@@ -140,45 +140,45 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     /**
      * Creates a new advantage.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile    The data file to associate it with.
      * @param isContainer Whether or not this row allows children.
      */
     public Advantage(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mType = TYPE_MASK_PHYSICAL;
-        mName = DEFAULT_NAME;
-        mCR = SelfControlRoll.NONE_REQUIRED;
-        mCRAdj = SelfControlRollAdjustments.NONE;
-        mLevels = -1;
-        mReference = ""; //$NON-NLS-1$
+        mType          = TYPE_MASK_PHYSICAL;
+        mName          = DEFAULT_NAME;
+        mCR            = SelfControlRoll.NONE_REQUIRED;
+        mCRAdj         = SelfControlRollAdjustments.NONE;
+        mLevels        = -1;
+        mReference     = ""; //$NON-NLS-1$
         mContainerType = AdvantageContainerType.GROUP;
-        mWeapons = new ArrayList<>();
-        mModifiers = new ArrayList<>();
+        mWeapons       = new ArrayList<>();
+        mModifiers     = new ArrayList<>();
     }
 
     /**
      * Creates a clone of an existing advantage and associates it with the specified data file.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile  The data file to associate it with.
      * @param advantage The advantage to clone.
-     * @param deep Whether or not to clone the children, grandchildren, etc.
+     * @param deep      Whether or not to clone the children, grandchildren, etc.
      */
     public Advantage(DataFile dataFile, Advantage advantage, boolean deep) {
         super(dataFile, advantage);
-        mType = advantage.mType;
-        mName = advantage.mName;
-        mCR = advantage.mCR;
-        mCRAdj = advantage.mCRAdj;
-        mLevels = advantage.mLevels;
-        mHalfLevel = advantage.mHalfLevel;
+        mType            = advantage.mType;
+        mName            = advantage.mName;
+        mCR              = advantage.mCR;
+        mCRAdj           = advantage.mCRAdj;
+        mLevels          = advantage.mLevels;
+        mHalfLevel       = advantage.mHalfLevel;
         mAllowHalfLevels = advantage.mAllowHalfLevels;
-        mPoints = advantage.mPoints;
-        mPointsPerLevel = advantage.mPointsPerLevel;
-        mRoundCostDown = advantage.mRoundCostDown;
-        mDisabled = advantage.mDisabled;
-        mReference = advantage.mReference;
-        mContainerType = advantage.mContainerType;
-        mWeapons = new ArrayList<>(advantage.mWeapons.size());
+        mPoints          = advantage.mPoints;
+        mPointsPerLevel  = advantage.mPointsPerLevel;
+        mRoundCostDown   = advantage.mRoundCostDown;
+        mDisabled        = advantage.mDisabled;
+        mReference       = advantage.mReference;
+        mContainerType   = advantage.mContainerType;
+        mWeapons         = new ArrayList<>(advantage.mWeapons.size());
         for (WeaponStats weapon : advantage.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
                 mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
@@ -203,8 +203,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
      * Loads an advantage and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param reader   The XML reader to load from.
+     * @param state    The {@link LoadState} to use.
      */
     public Advantage(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
         this(dataFile, TAG_ADVANTAGE_CONTAINER.equals(reader.getName()));
@@ -240,29 +240,29 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mType = TYPE_MASK_PHYSICAL;
-        mName = DEFAULT_NAME;
-        mCR = SelfControlRoll.NONE_REQUIRED;
-        mCRAdj = SelfControlRollAdjustments.NONE;
-        mLevels = -1;
-        mHalfLevel = false;
+        mType            = TYPE_MASK_PHYSICAL;
+        mName            = DEFAULT_NAME;
+        mCR              = SelfControlRoll.NONE_REQUIRED;
+        mCRAdj           = SelfControlRollAdjustments.NONE;
+        mLevels          = -1;
+        mHalfLevel       = false;
         mAllowHalfLevels = false;
-        mReference = ""; //$NON-NLS-1$
-        mContainerType = AdvantageContainerType.GROUP;
-        mPoints = 0;
-        mPointsPerLevel = 0;
-        mRoundCostDown = false;
-        mDisabled = false;
+        mReference       = ""; //$NON-NLS-1$
+        mContainerType   = AdvantageContainerType.GROUP;
+        mPoints          = 0;
+        mPointsPerLevel  = 0;
+        mRoundCostDown   = false;
+        mDisabled        = false;
         mOldPointsString = null;
-        mWeapons = new ArrayList<>();
-        mModifiers = new ArrayList<>();
+        mWeapons         = new ArrayList<>();
+        mModifiers       = new ArrayList<>();
     }
 
     @Override
     protected void loadAttributes(XMLReader reader, LoadState state) {
         super.loadAttributes(reader, state);
-        mRoundCostDown = reader.isAttributeSet(ATTR_ROUND_COST_DOWN);
-        mDisabled = reader.isAttributeSet(ATTR_DISABLED);
+        mRoundCostDown   = reader.isAttributeSet(ATTR_ROUND_COST_DOWN);
+        mDisabled        = reader.isAttributeSet(ATTR_DISABLED);
         mAllowHalfLevels = reader.isAttributeSet(ATTR_ALLOW_HALF_LEVELS);
         if (canHaveChildren()) {
             mContainerType = Enums.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
@@ -277,7 +277,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
         } else if (TAG_CR.equals(name)) {
             mCRAdj = Enums.extract(reader.getAttribute(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
-            mCR = SelfControlRoll.get(reader.readText());
+            mCR    = SelfControlRoll.get(reader.readText());
         } else if (TAG_REFERENCE.equals(name)) {
             mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
         } else if (!state.mForUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
@@ -290,7 +290,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             } else if (TAG_LEVELS.equals(name)) {
                 // Read the attribute first as next operation clears attribute map
                 mHalfLevel = mAllowHalfLevels && reader.isAttributeSet(ATTR_HALF_LEVEL);
-                mLevels = reader.readInteger(-1);
+                mLevels    = reader.readInteger(-1);
             } else if (TAG_OLD_POINTS.equals(name)) {
                 mOldPointsString = reader.readText();
             } else if (TAG_BASE_POINTS.equals(name)) {
@@ -318,7 +318,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             mOldPointsString = mOldPointsString.trim();
             int slash = mOldPointsString.indexOf('/');
             if (slash == -1) {
-                mPoints = getSimpleNumber(mOldPointsString);
+                mPoints         = getSimpleNumber(mOldPointsString);
                 mPointsPerLevel = 0;
             } else {
                 mPoints = getSimpleNumber(mOldPointsString.substring(0, slash));
@@ -328,13 +328,13 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                     mPointsPerLevel = 0;
                 }
                 if (mPoints == 0) {
-                    mPoints = mPointsPerLevel;
+                    mPoints         = mPointsPerLevel;
                     mPointsPerLevel = 0;
                 }
             }
             if (hasLevel() && mPointsPerLevel == 0) {
                 mPointsPerLevel = mPoints;
-                mPoints = 0;
+                mPoints         = 0;
             }
             mOldPointsString = null;
         }
@@ -581,7 +581,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                         points = pts;
                     }
                 }
-                int max = points;
+                int     max   = points;
                 boolean found = false;
                 for (Integer one : values) {
                     int value = one.intValue();
@@ -647,79 +647,79 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     /**
-     * @param basePoints The base point cost.
-     * @param levels The number of levels.
-     * @param halfLevel Whether a half level is present.
+     * @param basePoints     The base point cost.
+     * @param levels         The number of levels.
+     * @param halfLevel      Whether a half level is present.
      * @param pointsPerLevel The point cost per level.
-     * @param cr The {@link SelfControlRoll} to apply.
-     * @param modifiers The {@link Modifier}s to apply.
-     * @param roundCostDown Whether the point cost should be rounded down rather than up, as is
-     *            normal for most GURPS rules.
+     * @param cr             The {@link SelfControlRoll} to apply.
+     * @param modifiers      The {@link Modifier}s to apply.
+     * @param roundCostDown  Whether the point cost should be rounded down rather than up, as is
+     *                       normal for most GURPS rules.
      * @return The total points, taking levels and modifiers into account.
      */
     public static int getAdjustedPoints(int basePoints, int levels, boolean halfLevel, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers, boolean roundCostDown) {
-        int baseEnh = 0;
-        int levelEnh = 0;
-        int baseLim = 0;
-        int levelLim = 0;
+        int    baseEnh    = 0;
+        int    levelEnh   = 0;
+        int    baseLim    = 0;
+        int    levelLim   = 0;
         double multiplier = cr.getMultiplier();
 
         for (Modifier one : modifiers) {
             if (one.isEnabled()) {
                 int modifier = one.getCostModifier();
                 switch (one.getCostType()) {
-                    case PERCENTAGE:
+                case PERCENTAGE:
+                default:
+                    switch (one.getAffects()) {
+                    case TOTAL:
                     default:
-                        switch (one.getAffects()) {
-                            case TOTAL:
-                            default:
-                                if (modifier < 0) { // Limitation
-                                    baseLim += modifier;
-                                    levelLim += modifier;
-                                } else { // Enhancement
-                                    baseEnh += modifier;
-                                    levelEnh += modifier;
-                                }
-                                break;
-                            case BASE_ONLY:
-                                if (modifier < 0) { // Limitation
-                                    baseLim += modifier;
-                                } else { // Enhancement
-                                    baseEnh += modifier;
-                                }
-                                break;
-                            case LEVELS_ONLY:
-                                if (modifier < 0) { // Limitation
-                                    levelLim += modifier;
-                                } else { // Enhancement
-                                    levelEnh += modifier;
-                                }
-                                break;
+                        if (modifier < 0) { // Limitation
+                            baseLim  += modifier;
+                            levelLim += modifier;
+                        } else { // Enhancement
+                            baseEnh  += modifier;
+                            levelEnh += modifier;
                         }
                         break;
-                    case POINTS:
-                        switch (one.getAffects()) {
-                            case TOTAL:
-                            case BASE_ONLY:
-                            default:
-                                basePoints += modifier;
-                                break;
-                            case LEVELS_ONLY:
-                                pointsPerLevel += modifier;
-                                break;
+                    case BASE_ONLY:
+                        if (modifier < 0) { // Limitation
+                            baseLim += modifier;
+                        } else { // Enhancement
+                            baseEnh += modifier;
                         }
                         break;
-                    case MULTIPLIER:
-                        multiplier *= one.getCostMultiplier();
+                    case LEVELS_ONLY:
+                        if (modifier < 0) { // Limitation
+                            levelLim += modifier;
+                        } else { // Enhancement
+                            levelEnh += modifier;
+                        }
                         break;
+                    }
+                    break;
+                case POINTS:
+                    switch (one.getAffects()) {
+                    case TOTAL:
+                    case BASE_ONLY:
+                    default:
+                        basePoints += modifier;
+                        break;
+                    case LEVELS_ONLY:
+                        pointsPerLevel += modifier;
+                        break;
+                    }
+                    break;
+                case MULTIPLIER:
+                    multiplier *= one.getCostMultiplier();
+                    break;
                 }
             }
         }
 
         double modifiedBasePoints = basePoints;
-        double leveledPoints = pointsPerLevel * (levels + (halfLevel ? 0.5 : 0));
+        double leveledPoints      = pointsPerLevel * (levels + (halfLevel ? 0.5 : 0));
         if (baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0) {
-            int baseMod = 0;
+            int baseMod  = 0;
             int levelMod = 0;
 
             if (SheetPreferences.areOptionalModifierRulesUsed()) {
@@ -727,14 +727,14 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                     modifiedBasePoints = modifyPoints(basePoints + leveledPoints, baseEnh);
                     modifiedBasePoints = modifyPoints(modifiedBasePoints, Math.max(baseLim, -80));
                 } else {
-                    modifiedBasePoints = modifyPoints(basePoints, baseEnh);
-                    modifiedBasePoints = modifyPoints(modifiedBasePoints, Math.max(baseLim, -80));
-                    leveledPoints = modifyPoints(leveledPoints, levelEnh);
-                    leveledPoints = modifyPoints(leveledPoints, Math.max(levelLim, -80));
-                    basePoints += leveledPoints;
+                    modifiedBasePoints  = modifyPoints(basePoints, baseEnh);
+                    modifiedBasePoints  = modifyPoints(modifiedBasePoints, Math.max(baseLim, -80));
+                    leveledPoints       = modifyPoints(leveledPoints, levelEnh);
+                    leveledPoints       = modifyPoints(leveledPoints, Math.max(levelLim, -80));
+                    basePoints         += leveledPoints;
                 }
             } else {
-                baseMod = Math.max(baseEnh + baseLim, -80);
+                baseMod  = Math.max(baseEnh + baseLim, -80);
                 levelMod = Math.max(levelEnh + levelLim, -80);
                 if (baseMod == levelMod) {
                     modifiedBasePoints = modifyPoints(basePoints + leveledPoints, baseMod);
@@ -823,7 +823,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     /**
      * @param shouldRoundDown Whether the point cost should be rounded down rather than up, as is
-     *            normal for most GURPS rules.
+     *                        normal for most GURPS rules.
      * @return Whether it was modified.
      */
     public boolean setShouldRoundCostDown(boolean shouldRoundDown) {
@@ -899,9 +899,9 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     /** @return The type as a text string. */
     public String getTypeAsText() {
         if (!canHaveChildren()) {
-            String separator = ", "; //$NON-NLS-1$
-            StringBuilder buffer = new StringBuilder();
-            int type = getType();
+            String        separator = ", "; //$NON-NLS-1$
+            StringBuilder buffer    = new StringBuilder();
+            int           type      = getType();
 
             if ((type & Advantage.TYPE_MASK_MENTAL) != 0) {
                 buffer.append(TYPE_MENTAL);

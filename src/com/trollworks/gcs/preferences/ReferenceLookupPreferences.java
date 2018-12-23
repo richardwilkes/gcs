@@ -93,8 +93,8 @@ public class ReferenceLookupPreferences extends PreferencePanel {
             mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
         }
         mPanel.setSize(mPanel.getPreferredSize());
-        JScrollPane scroller = new JScrollPane(mPanel);
-        Dimension preferredSize = scroller.getPreferredSize();
+        JScrollPane scroller      = new JScrollPane(mPanel);
+        Dimension   preferredSize = scroller.getPreferredSize();
         if (preferredSize.height > 200) {
             preferredSize.height = 200;
         }

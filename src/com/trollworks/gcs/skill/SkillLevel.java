@@ -21,11 +21,11 @@ public class SkillLevel {
     /**
      * Creates a new {@link SkillLevel}.
      * 
-     * @param level The skill level.
+     * @param level         The skill level.
      * @param relativeLevel The relative skill level.
      */
     public SkillLevel(int level, int relativeLevel) {
-        mLevel = level;
+        mLevel         = level;
         mRelativeLevel = relativeLevel;
     }
 }

@@ -30,7 +30,7 @@ public class ListTextCell extends TextCell {
      * Create a new text cell.
      *
      * @param alignment The horizontal text alignment to use.
-     * @param wrapped Pass in <code>true</code> to enable wrapping.
+     * @param wrapped   Pass in <code>true</code> to enable wrapping.
      */
     public ListTextCell(int alignment, boolean wrapped) {
         super(alignment, wrapped);

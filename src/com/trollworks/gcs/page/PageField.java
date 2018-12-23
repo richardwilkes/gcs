@@ -60,7 +60,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
     /**
      * Creates a new, left-aligned, text input field.
      *
-     * @param sheet The sheet to listen to.
+     * @param sheet        The sheet to listen to.
      * @param consumedType The field to listen to.
      */
     public PageField(CharacterSheet sheet, String consumedType) {
@@ -70,9 +70,9 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
     /**
      * Creates a new, left-aligned, text input field.
      *
-     * @param sheet The sheet to listen to.
+     * @param sheet        The sheet to listen to.
      * @param consumedType The field to listen to.
-     * @param tooltip The tooltip to set.
+     * @param tooltip      The tooltip to set.
      */
     public PageField(CharacterSheet sheet, String consumedType, String tooltip) {
         this(sheet, consumedType, SwingConstants.LEFT, true, tooltip);
@@ -81,10 +81,10 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
     /**
      * Creates a new text input field.
      *
-     * @param sheet The sheet to listen to.
+     * @param sheet        The sheet to listen to.
      * @param consumedType The field to listen to.
-     * @param alignment The alignment of the field.
-     * @param tooltip The tooltip to set.
+     * @param alignment    The alignment of the field.
+     * @param tooltip      The tooltip to set.
      */
     public PageField(CharacterSheet sheet, String consumedType, int alignment, String tooltip) {
         this(sheet, consumedType, alignment, true, tooltip);
@@ -93,11 +93,11 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
     /**
      * Creates a new text input field.
      *
-     * @param sheet The sheet to listen to.
+     * @param sheet        The sheet to listen to.
      * @param consumedType The field to listen to.
-     * @param alignment The alignment of the field.
-     * @param editable Whether or not the user can edit this field.
-     * @param tooltip The tooltip to set.
+     * @param alignment    The alignment of the field.
+     * @param editable     Whether or not the user can edit this field.
+     * @param tooltip      The tooltip to set.
      */
     public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip) {
         super(getFormatterFactoryForType(consumedType), sheet.getCharacter().getValueForID(consumedType));
@@ -106,7 +106,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
             // around text fields.
             setUI(new BasicTextFieldUI());
         }
-        mSheet = sheet;
+        mSheet        = sheet;
         mConsumedType = consumedType;
         setFont(sheet.getScale().scale(UIManager.getFont(GCSFonts.KEY_FIELD)));
         setBorder(null);

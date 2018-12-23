@@ -34,8 +34,8 @@ public class PageLabel extends Label {
     /**
      * Creates a new label for the specified field.
      *
-     * @param title The title of the field.
-     * @param field The field.
+     * @param title     The title of the field.
+     * @param field     The field.
      * @param alignment The horizontal alignment to use.
      */
     public PageLabel(String title, JComponent field, int alignment) {

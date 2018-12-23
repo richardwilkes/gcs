@@ -57,9 +57,9 @@ public class SpellPrereqEditor extends PrereqEditor {
     /**
      * Creates a new spell prerequisite editor panel.
      *
-     * @param row The owning row.
+     * @param row    The owning row.
      * @param prereq The prerequisite to edit.
-     * @param depth The depth of this prerequisite.
+     * @param depth  The depth of this prerequisite.
      */
     public SpellPrereqEditor(ListRow row, SpellPrereq prereq, int depth) {
         super(row, prereq, depth);
@@ -68,9 +68,9 @@ public class SpellPrereqEditor extends PrereqEditor {
     @Override
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         SpellPrereq prereq = (SpellPrereq) mPrereq;
-        String type = prereq.getType();
+        String      type   = prereq.getType();
 
-        FlexRow row = new FlexRow();
+        FlexRow     row    = new FlexRow();
         row.add(addHasCombo(prereq.has()));
         row.add(addNumericCompareCombo(prereq.getQuantityCriteria(), null));
         row.add(addNumericCompareField(prereq.getQuantityCriteria(), 0, 999, false));
@@ -93,9 +93,9 @@ public class SpellPrereqEditor extends PrereqEditor {
     }
 
     private JComboBox<Object> addChangeTypePopup() {
-        String[] titles = { WHOSE_SPELL_NAME, ANY, COLLEGE, COLLEGE_COUNT };
-        int selection = 0;
-        String current = ((SpellPrereq) mPrereq).getType();
+        String[] titles    = { WHOSE_SPELL_NAME, ANY, COLLEGE, COLLEGE_COUNT };
+        int      selection = 0;
+        String   current   = ((SpellPrereq) mPrereq).getType();
         for (int i = 0; i < TYPES.length; i++) {
             if (TYPES[i].equals(current)) {
                 selection = i;
@@ -107,8 +107,8 @@ public class SpellPrereqEditor extends PrereqEditor {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        SpellPrereq prereq = (SpellPrereq) mPrereq;
-        String command = event.getActionCommand();
+        SpellPrereq prereq  = (SpellPrereq) mPrereq;
+        String      command = event.getActionCommand();
 
         if (CHANGE_TYPE.equals(command)) {
             String type = TYPES[((JComboBox<?>) event.getSource()).getSelectedIndex()];

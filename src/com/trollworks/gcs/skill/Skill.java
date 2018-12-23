@@ -120,10 +120,10 @@ public class Skill extends ListRow implements HasSourceReference {
     /**
      * Creates a string suitable for displaying the level.
      *
-     * @param level The skill level.
+     * @param level         The skill level.
      * @param relativeLevel The relative skill level.
-     * @param attribute The attribute the skill is based on.
-     * @param isContainer Whether this skill is a container or not.
+     * @param attribute     The attribute the skill is based on.
+     * @param isContainer   Whether this skill is a container or not.
      * @return The formatted string.
      */
     public static String getSkillDisplayLevel(int level, int relativeLevel, SkillAttribute attribute, boolean isContainer) {
@@ -139,19 +139,19 @@ public class Skill extends ListRow implements HasSourceReference {
     /**
      * Creates a new skill.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile    The data file to associate it with.
      * @param isContainer Whether or not this row allows children.
      */
     public Skill(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mName = getLocalizedName();
+        mName           = getLocalizedName();
         mSpecialization = EMPTY;
-        mTechLevel = null;
-        mAttribute = SkillAttribute.DX;
-        mDifficulty = SkillDifficulty.A;
-        mPoints = 1;
-        mReference = EMPTY;
-        mWeapons = new ArrayList<>();
+        mTechLevel      = null;
+        mAttribute      = SkillAttribute.DX;
+        mDifficulty     = SkillDifficulty.A;
+        mPoints         = 1;
+        mReference      = EMPTY;
+        mWeapons        = new ArrayList<>();
         updateLevel(false);
     }
 
@@ -159,19 +159,19 @@ public class Skill extends ListRow implements HasSourceReference {
      * Creates a clone of an existing skill and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param skill The skill to clone.
-     * @param deep Whether or not to clone the children, grandchildren, etc.
+     * @param skill    The skill to clone.
+     * @param deep     Whether or not to clone the children, grandchildren, etc.
      * @param forSheet Whether this is for a character sheet or a list.
      */
     public Skill(DataFile dataFile, Skill skill, boolean deep, boolean forSheet) {
         super(dataFile, skill);
-        mName = skill.mName;
-        mSpecialization = skill.mSpecialization;
-        mTechLevel = skill.mTechLevel;
-        mAttribute = skill.mAttribute;
-        mDifficulty = skill.mDifficulty;
-        mPoints = forSheet ? skill.mPoints : 1;
-        mReference = skill.mReference;
+        mName                         = skill.mName;
+        mSpecialization               = skill.mSpecialization;
+        mTechLevel                    = skill.mTechLevel;
+        mAttribute                    = skill.mAttribute;
+        mDifficulty                   = skill.mDifficulty;
+        mPoints                       = forSheet ? skill.mPoints : 1;
+        mReference                    = skill.mReference;
         mEncumbrancePenaltyMultiplier = skill.mEncumbrancePenaltyMultiplier;
         if (forSheet && dataFile instanceof GURPSCharacter) {
             if (mTechLevel != null) {
@@ -208,8 +208,8 @@ public class Skill extends ListRow implements HasSourceReference {
      * Loads a skill and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param reader   The XML reader to load from.
+     * @param state    The {@link LoadState} to use.
      */
     public Skill(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
         this(dataFile, TAG_SKILL_CONTAINER.equals(reader.getName()));
@@ -276,15 +276,15 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mName = getLocalizedName();
-        mSpecialization = EMPTY;
-        mTechLevel = null;
-        mAttribute = SkillAttribute.DX;
-        mDifficulty = SkillDifficulty.A;
-        mPoints = 1;
-        mReference = EMPTY;
+        mName                         = getLocalizedName();
+        mSpecialization               = EMPTY;
+        mTechLevel                    = null;
+        mAttribute                    = SkillAttribute.DX;
+        mDifficulty                   = SkillDifficulty.A;
+        mPoints                       = 1;
+        mReference                    = EMPTY;
         mEncumbrancePenaltyMultiplier = 0;
-        mWeapons = new ArrayList<>();
+        mWeapons                      = new ArrayList<>();
     }
 
     @Override
@@ -479,11 +479,11 @@ public class Skill extends ListRow implements HasSourceReference {
      * @param notify Whether or not a notification should be issued on a change.
      */
     public void updateLevel(boolean notify) {
-        int savedLevel = mLevel;
-        int savedRelativeLevel = mRelativeLevel;
-        SkillLevel level = calculateLevelSelf();
+        int        savedLevel         = mLevel;
+        int        savedRelativeLevel = mRelativeLevel;
+        SkillLevel level              = calculateLevelSelf();
 
-        mLevel = level.mLevel;
+        mLevel         = level.mLevel;
         mRelativeLevel = level.mRelativeLevel;
 
         if (notify) {
@@ -523,13 +523,13 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     /**
-     * @param attribute The attribute to set.
+     * @param attribute  The attribute to set.
      * @param difficulty The difficulty to set.
      * @return Whether it was changed.
      */
     public boolean setDifficulty(SkillAttribute attribute, SkillDifficulty difficulty) {
         if (mAttribute != attribute || mDifficulty != difficulty) {
-            mAttribute = attribute;
+            mAttribute  = attribute;
             mDifficulty = difficulty;
             startNotify();
             notify(ID_DIFFICULTY, this);
@@ -602,9 +602,9 @@ public class Skill extends ListRow implements HasSourceReference {
 
     /** @param text The combined attribute/difficulty to set. */
     public void setDifficultyFromText(String text) {
-        SkillAttribute[] attribute = SkillAttribute.values();
+        SkillAttribute[]  attribute  = SkillAttribute.values();
         SkillDifficulty[] difficulty = SkillDifficulty.values();
-        String input = text.trim();
+        String            input      = text.trim();
 
         for (SkillAttribute element : attribute) {
             // We have to go backwards through the list to avoid the
@@ -644,7 +644,7 @@ public class Skill extends ListRow implements HasSourceReference {
 
         builder.append(getName());
         if (!canHaveChildren()) {
-            String techLevel = getTechLevel();
+            String techLevel      = getTechLevel();
             String specialization = getSpecialization();
 
             if (techLevel != null) {
@@ -666,7 +666,7 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     public String getModifierNotes() {
         StringBuilder buffer = new StringBuilder(super.getModifierNotes());
-        Skill skill = getDefaultSkill();
+        Skill         skill  = getDefaultSkill();
         if (skill != null && mDefaultedFrom != null) {
             if (buffer.length() > 0) {
                 buffer.append(' ');
@@ -692,20 +692,20 @@ public class Skill extends ListRow implements HasSourceReference {
     /**
      * Calculates the skill level.
      *
-     * @param character The character the skill will be attached to.
-     * @param name The name of the skill.
+     * @param character      The character the skill will be attached to.
+     * @param name           The name of the skill.
      * @param specialization The specialization of the skill.
-     * @param defaults The defaults the skill has.
-     * @param attribute The attribute the skill is based on.
-     * @param difficulty The difficulty of the skill.
-     * @param points The number of points spent in the skill.
-     * @param excludes The set of skills to exclude from any default calculations.
+     * @param defaults       The defaults the skill has.
+     * @param attribute      The attribute the skill is based on.
+     * @param difficulty     The difficulty of the skill.
+     * @param points         The number of points spent in the skill.
+     * @param excludes       The set of skills to exclude from any default calculations.
      * @param encPenaltyMult The encumbrance penalty multiplier.
      * @return The calculated skill level.
      */
     public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
         int relativeLevel = difficulty.getBaseRelativeLevel();
-        int level = attribute.getBaseSkillLevel(character);
+        int level         = attribute.getBaseSkillLevel(character);
         if (level != Integer.MIN_VALUE) {
             if (difficulty != SkillDifficulty.W) {
                 if (mDefaultedFrom != null && mDefaultedFrom.getPoints() > 0) {
@@ -720,7 +720,7 @@ public class Skill extends ListRow implements HasSourceReference {
             } else if (mDefaultedFrom != null && mDefaultedFrom.getPoints() < 0) {
                 relativeLevel = mDefaultedFrom.getAdjLevel() - level;
             } else {
-                level = Integer.MIN_VALUE;
+                level         = Integer.MIN_VALUE;
                 relativeLevel = 0;
             }
 
@@ -732,12 +732,12 @@ public class Skill extends ListRow implements HasSourceReference {
                     }
                 }
                 int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
-                level += bonus;
+                level         += bonus;
                 relativeLevel += bonus;
-                bonus = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
-                level += bonus;
+                bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+                level         += bonus;
                 relativeLevel += bonus;
-                level += character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                level         += character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
             }
         }
         return new SkillLevel(level, relativeLevel);
@@ -751,8 +751,8 @@ public class Skill extends ListRow implements HasSourceReference {
      * @return extra points spent to keep minimum levels.
      */
     public int swapDefault() {
-        int extraPointsSpent = 0;
-        Skill baseSkill = getDefaultSkill();
+        int   extraPointsSpent = 0;
+        Skill baseSkill        = getDefaultSkill();
         if (baseSkill != null) {
             // Find alternative default
             mDefaultedFrom = getBestDefaultWithPoints(mDefaultedFrom);
@@ -786,8 +786,8 @@ public class Skill extends ListRow implements HasSourceReference {
     private boolean hasDefaultTo(Skill skill) {
         boolean result = false;
         for (SkillDefault skillDefault : getDefaults()) {
-            boolean skillBased = skillDefault.getType().isSkillBased();
-            boolean nameMatches = skillDefault.getName().equals(skill.getName());
+            boolean skillBased            = skillDefault.getType().isSkillBased();
+            boolean nameMatches           = skillDefault.getName().equals(skill.getName());
             boolean specializationMatches = skillDefault.getSpecialization() == null || skillDefault.getSpecialization().isEmpty() || skillDefault.getSpecialization().equals(skill.getSpecialization());
             if (skillBased && nameMatches && specializationMatches) {
                 result = true;
@@ -816,8 +816,8 @@ public class Skill extends ListRow implements HasSourceReference {
         SkillDefault best = getBestDefault(excludedDefault);
         if (best != null) {
             GURPSCharacter character = getCharacter();
-            int baseLine = getAttribute().getBaseSkillLevel(character) + getDifficulty().getBaseRelativeLevel();
-            int level = best.getLevel();
+            int            baseLine  = getAttribute().getBaseSkillLevel(character) + getDifficulty().getBaseRelativeLevel();
+            int            level     = best.getLevel();
             best.setAdjLevel(level);
             if (level == baseLine) {
                 best.setPoints(1);
@@ -837,10 +837,10 @@ public class Skill extends ListRow implements HasSourceReference {
         if (character != null) {
             Collection<SkillDefault> defaults = getDefaults();
             if (!defaults.isEmpty()) {
-                int best = Integer.MIN_VALUE;
-                SkillDefault bestSkill = null;
-                String exclude = toString();
-                HashSet<String> excludes = new HashSet<>();
+                int             best      = Integer.MIN_VALUE;
+                SkillDefault    bestSkill = null;
+                String          exclude   = toString();
+                HashSet<String> excludes  = new HashSet<>();
                 excludes.add(exclude);
                 for (SkillDefault skillDefault : defaults) {
                     // For skill-based defaults, prune out any that already use a default that we
@@ -853,7 +853,7 @@ public class Skill extends ListRow implements HasSourceReference {
                             level -= character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
                         }
                         if (level > best) {
-                            best = level;
+                            best      = level;
                             bestSkill = new SkillDefault(skillDefault);
                             bestSkill.setLevel(level);
                         }
@@ -901,7 +901,7 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     public void applyNameableKeys(HashMap<String, String> map) {
         super.applyNameableKeys(map);
-        mName = nameNameables(map, mName);
+        mName           = nameNameables(map, mName);
         mSpecialization = nameNameables(map, mSpecialization);
         for (WeaponStats weapon : mWeapons) {
             for (SkillDefault one : weapon.getDefaults()) {
@@ -918,7 +918,7 @@ public class Skill extends ListRow implements HasSourceReference {
     /**
      * Returns the skill defaulted to.
      *
-     * @param character Character
+     * @param character    Character
      * @param skillDefault Skill default
      * @return Returns the skill defaulted to.
      */

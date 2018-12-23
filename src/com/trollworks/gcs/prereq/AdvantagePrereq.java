@@ -127,13 +127,13 @@ public class AdvantagePrereq extends NameLevelPrereq {
 
     @Override
     public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
-        boolean satisfied = false;
-        StringCriteria nameCriteria = getNameCriteria();
+        boolean         satisfied     = false;
+        StringCriteria  nameCriteria  = getNameCriteria();
         IntegerCriteria levelCriteria = getLevelCriteria();
 
         for (Advantage advantage : character.getAdvantagesIterator(false)) {
             if (exclude != advantage && nameCriteria.matches(advantage.getName())) {
-                String notes = advantage.getNotes();
+                String notes         = advantage.getNotes();
                 String modifierNotes = advantage.getModifierNotes();
 
                 if (modifierNotes.length() > 0) {

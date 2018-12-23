@@ -56,10 +56,10 @@ public abstract class Prereq {
 
     /**
      * @param character The character to check.
-     * @param exclude The data to exclude from the check.
-     * @param builder The {@link StringBuilder} to append this prerequisite's satisfied/unsatisfied
-     *            description to. May be <code>null</code>.
-     * @param prefix The prefix to add to each line appended to the builder.
+     * @param exclude   The data to exclude from the check.
+     * @param builder   The {@link StringBuilder} to append this prerequisite's
+     *                  satisfied/unsatisfied description to. May be <code>null</code>.
+     * @param prefix    The prefix to add to each line appended to the builder.
      * @return Whether or not this prerequisite is satisfied by the specified character.
      */
     public abstract boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix);

@@ -48,9 +48,9 @@ public class AttributePrereqEditor extends PrereqEditor {
     /**
      * Creates a new attribute prerequisite editor panel.
      *
-     * @param row The owning row.
+     * @param row    The owning row.
      * @param prereq The prerequisite to edit.
-     * @param depth The depth of this prerequisite.
+     * @param depth  The depth of this prerequisite.
      */
     public AttributePrereqEditor(ListRow row, AttributePrereq prereq, int depth) {
         super(row, prereq, depth);
@@ -60,7 +60,7 @@ public class AttributePrereqEditor extends PrereqEditor {
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         AttributePrereq prereq = (AttributePrereq) mPrereq;
 
-        FlexRow row = new FlexRow();
+        FlexRow         row    = new FlexRow();
         row.add(addHasCombo(prereq.has()));
         row.add(addChangeBaseTypeCombo());
         row.add(new FlexSpacer(0, 0, true, false));
@@ -76,8 +76,8 @@ public class AttributePrereqEditor extends PrereqEditor {
     }
 
     private JComboBox<Object> addChangeTypePopup() {
-        BonusAttributeType[] types = AttributePrereq.TYPES;
-        String[] titles = new String[types.length];
+        BonusAttributeType[] types  = AttributePrereq.TYPES;
+        String[]             titles = new String[types.length];
         for (int i = 0; i < types.length; i++) {
             titles[i] = types[i].getPresentationName();
         }
@@ -85,10 +85,10 @@ public class AttributePrereqEditor extends PrereqEditor {
     }
 
     private JComboBox<Object> addChangeSecondTypePopup() {
-        BonusAttributeType current = ((AttributePrereq) mPrereq).getCombinedWith();
-        BonusAttributeType[] types = AttributePrereq.TYPES;
-        String[] titles = new String[types.length + 1];
-        String selection = BLANK;
+        BonusAttributeType   current   = ((AttributePrereq) mPrereq).getCombinedWith();
+        BonusAttributeType[] types     = AttributePrereq.TYPES;
+        String[]             titles    = new String[types.length + 1];
+        String               selection = BLANK;
         titles[0] = BLANK;
         for (int i = 0; i < types.length; i++) {
             titles[i + 1] = MessageFormat.format(COMBINED_WITH, types[i].getPresentationName());
@@ -101,8 +101,8 @@ public class AttributePrereqEditor extends PrereqEditor {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        AttributePrereq prereq = (AttributePrereq) mPrereq;
-        String command = event.getActionCommand();
+        AttributePrereq prereq  = (AttributePrereq) mPrereq;
+        String          command = event.getActionCommand();
 
         if (CHANGE_TYPE.equals(command)) {
             prereq.setWhich(AttributePrereq.TYPES[((JComboBox<?>) event.getSource()).getSelectedIndex()]);

@@ -41,9 +41,12 @@ public class PortraitPreferencePanel extends ActionPanel {
     @Localize(locale = "es", value = "Retrato")
     private static String PORTRAIT;
     @Localize("<html><body>The portrait to use when a new character sheet is created.<br><br>Ideal original portrait size is {0} pixels wide by {1} pixels tall,<br>although the image will be automatically scaled to these<br>dimensions, if necessary.</body></html>")
-    @Localize(locale = "de", value = "<html><body>Das zu verwendende Charakterbild, wenn ein neues Charakterblatt erstellt wird.<br><br>Ideale Größe für das Bild ist {0} Pixel breit und {1} Pixel hoch,<br>aber das Bild wird automatisch auf diese Maße<br>skaliert, wenn dies notwendig sein sollte.</body></html>")
-    @Localize(locale = "ru", value = "<html><body>Изображение, используемое при создании нового листа персонажа.<br><br>Наилучший размер изображения - {0} пикселей в ширину и {1} пикселей в высоту, но при необходимости, <br>изображение будет автоматически смасштабировано в этипропорции.</body></html>")
-    @Localize(locale = "es", value = "<html><body>Retrato para usar cuando se crea una nueva hoja de personaje.<br><br>El tamaño original ideal es de {0} pixels de ancho por {1} pixels de alto,<br>en cualquier otro caso, la imagen se escalará <br>automaticamente a estas dimensiones, si es necesario.</body></html>")
+    @Localize(locale = "de",
+              value = "<html><body>Das zu verwendende Charakterbild, wenn ein neues Charakterblatt erstellt wird.<br><br>Ideale Größe für das Bild ist {0} Pixel breit und {1} Pixel hoch,<br>aber das Bild wird automatisch auf diese Maße<br>skaliert, wenn dies notwendig sein sollte.</body></html>")
+    @Localize(locale = "ru",
+              value = "<html><body>Изображение, используемое при создании нового листа персонажа.<br><br>Наилучший размер изображения - {0} пикселей в ширину и {1} пикселей в высоту, но при необходимости, <br>изображение будет автоматически смасштабировано в этипропорции.</body></html>")
+    @Localize(locale = "es",
+              value = "<html><body>Retrato para usar cuando se crea una nueva hoja de personaje.<br><br>El tamaño original ideal es de {0} pixels de ancho por {1} pixels de alto,<br>en cualquier otro caso, la imagen se escalará <br>automaticamente a estas dimensiones, si es necesario.</body></html>")
     @Localize(locale = "es", value = "")
     private static String PORTRAIT_TOOLTIP;
 
@@ -83,7 +86,7 @@ public class PortraitPreferencePanel extends ActionPanel {
 
     @Override
     protected void paintComponent(Graphics gc) {
-        Insets insets = getInsets();
+        Insets    insets = getInsets();
         Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         gc.setColor(Color.white);
         gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);

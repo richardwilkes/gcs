@@ -85,9 +85,9 @@ public class ListPrereqEditor extends PrereqEditor {
     /**
      * Creates a new prerequisite editor panel.
      *
-     * @param row The owning row.
+     * @param row    The owning row.
      * @param prereq The prerequisite to edit.
-     * @param depth The depth of this prerequisite.
+     * @param depth  The depth of this prerequisite.
      */
     public ListPrereqEditor(ListRow row, PrereqList prereq, int depth) {
         super(row, prereq, depth);
@@ -96,13 +96,13 @@ public class ListPrereqEditor extends PrereqEditor {
     private static String mapWhenTLToString(IntegerCriteria criteria) {
         if (PrereqList.isWhenTLEnabled(criteria)) {
             switch (criteria.getType()) {
-                case IS:
-                default:
-                    return TL_IS;
-                case AT_LEAST:
-                    return TL_IS_AT_LEAST;
-                case AT_MOST:
-                    return TL_IS_AT_MOST;
+            case IS:
+            default:
+                return TL_IS;
+            case AT_LEAST:
+                return TL_IS_AT_LEAST;
+            case AT_MOST:
+                return TL_IS_AT_MOST;
             }
         }
         return NO_TL_PREREQ;
@@ -110,7 +110,7 @@ public class ListPrereqEditor extends PrereqEditor {
 
     @Override
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
-        PrereqList prereqList = (PrereqList) mPrereq;
+        PrereqList      prereqList     = (PrereqList) mPrereq;
         IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
         left.add(addComboBox(WHEN_TL, new Object[] { NO_TL_PREREQ, TL_IS, TL_IS_AT_LEAST, TL_IS_AT_MOST }, mapWhenTLToString(whenTLCriteria)));
         if (PrereqList.isWhenTLEnabled(whenTLCriteria)) {
@@ -148,9 +148,9 @@ public class ListPrereqEditor extends PrereqEditor {
             ((PrereqList) mPrereq).setRequiresAll(((JComboBox<?>) event.getSource()).getSelectedIndex() == 0);
             getParent().repaint();
         } else if (WHEN_TL.equals(command)) {
-            PrereqList prereqList = (PrereqList) mPrereq;
+            PrereqList      prereqList     = (PrereqList) mPrereq;
             IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
-            Object value = ((JComboBox<?>) event.getSource()).getSelectedItem();
+            Object          value          = ((JComboBox<?>) event.getSource()).getSelectedItem();
             if (!mapWhenTLToString(whenTLCriteria).equals(value)) {
                 if (TL_IS.equals(value)) {
                     if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
@@ -179,7 +179,7 @@ public class ListPrereqEditor extends PrereqEditor {
 
     private void addItem(Prereq prereq) {
         JComponent parent = (JComponent) getParent();
-        int index = UIUtilities.getIndexOf(parent, this);
+        int        index  = UIUtilities.getIndexOf(parent, this);
         ((PrereqList) mPrereq).add(0, prereq);
         parent.add(create(mRow, prereq, getDepth() + 1), index + 1);
         parent.revalidate();

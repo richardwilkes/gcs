@@ -98,18 +98,18 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     /**
      * Creates a new {@link WeaponEditor}.
      *
-     * @param owner The owning row.
-     * @param weapons The weapons to modify.
+     * @param owner       The owning row.
+     * @param weapons     The weapons to modify.
      * @param weaponClass The {@link Class} of weapons.
      */
     public WeaponEditor(ListRow owner, List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
         super(new BorderLayout());
-        mOwner = owner;
-        mWeaponClass = weaponClass;
-        mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addWeapon());
+        mOwner        = owner;
+        mWeaponClass  = weaponClass;
+        mAddButton    = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addWeapon());
         mDeleteButton = new IconButton(StdImage.REMOVE, REMOVE_TOOLTIP, () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
-        Panel top = new Panel(new BorderLayout());
+        Panel top  = new Panel(new BorderLayout());
         Panel left = new Panel(new PrecisionLayout());
         left.add(mAddButton);
         left.add(mDeleteButton);
@@ -170,7 +170,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         wrapper.setBorder(new EmptyBorder(5));
         mEditorPanel = new JPanel(new ColumnLayout(1, RowDistribution.GIVE_EXCESS_TO_LAST));
         mEditorPanel.add(wrapper);
-        mUsage = createTextField(wrapper, USAGE, EMPTY);
+        mUsage  = createTextField(wrapper, USAGE, EMPTY);
         mDamage = createTextField(wrapper, DAMAGE, EMPTY);
         createFields(wrapper);
         mStrength = createTextField(wrapper, MINIMUM_STRENGTH, EMPTY);
@@ -191,7 +191,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         mDefaults.removeAll();
         mDefaults.addActionListener(this);
         JScrollPane scrollPanel = new JScrollPane(mDefaults);
-        Dimension size = mDefaults.getMinimumSize();
+        Dimension   size        = mDefaults.getMinimumSize();
         if (size.height < 50) {
             size.height = 50;
             mDefaults.setMinimumSize(size);
@@ -204,8 +204,8 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
      * Creates a new text field.
      *
      * @param parent The parent.
-     * @param title The title of the field.
-     * @param value The initial value.
+     * @param title  The title of the field.
+     * @param value  The initial value.
      * @return The newly created field.
      */
     protected EditorField createTextField(Container parent, String title, Object value) {
@@ -280,7 +280,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
     private void addWeapon() {
         WeaponDisplayRow weapon = new WeaponDisplayRow(createWeaponStats());
-        OutlineModel model = mOutline.getModel();
+        OutlineModel     model  = mOutline.getModel();
         model.addRow(weapon);
         mOutline.sizeColumnsToFit();
         model.select(weapon, false);
@@ -294,9 +294,9 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
     private void handleOutline(String cmd) {
         if (Outline.CMD_SELECTION_CHANGED.equals(cmd)) {
-            OutlineModel model = mOutline.getModel();
-            Selection selection = model.getSelection();
-            int count = selection.getCount();
+            OutlineModel model     = mOutline.getModel();
+            Selection    selection = model.getSelection();
+            int          count     = selection.getCount();
             if (count == 1) {
                 setWeapon(((WeaponDisplayRow) model.getRowAtIndex(selection.firstSelectedIndex())).getWeapon());
             } else {

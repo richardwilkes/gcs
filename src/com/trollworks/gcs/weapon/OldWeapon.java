@@ -93,7 +93,7 @@ public class OldWeapon {
      */
     public ArrayList<WeaponStats> getWeapons(ListRow owner) {
         ArrayList<WeaponStats> weapons = new ArrayList<>();
-        int count = count();
+        int                    count   = count();
 
         for (int i = 0; i < count; i++) {
             String reach = get(mReach, i);
@@ -136,7 +136,7 @@ public class OldWeapon {
     }
 
     private int count() {
-        int max = 0;
+        int max   = 0;
         int count = count(mDamage);
 
         if (count > max) {

@@ -70,10 +70,10 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     /**
      * Creates a new {@link ModifierListEditor} editor.
      *
-     * @param owner The owning row.
+     * @param owner             The owning row.
      * @param readOnlyModifiers The list of {@link Modifier}s from parents, which are not to be
-     *            modified.
-     * @param modifiers The list of {@link Modifier}s to modify.
+     *                          modified.
+     * @param modifiers         The list of {@link Modifier}s to modify.
      */
     public ModifierListEditor(DataFile owner, List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
         super(new BorderLayout());
@@ -111,13 +111,13 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     }
 
     private Component createOutline(List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
-        JScrollPane scroller;
+        JScrollPane  scroller;
         OutlineModel model;
 
         mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addModifier());
 
-        mOutline = new ModifierOutline();
-        model = mOutline.getModel();
+        mOutline   = new ModifierOutline();
+        model      = mOutline.getModel();
         ModifierColumnID.addColumns(mOutline, true);
 
         if (readOnlyModifiers != null) {
@@ -162,8 +162,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     }
 
     private void addModifier() {
-        Modifier modifier = new Modifier(mOwner);
-        OutlineModel model = mOutline.getModel();
+        Modifier     modifier = new Modifier(mOwner);
+        OutlineModel model    = mOutline.getModel();
 
         if (mOwner instanceof ListFile || mOwner instanceof LibraryFile) {
             modifier.setEnabled(false);
@@ -210,7 +210,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
         @Override
         public boolean canDeleteSelection() {
             OutlineModel model = getModel();
-            boolean can = mAddButton.isEnabled() && model.hasSelection();
+            boolean      can   = mAddButton.isEnabled() && model.hasSelection();
             if (can) {
                 for (Modifier row : new FilteredIterator<>(model.getSelectionAsList(), Modifier.class)) {
                     if (row.isReadOnly()) {

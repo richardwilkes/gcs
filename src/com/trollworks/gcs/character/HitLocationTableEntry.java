@@ -36,11 +36,11 @@ public class HitLocationTableEntry {
     }
 
     public HitLocationTableEntry(HitLocation location, String titleOverride, int hitPenaltyModifier, int lowRoll, int highRoll) {
-        mLocation = location;
-        mTitleOverride = titleOverride;
+        mLocation           = location;
+        mTitleOverride      = titleOverride;
         mHitPenaltyModifier = hitPenaltyModifier;
-        mLowRoll = lowRoll;
-        mHighRoll = highRoll;
+        mLowRoll            = lowRoll;
+        mHighRoll           = highRoll;
     }
 
     public String getKey() {

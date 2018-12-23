@@ -113,7 +113,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
     @SuppressWarnings("unchecked")
     private List<Object> collectLists() {
         mCurrent = new ArrayList<>();
-        mStack = new Stack<>();
+        mStack   = new Stack<>();
         try {
             Files.walkFileTree(GCS.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, this);
         } catch (Exception exception) {
@@ -121,7 +121,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
         }
         List<Object> result = mCurrent;
         mCurrent = null;
-        mStack = null;
+        mStack   = null;
         return result.isEmpty() ? new ArrayList<>() : (List<Object>) result.get(0);
     }
 

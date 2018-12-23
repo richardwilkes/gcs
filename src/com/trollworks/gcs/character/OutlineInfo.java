@@ -32,22 +32,22 @@ public class OutlineInfo {
     /**
      * Creates a new outline information holder.
      *
-     * @param outline The outline to collect information about.
+     * @param outline      The outline to collect information about.
      * @param contentWidth The content width.
      */
     public OutlineInfo(Outline outline, int contentWidth) {
-        int one = Scale.get(outline).scale(1);
-        Insets insets = new TitledBorder().getBorderInsets(outline);
-        OutlineModel outlineModel = outline.getModel();
-        int count = outlineModel.getRowCount();
-        List<Column> columns = outlineModel.getColumns();
-        boolean hasRowDividers = outline.shouldDrawRowDividers();
+        int          one            = Scale.get(outline).scale(1);
+        Insets       insets         = new TitledBorder().getBorderInsets(outline);
+        OutlineModel outlineModel   = outline.getModel();
+        int          count          = outlineModel.getRowCount();
+        List<Column> columns        = outlineModel.getColumns();
+        boolean      hasRowDividers = outline.shouldDrawRowDividers();
 
         ColumnUtils.pack(outline, contentWidth - (insets.left + insets.right));
         outline.updateRowHeights();
 
         mRowIndex = -1;
-        mHeights = new int[count];
+        mHeights  = new int[count];
 
         for (int i = 0; i < count; i++) {
             Row row = outlineModel.getRowAtIndex(i);
@@ -61,7 +61,7 @@ public class OutlineInfo {
         }
 
         mOverheadHeight = insets.top + insets.bottom + outline.getHeaderPanel().getPreferredSize().height;
-        mMinimumHeight = mOverheadHeight + (count > 0 ? mHeights[0] : 0);
+        mMinimumHeight  = mOverheadHeight + (count > 0 ? mHeights[0] : 0);
     }
 
     /**

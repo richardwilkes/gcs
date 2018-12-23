@@ -62,8 +62,8 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     /**
      * Creates a new {@link JComboBox}.
      *
-     * @param command The command to issue on selection.
-     * @param items The items to add to the {@link JComboBox}.
+     * @param command   The command to issue on selection.
+     * @param items     The items to add to the {@link JComboBox}.
      * @param selection The item to select initially.
      * @return The new {@link JComboBox}.
      */
@@ -81,14 +81,14 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 
     /**
      * @param compare The current string compare object.
-     * @param extra The extra text to add to the menu item.
+     * @param extra   The extra text to add to the menu item.
      * @return The {@link JComboBox} that allows a string comparison to be changed.
      */
     protected JComboBox<Object> addStringCompareCombo(StringCriteria compare, String extra) {
         Object[] values;
-        Object selection;
+        Object   selection;
         if (extra == null) {
-            values = StringCompareType.values();
+            values    = StringCompareType.values();
             selection = compare.getType();
         } else {
             ArrayList<String> list = new ArrayList<>();
@@ -122,12 +122,12 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 
     /**
      * @param compare The current integer compare object.
-     * @param extra The extra text to add to the menu item.
+     * @param extra   The extra text to add to the menu item.
      * @return The {@link JComboBox} that allows a comparison to be changed.
      */
     protected JComboBox<Object> addNumericCompareCombo(NumericCriteria compare, String extra) {
-        Object selection = null;
-        ArrayList<String> list = new ArrayList<>();
+        Object            selection = null;
+        ArrayList<String> list      = new ArrayList<>();
         for (NumericCompareType type : NumericCompareType.values()) {
             String title = extra == null ? type.toString() : extra + type.getDescription();
             list.add(title);
@@ -141,9 +141,9 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     }
 
     /**
-     * @param compare The current compare object.
-     * @param min The minimum value to allow.
-     * @param max The maximum value to allow.
+     * @param compare   The current compare object.
+     * @param min       The minimum value to allow.
+     * @param max       The maximum value to allow.
      * @param forceSign Whether to force the sign to be visible.
      * @return The {@link EditorField} that allows an integer comparison to be changed.
      */
@@ -156,9 +156,9 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     }
 
     /**
-     * @param compare The current compare object.
-     * @param min The minimum value to allow.
-     * @param max The maximum value to allow.
+     * @param compare   The current compare object.
+     * @param min       The minimum value to allow.
+     * @param max       The maximum value to allow.
      * @param forceSign Whether to force the sign to be visible.
      * @return The {@link EditorField} that allows a double comparison to be changed.
      */
@@ -184,7 +184,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
-            EditorField field = (EditorField) event.getSource();
+            EditorField    field    = (EditorField) event.getSource();
             StringCriteria criteria = (StringCriteria) field.getClientProperty(StringCriteria.class);
             if (criteria != null) {
                 criteria.setQualifier((String) field.getValue());
@@ -215,8 +215,8 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
         if (COMPARISON.equals(command)) {
-            JComboBox<?> combo = (JComboBox<?>) event.getSource();
-            int selectedIndex = combo.getSelectedIndex();
+            JComboBox<?>   combo          = (JComboBox<?>) event.getSource();
+            int            selectedIndex  = combo.getSelectedIndex();
             StringCriteria stringCriteria = (StringCriteria) combo.getClientProperty(StringCriteria.class);
             if (stringCriteria != null) {
                 stringCriteria.setType(StringCompareType.values()[selectedIndex]);

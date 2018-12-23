@@ -126,7 +126,7 @@ public enum NumericCompareType {
     abstract String getDescriptionFormat();
 
     /**
-     * @param prefix A prefix to place before the description.
+     * @param prefix    A prefix to place before the description.
      * @param qualifier The qualifier to use.
      * @return A formatted description of this object.
      */

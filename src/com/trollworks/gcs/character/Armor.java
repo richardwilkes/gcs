@@ -69,7 +69,7 @@ public class Armor {
 
     Armor(GURPSCharacter character) {
         mCharacter = character;
-        mSkullDR = 2;
+        mSkullDR   = 2;
     }
 
     void update() {
@@ -96,7 +96,7 @@ public class Armor {
     }
 
     private int getBonusDR(String key) {
-        int bonus = mCharacter.getIntegerBonusFor(key);
+        int                                      bonus       = mCharacter.getIntegerBonusFor(key);
         com.trollworks.gcs.character.HitLocation hitLocation = com.trollworks.gcs.character.HitLocation.MAP.get(key);
         if (hitLocation != null) {
             bonus += hitLocation.getDRBonus();
@@ -401,7 +401,7 @@ public class Armor {
     }
 
     /**
-     * @param id The field ID to set the value for.
+     * @param id    The field ID to set the value for.
      * @param value The value to set.
      */
     public void setValueForID(String id, Object value) {

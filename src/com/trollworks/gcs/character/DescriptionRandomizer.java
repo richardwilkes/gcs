@@ -70,9 +70,9 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
      */
     public DescriptionRandomizer(GURPSCharacter character) {
         super(new BorderLayout());
-        mCharacter = character;
+        mCharacter  = character;
         mCheckBoxes = new JCheckBox[COUNT];
-        mFields = new JTextField[COUNT];
+        mFields     = new JTextField[COUNT];
         JPanel wrapper = new JPanel(new ColumnLayout(2));
         wrapper.setBorder(new EmptyBorder(10));
         Profile description = mCharacter.getDescription();
@@ -136,8 +136,8 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 
     /** Apply the changes. */
     public void applyChanges() {
-        MultipleUndo edit = new MultipleUndo(UNDO_RANDOMIZE);
-        Profile description = mCharacter.getDescription();
+        MultipleUndo edit        = new MultipleUndo(UNDO_RANDOMIZE);
+        Profile      description = mCharacter.getDescription();
         mCharacter.addEdit(edit);
         mCharacter.startNotify();
         description.setGender(mFields[GENDER_INDEX].getText());

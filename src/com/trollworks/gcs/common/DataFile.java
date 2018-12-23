@@ -54,8 +54,8 @@ public abstract class DataFile implements Undoable {
         setFile(file);
         try (FileReader fileReader = new FileReader(file)) {
             try (XMLReader reader = new XMLReader(fileReader)) {
-                XMLNodeType type = reader.next();
-                boolean found = false;
+                XMLNodeType type  = reader.next();
+                boolean     found = false;
                 while (type != XMLNodeType.END_DOCUMENT) {
                     if (type == XMLNodeType.START_TAG) {
                         String name = reader.getName();
@@ -81,7 +81,7 @@ public abstract class DataFile implements Undoable {
 
     /**
      * @param reader The {@link XMLReader} to load data from.
-     * @param state The {@link LoadState} to use.
+     * @param state  The {@link LoadState} to use.
      */
     public void load(XMLReader reader, LoadState state) throws IOException {
         try {
@@ -100,7 +100,7 @@ public abstract class DataFile implements Undoable {
      * Called to load the data file.
      *
      * @param reader The {@link XMLReader} to load data from.
-     * @param state The {@link LoadState} to use.
+     * @param state  The {@link LoadState} to use.
      */
     protected abstract void loadSelf(XMLReader reader, LoadState state) throws IOException;
 
@@ -112,7 +112,7 @@ public abstract class DataFile implements Undoable {
      */
     public boolean save(File file) {
         SafeFileUpdater transaction = new SafeFileUpdater();
-        boolean success = false;
+        boolean         success     = false;
         transaction.begin();
         try {
             File transactionFile = transaction.getTransactionFile(file);
@@ -139,9 +139,9 @@ public abstract class DataFile implements Undoable {
     /**
      * Saves the root tag.
      *
-     * @param out The XML writer to use.
+     * @param out             The XML writer to use.
      * @param includeUniqueID Whether the {@link UniqueID} should be included in the attribute list.
-     * @param onlyIfNotEmpty Whether to write something even if the file contents are empty.
+     * @param onlyIfNotEmpty  Whether to write something even if the file contents are empty.
      */
     public void save(XMLWriter out, boolean includeUniqueID, boolean onlyIfNotEmpty) {
         if (!onlyIfNotEmpty || !isEmpty()) {
@@ -258,7 +258,7 @@ public abstract class DataFile implements Undoable {
      * Registers a {@link NotifierTarget} with this data file's {@link Notifier}.
      *
      * @param target The {@link NotifierTarget} to register.
-     * @param names The names to register for.
+     * @param names  The names to register for.
      */
     public void addTarget(NotifierTarget target, String... names) {
         mNotifier.add(target, names);
@@ -363,7 +363,7 @@ public abstract class DataFile implements Undoable {
 
     /**
      * @param markDirty <code>true</code> if sorting a list should be considered a change that marks
-     *            the file dirty.
+     *                  the file dirty.
      */
     public final void setSortingMarksDirty(boolean markDirty) {
         mSortingMarksDirty = markDirty;

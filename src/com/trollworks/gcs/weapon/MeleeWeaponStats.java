@@ -66,7 +66,7 @@ public class MeleeWeaponStats extends WeaponStats {
     /**
      * Creates a {@link MeleeWeaponStats}.
      * 
-     * @param owner The owning piece of equipment or advantage.
+     * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
     public MeleeWeaponStats(ListRow owner, XMLReader reader) throws IOException {
@@ -125,23 +125,23 @@ public class MeleeWeaponStats extends WeaponStats {
     private String getResolvedValue(String input, SkillDefaultType baseDefaultType) {
         DataFile df = getOwner().getDataFile();
         if (df instanceof GURPSCharacter) {
-            GURPSCharacter character = (GURPSCharacter) df;
-            StringTokenizer tokenizer = new StringTokenizer(input, "\n\r", true); //$NON-NLS-1$
-            StringBuffer buffer = new StringBuffer();
-            int skillLevel = Integer.MAX_VALUE;
+            GURPSCharacter  character  = (GURPSCharacter) df;
+            StringTokenizer tokenizer  = new StringTokenizer(input, "\n\r", true); //$NON-NLS-1$
+            StringBuffer    buffer     = new StringBuffer();
+            int             skillLevel = Integer.MAX_VALUE;
 
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();
 
                 if (!token.equals("\n") && !token.equals("\r")) { //$NON-NLS-1$ //$NON-NLS-2$
                     int max = token.length();
-                    int i = skipSpaces(token, 0);
+                    int i   = skipSpaces(token, 0);
 
                     if (i < max) {
-                        char ch = token.charAt(i);
-                        boolean neg = false;
-                        int modifier = 0;
-                        boolean found = false;
+                        char    ch       = token.charAt(i);
+                        boolean neg      = false;
+                        int     modifier = 0;
+                        boolean found    = false;
 
                         if (ch == '-' || ch == '+') {
                             neg = ch == '-';
@@ -150,7 +150,7 @@ public class MeleeWeaponStats extends WeaponStats {
                             }
                         }
                         while (i < max && ch >= '0' && ch <= '9') {
-                            found = true;
+                            found     = true;
                             modifier *= 10;
                             modifier += ch - '0';
                             if (++i < max) {
@@ -164,8 +164,8 @@ public class MeleeWeaponStats extends WeaponStats {
                             if (skillLevel == Integer.MAX_VALUE) {
                                 int best = Integer.MIN_VALUE;
                                 for (SkillDefault skillDefault : getDefaults()) {
-                                    SkillDefaultType type = skillDefault.getType();
-                                    int level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
+                                    SkillDefaultType type  = skillDefault.getType();
+                                    int              level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
                                     if (level != Integer.MIN_VALUE && type != baseDefaultType) {
                                         level = level / 2 + 3 + (baseDefaultType == SkillDefaultType.Parry ? character.getParryBonus() : character.getBlockBonus());
                                     }

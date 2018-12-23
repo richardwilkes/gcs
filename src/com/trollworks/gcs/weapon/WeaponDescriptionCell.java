@@ -57,18 +57,18 @@ public class WeaponDescriptionCell implements Cell {
 
     @Override
     public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
-        Scale scale = Scale.get(outline);
-        int hMargin = scale.scale(H_MARGIN);
-        WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-        Rectangle insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
-        String notes = getSecondaryText(theRow);
-        Font font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
+        Scale            scale       = Scale.get(outline);
+        int              hMargin     = scale.scale(H_MARGIN);
+        WeaponDisplayRow theRow      = (WeaponDisplayRow) row;
+        Rectangle        insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
+        String           notes       = getSecondaryText(theRow);
+        Font             font        = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
         gc.setColor(Colors.getListForeground(selected, active));
         gc.setFont(font);
         int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
         if (notes.trim().length() > 0) {
             insetBounds.height -= pos - insetBounds.y;
-            insetBounds.y = pos;
+            insetBounds.y       = pos;
             gc.setFont(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)));
             TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
         }
@@ -76,10 +76,10 @@ public class WeaponDescriptionCell implements Cell {
 
     @Override
     public int getPreferredWidth(Outline outline, Row row, Column column) {
-        Scale scale = Scale.get(outline);
+        Scale            scale  = Scale.get(outline);
         WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-        int width = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD)), getPrimaryText(theRow));
-        String notes = getSecondaryText(theRow);
+        int              width  = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD)), getPrimaryText(theRow));
+        String           notes  = getSecondaryText(theRow);
         if (notes.trim().length() > 0) {
             int notesWidth = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)), notes);
             if (notesWidth > width) {
@@ -91,13 +91,13 @@ public class WeaponDescriptionCell implements Cell {
 
     @Override
     public int getPreferredHeight(Outline outline, Row row, Column column) {
-        Scale scale = Scale.get(outline);
+        Scale            scale  = Scale.get(outline);
         WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-        Font font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
-        int height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font, scale)).height;
-        String notes = getSecondaryText(theRow);
+        Font             font   = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
+        int              height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font, scale)).height;
+        String           notes  = getSecondaryText(theRow);
         if (notes.trim().length() > 0) {
-            font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
+            font    = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
             height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font, scale)).height;
         }
         return height;
@@ -113,9 +113,9 @@ public class WeaponDescriptionCell implements Cell {
 
     @Override
     public int compare(Column column, Row one, Row two) {
-        WeaponDisplayRow r1 = (WeaponDisplayRow) one;
-        WeaponDisplayRow r2 = (WeaponDisplayRow) two;
-        int result = NumericComparator.caselessCompareStrings(getPrimaryText(r1), getPrimaryText(r2));
+        WeaponDisplayRow r1     = (WeaponDisplayRow) one;
+        WeaponDisplayRow r2     = (WeaponDisplayRow) two;
+        int              result = NumericComparator.caselessCompareStrings(getPrimaryText(r1), getPrimaryText(r2));
         if (result == 0) {
             result = NumericComparator.caselessCompareStrings(getSecondaryText(r1), getSecondaryText(r2));
         }

@@ -57,7 +57,7 @@ public enum NoteColumn {
         @Override
         public String getDataAsText(Note note) {
             StringBuilder builder = new StringBuilder();
-            String notes = note.getNotes();
+            String        notes   = note.getNotes();
             builder.append(note.toString());
             if (notes.length() > 0) {
                 builder.append(" - "); //$NON-NLS-1$
@@ -76,7 +76,7 @@ public enum NoteColumn {
 
     /**
      * @param character The {@link GURPSCharacter} this note list is associated with, or
-     *            <code>null</code>.
+     *                  <code>null</code>.
      * @return The header title.
      */
     public String toString(GURPSCharacter character) {
@@ -110,13 +110,13 @@ public enum NoteColumn {
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
-     * @param outline The {@link Outline} to use.
+     * @param outline  The {@link Outline} to use.
      * @param dataFile The {@link DataFile} that data is being displayed for.
      */
     public static void addColumns(Outline outline, DataFile dataFile) {
-        GURPSCharacter character = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
-        boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
-        OutlineModel model = outline.getModel();
+        GURPSCharacter character       = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
+        boolean        sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        OutlineModel   model           = outline.getModel();
         for (NoteColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {
                 Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());

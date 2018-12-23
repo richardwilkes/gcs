@@ -41,8 +41,8 @@ public class SpellBonus extends Bonus {
     /** Creates a new spell bonus. */
     public SpellBonus() {
         super(1);
-        mAllColleges = true;
-        mMatchType = TAG_COLLEGE_NAME;
+        mAllColleges  = true;
+        mMatchType    = TAG_COLLEGE_NAME;
         mNameCriteria = new StringCriteria(StringCompareType.IS, ""); //$NON-NLS-1$
     }
 
@@ -54,7 +54,7 @@ public class SpellBonus extends Bonus {
     public SpellBonus(XMLReader reader) throws IOException {
         this();
         mAllColleges = reader.isAttributeSet(ATTRIBUTE_ALL_COLLEGES);
-        mMatchType = TAG_COLLEGE_NAME;
+        mMatchType   = TAG_COLLEGE_NAME;
         load(reader);
     }
 
@@ -65,8 +65,8 @@ public class SpellBonus extends Bonus {
      */
     public SpellBonus(SpellBonus other) {
         super(other);
-        mAllColleges = other.mAllColleges;
-        mMatchType = other.mMatchType;
+        mAllColleges  = other.mAllColleges;
+        mMatchType    = other.mMatchType;
         mNameCriteria = new StringCriteria(other.mNameCriteria);
     }
 

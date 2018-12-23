@@ -31,9 +31,11 @@ public class LiftPanel extends DropPanel {
     @Localize(locale = "es", value = "Levantar:")
     private static String BASIC_LIFT;
     @Localize("The weight the character can lift overhead with one hand in one second")
-    @Localize(locale = "de", value = "Das Gewicht, das der Charakter mit einer Hand in einer Sekunde überkopf heben kann")
+    @Localize(locale = "de",
+              value = "Das Gewicht, das der Charakter mit einer Hand in einer Sekunde überkopf heben kann")
     @Localize(locale = "ru", value = "Вес, который может поднять персонаж одной рукой на 1 сек")
-    @Localize(locale = "es", value = "Peso que el personaje puede levantar por encima de su cabeza con una mano en un segundo")
+    @Localize(locale = "es",
+              value = "Peso que el personaje puede levantar por encima de su cabeza con una mano en un segundo")
     private static String BASIC_LIFT_TOOLTIP;
     @Localize("One-Handed Lift:")
     @Localize(locale = "de", value = "Einhändig heben")
@@ -41,9 +43,11 @@ public class LiftPanel extends DropPanel {
     @Localize(locale = "es", value = "Levantar con una mano:")
     private static String ONE_HANDED_LIFT;
     @Localize("The weight the character can lift overhead with one hand in two seconds")
-    @Localize(locale = "de", value = "Das Gewicht, das der Charakter mit einer Hand in zwei Sekunden überkopf heben kann")
+    @Localize(locale = "de",
+              value = "Das Gewicht, das der Charakter mit einer Hand in zwei Sekunden überkopf heben kann")
     @Localize(locale = "ru", value = "Вес, который может поднять персонаж одной рукой на 2 сек")
-    @Localize(locale = "es", value = "Peso que el personaje puede levantar por encima de su cabeza con una mano en dos segundos")
+    @Localize(locale = "es",
+              value = "Peso que el personaje puede levantar por encima de su cabeza con una mano en dos segundos")
     private static String ONE_HANDED_LIFT_TOOLTIP;
     @Localize("Two-Handed Lift:")
     @Localize(locale = "de", value = "Zweihändig heben")
@@ -51,9 +55,11 @@ public class LiftPanel extends DropPanel {
     @Localize(locale = "es", value = "Levantar con las dos manos:")
     private static String TWO_HANDED_LIFT;
     @Localize("The weight the character can lift overhead with both hands in four seconds")
-    @Localize(locale = "de", value = "Das Gewicht, das der Charakter mit beiden Händen in vier Sekunden überkopf heben kann")
+    @Localize(locale = "de",
+              value = "Das Gewicht, das der Charakter mit beiden Händen in vier Sekunden überkopf heben kann")
     @Localize(locale = "ru", value = "Вес, который может поднять персонаж двумя руками на 4 сек")
-    @Localize(locale = "es", value = "Peso que el personaje puede levantar por encima de su cabeza con dos manos en cuatro segundos")
+    @Localize(locale = "es",
+              value = "Peso que el personaje puede levantar por encima de su cabeza con dos manos en cuatro segundos")
     private static String TWO_HANDED_LIFT_TOOLTIP;
     @Localize("Shove & Knock Over:")
     @Localize(locale = "de", value = "Schieben & Umstoßen")
@@ -61,7 +67,8 @@ public class LiftPanel extends DropPanel {
     @Localize(locale = "es", value = "Empujar y Derribar")
     private static String SHOVE_KNOCK_OVER;
     @Localize("The weight of an object the character can shove and knock over")
-    @Localize(locale = "de", value = "Das Gewicht eines Objektes, das der Charakter schieben und umstoßen kann")
+    @Localize(locale = "de",
+              value = "Das Gewicht eines Objektes, das der Charakter schieben und umstoßen kann")
     @Localize(locale = "ru", value = "Вес обьектов, который персонаж может столкнуть и опрокинуть")
     @Localize(locale = "es", value = "Peso de un objeto que el personaje puede empujar y derribar")
     private static String SHOVE_KNOCK_OVER_TOOLTIP;
@@ -71,9 +78,12 @@ public class LiftPanel extends DropPanel {
     @Localize(locale = "es", value = "Emp. y Der. con carrerilla:")
     private static String RUNNING_SHOVE;
     @Localize("The weight of an object the character can shove  and knock over with a running start")
-    @Localize(locale = "de", value = "Das Gewicht eines Objektes, das der Charakter mit Anlauf schieben und umstoßen kann")
-    @Localize(locale = "ru", value = "Вес обьектов, который персонаж может столкнуть и опрокинуть с разбегу")
-    @Localize(locale = "es", value = "Peso de un objeto que el personaje puede empujar y derribar con carrerilla")
+    @Localize(locale = "de",
+              value = "Das Gewicht eines Objektes, das der Charakter mit Anlauf schieben und umstoßen kann")
+    @Localize(locale = "ru",
+              value = "Вес обьектов, который персонаж может столкнуть и опрокинуть с разбегу")
+    @Localize(locale = "es",
+              value = "Peso de un objeto que el personaje puede empujar y derribar con carrerilla")
     private static String RUNNING_SHOVE_TOOLTIP;
     @Localize("Carry On Back:")
     @Localize(locale = "de", value = "Auf dem Rücken tragen")
@@ -81,7 +91,8 @@ public class LiftPanel extends DropPanel {
     @Localize(locale = "es", value = "Cargar a la espalda:")
     private static String CARRY_ON_BACK;
     @Localize("The weight the character can carry slung across the back")
-    @Localize(locale = "de", value = "Das Gewicht, das der Charakter auf den Rücken gebunden tragen kann")
+    @Localize(locale = "de",
+              value = "Das Gewicht, das der Charakter auf den Rücken gebunden tragen kann")
     @Localize(locale = "ru", value = "Вес, который может персонаж нести, перекинув через спину")
     @Localize(locale = "es", value = "Peso que el personaje puede cargar a la espalda")
     private static String CARRY_ON_BACK_TOOLTIP;
@@ -91,9 +102,12 @@ public class LiftPanel extends DropPanel {
     @Localize(locale = "es", value = "Desplazar Ligeramente")
     private static String SHIFT_SLIGHTLY;
     @Localize("The weight of an object the character can shift slightly on a floor")
-    @Localize(locale = "de", value = "Das Gewicht eines Objektes, das der Charakter auf einem Boden geringfügig verschieben kann")
-    @Localize(locale = "ru", value = "Вес обьектов, который персонаж может немного сдвинуть по полу")
-    @Localize(locale = "es", value = "Peso de un objeto que el personaje puede desplazar ligeramente por el suelo")
+    @Localize(locale = "de",
+              value = "Das Gewicht eines Objektes, das der Charakter auf einem Boden geringfügig verschieben kann")
+    @Localize(locale = "ru",
+              value = "Вес обьектов, который персонаж может немного сдвинуть по полу")
+    @Localize(locale = "es",
+              value = "Peso de un objeto que el personaje puede desplazar ligeramente por el suelo")
     private static String SHIFT_SLIGHTLY_TOOLTIP;
 
     static {

@@ -31,7 +31,7 @@ public class PrereqsPanel extends BandedPanel {
     /**
      * Creates a new prerequisite editor.
      *
-     * @param row The row these prerequisites will belong to.
+     * @param row     The row these prerequisites will belong to.
      * @param prereqs The initial prerequisites to display.
      */
     public PrereqsPanel(ListRow row, PrereqList prereqs) {

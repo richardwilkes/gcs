@@ -55,9 +55,9 @@ public class DropPanel extends JPanel {
     /**
      * Creates a standard panel with a drop shadow.
      *
-     * @param layout The layout to use.
+     * @param layout                  The layout to use.
      * @param onlyReportPreferredSize Whether or not minimum and maximum size is reported as
-     *            preferred size or not.
+     *                                preferred size or not.
      */
     public DropPanel(LayoutManager layout, boolean onlyReportPreferredSize) {
         this(layout, null, null, onlyReportPreferredSize);
@@ -67,7 +67,7 @@ public class DropPanel extends JPanel {
      * Creates a standard panel with a drop shadow.
      *
      * @param layout The layout to use.
-     * @param title The title to use.
+     * @param title  The title to use.
      */
     public DropPanel(LayoutManager layout, String title) {
         this(layout, title, UIManager.getFont(GCSFonts.KEY_LABEL), false);
@@ -76,10 +76,10 @@ public class DropPanel extends JPanel {
     /**
      * Creates a standard panel with a drop shadow.
      *
-     * @param layout The layout to use.
-     * @param title The title to use.
+     * @param layout                  The layout to use.
+     * @param title                   The title to use.
      * @param onlyReportPreferredSize Whether or not minimum and maximum size is reported as
-     *            preferred size or not.
+     *                                preferred size or not.
      */
     public DropPanel(LayoutManager layout, String title, boolean onlyReportPreferredSize) {
         this(layout, title, UIManager.getFont(GCSFonts.KEY_LABEL), onlyReportPreferredSize);
@@ -88,11 +88,11 @@ public class DropPanel extends JPanel {
     /**
      * Creates a standard panel with a drop shadow.
      *
-     * @param layout The layout to use.
-     * @param title The title to use.
-     * @param font The font to use for the title.
+     * @param layout                  The layout to use.
+     * @param title                   The title to use.
+     * @param font                    The font to use for the title.
      * @param onlyReportPreferredSize Whether or not minimum and maximum size is reported as
-     *            preferred size or not.
+     *                                preferred size or not.
      */
     public DropPanel(LayoutManager layout, String title, Font font, boolean onlyReportPreferredSize) {
         super(layout);
@@ -118,7 +118,7 @@ public class DropPanel extends JPanel {
      * Marks an area with a specific background color. The panel specified will be used to calculate
      * the area's top and bottom, and the background color will span the width of the drop panel.
      *
-     * @param panel The panel to attach the color to.
+     * @param panel      The panel to attach the color to.
      * @param background The color to attach.
      */
     public void addHorizontalBackground(Component panel, Color background) {
@@ -138,7 +138,7 @@ public class DropPanel extends JPanel {
      * Marks an area with a specific background color. The panel specified will be used to calculate
      * the area's left and right, and the background color will span the height of the drop panel.
      *
-     * @param panel The panel to attach the color to.
+     * @param panel      The panel to attach the color to.
      * @param background The color to attach.
      */
     public void addVerticalBackground(Component panel, Color background) {
@@ -157,11 +157,11 @@ public class DropPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics gc) {
         super.paintComponent(GraphicsUtilities.prepare(gc));
-        Insets insets = mTitledBorder.getBorderInsets(this);
+        Insets    insets      = mTitledBorder.getBorderInsets(this);
         Rectangle localBounds = getBounds();
-        localBounds.x = insets.left;
-        localBounds.y = insets.top;
-        localBounds.width -= insets.left + insets.right;
+        localBounds.x       = insets.left;
+        localBounds.y       = insets.top;
+        localBounds.width  -= insets.left + insets.right;
         localBounds.height -= insets.top + insets.bottom;
         if (mPaintVerticalFirst) {
             paintVerticalBackgrounds(gc, localBounds);
@@ -174,7 +174,7 @@ public class DropPanel extends JPanel {
 
     private void paintHorizontalBackgrounds(Graphics gc, Rectangle localBounds) {
         for (Entry<Component, Color> entry : mHorizontalBackgrounds.entrySet()) {
-            Component panel = entry.getKey();
+            Component panel  = entry.getKey();
             Rectangle bounds = panel.getBounds();
             Container parent = panel.getParent();
             if (parent != null) {
@@ -189,7 +189,7 @@ public class DropPanel extends JPanel {
 
     private void paintVerticalBackgrounds(Graphics gc, Rectangle localBounds) {
         for (Entry<Component, Color> entry : mVerticalBackgrounds.entrySet()) {
-            Component panel = entry.getKey();
+            Component panel  = entry.getKey();
             Rectangle bounds = panel.getBounds();
             Container parent = panel.getParent();
             if (parent != null) {
@@ -218,11 +218,11 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * @param parent The parent to use.
-     * @param sheet The {@link CharacterSheet} to use.
-     * @param key The notification ID to use.
-     * @param title The title to use.
-     * @param tooltip The tooltip to use.
+     * @param parent    The parent to use.
+     * @param sheet     The {@link CharacterSheet} to use.
+     * @param key       The notification ID to use.
+     * @param title     The title to use.
+     * @param tooltip   The tooltip to use.
      * @param alignment The horizontal field alignment to use.
      * @return The newly created field.
      */
@@ -235,11 +235,11 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * @param parent The parent to use.
-     * @param sheet The {@link CharacterSheet} to use.
-     * @param key The notification ID to use.
-     * @param title The title to use.
-     * @param tooltip The tooltip to use.
+     * @param parent    The parent to use.
+     * @param sheet     The {@link CharacterSheet} to use.
+     * @param key       The notification ID to use.
+     * @param title     The title to use.
+     * @param tooltip   The tooltip to use.
      * @param alignment The horizontal field alignment to use.
      * @return The newly created field.
      */
@@ -252,10 +252,10 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * @param parent The parent to use.
-     * @param sheet The {@link CharacterSheet} to use.
-     * @param key The notification ID to use.
-     * @param tooltip The tooltip to use.
+     * @param parent    The parent to use.
+     * @param sheet     The {@link CharacterSheet} to use.
+     * @param key       The notification ID to use.
+     * @param tooltip   The tooltip to use.
      * @param alignment The horizontal field alignment to use.
      * @return The newly created field.
      */
@@ -267,10 +267,10 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * @param parent The parent to use.
-     * @param sheet The {@link CharacterSheet} to use.
-     * @param key The notification ID to use.
-     * @param tooltip The tooltip to use.
+     * @param parent    The parent to use.
+     * @param sheet     The {@link CharacterSheet} to use.
+     * @param key       The notification ID to use.
+     * @param tooltip   The tooltip to use.
      * @param alignment The horizontal field alignment to use.
      * @return The newly created field.
      */
@@ -282,8 +282,8 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * @param parent The parent to use.
-     * @param title The title to use.
+     * @param parent  The parent to use.
+     * @param title   The title to use.
      * @param tooltip The tooltip to use.
      * @return The newly created header.
      */

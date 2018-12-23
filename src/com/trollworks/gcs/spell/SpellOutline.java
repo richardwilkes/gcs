@@ -85,7 +85,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
      * Create a new spells outline.
      *
      * @param dataFile The owning data file.
-     * @param model The {@link OutlineModel} to use.
+     * @param model    The {@link OutlineModel} to use.
      */
     public SpellOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Spell.ID_LIST_CHANGED);
@@ -188,10 +188,10 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
-                int basePoints = spell.getPoints() + 1;
-                int maxPoints = basePoints + 4;
-                int oldLevel = spell.getLevel();
-                RowUndo undo = new RowUndo(spell);
+                int     basePoints = spell.getPoints() + 1;
+                int     maxPoints  = basePoints + 4;
+                int     oldLevel   = spell.getLevel();
+                RowUndo undo       = new RowUndo(spell);
                 for (int points = basePoints; points < maxPoints; points++) {
                     spell.setPoints(points);
                     if (spell.getLevel() > oldLevel) {
@@ -220,9 +220,9 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
-                RowUndo undo = new RowUndo(spell);
-                int oldLevel = spell.getLevel();
-                int points = spell.getPoints() - 1;
+                RowUndo undo     = new RowUndo(spell);
+                int     oldLevel = spell.getLevel();
+                int     points   = spell.getPoints() - 1;
                 spell.setPoints(points);
                 if (spell.getLevel() == -1) {
                     spell.setPoints(0);
@@ -332,10 +332,10 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public void convertDragRowsToSelf(List<Row> list) {
-        OutlineModel model = getModel();
-        Row[] rows = model.getDragRows();
-        boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-        ArrayList<ListRow> process = new ArrayList<>();
+        OutlineModel       model              = getModel();
+        Row[]              rows               = model.getDragRows();
+        boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
+        ArrayList<ListRow> process            = new ArrayList<>();
 
         for (Row element : rows) {
             Spell spell = new Spell(mDataFile, (Spell) element, true, forSheetOrTemplate);

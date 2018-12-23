@@ -84,9 +84,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Localize(locale = "es", value = "Tirada de autocontrol")
     private static String CR;
     @Localize("Adjustments that are applied due to Self-Control Roll limitations")
-    @Localize(locale = "de", value = "Anpassungen, die auf den Wert der Selbstbeherrschungs-Probe basieren")
-    @Localize(locale = "ru", value = "Настройки, которые применяются для ограничений бросков СамоКонтроля (СК)")
-    @Localize(locale = "es", value = "Modificadores que se aplican debido a las limitaciones de la tirada de autocontrol")
+    @Localize(locale = "de",
+              value = "Anpassungen, die auf den Wert der Selbstbeherrschungs-Probe basieren")
+    @Localize(locale = "ru",
+              value = "Настройки, которые применяются для ограничений бросков СамоКонтроля (СК)")
+    @Localize(locale = "es",
+              value = "Modificadores que se aplican debido a las limitaciones de la tirada de autocontrol")
     private static String CR_ADJ_TOOLTIP;
     @Localize("Total")
     @Localize(locale = "de", value = "Gesamt")
@@ -114,9 +117,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Localize(locale = "es", value = "Coste por nivel")
     private static String LEVEL_POINTS;
     @Localize("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used")
-    @Localize(locale = "de", value = "Die Kosten pro Stufe dieses Vorteils.  Wenn dieses Feld leer ist und im Stufen-Feld etwas anderes als Null steht, dann wird der Wert im Grundkosten-Feld verwendet")
-    @Localize(locale = "ru", value = "Стоимость одного уровня преимущества. Если этот параметр установлен в ноль и есть значение, отличное от нуля в поле Уровень, то будет использоваться значение из поля Базовая стоимость")
-    @Localize(locale = "es", value = "Coste por nivel de la ventaja. Si está a cero pero el campo por nivel no, entonces se usa el coste base en su lugar")
+    @Localize(locale = "de",
+              value = "Die Kosten pro Stufe dieses Vorteils.  Wenn dieses Feld leer ist und im Stufen-Feld etwas anderes als Null steht, dann wird der Wert im Grundkosten-Feld verwendet")
+    @Localize(locale = "ru",
+              value = "Стоимость одного уровня преимущества. Если этот параметр установлен в ноль и есть значение, отличное от нуля в поле Уровень, то будет использоваться значение из поля Базовая стоимость")
+    @Localize(locale = "es",
+              value = "Coste por nivel de la ventaja. Si está a cero pero el campo por nivel no, entonces se usa el coste base en su lugar")
     private static String LEVEL_POINTS_TOOLTIP;
     @Localize("Level")
     @Localize(locale = "de", value = "Stufe")
@@ -136,9 +142,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Localize(locale = "es", value = "Categoría")
     private static String CATEGORIES;
     @Localize("The category or categories the advantage belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen dieser Vorteil angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru", value = "Категория или категории, к которым относится преимущество (перечислить через запятую)")
-    @Localize(locale = "es", value = "Categoría o categorías a las que pertenece la ventaja (múltiples categorías se separan con una coma)")
+    @Localize(locale = "de",
+              value = "Die Kategorie oder Kategorien, denen dieser Vorteil angehört (trenne mehrere Kategorien mit einem Komma)")
+    @Localize(locale = "ru",
+              value = "Категория или категории, к которым относится преимущество (перечислить через запятую)")
+    @Localize(locale = "es",
+              value = "Categoría o categorías a las que pertenece la ventaja (múltiples categorías se separan con una coma)")
     private static String CATEGORIES_TOOLTIP;
     @Localize("Notes")
     @Localize(locale = "de", value = "Anmerkungen")
@@ -146,9 +155,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Localize(locale = "es", value = "Notas")
     private static String NOTES;
     @Localize("Any notes that you would like to show up in the list along with this advantage")
-    @Localize(locale = "de", value = "Anmerkungen, die in der Liste neben dem Vorteil erscheinen sollen")
+    @Localize(locale = "de",
+              value = "Anmerkungen, die in der Liste neben dem Vorteil erscheinen sollen")
     @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с преимуществом")
-    @Localize(locale = "es", value = "Cualquier nota que desees mostrar en la lista de esta ventaja")
+    @Localize(locale = "es",
+              value = "Cualquier nota que desees mostrar en la lista de esta ventaja")
     private static String NOTES_TOOLTIP;
     @Localize("Type")
     @Localize(locale = "de", value = "Typ")
@@ -176,7 +187,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Localize(locale = "es", value = "Ref")
     private static String REFERENCE;
     @Localize("Page Reference")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
     @Localize(locale = "ru", value = "Ссылка на страницу")
     @Localize(locale = "es", value = "Página de referencia")
     private static String REFERENCE_TOOLTIP;
@@ -267,13 +279,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         FlexGrid outerGrid = new FlexGrid();
 
-        JLabel icon = new JLabel(advantage.getIcon(true));
+        JLabel   icon      = new JLabel(advantage.getIcon(true));
         UIUtilities.setOnlySize(icon, icon.getPreferredSize());
         add(icon);
         outerGrid.add(new FlexComponent(icon, Alignment.LEFT_TOP, Alignment.LEFT_TOP), 0, 0);
 
         FlexGrid innerGrid = new FlexGrid();
-        int ri = 0;
+        int      ri        = 0;
         outerGrid.add(innerGrid, 0, 1);
 
         FlexRow row = new FlexRow();
@@ -295,15 +307,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         boolean notContainer = !advantage.canHaveChildren();
         if (notContainer) {
-            mLastLevel = mRow.getLevels();
-            mLastHalfLevel = mRow.hasHalfLevel();
+            mLastLevel          = mRow.getLevels();
+            mLastHalfLevel      = mRow.hasHalfLevel();
             mLastPointsPerLevel = mRow.getPointsPerLevel();
             if (mLastLevel < 0) {
-                mLastLevel = 1;
+                mLastLevel     = 1;
                 mLastHalfLevel = false;
             }
 
-            row = new FlexRow();
+            row              = new FlexRow();
 
             mBasePointsField = createField(-9999, 9999, mRow.getPoints(), BASE_POINTS_TOOLTIP);
             row.add(mBasePointsField);
@@ -428,14 +440,14 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         row.add(createLabel(REFERENCE, mReferenceField));
         row.add(mReferenceField);
 
-        mTabPanel = new JTabbedPane();
+        mTabPanel  = new JTabbedPane();
         mModifiers = ModifierListEditor.createEditor(mRow);
         mModifiers.addActionListener(this);
         if (notContainer) {
-            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-            mDefaults = new Defaults(mRow.getDefaults());
-            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
+            mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
+            mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
+            mDefaults      = new Defaults(mRow.getDefaults());
+            mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
             mDefaults.addActionListener(this);
             Component panel = embedEditor(mDefaults);
@@ -627,7 +639,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void levelTypeChanged() {
-        boolean isLeveled = isLeveled();
+        boolean isLeveled       = isLeveled();
         boolean allowHalfLevels = allowHalfLevels();
 
         if (isLeveled) {
@@ -635,8 +647,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mLevelPointsField.setValue(Integer.valueOf(mLastPointsPerLevel));
             mHalfLevel.setSelected(mLastHalfLevel && allowHalfLevels);
         } else {
-            mLastLevel = getLevels();
-            mLastHalfLevel = getHalfLevel();
+            mLastLevel          = getLevels();
+            mLastHalfLevel      = getHalfLevel();
             mLastPointsPerLevel = getPointsPerLevel();
             mLevelField.setText(""); //$NON-NLS-1$
             mHalfLevel.setSelected(false);

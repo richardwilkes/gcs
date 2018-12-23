@@ -36,7 +36,8 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
     @Localize("An error occurred while trying to save the file.")
     @Localize(locale = "de", value = "Ein Fehler ist beim Speichern der Datei aufgetreten.")
     @Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить файл.")
-    @Localize(locale = "es", value = "Ha ocurrido un error mientras se intentaba guardar el archivo.")
+    @Localize(locale = "es",
+              value = "Ha ocurrido un error mientras se intentaba guardar el archivo.")
     private static String SAVE_ERROR;
 
     static {
@@ -136,7 +137,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
 
     @Override
     public String getTitle() {
-        File file = getBackingFile();
+        File   file = getBackingFile();
         String title;
         if (file == null) {
             if (mUntitledName == null) {

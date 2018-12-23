@@ -85,7 +85,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
      * Create a new skills outline.
      *
      * @param dataFile The owning data file.
-     * @param model The {@link OutlineModel} to use.
+     * @param model    The {@link OutlineModel} to use.
      */
     public SkillOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Skill.ID_LIST_CHANGED);
@@ -189,10 +189,10 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
             if (!skill.canHaveChildren()) {
-                int basePoints = skill.getPoints() + 1;
-                int maxPoints = basePoints + (skill.getDifficulty() == SkillDifficulty.W ? 12 : 4);
-                int oldLevel = skill.getLevel();
-                RowUndo undo = new RowUndo(skill);
+                int     basePoints = skill.getPoints() + 1;
+                int     maxPoints  = basePoints + (skill.getDifficulty() == SkillDifficulty.W ? 12 : 4);
+                int     oldLevel   = skill.getLevel();
+                RowUndo undo       = new RowUndo(skill);
                 for (int points = basePoints; points < maxPoints; points++) {
                     skill.setPoints(points);
                     if (skill.getLevel() > oldLevel) {
@@ -221,9 +221,9 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
             if (!skill.canHaveChildren()) {
-                RowUndo undo = new RowUndo(skill);
-                int oldLevel = skill.getLevel();
-                int points = skill.getPoints() - 1;
+                RowUndo undo     = new RowUndo(skill);
+                int     oldLevel = skill.getLevel();
+                int     points   = skill.getPoints() - 1;
                 skill.setPoints(points);
                 if (skill.getLevel() == Integer.MIN_VALUE) {
                     skill.setPoints(0);
@@ -408,10 +408,10 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public void convertDragRowsToSelf(List<Row> list) {
-        OutlineModel model = getModel();
-        Row[] rows = model.getDragRows();
-        boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-        ArrayList<ListRow> process = forSheetOrTemplate ? new ArrayList<>() : null;
+        OutlineModel       model              = getModel();
+        Row[]              rows               = model.getDragRows();
+        boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
+        ArrayList<ListRow> process            = forSheetOrTemplate ? new ArrayList<>() : null;
 
         for (Row element : rows) {
             ListRow row;

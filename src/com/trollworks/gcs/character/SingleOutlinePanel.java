@@ -35,15 +35,15 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
     /**
      * Creates a new outline panel.
      *
-     * @param scale The scale to use.
-     * @param outline The outline to display.
-     * @param title The localized title for the panel.
+     * @param scale    The scale to use.
+     * @param outline  The outline to display.
+     * @param title    The localized title for the panel.
      * @param useProxy <code>true</code> if a proxy of the outline should be used.
      */
     public SingleOutlinePanel(Scale scale, Outline outline, String title, boolean useProxy) {
         super(null);
         mOutline = useProxy ? new OutlineProxy(outline) : outline;
-        mHeader = mOutline.getHeaderPanel();
+        mHeader  = mOutline.getHeaderPanel();
         CharacterSheet.prepOutline(mOutline);
         add(mHeader);
         add(mOutline);
@@ -55,7 +55,7 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
      * Sets the embedded outline's display range.
      *
      * @param first The first row to display.
-     * @param last The last row to display.
+     * @param last  The last row to display.
      */
     public void setOutlineRowRange(int first, int last) {
         mOutline.setFirstRowToDisplay(first);
@@ -64,10 +64,10 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 
     /** @return The preferred width. */
     public int getPreferredWidth() {
-        Insets insets = getInsets();
-        int width = insets.left + insets.right;
+        Insets       insets       = getInsets();
+        int          width        = insets.left + insets.right;
         OutlineModel outlineModel = mOutline.getModel();
-        int count = outlineModel.getColumnCount();
+        int          count        = outlineModel.getColumnCount();
         if (mOutline.shouldDrawColumnDividers()) {
             width += (count - 1) * Scale.get(this).scale(1);
         }
@@ -80,11 +80,11 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
 
     @Override
     public void layoutContainer(Container parent) {
-        Insets insets = getInsets();
+        Insets    insets = getInsets();
         Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-        int height = mHeader.getPreferredSize().height;
+        int       height = mHeader.getPreferredSize().height;
         mHeader.setLocation(bounds.x, bounds.y);
-        bounds.y += height;
+        bounds.y      += height;
         bounds.height -= height;
         mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
         ColumnUtils.pack(mOutline, bounds.width);

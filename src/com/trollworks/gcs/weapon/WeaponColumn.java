@@ -52,7 +52,7 @@ public enum WeaponColumn {
         @Override
         public String getDataAsText(WeaponStats weapon) {
             StringBuilder builder = new StringBuilder();
-            String notes = weapon.getNotes();
+            String        notes   = weapon.getNotes();
 
             builder.append(weapon.toString());
             if (notes.length() > 0) {
@@ -378,9 +378,12 @@ public enum WeaponColumn {
     @Localize(locale = "es", value = "Uso")
     static String USAGE_TITLE;
     @Localize("The usage type of the weapon (swung, thrust, thrown, fired, etc.)")
-    @Localize(locale = "de", value = "Wie die Waffe benutzt wird (Schwung, Stoß, Wurf, Schuss usw.).")
-    @Localize(locale = "ru", value = "Тип использования оружия (рубящее, колющее, метательное, огнестрельное, и т.д.)")
-    @Localize(locale = "es", value = "Tipo de ataque del arma (tajo, penetración, arrojadiza, de fuego, etc.)")
+    @Localize(locale = "de",
+              value = "Wie die Waffe benutzt wird (Schwung, Stoß, Wurf, Schuss usw.).")
+    @Localize(locale = "ru",
+              value = "Тип использования оружия (рубящее, колющее, метательное, огнестрельное, и т.д.)")
+    @Localize(locale = "es",
+              value = "Tipo de ataque del arma (tajo, penetración, arrojadiza, de fuego, etc.)")
     static String USAGE_TOOLTIP;
     @Localize("Damage")
     @Localize(locale = "de", value = "Schaden")
@@ -458,9 +461,11 @@ public enum WeaponColumn {
     @Localize(locale = "es", value = "Disparos")
     static String SHOTS_TITLE;
     @Localize("The number of shots the weapon can fire before reloading/recharging")
-    @Localize(locale = "de", value = "Die Anzahl der Schüsse, die die Waffe abfeuern kann, bevor sie neu geladen werden muss.")
+    @Localize(locale = "de",
+              value = "Die Anzahl der Schüsse, die die Waffe abfeuern kann, bevor sie neu geladen werden muss.")
     @Localize(locale = "ru", value = "Количество выстрелов до перезарядки/подзарядки")
-    @Localize(locale = "es", value = "Cantidad de disparos que puede realizar un arma antes de ser recargada")
+    @Localize(locale = "es",
+              value = "Cantidad de disparos que puede realizar un arma antes de ser recargada")
     static String SHOTS_TOOLTIP;
     @Localize("Bulk")
     @Localize(locale = "de", value = "Handl.")
@@ -468,7 +473,8 @@ public enum WeaponColumn {
     @Localize(locale = "es", value = "Tamaño")
     static String BULK_TITLE;
     @Localize("The modifier to skill due to the bulk of the weapon")
-    @Localize(locale = "de", value = "Abschlag auf die Fertigkeit wegen der Handlichkeit der Waffe.")
+    @Localize(locale = "de",
+              value = "Abschlag auf die Fertigkeit wegen der Handlichkeit der Waffe.")
     @Localize(locale = "ru", value = "Модификатор умения за счет размера оружия")
     @Localize(locale = "es", value = "Modificador a la habilidad por el tamaño del arma")
     static String BULK_TOOLTIP;
@@ -488,7 +494,8 @@ public enum WeaponColumn {
     @Localize(locale = "es", value = "FU")
     static String MIN_ST_TITLE;
     @Localize("The minimum strength required to use the weapon properly")
-    @Localize(locale = "de", value = "Die mindestens benötigte Stärke, um die Waffe richtig führen zu können.")
+    @Localize(locale = "de",
+              value = "Die mindestens benötigte Stärke, um die Waffe richtig führen zu können.")
     @Localize(locale = "ru", value = "Минимальная сила для использования оружия")
     @Localize(locale = "es", value = "Valor mínimo en Fuerza para usar correctamente el arma")
     static String MIN_ST_TOOLTIP;
@@ -538,7 +545,7 @@ public enum WeaponColumn {
 
     /**
      * @param weaponClass The weapon class to check.
-     * @param forEditor Whether this is for an editor or not.
+     * @param forEditor   Whether this is for an editor or not.
      * @return Whether this column is valid for the specified weapon class.
      */
     @SuppressWarnings("static-method")
@@ -560,9 +567,9 @@ public enum WeaponColumn {
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
-     * @param outline The {@link Outline} to use.
+     * @param outline     The {@link Outline} to use.
      * @param weaponClass The weapon class to use.
-     * @param forEditor Whether this is for an editor or not.
+     * @param forEditor   Whether this is for an editor or not.
      */
     public static void addColumns(Outline outline, Class<? extends WeaponStats> weaponClass, boolean forEditor) {
         OutlineModel model = outline.getModel();

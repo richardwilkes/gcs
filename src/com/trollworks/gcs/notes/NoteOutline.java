@@ -51,7 +51,7 @@ public class NoteOutline extends ListOutline {
      * Create a new notes outline.
      *
      * @param dataFile The owning data file.
-     * @param model The {@link OutlineModel} to use.
+     * @param model    The {@link OutlineModel} to use.
      */
     public NoteOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Note.ID_LIST_CHANGED);
@@ -65,10 +65,10 @@ public class NoteOutline extends ListOutline {
 
     @Override
     public void convertDragRowsToSelf(List<Row> list) {
-        OutlineModel model = getModel();
-        Row[] rows = model.getDragRows();
-        boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-        ArrayList<ListRow> process = new ArrayList<>();
+        OutlineModel       model              = getModel();
+        Row[]              rows               = model.getDragRows();
+        boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
+        ArrayList<ListRow> process            = new ArrayList<>();
         for (Row element : rows) {
             Note note = new Note(mDataFile, (Note) element, true);
             model.collectRowsAndSetOwner(list, note, false);

@@ -41,7 +41,7 @@ public class SkillBonusEditor extends FeatureEditor {
     /**
      * Create a new skill bonus editor.
      *
-     * @param row The row this feature will belong to.
+     * @param row   The row this feature will belong to.
      * @param bonus The bonus to edit.
      */
     public SkillBonusEditor(ListRow row, SkillBonus bonus) {
@@ -52,7 +52,7 @@ public class SkillBonusEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         SkillBonus bonus = (SkillBonus) getFeature();
 
-        FlexRow row = new FlexRow();
+        FlexRow    row   = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999, 999));

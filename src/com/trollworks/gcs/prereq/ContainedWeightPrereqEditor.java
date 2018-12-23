@@ -33,9 +33,9 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
     /**
      * Creates a new contained weight prerequisite editor panel.
      *
-     * @param row The owning row.
+     * @param row    The owning row.
      * @param prereq The prerequisite to edit.
-     * @param depth The depth of this prerequisite.
+     * @param depth  The depth of this prerequisite.
      */
     public ContainedWeightPrereqEditor(ListRow row, ContainedWeightPrereq prereq, int depth) {
         super(row, prereq, depth);
@@ -45,7 +45,7 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         ContainedWeightPrereq prereq = (ContainedWeightPrereq) mPrereq;
 
-        FlexRow row = new FlexRow();
+        FlexRow               row    = new FlexRow();
         row.add(addHasCombo(prereq.has()));
         row.add(addChangeBaseTypeCombo());
         row.add(new FlexSpacer(0, 0, true, false));

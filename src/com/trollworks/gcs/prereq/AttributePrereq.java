@@ -86,7 +86,7 @@ public class AttributePrereq extends HasPrereq {
      */
     protected AttributePrereq(PrereqList parent, AttributePrereq prereq) {
         super(parent, prereq);
-        mWhich = prereq.mWhich;
+        mWhich        = prereq.mWhich;
         mCombinedWith = prereq.mCombinedWith;
         mValueCompare = new IntegerCriteria(prereq.mValueCompare);
     }
@@ -157,20 +157,20 @@ public class AttributePrereq extends HasPrereq {
             return 0;
         }
         switch (attribute) {
-            case ST:
-                return character.getStrength();
-            case DX:
-                return character.getDexterity();
-            case IQ:
-                return character.getIntelligence();
-            case HT:
-                return character.getHealth();
-            case WILL:
-                return character.getWill();
-            case PERCEPTION:
-                return character.getPerception();
-            default:
-                return 0;
+        case ST:
+            return character.getStrength();
+        case DX:
+            return character.getDexterity();
+        case IQ:
+            return character.getIntelligence();
+        case HT:
+            return character.getHealth();
+        case WILL:
+            return character.getWill();
+        case PERCEPTION:
+            return character.getPerception();
+        default:
+            return 0;
         }
     }
 

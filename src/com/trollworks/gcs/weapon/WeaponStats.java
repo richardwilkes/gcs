@@ -61,10 +61,10 @@ public abstract class WeaponStats {
      * @param owner The owning piece of equipment or advantage.
      */
     protected WeaponStats(ListRow owner) {
-        mOwner = owner;
-        mDamage = EMPTY;
+        mOwner    = owner;
+        mDamage   = EMPTY;
         mStrength = EMPTY;
-        mUsage = EMPTY;
+        mUsage    = EMPTY;
         mDefaults = new ArrayList<>();
         initialize();
     }
@@ -76,10 +76,10 @@ public abstract class WeaponStats {
      * @param other The weapon to clone.
      */
     protected WeaponStats(ListRow owner, WeaponStats other) {
-        mOwner = owner;
-        mDamage = other.mDamage;
+        mOwner    = owner;
+        mDamage   = other.mDamage;
         mStrength = other.mStrength;
-        mUsage = other.mUsage;
+        mUsage    = other.mUsage;
         mDefaults = new ArrayList<>();
         for (SkillDefault skillDefault : other.mDefaults) {
             mDefaults.add(new SkillDefault(skillDefault));
@@ -89,7 +89,7 @@ public abstract class WeaponStats {
     /**
      * Creates a weapon.
      *
-     * @param owner The owning piece of equipment or advantage.
+     * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
     public WeaponStats(ListRow owner, XMLReader reader) throws IOException {
@@ -217,12 +217,12 @@ public abstract class WeaponStats {
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
     public String getResolvedDamage() {
-        DataFile df = mOwner.getDataFile();
-        String damage = mDamage;
+        DataFile df     = mOwner.getDataFile();
+        String   damage = mDamage;
 
         if (df instanceof GURPSCharacter) {
-            GURPSCharacter character = (GURPSCharacter) df;
-            HashSet<WeaponBonus> bonuses = new HashSet<>();
+            GURPSCharacter       character = (GURPSCharacter) df;
+            HashSet<WeaponBonus> bonuses   = new HashSet<>();
 
             for (SkillDefault one : getDefaults()) {
                 if (one.getType().isSkillBased()) {
@@ -236,11 +236,11 @@ public abstract class WeaponStats {
     }
 
     private String resolveDamage(String damage, HashSet<WeaponBonus> bonuses) {
-        int maxST = getMinStrengthValue() * 3;
+        int            maxST     = getMinStrengthValue() * 3;
         GURPSCharacter character = (GURPSCharacter) mOwner.getDataFile();
-        int st = character.getStrength() + character.getStrikingStrengthBonus();
-        Dice dice;
-        String savedDamage;
+        int            st        = character.getStrength() + character.getStrikingStrengthBonus();
+        Dice           dice;
+        String         savedDamage;
 
         if (maxST > 0 && maxST < st) {
             st = maxST;
@@ -249,13 +249,13 @@ public abstract class WeaponStats {
         dice = GURPSCharacter.getSwing(st);
         do {
             savedDamage = damage;
-            damage = resolveDamage(damage, "sw", dice); //$NON-NLS-1$
+            damage      = resolveDamage(damage, "sw", dice); //$NON-NLS-1$
         } while (!savedDamage.equals(damage));
 
         dice = GURPSCharacter.getThrust(st);
         do {
             savedDamage = damage;
-            damage = resolveDamage(damage, "thr", dice); //$NON-NLS-1$
+            damage      = resolveDamage(damage, "thr", dice); //$NON-NLS-1$
         } while (!savedDamage.equals(damage));
 
         return resolveDamageBonuses(damage, bonuses);
@@ -265,10 +265,10 @@ public abstract class WeaponStats {
         int where = damage.indexOf(type);
 
         if (where != -1) {
-            int last = where + type.length();
-            int max = damage.length();
+            int          last   = where + type.length();
+            int          max    = damage.length();
             StringBuffer buffer = new StringBuffer();
-            int tmp;
+            int          tmp;
 
             if (where > 0) {
                 buffer.append(damage.substring(0, where));
@@ -302,7 +302,7 @@ public abstract class WeaponStats {
                 }
                 if (last < max - 1 && damage.charAt(last) == ':') {
                     tmp = last + 1;
-                    ch = damage.charAt(tmp++);
+                    ch  = damage.charAt(tmp++);
                     if (ch == '+' || ch == '-') {
                         int perDie = 0;
 
@@ -342,7 +342,7 @@ public abstract class WeaponStats {
     }
 
     private String resolveDamageBonuses(String damage, HashSet<WeaponBonus> bonuses) {
-        int max = damage.length();
+        int max   = damage.length();
         int start = 0;
         while (true) {
             int where = damage.indexOf('d', start);
@@ -359,7 +359,7 @@ public abstract class WeaponStats {
                     buffer.append(damage.substring(0, where));
                 }
                 int[] dicePos = Dice.extractDicePosition(damage.substring(where));
-                Dice dice = new Dice(damage.substring(where + dicePos[0], where + dicePos[1] + 1));
+                Dice  dice    = new Dice(damage.substring(where + dicePos[0], where + dicePos[1] + 1));
                 if (mOwner instanceof Advantage) {
                     Advantage advantage = (Advantage) mOwner;
                     if (advantage.isLeveled()) {
@@ -368,7 +368,7 @@ public abstract class WeaponStats {
                 }
                 for (WeaponBonus bonus : bonuses) {
                     LeveledAmount lvlAmt = bonus.getAmount();
-                    int amt = lvlAmt.getIntegerAmount();
+                    int           amt    = lvlAmt.getIntegerAmount();
                     if (lvlAmt.isPerLevel()) {
                         dice.add(amt * dice.getDieCount());
                     } else {
@@ -387,7 +387,7 @@ public abstract class WeaponStats {
 
     /**
      * @param buffer The string to find the next non-space character within.
-     * @param index The index to start looking.
+     * @param index  The index to start looking.
      * @return The index of the next non-space character.
      */
     @SuppressWarnings("static-method")
@@ -425,8 +425,8 @@ public abstract class WeaponStats {
     private int getSkillLevel(GURPSCharacter character) {
         int best = Integer.MIN_VALUE;
         for (SkillDefault skillDefault : getDefaults()) {
-            SkillDefaultType type = skillDefault.getType();
-            int level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
+            SkillDefaultType type  = skillDefault.getType();
+            int              level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
             if (level > best) {
                 best = level;
             }
@@ -453,8 +453,8 @@ public abstract class WeaponStats {
     /** @return The minimum ST to use this weapon, or -1 if there is none. */
     public int getMinStrengthValue() {
         StringBuilder builder = new StringBuilder();
-        int count = mStrength.length();
-        boolean started = false;
+        int           count   = mStrength.length();
+        boolean       started = false;
         for (int i = 0; i < count; i++) {
             char ch = mStrength.charAt(i);
             if (Character.isDigit(ch)) {

@@ -30,7 +30,7 @@ public class AttributeBonus extends Bonus {
     /** Creates a new attribute bonus. */
     public AttributeBonus() {
         super(1);
-        mAttribute = BonusAttributeType.ST;
+        mAttribute  = BonusAttributeType.ST;
         mLimitation = AttributeBonusLimitation.NONE;
     }
 
@@ -51,7 +51,7 @@ public class AttributeBonus extends Bonus {
      */
     public AttributeBonus(AttributeBonus other) {
         super(other);
-        mAttribute = other.mAttribute;
+        mAttribute  = other.mAttribute;
         mLimitation = other.mLimitation;
     }
 

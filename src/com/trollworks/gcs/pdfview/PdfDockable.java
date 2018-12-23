@@ -80,12 +80,12 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
         mFile = pdfRef.getFile();
         int pageCount = 9999;
         try {
-            mPdf = PDDocument.load(pdfRef.getFile(), MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
+            mPdf      = PDDocument.load(pdfRef.getFile(), MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
             pageCount = mPdf.getNumberOfPages();
         } catch (Exception exception) {
             Log.error(exception);
         }
-        mToolbar = new Toolbar();
+        mToolbar      = new Toolbar();
 
         mZoomInButton = new IconButton(StdImage.get("ZoomIn"), formatWithKey(SCALE_DOC_UP, KeyStroke.getKeyStroke('=')), () -> mPanel.zoomIn()); //$NON-NLS-1$
         mToolbar.add(mZoomInButton);
@@ -98,7 +98,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 
         mPageField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(1, pageCount, false)), event -> {
             if (mPanel != null) {
-                int pageIndex = ((Integer) mPageField.getValue()).intValue() - 1;
+                int pageIndex    = ((Integer) mPageField.getValue()).intValue() - 1;
                 int newPageIndex = mPanel.goToPageIndex(pageIndex, null);
                 if (pageIndex != newPageIndex) {
                     mPageField.setValue(Integer.valueOf(newPageIndex + 1));

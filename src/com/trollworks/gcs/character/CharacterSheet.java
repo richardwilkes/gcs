@@ -235,9 +235,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         super();
         setLayout(new CharacterSheetLayout(this));
         setOpaque(false);
-        mScale = SheetPreferences.getInitialUIScale().getScale();
-        mCharacter = character;
-        mLastPage = -1;
+        mScale       = SheetPreferences.getInitialUIScale().getScale();
+        mCharacter   = character;
+        mLastPage    = -1;
         mRootsToSync = new HashSet<>();
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
@@ -278,17 +278,17 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     /** Synchronizes the display with the underlying model. */
     public void rebuild() {
         KeyboardFocusManager focusMgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-        Component focus = focusMgr.getPermanentFocusOwner();
-        int firstRow = 0;
-        String focusKey = null;
-        PageAssembler pageAssembler;
+        Component            focus    = focusMgr.getPermanentFocusOwner();
+        int                  firstRow = 0;
+        String               focusKey = null;
+        PageAssembler        pageAssembler;
 
         if (UIUtilities.getSelfOrAncestorOfType(focus, CharacterSheet.class) == this) {
             if (focus instanceof PageField) {
                 focusKey = ((PageField) focus).getConsumedType();
-                focus = null;
+                focus    = null;
             } else if (focus instanceof Outline) {
-                Outline outline = (Outline) focus;
+                Outline   outline   = (Outline) focus;
                 Selection selection = outline.getModel().getSelection();
 
                 firstRow = outline.getFirstRowToDisplay();
@@ -328,16 +328,16 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         pageAssembler.addToContent(hwrap(new AttributesPanel(this), vwrap(new EncumbrancePanel(this), new LiftPanel(this)), new HitLocationPanel(this), new HitPointsPanel(this)), null, null);
 
         // Add the various outline blocks, based on the layout preference.
-        Set<String> remaining = prepBlockLayoutRemaining();
-        String blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        Set<String> remaining   = prepBlockLayoutRemaining();
+        String      blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         for (String line : blockLayout.split("\n")) { //$NON-NLS-1$
             String[] parts = line.trim().split(" "); //$NON-NLS-1$
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
-                String t1 = getOutlineTitleForKey(parts[0]);
+                String  t1 = getOutlineTitleForKey(parts[0]);
                 Outline o1 = getOutlineForKey(parts[0]);
                 remaining.remove(parts[0]);
                 if (parts.length > 1 && remaining.contains(parts[1])) {
-                    String t2 = getOutlineTitleForKey(parts[1]);
+                    String  t2 = getOutlineTitleForKey(parts[1]);
                     Outline o2 = getOutlineForKey(parts[1]);
                     remaining.remove(parts[1]);
                     if (o1.getModel().getRowCount() > 0 && o2.getModel().getRowCount() > 0) {
@@ -393,9 +393,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     public static String getHTMLGridTemplate() {
-        Set<String> remaining = prepBlockLayoutRemaining();
-        String blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        StringBuilder buffer = new StringBuilder();
+        Set<String>   remaining   = prepBlockLayoutRemaining();
+        String        blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        StringBuilder buffer      = new StringBuilder();
         for (String line : blockLayout.split("\n")) { //$NON-NLS-1$
             String[] parts = line.trim().split(" "); //$NON-NLS-1$
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
@@ -427,43 +427,43 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private static String getOutlineTitleForKey(String key) {
         switch (key) {
-            case MELEE_KEY:
-                return MELEE_WEAPONS;
-            case RANGED_KEY:
-                return RANGED_WEAPONS;
-            case ADVANTAGES_KEY:
-                return ADVANTAGES;
-            case SKILLS_KEY:
-                return SKILLS;
-            case SPELLS_KEY:
-                return SPELLS;
-            case EQUIPMENT_KEY:
-                return EQUIPMENT;
-            case NOTES_KEY:
-                return NOTES;
-            default:
-                return ""; //$NON-NLS-1$
+        case MELEE_KEY:
+            return MELEE_WEAPONS;
+        case RANGED_KEY:
+            return RANGED_WEAPONS;
+        case ADVANTAGES_KEY:
+            return ADVANTAGES;
+        case SKILLS_KEY:
+            return SKILLS;
+        case SPELLS_KEY:
+            return SPELLS;
+        case EQUIPMENT_KEY:
+            return EQUIPMENT;
+        case NOTES_KEY:
+            return NOTES;
+        default:
+            return ""; //$NON-NLS-1$
         }
     }
 
     private Outline getOutlineForKey(String key) {
         switch (key) {
-            case MELEE_KEY:
-                return mMeleeWeaponOutline;
-            case RANGED_KEY:
-                return mRangedWeaponOutline;
-            case ADVANTAGES_KEY:
-                return mAdvantageOutline;
-            case SKILLS_KEY:
-                return mSkillOutline;
-            case SPELLS_KEY:
-                return mSpellOutline;
-            case EQUIPMENT_KEY:
-                return mEquipmentOutline;
-            case NOTES_KEY:
-                return mNoteOutline;
-            default:
-                return null;
+        case MELEE_KEY:
+            return mMeleeWeaponOutline;
+        case RANGED_KEY:
+            return mRangedWeaponOutline;
+        case ADVANTAGES_KEY:
+            return mAdvantageOutline;
+        case SKILLS_KEY:
+            return mSkillOutline;
+        case SPELLS_KEY:
+            return mSpellOutline;
+        case EQUIPMENT_KEY:
+            return mEquipmentOutline;
+        case NOTES_KEY:
+            return mNoteOutline;
+        default:
+            return null;
         }
     }
 
@@ -491,12 +491,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private void addOutline(PageAssembler pageAssembler, Outline outline, String title) {
         if (outline.getModel().getRowCount() > 0) {
-            OutlineInfo info = new OutlineInfo(outline, pageAssembler.getContentWidth());
-            boolean useProxy = false;
+            OutlineInfo info     = new OutlineInfo(outline, pageAssembler.getContentWidth());
+            boolean     useProxy = false;
 
             while (pageAssembler.addToContent(new SingleOutlinePanel(mScale, outline, title, useProxy), info, null)) {
                 if (!useProxy) {
-                    title = MessageFormat.format(CONTINUED, title);
+                    title    = MessageFormat.format(CONTINUED, title);
                     useProxy = true;
                 }
             }
@@ -504,16 +504,16 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     private void addOutline(PageAssembler pageAssembler, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle) {
-        int width = pageAssembler.getContentWidth() / 2 - 1;
-        OutlineInfo infoLeft = new OutlineInfo(leftOutline, width);
+        int         width     = pageAssembler.getContentWidth() / 2 - 1;
+        OutlineInfo infoLeft  = new OutlineInfo(leftOutline, width);
         OutlineInfo infoRight = new OutlineInfo(rightOutline, width);
-        boolean useProxy = false;
+        boolean     useProxy  = false;
 
         while (pageAssembler.addToContent(new DoubleOutlinePanel(mScale, leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
             if (!useProxy) {
-                leftTitle = MessageFormat.format(CONTINUED, leftTitle);
+                leftTitle  = MessageFormat.format(CONTINUED, leftTitle);
                 rightTitle = MessageFormat.format(CONTINUED, rightTitle);
-                useProxy = true;
+                useProxy   = true;
             }
         }
     }
@@ -612,11 +612,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private void createMeleeWeaponOutline() {
         if (mMeleeWeaponOutline == null) {
             OutlineModel outlineModel;
-            String sortConfig;
+            String       sortConfig;
 
             mMeleeWeaponOutline = new WeaponOutline(MeleeWeaponStats.class);
-            outlineModel = mMeleeWeaponOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
+            outlineModel        = mMeleeWeaponOutline.getModel();
+            sortConfig          = outlineModel.getSortConfig();
             for (WeaponDisplayRow row : collectWeapons(MeleeWeaponStats.class)) {
                 outlineModel.addRow(row);
             }
@@ -635,11 +635,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private void createRangedWeaponOutline() {
         if (mRangedWeaponOutline == null) {
             OutlineModel outlineModel;
-            String sortConfig;
+            String       sortConfig;
 
             mRangedWeaponOutline = new WeaponOutline(RangedWeaponStats.class);
-            outlineModel = mRangedWeaponOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
+            outlineModel         = mRangedWeaponOutline.getModel();
+            sortConfig           = outlineModel.getSortConfig();
             for (WeaponDisplayRow row : collectWeapons(RangedWeaponStats.class)) {
                 outlineModel.addRow(row);
             }
@@ -652,12 +652,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private void addBuiltInWeapons(Class<? extends WeaponStats> weaponClass, HashMap<HashedWeapon, WeaponDisplayRow> map) {
         if (weaponClass == MeleeWeaponStats.class) {
-            boolean savedModified = mCharacter.isModified();
-            ArrayList<SkillDefault> defaults = new ArrayList<>();
-            Advantage phantom;
-            MeleeWeaponStats weapon;
+            boolean                 savedModified = mCharacter.isModified();
+            ArrayList<SkillDefault> defaults      = new ArrayList<>();
+            Advantage               phantom;
+            MeleeWeaponStats        weapon;
 
-            StdUndoManager mgr = mCharacter.getUndoManager();
+            StdUndoManager          mgr           = mCharacter.getUndoManager();
             mCharacter.setUndoManager(new StdUndoManager());
 
             phantom = new Advantage(mCharacter, false);
@@ -709,7 +709,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private ArrayList<WeaponDisplayRow> collectWeapons(Class<? extends WeaponStats> weaponClass) {
         HashMap<HashedWeapon, WeaponDisplayRow> weaponMap = new HashMap<>();
-        ArrayList<WeaponDisplayRow> weaponList;
+        ArrayList<WeaponDisplayRow>             weaponList;
 
         addBuiltInWeapons(weaponClass, weaponMap);
 
@@ -819,9 +819,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mLastPage != pageIndex) {
             mLastPage = pageIndex;
         } else {
-            Component comp = getComponent(pageIndex);
-            RepaintManager mgr = RepaintManager.currentManager(comp);
-            boolean saved = mgr.isDoubleBufferingEnabled();
+            Component      comp  = getComponent(pageIndex);
+            RepaintManager mgr   = RepaintManager.currentManager(comp);
+            boolean        saved = mgr.isDoubleBufferingEnabled();
             mgr.setDoubleBufferingEnabled(false);
             mOkToPaint = true;
             comp.print(graphics);
@@ -863,11 +863,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 int count = getComponentCount();
 
                 for (int i = 0; i < count; i++) {
-                    Page page = (Page) getComponent(i);
+                    Page      page   = (Page) getComponent(i);
                     Rectangle bounds = page.getBounds();
-                    Insets insets = page.getInsets();
+                    Insets    insets = page.getInsets();
 
-                    bounds.y = bounds.y + bounds.height - insets.bottom;
+                    bounds.y      = bounds.y + bounds.height - insets.bottom;
                     bounds.height = insets.bottom;
                     repaint(bounds);
                 }
@@ -889,29 +889,29 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     @Override
     public void drawPageAdornments(Page page, Graphics gc) {
         Rectangle bounds = page.getBounds();
-        Insets insets = page.getInsets();
-        bounds.width -= insets.left + insets.right;
+        Insets    insets = page.getInsets();
+        bounds.width  -= insets.left + insets.right;
         bounds.height -= insets.top + insets.bottom;
-        bounds.x = insets.left;
-        bounds.y = insets.top;
-        int pageNumber = 1 + UIUtilities.getIndexOf(this, page);
-        String pageString = MessageFormat.format(PAGE_NUMBER, Numbers.format(pageNumber), Numbers.format(getPageCount()));
-        BundleInfo bundleInfo = BundleInfo.getDefault();
-        String copyright1 = bundleInfo.getCopyright();
-        String copyright2 = bundleInfo.getReservedRights();
-        Font font1 = mScale.scale(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
-        Font font2 = mScale.scale(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
-        FontMetrics fm1 = gc.getFontMetrics(font1);
-        FontMetrics fm2 = gc.getFontMetrics(font2);
-        int y = bounds.y + bounds.height + fm2.getAscent();
-        String left;
-        String right;
+        bounds.x       = insets.left;
+        bounds.y       = insets.top;
+        int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
+        String      pageString = MessageFormat.format(PAGE_NUMBER, Numbers.format(pageNumber), Numbers.format(getPageCount()));
+        BundleInfo  bundleInfo = BundleInfo.getDefault();
+        String      copyright1 = bundleInfo.getCopyright();
+        String      copyright2 = bundleInfo.getReservedRights();
+        Font        font1      = mScale.scale(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
+        Font        font2      = mScale.scale(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
+        FontMetrics fm1        = gc.getFontMetrics(font1);
+        FontMetrics fm2        = gc.getFontMetrics(font2);
+        int         y          = bounds.y + bounds.height + fm2.getAscent();
+        String      left;
+        String      right;
 
         if (pageNumber % 2 == 1) {
-            left = copyright1;
+            left  = copyright1;
             right = mCharacter.getLastModified();
         } else {
-            left = mCharacter.getLastModified();
+            left  = mCharacter.getLastModified();
             right = copyright1;
         }
 
@@ -925,10 +925,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         gc.drawString(center, bounds.x + (bounds.width - (int) fm2.getStringBounds(center, gc).getWidth()) / 2, y);
 
         if (pageNumber % 2 == 1) {
-            left = copyright2;
+            left  = copyright2;
             right = pageString;
         } else {
-            left = pageString;
+            left  = pageString;
             right = copyright2;
         }
 
@@ -988,7 +988,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private void syncRoots() {
         if (mSyncWeapons || mRootsToSync.contains(mEquipmentOutline) || mRootsToSync.contains(mAdvantageOutline) || mRootsToSync.contains(mSpellOutline) || mRootsToSync.contains(mSkillOutline)) {
             OutlineModel outlineModel = mMeleeWeaponOutline.getModel();
-            String sortConfig = outlineModel.getSortConfig();
+            String       sortConfig   = outlineModel.getSortConfig();
 
             outlineModel.removeAllRows();
             for (WeaponDisplayRow row : collectWeapons(MeleeWeaponStats.class)) {
@@ -997,7 +997,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             outlineModel.applySortConfig(sortConfig);
 
             outlineModel = mRangedWeaponOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
+            sortConfig   = outlineModel.getSortConfig();
 
             outlineModel.removeAllRows();
             for (WeaponDisplayRow row : collectWeapons(RangedWeaponStats.class)) {
@@ -1110,7 +1110,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     private static PageFormat createDefaultPageFormat() {
-        Paper paper = new Paper();
+        Paper      paper  = new Paper();
         PageFormat format = new PageFormat();
         format.setOrientation(PageFormat.PORTRAIT);
         paper.setSize(8.5 * 72.0, 11.0 * 72.0);
@@ -1159,25 +1159,25 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         HashSet<Row> changed = expandAllContainers();
         try {
             PrintManager settings = mCharacter.getPageSettings();
-            PageFormat format = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
-            Paper paper = format.getPaper();
-            float width = (float) paper.getWidth();
-            float height = (float) paper.getHeight();
+            PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
+            Paper        paper    = format.getPaper();
+            float        width    = (float) paper.getWidth();
+            float        height   = (float) paper.getHeight();
 
             adjustToPageSetupChanges(true);
             setPrinting(true);
 
             com.lowagie.text.Document pdfDoc = new com.lowagie.text.Document(new com.lowagie.text.Rectangle(width, height));
             try (FileOutputStream out = new FileOutputStream(file)) {
-                PdfWriter writer = PdfWriter.getInstance(pdfDoc, out);
-                int pageNum = 0;
+                PdfWriter      writer  = PdfWriter.getInstance(pdfDoc, out);
+                int            pageNum = 0;
                 PdfContentByte cb;
 
                 pdfDoc.open();
                 cb = writer.getDirectContent();
                 while (true) {
                     PdfTemplate template = cb.createTemplate(width, height);
-                    Graphics2D g2d = template.createGraphics(width, height, new DefaultFontMapper());
+                    Graphics2D  g2d      = template.createGraphics(width, height, new DefaultFontMapper());
 
                     if (print(g2d, format, pageNum) == NO_SUCH_PAGE) {
                         g2d.dispose();
@@ -1203,22 +1203,22 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     /**
-     * @param file The file to save to.
+     * @param file         The file to save to.
      * @param createdFiles The files that were created.
      * @return <code>true</code> on success.
      */
     public boolean saveAsPNG(File file, ArrayList<File> createdFiles) {
         HashSet<Row> changed = expandAllContainers();
         try {
-            int dpi = OutputPreferences.getPNGResolution();
+            int          dpi      = OutputPreferences.getPNGResolution();
             PrintManager settings = mCharacter.getPageSettings();
-            PageFormat format = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
-            Paper paper = format.getPaper();
-            int width = (int) (paper.getWidth() / 72.0 * dpi);
-            int height = (int) (paper.getHeight() / 72.0 * dpi);
-            StdImage buffer = StdImage.create(width, height, Transparency.OPAQUE);
-            int pageNum = 0;
-            String name = PathUtils.getLeafName(file.getName(), false);
+            PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
+            Paper        paper    = format.getPaper();
+            int          width    = (int) (paper.getWidth() / 72.0 * dpi);
+            int          height   = (int) (paper.getHeight() / 72.0 * dpi);
+            StdImage     buffer   = StdImage.create(width, height, Transparency.OPAQUE);
+            int          pageNum  = 0;
+            String       name     = PathUtils.getLeafName(file.getName(), false);
 
             file = file.getParentFile();
 
@@ -1226,7 +1226,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             setPrinting(true);
 
             while (true) {
-                File pngFile;
+                File       pngFile;
 
                 Graphics2D gc = buffer.getGraphics();
                 if (print(gc, format, pageNum) == NO_SUCH_PAGE) {
@@ -1289,8 +1289,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         OutputPreferences.setDefaultPageSettings(getPrintManager());
         if (willPrint) {
             mSavedScale = mScale;
-            mScale = Scales.ACTUAL_SIZE.getScale();
-            mOkToPaint = false;
+            mScale      = Scales.ACTUAL_SIZE.getScale();
+            mOkToPaint  = false;
         }
         rebuild();
     }

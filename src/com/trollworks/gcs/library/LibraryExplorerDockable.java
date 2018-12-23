@@ -83,9 +83,12 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
     @Localize(locale = "es", value = "Listado de la librería")
     private static String TITLE;
     @Localize("Enter text here to narrow the list to only those rows containing matching items")
-    @Localize(locale = "de", value = "Hier Text eingeben, um eine Liste der passenden Einträge anzuzeigen")
-    @Localize(locale = "ru", value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
-    @Localize(locale = "es", value = "Escribe un texto aquí para acortar la lista y mostrar sólo las filas que contengan el texto")
+    @Localize(locale = "de",
+              value = "Hier Text eingeben, um eine Liste der passenden Einträge anzuzeigen")
+    @Localize(locale = "ru",
+              value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
+    @Localize(locale = "es",
+              value = "Escribe un texto aquí para acortar la lista y mostrar sólo las filas que contengan el texto")
     private static String SEARCH_FIELD_TOOLTIP;
     @Localize("Opens/closes all hierarchical rows")
     @Localize(locale = "de", value = "Öffnet / Schließt alle Untereinträge")
@@ -132,7 +135,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         mTreePanel.setUserSortable(false);
         mTreePanel.setOpenableProxy(this);
         mToolbar = new Toolbar();
-        mSearch = new Search(this);
+        mSearch  = new Search(this);
         mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, TOGGLE_ROWS_OPEN_TOOLTIP, () -> mTreePanel.toggleDisclosure()));
         add(mToolbar, BorderLayout.NORTH);
@@ -194,8 +197,8 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         for (int i = 1; i < count; i++) {
             Object entry = lists.get(i);
             if (entry instanceof List<?>) {
-                List<?> subList = (List<?>) entry;
-                LibraryDirectoryRow dir = new LibraryDirectoryRow((String) subList.get(0));
+                List<?>             subList = (List<?>) entry;
+                LibraryDirectoryRow dir     = new LibraryDirectoryRow((String) subList.get(0));
                 fillTree(subList, dir);
                 parent.addRow(dir);
             } else {
@@ -206,7 +209,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 
     @Override
     public void dataFileListUpdated(List<Object> lists) {
-        TreeRoot root = mTreePanel.getRoot();
+        TreeRoot    root     = mTreePanel.getRoot();
         Set<String> selected = new HashSet<>();
         for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
             selected.add(((LibraryExplorerRow) row).getSelectionKey());
@@ -264,7 +267,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
     @Override
     public void openSelection() {
         List<TreeContainerRow> containers = new ArrayList<>();
-        boolean hadFile = false;
+        boolean                hadFile    = false;
         for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
             if (row instanceof TreeContainerRow) {
                 containers.add((TreeContainerRow) row);
@@ -305,35 +308,35 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
             // If it wasn't, load it and put it into the dock
             try {
                 switch (PathUtils.getExtension(path)) {
-                    case AdvantageList.EXTENSION:
-                        proxy = openAdvantageList(path);
-                        break;
-                    case EquipmentList.EXTENSION:
-                        proxy = openEquipmentList(path);
-                        break;
-                    case SkillList.EXTENSION:
-                        proxy = openSkillList(path);
-                        break;
-                    case SpellList.EXTENSION:
-                        proxy = openSpellList(path);
-                        break;
-                    case NoteList.EXTENSION:
-                        proxy = openNoteList(path);
-                        break;
-                    case LibraryFile.EXTENSION:
-                        proxy = openLibrary(path);
-                        break;
-                    case GURPSCharacter.EXTENSION:
-                        proxy = dockSheet(new SheetDockable(new GURPSCharacter(path.toFile())));
-                        break;
-                    case Template.EXTENSION:
-                        proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
-                        break;
-                    case FileType.PDF_EXTENSION:
-                        proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), 1, null));
-                        break;
-                    default:
-                        break;
+                case AdvantageList.EXTENSION:
+                    proxy = openAdvantageList(path);
+                    break;
+                case EquipmentList.EXTENSION:
+                    proxy = openEquipmentList(path);
+                    break;
+                case SkillList.EXTENSION:
+                    proxy = openSkillList(path);
+                    break;
+                case SpellList.EXTENSION:
+                    proxy = openSpellList(path);
+                    break;
+                case NoteList.EXTENSION:
+                    proxy = openNoteList(path);
+                    break;
+                case LibraryFile.EXTENSION:
+                    proxy = openLibrary(path);
+                    break;
+                case GURPSCharacter.EXTENSION:
+                    proxy = dockSheet(new SheetDockable(new GURPSCharacter(path.toFile())));
+                    break;
+                case Template.EXTENSION:
+                    proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
+                    break;
+                case FileType.PDF_EXTENSION:
+                    proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), 1, null));
+                    break;
+                default:
+                    break;
                 }
             } catch (Throwable throwable) {
                 StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
@@ -388,9 +391,9 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
     }
 
     private FileProxy openLibrary(Path path) throws IOException {
-        FileProxy proxy = null;
+        FileProxy   proxy   = null;
         LibraryFile library = new LibraryFile(path.toFile());
-        SpellList spells = library.getSpellList();
+        SpellList   spells  = library.getSpellList();
         if (!spells.isEmpty()) {
             spells.setModified(true);
             proxy = dockLibrary(new SpellsDockable(spells));
@@ -429,8 +432,8 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         // 2. Dock to the right of a sheet
         // 3. Dock to the right of the library explorer
         Dockable template = null;
-        Dockable sheet = null;
-        Dock dock = getDockContainer().getDock();
+        Dockable sheet    = null;
+        Dock     dock     = getDockContainer().getDock();
         for (Dockable dockable : dock.getDockables()) {
             if (dockable instanceof LibraryDockable) {
                 dockable.getDockContainer().stack(library);
@@ -463,7 +466,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         // 2. Dock to the left of a library or template
         // 3. Dock to the right of the library explorer
         Dockable other = null;
-        Dock dock = getDockContainer().getDock();
+        Dock     dock  = getDockContainer().getDock();
         for (Dockable dockable : dock.getDockables()) {
             if (dockable instanceof SheetDockable) {
                 dockable.getDockContainer().stack(sheet);
@@ -474,8 +477,8 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
             }
         }
         if (other != null) {
-            DockContainer dc = other.getDockContainer();
-            DockLayout layout = dc.getDock().getLayout().findLayout(dc);
+            DockContainer dc     = other.getDockContainer();
+            DockLayout    layout = dc.getDock().getLayout().findLayout(dc);
             if (layout.isVertical()) {
                 dock.dock(sheet, layout, DockLocation.WEST);
             } else {
@@ -497,9 +500,9 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         // 2. Dock to the bottom of a library
         // 3. Dock to the right of a sheet
         // 4. Dock to the right of the library explorer
-        Dockable sheet = null;
+        Dockable sheet   = null;
         Dockable library = null;
-        Dock dock = getDockContainer().getDock();
+        Dock     dock    = getDockContainer().getDock();
         for (Dockable dockable : dock.getDockables()) {
             if (dockable instanceof TemplateDockable) {
                 dockable.getDockContainer().stack(template);
@@ -534,7 +537,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         // 3. Dock to the right of the library explorer
         Dockable sheet = null;
         Dockable other = null;
-        Dock dock = getDockContainer().getDock();
+        Dock     dock  = getDockContainer().getDock();
         for (Dockable dockable : dock.getDockables()) {
             if (dockable instanceof PdfDockable) {
                 dockable.getDockContainer().stack(pdf);
@@ -550,8 +553,8 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         if (sheet != null) {
             dock.dock(pdf, sheet, DockLocation.EAST);
         } else if (other != null) {
-            DockContainer dc = other.getDockContainer();
-            DockLayout layout = dc.getDock().getLayout().findLayout(dc);
+            DockContainer dc     = other.getDockContainer();
+            DockLayout    layout = dc.getDock().getLayout().findLayout(dc);
             if (layout.isVertical()) {
                 dock.dock(pdf, layout, DockLocation.WEST);
             } else {

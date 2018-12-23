@@ -55,10 +55,10 @@ public class RowUndo extends AbstractUndoableEdit {
      */
     public RowUndo(ListRow row) {
         super();
-        mRow = row;
+        mRow      = row;
         mDataFile = mRow.getDataFile();
-        mName = MessageFormat.format(UNDO_FORMAT, mRow.getLocalizedName());
-        mBefore = serialize(mRow);
+        mName     = MessageFormat.format(UNDO_FORMAT, mRow.getLocalizedName());
+        mBefore   = serialize(mRow);
     }
 
     /**
@@ -82,7 +82,7 @@ public class RowUndo extends AbstractUndoableEdit {
     private static byte[] serialize(ListRow row) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            GZIPOutputStream gos = new GZIPOutputStream(baos);
+            GZIPOutputStream      gos  = new GZIPOutputStream(baos);
             try (XMLWriter writer = new XMLWriter(gos)) {
                 row.save(writer, true);
             }
@@ -95,8 +95,8 @@ public class RowUndo extends AbstractUndoableEdit {
 
     private void deserialize(byte[] buffer) {
         try (XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer))))) {
-            XMLNodeType type = reader.next();
-            LoadState state = new LoadState();
+            XMLNodeType type  = reader.next();
+            LoadState   state = new LoadState();
             state.mForUndo = true;
             while (type != XMLNodeType.END_DOCUMENT) {
                 if (type == XMLNodeType.START_TAG) {

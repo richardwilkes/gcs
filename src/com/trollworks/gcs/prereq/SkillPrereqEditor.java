@@ -43,9 +43,9 @@ public class SkillPrereqEditor extends PrereqEditor {
     /**
      * Creates a new skill prerequisite editor panel.
      *
-     * @param row The owning row.
+     * @param row    The owning row.
      * @param prereq The prerequisite to edit.
-     * @param depth The depth of this prerequisite.
+     * @param depth  The depth of this prerequisite.
      */
     public SkillPrereqEditor(ListRow row, SkillPrereq prereq, int depth) {
         super(row, prereq, depth);
@@ -55,7 +55,7 @@ public class SkillPrereqEditor extends PrereqEditor {
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         SkillPrereq prereq = (SkillPrereq) mPrereq;
 
-        FlexRow row = new FlexRow();
+        FlexRow     row    = new FlexRow();
         row.add(addHasCombo(prereq.has()));
         row.add(addChangeBaseTypeCombo());
         row.add(new FlexSpacer(0, 0, true, false));

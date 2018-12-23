@@ -37,7 +37,7 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
     /**
      * Create a new contained weight reduction editor.
      *
-     * @param row The row this feature will belong to.
+     * @param row     The row this feature will belong to.
      * @param feature The feature to edit.
      */
     public ContainedWeightReductionEditor(ListRow row, ContainedWeightReduction feature) {
@@ -47,7 +47,7 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
     @Override
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         ContainedWeightReduction feature = (ContainedWeightReduction) getFeature();
-        FlexRow row = new FlexRow();
+        FlexRow                  row     = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         EditorField field = new EditorField(new DefaultFormatterFactory(new WeightReductionFormatter()), (event) -> {
             EditorField source = (EditorField) event.getSource();

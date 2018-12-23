@@ -67,7 +67,7 @@ public enum AdvantageColumn {
         @Override
         public String getDataAsText(Advantage advantage) {
             StringBuilder builder = new StringBuilder();
-            String notes = advantage.getModifierNotes();
+            String        notes   = advantage.getModifierNotes();
 
             builder.append(advantage.toString());
             if (notes.length() > 0) {
@@ -280,9 +280,12 @@ public enum AdvantageColumn {
     @Localize(locale = "es", value = "Ref")
     static String REFERENCE_TITLE;
     @Localize("A reference to the book and page this advantage appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая преимущество (например, B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página en donde aparece la ventaja (p.e. B22 se refiere al \"Manual Básico\", página 22)")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая преимущество (например, B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página en donde aparece la ventaja (p.e. B22 se refiere al \"Manual Básico\", página 22)")
     static String REFERENCE_TOOLTIP;
 
     static {
@@ -316,12 +319,12 @@ public enum AdvantageColumn {
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
-     * @param outline The {@link Outline} to use.
+     * @param outline  The {@link Outline} to use.
      * @param dataFile The {@link DataFile} that data is being displayed for.
      */
     public static void addColumns(Outline outline, DataFile dataFile) {
-        boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
-        OutlineModel model = outline.getModel();
+        boolean      sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        OutlineModel model           = outline.getModel();
         for (AdvantageColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());

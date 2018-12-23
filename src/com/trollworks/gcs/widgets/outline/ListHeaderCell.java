@@ -57,8 +57,8 @@ public class ListHeaderCell extends HeaderCell {
     public int getPreferredWidth(Outline outline, Row row, Column column) {
         int width = super.getPreferredWidth(outline, row, column);
         if (mForSheet) {
-            Scale scale = Scale.get(outline);
-            int margin = scale.scale(2);
+            Scale scale  = Scale.get(outline);
+            int   margin = scale.scale(2);
             width -= margin + scale.scale(SORTER_WIDTH) + margin;
         }
         return width;

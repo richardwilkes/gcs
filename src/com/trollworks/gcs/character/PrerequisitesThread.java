@@ -92,8 +92,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
         super("Prerequisites #" + ++COUNTER); //$NON-NLS-1$
         setPriority(NORM_PRIORITY);
         setDaemon(true);
-        mSheet = sheet;
-        mCharacter = sheet.getCharacter();
+        mSheet      = sheet;
+        mCharacter  = sheet.getCharacter();
         mNeedUpdate = true;
         mCharacter.addTarget(this, Profile.ID_TECH_LEVEL, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, GURPSCharacter.ID_WILL, GURPSCharacter.ID_PERCEPTION, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_STATE, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
         Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY);
@@ -109,8 +109,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
                 try {
                     boolean needUpdate;
                     synchronized (this) {
-                        needUpdate = mNeedUpdate;
-                        mNeedUpdate = false;
+                        needUpdate    = mNeedUpdate;
+                        mNeedUpdate   = false;
                         mIsProcessing = needUpdate;
                     }
                     if (!needUpdate) {
@@ -193,7 +193,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
     }
 
     private static void processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
-        String key = feature.getKey().toLowerCase();
+        String             key  = feature.getKey().toLowerCase();
         ArrayList<Feature> list = map.get(key);
         if (list == null) {
             list = new ArrayList<>(1);

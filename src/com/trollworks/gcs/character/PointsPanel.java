@@ -41,9 +41,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Atributos:")
     private static String ATTRIBUTE_POINTS;
     @Localize("A summary of all points spent on attributes for this character")
-    @Localize(locale = "de", value = "Die Summe der Punkte, die für Attribute dieses Charakters aufgewendet wurden")
+    @Localize(locale = "de",
+              value = "Die Summe der Punkte, die für Attribute dieses Charakters aufgewendet wurden")
     @Localize(locale = "ru", value = "Очки, потраченные на атрибуты")
-    @Localize(locale = "es", value = "Suma de todos los puntos consumidos en atributos para el personaje")
+    @Localize(locale = "es",
+              value = "Suma de todos los puntos consumidos en atributos para el personaje")
     private static String ATTRIBUTE_POINTS_TOOLTIP;
     @Localize("Advantages:")
     @Localize(locale = "de", value = "Vorteile:")
@@ -51,9 +53,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Ventajas:")
     private static String ADVANTAGE_POINTS;
     @Localize("A summary of all points spent on advantages for this character")
-    @Localize(locale = "de", value = "Die Summe der Punkte, die für Vorteile dieses Charakters aufgewendet wurden")
+    @Localize(locale = "de",
+              value = "Die Summe der Punkte, die für Vorteile dieses Charakters aufgewendet wurden")
     @Localize(locale = "ru", value = "Очки, потраченные на преимущества")
-    @Localize(locale = "es", value = "Suma de todos los puntos consumidos en ventajas para el personaje")
+    @Localize(locale = "es",
+              value = "Suma de todos los puntos consumidos en ventajas para el personaje")
     private static String ADVANTAGE_POINTS_TOOLTIP;
     @Localize("Disadvantages:")
     @Localize(locale = "de", value = "Nachteile:")
@@ -61,9 +65,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Desventajas:")
     private static String DISADVANTAGE_POINTS;
     @Localize("A summary of all points spent on disadvantages for this character")
-    @Localize(locale = "de", value = "Die Summe der Punkte, die für Nachteile dieses Charakters aufgewendet wurden")
+    @Localize(locale = "de",
+              value = "Die Summe der Punkte, die für Nachteile dieses Charakters aufgewendet wurden")
     @Localize(locale = "ru", value = "Очки, потраченные на недостатки")
-    @Localize(locale = "es", value = "Suma de todos los puntos consumidos en desventajas para el personaje")
+    @Localize(locale = "es",
+              value = "Suma de todos los puntos consumidos en desventajas para el personaje")
     private static String DISADVANTAGE_POINTS_TOOLTIP;
     @Localize("Quirks:")
     @Localize(locale = "de", value = "Marotten:")
@@ -71,9 +77,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Singularidades:")
     private static String QUIRK_POINTS;
     @Localize("A summary of all points spent on quirks for this character")
-    @Localize(locale = "de", value = "Die Summe der Punkte, die für Marotten dieses Charakters aufgewendet wurden")
+    @Localize(locale = "de",
+              value = "Die Summe der Punkte, die für Marotten dieses Charakters aufgewendet wurden")
     @Localize(locale = "ru", value = "Очки, потраченные на причуды")
-    @Localize(locale = "es", value = "Suma de todos los puntos consumidos en singularidades para el personaje")
+    @Localize(locale = "es",
+              value = "Suma de todos los puntos consumidos en singularidades para el personaje")
     private static String QUIRK_POINTS_TOOLTIP;
     @Localize("Skills:")
     @Localize(locale = "de", value = "Fertigkeiten:")
@@ -81,9 +89,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Habilidades:")
     private static String SKILL_POINTS;
     @Localize("A summary of all points spent on skills for this character")
-    @Localize(locale = "de", value = "Die Summe der Punkte, die für Fertigkeiten dieses Charakters aufgewendet wurden")
+    @Localize(locale = "de",
+              value = "Die Summe der Punkte, die für Fertigkeiten dieses Charakters aufgewendet wurden")
     @Localize(locale = "ru", value = "Очки, потраченные на умения")
-    @Localize(locale = "es", value = "Suma de todos los puntos consumidos en habilidades para el personaje")
+    @Localize(locale = "es",
+              value = "Suma de todos los puntos consumidos en habilidades para el personaje")
     private static String SKILL_POINTS_TOOLTIP;
     @Localize("Spells:")
     @Localize(locale = "de", value = "Zauber:")
@@ -91,9 +101,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Sortilegios:")
     private static String SPELL_POINTS;
     @Localize("A summary of all points spent on spells for this character")
-    @Localize(locale = "de", value = "Die Summe der Punkte, die für Zauber dieses Charakters aufgewendet wurden")
+    @Localize(locale = "de",
+              value = "Die Summe der Punkte, die für Zauber dieses Charakters aufgewendet wurden")
     @Localize(locale = "ru", value = "Очки, потраченные на заклинания")
-    @Localize(locale = "es", value = "Suma de todos los puntos consumidos en sortilegios para el personaje")
+    @Localize(locale = "es",
+              value = "Suma de todos los puntos consumidos en sortilegios para el personaje")
     private static String SPELL_POINTS_TOOLTIP;
     @Localize("Race:")
     @Localize(locale = "de", value = "Rasse:")
@@ -101,9 +113,11 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Raza:")
     private static String RACE_POINTS;
     @Localize("A summary of all points spent on a racial package for this character")
-    @Localize(locale = "de", value = "Die Summe der Punkte, die für ein Rassenpaket dieses Charakters aufgewendet wurden")
+    @Localize(locale = "de",
+              value = "Die Summe der Punkte, die für ein Rassenpaket dieses Charakters aufgewendet wurden")
     @Localize(locale = "ru", value = "Очки, потраченные на расовый пакет")
-    @Localize(locale = "es", value = "Suma de todos los puntos consumidos en el paquete racial para el personaje")
+    @Localize(locale = "es",
+              value = "Suma de todos los puntos consumidos en el paquete racial para el personaje")
     private static String RACE_POINTS_TOOLTIP;
     @Localize("Unspent:")
     private static String UNSPENT_POINTS;

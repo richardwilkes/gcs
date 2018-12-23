@@ -59,11 +59,11 @@ public class MultiCell implements Cell {
      * Creates a new {@link MultiCell}.
      *
      * @param maxPreferredWidth The maximum preferred width to use. Pass in -1 for no limit.
-     * @param forEditor Whether this is for an editor dialog or for a character sheet.
+     * @param forEditor         Whether this is for an editor dialog or for a character sheet.
      */
     public MultiCell(int maxPreferredWidth, boolean forEditor) {
         mMaxPreferredWidth = maxPreferredWidth;
-        mForEditor = forEditor;
+        mForEditor         = forEditor;
     }
 
     /** @return The primary font. */
@@ -94,7 +94,7 @@ public class MultiCell implements Cell {
      * @return The text to sort.
      */
     protected String getSortText(ListRow row) {
-        String text = getPrimaryText(row);
+        String text      = getPrimaryText(row);
         String secondary = getSecondaryText(row);
         if (secondary != null && secondary.length() > 0) {
             text += '\n';
@@ -110,26 +110,26 @@ public class MultiCell implements Cell {
     @SuppressWarnings("static-method")
     protected String getSecondaryText(ListRow row) {
         String modifierNotes = row.getModifierNotes();
-        String notes = row.getNotes();
+        String notes         = row.getNotes();
         return modifierNotes.length() == 0 ? notes : modifierNotes + '\n' + notes;
     }
 
     @Override
     public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
-        Scale scale = Scale.get(outline);
-        ListRow theRow = (ListRow) row;
-        int hMargin = scale.scale(H_MARGIN);
+        Scale     scale       = Scale.get(outline);
+        ListRow   theRow      = (ListRow) row;
+        int       hMargin     = scale.scale(H_MARGIN);
         Rectangle insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
-        String notes = getSecondaryText(theRow);
-        Font font = scale.scale(getPrimaryFont());
-        int pos;
+        String    notes       = getSecondaryText(theRow);
+        Font      font        = scale.scale(getPrimaryFont());
+        int       pos;
         gc.setColor(getColor(selected, active, row, column));
         gc.setFont(font);
         Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? Color.RED : null;
         pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru, scale.scale(1));
         if (notes.trim().length() > 0) {
             insetBounds.height -= pos - insetBounds.y;
-            insetBounds.y = pos;
+            insetBounds.y       = pos;
             gc.setFont(scale.scale(getSecondaryFont()));
             TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
         }
@@ -137,9 +137,9 @@ public class MultiCell implements Cell {
 
     /**
      * @param selected Whether or not the selected version of the color is needed.
-     * @param active Whether or not the active version of the color is needed.
-     * @param row The row.
-     * @param column The column.
+     * @param active   Whether or not the active version of the color is needed.
+     * @param row      The row.
+     * @param column   The column.
      * @return The foreground color.
      */
     @SuppressWarnings("static-method")
@@ -152,10 +152,10 @@ public class MultiCell implements Cell {
 
     @Override
     public int getPreferredWidth(Outline outline, Row row, Column column) {
-        Scale scale = Scale.get(outline);
+        Scale   scale  = Scale.get(outline);
         ListRow theRow = (ListRow) row;
-        int width = TextDrawing.getWidth(scale.scale(getPrimaryFont()), getPrimaryText(theRow));
-        String notes = getSecondaryText(theRow);
+        int     width  = TextDrawing.getWidth(scale.scale(getPrimaryFont()), getPrimaryText(theRow));
+        String  notes  = getSecondaryText(theRow);
         if (notes.trim().length() > 0) {
             int notesWidth = TextDrawing.getWidth(scale.scale(getSecondaryFont()), notes);
 
@@ -170,13 +170,13 @@ public class MultiCell implements Cell {
 
     @Override
     public int getPreferredHeight(Outline outline, Row row, Column column) {
-        Scale scale = Scale.get(outline);
+        Scale   scale  = Scale.get(outline);
         ListRow theRow = (ListRow) row;
-        Font font = scale.scale(getPrimaryFont());
-        int height = TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, getPrimaryText(theRow), font)).height;
-        String notes = getSecondaryText(theRow);
+        Font    font   = scale.scale(getPrimaryFont());
+        int     height = TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, getPrimaryText(theRow), font)).height;
+        String  notes  = getSecondaryText(theRow);
         if (notes.trim().length() > 0) {
-            font = scale.scale(getSecondaryFont());
+            font    = scale.scale(getSecondaryFont());
             height += TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, notes, font)).height;
         }
         return height;
@@ -190,8 +190,8 @@ public class MultiCell implements Cell {
             }
             width = scale.scale(mMaxPreferredWidth);
         }
-        OutlineModel owner = row.getOwner();
-        int indent = owner != null ? scale.scale(owner.getIndentWidth(row, column)) : 0;
+        OutlineModel owner  = row.getOwner();
+        int          indent = owner != null ? scale.scale(owner.getIndentWidth(row, column)) : 0;
         return TextDrawing.wrapToPixelWidth(font, text, width - (indent + scale.scale(H_MARGIN) * 2));
     }
 

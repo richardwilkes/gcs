@@ -59,13 +59,14 @@ public class PrereqList extends Prereq {
      * Creates a new prerequisite list.
      *
      * @param parent The owning prerequisite list, if any.
-     * @param all Whether only one criteria in this list has to be met, or all of them must be met.
+     * @param all    Whether only one criteria in this list has to be met, or all of them must be
+     *               met.
      */
     public PrereqList(PrereqList parent, boolean all) {
         super(parent);
-        mAll = all;
+        mAll            = all;
         mWhenTLCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, Integer.MIN_VALUE);
-        mPrereqs = new ArrayList<>();
+        mPrereqs        = new ArrayList<>();
     }
 
     /**
@@ -105,14 +106,14 @@ public class PrereqList extends Prereq {
     /**
      * Creates a clone of the specified prerequisite list.
      *
-     * @param parent The new owning prerequisite list, if any.
+     * @param parent     The new owning prerequisite list, if any.
      * @param prereqList The prerequisite to clone.
      */
     public PrereqList(PrereqList parent, PrereqList prereqList) {
         super(parent);
-        mAll = prereqList.mAll;
+        mAll            = prereqList.mAll;
         mWhenTLCriteria = new IntegerCriteria(prereqList.mWhenTLCriteria);
-        mPrereqs = new ArrayList<>(prereqList.mPrereqs.size());
+        mPrereqs        = new ArrayList<>(prereqList.mPrereqs.size());
         for (Prereq prereq : prereqList.mPrereqs) {
             mPrereqs.add(prereq.clone(this));
         }
@@ -171,7 +172,7 @@ public class PrereqList extends Prereq {
 
     /**
      * @param criteria The {@link IntegerCriteria} to work on.
-     * @param enabled Whether the character's TL criteria check is enabled.
+     * @param enabled  Whether the character's TL criteria check is enabled.
      */
     public static void setWhenTLEnabled(IntegerCriteria criteria, boolean enabled) {
         if (isWhenTLEnabled(criteria) != enabled) {
@@ -186,7 +187,7 @@ public class PrereqList extends Prereq {
 
     /**
      * @param requiresAll Whether only one criteria in this list has to be met, or all of them must
-     *            be met.
+     *                    be met.
      */
     public void setRequiresAll(boolean requiresAll) {
         mAll = requiresAll;
@@ -214,7 +215,7 @@ public class PrereqList extends Prereq {
     /**
      * Adds the specified prerequisite to this list.
      *
-     * @param index The index to add the list at.
+     * @param index  The index to add the list at.
      * @param prereq The prerequisite to add.
      */
     public void add(int index, Prereq prereq) {
@@ -241,10 +242,10 @@ public class PrereqList extends Prereq {
             }
         }
 
-        int satisfiedCount = 0;
-        int total = mPrereqs.size();
-        boolean requiresAll = requiresAll();
-        StringBuilder localBuilder = builder != null ? new StringBuilder() : null;
+        int           satisfiedCount = 0;
+        int           total          = mPrereqs.size();
+        boolean       requiresAll    = requiresAll();
+        StringBuilder localBuilder   = builder != null ? new StringBuilder() : null;
         for (Prereq prereq : mPrereqs) {
             if (prereq.satisfied(character, exclude, localBuilder, prefix)) {
                 satisfiedCount++;

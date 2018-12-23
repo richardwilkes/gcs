@@ -55,9 +55,12 @@ import javax.swing.event.DocumentListener;
 /** A list from a library. */
 public abstract class LibraryDockable extends CommonDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget, RetargetableFocus {
     @Localize("Enter text here to narrow the list to only those rows containing matching items")
-    @Localize(locale = "de", value = "Hier Text eingeben, um eine Liste der passenden Einträge anzuzeigen")
-    @Localize(locale = "ru", value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
-    @Localize(locale = "es", value = "Escribe un texto aquí para acortar la lista y mostrar sólo las filas que contengan el texto")
+    @Localize(locale = "de",
+              value = "Hier Text eingeben, um eine Liste der passenden Einträge anzuzeigen")
+    @Localize(locale = "ru",
+              value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
+    @Localize(locale = "es",
+              value = "Escribe un texto aquí para acortar la lista y mostrar sólo las filas que contengan el texto")
     private static String SEARCH_FIELD_TOOLTIP;
     @Localize("Any Category")
     @Localize(locale = "de", value = "Beliebige Kategorie")
@@ -75,7 +78,8 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
     @Localize(locale = "es", value = "Pliega/despliega todas las filas jerarquicamente")
     private static String TOGGLE_ROWS_OPEN_TOOLTIP;
     @Localize("Sets the width of each column to exactly fit its contents")
-    @Localize(locale = "de", value = "Setzt die Breite jeder Spalte um den Inhalt komplett darzustellen")
+    @Localize(locale = "de",
+              value = "Setzt die Breite jeder Spalte um den Inhalt komplett darzustellen")
     @Localize(locale = "ru", value = "Подобрать ширину каждого столбца по его содержимому")
     @Localize(locale = "es", value = "Ajusta el ancho de cada columna para encajar su contenido")
     private static String SIZE_COLUMNS_TO_FIT_TOOLTIP;
@@ -101,8 +105,8 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
         outlineModel.applySortConfig(outlineModel.getSortConfig());
         outlineModel.setRowFilter(this);
         LibraryContent content = new LibraryContent(mOutline);
-        LibraryHeader header = new LibraryHeader(mOutline.getHeaderPanel());
-        mToolbar = new Toolbar();
+        LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
+        mToolbar    = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {

@@ -64,34 +64,34 @@ public abstract class ListRow extends Row {
     /**
      * Extracts any "nameable" portions of the buffer and puts their keys into the provided set.
      *
-     * @param set The set to add the nameable keys to.
+     * @param set    The set to add the nameable keys to.
      * @param buffer The text to check for nameable portions.
      */
     public static void extractNameables(HashSet<String> set, String buffer) {
         int first = buffer.indexOf('@');
-        int last = buffer.indexOf('@', first + 1);
+        int last  = buffer.indexOf('@', first + 1);
 
         while (first != -1 && last != -1) {
             set.add(buffer.substring(first + 1, last));
             first = buffer.indexOf('@', last + 1);
-            last = buffer.indexOf('@', first + 1);
+            last  = buffer.indexOf('@', first + 1);
         }
     }
 
     /**
      * Names any "nameable" portions of the data and returns the resulting string.
      *
-     * @param map The map of nameable keys to names.
+     * @param map  The map of nameable keys to names.
      * @param data The data to change.
      * @return The revised string.
      */
     public static String nameNameables(HashMap<String, String> map, String data) {
-        int first = data.indexOf('@');
-        int last = data.indexOf('@', first + 1);
+        int           first  = data.indexOf('@');
+        int           last   = data.indexOf('@', first + 1);
         StringBuilder buffer = new StringBuilder();
 
         while (first != -1 && last != -1) {
-            String key = data.substring(first + 1, last);
+            String key         = data.substring(first + 1, last);
             String replacement = map.get(key);
 
             if (first != 0) {
@@ -110,7 +110,7 @@ public abstract class ListRow extends Row {
                 data = ""; //$NON-NLS-1$
             }
             first = data.indexOf('@');
-            last = data.indexOf('@', first + 1);
+            last  = data.indexOf('@', first + 1);
         }
         buffer.append(data);
         return buffer.toString();
@@ -119,26 +119,26 @@ public abstract class ListRow extends Row {
     /**
      * Creates a new data row.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile    The data file to associate it with.
      * @param isContainer Whether or not this row allows children.
      */
     public ListRow(DataFile dataFile, boolean isContainer) {
         super();
         setCanHaveChildren(isContainer);
         setOpen(isContainer);
-        mDataFile = dataFile;
-        mFeatures = new ArrayList<>();
-        mPrereqList = new PrereqList(null, true);
-        mDefaults = new ArrayList<>();
+        mDataFile    = dataFile;
+        mFeatures    = new ArrayList<>();
+        mPrereqList  = new PrereqList(null, true);
+        mDefaults    = new ArrayList<>();
         mIsSatisfied = true;
-        mNotes = ""; //$NON-NLS-1$
-        mCategories = new TreeSet<>();
+        mNotes       = ""; //$NON-NLS-1$
+        mCategories  = new TreeSet<>();
     }
 
     /**
      * Creates a clone of an existing data row and associates it with the specified data file.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile   The data file to associate it with.
      * @param rowToClone The data row to clone.
      */
     public ListRow(DataFile dataFile, ListRow rowToClone) {
@@ -150,7 +150,7 @@ public abstract class ListRow extends Row {
             mFeatures.add(feature.cloneFeature());
         }
         mPrereqList = new PrereqList(null, rowToClone.getPrereqs());
-        mDefaults = new ArrayList<>();
+        mDefaults   = new ArrayList<>();
         for (SkillDefault skillDefault : rowToClone.mDefaults) {
             mDefaults.add(new SkillDefault(skillDefault));
         }
@@ -243,7 +243,7 @@ public abstract class ListRow extends Row {
      * Loads this row's contents.
      *
      * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param state  The {@link LoadState} to use.
      */
     public final void load(XMLReader reader, LoadState state) throws IOException {
         String marker = reader.getMarker();
@@ -313,7 +313,7 @@ public abstract class ListRow extends Row {
      * Loads this row's custom attributes from the specified element.
      *
      * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param state  The {@link LoadState} to use.
      */
     protected void loadAttributes(XMLReader reader, LoadState state) {
         if (canHaveChildren()) {
@@ -325,7 +325,7 @@ public abstract class ListRow extends Row {
      * Loads this row's custom data from the specified element.
      *
      * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param state  The {@link LoadState} to use.
      */
     @SuppressWarnings("static-method")
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
@@ -344,7 +344,7 @@ public abstract class ListRow extends Row {
     /**
      * Saves the row.
      *
-     * @param out The XML writer to use.
+     * @param out     The XML writer to use.
      * @param forUndo Whether this is being called to save undo state.
      */
     public void save(XMLWriter out, boolean forUndo) {
@@ -391,7 +391,7 @@ public abstract class ListRow extends Row {
     /**
      * Saves the row.
      *
-     * @param out The XML writer to use.
+     * @param out     The XML writer to use.
      * @param forUndo Whether this is being called to save undo state.
      */
     protected abstract void saveSelf(XMLWriter out, boolean forUndo);
@@ -399,7 +399,7 @@ public abstract class ListRow extends Row {
     /**
      * Saves extra attributes of the row, if any.
      *
-     * @param out The XML writer to use.
+     * @param out     The XML writer to use.
      * @param forUndo Whether this is being called to save undo state.
      */
     protected void saveAttributes(XMLWriter out, boolean forUndo) {
@@ -597,7 +597,7 @@ public abstract class ListRow extends Row {
     }
 
     /**
-     * @param text The text to search for.
+     * @param text          The text to search for.
      * @param lowerCaseOnly The passed in text is all lowercase.
      * @return <code>true</code> if this row contains the text.
      */

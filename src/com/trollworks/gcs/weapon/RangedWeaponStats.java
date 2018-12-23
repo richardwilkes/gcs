@@ -66,18 +66,18 @@ public class RangedWeaponStats extends WeaponStats {
      */
     public RangedWeaponStats(ListRow owner, RangedWeaponStats other) {
         super(owner, other);
-        mAccuracy = other.mAccuracy;
-        mRange = other.mRange;
+        mAccuracy   = other.mAccuracy;
+        mRange      = other.mRange;
         mRateOfFire = other.mRateOfFire;
-        mShots = other.mShots;
-        mBulk = other.mBulk;
-        mRecoil = other.mRecoil;
+        mShots      = other.mShots;
+        mBulk       = other.mBulk;
+        mRecoil     = other.mRecoil;
     }
 
     /**
      * Creates a {@link RangedWeaponStats}.
      * 
-     * @param owner The owning piece of equipment or advantage.
+     * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
     public RangedWeaponStats(ListRow owner, XMLReader reader) throws IOException {
@@ -91,12 +91,12 @@ public class RangedWeaponStats extends WeaponStats {
 
     @Override
     protected void initialize() {
-        mAccuracy = EMPTY;
-        mRange = EMPTY;
+        mAccuracy   = EMPTY;
+        mRange      = EMPTY;
         mRateOfFire = EMPTY;
-        mShots = EMPTY;
-        mBulk = EMPTY;
-        mRecoil = EMPTY;
+        mShots      = EMPTY;
+        mBulk       = EMPTY;
+        mRecoil     = EMPTY;
     }
 
     @Override
@@ -178,16 +178,16 @@ public class RangedWeaponStats extends WeaponStats {
 
     /** @return The range, fully resolved for the user's ST, if possible. */
     public String getResolvedRange() {
-        DataFile df = getOwner().getDataFile();
-        String range = mRange;
+        DataFile df    = getOwner().getDataFile();
+        String   range = mRange;
 
         if (df instanceof GURPSCharacter) {
-            int strength = ((GURPSCharacter) df).getStrength();
+            int    strength = ((GURPSCharacter) df).getStrength();
             String savedRange;
 
             do {
                 savedRange = range;
-                range = resolveRange(range, strength);
+                range      = resolveRange(range, strength);
             } while (!savedRange.equals(range));
         }
         return range;
@@ -198,14 +198,14 @@ public class RangedWeaponStats extends WeaponStats {
 
         if (where != -1) {
             int last = where + 1;
-            int max = range.length();
+            int max  = range.length();
 
             last = skipSpaces(range, last);
             if (last < max) {
-                double value = 0.0;
-                char ch = range.charAt(last);
-                boolean found = false;
-                double multiplier = 1.0;
+                double  value      = 0.0;
+                char    ch         = range.charAt(last);
+                boolean found      = false;
+                double  multiplier = 1.0;
 
                 while (multiplier == 1.0 && ch == '.' || ch >= '0' && ch <= '9') {
                     found = true;
@@ -215,7 +215,7 @@ public class RangedWeaponStats extends WeaponStats {
                         value *= 10.0;
                         value += ch - '0';
                     } else {
-                        value += (ch - '0') * multiplier;
+                        value      += (ch - '0') * multiplier;
                         multiplier *= 0.1;
                     }
                     if (++last >= max) {

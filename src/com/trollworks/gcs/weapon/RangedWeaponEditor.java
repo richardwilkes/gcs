@@ -94,7 +94,7 @@ public class RangedWeaponEditor extends WeaponEditor {
     /**
      * Creates a new {@link RangedWeaponStats} editor.
      *
-     * @param owner The owning row.
+     * @param owner   The owning row.
      * @param weapons The weapons to modify.
      */
     public RangedWeaponEditor(ListRow owner, List<WeaponStats> weapons) {
@@ -103,12 +103,12 @@ public class RangedWeaponEditor extends WeaponEditor {
 
     @Override
     protected void createFields(Container parent) {
-        mAccuracy = createTextField(parent, ACCURACY, EMPTY);
-        mRange = createTextField(parent, RANGE, EMPTY);
+        mAccuracy   = createTextField(parent, ACCURACY, EMPTY);
+        mRange      = createTextField(parent, RANGE, EMPTY);
         mRateOfFire = createTextField(parent, RATE_OF_FIRE, EMPTY);
-        mShots = createTextField(parent, SHOTS, EMPTY);
-        mRecoil = createTextField(parent, RECOIL, EMPTY);
-        mBulk = createTextField(parent, BULK, EMPTY);
+        mShots      = createTextField(parent, SHOTS, EMPTY);
+        mRecoil     = createTextField(parent, RECOIL, EMPTY);
+        mBulk       = createTextField(parent, BULK, EMPTY);
     }
 
     @Override

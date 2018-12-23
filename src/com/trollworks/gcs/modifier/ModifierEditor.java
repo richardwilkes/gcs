@@ -59,7 +59,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     @Localize(locale = "es", value = "Notas")
     private static String NOTES;
     @Localize("Any notes that you would like to show up in the list along with this modifier")
-    @Localize(locale = "de", value = "Anmerkungen, die in der Liste neben dem Modifikator erscheinen sollen.")
+    @Localize(locale = "de",
+              value = "Anmerkungen, die in der Liste neben dem Modifikator erscheinen sollen.")
     @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с модификатором")
     @Localize(locale = "es", value = "Cualquier nota que te gustaría mostar con este modificador")
     private static String NOTES_TOOLTIP;
@@ -118,9 +119,12 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     @Localize(locale = "ru", value = "Ссыл")
     private static String REFERENCE;
     @Localize("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
     private static String REFERENCE_TOOLTIP;
 
     static {
@@ -149,10 +153,10 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     public ModifierEditor(Modifier modifier) {
         super(modifier);
 
-        JPanel content = new JPanel(new ColumnLayout(2));
-        JPanel fields = new JPanel(new ColumnLayout(2));
-        JLabel icon;
-        StdImage image = modifier.getIcon(true);
+        JPanel   content = new JPanel(new ColumnLayout(2));
+        JPanel   fields  = new JPanel(new ColumnLayout(2));
+        JLabel   icon;
+        StdImage image   = modifier.getIcon(true);
         if (image != null) {
             icon = new JLabel(image);
         } else {
@@ -160,7 +164,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         }
 
         JPanel wrapper = new JPanel(new ColumnLayout(2));
-        mNameField = createCorrectableField(fields, wrapper, NAME, modifier.getName(), NAME_TOOLTIP);
+        mNameField    = createCorrectableField(fields, wrapper, NAME, modifier.getName(), NAME_TOOLTIP);
         mEnabledField = new JCheckBox(ENABLED, modifier.isEnabled());
         mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(ENABLED_TOOLTIP));
         mEnabledField.setEnabled(mIsEditable);
@@ -169,8 +173,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
         createCostModifierFields(fields);
 
-        wrapper = new JPanel(new ColumnLayout(3));
-        mNotesField = createField(fields, wrapper, NOTES, modifier.getNotes(), NOTES_TOOLTIP, 0);
+        wrapper         = new JPanel(new ColumnLayout(3));
+        mNotesField     = createField(fields, wrapper, NOTES, modifier.getNotes(), NOTES_TOOLTIP, 0);
         mReferenceField = createField(wrapper, wrapper, REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
         fields.add(wrapper);
 
@@ -311,9 +315,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
             mCostField = createNumberField(parent, wrapper, COST, true, mRow.getCost(), COST_TOOLTIP, 5);
         }
         createCostType(wrapper);
-        mLevelField = createNumberField(wrapper, wrapper, LEVELS, false, mLastLevel, LEVELS_TOOLTIP, 3);
+        mLevelField        = createNumberField(wrapper, wrapper, LEVELS, false, mLastLevel, LEVELS_TOOLTIP, 3);
         mCostModifierField = createNumberField(wrapper, wrapper, TOTAL_COST, true, 0, TOTAL_COST_TOOLTIP, 9);
-        mAffects = createComboBox(wrapper, Affects.values(), mRow.getAffects());
+        mAffects           = createComboBox(wrapper, Affects.values(), mRow.getAffects());
         mCostModifierField.setEnabled(false);
         if (!mRow.hasLevels()) {
             mLevelField.setText(EMPTY);
@@ -333,8 +337,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     }
 
     private void createCostType(Container parent) {
-        CostType[] types = CostType.values();
-        Object[] values = new Object[types.length + 1];
+        CostType[] types  = CostType.values();
+        Object[]   values = new Object[types.length + 1];
         values[0] = MessageFormat.format(HAS_LEVELS, CostType.PERCENTAGE.toString());
         System.arraycopy(types, 0, values, 1, types.length);
         mCostType = createComboBox(parent, values, mRow.hasLevels() ? values[0] : mRow.getCostType());
@@ -373,18 +377,18 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         } else {
             CostType costType = getCostType();
             switch (costType) {
-                case PERCENTAGE:
-                default:
-                    mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + costType);
-                    break;
-                case POINTS:
-                    mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()));
-                    break;
-                case MULTIPLIER:
-                    mCostModifierField.setText(costType + Numbers.format(getCostMultiplier()));
-                    mAffects.setSelectedItem(Affects.TOTAL);
-                    enabled = false;
-                    break;
+            case PERCENTAGE:
+            default:
+                mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + costType);
+                break;
+            case POINTS:
+                mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()));
+                break;
+            case MULTIPLIER:
+                mCostModifierField.setText(costType + Numbers.format(getCostMultiplier()));
+                mAffects.setSelectedItem(Affects.TOTAL);
+                enabled = false;
+                break;
             }
         }
         mAffects.setEnabled(mIsEditable && enabled);

@@ -97,8 +97,8 @@ public class OpenPageReferenceCommand extends Command {
         if (i > 0) {
             String id = reference.substring(0, i);
             try {
-                int page = Integer.parseInt(reference.substring(i));
-                PdfRef ref = PdfRef.lookup(id, true);
+                int    page = Integer.parseInt(reference.substring(i));
+                PdfRef ref  = PdfRef.lookup(id, true);
                 if (ref == null) {
                     File file = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(LOCATE_PDF, id), new FileNameExtensionFilter(PDF_FILE, FileType.PDF_EXTENSION));
                     if (file != null) {
@@ -107,9 +107,9 @@ public class OpenPageReferenceCommand extends Command {
                     }
                 }
                 if (ref != null) {
-                    Path path = ref.getFile().toPath();
-                    LibraryExplorerDockable library = LibraryExplorerDockable.get();
-                    PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
+                    Path                    path     = ref.getFile().toPath();
+                    LibraryExplorerDockable library  = LibraryExplorerDockable.get();
+                    PdfDockable             dockable = (PdfDockable) library.getDockableFor(path);
                     if (dockable != null) {
                         dockable.goToPage(ref, page, highlight);
                         dockable.getDockContainer().setCurrentDockable(dockable);
@@ -126,8 +126,8 @@ public class OpenPageReferenceCommand extends Command {
     }
 
     private static HasSourceReference getTarget() {
-        HasSourceReference ref = null;
-        Component comp = getFocusOwner();
+        HasSourceReference ref  = null;
+        Component          comp = getFocusOwner();
         if (comp instanceof Outline) {
             OutlineModel model = ((Outline) comp).getModel();
             if (model.hasSelection()) {

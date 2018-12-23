@@ -82,7 +82,7 @@ public class ContainedWeightReduction implements Feature {
      * Sets the value of the weight reduction.
      *
      * @param value An Integer value or a WeightValue. Other object types will be turned into a
-     *            value of 0.
+     *              value of 0.
      */
     public void setValue(Object value) {
         if (value instanceof Integer) {

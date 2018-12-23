@@ -155,8 +155,8 @@ public class GCSImages {
     }
 
     private static StdImageSet getDocumentIcons(String prefix) {
-        String name = prefix + "_doc";
-        StdImageSet set = StdImageSet.get(name);
+        String      name = prefix + "_doc";
+        StdImageSet set  = StdImageSet.get(name);
         if (set == null) {
             set = new StdImageSet(name, StdImageSet.getOrLoad("document"), StdImageSet.getOrLoad(prefix));
         }
@@ -165,7 +165,7 @@ public class GCSImages {
 
     /** Utility for creating GCS's icon sets. */
     public static void main(String[] args) {
-        String name = "GenerateIcons";
+        String     name       = "GenerateIcons";
         Attributes attributes = new Attributes();
         attributes.putValue(BundleInfo.BUNDLE_NAME, name);
         attributes.putValue(BundleInfo.BUNDLE_VERSION, "1.0");
@@ -174,15 +174,15 @@ public class GCSImages {
         attributes.putValue(BundleInfo.BUNDLE_LICENSE, "Mozilla Public License 2.0");
         BundleInfo.setDefault(new BundleInfo(attributes, name));
         CmdLineOption icnsOption = new CmdLineOption("Generate ICNS files", null, "icns");
-        CmdLineOption icoOption = new CmdLineOption("Generate ICO files", null, "ico");
-        CmdLineOption appOption = new CmdLineOption("Generate just the 128x128 app icon", null, "app");
-        CmdLineOption dirOption = new CmdLineOption("The directory to place the generated files into", "DIR", "dir");
-        CmdLine cmdline = new CmdLine();
+        CmdLineOption icoOption  = new CmdLineOption("Generate ICO files", null, "ico");
+        CmdLineOption appOption  = new CmdLineOption("Generate just the 128x128 app icon", null, "app");
+        CmdLineOption dirOption  = new CmdLineOption("The directory to place the generated files into", "DIR", "dir");
+        CmdLine       cmdline    = new CmdLine();
         cmdline.addOptions(icnsOption, icoOption, appOption, dirOption);
         cmdline.processArguments(args);
         boolean icns = cmdline.isOptionUsed(icnsOption);
-        boolean ico = cmdline.isOptionUsed(icoOption);
-        boolean app = cmdline.isOptionUsed(appOption);
+        boolean ico  = cmdline.isOptionUsed(icoOption);
+        boolean app  = cmdline.isOptionUsed(appOption);
         if (!icns && !ico && !app) {
             System.err.printf("At least one of %s, %s, or %s must be specified.\n", icnsOption, icoOption, appOption);
             System.exit(1);

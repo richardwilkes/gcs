@@ -32,17 +32,17 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
     /**
      * Creates a new double outline panel.
      *
-     * @param leftOutline The outline to display on the left.
-     * @param leftTitle The localized title for the left panel.
+     * @param leftOutline  The outline to display on the left.
+     * @param leftTitle    The localized title for the left panel.
      * @param rightOutline The outline to display on the right.
-     * @param rightTitle The localized title for the right panel.
-     * @param useProxy <code>true</code> if a proxy of the outlines should be used.
+     * @param rightTitle   The localized title for the right panel.
+     * @param useProxy     <code>true</code> if a proxy of the outlines should be used.
      */
     public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
         super();
         setLayout(this);
         setBackground(Color.WHITE);
-        mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
+        mLeftPanel  = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
         mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
         add(mLeftPanel);
         add(mRightPanel);
@@ -52,8 +52,8 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
      * Sets the embedded outline's display range.
      *
      * @param forRight <code>true</code> to set the right outline.
-     * @param first The first row to display.
-     * @param last The last row to display.
+     * @param first    The first row to display.
+     * @param last     The last row to display.
      */
     public void setOutlineRowRange(boolean forRight, int first, int last) {
         (forRight ? mRightPanel : mLeftPanel).setOutlineRowRange(first, last);
@@ -106,19 +106,19 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
 
     @Override
     public void layoutContainer(Container parent) {
-        Insets insets = getInsets();
+        Insets    insets = getInsets();
         Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-        Scale scale = Scale.get(parent);
-        int gap = scale.scale(2);
-        int width = (bounds.width - gap) / 2;
+        Scale     scale  = Scale.get(parent);
+        int       gap    = scale.scale(2);
+        int       width  = (bounds.width - gap) / 2;
         mLeftPanel.setBounds(bounds.x, bounds.y, width, bounds.height);
         mRightPanel.setBounds(bounds.x + bounds.width - width, bounds.y, width, bounds.height);
     }
 
     private Dimension getLayoutSize(Container parent, Dimension leftSize, Dimension rightSize) {
-        Dimension size = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
-        Insets insets = getInsets();
-        size.width += insets.left + Scale.get(parent).scale(2) + insets.right;
+        Dimension size   = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
+        Insets    insets = getInsets();
+        size.width  += insets.left + Scale.get(parent).scale(2) + insets.right;
         size.height += insets.top + insets.bottom;
         return size;
     }

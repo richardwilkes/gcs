@@ -76,7 +76,7 @@ public class MeleeWeaponEditor extends WeaponEditor {
     /**
      * Creates a new {@link MeleeWeaponStats} editor.
      *
-     * @param owner The owning row.
+     * @param owner   The owning row.
      * @param weapons The weapons to modify.
      */
     public MeleeWeaponEditor(ListRow owner, List<WeaponStats> weapons) {

@@ -75,9 +75,9 @@ public class RotateStateCommand extends Command {
         if (focus instanceof EquipmentOutline) {
             EquipmentOutline outline = (EquipmentOutline) focus;
             for (Equipment equipment : new FilteredIterator<Equipment>(outline.getModel().getSelectionAsList(), Equipment.class)) {
-                RowUndo undo = new RowUndo(equipment);
+                RowUndo          undo   = new RowUndo(equipment);
                 EquipmentState[] values = EquipmentState.values();
-                int index = equipment.getState().ordinal() - 1;
+                int              index  = equipment.getState().ordinal() - 1;
                 if (index < 0) {
                     index = values.length - 1;
                 }

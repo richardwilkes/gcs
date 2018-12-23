@@ -35,7 +35,7 @@ public class SkillBonus extends Bonus {
     /** Creates a new skill bonus. */
     public SkillBonus() {
         super(1);
-        mNameCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
+        mNameCriteria           = new StringCriteria(StringCompareType.IS, EMPTY);
         mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
     }
 
@@ -56,7 +56,7 @@ public class SkillBonus extends Bonus {
      */
     public SkillBonus(SkillBonus other) {
         super(other);
-        mNameCriteria = new StringCriteria(other.mNameCriteria);
+        mNameCriteria           = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
     }
 

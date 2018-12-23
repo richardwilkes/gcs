@@ -29,7 +29,7 @@ public interface PageOwner {
      * Called so the page owner can draw headers, footers, etc.
      *
      * @param page The page to work on.
-     * @param gc The graphics object to work with.
+     * @param gc   The graphics object to work with.
      */
     public void drawPageAdornments(Page page, Graphics gc);
 

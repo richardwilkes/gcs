@@ -74,12 +74,12 @@ public class NewSpellCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        ListOutline outline;
-        DataFile dataFile;
+        ListOutline    outline;
+        DataFile       dataFile;
         SpellsDockable spells = getTarget(SpellsDockable.class);
         if (spells != null) {
             dataFile = spells.getDataFile();
-            outline = spells.getOutline();
+            outline  = spells.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -87,12 +87,12 @@ public class NewSpellCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline = sheet.getSheet().getSpellOutline();
+                outline  = sheet.getSheet().getSpellOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline = template.getTemplate().getSpellOutline();
+                    outline  = template.getTemplate().getSpellOutline();
                 } else {
                     return;
                 }

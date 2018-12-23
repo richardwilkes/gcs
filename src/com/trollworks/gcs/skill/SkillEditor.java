@@ -56,8 +56,10 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Nombre")
     private static String NAME;
     @Localize("The base name of the skill, without any notes or specialty information")
-    @Localize(locale = "de", value = "Der Name der Fertigkeit ohne Anmerkungen oder Spezialisierung")
-    @Localize(locale = "ru", value = "Базовое название умения, без заметок или информации по специализации")
+    @Localize(locale = "de",
+              value = "Der Name der Fertigkeit ohne Anmerkungen oder Spezialisierung")
+    @Localize(locale = "ru",
+              value = "Базовое название умения, без заметок или информации по специализации")
     @Localize(locale = "es", value = "Nombre de la habilidad, sin notas ni otra información")
     private static String NAME_TOOLTIP;
     @Localize("The name field may not be empty")
@@ -71,7 +73,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Especialización")
     private static String SPECIALIZATION;
     @Localize("The specialization, if any, taken for this skill")
-    @Localize(locale = "de", value = "Die Spezialisierung, wenn für diese Fertigkeit eine genommen wurde")
+    @Localize(locale = "de",
+              value = "Die Spezialisierung, wenn für diese Fertigkeit eine genommen wurde")
     @Localize(locale = "ru", value = "Специализация, если есть, используемая для этого умения")
     @Localize(locale = "es", value = "Especialización, si la hay, viene de esta habilidad")
     private static String SPECIALIZATION_TOOLTIP;
@@ -81,9 +84,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Categorías")
     private static String CATEGORIES;
     @Localize("The category or categories the skill belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru", value = "Категория или категории, к которым относится умение (перечислить через запятую)")
-    @Localize(locale = "es", value = "Categoría o categorías a las que pertenece la habilidad (separa categorías multiples con una coma)")
+    @Localize(locale = "de",
+              value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört (trenne mehrere Kategorien mit einem Komma)")
+    @Localize(locale = "ru",
+              value = "Категория или категории, к которым относится умение (перечислить через запятую)")
+    @Localize(locale = "es",
+              value = "Categoría o categorías a las que pertenece la habilidad (separa categorías multiples con una coma)")
     private static String CATEGORIES_TOOLTIP;
     @Localize("Notes")
     @Localize(locale = "de", value = "Anmerkungen")
@@ -91,9 +97,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Notas")
     private static String NOTES;
     @Localize("Any notes that you would like to show up in the list along with this skill")
-    @Localize(locale = "de", value = "Anmerkungen, die in der Liste neben der Fertigkeit erscheinen sollen")
+    @Localize(locale = "de",
+              value = "Anmerkungen, die in der Liste neben der Fertigkeit erscheinen sollen")
     @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с умением")
-    @Localize(locale = "es", value = "Cualquier nota que te gustaría que se mostrara junto a la habilidad")
+    @Localize(locale = "es",
+              value = "Cualquier nota que te gustaría que se mostrara junto a la habilidad")
     private static String NOTES_TOOLTIP;
     @Localize("Tech Level")
     @Localize(locale = "de", value = "Techlevel")
@@ -101,9 +109,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Nivel tecnológico")
     private static String TECH_LEVEL;
     @Localize("Whether this skill requires tech level specialization, and, if so, at what tech level it was learned")
-    @Localize(locale = "de", value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist und wenn, mit welchem Techlevel sie gelernt wurde")
-    @Localize(locale = "ru", value = "Для умения необходима специализации с технологическим уровнем с указанием уровня изучения")
-    @Localize(locale = "es", value = "Si la habilidad requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
+    @Localize(locale = "de",
+              value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist und wenn, mit welchem Techlevel sie gelernt wurde")
+    @Localize(locale = "ru",
+              value = "Для умения необходима специализации с технологическим уровнем с указанием уровня изучения")
+    @Localize(locale = "es",
+              value = "Si la habilidad requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
     private static String TECH_LEVEL_TOOLTIP;
     @Localize("Tech Level Required")
     @Localize(locale = "de", value = "Techlevel benötigt")
@@ -111,8 +122,10 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Nivel tecnológico requerido")
     private static String TECH_LEVEL_REQUIRED;
     @Localize("Whether this skill requires tech level specialization")
-    @Localize(locale = "de", value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist")
-    @Localize(locale = "ru", value = "Для умения необходима специализация с технологическим уровнем")
+    @Localize(locale = "de",
+              value = "Ob diese Fertigkeit auf einen bestimmten Techlevel spezialisiert ist")
+    @Localize(locale = "ru",
+              value = "Для умения необходима специализация с технологическим уровнем")
     @Localize(locale = "es", value = "Esta habilidad requiere especializarse por nivel tecnológico")
     private static String TECH_LEVEL_REQUIRED_TOOLTIP;
     @Localize("Difficulty")
@@ -136,9 +149,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Nivel")
     private static String EDITOR_LEVEL;
     @Localize("The skill level and relative skill level to roll against")
-    @Localize(locale = "de", value = "Der Fertigkeitswert und relativer Fertigkeitswert, gegen die gewürfelt werden muss")
-    @Localize(locale = "ru", value = "Уровень умения и относительный уровень умения для повторного броска")
-    @Localize(locale = "es", value = "Nivel y nivel relativo de la habilidad a superar con la tirada")
+    @Localize(locale = "de",
+              value = "Der Fertigkeitswert und relativer Fertigkeitswert, gegen die gewürfelt werden muss")
+    @Localize(locale = "ru",
+              value = "Уровень умения и относительный уровень умения для повторного броска")
+    @Localize(locale = "es",
+              value = "Nivel y nivel relativo de la habilidad a superar con la tirada")
     private static String EDITOR_LEVEL_TOOLTIP;
     @Localize("The attribute this skill is based on")
     @Localize(locale = "de", value = "Das Attribut, auf dem diese Fertigkeit basiert")
@@ -161,9 +177,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     @Localize(locale = "es", value = "Página de referencia")
     private static String EDITOR_REFERENCE;
     @Localize("A reference to the book and page this skill appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Fertigkeit beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая умение (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página en donde se menciona la habilidad (p.e. B22 se refiere al \"Manual Básico\", página 22)")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der diese Fertigkeit beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая умение (например B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página en donde se menciona la habilidad (p.e. B22 se refiere al \"Manual Básico\", página 22)")
     private static String REFERENCE_TOOLTIP;
     @Localize("Encumbrance")
     @Localize(locale = "de", value = "Belastung")
@@ -223,21 +242,21 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     public SkillEditor(Skill skill) {
         super(skill);
 
-        JPanel content = new JPanel(new ColumnLayout(2));
-        JPanel fields = new JPanel(new ColumnLayout(2));
-        JLabel icon = new JLabel(skill.getIcon(true));
-        boolean notContainer = !skill.canHaveChildren();
+        JPanel    content      = new JPanel(new ColumnLayout(2));
+        JPanel    fields       = new JPanel(new ColumnLayout(2));
+        JLabel    icon         = new JLabel(skill.getIcon(true));
+        boolean   notContainer = !skill.canHaveChildren();
         Container wrapper;
 
         mNameField = createCorrectableField(fields, NAME, skill.getName(), NAME_TOOLTIP);
         if (notContainer) {
-            wrapper = new JPanel(new ColumnLayout(2));
+            wrapper              = new JPanel(new ColumnLayout(2));
             mSpecializationField = createField(fields, wrapper, SPECIALIZATION, skill.getSpecialization(), SPECIALIZATION_TOOLTIP, 0);
             createTechLevelFields(wrapper);
             fields.add(wrapper);
             mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(fields);
         }
-        mNotesField = createField(fields, fields, NOTES, skill.getNotes(), NOTES_TOOLTIP, 0);
+        mNotesField      = createField(fields, fields, NOTES, skill.getNotes(), NOTES_TOOLTIP, 0);
         mCategoriesField = createField(fields, fields, CATEGORIES, skill.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
         if (notContainer) {
             wrapper = createDifficultyPopups(fields);
@@ -252,12 +271,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         add(content);
 
         if (notContainer) {
-            mTabPanel = new JTabbedPane();
-            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
+            mTabPanel      = new JTabbedPane();
+            mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
+            mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-            mDefaults = new Defaults(mRow.getDefaults());
+            mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
+            mDefaults      = new Defaults(mRow.getDefaults());
             mDefaults.addActionListener(this);
             Component panel = embedEditor(mDefaults);
             mTabPanel.addTab(panel.getName(), panel);
@@ -327,13 +346,13 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private void createTechLevelFields(Container parent) {
-        OutlineModel owner = mRow.getOwner();
+        OutlineModel   owner     = mRow.getOwner();
         GURPSCharacter character = mRow.getCharacter();
-        boolean enabled = !owner.isLocked();
-        boolean hasTL;
+        boolean        enabled   = !owner.isLocked();
+        boolean        hasTL;
 
         mSavedTechLevel = mRow.getTechLevel();
-        hasTL = mSavedTechLevel != null;
+        hasTL           = mSavedTechLevel != null;
         if (!hasTL) {
             mSavedTechLevel = ""; //$NON-NLS-1$
         }
@@ -359,7 +378,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                 mSavedTechLevel = character.getDescription().getTechLevel();
             }
         } else {
-            mTechLevel = new JTextField(mSavedTechLevel);
+            mTechLevel    = new JTextField(mSavedTechLevel);
             mHasTechLevel = new JCheckBox(TECH_LEVEL_REQUIRED, hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_REQUIRED_TOOLTIP));
             mHasTechLevel.setEnabled(enabled);
@@ -383,10 +402,10 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private Container createDifficultyPopups(Container parent) {
-        GURPSCharacter character = mRow.getCharacter();
-        boolean forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
-        JLabel label = new JLabel(EDITOR_DIFFICULTY, SwingConstants.RIGHT);
-        JPanel wrapper = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 10 : 8 : 6));
+        GURPSCharacter character              = mRow.getCharacter();
+        boolean        forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
+        JLabel         label                  = new JLabel(EDITOR_DIFFICULTY, SwingConstants.RIGHT);
+        JPanel         wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 10 : 8 : 6));
 
         label.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_DIFFICULTY_TOOLTIP));
 
@@ -419,7 +438,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private void recalculateLevel() {
         if (mLevelField != null) {
             SkillAttribute attribute = getSkillAttribute();
-            SkillLevel level = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
+            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
             mLevelField.setText(Skill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
         }
     }

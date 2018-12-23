@@ -88,12 +88,12 @@ public class WebServiceClient {
      */
     public String sendRequest(HttpMethodType method, String path) throws MalformedURLException, IOException, NotImplementedException {
         mMethod = method;
-        mPath = path;
+        mPath   = path;
         return sendRequest();
     }
 
     public String sendRequest(HttpMethodType method, String path, byte[] bytes) throws MalformedURLException, IOException, NotImplementedException {
-        mBody = null;
+        mBody     = null;
         mByteBody = bytes;
         return sendRequest(method, path);
     }
@@ -143,7 +143,7 @@ public class WebServiceClient {
     private URL buildUrl() throws MalformedURLException {
         // sanitize strings
         mBaseUrl = ditchLeadingTrailingSlashes(mBaseUrl);
-        mPath = ditchLeadingTrailingSlashes(mPath);
+        mPath    = ditchLeadingTrailingSlashes(mPath);
         // build the url
         StringBuilder url = new StringBuilder(mBaseUrl);
         url.append(SLASH);

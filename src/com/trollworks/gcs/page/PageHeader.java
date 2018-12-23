@@ -25,7 +25,7 @@ public class PageHeader extends Label {
     /**
      * Creates a new {@link PageHeader}.
      *
-     * @param title The title to use.
+     * @param title   The title to use.
      * @param tooltip The tooltip to use.
      */
     public PageHeader(String title, String tooltip) {

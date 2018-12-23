@@ -84,14 +84,14 @@ public class Namer extends JPanel {
      * Brings up a modal naming dialog for each row in the list.
      *
      * @param owner The owning component.
-     * @param list The rows to name.
+     * @param list  The rows to name.
      * @return Whether anything was modified.
      */
     static public boolean name(Component owner, ArrayList<ListRow> list) {
-        ArrayList<ListRow> rowList = new ArrayList<>();
-        ArrayList<HashSet<String>> setList = new ArrayList<>();
-        boolean modified = false;
-        int count;
+        ArrayList<ListRow>         rowList  = new ArrayList<>();
+        ArrayList<HashSet<String>> setList  = new ArrayList<>();
+        boolean                    modified = false;
+        int                        count;
 
         for (ListRow row : list) {
             HashSet<String> set = new HashSet<>();
@@ -105,22 +105,22 @@ public class Namer extends JPanel {
 
         count = rowList.size();
         for (int i = 0; i < count; i++) {
-            ListRow row = rowList.get(i);
-            boolean hasMore = i != count - 1;
-            int type = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
+            ListRow  row     = rowList.get(i);
+            boolean  hasMore = i != count - 1;
+            int      type    = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
             String[] options = hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL };
-            Namer panel = new Namer(row, setList.get(i), count - i - 1);
+            Namer    panel   = new Namer(row, setList.get(i), count - i - 1);
             switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(NAME_TITLE, row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, APPLY)) {
-                case JOptionPane.YES_OPTION:
-                    panel.applyChanges();
-                    modified = true;
-                    break;
-                case JOptionPane.NO_OPTION:
-                    break;
-                case JOptionPane.CANCEL_OPTION:
-                case JOptionPane.CLOSED_OPTION:
-                default:
-                    return modified;
+            case JOptionPane.YES_OPTION:
+                panel.applyChanges();
+                modified = true;
+                break;
+            case JOptionPane.NO_OPTION:
+                break;
+            case JOptionPane.CANCEL_OPTION:
+            case JOptionPane.CLOSED_OPTION:
+            default:
+                return modified;
             }
         }
         return modified;
@@ -128,7 +128,7 @@ public class Namer extends JPanel {
 
     private Namer(ListRow row, HashSet<String> set, int remaining) {
         JLabel label;
-        mRow = row;
+        mRow    = row;
         mFields = new ArrayList<>();
 
         FlexColumn column = new FlexColumn();
@@ -142,10 +142,10 @@ public class Namer extends JPanel {
         }
         label = new JLabel(Text.truncateIfNecessary(row.toString(), 80, SwingConstants.RIGHT), SwingConstants.CENTER);
         Dimension size = label.getMaximumSize();
-        size.width = LayoutSize.MAXIMUM_SIZE;
+        size.width   = LayoutSize.MAXIMUM_SIZE;
         size.height += 4;
         label.setMaximumSize(size);
-        size = label.getPreferredSize();
+        size         = label.getPreferredSize();
         size.height += 4;
         label.setPreferredSize(size);
         label.setMinimumSize(size);
@@ -156,15 +156,15 @@ public class Namer extends JPanel {
         column.add(label);
         column.add(new FlexSpacer(0, 10, false, false));
 
-        int rowIndex = 0;
-        FlexGrid grid = new FlexGrid();
+        int      rowIndex = 0;
+        FlexGrid grid     = new FlexGrid();
         grid.setFillHorizontal(true);
         ArrayList<String> list = new ArrayList<>(set);
         Collections.sort(list);
         for (String name : list) {
             JTextField field = new JTextField(25);
             field.setName(name);
-            size = field.getPreferredSize();
+            size       = field.getPreferredSize();
             size.width = LayoutSize.MAXIMUM_SIZE;
             field.setMaximumSize(size);
             mFields.add(field);

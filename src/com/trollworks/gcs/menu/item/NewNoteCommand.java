@@ -67,12 +67,12 @@ public class NewNoteCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        ListOutline outline;
-        DataFile dataFile;
+        ListOutline   outline;
+        DataFile      dataFile;
         NotesDockable eqpDockable = getTarget(NotesDockable.class);
         if (eqpDockable != null) {
             dataFile = eqpDockable.getDataFile();
-            outline = eqpDockable.getOutline();
+            outline  = eqpDockable.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -80,12 +80,12 @@ public class NewNoteCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline = sheet.getSheet().getNoteOutline();
+                outline  = sheet.getSheet().getNoteOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline = template.getTemplate().getNoteOutline();
+                    outline  = template.getTemplate().getNoteOutline();
                 } else {
                     return;
                 }

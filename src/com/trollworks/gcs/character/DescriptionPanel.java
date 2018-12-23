@@ -49,9 +49,12 @@ public class DescriptionPanel extends DropPanel {
     @Localize(locale = "es", value = "NT")
     private static String TECH_LEVEL;
     @Localize("<html><body>TL0: Stone Age<br>TL1: Bronze Age<br>TL2: Iron Age<br>TL3: Medieval<br>TL4: Age of Sail<br>TL5: Industrial Revolution<br>TL6: Mechanized Age<br>TL7: Nuclear Age<br>TL8: Digital Age<br>TL9: Microtech Age<br>TL10: Robotic Age<br>TL11: Age of Exotic Matter<br>TL12: Anything Goes</body></html>")
-    @Localize(locale = "de", value = "<html><body>TL0: Steinzeit<br>TL1: Bronzezeit<br>TL2: Eisenzeit<br>TL3: Mittelalter<br>TL4: Renaissance / Kolonialzeitalter<br>TL5: Industrielle Revolution<br>TL6: Zeitalter der Mechanik<br>TL7: Ära der Kernkraft<br>TL8: Ära der Digitalisierung<br>TL9: Ära der Mikrotechnik<br>TL10: Ära der Robotik<br>TL11: Ära der Exotischen Materie<br>TL12: Was ihr wollt!</body></html>")
-    @Localize(locale = "ru", value = "<html><body>ТУ0: Каменный век<br>ТУ1: Бронзовый век<br>ТУ2: Железный век<br>ТУ3: Средневековье<br>ТУ4: Эпоха парусов<br>ТУ5: Промышленный переворот<br>ТУ6: Эпоха механики<br>ТУ7: Атомная эпоха<br>ТУ8: Цифровая эпоха<br>ТУ9: Эпоха микротехники<br>ТУ10: Эпоха роботизации<br>ТУ11: Эпоха экзотических материалов<br>ТУ12: Всё, что угодно</body></html>")
-    @Localize(locale = "es", value = "<html><body>TL0: Edad de Piedra<br>TL1: Edad de Bronce<br>TL2: Edad de Hierro<br>TL3: Edad Media<br>TL4: Era del Renacimiento<br>TL5: Revolución Industrial<br>TL6: Era de la Mecanización<br>TL7: Era Nuclear<br>TL8: Era Digital<br>TL9: Era de la Microtecnología<br>TL10: Era de la Robótica<br>TL11: Era del Dominio de la Materia<br>TL12: Más allá</body></html>")
+    @Localize(locale = "de",
+              value = "<html><body>TL0: Steinzeit<br>TL1: Bronzezeit<br>TL2: Eisenzeit<br>TL3: Mittelalter<br>TL4: Renaissance / Kolonialzeitalter<br>TL5: Industrielle Revolution<br>TL6: Zeitalter der Mechanik<br>TL7: Ära der Kernkraft<br>TL8: Ära der Digitalisierung<br>TL9: Ära der Mikrotechnik<br>TL10: Ära der Robotik<br>TL11: Ära der Exotischen Materie<br>TL12: Was ihr wollt!</body></html>")
+    @Localize(locale = "ru",
+              value = "<html><body>ТУ0: Каменный век<br>ТУ1: Бронзовый век<br>ТУ2: Железный век<br>ТУ3: Средневековье<br>ТУ4: Эпоха парусов<br>ТУ5: Промышленный переворот<br>ТУ6: Эпоха механики<br>ТУ7: Атомная эпоха<br>ТУ8: Цифровая эпоха<br>ТУ9: Эпоха микротехники<br>ТУ10: Эпоха роботизации<br>ТУ11: Эпоха экзотических материалов<br>ТУ12: Всё, что угодно</body></html>")
+    @Localize(locale = "es",
+              value = "<html><body>TL0: Edad de Piedra<br>TL1: Edad de Bronce<br>TL2: Edad de Hierro<br>TL3: Edad Media<br>TL4: Era del Renacimiento<br>TL5: Revolución Industrial<br>TL6: Era de la Mecanización<br>TL7: Era Nuclear<br>TL8: Era Digital<br>TL9: Era de la Microtecnología<br>TL10: Era de la Robótica<br>TL11: Era del Dominio de la Materia<br>TL12: Más allá</body></html>")
     private static String TECH_LEVEL_TOOLTIP;
     @Localize("Age:")
     @Localize(locale = "de", value = "Alter:")

@@ -22,15 +22,15 @@ import javax.swing.JList;
 public class LibraryExplorerRowRenderer extends DefaultListCellRenderer {
     @Override
     public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        String title;
+        String   title;
         StdImage icon;
         if (value instanceof LibraryExplorerRow) {
             LibraryExplorerRow row = (LibraryExplorerRow) value;
             title = row.getName();
-            icon = row.getIcon();
+            icon  = row.getIcon();
         } else {
             title = value.toString();
-            icon = null;
+            icon  = null;
         }
         Component comp = super.getListCellRendererComponent(list, title, index, isSelected, cellHasFocus);
         if (icon != null) {

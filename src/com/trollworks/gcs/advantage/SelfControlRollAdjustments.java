@@ -162,23 +162,23 @@ public enum SelfControlRollAdjustments {
         @Override
         public int getAdjustment(SelfControlRoll cr) {
             switch (cr) {
-                case CR6:
-                    return 80;
-                case CR9:
-                    return 40;
-                case CR12:
-                    return 20;
-                case CR15:
-                    return 10;
-                default:
-                    return 0;
+            case CR6:
+                return 80;
+            case CR9:
+                return 40;
+            case CR12:
+                return 20;
+            case CR15:
+                return 10;
+            default:
+                return 0;
             }
         }
 
         @Override
         public List<Bonus> getBonuses(SelfControlRoll cr) {
-            List<Bonus> list = new ArrayList<>();
-            SkillBonus bonus = new SkillBonus();
+            List<Bonus>    list     = new ArrayList<>();
+            SkillBonus     bonus    = new SkillBonus();
             StringCriteria criteria = bonus.getNameCriteria();
             criteria.setType(StringCompareType.IS);
             criteria.setQualifier("Merchant"); //$NON-NLS-1$
@@ -249,9 +249,12 @@ public enum SelfControlRollAdjustments {
     @Localize(locale = "es", value = "{0}% Incremento del Coste de Vida")
     static String MINOR_COST_OF_LIVING_INCREASE_DESCRIPTION;
     @Localize("Includes a Major Cost of Living Increase and Merchant Skill Penalty")
-    @Localize(locale = "de", value = "Beinhaltet eine deutliche Erhöhung der Lebenshaltungskosten und einen Malus der Händler-Fertigkeit")
-    @Localize(locale = "ru", value = "Включает большое возрастание расходов на жизнь и штраф на торговое дело")
-    @Localize(locale = "es", value = "Incluye un Incremento por Mayor Coste de Vida y una Penalización por la habilidad de Mercader")
+    @Localize(locale = "de",
+              value = "Beinhaltet eine deutliche Erhöhung der Lebenshaltungskosten und einen Malus der Händler-Fertigkeit")
+    @Localize(locale = "ru",
+              value = "Включает большое возрастание расходов на жизнь и штраф на торговое дело")
+    @Localize(locale = "es",
+              value = "Incluye un Incremento por Mayor Coste de Vida y una Penalización por la habilidad de Mercader")
     static String MAJOR_COST_OF_LIVING_INCREASE_TITLE;
     @Localize("{0}% Cost of Living Increase")
     @Localize(locale = "de", value = "{0}% höhere Lebenshaltungskosten")

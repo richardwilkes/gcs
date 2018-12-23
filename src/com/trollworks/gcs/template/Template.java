@@ -84,10 +84,10 @@ public class Template extends DataFile {
     public Template() {
         super();
         mAdvantages = new OutlineModel();
-        mSkills = new OutlineModel();
-        mSpells = new OutlineModel();
-        mEquipment = new OutlineModel();
-        mNotes = new OutlineModel();
+        mSkills     = new OutlineModel();
+        mSpells     = new OutlineModel();
+        mEquipment  = new OutlineModel();
+        mNotes      = new OutlineModel();
     }
 
     /**
@@ -95,7 +95,7 @@ public class Template extends DataFile {
      *
      * @param file The file to load the data from.
      * @throws IOException if the data cannot be read or the file doesn't contain a valid character
-     *             sheet.
+     *                     sheet.
      */
     public Template(File file) throws IOException {
         this();
@@ -291,8 +291,8 @@ public class Template extends DataFile {
     @Override
     protected void startNotifyAtBatchLevelZero() {
         mNeedAdvantagesPointCalculation = false;
-        mNeedSkillPointCalculation = false;
-        mNeedSpellPointCalculation = false;
+        mNeedSkillPointCalculation      = false;
+        mNeedSpellPointCalculation      = false;
     }
 
     @Override
@@ -350,9 +350,9 @@ public class Template extends DataFile {
     }
 
     private void calculateAdvantagePoints() {
-        mCachedAdvantagePoints = 0;
+        mCachedAdvantagePoints    = 0;
         mCachedDisadvantagePoints = 0;
-        mCachedQuirkPoints = 0;
+        mCachedQuirkPoints        = 0;
 
         for (Advantage advantage : getAdvantagesIterator()) {
             if (!advantage.canHaveChildren()) {

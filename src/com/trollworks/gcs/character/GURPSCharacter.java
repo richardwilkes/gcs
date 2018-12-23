@@ -397,7 +397,7 @@ public class GURPSCharacter extends DataFile {
      *
      * @param file The file to load the data from.
      * @throws IOException if the data cannot be read or the file doesn't contain a valid character
-     *             sheet.
+     *                     sheet.
      */
     public GURPSCharacter(File file) throws IOException {
         super();
@@ -405,28 +405,28 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void characterInitialize(boolean full) {
-        mFeatureMap = new HashMap<>();
-        mAdvantages = new OutlineModel();
-        mSkills = new OutlineModel();
-        mSpells = new OutlineModel();
-        mEquipment = new OutlineModel();
-        mNotes = new OutlineModel();
-        mTotalPoints = SheetPreferences.getInitialPoints();
-        mStrength = 10;
-        mDexterity = 10;
-        mIntelligence = 10;
-        mHealth = 10;
-        mCurrentHitPoints = EMPTY;
+        mFeatureMap           = new HashMap<>();
+        mAdvantages           = new OutlineModel();
+        mSkills               = new OutlineModel();
+        mSpells               = new OutlineModel();
+        mEquipment            = new OutlineModel();
+        mNotes                = new OutlineModel();
+        mTotalPoints          = SheetPreferences.getInitialPoints();
+        mStrength             = 10;
+        mDexterity            = 10;
+        mIntelligence         = 10;
+        mHealth               = 10;
+        mCurrentHitPoints     = EMPTY;
         mCurrentFatiguePoints = EMPTY;
-        mDescription = new Profile(this, full);
-        mArmor = new Armor(this);
-        mIncludePunch = true;
-        mIncludeKick = true;
-        mIncludeKickBoots = true;
-        mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
-        mPageSettings = OutputPreferences.getDefaultPageSettings();
-        mLastModified = System.currentTimeMillis();
-        mCreatedOn = mLastModified;
+        mDescription          = new Profile(this, full);
+        mArmor                = new Armor(this);
+        mIncludePunch         = true;
+        mIncludeKick          = true;
+        mIncludeKickBoots     = true;
+        mCachedWeightCarried  = new WeightValue(0, SheetPreferences.getWeightUnits());
+        mPageSettings         = OutputPreferences.getDefaultPageSettings();
+        mLastModified         = System.currentTimeMillis();
+        mCreatedOn            = mLastModified;
         // This will force the long value to match the string value.
         setCreatedOn(getCreatedOn());
     }
@@ -448,8 +448,8 @@ public class GURPSCharacter extends DataFile {
 
     @Override
     protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
-        String marker = reader.getMarker();
-        int unspentPoints = 0;
+        String marker        = reader.getMarker();
+        int    unspentPoints = 0;
 
         characterInitialize(false);
         do {
@@ -816,7 +816,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id The field ID to set the value for.
+     * @param id    The field ID to set the value for.
      * @param value The value to set.
      */
     public void setValueForID(String id, Object value) {
@@ -871,12 +871,12 @@ public class GURPSCharacter extends DataFile {
 
     @Override
     protected void startNotifyAtBatchLevelZero() {
-        mDidModify = false;
-        mNeedAttributePointCalculation = false;
+        mDidModify                      = false;
+        mNeedAttributePointCalculation  = false;
         mNeedAdvantagesPointCalculation = false;
-        mNeedSkillPointCalculation = false;
-        mNeedSpellPointCalculation = false;
-        mNeedEquipmentCalculation = false;
+        mNeedSkillPointCalculation      = false;
+        mNeedSpellPointCalculation      = false;
+        mNeedEquipmentCalculation       = false;
     }
 
     @Override
@@ -1023,7 +1023,7 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for strength. */
     public void setStrengthCostReduction(int reduction) {
         if (mStrengthCostReduction != reduction) {
-            mStrengthCostReduction = reduction;
+            mStrengthCostReduction         = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
@@ -1053,15 +1053,15 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void updateStrengthInfo(int strength, int bonus, int liftingBonus, int strikingBonus) {
-        Dice thrust = getThrust();
-        Dice swing = getSwing();
-        WeightValue lift = getBasicLift();
-        boolean notifyST = mStrength != strength || mStrengthBonus != bonus;
-        Dice dice;
+        Dice        thrust   = getThrust();
+        Dice        swing    = getSwing();
+        WeightValue lift     = getBasicLift();
+        boolean     notifyST = mStrength != strength || mStrengthBonus != bonus;
+        Dice        dice;
 
-        mStrength = strength;
-        mStrengthBonus = bonus;
-        mLiftingStrengthBonus = liftingBonus;
+        mStrength              = strength;
+        mStrengthBonus         = bonus;
+        mLiftingStrengthBonus  = liftingBonus;
         mStrikingStrengthBonus = strikingBonus;
 
         startNotify();
@@ -1141,9 +1141,9 @@ public class GURPSCharacter extends DataFile {
                 adds++;
             }
             dice += 2 * (adds / 7);
-            adds = adds % 7;
+            adds  = adds % 7;
             dice += adds / 4;
-            adds = adds % 4;
+            adds  = adds % 4;
             if (adds == 3) {
                 dice++;
                 adds = -1;
@@ -1193,9 +1193,9 @@ public class GURPSCharacter extends DataFile {
             int dice = 1;
             int adds = (strength - 10) / 2;
             dice += 2 * (adds / 7);
-            adds = adds % 7;
+            adds  = adds % 7;
             dice += adds / 4;
-            adds = adds % 4;
+            adds  = adds % 4;
             if (adds == 3) {
                 dice++;
                 adds = -1;
@@ -1240,21 +1240,21 @@ public class GURPSCharacter extends DataFile {
 
     private WeightValue getBasicLift(WeightUnits desiredUnits) {
         WeightUnits units;
-        double divisor;
-        double multiplier;
-        double roundAt;
+        double      divisor;
+        double      multiplier;
+        double      roundAt;
         if (SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric()) {
-            units = WeightUnits.KG;
-            divisor = 10;
+            units      = WeightUnits.KG;
+            divisor    = 10;
             multiplier = 1;
-            roundAt = 5;
+            roundAt    = 5;
         } else {
-            units = WeightUnits.LB;
-            divisor = 5;
+            units      = WeightUnits.LB;
+            divisor    = 5;
             multiplier = 2;
-            roundAt = 10;
+            roundAt    = 10;
         }
-        int strength = getStrength() + mLiftingStrengthBonus;
+        int    strength = getStrength() + mLiftingStrengthBonus;
         double value;
         if (strength < 1) {
             value = 0;
@@ -1262,7 +1262,7 @@ public class GURPSCharacter extends DataFile {
             if (SheetPreferences.areOptionalStrengthRulesUsed()) {
                 int diff = 0;
                 if (strength > 19) {
-                    diff = strength / 10 - 1;
+                    diff      = strength / 10 - 1;
                     strength -= diff * 10;
                 }
                 value = Math.pow(10.0, strength / 10.0) * multiplier;
@@ -1325,7 +1325,7 @@ public class GURPSCharacter extends DataFile {
      */
     public WeightValue getMaximumCarry(Encumbrance encumbrance) {
         WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric() ? WeightUnits.KG : WeightUnits.LB;
-        WeightValue lift = getBasicLift(calcUnits);
+        WeightValue lift      = getBasicLift(calcUnits);
         lift.setValue(lift.getValue() * encumbrance.getWeightMultiplier());
         WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, lift.getValue()), desiredUnits);
@@ -1369,11 +1369,11 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void updateBasicSpeedInfo(double speed, double bonus) {
-        int move = getBasicMove();
+        int   move = getBasicMove();
         int[] data = preserveMoveAndDodge();
-        int tmp;
+        int   tmp;
 
-        mSpeed = speed;
+        mSpeed      = speed;
         mSpeedBonus = bonus;
 
         startNotify();
@@ -1435,7 +1435,7 @@ public class GURPSCharacter extends DataFile {
         int[] data = preserveMoveAndDodge();
 
         startNotify();
-        mMove = move;
+        mMove      = move;
         mMoveBonus = bonus;
         notify(ID_BASIC_MOVE, Integer.valueOf(getBasicMove()));
         notifyIfMoveOrDodgeAltered(data);
@@ -1454,7 +1454,7 @@ public class GURPSCharacter extends DataFile {
      */
     public int getMove(Encumbrance encumbrance) {
         int basicMove = getBasicMove();
-        int move = basicMove * (10 + 2 * encumbrance.getEncumbrancePenalty()) / 10;
+        int move      = basicMove * (10 + 2 * encumbrance.getEncumbrancePenalty()) / 10;
         if (move < 1) {
             return basicMove > 0 ? 1 : 0;
         }
@@ -1552,14 +1552,14 @@ public class GURPSCharacter extends DataFile {
      */
     public static WeightValue convertFromGurpsMetric(WeightValue value) {
         switch (value.getUnits()) {
-            case G:
-                return new WeightValue(value.getValue() / 30, WeightUnits.OZ);
-            case KG:
-                return new WeightValue(value.getValue() * 2, WeightUnits.LB);
-            case T:
-                return new WeightValue(value.getValue(), WeightUnits.LT);
-            default:
-                return value;
+        case G:
+            return new WeightValue(value.getValue() / 30, WeightUnits.OZ);
+        case KG:
+            return new WeightValue(value.getValue() * 2, WeightUnits.LB);
+        case T:
+            return new WeightValue(value.getValue(), WeightUnits.LT);
+        default:
+            return value;
         }
     }
 
@@ -1572,16 +1572,16 @@ public class GURPSCharacter extends DataFile {
      */
     public static WeightValue convertToGurpsMetric(WeightValue value) {
         switch (value.getUnits()) {
-            case LB:
-                return new WeightValue(value.getValue() / 2, WeightUnits.KG);
-            case LT:
-                return new WeightValue(value.getValue(), WeightUnits.T);
-            case OZ:
-                return new WeightValue(value.getValue() * 30, WeightUnits.G);
-            case TN:
-                return new WeightValue(value.getValue(), WeightUnits.T);
-            default:
-                return value;
+        case LB:
+            return new WeightValue(value.getValue() / 2, WeightUnits.KG);
+        case LT:
+            return new WeightValue(value.getValue(), WeightUnits.T);
+        case OZ:
+            return new WeightValue(value.getValue() * 30, WeightUnits.G);
+        case TN:
+            return new WeightValue(value.getValue(), WeightUnits.T);
+        default:
+            return value;
         }
     }
 
@@ -1589,11 +1589,11 @@ public class GURPSCharacter extends DataFile {
      * Calculate the total weight and wealth carried.
      *
      * @param notify Whether to send out notifications if the resulting values are different from
-     *            the previous values.
+     *               the previous values.
      */
     public void calculateWeightAndWealthCarried(boolean notify) {
         WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
-        double savedWealth = mCachedWealthCarried;
+        double      savedWealth = mCachedWealthCarried;
         mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
         mCachedWealthCarried = 0.0;
         for (Row one : mEquipment.getTopLevelRows()) {
@@ -1623,10 +1623,10 @@ public class GURPSCharacter extends DataFile {
 
     private int[] preserveMoveAndDodge() {
         Encumbrance[] values = Encumbrance.values();
-        int[] data = new int[values.length * 2];
+        int[]         data   = new int[values.length * 2];
         for (Encumbrance encumbrance : values) {
             int index = encumbrance.ordinal();
-            data[index] = getMove(encumbrance);
+            data[index]                 = getMove(encumbrance);
             data[values.length + index] = getDodge(encumbrance);
         }
         return data;
@@ -1636,7 +1636,7 @@ public class GURPSCharacter extends DataFile {
         Encumbrance[] values = Encumbrance.values();
         for (Encumbrance encumbrance : values) {
             int index = encumbrance.ordinal();
-            int tmp = getDodge(encumbrance);
+            int tmp   = getDodge(encumbrance);
             if (tmp != data[values.length + index]) {
                 notify(DODGE_PREFIX + index, Integer.valueOf(tmp));
             }
@@ -1681,19 +1681,19 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for dexterity. */
     public void setDexterityCostReduction(int reduction) {
         if (mDexterityCostReduction != reduction) {
-            mDexterityCostReduction = reduction;
+            mDexterityCostReduction        = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
 
     private void updateDexterityInfo(int dexterity, int bonus) {
         double speed = getBasicSpeed();
-        int move = getBasicMove();
-        int[] data = preserveMoveAndDodge();
+        int    move  = getBasicMove();
+        int[]  data  = preserveMoveAndDodge();
         double newSpeed;
-        int newMove;
+        int    newMove;
 
-        mDexterity = dexterity;
+        mDexterity      = dexterity;
         mDexterityBonus = bonus;
 
         startNotify();
@@ -1750,18 +1750,18 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for intelligence. */
     public void setIntelligenceCostReduction(int reduction) {
         if (mIntelligenceCostReduction != reduction) {
-            mIntelligenceCostReduction = reduction;
+            mIntelligenceCostReduction     = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
 
     private void updateIntelligenceInfo(int intelligence, int bonus) {
         int perception = getPerception();
-        int will = getWill();
+        int will       = getWill();
         int newPerception;
         int newWill;
 
-        mIntelligence = intelligence;
+        mIntelligence      = intelligence;
         mIntelligenceBonus = bonus;
 
         startNotify();
@@ -1824,19 +1824,19 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for health. */
     public void setHealthCostReduction(int reduction) {
         if (mHealthCostReduction != reduction) {
-            mHealthCostReduction = reduction;
+            mHealthCostReduction           = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
 
     private void updateHealthInfo(int health, int bonus) {
         double speed = getBasicSpeed();
-        int move = getBasicMove();
-        int[] data = preserveMoveAndDodge();
+        int    move  = getBasicMove();
+        int[]  data  = preserveMoveAndDodge();
         double newSpeed;
-        int tmp;
+        int    tmp;
 
-        mHealth = health;
+        mHealth      = health;
         mHealthBonus = bonus;
 
         startNotify();
@@ -1928,10 +1928,10 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void calculateAdvantagePoints() {
-        mCachedAdvantagePoints = 0;
+        mCachedAdvantagePoints    = 0;
         mCachedDisadvantagePoints = 0;
-        mCachedRacePoints = 0;
-        mCachedQuirkPoints = 0;
+        mCachedRacePoints         = 0;
+        mCachedQuirkPoints        = 0;
 
         for (Advantage advantage : new FilteredIterator<>(mAdvantages.getTopLevelRows(), Advantage.class)) {
             calculateSingleAdvantagePoints(advantage);
@@ -2048,7 +2048,7 @@ public class GURPSCharacter extends DataFile {
         if (oldHP != hp) {
             postUndoEdit(HIT_POINTS_UNDO, ID_HIT_POINTS, Integer.valueOf(oldHP), Integer.valueOf(hp));
             startNotify();
-            mHitPoints = hp - (getStrength() + mHitPointBonus);
+            mHitPoints                     = hp - (getStrength() + mHitPointBonus);
             mNeedAttributePointCalculation = true;
             notifyOfBaseHitPointChange();
             endNotify();
@@ -2057,7 +2057,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of points spent on hit points. */
     public int getHitPointPoints() {
-        int pts = 2 * mHitPoints;
+        int pts          = 2 * mHitPoints;
         int sizeModifier = mDescription.getSizeModifier();
 
         if (sizeModifier > 0) {
@@ -2067,7 +2067,7 @@ public class GURPSCharacter extends DataFile {
                 sizeModifier = 8;
             }
             pts *= 10 - sizeModifier;
-            rem = pts % 10;
+            rem  = pts % 10;
             pts /= 10;
             if (rem > 4) {
                 pts++;
@@ -2187,7 +2187,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void updateWillInfo(int will, int bonus) {
-        mWill = will;
+        mWill      = will;
         mWillBonus = bonus;
 
         startNotify();
@@ -2340,7 +2340,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void updatePerceptionInfo(int perception, int bonus) {
-        mPerception = perception;
+        mPerception      = perception;
         mPerceptionBonus = bonus;
 
         startNotify();
@@ -2375,7 +2375,7 @@ public class GURPSCharacter extends DataFile {
         if (oldFP != fp) {
             postUndoEdit(FATIGUE_POINTS_UNDO, ID_FATIGUE_POINTS, Integer.valueOf(oldFP), Integer.valueOf(fp));
             startNotify();
-            mFatiguePoints = fp - (getHealth() + mFatiguePointBonus);
+            mFatiguePoints                 = fp - (getHealth() + mFatiguePointBonus);
             mNeedAttributePointCalculation = true;
             notifyOfBaseFatiguePointChange();
             endNotify();
@@ -2511,16 +2511,16 @@ public class GURPSCharacter extends DataFile {
     /**
      * Searches the character's current skill list for the specified name.
      *
-     * @param name The name to look for.
+     * @param name           The name to look for.
      * @param specialization The specialization to look for. Pass in <code>null</code> or an empty
-     *            string to ignore.
-     * @param requirePoints Only look at {@link Skill}s that have points.
-     * @param excludes The set of {@link Skill}s to exclude from consideration.
+     *                       string to ignore.
+     * @param requirePoints  Only look at {@link Skill}s that have points.
+     * @param excludes       The set of {@link Skill}s to exclude from consideration.
      * @return The skill if it is present, or <code>null</code> if its not.
      */
     public ArrayList<Skill> getSkillNamed(String name, String specialization, boolean requirePoints, HashSet<String> excludes) {
-        ArrayList<Skill> skills = new ArrayList<>();
-        boolean checkSpecialization = specialization != null && specialization.length() > 0;
+        ArrayList<Skill> skills              = new ArrayList<>();
+        boolean          checkSpecialization = specialization != null && specialization.length() > 0;
         for (Skill skill : getSkillsIterator()) {
             if (!skill.canHaveChildren()) {
                 if (excludes == null || !excludes.contains(skill.toString())) {
@@ -2541,22 +2541,22 @@ public class GURPSCharacter extends DataFile {
      * Searches the character's current {@link Skill} list for the {@link Skill} with the best level
      * that matches the name.
      *
-     * @param name The {@link Skill} name to look for.
+     * @param name           The {@link Skill} name to look for.
      * @param specialization An optional specialization to look for. Pass <code>null</code> if it is
-     *            not needed.
-     * @param requirePoints Only look at {@link Skill}s that have points.
-     * @param excludes The set of {@link Skill}s to exclude from consideration.
+     *                       not needed.
+     * @param requirePoints  Only look at {@link Skill}s that have points.
+     * @param excludes       The set of {@link Skill}s to exclude from consideration.
      * @return The {@link Skill} that matches with the highest level.
      */
     public Skill getBestSkillNamed(String name, String specialization, boolean requirePoints, HashSet<String> excludes) {
-        Skill best = null;
-        int level = Integer.MIN_VALUE;
+        Skill best  = null;
+        int   level = Integer.MIN_VALUE;
 
         for (Skill skill : getSkillNamed(name, specialization, requirePoints, excludes)) {
             int skillLevel = skill.getLevel(excludes);
 
             if (best == null || skillLevel > level) {
-                best = skill;
+                best  = skill;
                 level = skillLevel;
             }
         }
@@ -2595,7 +2595,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @param map The new feature map. */
     public void setFeatureMap(HashMap<String, ArrayList<Feature>> map) {
-        mFeatureMap = map;
+        mFeatureMap    = map;
         mSkillsUpdated = false;
         mSpellsUpdated = false;
 
@@ -2640,8 +2640,8 @@ public class GURPSCharacter extends DataFile {
      * @return The cost reduction, as a percentage.
      */
     public int getCostReductionFor(String id) {
-        int total = 0;
-        ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
+        int                total = 0;
+        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
 
         if (list != null) {
             for (Feature feature : list) {
@@ -2661,8 +2661,8 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getIntegerBonusFor(String id) {
-        int total = 0;
-        ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
+        int                total = 0;
+        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
@@ -2674,14 +2674,14 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id The feature ID to search for.
-     * @param nameQualifier The name qualifier.
+     * @param id                      The feature ID to search for.
+     * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
      * @return The bonuses.
      */
     public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier) {
         ArrayList<WeaponBonus> bonuses = new ArrayList<>();
-        int rsl = Integer.MIN_VALUE;
+        int                    rsl     = Integer.MIN_VALUE;
 
         for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
             int srsl = skill.getRelativeLevel();
@@ -2708,14 +2708,14 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id The feature ID to search for.
-     * @param nameQualifier The name qualifier.
+     * @param id                      The feature ID to search for.
+     * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
      * @return The bonus.
      */
     public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier) {
-        int total = 0;
-        ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
+        int                total = 0;
+        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SkillBonus) {
@@ -2730,13 +2730,13 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id The feature ID to search for.
+     * @param id        The feature ID to search for.
      * @param qualifier The qualifier.
      * @return The bonus.
      */
     public int getSpellComparedIntegerBonusFor(String id, String qualifier) {
-        int total = 0;
-        ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
+        int                total = 0;
+        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SpellBonus) {
@@ -2755,8 +2755,8 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public double getDoubleBonusFor(String id) {
-        double total = 0;
-        ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
+        double             total = 0;
+        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
@@ -2770,10 +2770,10 @@ public class GURPSCharacter extends DataFile {
     /**
      * Post an undo edit if we're not currently in an undo.
      *
-     * @param name The name of the undo.
-     * @param id The ID of the field being changed.
+     * @param name   The name of the undo.
+     * @param id     The ID of the field being changed.
      * @param before The original value.
-     * @param after The new value.
+     * @param after  The new value.
      */
     void postUndoEdit(String name, String id, Object before, Object after) {
         StdUndoManager mgr = getUndoManager();

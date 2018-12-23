@@ -38,7 +38,7 @@ public abstract class ListFile extends DataFile {
      * Called to load the individual rows.
      *
      * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param state  The {@link LoadState} to use.
      */
     protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
 

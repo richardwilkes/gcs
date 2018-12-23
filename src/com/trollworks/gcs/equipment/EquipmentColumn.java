@@ -143,7 +143,7 @@ public enum EquipmentColumn {
         @Override
         public String getDataAsText(Equipment equipment) {
             StringBuilder builder = new StringBuilder();
-            String notes = equipment.getNotes();
+            String        notes   = equipment.getNotes();
 
             builder.append(equipment.toString());
             if (notes.length() > 0) {
@@ -416,7 +416,8 @@ public enum EquipmentColumn {
     @Localize(locale = "es", value = "Equipo")
     static String DESCRIPTION_TITLE;
     @Localize("The name and notes describing a piece of equipment")
-    @Localize(locale = "de", value = "Der Name und Anmerkungen, die den Ausrüstungsgegenstand beschreiben")
+    @Localize(locale = "de",
+              value = "Der Name und Anmerkungen, die den Ausrüstungsgegenstand beschreiben")
     @Localize(locale = "ru", value = "Название и заметки, описывающие снаряжения")
     @Localize(locale = "es", value = "Nombre y notas describiendo la pieza de equipo")
     static String DESCRIPTION_TOOLTIP;
@@ -430,9 +431,12 @@ public enum EquipmentColumn {
     @Localize(locale = "es", value = "?")
     static String STATE_TITLE;
     @Localize("Whether this piece of equipment is carried & equipped (E), just carried (C), or not carried (-). Items that are not equipped do not apply any features they may normally contribute to the character.")
-    @Localize(locale = "de", value = "Ob dieser Ausrüstungsgegenstand ausgerüstet (A), mitgeführt (M) oder nicht mitgeführt (-) ist. Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
-    @Localize(locale = "ru", value = "Предмет снаряжения носим и экипирован (E), только носим (C), или не переносим (-). Не экипированные предметы не добавляют никаких свойств, которыми может воспользоваться персонаж.")
-    @Localize(locale = "es", value = "Indica si la pieza de equipo se porta y equipa (E), sólo se porta (P), o no se porta (-). Los objetos no equipados no aplican sus características como harían normalmente al personaje.")
+    @Localize(locale = "de",
+              value = "Ob dieser Ausrüstungsgegenstand ausgerüstet (A), mitgeführt (M) oder nicht mitgeführt (-) ist. Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
+    @Localize(locale = "ru",
+              value = "Предмет снаряжения носим и экипирован (E), только носим (C), или не переносим (-). Не экипированные предметы не добавляют никаких свойств, которыми может воспользоваться персонаж.")
+    @Localize(locale = "es",
+              value = "Indica si la pieza de equipo se porta y equipa (E), sólo se porta (P), o no se porta (-). Los objetos no equipados no aplican sus características como harían normalmente al personaje.")
     static String STATE_TOOLTIP;
     @Localize("TL")
     @Localize(locale = "de", value = "TL")
@@ -486,18 +490,24 @@ public enum EquipmentColumn {
     @Localize(locale = "es", value = "\u2211 $")
     static String EXT_VALUE_TITLE;
     @Localize("The value of all of these pieces of equipment, plus the value of any contained equipment")
-    @Localize(locale = "de", value = "Der Wert aller dieser Ausrüstungsgegenstände und der Wert der darin enthaltenen Ausrüstung")
-    @Localize(locale = "ru", value = "Цена всего снаряжения, плюс цена любого входящего в него снаряжения")
-    @Localize(locale = "es", value = "Valor de todas las piezas del equipo  más el valor de lo que contengan")
+    @Localize(locale = "de",
+              value = "Der Wert aller dieser Ausrüstungsgegenstände und der Wert der darin enthaltenen Ausrüstung")
+    @Localize(locale = "ru",
+              value = "Цена всего снаряжения, плюс цена любого входящего в него снаряжения")
+    @Localize(locale = "es",
+              value = "Valor de todas las piezas del equipo  más el valor de lo que contengan")
     static String EXT_VALUE_TOOLTIP;
     @Localize("\u2211 W")
     @Localize(locale = "de", value = "\u2211 Gew.")
     @Localize(locale = "es", value = "\u2211 Peso")
     static String EXT_WEIGHT_TITLE;
     @Localize("The weight of all of these pieces of equipment, plus the weight of any contained equipment")
-    @Localize(locale = "de", value = "Das Gewicht aller dieser Ausrüstungsgegenstände und das Gewicht der darin enthaltenen Ausrüstung")
-    @Localize(locale = "ru", value = "Вес всего снаряжения, плюс вес любого входящего в него снаряжения")
-    @Localize(locale = "es", value = "Peso de todas las piezas del equipo más el peso de lo que contegan")
+    @Localize(locale = "de",
+              value = "Das Gewicht aller dieser Ausrüstungsgegenstände und das Gewicht der darin enthaltenen Ausrüstung")
+    @Localize(locale = "ru",
+              value = "Вес всего снаряжения, плюс вес любого входящего в него снаряжения")
+    @Localize(locale = "es",
+              value = "Peso de todas las piezas del equipo más el peso de lo que contegan")
     static String EXT_WEIGHT_TOOLTIP;
     @Localize("Category")
     @Localize(locale = "de", value = "Kategorie")
@@ -505,8 +515,10 @@ public enum EquipmentColumn {
     @Localize(locale = "es", value = "Categoría")
     static String CATEGORY_TITLE;
     @Localize("The category or categories the equipment belongs to")
-    @Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Ausrüstung angehört")
-    @Localize(locale = "ru", value = "Категория или категории снаряжения, к которым оно принадлежит")
+    @Localize(locale = "de",
+              value = "Die Kategorie oder Kategorien, denen diese Ausrüstung angehört")
+    @Localize(locale = "ru",
+              value = "Категория или категории снаряжения, к которым оно принадлежит")
     @Localize(locale = "es", value = "Categoría o categorías a las que pertenece el equipo")
     static String CATEGORY_TOOLTIP;
     @Localize("Ref")
@@ -515,9 +527,12 @@ public enum EquipmentColumn {
     @Localize(locale = "es", value = "Ref.")
     static String REFERENCE_TITLE;
     @Localize("A reference to the book and page this equipment appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página donde se menciona el equipo (p.e. B22 se refiere al \"Manual Básico\", página 22).")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая снаряжение (например B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página donde se menciona el equipo (p.e. B22 se refiere al \"Manual Básico\", página 22).")
     static String REFERENCE_TOOLTIP;
 
     static {
@@ -526,7 +541,7 @@ public enum EquipmentColumn {
 
     /**
      * @param character The {@link GURPSCharacter} this equipment list is associated with, or
-     *            <code>null</code>.
+     *                  <code>null</code>.
      * @return The header title.
      */
     public String toString(GURPSCharacter character) {
@@ -566,13 +581,13 @@ public enum EquipmentColumn {
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
-     * @param outline The {@link Outline} to use.
+     * @param outline  The {@link Outline} to use.
      * @param dataFile The {@link DataFile} that data is being displayed for.
      */
     public static void addColumns(Outline outline, DataFile dataFile) {
-        GURPSCharacter character = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
-        boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
-        OutlineModel model = outline.getModel();
+        GURPSCharacter character       = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
+        boolean        sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        OutlineModel   model           = outline.getModel();
         for (EquipmentColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {
                 Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());

@@ -279,7 +279,8 @@ public class Profile {
     private static String PORTRAIT_UNDO;
     @Localize("The portrait is a PNG file encoded as Base64.")
     @Localize(locale = "de", value = "Das Portrait ist eine Base64-kodierte PNG-Datei.")
-    @Localize(locale = "ru", value = "Изображение представляет собой файл PNG (закодирован в Base64).")
+    @Localize(locale = "ru",
+              value = "Изображение представляет собой файл PNG (закодирован в Base64).")
     @Localize(locale = "es", value = "El retrato es un archivo PNG codificado como Base64 ")
     private static String PORTRAIT_COMMENT;
     @Localize("Could not write portrait.")
@@ -396,26 +397,26 @@ public class Profile {
     private HitLocationTable      mHitLocationTable;
 
     Profile(GURPSCharacter character, boolean full) {
-        mCharacter = character;
-        mCustomPortrait = false;
-        mPortrait = null;
-        mTitle = EMPTY;
-        mAge = full ? getRandomAge() : 0;
-        mBirthday = full ? getRandomMonthAndDay() : EMPTY;
-        mEyeColor = full ? getRandomEyeColor() : EMPTY;
-        mHair = full ? getRandomHair() : EMPTY;
-        mSkinColor = full ? getRandomSkinColor() : EMPTY;
-        mHandedness = full ? getRandomHandedness() : EMPTY;
-        mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, SheetPreferences.getLengthUnits());
-        mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, SheetPreferences.getWeightUnits());
-        mGender = full ? getRandomGender() : EMPTY;
-        mName = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == MALE) : EMPTY;
-        mRace = full ? DEFAULT_RACE : EMPTY;
-        mTechLevel = full ? getDefaultTechLevel() : EMPTY;
-        mReligion = EMPTY;
-        mPlayerName = full ? getDefaultPlayerName() : EMPTY;
-        mCampaign = full ? getDefaultCampaign() : EMPTY;
-        mPortrait = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
+        mCharacter        = character;
+        mCustomPortrait   = false;
+        mPortrait         = null;
+        mTitle            = EMPTY;
+        mAge              = full ? getRandomAge() : 0;
+        mBirthday         = full ? getRandomMonthAndDay() : EMPTY;
+        mEyeColor         = full ? getRandomEyeColor() : EMPTY;
+        mHair             = full ? getRandomHair() : EMPTY;
+        mSkinColor        = full ? getRandomSkinColor() : EMPTY;
+        mHandedness       = full ? getRandomHandedness() : EMPTY;
+        mHeight           = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, SheetPreferences.getLengthUnits());
+        mWeight           = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, SheetPreferences.getWeightUnits());
+        mGender           = full ? getRandomGender() : EMPTY;
+        mName             = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == MALE) : EMPTY;
+        mRace             = full ? DEFAULT_RACE : EMPTY;
+        mTechLevel        = full ? getDefaultTechLevel() : EMPTY;
+        mReligion         = EMPTY;
+        mPlayerName       = full ? getDefaultPlayerName() : EMPTY;
+        mCampaign         = full ? getDefaultCampaign() : EMPTY;
+        mPortrait         = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
         mHitLocationTable = HitLocationTable.HUMANOID;
     }
 
@@ -477,7 +478,7 @@ public class Profile {
             mReligion = reader.readText();
         } else if (TAG_PORTRAIT.equals(tag)) {
             try {
-                mPortrait = createPortrait(StdImage.loadImage(Base64.getMimeDecoder().decode(reader.readText())));
+                mPortrait       = createPortrait(StdImage.loadImage(Base64.getMimeDecoder().decode(reader.readText())));
                 mCustomPortrait = true;
             } catch (Exception imageException) {
                 // Ignore
@@ -557,8 +558,8 @@ public class Profile {
         }
         StdImage normal;
         StdImage retina;
-        int width = image.getWidth();
-        int height = image.getHeight();
+        int      width  = image.getWidth();
+        int      height = image.getHeight();
         if (width == PORTRAIT_WIDTH * 2 && height == PORTRAIT_HEIGHT * 2) {
             retina = image;
             normal = StdImage.scale(retina, PORTRAIT_WIDTH, PORTRAIT_HEIGHT);
@@ -739,9 +740,9 @@ public class Profile {
     /** @return A random age. */
     public int getRandomAge() {
         Advantage lifespan = mCharacter.getAdvantageNamed("Unaging"); //$NON-NLS-1$
-        int base = 16;
-        int mod = 7;
-        int levels;
+        int       base     = 16;
+        int       mod      = 7;
+        int       levels;
 
         if (lifespan != null) {
             return 18 + RANDOM.nextInt(7);
@@ -757,14 +758,14 @@ public class Profile {
         lifespan = mCharacter.getAdvantageNamed("Short Lifespan"); //$NON-NLS-1$
         if (lifespan != null) {
             levels = lifespan.getLevels();
-            base = base >> levels;
-            mod = mod >> levels;
+            base   = base >> levels;
+            mod    = mod >> levels;
         } else {
             lifespan = mCharacter.getAdvantageNamed("Extended Lifespan"); //$NON-NLS-1$
             if (lifespan != null) {
                 levels = lifespan.getLevels();
-                base = base << levels;
-                mod = mod << levels;
+                base   = base << levels;
+                mod    = mod << levels;
             }
         }
         if (mod < 1) {
@@ -995,7 +996,7 @@ public class Profile {
     }
 
     /**
-     * @param id The field ID to set the value for.
+     * @param id    The field ID to set the value for.
      * @param value The value to set.
      */
     public void setValueForID(String id, Object value) {
@@ -1045,10 +1046,10 @@ public class Profile {
     }
 
     static {
-        ArrayList<String> hair = new ArrayList<>(100);
-        String[] colors = { BROWN, BROWN, BROWN, BLACK, BLACK, BLACK, BLOND, BLOND, REDHEAD };
-        String[] styles = { STRAIGHT, CURLY, WAVY };
-        String[] lengths = { SHORT, MEDIUM, LONG };
+        ArrayList<String> hair    = new ArrayList<>(100);
+        String[]          colors  = { BROWN, BROWN, BROWN, BLACK, BLACK, BLACK, BLOND, BLOND, REDHEAD };
+        String[]          styles  = { STRAIGHT, CURLY, WAVY };
+        String[]          lengths = { SHORT, MEDIUM, LONG };
 
         for (String element : colors) {
             for (String style : styles) {
@@ -1094,7 +1095,7 @@ public class Profile {
 
     /**
      * @param strength The strength to base the height on.
-     * @param sm The size modifier to use.
+     * @param sm       The size modifier to use.
      * @return A random height.
      */
     public static LengthValue getRandomHeight(int strength, int sm) {
@@ -1113,7 +1114,7 @@ public class Profile {
         }
         boolean useMetric = SheetPreferences.getWeightUnits().isMetric();
         if (useMetric) {
-            base = (int) Math.round(LengthUnits.CM.convert(LengthUnits.FT_IN, base));
+            base  = (int) Math.round(LengthUnits.CM.convert(LengthUnits.FT_IN, base));
             base += RANDOM.nextInt(16);
         } else {
             base += RANDOM.nextInt(11);
@@ -1121,14 +1122,14 @@ public class Profile {
         if (sm != 0) {
             base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
         }
-        LengthUnits calcUnits = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
+        LengthUnits calcUnits    = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
         LengthUnits desiredUnits = SheetPreferences.getLengthUnits();
         return new LengthValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 
     /**
-     * @param strength The strength to base the weight on.
-     * @param sm The size modifier to use.
+     * @param strength   The strength to base the weight on.
+     * @param sm         The size modifier to use.
      * @param multiplier The weight multiplier for being under- or overweight.
      * @return A random weight.
      */
@@ -1137,24 +1138,24 @@ public class Profile {
         int range;
 
         if (strength < 7) {
-            base = 60;
+            base  = 60;
             range = 61;
         } else if (strength < 10) {
-            base = 75 + (strength - 7) * 15;
+            base  = 75 + (strength - 7) * 15;
             range = 61;
         } else if (strength == 10) {
-            base = 115;
+            base  = 115;
             range = 61;
         } else if (strength < 14) {
-            base = 125 + (strength - 11) * 15;
+            base  = 125 + (strength - 11) * 15;
             range = 71 + (strength - 11) * 10;
         } else {
-            base = 170;
+            base  = 170;
             range = 101;
         }
         boolean useMetric = SheetPreferences.getWeightUnits().isMetric();
         if (useMetric) {
-            base = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, base));
+            base  = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, base));
             range = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, range - 1)) + 1;
         }
         base += RANDOM.nextInt(range);
@@ -1162,7 +1163,7 @@ public class Profile {
             base = (int) Math.round(base * Math.pow(1000.0, sm / 6.0));
         }
         base = (int) Math.max(Math.round(base * multiplier), 1);
-        WeightUnits calcUnits = useMetric ? WeightUnits.KG : WeightUnits.LB;
+        WeightUnits calcUnits    = useMetric ? WeightUnits.KG : WeightUnits.LB;
         WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }

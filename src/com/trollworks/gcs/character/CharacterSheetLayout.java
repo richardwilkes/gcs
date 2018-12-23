@@ -33,20 +33,20 @@ class CharacterSheetLayout implements LayoutManager2 {
 
     @Override
     public Dimension preferredLayoutSize(Container target) {
-        Insets insets = target.getInsets();
+        Insets      insets   = target.getInsets();
         Component[] children = target.getComponents();
-        int across = 1;
-        int width = 0;
-        int height = 0;
-        int margin = mSheet.getScale().scale(MARGIN);
+        int         across   = 1;
+        int         width    = 0;
+        int         height   = 0;
+        int         margin   = mSheet.getScale().scale(MARGIN);
         if (children.length > 0) {
-            Dimension size = children[0].getPreferredSize();
+            Dimension size   = children[0].getPreferredSize();
             Container parent = target.getParent();
             if (parent != null) {
                 Insets parentInsets = parent.getInsets();
-                int avail = parent.getWidth() - (parentInsets.left + parentInsets.right);
-                int pageWidth = size.width;
-                avail -= insets.left + insets.right + pageWidth;
+                int    avail        = parent.getWidth() - (parentInsets.left + parentInsets.right);
+                int    pageWidth    = size.width;
+                avail     -= insets.left + insets.right + pageWidth;
                 pageWidth += margin;
                 while (true) {
                     avail -= pageWidth;
@@ -76,17 +76,17 @@ class CharacterSheetLayout implements LayoutManager2 {
     public void layoutContainer(Container target) {
         Component[] children = target.getComponents();
         if (children.length > 0) {
-            Dimension size = children[0].getPreferredSize();
-            Dimension avail = target.getSize();
-            Insets insets = target.getInsets();
-            int x = insets.left;
-            int y = insets.top;
-            int margin = mSheet.getScale().scale(MARGIN);
+            Dimension size   = children[0].getPreferredSize();
+            Dimension avail  = target.getSize();
+            Insets    insets = target.getInsets();
+            int       x      = insets.left;
+            int       y      = insets.top;
+            int       margin = mSheet.getScale().scale(MARGIN);
             for (Component child : children) {
                 child.setBounds(x, y, size.width, size.height);
                 x += size.width + margin;
                 if (x + size.width + insets.right > avail.width) {
-                    x = insets.left;
+                    x  = insets.left;
                     y += size.height + margin;
                 }
             }

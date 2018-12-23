@@ -119,44 +119,44 @@ public class Equipment extends ListRow implements HasSourceReference {
     /**
      * Creates a new equipment.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile    The data file to associate it with.
      * @param isContainer Whether or not this row allows children.
      */
     public Equipment(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mState = EquipmentState.EQUIPPED;
-        mQuantity = 1;
-        mDescription = DEFAULT_NAME;
-        mTechLevel = EMPTY;
-        mLegalityClass = DEFAULT_LEGALITY_CLASS;
-        mReference = EMPTY;
-        mWeight = new WeightValue(0, SheetPreferences.getWeightUnits());
+        mState          = EquipmentState.EQUIPPED;
+        mQuantity       = 1;
+        mDescription    = DEFAULT_NAME;
+        mTechLevel      = EMPTY;
+        mLegalityClass  = DEFAULT_LEGALITY_CLASS;
+        mReference      = EMPTY;
+        mWeight         = new WeightValue(0, SheetPreferences.getWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
-        mWeapons = new ArrayList<>();
+        mWeapons        = new ArrayList<>();
     }
 
     /**
      * Creates a clone of an existing equipment and associates it with the specified data file.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile  The data file to associate it with.
      * @param equipment The equipment to clone.
-     * @param deep Whether or not to clone the children, grandchildren, etc.
+     * @param deep      Whether or not to clone the children, grandchildren, etc.
      */
     public Equipment(DataFile dataFile, Equipment equipment, boolean deep) {
         super(dataFile, equipment);
         boolean forSheet = dataFile instanceof GURPSCharacter;
-        mState = forSheet ? equipment.mState : EquipmentState.EQUIPPED;
-        mQuantity = forSheet ? equipment.mQuantity : 1;
-        mDescription = equipment.mDescription;
-        mTechLevel = equipment.mTechLevel;
-        mLegalityClass = equipment.mLegalityClass;
-        mValue = equipment.mValue;
-        mWeight = new WeightValue(equipment.mWeight);
-        mExtendedValue = mQuantity * mValue;
+        mState          = forSheet ? equipment.mState : EquipmentState.EQUIPPED;
+        mQuantity       = forSheet ? equipment.mQuantity : 1;
+        mDescription    = equipment.mDescription;
+        mTechLevel      = equipment.mTechLevel;
+        mLegalityClass  = equipment.mLegalityClass;
+        mValue          = equipment.mValue;
+        mWeight         = new WeightValue(equipment.mWeight);
+        mExtendedValue  = mQuantity * mValue;
         mExtendedWeight = new WeightValue(mWeight);
         mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
         mReference = equipment.mReference;
-        mWeapons = new ArrayList<>(equipment.mWeapons.size());
+        mWeapons   = new ArrayList<>(equipment.mWeapons.size());
         for (WeaponStats weapon : equipment.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
                 mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
@@ -177,8 +177,8 @@ public class Equipment extends ListRow implements HasSourceReference {
      * Loads an equipment and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param reader   The XML reader to load from.
+     * @param state    The {@link LoadState} to use.
      */
     public Equipment(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
         this(dataFile, TAG_EQUIPMENT_CONTAINER.equals(reader.getName()));
@@ -227,13 +227,13 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mState = EquipmentState.EQUIPPED;
-        mQuantity = 1;
-        mDescription = DEFAULT_NAME;
-        mTechLevel = EMPTY;
+        mState         = EquipmentState.EQUIPPED;
+        mQuantity      = 1;
+        mDescription   = DEFAULT_NAME;
+        mTechLevel     = EMPTY;
         mLegalityClass = DEFAULT_LEGALITY_CLASS;
-        mReference = EMPTY;
-        mValue = 0.0;
+        mReference     = EMPTY;
+        mValue         = 0.0;
         mWeight.setValue(0.0);
         mWeapons = new ArrayList<>();
     }
@@ -457,7 +457,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     private boolean updateExtendedWeight(boolean okToNotify) {
         WeightValue saved = mExtendedWeight;
-        int count = getChildCount();
+        int         count = getChildCount();
         WeightUnits units = mWeight.getUnits();
         mExtendedWeight = new WeightValue(mWeight.getValue() * mQuantity, units);
         WeightValue contained = new WeightValue(0, units);
@@ -475,8 +475,8 @@ public class Equipment extends ListRow implements HasSourceReference {
                 contained.add(weight);
             }
         }
-        int percentage = 0;
-        WeightValue reduction = new WeightValue(0, units);
+        int         percentage = 0;
+        WeightValue reduction  = new WeightValue(0, units);
         for (Feature feature : getFeatures()) {
             if (feature instanceof ContainedWeightReduction) {
                 ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
@@ -521,7 +521,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     private boolean updateExtendedValue(boolean okToNotify) {
         double savedValue = mExtendedValue;
-        int count = getChildCount();
+        int    count      = getChildCount();
         mExtendedValue = mQuantity * mValue;
         for (int i = 0; i < count; i++) {
             Equipment child = (Equipment) getChild(i);

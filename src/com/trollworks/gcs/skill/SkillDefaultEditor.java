@@ -92,11 +92,11 @@ public class SkillDefaultEditor extends EditorPanel {
         if (mDefault != null) {
             FlexGrid grid = new FlexGrid();
 
-            OrLabel or = new OrLabel(this);
+            OrLabel  or   = new OrLabel(this);
             add(or);
             grid.add(or, 0, 0);
 
-            FlexRow row = new FlexRow();
+            FlexRow          row     = new FlexRow();
             SkillDefaultType current = mDefault.getType();
             mTypeCombo = new JComboBox<Object>(SkillDefaultType.values());
             mTypeCombo.setOpaque(false);
@@ -163,7 +163,7 @@ public class SkillDefaultEditor extends EditorPanel {
 
     private void addDefault() {
         SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, LAST_ITEM_TYPE.isSkillBased() ? "" : null, null, 0); //$NON-NLS-1$
-        JComponent parent = (JComponent) getParent();
+        JComponent   parent       = (JComponent) getParent();
         parent.add(new SkillDefaultEditor(skillDefault));
         if (mDefault == null) {
             parent.remove(this);
@@ -203,11 +203,11 @@ public class SkillDefaultEditor extends EditorPanel {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        Object src = event.getSource();
+        Object src     = event.getSource();
         String command = event.getActionCommand();
         if (SkillDefault.TAG_TYPE.equals(command)) {
             SkillDefaultType current = mDefault.getType();
-            SkillDefaultType value = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
+            SkillDefaultType value   = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
             if (!current.equals(value)) {
                 Commitable.sendCommitToFocusOwner();
                 mDefault.setType(value);

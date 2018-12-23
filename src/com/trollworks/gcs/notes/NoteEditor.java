@@ -46,7 +46,7 @@ public class NoteEditor extends RowEditor<Note> {
         super(note);
 
         JPanel content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
-        JLabel icon = new JLabel(note.getIcon(true));
+        JLabel icon    = new JLabel(note.getIcon(true));
 
         mEditor = new JTextArea(note.getDescription());
         mEditor.setLineWrap(true);

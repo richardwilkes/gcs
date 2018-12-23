@@ -78,7 +78,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
      * Create a new equipment outline.
      *
      * @param dataFile The owning data file.
-     * @param model The {@link OutlineModel} to use.
+     * @param model    The {@link OutlineModel} to use.
      */
     public EquipmentOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Equipment.ID_LIST_CHANGED);
@@ -239,10 +239,10 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
 
     @Override
     public void convertDragRowsToSelf(List<Row> list) {
-        OutlineModel model = getModel();
-        Row[] rows = model.getDragRows();
-        boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-        ArrayList<ListRow> process = new ArrayList<>();
+        OutlineModel       model              = getModel();
+        Row[]              rows               = model.getDragRows();
+        boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
+        ArrayList<ListRow> process            = new ArrayList<>();
 
         for (Row element : rows) {
             Equipment equipment = new Equipment(mDataFile, (Equipment) element, true);

@@ -80,11 +80,11 @@ public class AboutPanel extends JPanel {
         Font baseFont = UIManager.getFont("TextField.font"); //$NON-NLS-1$
         gc.setFont(baseFont.deriveFont(10f));
         gc.setColor(Color.WHITE);
-        int right = getWidth() - HMARGIN;
-        int y = draw(gc, LICENSES, getHeight() - HMARGIN, right, true, true);
+        int        right      = getWidth() - HMARGIN;
+        int        y          = draw(gc, LICENSES, getHeight() - HMARGIN, right, true, true);
         BundleInfo bundleInfo = BundleInfo.getDefault();
-        long version = bundleInfo.getVersion();
-        int y2 = draw(gc, bundleInfo.getCopyrightBanner(), y, right, false, true);
+        long       version    = bundleInfo.getVersion();
+        int        y2         = draw(gc, bundleInfo.getCopyrightBanner(), y, right, false, true);
         draw(gc, String.format(PLATFORM_FORMAT, System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         y2 = draw(gc, version != 0 ? Version.toBuildTimestamp(version) : UNKNOWN_BUILD_DATE, y2, right, false, true);
         gc.setFont(baseFont.deriveFont(Font.BOLD, 12f));
@@ -93,9 +93,9 @@ public class AboutPanel extends JPanel {
     }
 
     private static int draw(Graphics2D gc, String text, int y, int right, boolean addGap, boolean onLeft) {
-        String[] one = text.split(SEPARATOR);
-        FontMetrics fm = gc.getFontMetrics();
-        int fHeight = fm.getAscent() + fm.getDescent();
+        String[]    one     = text.split(SEPARATOR);
+        FontMetrics fm      = gc.getFontMetrics();
+        int         fHeight = fm.getAscent() + fm.getDescent();
         for (int i = one.length - 1; i >= 0; i--) {
             gc.drawString(one[i], onLeft ? HMARGIN : right - fm.stringWidth(one[i]), y);
             y -= fHeight;

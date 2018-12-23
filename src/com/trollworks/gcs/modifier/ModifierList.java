@@ -47,8 +47,8 @@ public class ModifierList extends ListFile {
 
     @Override
     protected void loadList(XMLReader reader, LoadState state) throws IOException {
-        OutlineModel model = getModel();
-        String marker = reader.getMarker();
+        OutlineModel model  = getModel();
+        String       marker = reader.getMarker();
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();

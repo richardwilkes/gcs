@@ -272,7 +272,7 @@ public enum SkillDefaultType {
 
     /**
      * @param name The name of a {@link SkillDefaultType}, as returned from {@link #name()} or
-     *            {@link #toString()}.
+     *             {@link #toString()}.
      * @return The matching {@link SkillDefaultType}, or {@link #Skill} if a match cannot be found.
      */
     public static final SkillDefaultType getByName(String name) {
@@ -291,17 +291,17 @@ public enum SkillDefaultType {
     }
 
     /**
-     * @param character The character to work with.
+     * @param character    The character to work with.
      * @param skillDefault The default being calculated.
-     * @param excludes Exclude these {@link Skill}s from consideration.
+     * @param excludes     Exclude these {@link Skill}s from consideration.
      * @return The base skill level for this {@link SkillDefaultType}.
      */
     public abstract int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes);
 
     /**
-     * @param character The character to work with.
+     * @param character    The character to work with.
      * @param skillDefault The default being calculated.
-     * @param excludes Exclude these {@link Skill}s from consideration.
+     * @param excludes     Exclude these {@link Skill}s from consideration.
      * @return The base skill level for this {@link SkillDefaultType}.
      */
     public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
@@ -310,7 +310,7 @@ public enum SkillDefaultType {
 
     /**
      * @param skillDefault The {@link SkillDefault}.
-     * @param level The level without the default modifier.
+     * @param level        The level without the default modifier.
      * @return The final level.
      */
     @SuppressWarnings("static-method")

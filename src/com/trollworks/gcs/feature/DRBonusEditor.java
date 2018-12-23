@@ -28,7 +28,7 @@ public class DRBonusEditor extends FeatureEditor {
     /**
      * Create a new DR bonus editor.
      *
-     * @param row The row this feature will belong to.
+     * @param row   The row this feature will belong to.
      * @param bonus The bonus to edit.
      */
     public DRBonusEditor(ListRow row, DRBonus bonus) {
@@ -38,7 +38,7 @@ public class DRBonusEditor extends FeatureEditor {
     @Override
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         DRBonus bonus = (DRBonus) getFeature();
-        FlexRow row = new FlexRow();
+        FlexRow row   = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -99999, 99999));

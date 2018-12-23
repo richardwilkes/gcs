@@ -61,12 +61,12 @@ public class SkillDefault {
     /**
      * Creates a new skill default.
      *
-     * @param type The type of default.
-     * @param name The name of the skill to default from. Pass in <code>null</code> if type is not
-     *            skill-based.
+     * @param type           The type of default.
+     * @param name           The name of the skill to default from. Pass in <code>null</code> if
+     *                       type is not skill-based.
      * @param specialization The specialization of the skill. Pass in <code>null</code> if this does
-     *            not default from a skill or the skill doesn't require a specialization.
-     * @param modifier The modifier to use.
+     *                       not default from a skill or the skill doesn't require a specialization.
+     * @param modifier       The modifier to use.
      */
     public SkillDefault(SkillDefaultType type, String name, String specialization, int modifier) {
         setType(type);
@@ -81,10 +81,10 @@ public class SkillDefault {
      * @param other The skill default to clone.
      */
     public SkillDefault(SkillDefault other) {
-        mType = other.mType;
-        mName = other.mName;
+        mType           = other.mType;
+        mName           = other.mName;
         mSpecialization = other.mSpecialization;
-        mModifier = other.mModifier;
+        mModifier       = other.mModifier;
     }
 
     /**
@@ -95,10 +95,10 @@ public class SkillDefault {
     public SkillDefault(XMLReader reader) throws IOException {
         String marker = reader.getMarker();
 
-        mType = SkillDefaultType.Skill;
-        mName = EMPTY;
+        mType           = SkillDefaultType.Skill;
+        mName           = EMPTY;
         mSpecialization = EMPTY;
-        mModifier = 0;
+        mModifier       = 0;
 
         do {
             if (reader.next() == XMLNodeType.START_TAG) {

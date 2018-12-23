@@ -41,7 +41,7 @@ public class CostReductionEditor extends FeatureEditor {
     /**
      * Create a new cost reduction editor.
      *
-     * @param row The row this feature will belong to.
+     * @param row     The row this feature will belong to.
      * @param feature The feature to edit.
      */
     public CostReductionEditor(ListRow row, CostReduction feature) {
@@ -51,7 +51,7 @@ public class CostReductionEditor extends FeatureEditor {
     @Override
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         CostReduction feature = (CostReduction) getFeature();
-        FlexRow row = new FlexRow();
+        FlexRow       row     = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         String[] names = new String[CostReduction.TYPES.length];
         for (int i = 0; i < CostReduction.TYPES.length; i++) {

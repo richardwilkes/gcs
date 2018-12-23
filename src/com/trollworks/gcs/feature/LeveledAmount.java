@@ -33,9 +33,9 @@ public class LeveledAmount {
      */
     public LeveledAmount(double amount) {
         mPerLevel = false;
-        mLevel = 0;
-        mAmount = amount;
-        mInteger = false;
+        mLevel    = 0;
+        mAmount   = amount;
+        mInteger  = false;
     }
 
     /**
@@ -55,9 +55,9 @@ public class LeveledAmount {
      */
     public LeveledAmount(LeveledAmount other) {
         mPerLevel = other.mPerLevel;
-        mLevel = other.mLevel;
-        mAmount = other.mAmount;
-        mInteger = other.mInteger;
+        mLevel    = other.mLevel;
+        mAmount   = other.mAmount;
+        mInteger  = other.mInteger;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class LeveledAmount {
     /** @param reader The reader to load data from. */
     public void load(XMLReader reader) throws IOException {
         mPerLevel = reader.isAttributeSet(ATTRIBUTE_PER_LEVEL);
-        mAmount = reader.readDouble(0.0);
+        mAmount   = reader.readDouble(0.0);
     }
 
     /**

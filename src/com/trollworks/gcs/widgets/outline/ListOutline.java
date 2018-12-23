@@ -52,13 +52,13 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     /**
      * Create a new outline.
      *
-     * @param dataFile The owning data file.
-     * @param model The outline model to use.
+     * @param dataFile        The owning data file.
+     * @param model           The outline model to use.
      * @param rowSetChangedID The notification ID to use when the row set changes.
      */
     public ListOutline(DataFile dataFile, OutlineModel model, String rowSetChangedID) {
         super(model);
-        mDataFile = dataFile;
+        mDataFile        = dataFile;
         mRowSetChangedID = rowSetChangedID;
         addActionListener(this);
     }
@@ -95,8 +95,8 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     public void deleteSelection() {
         if (canDeleteSelection()) {
             OutlineModel model = getModel();
-            StateEdit edit = new StateEdit(model, CLEAR_UNDO);
-            Row[] rows = model.getSelectionAsList(true).toArray(new Row[0]);
+            StateEdit    edit  = new StateEdit(model, CLEAR_UNDO);
+            Row[]        rows  = model.getSelectionAsList(true).toArray(new Row[0]);
             mDataFile.startNotify();
             model.removeSelection();
             for (int i = rows.length - 1; i >= 0; i--) {
@@ -117,10 +117,10 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     /**
      * Adds a row at the "best" place (i.e. looks at the selection).
      *
-     * @param row The row to add.
-     * @param name The name for the undo event.
+     * @param row     The row to add.
+     * @param name    The name for the undo event.
      * @param sibling If the current selection is a container, whether to insert into it, or as a
-     *            sibling.
+     *                sibling.
      * @return The index of the row that was added.
      */
     public int addRow(ListRow row, String name, boolean sibling) {
@@ -130,29 +130,29 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     /**
      * Adds rows at the "best" place (i.e. looks at the selection).
      *
-     * @param rows The rows to add.
-     * @param name The name for the undo event.
+     * @param rows    The rows to add.
+     * @param name    The name for the undo event.
      * @param sibling If the current selection is a container, whether to insert into it, or as a
-     *            sibling.
+     *                sibling.
      * @return The index of the first row that was added.
      */
     public int addRow(ListRow[] rows, String name, boolean sibling) {
-        OutlineModel model = getModel();
-        StateEdit edit = new StateEdit(model, name);
-        Selection selection = model.getSelection();
-        int count = selection.getCount();
-        int insertAt;
-        int i;
-        Row parentRow;
+        OutlineModel model     = getModel();
+        StateEdit    edit      = new StateEdit(model, name);
+        Selection    selection = model.getSelection();
+        int          count     = selection.getCount();
+        int          insertAt;
+        int          i;
+        Row          parentRow;
 
         if (count > 0) {
-            insertAt = count == 1 ? selection.firstSelectedIndex() : selection.lastSelectedIndex();
+            insertAt  = count == 1 ? selection.firstSelectedIndex() : selection.lastSelectedIndex();
             parentRow = model.getRowAtIndex(insertAt++);
             if (!parentRow.canHaveChildren() || !parentRow.isOpen()) {
                 parentRow = parentRow.getParent();
             } else if (sibling) {
-                insertAt += parentRow.getChildCount();
-                parentRow = parentRow.getParent();
+                insertAt  += parentRow.getChildCount();
+                parentRow  = parentRow.getParent();
             }
             if (parentRow != null && parentRow.canHaveChildren()) {
                 for (ListRow row : rows) {
@@ -176,7 +176,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        Object source = event.getSource();
+        Object source  = event.getSource();
         String command = event.getActionCommand();
 
         if (source instanceof OutlineProxy) {
@@ -191,7 +191,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
      * Opens detailed editors for the current selection.
      *
      * @param later Whether to call {@link EventQueue#invokeLater(Runnable)} rather than immediately
-     *            opening the editor.
+     *              opening the editor.
      */
     public void openDetailEditor(boolean later) {
         mRowsToEdit = new FilteredList<>(getModel().getSelectionAsList(), ListRow.class);
@@ -258,7 +258,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
      * them.
      *
      * @param list The list to add rows to.
-     * @param row The row to check.
+     * @param row  The row to check.
      */
     protected void addRowsToBeProcessed(ArrayList<ListRow> list, ListRow row) {
         int count = row.getChildCount();

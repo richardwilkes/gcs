@@ -62,7 +62,7 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             StringBuilder builder = new StringBuilder();
-            String notes = spell.getNotes();
+            String        notes   = spell.getNotes();
 
             builder.append(spell.toString());
             if (notes.length() > 0) {
@@ -388,7 +388,8 @@ public enum SpellColumn {
     @Localize(locale = "es", value = "Sortilegios")
     static String DESCRIPTION_TITLE;
     @Localize("The name, tech level and notes describing the spell")
-    @Localize(locale = "de", value = "Der Name, Techlevel und Anmerkungen, die den Zauber beschreiben")
+    @Localize(locale = "de",
+              value = "Der Name, Techlevel und Anmerkungen, die den Zauber beschreiben")
     @Localize(locale = "ru", value = "Название, ТУ и заметки заклинания")
     @Localize(locale = "es", value = "Nombre, nivel tecnológico y notas describiendo el sortilegio")
     static String DESCRIPTION_TOOLTIP;
@@ -419,7 +420,8 @@ public enum SpellColumn {
     static String TIME_TITLE;
     @Localize("The time required to cast the spell and its duration")
     @Localize(locale = "de", value = "Die benötigte Zeit, um den Zauber zu wirken und seine Dauer")
-    @Localize(locale = "ru", value = "Необходимое время для сотворения заклинания и его длительность")
+    @Localize(locale = "ru",
+              value = "Необходимое время для сотворения заклинания и его длительность")
     @Localize(locale = "es", value = "Tiempo requerido para lanzar el sortilegio y su duración")
     static String TIME_TOOLTIP;
     @Localize("Pts")
@@ -467,9 +469,12 @@ public enum SpellColumn {
     @Localize(locale = "ru", value = "Ссыл")
     static String REFERENCE_TITLE;
     @Localize("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página en donde se menciona el sortilegio (p.e. B22 se refiere al \"Manual Básico\", página 22)")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая заклинание (например B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página en donde se menciona el sortilegio (p.e. B22 se refiere al \"Manual Básico\", página 22)")
     static String REFERENCE_TOOLTIP;
 
     static {
@@ -503,12 +508,12 @@ public enum SpellColumn {
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
-     * @param outline The {@link Outline} to use.
+     * @param outline  The {@link Outline} to use.
      * @param dataFile The {@link DataFile} that data is being displayed for.
      */
     public static void addColumns(Outline outline, DataFile dataFile) {
-        boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
-        OutlineModel model = outline.getModel();
+        boolean      sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        OutlineModel model           = outline.getModel();
 
         for (SpellColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {

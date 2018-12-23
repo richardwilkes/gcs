@@ -39,12 +39,12 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
      * Creates a new template outline panel.
      *
      * @param outline The outline to display.
-     * @param title The localized title for the panel.
+     * @param title   The localized title for the panel.
      */
     public TemplateOutlinePanel(Outline outline, String title) {
         super(null, title, false);
         mOutline = outline;
-        mHeader = mOutline.getHeaderPanel();
+        mHeader  = mOutline.getHeaderPanel();
         TemplateSheet.prepOutline(mOutline);
         add(mHeader);
         add(mOutline);
@@ -84,17 +84,17 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 
     @Override
     public void layoutContainer(Container parent) {
-        Insets insets = getInsets();
-        Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-        int width = bounds.width;
-        int height = mHeader.getPreferredSize().height;
-        OutlineModel outlineModel = mOutline.getModel();
-        int count = outlineModel.getColumnCount();
-        ArrayList<Column> changed = new ArrayList<>();
-        Column column;
+        Insets            insets       = getInsets();
+        Rectangle         bounds       = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
+        int               width        = bounds.width;
+        int               height       = mHeader.getPreferredSize().height;
+        OutlineModel      outlineModel = mOutline.getModel();
+        int               count        = outlineModel.getColumnCount();
+        ArrayList<Column> changed      = new ArrayList<>();
+        Column            column;
 
         mHeader.setBounds(bounds.x, bounds.y, width, height);
-        bounds.y += height;
+        bounds.y      += height;
         bounds.height -= height;
         mOutline.setBounds(bounds.x, bounds.y, width, bounds.height);
 
@@ -129,8 +129,8 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 
     @Override
     public Dimension minimumLayoutSize(Container parent) {
-        Dimension size = mOutline.getMinimumSize();
-        int minHeight = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_FIELD), "Mg").height; //$NON-NLS-1$
+        Dimension size      = mOutline.getMinimumSize();
+        int       minHeight = TextDrawing.getPreferredSize(UIManager.getFont(GCSFonts.KEY_FIELD), "Mg").height; //$NON-NLS-1$
         if (size.height < minHeight) {
             size.height = minHeight;
         }
@@ -140,7 +140,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
     @Override
     public Dimension preferredLayoutSize(Container parent) {
         Dimension size = getLayoutSizeForOne(mOutline.getPreferredSize());
-        Dimension min = getMinimumSize();
+        Dimension min  = getMinimumSize();
         if (size.width < min.width) {
             size.width = min.width;
         }

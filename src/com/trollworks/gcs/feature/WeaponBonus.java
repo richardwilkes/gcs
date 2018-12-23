@@ -39,9 +39,9 @@ public class WeaponBonus extends Bonus {
     /** Creates a new skill bonus. */
     public WeaponBonus() {
         super(1);
-        mNameCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
+        mNameCriteria           = new StringCriteria(StringCompareType.IS, EMPTY);
         mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
-        mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
+        mLevelCriteria          = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
     }
 
     /**
@@ -61,9 +61,9 @@ public class WeaponBonus extends Bonus {
      */
     public WeaponBonus(WeaponBonus other) {
         super(other);
-        mNameCriteria = new StringCriteria(other.mNameCriteria);
+        mNameCriteria           = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
-        mLevelCriteria = new IntegerCriteria(other.mLevelCriteria);
+        mLevelCriteria          = new IntegerCriteria(other.mLevelCriteria);
     }
 
     @Override

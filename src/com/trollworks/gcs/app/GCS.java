@@ -88,9 +88,11 @@ public class GCS {
     @Localize(locale = "es", value = "Plantilla de Personaje GCS")
     private static String TEMPLATE_DESCRIPTION;
     @Localize("Create PDF versions of sheets specified on the command line.")
-    @Localize(locale = "de", value = "Erstelle PDF-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
+    @Localize(locale = "de",
+              value = "Erstelle PDF-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
     @Localize(locale = "ru", value = "Создать PDF-версии листов, указанных в командной строке.")
-    @Localize(locale = "es", value = "Crear archivo PDF de las hojas especificadas en la linea de mandatos")
+    @Localize(locale = "es",
+              value = "Crear archivo PDF de las hojas especificadas en la linea de mandatos")
     private static String PDF_OPTION_DESCRIPTION;
     @Localize("Create text versions of sheets specified on the command line.")
     private static String TEXT_OPTION_DESCRIPTION;
@@ -102,24 +104,34 @@ public class GCS {
     @Localize(locale = "es", value = "Archivo")
     private static String TEXT_TEMPLATE_ARG;
     @Localize("Create PNG versions of sheets specified on the command line.")
-    @Localize(locale = "de", value = "Erstelle PNG-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
+    @Localize(locale = "de",
+              value = "Erstelle PNG-Dateien von den auf der Kommandozeile angegebenen Charakterblättern.")
     @Localize(locale = "ru", value = "Создать PNG-версии листов, указанных в командной строке.")
-    @Localize(locale = "es", value = "Crear archivo PNG de las hojas especificadas en la linea de mandatos")
+    @Localize(locale = "es",
+              value = "Crear archivo PNG de las hojas especificadas en la linea de mandatos")
     private static String PNG_OPTION_DESCRIPTION;
     @Localize("When generating PDF or PNG from the command line, allows you to specify a paper size to use, rather than the one embedded in the file. Valid choices are: LETTER, A4, or the width and height, expressed in inches and separated by an 'x', such as '5x7'.")
-    @Localize(locale = "de", value = "Erlaubt, bei der Erstellung von PDF-Dateien oder PNG-Dateien von der Kommandozeile aus, das zu verwendende Papierformat anzugeben, statt das im Charakterblatt angegebene zu verwenden. Gültige Werte sind: LETTER, A4 oder die Höhe und Breite in Zoll und mit einem 'x' getrennt, wie z.B. '5x7'.")
-    @Localize(locale = "ru", value = "При создании PDF или PNG из командной строки, позволяет указывать размер бумаги, отличный от того, что содержится в файле. Можно выбрать следующие: Letter, A4 или ширину и высоту в дюймах и разделенную 'х', например '5x7'.")
-    @Localize(locale = "es", value = "Cuando se genera en formato PDF o PNG desde la linea de mandatos,se permite especificar el tamaño de papel, en lugar del valor contenido en el archivo. Las elecciones válidas son: LETTER, A4, o ancho y alto en pulgadas separado por una 'x', como por ejemplo '5x7'.")
+    @Localize(locale = "de",
+              value = "Erlaubt, bei der Erstellung von PDF-Dateien oder PNG-Dateien von der Kommandozeile aus, das zu verwendende Papierformat anzugeben, statt das im Charakterblatt angegebene zu verwenden. Gültige Werte sind: LETTER, A4 oder die Höhe und Breite in Zoll und mit einem 'x' getrennt, wie z.B. '5x7'.")
+    @Localize(locale = "ru",
+              value = "При создании PDF или PNG из командной строки, позволяет указывать размер бумаги, отличный от того, что содержится в файле. Можно выбрать следующие: Letter, A4 или ширину и высоту в дюймах и разделенную 'х', например '5x7'.")
+    @Localize(locale = "es",
+              value = "Cuando se genera en formato PDF o PNG desde la linea de mandatos,se permite especificar el tamaño de papel, en lugar del valor contenido en el archivo. Las elecciones válidas son: LETTER, A4, o ancho y alto en pulgadas separado por una 'x', como por ejemplo '5x7'.")
     private static String SIZE_OPTION_DESCRIPTION;
     @Localize("When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'.")
-    @Localize(locale = "de", value = "Erlaubt, bei der Erstellung von PDF-Dateien oder PNG-Dateien von der Kommandozeile aus, die zu verwendenden Ränder anzugeben, statt die im Charakterblatt angegebenen zu verwenden. Der obere, linke, untere und rechte Rand müssen alle in Zoll angegeben werden, getrennt durch Doppelpunke, wie z.B. '1:1:1:1'.")
-    @Localize(locale = "ru", value = "При создании PDF или PNG из командной строки, позволяет указать размеры отступов, отличные от тех, что содержатся в файле. Сверху, слева, снизу, и справа должны быть указаны в дюймах, разделенные двоеточиями, например '1:1:1:1'.")
-    @Localize(locale = "es", value = "Cuando se genera en formato PDF o PNG desde la linea de mandatos,se permite especificar las dimensiones de los márgenes, en lugar de los valores contenidos en el archivo. Las medidas de los márgenes superior, izquierdo, inferior y derecho, deben especificarse en pulgadas, separadas por dos puntos, como por ejemplo '1:1:1:1' .")
+    @Localize(locale = "de",
+              value = "Erlaubt, bei der Erstellung von PDF-Dateien oder PNG-Dateien von der Kommandozeile aus, die zu verwendenden Ränder anzugeben, statt die im Charakterblatt angegebenen zu verwenden. Der obere, linke, untere und rechte Rand müssen alle in Zoll angegeben werden, getrennt durch Doppelpunke, wie z.B. '1:1:1:1'.")
+    @Localize(locale = "ru",
+              value = "При создании PDF или PNG из командной строки, позволяет указать размеры отступов, отличные от тех, что содержатся в файле. Сверху, слева, снизу, и справа должны быть указаны в дюймах, разделенные двоеточиями, например '1:1:1:1'.")
+    @Localize(locale = "es",
+              value = "Cuando se genera en formato PDF o PNG desde la linea de mandatos,se permite especificar las dimensiones de los márgenes, en lugar de los valores contenidos en el archivo. Las medidas de los márgenes superior, izquierdo, inferior y derecho, deben especificarse en pulgadas, separadas por dos puntos, como por ejemplo '1:1:1:1' .")
     private static String MARGIN_OPTION_DESCRIPTION;
     @Localize("You must specify one or more sheet files to process.")
     @Localize(locale = "de", value = "Es muss mindestens ein Charakterblatt angegeben werden.")
-    @Localize(locale = "ru", value = "Вы должны указать один или несколько файлов листов для обработки.")
-    @Localize(locale = "es", value = "Debes seleccionar uno o más archivos de Ficha de Personaje para procesarlas.")
+    @Localize(locale = "ru",
+              value = "Вы должны указать один или несколько файлов листов для обработки.")
+    @Localize(locale = "es",
+              value = "Debes seleccionar uno o más archivos de Ficha de Personaje para procesarlas.")
     private static String NO_FILES_TO_PROCESS;
     @Localize("Loading \"{0}\"... ")
     @Localize(locale = "de", value = "Lade \"{0}\"... ")
@@ -258,17 +270,17 @@ public class GCS {
     }
 
     private static int convert(CmdLine cmdLine) {
-        boolean text = cmdLine.isOptionUsed(GCS.TEXT_OPTION);
-        boolean pdf = cmdLine.isOptionUsed(GCS.PDF_OPTION);
-        boolean png = cmdLine.isOptionUsed(GCS.PNG_OPTION);
-        int count = 0;
+        boolean text  = cmdLine.isOptionUsed(GCS.TEXT_OPTION);
+        boolean pdf   = cmdLine.isOptionUsed(GCS.PDF_OPTION);
+        boolean png   = cmdLine.isOptionUsed(GCS.PNG_OPTION);
+        int     count = 0;
 
         if (text || pdf || png) {
-            double[] paperSize = getPaperSize(cmdLine);
-            double[] margins = getMargins(cmdLine);
-            Timing timing = new Timing();
-            String textTemplateOption = cmdLine.getOptionArgument(GCS.TEXT_TEMPLATE_OPTION);
-            File textTemplate = null;
+            double[] paperSize          = getPaperSize(cmdLine);
+            double[] margins            = getMargins(cmdLine);
+            Timing   timing             = new Timing();
+            String   textTemplateOption = cmdLine.getOptionArgument(GCS.TEXT_TEMPLATE_OPTION);
+            File     textTemplate       = null;
 
             if (textTemplateOption != null) {
                 textTemplate = new File(textTemplateOption);
@@ -280,12 +292,12 @@ public class GCS {
                     System.out.flush();
                     timing.reset();
                     try {
-                        GURPSCharacter character = new GURPSCharacter(file);
-                        CharacterSheet sheet = new CharacterSheet(character);
-                        PrerequisitesThread prereqs = new PrerequisitesThread(sheet);
-                        PrintManager settings = character.getPageSettings();
-                        File output;
-                        boolean success;
+                        GURPSCharacter      character = new GURPSCharacter(file);
+                        CharacterSheet      sheet     = new CharacterSheet(character);
+                        PrerequisitesThread prereqs   = new PrerequisitesThread(sheet);
+                        PrintManager        settings  = character.getPageSettings();
+                        File                output;
+                        boolean             success;
 
                         sheet.addNotify(); // Required to allow layout to work
                         sheet.rebuild();
@@ -306,7 +318,7 @@ public class GCS {
                             System.out.print(CREATING_TEXT);
                             System.out.flush();
                             textTemplate = TextTemplate.resolveTextTemplate(textTemplate);
-                            output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(textTemplate.getName())));
+                            output       = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(textTemplate.getName())));
                             timing.reset();
                             success = new TextTemplate(sheet).export(output, textTemplate);
                             System.out.println(timing);
@@ -357,7 +369,7 @@ public class GCS {
     private static double[] getPaperSize(CmdLine cmdLine) {
         if (cmdLine.isOptionUsed(GCS.SIZE_OPTION)) {
             String argument = cmdLine.getOptionArgument(GCS.SIZE_OPTION);
-            int index;
+            int    index;
 
             if ("LETTER".equalsIgnoreCase(argument)) { //$NON-NLS-1$
                 return new double[] { 8.5, 11 };
@@ -372,7 +384,7 @@ public class GCS {
                 index = argument.indexOf('X');
             }
             if (index != -1) {
-                double width = Numbers.extractDouble(argument.substring(0, index), -1.0, true);
+                double width  = Numbers.extractDouble(argument.substring(0, index), -1.0, true);
                 double height = Numbers.extractDouble(argument.substring(index + 1), -1.0, true);
 
                 if (width > 0.0 && height > 0.0) {
@@ -387,8 +399,8 @@ public class GCS {
     private static double[] getMargins(CmdLine cmdLine) {
         if (cmdLine.isOptionUsed(GCS.MARGIN_OPTION)) {
             StringTokenizer tokenizer = new StringTokenizer(cmdLine.getOptionArgument(GCS.MARGIN_OPTION), ":"); //$NON-NLS-1$
-            double[] values = new double[4];
-            int index = 0;
+            double[]        values    = new double[4];
+            int             index     = 0;
 
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();

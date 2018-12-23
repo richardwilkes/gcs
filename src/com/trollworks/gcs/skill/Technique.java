@@ -41,7 +41,8 @@ public class Technique extends Skill {
     @Localize(locale = "es", value = "{0}Requiere la habilidad {1}\n")
     private static String REQUIRES_SKILL;
     @Localize("{0}Requires at least 1 point in the skill named {1}\n")
-    @Localize(locale = "de", value = "{0}Benötigt mindestens einen Punkt in der Fertigkeit namens {1}")
+    @Localize(locale = "de",
+              value = "{0}Benötigt mindestens einen Punkt in der Fertigkeit namens {1}")
     @Localize(locale = "ru", value = "{0}Требуется хотя бы 1 очко в умении {1}\n")
     @Localize(locale = "es", value = "{0}Requiere al menos 1 punto en la habilidad {1}\n")
     private static String REQUIRES_POINTS;
@@ -60,19 +61,19 @@ public class Technique extends Skill {
     /**
      * Calculates the technique level.
      *
-     * @param character The character the technique will be attached to.
-     * @param name The name of the technique.
+     * @param character      The character the technique will be attached to.
+     * @param name           The name of the technique.
      * @param specialization The specialization of the technique.
-     * @param def The default the technique is based on.
-     * @param difficulty The difficulty of the technique.
-     * @param points The number of points spent in the technique.
-     * @param limited Whether the technique has been limited or not.
-     * @param limitModifier The maximum bonus the technique can grant.
+     * @param def            The default the technique is based on.
+     * @param difficulty     The difficulty of the technique.
+     * @param points         The number of points spent in the technique.
+     * @param limited        Whether the technique has been limited or not.
+     * @param limitModifier  The maximum bonus the technique can grant.
      * @return The calculated technique level.
      */
     public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
         int relativeLevel = 0;
-        int level = Integer.MIN_VALUE;
+        int level         = Integer.MIN_VALUE;
         if (character != null) {
             level = getBaseLevel(character, def);
             if (level != Integer.MIN_VALUE) {
@@ -91,7 +92,7 @@ public class Technique extends Skill {
                     int max = baseLevel + limitModifier;
                     if (level > max) {
                         relativeLevel -= level - max;
-                        level = max;
+                        level          = max;
                     }
                 }
             }
@@ -112,9 +113,9 @@ public class Technique extends Skill {
     /**
      * Creates a string suitable for displaying the level.
      *
-     * @param level The skill level.
+     * @param level         The skill level.
      * @param relativeLevel The relative skill level.
-     * @param modifier The modifer to the skill level.
+     * @param modifier      The modifer to the skill level.
      * @return The formatted string.
      */
     public static String getTechniqueDisplayLevel(int level, int relativeLevel, int modifier) {
@@ -138,15 +139,15 @@ public class Technique extends Skill {
     /**
      * Creates a clone of an existing technique and associates it with the specified data file.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile  The data file to associate it with.
      * @param technique The technique to clone.
-     * @param forSheet Whether this is for a character sheet or a list.
+     * @param forSheet  Whether this is for a character sheet or a list.
      */
     public Technique(DataFile dataFile, Technique technique, boolean forSheet) {
         super(dataFile, technique, false, forSheet);
-        mPoints = forSheet ? technique.mPoints : getDifficulty() == SkillDifficulty.A ? 1 : 2;
-        mDefault = new SkillDefault(technique.mDefault);
-        mLimited = technique.mLimited;
+        mPoints        = forSheet ? technique.mPoints : getDifficulty() == SkillDifficulty.A ? 1 : 2;
+        mDefault       = new SkillDefault(technique.mDefault);
+        mLimited       = technique.mLimited;
         mLimitModifier = technique.mLimitModifier;
         updateLevel(false);
     }
@@ -155,8 +156,8 @@ public class Technique extends Skill {
      * Loads a technique and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param reader   The XML reader to load from.
+     * @param state    The {@link LoadState} to use.
      */
     public Technique(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
         this(dataFile);
@@ -198,8 +199,8 @@ public class Technique extends Skill {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mDefault = new SkillDefault(SkillDefaultType.Skill, DEFAULT_NAME, null, 0);
-        mLimited = false;
+        mDefault       = new SkillDefault(SkillDefaultType.Skill, DEFAULT_NAME, null, 0);
+        mLimited       = false;
         mLimitModifier = 0;
     }
 
@@ -211,7 +212,7 @@ public class Technique extends Skill {
             try {
                 mLimitModifier = Integer.parseInt(value);
             } catch (Exception exception) {
-                mLimited = false;
+                mLimited       = false;
                 mLimitModifier = 0;
             }
         }
@@ -242,13 +243,13 @@ public class Technique extends Skill {
 
     /**
      * @param builder The {@link StringBuilder} to append this technique's satisfied/unsatisfied
-     *            description to. May be <code>null</code>.
-     * @param prefix The prefix to add to each line appended to the builder.
+     *                description to. May be <code>null</code>.
+     * @param prefix  The prefix to add to each line appended to the builder.
      * @return <code>true</code> if this technique has its default satisfied.
      */
     public boolean satisfied(StringBuilder builder, String prefix) {
         if (mDefault.getType().isSkillBased()) {
-            Skill skill = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<String>());
+            Skill   skill     = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<String>());
             boolean satisfied = skill != null && skill.getPoints() > 0;
             if (!satisfied && builder != null) {
                 if (skill == null) {

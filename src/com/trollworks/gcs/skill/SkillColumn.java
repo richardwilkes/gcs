@@ -61,7 +61,7 @@ public enum SkillColumn {
         @Override
         public String getDataAsText(Skill skill) {
             StringBuilder builder = new StringBuilder();
-            String notes = skill.getNotes();
+            String        notes   = skill.getNotes();
 
             builder.append(skill.toString());
             if (notes.length() > 0) {
@@ -186,7 +186,7 @@ public enum SkillColumn {
                     int points = skill.getPoints();
                     if (points > 0) {
                         SkillDifficulty difficulty = skill.getDifficulty();
-                        int level;
+                        int             level;
                         if (skill instanceof Technique) {
                             if (difficulty != SkillDifficulty.A) {
                                 points--;
@@ -214,7 +214,7 @@ public enum SkillColumn {
         @Override
         public String getDataAsText(Skill skill) {
             if (!skill.canHaveChildren()) {
-                int level = getRelativeLevel(skill);
+                int           level = getRelativeLevel(skill);
                 StringBuilder builder;
 
                 if (level == Integer.MIN_VALUE) {
@@ -333,9 +333,11 @@ public enum SkillColumn {
     @Localize(locale = "es", value = "Habilidades")
     static String DESCRIPTION_TITLE;
     @Localize("The name, specialty, tech level and notes describing a skill")
-    @Localize(locale = "de", value = "Der Name, Spezialisierung, Techlevel und Anmerkungen, die die Fertigkeit beschreiben")
+    @Localize(locale = "de",
+              value = "Der Name, Spezialisierung, Techlevel und Anmerkungen, die die Fertigkeit beschreiben")
     @Localize(locale = "ru", value = "Название, специализация, ТУ и заметки умения")
-    @Localize(locale = "es", value = "Nombre, especialización, nivel tecnológico y notas que describen una habilidad")
+    @Localize(locale = "es",
+              value = "Nombre, especialización, nivel tecnológico y notas que describen una habilidad")
     static String DESCRIPTION_TOOLTIP;
     @Localize("SL")
     @Localize(locale = "de", value = "FW")
@@ -383,7 +385,8 @@ public enum SkillColumn {
     @Localize(locale = "es", value = "Categoría")
     static String CATEGORY_TITLE;
     @Localize("The category or categories the skill belongs to")
-    @Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört")
+    @Localize(locale = "de",
+              value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört")
     @Localize(locale = "ru", value = "Категория или категории, к которым относится умение")
     @Localize(locale = "es", value = "Categoría o categorías a las que pertenece la habilidad")
     static String CATEGORY_TOOLTIP;
@@ -392,9 +395,12 @@ public enum SkillColumn {
     @Localize(locale = "ru", value = "Ссыл")
     static String REFERENCE_TITLE;
     @Localize("A reference to the book and page this skill appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая умение (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página en donde se menciona la habilidad (p.e. B22 se refiere al \"Manual Básico\", página 22)")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая умение (например B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página en donde se menciona la habilidad (p.e. B22 se refiere al \"Manual Básico\", página 22)")
     static String REFERENCE_TOOLTIP;
 
     static {
@@ -428,12 +434,12 @@ public enum SkillColumn {
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
-     * @param outline The {@link Outline} to use.
+     * @param outline  The {@link Outline} to use.
      * @param dataFile The {@link DataFile} that data is being displayed for.
      */
     public static void addColumns(Outline outline, DataFile dataFile) {
-        boolean sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
-        OutlineModel model = outline.getModel();
+        boolean      sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        OutlineModel model           = outline.getModel();
         for (SkillColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());

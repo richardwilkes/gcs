@@ -26,7 +26,7 @@ public class StringCriteria {
     /**
      * Creates a new string comparison.
      *
-     * @param type The type of comparison.
+     * @param type      The type of comparison.
      * @param qualifier The qualifier to match against.
      */
     public StringCriteria(StringCompareType type, String qualifier) {
@@ -40,7 +40,7 @@ public class StringCriteria {
      * @param other A {@link StringCriteria} to clone.
      */
     public StringCriteria(StringCriteria other) {
-        mType = other.mType;
+        mType      = other.mType;
         mQualifier = other.mQualifier;
     }
 

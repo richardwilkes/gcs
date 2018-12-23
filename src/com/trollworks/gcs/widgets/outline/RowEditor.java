@@ -83,48 +83,48 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      * Brings up a modal detailed editor for each row in the list.
      *
      * @param owner The owning component.
-     * @param list The rows to edit.
+     * @param list  The rows to edit.
      * @return Whether anything was modified.
      */
     @SuppressWarnings("unused")
     static public boolean edit(Component owner, List<? extends ListRow> list) {
         ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-        ListRow[] rows = list.toArray(new ListRow[0]);
+        ListRow[]          rows  = list.toArray(new ListRow[0]);
 
         for (int i = 0; i < rows.length; i++) {
-            boolean hasMore = i != rows.length - 1;
-            ListRow row = rows[i];
-            RowEditor<? extends ListRow> editor = row.createEditor();
-            String title = MessageFormat.format(WINDOW_TITLE, row.getRowType());
-            JPanel wrapper = new JPanel(new BorderLayout());
+            boolean                      hasMore = i != rows.length - 1;
+            ListRow                      row     = rows[i];
+            RowEditor<? extends ListRow> editor  = row.createEditor();
+            String                       title   = MessageFormat.format(WINDOW_TITLE, row.getRowType());
+            JPanel                       wrapper = new JPanel(new BorderLayout());
 
             if (hasMore) {
-                int remaining = rows.length - i - 1;
-                String msg = remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, Integer.valueOf(remaining));
-                JLabel panel = new JLabel(msg, SwingConstants.CENTER);
+                int    remaining = rows.length - i - 1;
+                String msg       = remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, Integer.valueOf(remaining));
+                JLabel panel     = new JLabel(msg, SwingConstants.CENTER);
                 panel.setBorder(new EmptyBorder(0, 0, 10, 0));
                 wrapper.add(panel, BorderLayout.NORTH);
             }
             wrapper.add(editor, BorderLayout.CENTER);
 
-            int type = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
+            int      type    = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
             String[] options = hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL };
             switch (WindowUtils.showOptionDialog(owner, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, APPLY)) {
-                case JOptionPane.YES_OPTION:
-                    RowUndo undo = new RowUndo(row);
-                    if (editor.applyChanges()) {
-                        if (undo.finish()) {
-                            undos.add(undo);
-                        }
+            case JOptionPane.YES_OPTION:
+                RowUndo undo = new RowUndo(row);
+                if (editor.applyChanges()) {
+                    if (undo.finish()) {
+                        undos.add(undo);
                     }
-                    break;
-                case JOptionPane.NO_OPTION:
-                    break;
-                case JOptionPane.CANCEL_OPTION:
-                case JOptionPane.CLOSED_OPTION:
-                default:
-                    i = rows.length;
-                    break;
+                }
+                break;
+            case JOptionPane.NO_OPTION:
+                break;
+            case JOptionPane.CANCEL_OPTION:
+            case JOptionPane.CLOSED_OPTION:
+            default:
+                i = rows.length;
+                break;
             }
             editor.finished();
         }
@@ -143,7 +143,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      */
     protected RowEditor(T row) {
         super(new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
-        mRow = row;
+        mRow        = row;
         mIsEditable = !mRow.getOwner().isLocked();
     }
 

@@ -108,7 +108,7 @@ public abstract class FeatureEditor extends EditorPanel {
     /**
      * Creates a new {@link FeatureEditor}.
      *
-     * @param row The row this feature will belong to.
+     * @param row     The row this feature will belong to.
      * @param feature The feature to edit.
      * @return The newly created editor panel.
      */
@@ -140,12 +140,12 @@ public abstract class FeatureEditor extends EditorPanel {
     /**
      * Creates a new {@link FeatureEditor}.
      *
-     * @param row The row this feature will belong to.
+     * @param row     The row this feature will belong to.
      * @param feature The feature to edit.
      */
     public FeatureEditor(ListRow row, Feature feature) {
         super();
-        mRow = row;
+        mRow     = row;
         mFeature = feature;
         rebuild();
     }
@@ -153,8 +153,8 @@ public abstract class FeatureEditor extends EditorPanel {
     /** Rebuilds the contents of this panel with the current feature settings. */
     protected void rebuild() {
         removeAll();
-        FlexGrid grid = new FlexGrid();
-        FlexRow right = new FlexRow();
+        FlexGrid grid  = new FlexGrid();
+        FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
             IconButton button = new IconButton(StdImage.REMOVE, REMOVE_FEATURE_TOOLTIP, () -> removeFeature());
@@ -173,7 +173,7 @@ public abstract class FeatureEditor extends EditorPanel {
     /**
      * Sub-classes must implement this method to add any components they want to be visible.
      *
-     * @param grid The general {@link FlexGrid}. Add items in column 0.
+     * @param grid  The general {@link FlexGrid}. Add items in column 0.
      * @param right The right-side {@link FlexRow}, situated in grid row 0, column 1.
      */
     protected abstract void rebuildSelf(FlexGrid grid, FlexRow right);
@@ -190,9 +190,9 @@ public abstract class FeatureEditor extends EditorPanel {
         if (mRow instanceof Equipment) {
             choices.add(CONTAINED_WEIGHT_REDUCTION);
         }
-        Class<?> type = mFeature.getClass();
-        Object current = choices.get(0);
-        int length = choices.size();
+        Class<?> type    = mFeature.getClass();
+        Object   current = choices.get(0);
+        int      length  = choices.size();
         for (int i = 0; i < length; i++) {
             if (type.equals(BASE_TYPES[i])) {
                 current = choices.get(i);
@@ -211,15 +211,15 @@ public abstract class FeatureEditor extends EditorPanel {
      */
     protected EditorField addLeveledAmountField(LeveledAmount amt, int min, int max) {
         AbstractFormatter formatter;
-        Object value;
-        Object prototype;
+        Object            value;
+        Object            prototype;
         if (amt.isIntegerOnly()) {
             formatter = new IntegerFormatter(min, max, true);
-            value = Integer.valueOf(amt.getIntegerAmount());
+            value     = Integer.valueOf(amt.getIntegerAmount());
             prototype = Integer.valueOf(max);
         } else {
             formatter = new DoubleFormatter(min, max, true);
-            value = Double.valueOf(amt.getAmount());
+            value     = Double.valueOf(amt.getAmount());
             prototype = Double.valueOf(max + 0.25);
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, prototype, null);
@@ -230,7 +230,7 @@ public abstract class FeatureEditor extends EditorPanel {
     }
 
     /**
-     * @param amt The current leveled amount object.
+     * @param amt       The current leveled amount object.
      * @param usePerDie Whether to use the "per die" message or the "per level" message.
      * @return The {@link JComboBox} that allows a {@link LeveledAmount} to be changed.
      */
@@ -272,8 +272,8 @@ public abstract class FeatureEditor extends EditorPanel {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        JComponent parent = (JComponent) getParent();
+        String     command = event.getActionCommand();
+        JComponent parent  = (JComponent) getParent();
 
         if (LeveledAmount.ATTRIBUTE_PER_LEVEL.equals(command)) {
             ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountCombo.getSelectedIndex() == 1);
@@ -299,8 +299,8 @@ public abstract class FeatureEditor extends EditorPanel {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
-            EditorField field = (EditorField) event.getSource();
-            LeveledAmount amt = (LeveledAmount) field.getClientProperty(LeveledAmount.class);
+            EditorField   field = (EditorField) event.getSource();
+            LeveledAmount amt   = (LeveledAmount) field.getClientProperty(LeveledAmount.class);
             if (amt != null) {
                 if (amt.isIntegerOnly()) {
                     amt.setAmount(((Integer) field.getValue()).intValue());

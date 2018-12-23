@@ -75,9 +75,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Localize(locale = "es", value = "Nivel")
     private static String EDITOR_LEVEL;
     @Localize("The skill level and relative skill level to roll against")
-    @Localize(locale = "de", value = "Der Fertigkeitswert und relativer Fertigkeitswert, gegen die gewürfelt werden muss")
-    @Localize(locale = "ru", value = "Уровень умения и относительный уровень умения для повторного броска")
-    @Localize(locale = "es", value = "Nivel y nivel relativo de la habilidad a superar con la tirada")
+    @Localize(locale = "de",
+              value = "Der Fertigkeitswert und relativer Fertigkeitswert, gegen die gewürfelt werden muss")
+    @Localize(locale = "ru",
+              value = "Уровень умения и относительный уровень умения для повторного броска")
+    @Localize(locale = "es",
+              value = "Nivel y nivel relativo de la habilidad a superar con la tirada")
     private static String EDITOR_LEVEL_TOOLTIP;
     @Localize("Difficulty")
     @Localize(locale = "de", value = "Schwierigkeit")
@@ -86,7 +89,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private static String EDITOR_DIFFICULTY;
     @Localize("The base name of the technique, without any notes or specialty information")
     @Localize(locale = "de", value = "Der Name der Technik ohne Anmerkungen oder Spezialisierung")
-    @Localize(locale = "ru", value = "Базовое название техники, без заметок или информации по специализации")
+    @Localize(locale = "ru",
+              value = "Базовое название техники, без заметок или информации по специализации")
     @Localize(locale = "es", value = "Nombre de la técnica, sin notas ni otra información")
     private static String TECHNIQUE_NAME_TOOLTIP;
     @Localize("The name field may not be empty")
@@ -95,9 +99,11 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Localize(locale = "es", value = "El nombre no puede estar en blanco")
     private static String TECHNIQUE_NAME_CANNOT_BE_EMPTY;
     @Localize("Any notes that you would like to show up in the list along with this technique")
-    @Localize(locale = "de", value = "Anmerkungen, die in der Liste neben der Technik erscheinen sollen")
+    @Localize(locale = "de",
+              value = "Anmerkungen, die in der Liste neben der Technik erscheinen sollen")
     @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с техникой")
-    @Localize(locale = "es", value = "Cualquier nota que te gustaría que se mostrara junto a la técnica")
+    @Localize(locale = "es",
+              value = "Cualquier nota que te gustaría que se mostrara junto a la técnica")
     private static String TECHNIQUE_NOTES_TOOLTIP;
     @Localize("The difficulty of learning this technique")
     @Localize(locale = "de", value = "Die Schwierigkeit dieser Fertikgeit")
@@ -115,9 +121,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Localize(locale = "es", value = "Puntos consumidos en la técnica")
     private static String TECHNIQUE_POINTS_TOOLTIP;
     @Localize("A reference to the book and page this technique appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Technik beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая технику (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página en donde se menciona la técnica (p.e. B22 se refiere al \"Manual Básico\", página 22)")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der diese Technik beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая технику (например B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página en donde se menciona la técnica (p.e. B22 se refiere al \"Manual Básico\", página 22)")
     private static String TECHNIQUE_REFERENCE_TOOLTIP;
     @Localize("Defaults To")
     @Localize(locale = "de", value = "Grundwert auf")
@@ -125,7 +134,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Localize(locale = "es", value = "Por defecto")
     private static String DEFAULTS_TO;
     @Localize("The name of the skill this technique defaults from")
-    @Localize(locale = "de", value = "Der Name der Fertigkeit, von welcher diese Technik ihren Grundwert bezieht")
+    @Localize(locale = "de",
+              value = "Der Name der Fertigkeit, von welcher diese Technik ihren Grundwert bezieht")
     @Localize(locale = "ru", value = "Название умения, для которой предназначена техника")
     @Localize(locale = "es", value = "Nombre de la habilidad por defecto para esta técnica ")
     private static String DEFAULTS_TO_TOOLTIP;
@@ -135,19 +145,26 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Localize(locale = "ru", value = "Поле \"Название по умолчанию\" не может быть пустым")
     private static String DEFAULT_NAME_CANNOT_BE_EMPTY;
     @Localize("The specialization of the skill, if any, this technique defaults from")
-    @Localize(locale = "de", value = "Die Spezialisierung für diese Fertigkeit, wenn eine genommen wurde, von welcher diese Technik ihren Grundwert bezieht")
-    @Localize(locale = "ru", value = "Специализация умения, если есть, для которой предназначена техника")
-    @Localize(locale = "es", value = "Especialización de Habilidad, si la hay, esta técnica toma su valor por defecto de")
+    @Localize(locale = "de",
+              value = "Die Spezialisierung für diese Fertigkeit, wenn eine genommen wurde, von welcher diese Technik ihren Grundwert bezieht")
+    @Localize(locale = "ru",
+              value = "Специализация умения, если есть, для которой предназначена техника")
+    @Localize(locale = "es",
+              value = "Especialización de Habilidad, si la hay, esta técnica toma su valor por defecto de")
     private static String DEFAULT_SPECIALIZATION_TOOLTIP;
     @Localize("The amount to adjust the default skill level by")
     @Localize(locale = "de", value = "Um wieviel der Fertigkeitswert des Grundwerts angepasst wird")
     @Localize(locale = "ru", value = "Значение уровня умения по умолчанию")
-    @Localize(locale = "es", value = "Cantidad hasta la que puede ajustarse el nivel de la habilidad por defecto")
+    @Localize(locale = "es",
+              value = "Cantidad hasta la que puede ajustarse el nivel de la habilidad por defecto")
     private static String DEFAULT_MODIFIER_TOOLTIP;
     @Localize("Cannot exceed default skill level by more than")
-    @Localize(locale = "de", value = "Kann den Fertigkeitswert des Grundwerts nicht übersteigen um mehr als")
-    @Localize(locale = "ru", value = "Не может превышать уровень умения по умолчанию, больше чем на")
-    @Localize(locale = "es", value = "No puede exceder el nivel de la habilidad por defecto en más de")
+    @Localize(locale = "de",
+              value = "Kann den Fertigkeitswert des Grundwerts nicht übersteigen um mehr als")
+    @Localize(locale = "ru",
+              value = "Не может превышать уровень умения по умолчанию, больше чем на")
+    @Localize(locale = "es",
+              value = "No puede exceder el nivel de la habilidad por defecto en más de")
     private static String LIMIT;
     @Localize("Whether to limit the maximum level that can be achieved or not")
     @Localize(locale = "de", value = "Ob der Fertigkeitswert der Technik eine Obergrenze hat")
@@ -155,9 +172,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Localize(locale = "es", value = "Si se ha alcanzado o no el máximo nivel al que puede llegar")
     private static String LIMIT_TOOLTIP;
     @Localize("The maximum amount above the default skill level that this technique can be raised")
-    @Localize(locale = "de", value = "Die maximale Erhöhung über den Fertigkeitswert des Grundwerts.")
-    @Localize(locale = "ru", value = "Максимальное значение выше уровня умения по умолчанию, при котором эта техника может быть использована")
-    @Localize(locale = "es", value = "Cantidad máxima sobre la habilidad por defecto que puede alcanzar esta técnica")
+    @Localize(locale = "de",
+              value = "Die maximale Erhöhung über den Fertigkeitswert des Grundwerts.")
+    @Localize(locale = "ru",
+              value = "Максимальное значение выше уровня умения по умолчанию, при котором эта техника может быть использована")
+    @Localize(locale = "es",
+              value = "Cantidad máxima sobre la habilidad por defecto que puede alcanzar esta técnica")
     private static String LIMIT_AMOUNT_TOOLTIP;
     @Localize("Categories")
     @Localize(locale = "de", value = "Kategorie")
@@ -165,9 +185,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Localize(locale = "es", value = "Categoría")
     private static String CATEGORIES;
     @Localize("The category or categories the technique belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru", value = "Категория или категории, к которым относится техника (перечислить через запятую)")
-    @Localize(locale = "es", value = "Categoría o categorías a las que pertenece la técnica (separa categorías multiples con una coma)")
+    @Localize(locale = "de",
+              value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört (trenne mehrere Kategorien mit einem Komma)")
+    @Localize(locale = "ru",
+              value = "Категория или категории, к которым относится техника (перечислить через запятую)")
+    @Localize(locale = "es",
+              value = "Categoría o categorías a las que pertenece la técnica (separa categorías multiples con una coma)")
     private static String CATEGORIES_TOOLTIP;
 
     static {
@@ -204,17 +227,17 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     public TechniqueEditor(Technique technique) {
         super(technique);
 
-        JPanel content = new JPanel(new ColumnLayout(2));
-        JPanel fields = new JPanel(new ColumnLayout(2));
-        JLabel icon = new JLabel(technique.getIcon(true));
+        JPanel    content = new JPanel(new ColumnLayout(2));
+        JPanel    fields  = new JPanel(new ColumnLayout(2));
+        JLabel    icon    = new JLabel(technique.getIcon(true));
         Container wrapper;
 
-        mNameField = createCorrectableField(fields, fields, NAME, technique.getName(), TECHNIQUE_NAME_TOOLTIP);
-        mNotesField = createField(fields, fields, NOTES, technique.getNotes(), TECHNIQUE_NOTES_TOOLTIP, 0);
+        mNameField       = createCorrectableField(fields, fields, NAME, technique.getName(), TECHNIQUE_NAME_TOOLTIP);
+        mNotesField      = createField(fields, fields, NOTES, technique.getNotes(), TECHNIQUE_NOTES_TOOLTIP, 0);
         mCategoriesField = createField(fields, fields, CATEGORIES, technique.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
         createDefaults(fields);
         createLimits(fields);
-        wrapper = createDifficultyPopups(fields);
+        wrapper         = createDifficultyPopups(fields);
         mReferenceField = createField(wrapper, wrapper, EDITOR_REFERENCE, mRow.getReference(), TECHNIQUE_REFERENCE_TOOLTIP, 6);
         icon.setVerticalAlignment(SwingConstants.TOP);
         icon.setAlignmentY(-1f);
@@ -222,10 +245,10 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         content.add(fields);
         add(content);
 
-        mTabPanel = new JTabbedPane();
-        mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-        mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-        mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
+        mTabPanel      = new JTabbedPane();
+        mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
+        mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
+        mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
         mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
         Component panel = embedEditor(mPrereqs);
         mTabPanel.addTab(panel.getName(), panel);
@@ -238,9 +261,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private void createDefaults(Container parent) {
-        mDefaultPanel = new JPanel(new ColumnLayout(4));
+        mDefaultPanel      = new JPanel(new ColumnLayout(4));
         mDefaultPanelLabel = new LinkedLabel(DEFAULTS_TO);
-        mDefaultTypeCombo = createComboBox(mDefaultPanel, SkillDefaultType.values(), mRow.getDefault().getType());
+        mDefaultTypeCombo  = createComboBox(mDefaultPanel, SkillDefaultType.values(), mRow.getDefault().getType());
         mDefaultTypeCombo.setEnabled(mIsEditable);
 
         parent.add(mDefaultPanelLabel);
@@ -263,8 +286,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private String getSpecialization() {
-        StringBuilder builder = new StringBuilder();
-        String specialization = mDefaultSpecializationField.getText();
+        StringBuilder builder        = new StringBuilder();
+        String        specialization = mDefaultSpecializationField.getText();
 
         builder.append(mDefaultNameField.getText());
         if (specialization.length() > 0) {
@@ -277,16 +300,16 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     private void rebuildDefaultPanel() {
         SkillDefault def = mRow.getDefault();
-        boolean skillBased;
+        boolean      skillBased;
 
         mLastDefaultType = getDefaultType();
-        skillBased = mLastDefaultType.isSkillBased();
+        skillBased       = mLastDefaultType.isSkillBased();
         Commitable.sendCommitToFocusOwner();
         while (mDefaultPanel.getComponentCount() > 1) {
             mDefaultPanel.remove(1);
         }
         if (skillBased) {
-            mDefaultNameField = createCorrectableField(null, mDefaultPanel, DEFAULTS_TO, def.getName(), DEFAULTS_TO_TOOLTIP);
+            mDefaultNameField           = createCorrectableField(null, mDefaultPanel, DEFAULTS_TO, def.getName(), DEFAULTS_TO_TOOLTIP);
             mDefaultSpecializationField = createField(null, mDefaultPanel, null, def.getSpecialization(), DEFAULT_SPECIALIZATION_TOOLTIP, 0);
             mDefaultPanelLabel.setLink(mDefaultNameField);
         }
@@ -381,10 +404,10 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private Container createDifficultyPopups(Container parent) {
-        GURPSCharacter character = mRow.getCharacter();
-        boolean forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
-        JLabel label = new JLabel(EDITOR_DIFFICULTY, SwingConstants.RIGHT);
-        JPanel wrapper = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 8 : 6 : 4));
+        GURPSCharacter character              = mRow.getCharacter();
+        boolean        forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
+        JLabel         label                  = new JLabel(EDITOR_DIFFICULTY, SwingConstants.RIGHT);
+        JPanel         wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 8 : 6 : 4));
 
         label.setToolTipText(Text.wrapPlainTextForToolTip(TECHNIQUE_DIFFICULTY_TOOLTIP));
 

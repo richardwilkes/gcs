@@ -49,9 +49,12 @@ import javax.swing.event.DocumentListener;
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
     @Localize("A reference to the book and page this equipment appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая снаряжение (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página donde se menciona el equipo (p.e. B22 se refiere al \"Manual Básico\", página 22).")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая снаряжение (например B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página donde se menciona el equipo (p.e. B22 se refiere al \"Manual Básico\", página 22).")
     private static String REFERENCE_TOOLTIP;
     @Localize("The value of one of these pieces of equipment")
     @Localize(locale = "de", value = "Der Wert eines einzelnen Ausrüstungsgegenstandes")
@@ -59,9 +62,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @Localize(locale = "es", value = "Valor unitario de cada pieza de equipo.")
     private static String VALUE_TOOLTIP;
     @Localize("The value of all of these pieces of equipment, plus the value of any contained equipment")
-    @Localize(locale = "de", value = "Der Wert aller dieser Ausrüstungsgegenstände und der Wert der darin enthaltenen Ausrüstung")
-    @Localize(locale = "ru", value = "Цена всего снаряжения, плюс цена любого входящего в него снаряжения")
-    @Localize(locale = "es", value = "Valor de todas las piezas de equipo, más el valor de lo que contengan.")
+    @Localize(locale = "de",
+              value = "Der Wert aller dieser Ausrüstungsgegenstände und der Wert der darin enthaltenen Ausrüstung")
+    @Localize(locale = "ru",
+              value = "Цена всего снаряжения, плюс цена любого входящего в него снаряжения")
+    @Localize(locale = "es",
+              value = "Valor de todas las piezas de equipo, más el valor de lo que contengan.")
     private static String EXT_VALUE_TOOLTIP;
     @Localize("Name")
     @Localize(locale = "de", value = "Name")
@@ -86,7 +92,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @Localize("The first Tech Level this equipment is available at")
     @Localize(locale = "de", value = "Der Techlevel, ab dem diese Ausrüstung zur Verfügung steht")
     @Localize(locale = "ru", value = "Первый тех. уровень этого снаряжения доступен с")
-    @Localize(locale = "es", value = "Nivel Tecnológico a partir del cual el equipo está disponible.")
+    @Localize(locale = "es",
+              value = "Nivel Tecnológico a partir del cual el equipo está disponible.")
     private static String EDITOR_TECH_LEVEL_TOOLTIP;
     @Localize("Legality Class")
     @Localize(locale = "de", value = "Legalitätsklasse")
@@ -133,9 +140,11 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @Localize(locale = "es", value = "Peso ampliado")
     private static String EDITOR_EXTENDED_WEIGHT;
     @Localize("The total weight of this quantity of equipment, plus everything contained by it")
-    @Localize(locale = "de", value = "Das Gewicht aller dieser Ausrüstungsgegenstände und das Gewicht der darin enthaltenen Ausrüstung")
+    @Localize(locale = "de",
+              value = "Das Gewicht aller dieser Ausrüstungsgegenstände und das Gewicht der darin enthaltenen Ausrüstung")
     @Localize(locale = "ru", value = "Общий вес имеющегося снаряжения и его содержимого")
-    @Localize(locale = "es", value = "Peso total de todo el equipo, más el peso de lo que contengan")
+    @Localize(locale = "es",
+              value = "Peso total de todo el equipo, más el peso de lo que contengan")
     private static String EDITOR_EXTENDED_WEIGHT_TOOLTIP;
     @Localize("Categories")
     @Localize(locale = "de", value = "Kategorien")
@@ -143,9 +152,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @Localize(locale = "es", value = "Categorías")
     private static String CATEGORIES;
     @Localize("The category or categories the equipment belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen diese Ausrüstung angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru", value = "Категория или категории снаряжения, к которым оно принадлежит (несколько категорий разделяются точкой с запятой)")
-    @Localize(locale = "es", value = "Categoría o categorías a las que pertenece el equipo (múltiples categorías separadas con comas)")
+    @Localize(locale = "de",
+              value = "Die Kategorie oder Kategorien, denen diese Ausrüstung angehört (trenne mehrere Kategorien mit einem Komma)")
+    @Localize(locale = "ru",
+              value = "Категория или категории снаряжения, к которым оно принадлежит (несколько категорий разделяются точкой с запятой)")
+    @Localize(locale = "es",
+              value = "Categoría o categorías a las que pertenece el equipo (múltiples categorías separadas con comas)")
     private static String CATEGORIES_TOOLTIP;
     @Localize("Notes")
     @Localize(locale = "de", value = "Anmerkungen")
@@ -153,7 +165,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @Localize(locale = "es", value = "Notas")
     private static String NOTES;
     @Localize("Any notes that you would like to show up in the list along with this equipment")
-    @Localize(locale = "de", value = "Anmerkungen, die in der Liste neben der Ausrüstung erscheinen sollen")
+    @Localize(locale = "de",
+              value = "Anmerkungen, die in der Liste neben der Ausrüstung erscheinen sollen")
     @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с снаряжением")
     @Localize(locale = "es", value = "Cualquier nota que te gustaría mostar en la lista de equipo")
     private static String NOTES_TOOLTIP;
@@ -163,9 +176,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @Localize(locale = "es", value = "Página de referencia")
     private static String EDITOR_REFERENCE;
     @Localize("Items that are not equipped do not apply any features they may normally contribute to the character.")
-    @Localize(locale = "de", value = "Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
-    @Localize(locale = "ru", value = "Не экипированные предметы не добавляют свойств, которые обычно может использовать персонаж.")
-    @Localize(locale = "es", value = "Los objetos no equipados no aplican sus características como harían normalmente al personaje.")
+    @Localize(locale = "de",
+              value = "Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
+    @Localize(locale = "ru",
+              value = "Не экипированные предметы не добавляют свойств, которые обычно может использовать персонаж.")
+    @Localize(locale = "es",
+              value = "Los objetos no equipados no aplican sus características como harían normalmente al personaje.")
     private static String STATE_TOOLTIP;
 
     static {
@@ -201,16 +217,16 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         super(equipment);
 
         JPanel content = new JPanel(new ColumnLayout(2));
-        JPanel fields = new JPanel(new ColumnLayout(2));
-        JLabel icon = new JLabel(equipment.getIcon(true));
+        JPanel fields  = new JPanel(new ColumnLayout(2));
+        JLabel icon    = new JLabel(equipment.getIcon(true));
         JPanel wrapper = new JPanel(new ColumnLayout(2));
 
         mDescriptionField = createCorrectableField(fields, NAME, equipment.getDescription(), NAME_TOOLTIP);
         createSecondLineFields(fields);
         createValueAndWeightFields(fields);
-        mNotesField = createField(fields, fields, NOTES, equipment.getNotes(), NOTES_TOOLTIP, 0);
+        mNotesField      = createField(fields, fields, NOTES, equipment.getNotes(), NOTES_TOOLTIP, 0);
         mCategoriesField = createField(fields, fields, CATEGORIES, equipment.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
-        mReferenceField = createField(fields, wrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
+        mReferenceField  = createField(fields, wrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
         wrapper.add(new JPanel());
         fields.add(wrapper);
         icon.setVerticalAlignment(SwingConstants.TOP);
@@ -219,10 +235,10 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         content.add(fields);
         add(content);
 
-        mTabPanel = new JTabbedPane();
-        mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-        mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-        mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
+        mTabPanel      = new JTabbedPane();
+        mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
+        mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
+        mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
         mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
         mTabPanel.addTab(mMeleeWeapons.getName(), mMeleeWeapons);
         mTabPanel.addTab(mRangedWeapons.getName(), mRangedWeapons);
@@ -244,12 +260,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     private void createSecondLineFields(Container parent) {
         boolean isContainer = mRow.canHaveChildren();
-        JPanel wrapper = new JPanel(new ColumnLayout((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
+        JPanel  wrapper     = new JPanel(new ColumnLayout((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
 
         if (!isContainer) {
             mQtyField = createIntegerNumberField(parent, wrapper, EDITOR_QUANTITY, mRow.getQuantity(), EDITOR_QUANTITY_TOOLTIP, 9);
         }
-        mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, EDITOR_TECH_LEVEL, mRow.getTechLevel(), EDITOR_TECH_LEVEL_TOOLTIP, 3);
+        mTechLevelField     = createField(isContainer ? parent : wrapper, wrapper, EDITOR_TECH_LEVEL, mRow.getTechLevel(), EDITOR_TECH_LEVEL_TOOLTIP, 3);
         mLegalityClassField = createField(wrapper, wrapper, EDITOR_LEGALITY_CLASS, mRow.getLegalityClass(), EDITOR_LEGALITY_CLASS_TOOLTIP, 3);
         if (showEquipmentState()) {
             mStateCombo = new JComboBox<>(EquipmentState.values());
@@ -264,23 +280,23 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void createValueAndWeightFields(Container parent) {
-        JPanel wrapper = new JPanel(new ColumnLayout(4));
+        JPanel    wrapper = new JPanel(new ColumnLayout(4));
         Component first;
 
         mContainedValue = mRow.getExtendedValue() - mRow.getValue() * mRow.getQuantity();
-        mValueField = createNumberField(parent, wrapper, EDITOR_VALUE, mRow.getValue(), VALUE_TOOLTIP, 13);
-        mExtValueField = createNumberField(wrapper, wrapper, EDITOR_EXTENDED_VALUE, mRow.getExtendedValue(), EXT_VALUE_TOOLTIP, 13);
-        first = wrapper.getComponent(1);
+        mValueField     = createNumberField(parent, wrapper, EDITOR_VALUE, mRow.getValue(), VALUE_TOOLTIP, 13);
+        mExtValueField  = createNumberField(wrapper, wrapper, EDITOR_EXTENDED_VALUE, mRow.getExtendedValue(), EXT_VALUE_TOOLTIP, 13);
+        first           = wrapper.getComponent(1);
         mExtValueField.setEnabled(false);
         wrapper.add(new JPanel());
         parent.add(wrapper);
 
-        wrapper = new JPanel(new ColumnLayout(3));
+        wrapper          = new JPanel(new ColumnLayout(3));
         mContainedWeight = new WeightValue(mRow.getExtendedWeight());
         WeightValue weight = new WeightValue(mRow.getWeight());
         weight.setValue(weight.getValue() * mRow.getQuantity());
         mContainedWeight.subtract(weight);
-        mWeightField = createWeightField(parent, wrapper, EDITOR_WEIGHT, mRow.getWeight(), EDITOR_WEIGHT_TOOLTIP, 13);
+        mWeightField    = createWeightField(parent, wrapper, EDITOR_WEIGHT, mRow.getWeight(), EDITOR_WEIGHT_TOOLTIP, 13);
         mExtWeightField = createWeightField(wrapper, wrapper, EDITOR_EXTENDED_WEIGHT, mRow.getExtendedWeight(), EDITOR_EXTENDED_WEIGHT_TOOLTIP, 13);
         mExtWeightField.setEnabled(false);
         UIUtilities.adjustToSameSize(new Component[] { first, wrapper.getComponent(1) });
@@ -417,7 +433,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void valueChanged() {
-        int qty = getQty();
+        int    qty = getQty();
         double value;
 
         if (qty < 1) {

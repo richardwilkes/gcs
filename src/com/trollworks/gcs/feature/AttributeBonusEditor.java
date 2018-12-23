@@ -41,7 +41,7 @@ public class AttributeBonusEditor extends FeatureEditor {
     /**
      * Create a new attribute bonus editor.
      *
-     * @param row The row this feature will belong to.
+     * @param row   The row this feature will belong to.
      * @param bonus The bonus to edit.
      */
     public AttributeBonusEditor(ListRow row, AttributeBonus bonus) {
@@ -52,9 +52,9 @@ public class AttributeBonusEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         AttributeBonus bonus = (AttributeBonus) getFeature();
 
-        FlexRow row = new FlexRow();
+        FlexRow        row   = new FlexRow();
         row.add(addChangeBaseTypeCombo());
-        LeveledAmount amount = bonus.getAmount();
+        LeveledAmount      amount    = bonus.getAmount();
         BonusAttributeType attribute = bonus.getAttribute();
         row.add(addLeveledAmountField(amount, -999999, 999999));
         row.add(addLeveledAmountCombo(amount, false));

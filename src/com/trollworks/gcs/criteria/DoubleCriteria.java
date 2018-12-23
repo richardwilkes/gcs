@@ -22,7 +22,7 @@ public class DoubleCriteria extends NumericCriteria {
     /**
      * Creates a new double comparison.
      * 
-     * @param type The {@link NumericCompareType} to use.
+     * @param type      The {@link NumericCompareType} to use.
      * @param qualifier The qualifier to match against.
      */
     public DoubleCriteria(NumericCompareType type, double qualifier) {
@@ -83,13 +83,13 @@ public class DoubleCriteria extends NumericCriteria {
      */
     public boolean matches(double data) {
         switch (getType()) {
-            case IS:
-                return data == mQualifier;
-            case AT_LEAST:
-            default:
-                return data >= mQualifier;
-            case AT_MOST:
-                return data <= mQualifier;
+        case IS:
+            return data == mQualifier;
+        case AT_LEAST:
+        default:
+            return data >= mQualifier;
+        case AT_MOST:
+            return data <= mQualifier;
         }
     }
 }

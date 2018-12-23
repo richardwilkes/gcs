@@ -67,9 +67,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "Jugador")
     private static String PLAYER;
     @Localize("The player name to use when a new character sheet is created")
-    @Localize(locale = "de", value = "Der Spielername, der verwendet wird, wenn ein neues Charakterblatt erstellt wird.")
+    @Localize(locale = "de",
+              value = "Der Spielername, der verwendet wird, wenn ein neues Charakterblatt erstellt wird.")
     @Localize(locale = "ru", value = "Имя игрока при создании нового листа персонажа")
-    @Localize(locale = "es", value = "Nombre del jugador que se usará cuando se cree una nueva hoja de personaje")
+    @Localize(locale = "es",
+              value = "Nombre del jugador que se usará cuando se cree una nueva hoja de personaje")
     private static String PLAYER_TOOLTIP;
     @Localize("Campaign")
     @Localize(locale = "de", value = "Kampagne")
@@ -77,9 +79,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "Campaña")
     private static String CAMPAIGN;
     @Localize("The campaign to use when a new character sheet is created")
-    @Localize(locale = "de", value = "Die Kampagne, die verwendet wird, wenn ein neues Charakterblatt erstellt wird.")
+    @Localize(locale = "de",
+              value = "Die Kampagne, die verwendet wird, wenn ein neues Charakterblatt erstellt wird.")
     @Localize(locale = "ru", value = "Название компании при создании нового листа персонаж")
-    @Localize(locale = "es", value = "Nombre de la campaña que se usará cuando se cree una nueva hoja de personaje")
+    @Localize(locale = "es",
+              value = "Nombre de la campaña que se usará cuando se cree una nueva hoja de personaje")
     private static String CAMPAIGN_TOOLTIP;
     @Localize("Tech Level")
     @Localize(locale = "de", value = "Techlevel")
@@ -87,9 +91,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "Nivel Tecnológico")
     private static String TECH_LEVEL;
     @Localize("<html><body>TL0: Stone Age (Prehistory and later)<br>TL1: Bronze Age (3500 B.C.+)<br>TL2: Iron Age (1200 B.C.+)<br>TL3: Medieval (600 A.D.+)<br>TL4: Age of Sail (1450+)<br>TL5: Industrial Revolution (1730+)<br>TL6: Mechanized Age (1880+)<br>TL7: Nuclear Age (1940+)<br>TL8: Digital Age (1980+)<br>TL9: Microtech Age (2025+?)<br>TL10: Robotic Age (2070+?)<br>TL11: Age of Exotic Matter<br>TL12: Anything Goes</body></html>")
-    @Localize(locale = "de", value = "<html><body>TL0: Steinzeit (Vorzeit und älter)<br>TL1: Bronzezeit (ab 3500 v.Chr.)<br>TL2: Eisenzeit (ab 1200 v. Chr.)<br>TL3: Mittelalter(ab 600 n. Chr.)<br>TL4: Renaissance / Kolonialzeitalter (ab 1450)<br>TL5: Industrielle Revolution (ab 1730)<br>TL6: Zeitalter der Mechanik (ab 1880)<br>TL7: Ära der Kernkraft (ab 1940)<br>TL8: Ära der Digitalisierung (ab 1980)<br>TL9: Ära der Mikrotechnik (ab 2025?)<br>TL10: Ära der Robotik (ab 2070?)<br>TL11: Ära der Exotischen Materie<br>TL12: Was ihr wollt!</body></html>")
-    @Localize(locale = "ru", value = "<html><body>ТУ0: Каменный век<br>ТУ1: Бронзовый век<br>ТУ2: Железный век<br>ТУ3: Средневековье<br>ТУ4: Эпоха парусов<br>ТУ5: Промышленный переворот<br>ТУ6: Эпоха механики<br>ТУ7: Атомная эпоха<br>ТУ8: Цифровая эпоха<br>ТУ9: Эпоха микротехники<br>ТУ10: Эпоха роботизации<br>ТУ11: Эпоха экзотических материалов<br>ТУ12: Всё, что угодно</body></html>")
-    @Localize(locale = "es", value = "<html><body>TL0: Edad de Piedra (Prehistoria y anterior)<br>TL1: Edad de Bronce (3500 a. C.+)<br>TL2: Edad de Hierro (1200 a. C.+)<br>TL3: Edad Media (600 a. C.+)<br>TL4: Era del Renacimiento (1450+)<br>TL5: Revolución Industrial(1730+)<br>TL6: Era de la Mecanización(1880+)<br>TL7: Era Nuclear(1940+)<br>TL8: Era Digital(1980+)<br>TL9: Era de la Microtecnología(¿2025+?)<br>TL10: Era de la Robótica(¿2070+?)<br>TL11: Era del Dominio de la Materia<br>TL12: Más allá</body></html>")
+    @Localize(locale = "de",
+              value = "<html><body>TL0: Steinzeit (Vorzeit und älter)<br>TL1: Bronzezeit (ab 3500 v.Chr.)<br>TL2: Eisenzeit (ab 1200 v. Chr.)<br>TL3: Mittelalter(ab 600 n. Chr.)<br>TL4: Renaissance / Kolonialzeitalter (ab 1450)<br>TL5: Industrielle Revolution (ab 1730)<br>TL6: Zeitalter der Mechanik (ab 1880)<br>TL7: Ära der Kernkraft (ab 1940)<br>TL8: Ära der Digitalisierung (ab 1980)<br>TL9: Ära der Mikrotechnik (ab 2025?)<br>TL10: Ära der Robotik (ab 2070?)<br>TL11: Ära der Exotischen Materie<br>TL12: Was ihr wollt!</body></html>")
+    @Localize(locale = "ru",
+              value = "<html><body>ТУ0: Каменный век<br>ТУ1: Бронзовый век<br>ТУ2: Железный век<br>ТУ3: Средневековье<br>ТУ4: Эпоха парусов<br>ТУ5: Промышленный переворот<br>ТУ6: Эпоха механики<br>ТУ7: Атомная эпоха<br>ТУ8: Цифровая эпоха<br>ТУ9: Эпоха микротехники<br>ТУ10: Эпоха роботизации<br>ТУ11: Эпоха экзотических материалов<br>ТУ12: Всё, что угодно</body></html>")
+    @Localize(locale = "es",
+              value = "<html><body>TL0: Edad de Piedra (Prehistoria y anterior)<br>TL1: Edad de Bronce (3500 a. C.+)<br>TL2: Edad de Hierro (1200 a. C.+)<br>TL3: Edad Media (600 a. C.+)<br>TL4: Era del Renacimiento (1450+)<br>TL5: Revolución Industrial(1730+)<br>TL6: Era de la Mecanización(1880+)<br>TL7: Era Nuclear(1940+)<br>TL8: Era Digital(1980+)<br>TL9: Era de la Microtecnología(¿2025+?)<br>TL10: Era de la Robótica(¿2070+?)<br>TL11: Era del Dominio de la Materia<br>TL12: Más allá</body></html>")
     private static String TECH_LEVEL_TOOLTIP;
     @Localize("Initial Points")
     @Localize(locale = "de", value = "Charakterpunkte")
@@ -97,7 +104,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "Puntos Iniciales")
     private static String INITIAL_POINTS;
     @Localize("The initial number of character points to start with")
-    @Localize(locale = "de", value = "Die Zahl der Charakterpunkte, mit denen der Charakter startet.")
+    @Localize(locale = "de",
+              value = "Die Zahl der Charakterpunkte, mit denen der Charakter startet.")
     @Localize(locale = "ru", value = "Первоначальное количество очков персонажа")
     @Localize(locale = "es", value = "Cantidad inicial de puntos de parsonaje")
     private static String INITIAL_POINTS_TOOLTIP;
@@ -107,19 +115,28 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "Selecciona un retrato")
     private static String SELECT_PORTRAIT;
     @Localize("Use optional (house) rule: Will and Perception are not based upon IQ")
-    @Localize(locale = "de", value = "Verwende die optionale (Haus-) Regel: Wille und Wahrnehmung basieren nicht auf IQ")
-    @Localize(locale = "ru", value = "Использовать опциональное (домашнее) правило: Воля и Восприятие не основаны на интеллекте (ИН)")
-    @Localize(locale = "es", value = "Usar regla opcional (no oficial): Voluntad y Percepción no se basan en Inteligencia (CI)")
+    @Localize(locale = "de",
+              value = "Verwende die optionale (Haus-) Regel: Wille und Wahrnehmung basieren nicht auf IQ")
+    @Localize(locale = "ru",
+              value = "Использовать опциональное (домашнее) правило: Воля и Восприятие не основаны на интеллекте (ИН)")
+    @Localize(locale = "es",
+              value = "Usar regla opcional (no oficial): Voluntad y Percepción no se basan en Inteligencia (CI)")
     private static String OPTIONAL_IQ_RULES;
     @Localize("Use optional rule \"Multiplicative Modifiers\" from PW102 (note: changes point value)")
-    @Localize(locale = "de", value = "Verwende die optionale Regel \"Multiplicative Modifiers\" aus PW102 (Hinweis: Verändert den Punktwert)")
-    @Localize(locale = "ru", value = "Использовать необязательное правило \"Накопительные модификаторы\" из PW102 (прим.: изменяет количество очков)")
-    @Localize(locale = "es", value = "Usar regla opcional: \"Modificadores Multiplicadores\", véase PW102 (Nota: cambia el valor en puntos)")
+    @Localize(locale = "de",
+              value = "Verwende die optionale Regel \"Multiplicative Modifiers\" aus PW102 (Hinweis: Verändert den Punktwert)")
+    @Localize(locale = "ru",
+              value = "Использовать необязательное правило \"Накопительные модификаторы\" из PW102 (прим.: изменяет количество очков)")
+    @Localize(locale = "es",
+              value = "Usar regla opcional: \"Modificadores Multiplicadores\", véase PW102 (Nota: cambia el valor en puntos)")
     private static String OPTIONAL_MODIFIER_RULES;
     @Localize("Use optional rule \"Modifying Dice + Adds\" from B269")
-    @Localize(locale = "de", value = "Verwende die optionale Regel \"Verändere Würfel und Zugabe\" aus B269 (\"Modifying Dice + Adds\")")
-    @Localize(locale = "ru", value = "Использовать необязательное правило \"Замена модификаторов кубиками\" из B269")
-    @Localize(locale = "es", value = "Usar regla opcional: \"Modificando dado + incrementos\", véase B269")
+    @Localize(locale = "de",
+              value = "Verwende die optionale Regel \"Verändere Würfel und Zugabe\" aus B269 (\"Modifying Dice + Adds\")")
+    @Localize(locale = "ru",
+              value = "Использовать необязательное правило \"Замена модификаторов кубиками\" из B269")
+    @Localize(locale = "es",
+              value = "Usar regla opcional: \"Modificando dado + incrementos\", véase B269")
     private static String OPTIONAL_DICE_RULES;
     @Localize("Use optional strength rules from the \"Knowing Your Own Strength\" Pyramid article")
     private static String OPTIONAL_STRENGTH_RULES;
@@ -139,9 +156,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "Elegir\u2026")
     private static String HTML_TEMPLATE_PICKER;
     @Localize("Specify a file to use as the template when exporting to HTML")
-    @Localize(locale = "de", value = "Wähle die Datei, die als Vorlage für den HTML-Export verwendet werden soll.")
+    @Localize(locale = "de",
+              value = "Wähle die Datei, die als Vorlage für den HTML-Export verwendet werden soll.")
     @Localize(locale = "ru", value = "Использовать указанный файл шаблона при экспорте в HTML")
-    @Localize(locale = "es", value = "Especifica que archivose usará como plantilla cuando se exporta a formato HTML")
+    @Localize(locale = "es",
+              value = "Especifica que archivose usará como plantilla cuando se exporta a formato HTML")
     private static String HTML_TEMPLATE_OVERRIDE_TOOLTIP;
     @Localize("Select A HTML Template")
     @Localize(locale = "de", value = "Wähle eine HTML-Vorlage")
@@ -149,14 +168,20 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "Selecionar una plantilla HTML")
     private static String SELECT_HTML_TEMPLATE;
     @Localize("Use platform native print dialogs (settings cannot be saved)")
-    @Localize(locale = "de", value = "Verwende Druckdialoge des Betriebssystems (Einstellungen können nicht gespeichert werden)")
-    @Localize(locale = "ru", value = "Использовать диалоги печати родные для ОС (в этом случае не сохраняются настройки диалогов)")
-    @Localize(locale = "es", value = "Usar los diálogos de impresión del sistema operativo (No pueden guardarse las preferencias)")
+    @Localize(locale = "de",
+              value = "Verwende Druckdialoge des Betriebssystems (Einstellungen können nicht gespeichert werden)")
+    @Localize(locale = "ru",
+              value = "Использовать диалоги печати родные для ОС (в этом случае не сохраняются настройки диалогов)")
+    @Localize(locale = "es",
+              value = "Usar los diálogos de impresión del sistema operativo (No pueden guardarse las preferencias)")
     private static String NATIVE_PRINTER;
     @Localize("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>")
-    @Localize(locale = "de", value = "<html><body>Ob die Druckdialoge des Betriebssystems verwendet werden sollen.<br>Das Auswählen dieser Option wird das Programm daran hindern,<br>die Druckeinstellungen im Dokument zu speichern und werderherzustellen.</body></html>")
-    @Localize(locale = "ru", value = "<html><body>Использовать родные диалоги печати ОС.<br>При выборе этого параметра программа не будет сохранять<br>настройки печати документа.</body></html>")
-    @Localize(locale = "es", value = "<html><body>Indica si se usan o no los diálogos de impresión del sistema operativo.<br>Si se selecciona esta opción, el programa no podrá salvar<br>y restaurar configuración del documento.</body></html>")
+    @Localize(locale = "de",
+              value = "<html><body>Ob die Druckdialoge des Betriebssystems verwendet werden sollen.<br>Das Auswählen dieser Option wird das Programm daran hindern,<br>die Druckeinstellungen im Dokument zu speichern und werderherzustellen.</body></html>")
+    @Localize(locale = "ru",
+              value = "<html><body>Использовать родные диалоги печати ОС.<br>При выборе этого параметра программа не будет сохранять<br>настройки печати документа.</body></html>")
+    @Localize(locale = "es",
+              value = "<html><body>Indica si se usan o no los diálogos de impresión del sistema operativo.<br>Si se selecciona esta opción, el programa no podrá salvar<br>y restaurar configuración del documento.</body></html>")
     private static String NATIVE_PRINTER_TOOLTIP;
     @Localize("Automatically name new characters")
     @Localize(locale = "de", value = "Neue Charaktere automatisch benennen")
@@ -189,14 +214,20 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Localize(locale = "es", value = "para mostrar las unidades generadas")
     private static String FOR_UNIT_DISPLAY;
     @Localize("Character point total display includes unspent points")
-    @Localize(locale = "de", value = "Die Gesamtpunktzahl des Charakters enthält die noch nicht ausgegebenen Punkte")
-    @Localize(locale = "ru", value = "Показывать в общих очках персонажа неизрасходованные (заработанные)")
-    @Localize(locale = "es", value = "Total de puntos de personaje, que incluye los puntos no consumidos")
+    @Localize(locale = "de",
+              value = "Die Gesamtpunktzahl des Charakters enthält die noch nicht ausgegebenen Punkte")
+    @Localize(locale = "ru",
+              value = "Показывать в общих очках персонажа неизрасходованные (заработанные)")
+    @Localize(locale = "es",
+              value = "Total de puntos de personaje, que incluye los puntos no consumidos")
     private static String TOTAL_POINTS_INCLUDES_UNSPENT_POINTS;
     @Localize("Use GURPS Metric rules for height, weight, encumbrance and lifting things")
-    @Localize(locale = "de", value = "Benutze GURPS Metrisch-Regeln für Höhe, Gewicht, Belastung und Heben von Gegenständen")
-    @Localize(locale = "ru", value = "Использовать метрическую систему по правилам GURPS для роста, веса, нагрузки и грузоподъёмности")
-    @Localize(locale = "es", value = "Usar las reglas de métrica de GURPS para altura, peso, carga y levantar objetos")
+    @Localize(locale = "de",
+              value = "Benutze GURPS Metrisch-Regeln für Höhe, Gewicht, Belastung und Heben von Gegenständen")
+    @Localize(locale = "ru",
+              value = "Использовать метрическую систему по правилам GURPS для роста, веса, нагрузки и грузоподъёмности")
+    @Localize(locale = "es",
+              value = "Usar las reglas de métrica de GURPS para altura, peso, carga y levantar objetos")
     private static String USE_METRIC_RULES;
     @Localize("All Readable Image Files")
     private static String ALL_READABLE_IMAGE_FILES;
@@ -369,7 +400,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         super(SHEET, owner);
         FlexColumn column = new FlexColumn();
 
-        FlexGrid grid = new FlexGrid();
+        FlexGrid   grid   = new FlexGrid();
         column.add(grid);
 
         int rowIndex = 0;
@@ -495,7 +526,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         JTextField field = new JTextField(value);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.getDocument().addDocumentListener(this);
-        Dimension size = field.getPreferredSize();
+        Dimension size    = field.getPreferredSize();
         Dimension maxSize = field.getMaximumSize();
         maxSize.height = size.height;
         field.setMaximumSize(maxSize);

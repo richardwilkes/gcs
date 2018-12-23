@@ -72,9 +72,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize(locale = "es", value = "Nivel Tecnológico")
     private static String TECH_LEVEL;
     @Localize("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned")
-    @Localize(locale = "de", value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist und wenn, mit welchem Techlevel er gelernt wurde")
-    @Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем с указанием уровня изучения")
-    @Localize(locale = "es", value = "Si el sortilegio requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
+    @Localize(locale = "de",
+              value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist und wenn, mit welchem Techlevel er gelernt wurde")
+    @Localize(locale = "ru",
+              value = "Для заклинания необходима специализация с технологическим уровнем с указанием уровня изучения")
+    @Localize(locale = "es",
+              value = "Si el sortilegio requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
     private static String TECH_LEVEL_TOOLTIP;
     @Localize("Tech Level Required")
     @Localize(locale = "de", value = "Techlevel benötigt")
@@ -82,9 +85,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize(locale = "es", value = "Nivel tecnologíco requerido")
     private static String TECH_LEVEL_REQUIRED;
     @Localize("Whether this spell requires tech level specialization")
-    @Localize(locale = "de", value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist")
-    @Localize(locale = "ru", value = "Для заклинания необходима специализация с технологическим уровнем")
-    @Localize(locale = "es", value = "Este sortilegio requiere especializarse por nivel tecnológico")
+    @Localize(locale = "de",
+              value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist")
+    @Localize(locale = "ru",
+              value = "Для заклинания необходима специализация с технологическим уровнем")
+    @Localize(locale = "es",
+              value = "Este sortilegio requiere especializarse por nivel tecnológico")
     private static String TECH_LEVEL_REQUIRED_TOOLTIP;
     @Localize("College")
     @Localize(locale = "de", value = "Schule")
@@ -144,7 +150,8 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize("The cost to maintain a spell after its initial duration")
     @Localize(locale = "de", value = "Die Kosten, um den Zauber aufrecht zu erhalten")
     @Localize(locale = "ru", value = "Стоимость поддержки заклинания свыше исходной длительности")
-    @Localize(locale = "es", value = "Coste para manterner el sortilegio superada la duración inicial")
+    @Localize(locale = "es",
+              value = "Coste para manterner el sortilegio superada la duración inicial")
     private static String MAINTENANCE_COST_TOOLTIP;
     @Localize("Casting Time")
     @Localize(locale = "de", value = "Zauberzeit")
@@ -159,7 +166,8 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize("The casting time field may not be empty")
     @Localize(locale = "de", value = "Die Zauberzeit darf nicht leer sein")
     @Localize(locale = "ru", value = "Поле \"Время сотворения\" не может быть пустым")
-    @Localize(locale = "es", value = "El tiempo necesario para lanzar el sotilegio no puede estar en blanco")
+    @Localize(locale = "es",
+              value = "El tiempo necesario para lanzar el sotilegio no puede estar en blanco")
     private static String CASTING_TIME_CANNOT_BE_EMPTY;
     @Localize("Duration")
     @Localize(locale = "de", value = "Dauer")
@@ -182,9 +190,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize(locale = "es", value = "Categorías")
     private static String CATEGORIES;
     @Localize("The category or categories the spell belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de", value = "Die Kategorie oder Kategorien, denen dieser Zauber angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru", value = "Категория или категории, к которым относится заклинание (перечислить через запятую)")
-    @Localize(locale = "es", value = "Categoría o categorías a las que pertenece el sortilegio (separa categorías multiples con una coma)")
+    @Localize(locale = "de",
+              value = "Die Kategorie oder Kategorien, denen dieser Zauber angehört (trenne mehrere Kategorien mit einem Komma)")
+    @Localize(locale = "ru",
+              value = "Категория или категории, к которым относится заклинание (перечислить через запятую)")
+    @Localize(locale = "es",
+              value = "Categoría o categorías a las que pertenece el sortilegio (separa categorías multiples con una coma)")
     private static String CATEGORIES_TOOLTIP;
     @Localize("Notes")
     @Localize(locale = "de", value = "Anmerkungen")
@@ -192,9 +203,11 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize(locale = "es", value = "Notas")
     private static String NOTES;
     @Localize("Any notes that you would like to show up in the list along with this spell")
-    @Localize(locale = "de", value = "Anmerkungen, die in der Liste neben dem Zauber erscheinen sollen")
+    @Localize(locale = "de",
+              value = "Anmerkungen, die in der Liste neben dem Zauber erscheinen sollen")
     @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с заклинанием")
-    @Localize(locale = "es", value = "Cualquier nota que te gustaría que se mostrara junto al sortilegio")
+    @Localize(locale = "es",
+              value = "Cualquier nota que te gustaría que se mostrara junto al sortilegio")
     private static String NOTES_TOOLTIP;
     @Localize("Points")
     @Localize(locale = "de", value = "Punkte")
@@ -212,9 +225,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize(locale = "es", value = "Nivel")
     private static String EDITOR_LEVEL;
     @Localize("The spell level and relative spell level to roll against")
-    @Localize(locale = "de", value = "Der Fertigkeitswert und relativer Fertigkeitswert des Zaubers, gegen die gewürfelt werden muss")
-    @Localize(locale = "ru", value = "Уровень заклинания и относительный уровень заклинания для повторного броска")
-    @Localize(locale = "es", value = "Nivel y nivel relativo del sortilegio a superar con la tirada")
+    @Localize(locale = "de",
+              value = "Der Fertigkeitswert und relativer Fertigkeitswert des Zaubers, gegen die gewürfelt werden muss")
+    @Localize(locale = "ru",
+              value = "Уровень заклинания и относительный уровень заклинания для повторного броска")
+    @Localize(locale = "es",
+              value = "Nivel y nivel relativo del sortilegio a superar con la tirada")
     private static String EDITOR_LEVEL_TOOLTIP;
     @Localize("The attribute this spell is based on")
     private static String ATTRIBUTE_POPUP_TOOLTIP;
@@ -234,9 +250,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @Localize(locale = "es", value = "Página de referencia")
     private static String EDITOR_REFERENCE;
     @Localize("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая заклинание (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página en donde se menciona el sortilegio (p.e. B22 se refiere al \"Manual Básico\", página 22)")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая заклинание (например B22 - книга \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página en donde se menciona el sortilegio (p.e. B22 se refiere al \"Manual Básico\", página 22)")
     private static String REFERENCE_TOOLTIP;
 
     static {
@@ -274,38 +293,38 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     public SpellEditor(Spell spell) {
         super(spell);
 
-        boolean notContainer = !spell.canHaveChildren();
-        Container content = new JPanel(new ColumnLayout(2));
-        Container fields = new JPanel(new ColumnLayout());
-        Container wrapper1 = new JPanel(new ColumnLayout(notContainer ? 3 : 2));
-        Container wrapper2 = new JPanel(new ColumnLayout(4));
-        Container wrapper3 = new JPanel(new ColumnLayout(2));
+        boolean   notContainer = !spell.canHaveChildren();
+        Container content      = new JPanel(new ColumnLayout(2));
+        Container fields       = new JPanel(new ColumnLayout());
+        Container wrapper1     = new JPanel(new ColumnLayout(notContainer ? 3 : 2));
+        Container wrapper2     = new JPanel(new ColumnLayout(4));
+        Container wrapper3     = new JPanel(new ColumnLayout(2));
         Container noGapWrapper = new JPanel(new ColumnLayout(2, 0, 0));
-        Container ptsPanel = null;
-        JLabel icon = new JLabel(spell.getIcon(true));
-        Dimension size = new Dimension();
-        Container refParent = wrapper3;
+        Container ptsPanel     = null;
+        JLabel    icon         = new JLabel(spell.getIcon(true));
+        Dimension size         = new Dimension();
+        Container refParent    = wrapper3;
 
         mNameField = createCorrectableField(wrapper1, wrapper1, NAME, spell.getName(), NAME_TOOLTIP);
         fields.add(wrapper1);
         if (notContainer) {
             createTechLevelFields(wrapper1);
-            mCollegeField = createField(wrapper2, wrapper2, COLLEGE, spell.getCollege(), COLLEGE_TOOLTIP, 0);
+            mCollegeField     = createField(wrapper2, wrapper2, COLLEGE, spell.getCollege(), COLLEGE_TOOLTIP, 0);
             mPowerSourceField = createField(wrapper2, wrapper2, POWER_SOURCE, spell.getPowerSource(), POWER_SOURCE_TOOLTIP, 0);
-            mClassField = createCorrectableField(wrapper2, wrapper2, CLASS, spell.getSpellClass(), CLASS_ONLY_TOOLTIP);
+            mClassField       = createCorrectableField(wrapper2, wrapper2, CLASS, spell.getSpellClass(), CLASS_ONLY_TOOLTIP);
             mCastingCostField = createCorrectableField(wrapper2, wrapper2, CASTING_COST, spell.getCastingCost(), CASTING_COST_TOOLTIP);
             mMaintenanceField = createField(wrapper2, wrapper2, MAINTENANCE_COST, spell.getMaintenance(), MAINTENANCE_COST_TOOLTIP, 0);
             mCastingTimeField = createCorrectableField(wrapper2, wrapper2, CASTING_TIME, spell.getCastingTime(), CASTING_TIME_TOOLTIP);
-            mDurationField = createCorrectableField(wrapper2, wrapper2, DURATION, spell.getDuration(), DURATION_TOOLTIP);
+            mDurationField    = createCorrectableField(wrapper2, wrapper2, DURATION, spell.getDuration(), DURATION_TOOLTIP);
             fields.add(wrapper2);
 
             ptsPanel = createPointsFields();
             fields.add(ptsPanel);
             refParent = ptsPanel;
         }
-        mNotesField = createField(wrapper3, wrapper3, NOTES, spell.getNotes(), NOTES_TOOLTIP, 0);
+        mNotesField      = createField(wrapper3, wrapper3, NOTES, spell.getNotes(), NOTES_TOOLTIP, 0);
         mCategoriesField = createField(wrapper3, wrapper3, CATEGORIES, spell.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
-        mReferenceField = createField(refParent, noGapWrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
+        mReferenceField  = createField(refParent, noGapWrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
         noGapWrapper.add(new JPanel());
         refParent.add(noGapWrapper);
         fields.add(wrapper3);
@@ -330,9 +349,9 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         add(content);
 
         if (notContainer) {
-            mTabPanel = new JTabbedPane();
-            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
+            mTabPanel      = new JTabbedPane();
+            mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
+            mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
             Component panel = embedEditor(mPrereqs);
             mTabPanel.addTab(panel.getName(), panel);
@@ -382,13 +401,13 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     }
 
     private void createTechLevelFields(Container parent) {
-        OutlineModel owner = mRow.getOwner();
+        OutlineModel   owner     = mRow.getOwner();
         GURPSCharacter character = mRow.getCharacter();
-        boolean enabled = !owner.isLocked();
-        boolean hasTL;
+        boolean        enabled   = !owner.isLocked();
+        boolean        hasTL;
 
         mSavedTechLevel = mRow.getTechLevel();
-        hasTL = mSavedTechLevel != null;
+        hasTL           = mSavedTechLevel != null;
         if (!hasTL) {
             mSavedTechLevel = ""; //$NON-NLS-1$
         }
@@ -414,7 +433,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
                 mSavedTechLevel = character.getDescription().getTechLevel();
             }
         } else {
-            mTechLevel = new JTextField(mSavedTechLevel);
+            mTechLevel    = new JTextField(mSavedTechLevel);
             mHasTechLevel = new JCheckBox(TECH_LEVEL_REQUIRED, hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_REQUIRED_TOOLTIP));
             mHasTechLevel.setEnabled(enabled);
@@ -426,10 +445,10 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     @SuppressWarnings("unused")
     private Container createPointsFields() {
         boolean forCharacter = mRow.getCharacter() != null;
-        boolean forTemplate = mRow.getTemplate() != null;
-        JPanel panel = new JPanel(new ColumnLayout(forCharacter ? 10 : forTemplate ? 8 : 6));
+        boolean forTemplate  = mRow.getTemplate() != null;
+        JPanel  panel        = new JPanel(new ColumnLayout(forCharacter ? 10 : forTemplate ? 8 : 6));
 
-        JLabel label = new JLabel(DIFFICULTY, SwingConstants.RIGHT);
+        JLabel  label        = new JLabel(DIFFICULTY, SwingConstants.RIGHT);
         label.setToolTipText(Text.wrapPlainTextForToolTip(DIFFICULTY_TOOLTIP));
         panel.add(label);
 
@@ -499,7 +518,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
     @Override
     public boolean applyChangesSelf() {
-        boolean modified = mRow.setName(mNameField.getText());
+        boolean modified     = mRow.setName(mNameField.getText());
         boolean notContainer = !mRow.canHaveChildren();
 
         modified |= mRow.setReference(mReferenceField.getText());
@@ -562,7 +581,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     private void recalculateLevel() {
         if (mLevelField != null) {
             SkillAttribute attribute = getAttribute();
-            SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText());
+            SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText());
             mLevelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
         }
     }

@@ -86,12 +86,12 @@ public class NewSkillCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        ListOutline outline;
-        DataFile dataFile;
+        ListOutline    outline;
+        DataFile       dataFile;
         SkillsDockable skills = getTarget(SkillsDockable.class);
         if (skills != null) {
             dataFile = skills.getDataFile();
-            outline = skills.getOutline();
+            outline  = skills.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -99,12 +99,12 @@ public class NewSkillCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline = sheet.getSheet().getSkillOutline();
+                outline  = sheet.getSheet().getSkillOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline = template.getTemplate().getSkillOutline();
+                    outline  = template.getTemplate().getSkillOutline();
                 } else {
                     return;
                 }

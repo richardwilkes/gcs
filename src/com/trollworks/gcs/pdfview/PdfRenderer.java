@@ -79,44 +79,44 @@ public class PdfRenderer extends PDFTextStripper {
         text = text.toLowerCase();
         int index = text.indexOf(mTextToHighlight);
         if (index != -1) {
-            PDPage currentPage = getCurrentPage();
-            PDRectangle pageBoundingBox = currentPage.getBBox();
-            AffineTransform flip = new AffineTransform();
+            PDPage          currentPage     = getCurrentPage();
+            PDRectangle     pageBoundingBox = currentPage.getBBox();
+            AffineTransform flip            = new AffineTransform();
             flip.translate(0, pageBoundingBox.getHeight());
             flip.scale(1, -1);
-            PDRectangle mediaBox = currentPage.getMediaBox();
-            float mediaHeight = mediaBox.getHeight();
-            float mediaWidth = mediaBox.getWidth();
-            int size = textPositions.size();
+            PDRectangle mediaBox    = currentPage.getMediaBox();
+            float       mediaHeight = mediaBox.getHeight();
+            float       mediaWidth  = mediaBox.getWidth();
+            int         size        = textPositions.size();
             while (index != -1) {
                 int last = index + mTextToHighlight.length() - 1;
                 for (int i = index; i <= last; i++) {
-                    TextPosition pos = textPositions.get(i);
-                    PDFont font = pos.getFont();
-                    BoundingBox bbox = font.getBoundingBox();
+                    TextPosition      pos  = textPositions.get(i);
+                    PDFont            font = pos.getFont();
+                    BoundingBox       bbox = font.getBoundingBox();
                     Rectangle2D.Float rect = new Rectangle2D.Float(0, bbox.getLowerLeftY(), font.getWidth(pos.getCharacterCodes()[0]), bbox.getHeight());
-                    AffineTransform at = pos.getTextMatrix().createAffineTransform();
+                    AffineTransform   at   = pos.getTextMatrix().createAffineTransform();
                     if (font instanceof PDType3Font) {
                         at.concatenate(font.getFontMatrix().createAffineTransform());
                     } else {
                         at.scale(1 / 1000f, 1 / 1000f);
                     }
-                    Shape shape = flip.createTransformedShape(at.createTransformedShape(rect));
+                    Shape           shape     = flip.createTransformedShape(at.createTransformedShape(rect));
                     AffineTransform transform = mGC.getTransform();
-                    int rotation = currentPage.getRotation();
+                    int             rotation  = currentPage.getRotation();
                     if (rotation != 0) {
                         switch (rotation) {
-                            case 90:
-                                mGC.translate(mediaHeight, 0);
-                                break;
-                            case 270:
-                                mGC.translate(0, mediaWidth);
-                                break;
-                            case 180:
-                                mGC.translate(mediaWidth, mediaHeight);
-                                break;
-                            default:
-                                break;
+                        case 90:
+                            mGC.translate(mediaHeight, 0);
+                            break;
+                        case 270:
+                            mGC.translate(0, mediaWidth);
+                            break;
+                        case 180:
+                            mGC.translate(mediaWidth, mediaHeight);
+                            break;
+                        default:
+                            break;
                         }
                         mGC.rotate(Math.toRadians(rotation));
                     }

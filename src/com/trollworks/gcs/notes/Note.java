@@ -55,7 +55,7 @@ public class Note extends ListRow {
     /**
      * Creates a new note.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile    The data file to associate it with.
      * @param isContainer Whether or not this row allows children.
      */
     public Note(DataFile dataFile, boolean isContainer) {
@@ -67,8 +67,8 @@ public class Note extends ListRow {
      * Creates a clone of an existing note and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param note The note to clone.
-     * @param deep Whether or not to clone the children, grandchildren, etc.
+     * @param note     The note to clone.
+     * @param deep     Whether or not to clone the children, grandchildren, etc.
      */
     public Note(DataFile dataFile, Note note, boolean deep) {
         super(dataFile, note);
@@ -85,8 +85,8 @@ public class Note extends ListRow {
      * Loads a note and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param reader   The XML reader to load from.
+     * @param state    The {@link LoadState} to use.
      */
     public Note(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
         this(dataFile, TAG_NOTE_CONTAINER.equals(reader.getName()));

@@ -66,9 +66,9 @@ public class ApplyTemplateCommand extends Command {
         if (templateDockable != null) {
             SheetDockable sheetDockable = SheetDockable.getLastActivated();
             if (sheetDockable != null) {
-                Template template = templateDockable.getDataFile();
-                MultipleUndo edit = new MultipleUndo(UNDO);
-                ArrayList<Row> rows = new ArrayList<>();
+                Template       template = templateDockable.getDataFile();
+                MultipleUndo   edit     = new MultipleUndo(UNDO);
+                ArrayList<Row> rows     = new ArrayList<>();
                 template.addEdit(edit);
                 rows.addAll(template.getAdvantagesModel().getTopLevelRows());
                 rows.addAll(template.getSkillsModel().getTopLevelRows());

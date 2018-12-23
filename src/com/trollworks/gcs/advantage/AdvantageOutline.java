@@ -72,7 +72,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
      * Create a new Advantages, Disadvantages & Quirks outline.
      *
      * @param dataFile The owning data file.
-     * @param model The {@link OutlineModel} to use.
+     * @param model    The {@link OutlineModel} to use.
      */
     public AdvantageOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Advantage.ID_LIST_CHANGED);
@@ -86,10 +86,10 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 
     @Override
     public void convertDragRowsToSelf(List<Row> list) {
-        OutlineModel model = getModel();
-        Row[] rows = model.getDragRows();
-        boolean forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-        ArrayList<ListRow> process = new ArrayList<>();
+        OutlineModel       model              = getModel();
+        Row[]              rows               = model.getDragRows();
+        boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
+        ArrayList<ListRow> process            = new ArrayList<>();
 
         for (Row element : rows) {
             Advantage advantage = new Advantage(mDataFile, (Advantage) element, true);

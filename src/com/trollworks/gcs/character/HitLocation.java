@@ -129,11 +129,11 @@ public class HitLocation {
     private int                                  mDRBonus;
 
     private HitLocation(String key, String title, String description, int hitPenalty, int drBonus) {
-        mKey = key;
-        mTitle = title;
+        mKey         = key;
+        mTitle       = title;
         mDescription = description;
-        mHitPenalty = hitPenalty;
-        mDRBonus = drBonus;
+        mHitPenalty  = hitPenalty;
+        mDRBonus     = drBonus;
         MAP.put(key, this);
     }
 

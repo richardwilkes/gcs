@@ -114,15 +114,15 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         setBackground(Color.WHITE);
         setBorder(NORMAL_BORDER);
 
-        mScale = SheetPreferences.getInitialUIScale().getScale();
-        mTemplate = template;
+        mScale            = SheetPreferences.getInitialUIScale().getScale();
+        mTemplate         = template;
 
         // Make sure our primary outlines exist
         mAdvantageOutline = new AdvantageOutline(mTemplate);
-        mSkillOutline = new SkillOutline(mTemplate);
-        mSpellOutline = new SpellOutline(mTemplate);
+        mSkillOutline     = new SkillOutline(mTemplate);
+        mSpellOutline     = new SpellOutline(mTemplate);
         mEquipmentOutline = new EquipmentOutline(mTemplate);
-        mNoteOutline = new NoteOutline(mTemplate);
+        mNoteOutline      = new NoteOutline(mTemplate);
         add(new TemplateOutlinePanel(mAdvantageOutline, ADVANTAGES));
         add(new TemplateOutlinePanel(mSkillOutline, SKILLS));
         add(new TemplateOutlinePanel(mSpellOutline, SPELLS));

@@ -48,16 +48,16 @@ public class SetLanguageCommand extends Command {
             return AUTO;
         }
         switch (locale.getLanguage()) {
-            case "en": //$NON-NLS-1$
-                return ENGLISH;
-            case "de": //$NON-NLS-1$
-                return GERMAN;
-            case "ru": //$NON-NLS-1$
-                return RUSSIAN;
-            case "es": //$NON-NLS-1$
-                return SPANISH;
-            default:
-                return locale.getLanguage();
+        case "en": //$NON-NLS-1$
+            return ENGLISH;
+        case "de": //$NON-NLS-1$
+            return GERMAN;
+        case "ru": //$NON-NLS-1$
+            return RUSSIAN;
+        case "es": //$NON-NLS-1$
+            return SPANISH;
+        default:
+            return locale.getLanguage();
         }
     }
 
@@ -72,7 +72,7 @@ public class SetLanguageCommand extends Command {
 
     @Override
     public void adjust() {
-        Locale locale = Localization.getLocaleOverride();
+        Locale  locale  = Localization.getLocaleOverride();
         boolean matches = matches(locale);
         setEnabled(!matches);
         setMarked(matches);

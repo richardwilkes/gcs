@@ -152,25 +152,25 @@ public class Spell extends ListRow implements HasSourceReference {
     /**
      * Creates a new spell.
      *
-     * @param dataFile The data file to associate it with.
+     * @param dataFile    The data file to associate it with.
      * @param isContainer Whether or not this row allows children.
      */
     public Spell(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mName = DEFAULT_NAME;
-        mAttribute = SkillAttribute.IQ;
-        mTechLevel = null;
-        mCollege = EMPTY;
+        mName        = DEFAULT_NAME;
+        mAttribute   = SkillAttribute.IQ;
+        mTechLevel   = null;
+        mCollege     = EMPTY;
         mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
-        mSpellClass = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
+        mSpellClass  = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
         mCastingCost = isContainer ? EMPTY : DEFAULT_CASTING_COST;
         mMaintenance = EMPTY;
         mCastingTime = isContainer ? EMPTY : DEFAULT_CASTING_TIME;
-        mDuration = isContainer ? EMPTY : DEFAULT_DURATION;
-        mPoints = 1;
-        mReference = EMPTY;
-        mIsVeryHard = false;
-        mWeapons = new ArrayList<>();
+        mDuration    = isContainer ? EMPTY : DEFAULT_DURATION;
+        mPoints      = 1;
+        mReference   = EMPTY;
+        mIsVeryHard  = false;
+        mWeapons     = new ArrayList<>();
         updateLevel(false);
     }
 
@@ -178,25 +178,25 @@ public class Spell extends ListRow implements HasSourceReference {
      * Creates a clone of an existing spell and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param spell The spell to clone.
-     * @param deep Whether or not to clone the children, grandchildren, etc.
+     * @param spell    The spell to clone.
+     * @param deep     Whether or not to clone the children, grandchildren, etc.
      * @param forSheet Whether this is for a character sheet or a list.
      */
     public Spell(DataFile dataFile, Spell spell, boolean deep, boolean forSheet) {
         super(dataFile, spell);
-        mName = spell.mName;
-        mAttribute = spell.mAttribute;
-        mTechLevel = spell.mTechLevel;
-        mCollege = spell.mCollege;
+        mName        = spell.mName;
+        mAttribute   = spell.mAttribute;
+        mTechLevel   = spell.mTechLevel;
+        mCollege     = spell.mCollege;
         mPowerSource = spell.mPowerSource;
-        mSpellClass = spell.mSpellClass;
+        mSpellClass  = spell.mSpellClass;
         mCastingCost = spell.mCastingCost;
         mMaintenance = spell.mMaintenance;
         mCastingTime = spell.mCastingTime;
-        mDuration = spell.mDuration;
-        mPoints = forSheet ? spell.mPoints : 1;
-        mReference = spell.mReference;
-        mIsVeryHard = spell.mIsVeryHard;
+        mDuration    = spell.mDuration;
+        mPoints      = forSheet ? spell.mPoints : 1;
+        mReference   = spell.mReference;
+        mIsVeryHard  = spell.mIsVeryHard;
         if (forSheet && dataFile instanceof GURPSCharacter) {
             if (mTechLevel != null) {
                 mTechLevel = ((GURPSCharacter) dataFile).getDescription().getTechLevel();
@@ -228,8 +228,8 @@ public class Spell extends ListRow implements HasSourceReference {
      * Loads a spell and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param reader The XML reader to load from.
-     * @param state The {@link LoadState} to use.
+     * @param reader   The XML reader to load from.
+     * @param state    The {@link LoadState} to use.
      */
     public Spell(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
         this(dataFile, TAG_SPELL_CONTAINER.equals(reader.getName()));
@@ -285,20 +285,20 @@ public class Spell extends ListRow implements HasSourceReference {
     protected void prepareForLoad(LoadState state) {
         boolean isContainer = canHaveChildren();
         super.prepareForLoad(state);
-        mName = DEFAULT_NAME;
-        mAttribute = SkillAttribute.IQ;
-        mTechLevel = null;
-        mCollege = EMPTY;
+        mName        = DEFAULT_NAME;
+        mAttribute   = SkillAttribute.IQ;
+        mTechLevel   = null;
+        mCollege     = EMPTY;
         mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
-        mSpellClass = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
+        mSpellClass  = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
         mCastingCost = isContainer ? EMPTY : DEFAULT_CASTING_COST;
         mMaintenance = EMPTY;
         mCastingTime = isContainer ? EMPTY : DEFAULT_CASTING_TIME;
-        mDuration = isContainer ? EMPTY : DEFAULT_DURATION;
-        mPoints = 1;
-        mReference = EMPTY;
-        mIsVeryHard = false;
-        mWeapons = new ArrayList<>();
+        mDuration    = isContainer ? EMPTY : DEFAULT_DURATION;
+        mPoints      = 1;
+        mReference   = EMPTY;
+        mIsVeryHard  = false;
+        mWeapons     = new ArrayList<>();
     }
 
     @Override
@@ -314,7 +314,7 @@ public class Spell extends ListRow implements HasSourceReference {
             mName = reader.readText().replace(NEWLINE, SPACE);
             // Fix for legacy format...
             if (mName.toLowerCase().endsWith("(vh)")) { //$NON-NLS-1$
-                mName = mName.substring(0, mName.length() - 4).trim();
+                mName       = mName.substring(0, mName.length() - 4).trim();
                 mIsVeryHard = true;
             }
         } else if (TAG_TECH_LEVEL.equals(name)) {
@@ -455,11 +455,11 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param notify Whether or not a notification should be issued on a change.
      */
     public void updateLevel(boolean notify) {
-        int savedLevel = mLevel;
-        int savedRelativeLevel = mRelativeLevel;
-        SkillLevel level = calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName);
+        int        savedLevel         = mLevel;
+        int        savedRelativeLevel = mRelativeLevel;
+        SkillLevel level              = calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName);
 
-        mLevel = level.mLevel;
+        mLevel         = level.mLevel;
         mRelativeLevel = level.mRelativeLevel;
 
         if (notify && (savedLevel != mLevel || savedRelativeLevel != mRelativeLevel)) {
@@ -470,12 +470,12 @@ public class Spell extends ListRow implements HasSourceReference {
     /**
      * Calculates the spell level.
      *
-     * @param character The character the spell will be attached to.
-     * @param points The number of points spent in the spell.
-     * @param isVeryHard Whether the spell is "Very Hard" or not.
-     * @param college The college the spell belongs to.
+     * @param character   The character the spell will be attached to.
+     * @param points      The number of points spent in the spell.
+     * @param isVeryHard  Whether the spell is "Very Hard" or not.
+     * @param college     The college the spell belongs to.
      * @param powerSource The source of power for the spell.
-     * @param name The name of the spell.
+     * @param name        The name of the spell.
      * @return The calculated spell level.
      */
     public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, boolean isVeryHard, String college, String powerSource, String name) {
@@ -485,7 +485,7 @@ public class Spell extends ListRow implements HasSourceReference {
         if (character != null) {
             level = attribute.getBaseSkillLevel(character);
             if (points < 1) {
-                level = -1;
+                level         = -1;
                 relativeLevel = 0;
             } else if (points == 1) {
                 // mRelativeLevel is preset to this point value
@@ -499,7 +499,7 @@ public class Spell extends ListRow implements HasSourceReference {
                 relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college);
                 relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource);
                 relativeLevel += getSpellBonusesFor(character, ID_NAME, name);
-                level += relativeLevel;
+                level         += relativeLevel;
             }
         } else {
             level = -1;
@@ -762,12 +762,12 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /**
      * @param attribute The attribute to use.
-     * @param veryHard Whether this is a "Very Hard" spell or not.
+     * @param veryHard  Whether this is a "Very Hard" spell or not.
      * @return Whether it was modified.
      */
     public boolean setDifficulty(SkillAttribute attribute, boolean veryHard) {
         if (mAttribute != attribute || mIsVeryHard != veryHard) {
-            mAttribute = attribute;
+            mAttribute  = attribute;
             mIsVeryHard = veryHard;
             startNotify();
             notify(ID_DIFFICULTY, this);
@@ -803,14 +803,14 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     public void applyNameableKeys(HashMap<String, String> map) {
         super.applyNameableKeys(map);
-        mName = nameNameables(map, mName);
-        mCollege = nameNameables(map, mCollege);
+        mName        = nameNameables(map, mName);
+        mCollege     = nameNameables(map, mCollege);
         mPowerSource = nameNameables(map, mPowerSource);
-        mSpellClass = nameNameables(map, mSpellClass);
+        mSpellClass  = nameNameables(map, mSpellClass);
         mCastingCost = nameNameables(map, mCastingCost);
         mMaintenance = nameNameables(map, mMaintenance);
         mCastingTime = nameNameables(map, mCastingTime);
-        mDuration = nameNameables(map, mDuration);
+        mDuration    = nameNameables(map, mDuration);
         for (WeaponStats weapon : mWeapons) {
             for (SkillDefault one : weapon.getDefaults()) {
                 one.applyNameableKeys(map);

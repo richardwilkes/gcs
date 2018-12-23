@@ -41,12 +41,12 @@ public class PdfRef implements Comparable<PdfRef> {
      * Get a list of all known {@link PdfRef}s.
      *
      * @param requireExistence <code>true</code> if only references that refer to an existing file
-     *            should be returned.
+     *                         should be returned.
      * @return The list of {@link PdfRef}s.
      */
     public static synchronized List<PdfRef> getKnown(boolean requireExistence) {
-        List<PdfRef> list = new ArrayList<>();
-        Preferences prefs = Preferences.getInstance();
+        List<PdfRef> list  = new ArrayList<>();
+        Preferences  prefs = Preferences.getInstance();
         prefs.resetIfVersionMisMatch(MODULE, VERSION);
         for (String id : prefs.getModuleKeys(MODULE)) {
             PdfRef ref = lookup(id, requireExistence);
@@ -61,9 +61,9 @@ public class PdfRef implements Comparable<PdfRef> {
     /**
      * Attempts to locate an existing {@link PdfRef}.
      *
-     * @param id The id to lookup.
+     * @param id               The id to lookup.
      * @param requireExistence <code>true</code> if only a reference that refers to an existing file
-     *            should be returned.
+     *                         should be returned.
      * @return The {@link PdfRef}, or <code>null</code>.
      */
     public static synchronized PdfRef lookup(String id, boolean requireExistence) {
@@ -93,14 +93,14 @@ public class PdfRef implements Comparable<PdfRef> {
     /**
      * Creates a new {@link PdfRef}.
      *
-     * @param id The id to use. Pass in <code>null</code> or an empty string to create a
-     *            {@link PdfRef} that won't update preferences.
-     * @param file The file that the <code>id</code> refers to.
+     * @param id     The id to use. Pass in <code>null</code> or an empty string to create a
+     *               {@link PdfRef} that won't update preferences.
+     * @param file   The file that the <code>id</code> refers to.
      * @param offset The amount to add to a symbolic page number to find the actual index.
      */
     public PdfRef(String id, File file, int offset) {
-        mId = id == null ? "" : id; //$NON-NLS-1$
-        mFile = file;
+        mId                = id == null ? "" : id; //$NON-NLS-1$
+        mFile              = file;
         mPageToIndexOffset = offset;
     }
 

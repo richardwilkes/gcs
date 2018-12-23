@@ -74,12 +74,12 @@ public class DuplicateCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        ListOutline outline = (ListOutline) focus;
-        OutlineModel model = outline.getModel();
+        ListOutline  outline = (ListOutline) focus;
+        OutlineModel model   = outline.getModel();
         if (!model.isLocked() && model.hasSelection()) {
-            ArrayList<Row> rows = new ArrayList<>();
-            ArrayList<Row> topRows = new ArrayList<>();
-            DataFile dataFile = outline.getDataFile();
+            ArrayList<Row> rows     = new ArrayList<>();
+            ArrayList<Row> topRows  = new ArrayList<>();
+            DataFile       dataFile = outline.getDataFile();
             dataFile.startNotify();
             model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));
             outline.convertDragRowsToSelf(rows);

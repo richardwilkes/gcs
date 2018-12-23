@@ -75,8 +75,8 @@ public class GURPSCalculator {
 
     public static void export(CharacterSheet sheet) {
         if (sheet != null) {
-            GURPSCharacter character = sheet.getCharacter();
-            WebServiceClient client = new WebServiceClient(OutputPreferences.BASE_GURPS_CALCULATOR_URL);
+            GURPSCharacter   character = sheet.getCharacter();
+            WebServiceClient client    = new WebServiceClient(OutputPreferences.BASE_GURPS_CALCULATOR_URL);
             try {
                 if (showExistsDialogIfNecessary(client, character)) {
                     try (TemporaryFile templateFile = new TemporaryFile("gcalcTemplate", ".html")) { //$NON-NLS-1$ //$NON-NLS-2$
@@ -91,8 +91,8 @@ public class GURPSCalculator {
                                 } catch (FileNotFoundException exception) {
                                     Log.error(exception);
                                 }
-                                UUID id = character.getId();
-                                String key = OutputPreferences.getGurpsCalculatorKey();
+                                UUID   id   = character.getId();
+                                String key  = OutputPreferences.getGurpsCalculatorKey();
                                 String path = String.format("api/SaveCharacter/%s/%s", id, key); //$NON-NLS-1$
                                 result = client.sendRequest(HttpMethodType.POST, path, null, result);
                                 if (!result.isEmpty()) {
@@ -100,7 +100,7 @@ public class GURPSCalculator {
                                 }
                                 try (TemporaryFile image = new TemporaryFile("gcalcImage", ".png")) { //$NON-NLS-1$ //$NON-NLS-2$
                                     StdImage.writePNG(image, character.getDescription().getPortrait().getRetina(), 150);
-                                    path = String.format("api/SaveCharacterImage/%s/%s", id, key); //$NON-NLS-1$
+                                    path   = String.format("api/SaveCharacterImage/%s/%s", id, key); //$NON-NLS-1$
                                     result = client.sendRequest(HttpMethodType.POST, path, Files.readAllBytes(image.toPath()));
                                     if (!result.isEmpty()) {
                                         throw new IOException("Bad response from the web server for image write"); //$NON-NLS-1$
@@ -110,7 +110,7 @@ public class GURPSCalculator {
                                     try (XMLWriter w = new XMLWriter(out)) {
                                         character.save(w, true, false);
                                     }
-                                    path = String.format("api/SaveCharacterRawFileGCS/%s/%s", id, key); //$NON-NLS-1$
+                                    path   = String.format("api/SaveCharacterRawFileGCS/%s/%s", id, key); //$NON-NLS-1$
                                     result = client.sendRequest(HttpMethodType.POST, path, out.toByteArray());
                                     if (!result.isEmpty()) {
                                         throw new IOException("Bad response from the web server for GCS file write"); //$NON-NLS-1$
@@ -133,14 +133,14 @@ public class GURPSCalculator {
     private static boolean showExistsDialogIfNecessary(WebServiceClient client, GURPSCharacter character) throws MalformedURLException, IOException, NotImplementedException {
         if (client.sendRequest(HttpMethodType.GET, String.format("api/GetCharacterExists/%s/%s", character.getId(), OutputPreferences.getGurpsCalculatorKey())).equals("true")) { //$NON-NLS-1$ //$NON-NLS-2$
             switch (JOptionPane.showOptionDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(), TEXT_CHARACTER_EXISTS, TITLE_CHARACTER_EXISTS, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[] { OPTION_REPLACE, OPTION_CREATE_NEW, OPTION_CANCEL }, OPTION_CANCEL)) {
-                case 1:
-                    character.generateNewId();
-                    character.setModified(true);
-                    break;
-                case 2:
-                    return false;
-                default:
-                    break;
+            case 1:
+                character.generateNewId();
+                character.setModified(true);
+                break;
+            case 2:
+                return false;
+            default:
+                break;
 
             }
         }
@@ -149,14 +149,14 @@ public class GURPSCalculator {
 
     private static void showResult(boolean success) {
         String message = success ? SUCCESS_MESSAGE : ERROR_MESSAGE;
-        String key = OutputPreferences.getGurpsCalculatorKey();
+        String key     = OutputPreferences.getGurpsCalculatorKey();
         if (key == null || !key.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")) { //$NON-NLS-1$
             message = String.format(KEY_MISSING_MESSAGE, OutputPreferences.GURPS_CALCULATOR_URL);
         }
-        JLabel styleLabel = new JLabel();
-        Font font = styleLabel.getFont();
-        Color color = styleLabel.getBackground();
-        StringBuilder buffer = new StringBuilder();
+        JLabel        styleLabel = new JLabel();
+        Font          font       = styleLabel.getFont();
+        Color         color      = styleLabel.getBackground();
+        StringBuilder buffer     = new StringBuilder();
         buffer.append("<html><body style='font-family:"); //$NON-NLS-1$
         buffer.append(font.getFamily());
         buffer.append(";font-weight:"); //$NON-NLS-1$

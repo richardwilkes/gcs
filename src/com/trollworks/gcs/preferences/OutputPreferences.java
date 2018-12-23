@@ -71,9 +71,12 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     @Localize(locale = "es", value = "cuando se salva la hoja de personaje en formato PNG")
     private static String PNG_RESOLUTION_POST;
     @Localize("The resolution, in dots-per-inch, to use when saving sheets as PNG files")
-    @Localize(locale = "de", value = "Die Auflösung in DPI, mit der die Charakterblätter als PNG-Datei gespeichert werden.")
-    @Localize(locale = "ru", value = "Разрешение в точках на дюйм, которое используется при сохранении листов в формате PNG-файла")
-    @Localize(locale = "es", value = "Resolución, en puntos por pulgada (ppp), cuando se salva la hoja de personaje en formato PNG")
+    @Localize(locale = "de",
+              value = "Die Auflösung in DPI, mit der die Charakterblätter als PNG-Datei gespeichert werden.")
+    @Localize(locale = "ru",
+              value = "Разрешение в точках на дюйм, которое используется при сохранении листов в формате PNG-файла")
+    @Localize(locale = "es",
+              value = "Resolución, en puntos por pulgada (ppp), cuando se salva la hoja de personaje en formato PNG")
     private static String PNG_RESOLUTION_TOOLTIP;
     @Localize("{0} dpi")
     @Localize(locale = "de", value = "{0} DPI")
@@ -91,14 +94,20 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     @Localize("Select A Text Template")
     private static String SELECT_TEXT_TEMPLATE;
     @Localize("Use platform native print dialogs (settings cannot be saved)")
-    @Localize(locale = "de", value = "Verwende Druckdialoge des Betriebssystems (Einstellungen können nicht gespeichert werden)")
-    @Localize(locale = "ru", value = "Использовать диалоги печати родные для ОС (в этом случае не сохраняются настройки диалогов)")
-    @Localize(locale = "es", value = "Usar los diálogos de impresión del sistema operativo (No pueden guardarse las preferencias)")
+    @Localize(locale = "de",
+              value = "Verwende Druckdialoge des Betriebssystems (Einstellungen können nicht gespeichert werden)")
+    @Localize(locale = "ru",
+              value = "Использовать диалоги печати родные для ОС (в этом случае не сохраняются настройки диалогов)")
+    @Localize(locale = "es",
+              value = "Usar los diálogos de impresión del sistema operativo (No pueden guardarse las preferencias)")
     private static String NATIVE_PRINTER;
     @Localize("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>")
-    @Localize(locale = "de", value = "<html><body>Ob die Druckdialoge des Betriebssystems verwendet werden sollen.<br>Das Auswählen dieser Option wird das Programm daran hindern,<br>die Druckeinstellungen im Dokument zu speichern und werderherzustellen.</body></html>")
-    @Localize(locale = "ru", value = "<html><body>Использовать родные диалоги печати ОС.<br>При выборе этого параметра программа не будет сохранять<br>настройки печати документа.</body></html>")
-    @Localize(locale = "es", value = "<html><body>Indica si se usan o no los diálogos de impresión del sistema operativo.<br>Si se selecciona esta opción, el programa no podrá salvar<br>y restaurar configuración del documento.</body></html>")
+    @Localize(locale = "de",
+              value = "<html><body>Ob die Druckdialoge des Betriebssystems verwendet werden sollen.<br>Das Auswählen dieser Option wird das Programm daran hindern,<br>die Druckeinstellungen im Dokument zu speichern und werderherzustellen.</body></html>")
+    @Localize(locale = "ru",
+              value = "<html><body>Использовать родные диалоги печати ОС.<br>При выборе этого параметра программа не будет сохранять<br>настройки печати документа.</body></html>")
+    @Localize(locale = "es",
+              value = "<html><body>Indica si se usan o no los diálogos de impresión del sistema operativo.<br>Si se selecciona esta opción, el programa no podrá salvar<br>y restaurar configuración del documento.</body></html>")
     private static String NATIVE_PRINTER_TOOLTIP;
     @Localize("Use")
     @Localize(locale = "de", value = "Verwende")
@@ -219,8 +228,8 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         String settings = Preferences.getInstance().getStringValue(MODULE, DEFAULT_PAGE_SETTINGS_KEY);
         if (settings != null && !settings.isEmpty()) {
             try (XMLReader in = new XMLReader(new StringReader(settings))) {
-                XMLNodeType type = in.next();
-                boolean found = false;
+                XMLNodeType type  = in.next();
+                boolean     found = false;
                 while (type != XMLNodeType.END_DOCUMENT) {
                     if (type == XMLNodeType.START_TAG) {
                         String name = in.getName();
@@ -275,7 +284,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         super(TITLE, owner);
         FlexColumn column = new FlexColumn();
 
-        FlexGrid grid = new FlexGrid();
+        FlexGrid   grid   = new FlexGrid();
         column.add(grid);
 
         FlexRow row = new FlexRow();
@@ -291,7 +300,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         mUseNativePrinter = createCheckBox(NATIVE_PRINTER, NATIVE_PRINTER_TOOLTIP, PrintManager.useNativeDialogs());
         column.add(mUseNativePrinter);
 
-        row = new FlexRow();
+        row                      = new FlexRow();
         mUseTextTemplateOverride = createCheckBox(TEXT_TEMPLATE_OVERRIDE, TEXT_TEMPLATE_OVERRIDE_TOOLTIP, isTextTemplateOverridden());
         row.add(mUseTextTemplateOverride);
         mTextTemplatePath = createTextTemplatePathField();
@@ -312,7 +321,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         row.add(createLabel(BLOCK_LAYOUT, BLOCK_LAYOUT_TOOLTIP));
         column.add(row);
 
-        row = new FlexRow();
+        row               = new FlexRow();
         mBlockLayoutField = createTextArea(BLOCK_LAYOUT_TOOLTIP, getBlockLayout());
         row.add(mBlockLayoutField);
         row.setFillVertical(true);
@@ -335,7 +344,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         field.setToolTipText(Text.wrapPlainTextForToolTip(TEXT_TEMPLATE_OVERRIDE_TOOLTIP));
         field.setEnabled(isTextTemplateOverridden());
         field.getDocument().addDocumentListener(this);
-        Dimension size = field.getPreferredSize();
+        Dimension size    = field.getPreferredSize();
         Dimension maxSize = field.getMaximumSize();
         maxSize.height = size.height;
         field.setMaximumSize(maxSize);
@@ -359,9 +368,9 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     }
 
     private JComboBox<String> createPNGResolutionPopup() {
-        int selection = 0;
-        int resolution = getPNGResolution();
-        JComboBox<String> combo = new JComboBox<>();
+        int               selection  = 0;
+        int               resolution = getPNGResolution();
+        JComboBox<String> combo      = new JComboBox<>();
         setupCombo(combo, PNG_RESOLUTION_TOOLTIP);
         for (int i = 0; i < DPI.length; i++) {
             combo.addItem(MessageFormat.format(DPI_FORMAT, Integer.valueOf(DPI[i])));
@@ -380,7 +389,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         JTextField field = new JTextField(value);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.getDocument().addDocumentListener(this);
-        Dimension size = field.getPreferredSize();
+        Dimension size    = field.getPreferredSize();
         Dimension maxSize = field.getMaximumSize();
         maxSize.height = size.height;
         field.setMaximumSize(maxSize);

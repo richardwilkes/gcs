@@ -86,14 +86,14 @@ public class ModifierEnabler extends JPanel {
      * Brings up a modal dialog that allows {@link Modifier}s to be enabled or disabled for the
      * specified {@link Advantage}s.
      *
-     * @param comp The component to open the dialog over.
+     * @param comp       The component to open the dialog over.
      * @param advantages The {@link Advantage}s to process.
      * @return Whether anything was modified.
      */
     static public boolean process(Component comp, ArrayList<Advantage> advantages) {
-        ArrayList<Advantage> list = new ArrayList<>();
-        boolean modified = false;
-        int count;
+        ArrayList<Advantage> list     = new ArrayList<>();
+        boolean              modified = false;
+        int                  count;
 
         for (Advantage advantage : advantages) {
             if (advantage.getCR() != SelfControlRoll.NONE_REQUIRED || !advantage.getModifiers().isEmpty()) {
@@ -103,20 +103,20 @@ public class ModifierEnabler extends JPanel {
 
         count = list.size();
         for (int i = 0; i < count; i++) {
-            Advantage advantage = list.get(i);
-            boolean hasMore = i != count - 1;
-            ModifierEnabler panel = new ModifierEnabler(advantage, count - i - 1);
+            Advantage       advantage = list.get(i);
+            boolean         hasMore   = i != count - 1;
+            ModifierEnabler panel     = new ModifierEnabler(advantage, count - i - 1);
             switch (WindowUtils.showOptionDialog(comp, panel, MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL }, APPLY)) {
-                case JOptionPane.YES_OPTION:
-                    panel.applyChanges();
-                    modified = true;
-                    break;
-                case JOptionPane.NO_OPTION:
-                    break;
-                case JOptionPane.CANCEL_OPTION:
-                case JOptionPane.CLOSED_OPTION:
-                default:
-                    return modified;
+            case JOptionPane.YES_OPTION:
+                panel.applyChanges();
+                modified = true;
+                break;
+            case JOptionPane.NO_OPTION:
+                break;
+            case JOptionPane.CANCEL_OPTION:
+            case JOptionPane.CLOSED_OPTION:
+            default:
+                return modified;
             }
         }
         return modified;
@@ -132,7 +132,7 @@ public class ModifierEnabler extends JPanel {
     }
 
     private static Container createTop(Advantage advantage, int remaining) {
-        JPanel top = new JPanel(new ColumnLayout());
+        JPanel top   = new JPanel(new ColumnLayout());
         JLabel label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
 
         top.setBorder(new EmptyBorder(0, 0, 15, 0));

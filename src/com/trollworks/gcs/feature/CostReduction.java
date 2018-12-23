@@ -34,7 +34,7 @@ public class CostReduction implements Feature {
 
     /** Creates a new cost reduction. */
     public CostReduction() {
-        mAttribute = BonusAttributeType.ST;
+        mAttribute  = BonusAttributeType.ST;
         mPercentage = 40;
     }
 
@@ -44,7 +44,7 @@ public class CostReduction implements Feature {
      * @param other The bonus to clone.
      */
     public CostReduction(CostReduction other) {
-        mAttribute = other.mAttribute;
+        mAttribute  = other.mAttribute;
         mPercentage = other.mPercentage;
     }
 

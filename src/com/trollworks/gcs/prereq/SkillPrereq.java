@@ -126,9 +126,9 @@ public class SkillPrereq extends NameLevelPrereq {
 
     @Override
     public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
-        boolean satisfied = false;
-        String techLevel = null;
-        StringCriteria nameCriteria = getNameCriteria();
+        boolean         satisfied     = false;
+        String          techLevel     = null;
+        StringCriteria  nameCriteria  = getNameCriteria();
         IntegerCriteria levelCriteria = getLevelCriteria();
 
         if (exclude instanceof Skill) {

@@ -71,7 +71,7 @@ public enum ModifierColumnID {
         @Override
         public String getDataAsText(Modifier modifier) {
             StringBuilder builder = new StringBuilder();
-            String notes = modifier.getNotes();
+            String        notes   = modifier.getNotes();
 
             builder.append(modifier.toString());
             if (notes.length() > 0) {
@@ -153,7 +153,8 @@ public enum ModifierColumnID {
     @Localize(locale = "es", value = "Mejoras y Limitaciones")
     static String DESCRIPTION_TITLE;
     @Localize("The name and notes describing this enhancement or limitation")
-    @Localize(locale = "de", value = "Die Namen und Anmerkungen, die diese Verbesserung oder Einschränkung beschreiben.")
+    @Localize(locale = "de",
+              value = "Die Namen und Anmerkungen, die diese Verbesserung oder Einschränkung beschreiben.")
     @Localize(locale = "ru", value = "Название и заметки, описывающие улучшение или ограничение")
     @Localize(locale = "es", value = "Nombre y Notas describiendo esta mejora o limitación")
     static String DESCRIPTION_TOOLTIP;
@@ -163,7 +164,8 @@ public enum ModifierColumnID {
     @Localize(locale = "es", value = "Coste del modificador")
     static String COST_MODIFIER_TITLE;
     @Localize("The cost modifier for this enhancement or limitation")
-    @Localize(locale = "de", value = "Der Kostenmodifikator für diese Verbesserung oder Einschränkung.")
+    @Localize(locale = "de",
+              value = "Der Kostenmodifikator für diese Verbesserung oder Einschränkung.")
     @Localize(locale = "ru", value = "Стоимость модификатора за улучшение или ограничение")
     @Localize(locale = "es", value = "Coste del modificador de esta mejora o limitación")
     static String COST_MODIFIER_TOOLTIP;
@@ -172,9 +174,12 @@ public enum ModifierColumnID {
     @Localize(locale = "ru", value = "Ссыл")
     static String REFERENCE_TITLE;
     @Localize("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de", value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-    @Localize(locale = "ru", value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
-    @Localize(locale = "es", value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
+    @Localize(locale = "de",
+              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
+    @Localize(locale = "ru",
+              value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
+    @Localize(locale = "es",
+              value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
     static String REFERENCE_TOOLTIP;
 
     static {
@@ -213,7 +218,7 @@ public enum ModifierColumnID {
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
-     * @param outline The {@link Outline} to use.
+     * @param outline   The {@link Outline} to use.
      * @param forEditor Whether this is for an editor or not.
      */
     public static void addColumns(Outline outline, boolean forEditor) {

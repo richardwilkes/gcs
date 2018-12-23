@@ -57,7 +57,7 @@ public class SpellBonusEditor extends FeatureEditor {
     /**
      * Create a new spell bonus editor.
      *
-     * @param row The row this feature will belong to.
+     * @param row   The row this feature will belong to.
      * @param bonus The bonus to edit.
      */
     public SpellBonusEditor(ListRow row, SpellBonus bonus) {
@@ -68,7 +68,7 @@ public class SpellBonusEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         SpellBonus bonus = (SpellBonus) getFeature();
 
-        FlexRow row = new FlexRow();
+        FlexRow    row   = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999, 999));
@@ -109,23 +109,23 @@ public class SpellBonusEditor extends FeatureEditor {
         if (COLLEGE_TYPE.equals(command)) {
             SpellBonus bonus = (SpellBonus) getFeature();
             switch (((JComboBox<?>) event.getSource()).getSelectedIndex()) {
-                case 0:
-                default:
-                    if (!bonus.allColleges()) {
-                        Commitable.sendCommitToFocusOwner();
-                        bonus.allColleges(true);
-                        rebuild();
-                    }
-                    break;
-                case 1:
-                    adjustMatchType(bonus, SpellBonus.TAG_COLLEGE_NAME);
-                    break;
-                case 2:
-                    adjustMatchType(bonus, SpellBonus.TAG_SPELL_NAME);
-                    break;
-                case 3:
-                    adjustMatchType(bonus, SpellBonus.TAG_POWER_SOURCE_NAME);
-                    break;
+            case 0:
+            default:
+                if (!bonus.allColleges()) {
+                    Commitable.sendCommitToFocusOwner();
+                    bonus.allColleges(true);
+                    rebuild();
+                }
+                break;
+            case 1:
+                adjustMatchType(bonus, SpellBonus.TAG_COLLEGE_NAME);
+                break;
+            case 2:
+                adjustMatchType(bonus, SpellBonus.TAG_SPELL_NAME);
+                break;
+            case 3:
+                adjustMatchType(bonus, SpellBonus.TAG_POWER_SOURCE_NAME);
+                break;
             }
         } else {
             super.actionPerformed(event);

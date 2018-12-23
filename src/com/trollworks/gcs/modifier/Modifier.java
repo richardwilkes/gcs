@@ -98,27 +98,27 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     /**
      * Creates a new {@link Modifier}.
      *
-     * @param file The {@link DataFile} to use.
+     * @param file  The {@link DataFile} to use.
      * @param other Another {@link Modifier} to clone.
      */
     public Modifier(DataFile file, Modifier other) {
         super(file, other);
-        mName = other.mName;
-        mReference = other.mReference;
-        mCostType = other.mCostType;
-        mCost = other.mCost;
+        mName           = other.mName;
+        mReference      = other.mReference;
+        mCostType       = other.mCostType;
+        mCost           = other.mCost;
         mCostMultiplier = other.mCostMultiplier;
-        mLevels = other.mLevels;
-        mAffects = other.mAffects;
-        mEnabled = other.mEnabled;
+        mLevels         = other.mLevels;
+        mAffects        = other.mAffects;
+        mEnabled        = other.mEnabled;
     }
 
     /**
      * Creates a new {@link Modifier}.
      *
-     * @param file The {@link DataFile} to use.
+     * @param file   The {@link DataFile} to use.
      * @param reader The {@link XMLReader} to use.
-     * @param state The {@link LoadState} to use.
+     * @param state  The {@link LoadState} to use.
      */
     public Modifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
         super(file, false);
@@ -132,14 +132,14 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
      */
     public Modifier(DataFile file) {
         super(file, false);
-        mName = DEFAULT_NAME;
-        mReference = ""; //$NON-NLS-1$
-        mCostType = CostType.PERCENTAGE;
-        mCost = 0;
+        mName           = DEFAULT_NAME;
+        mReference      = ""; //$NON-NLS-1$
+        mCostType       = CostType.PERCENTAGE;
+        mCost           = 0;
         mCostMultiplier = 1.0;
-        mLevels = 0;
-        mAffects = Affects.TOTAL;
-        mEnabled = true;
+        mLevels         = 0;
+        mAffects        = Affects.TOTAL;
+        mEnabled        = true;
     }
 
     @Override
@@ -370,14 +370,14 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mName = DEFAULT_NAME;
-        mCostType = CostType.PERCENTAGE;
-        mCost = 0;
+        mName           = DEFAULT_NAME;
+        mCostType       = CostType.PERCENTAGE;
+        mCost           = 0;
         mCostMultiplier = 1.0;
-        mLevels = 0;
-        mAffects = Affects.TOTAL;
-        mReference = ""; //$NON-NLS-1$
-        mEnabled = true;
+        mLevels         = 0;
+        mAffects        = Affects.TOTAL;
+        mReference      = ""; //$NON-NLS-1$
+        mEnabled        = true;
     }
 
     @Override
@@ -428,7 +428,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     /** @return A full description of this {@link Modifier}. */
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
-        String modNote = getNotes();
+        String        modNote = getNotes();
 
         builder.append(toString());
         if (modNote.length() > 0) {
@@ -443,27 +443,27 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     /** @return The formatted cost. */
     public String getCostDescription() {
-        StringBuilder builder = new StringBuilder();
-        CostType costType = getCostType();
+        StringBuilder builder  = new StringBuilder();
+        CostType      costType = getCostType();
 
         switch (costType) {
-            case PERCENTAGE:
-            case POINTS:
-            default:
-                builder.append(Numbers.formatWithForcedSign(getCostModifier()));
-                if (costType == CostType.PERCENTAGE) {
-                    builder.append('%');
-                }
-                String desc = mAffects.getShortTitle();
-                if (desc.length() > 0) {
-                    builder.append(' ');
-                    builder.append(desc);
-                }
-                break;
-            case MULTIPLIER:
-                builder.append('x');
-                builder.append(Numbers.format(getCostMultiplier()));
-                break;
+        case PERCENTAGE:
+        case POINTS:
+        default:
+            builder.append(Numbers.formatWithForcedSign(getCostModifier()));
+            if (costType == CostType.PERCENTAGE) {
+                builder.append('%');
+            }
+            String desc = mAffects.getShortTitle();
+            if (desc.length() > 0) {
+                builder.append(' ');
+                builder.append(desc);
+            }
+            break;
+        case MULTIPLIER:
+            builder.append('x');
+            builder.append(Numbers.format(getCostMultiplier()));
+            break;
         }
         return builder.toString();
     }

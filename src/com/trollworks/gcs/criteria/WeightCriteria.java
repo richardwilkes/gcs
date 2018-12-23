@@ -23,7 +23,7 @@ public class WeightCriteria extends NumericCriteria {
     /**
      * Creates a new double comparison.
      * 
-     * @param type The {@link NumericCompareType} to use.
+     * @param type      The {@link NumericCompareType} to use.
      * @param qualifier The qualifier to match against.
      */
     public WeightCriteria(NumericCompareType type, WeightValue qualifier) {
@@ -84,13 +84,13 @@ public class WeightCriteria extends NumericCriteria {
      */
     public boolean matches(WeightValue data) {
         switch (getType()) {
-            case IS:
-                return mQualifier.equals(data);
-            case AT_LEAST:
-            default:
-                return data.getNormalizedValue() >= mQualifier.getNormalizedValue();
-            case AT_MOST:
-                return data.getNormalizedValue() <= mQualifier.getNormalizedValue();
+        case IS:
+            return mQualifier.equals(data);
+        case AT_LEAST:
+        default:
+            return data.getNormalizedValue() >= mQualifier.getNormalizedValue();
+        case AT_MOST:
+            return data.getNormalizedValue() <= mQualifier.getNormalizedValue();
         }
     }
 }

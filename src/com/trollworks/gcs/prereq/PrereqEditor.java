@@ -91,9 +91,9 @@ public abstract class PrereqEditor extends EditorPanel {
     /**
      * Creates a new prerequisite editor panel.
      *
-     * @param row The owning row.
+     * @param row    The owning row.
      * @param prereq The prerequisite to edit.
-     * @param depth The depth of this prerequisite.
+     * @param depth  The depth of this prerequisite.
      * @return The newly created editor panel.
      */
     public static PrereqEditor create(ListRow row, Prereq prereq, int depth) {
@@ -121,24 +121,24 @@ public abstract class PrereqEditor extends EditorPanel {
     /**
      * Creates a new generic prerequisite editor panel.
      *
-     * @param row The owning row.
+     * @param row    The owning row.
      * @param prereq The prerequisite to edit.
-     * @param depth The depth of this prerequisite.
+     * @param depth  The depth of this prerequisite.
      */
     protected PrereqEditor(ListRow row, Prereq prereq, int depth) {
         super(20 * depth);
-        mRow = row;
+        mRow    = row;
         mPrereq = prereq;
-        mDepth = depth;
+        mDepth  = depth;
         rebuild();
     }
 
     /** Rebuilds the contents of this panel with the current prerequisite settings. */
     protected final void rebuild() {
         removeAll();
-        FlexGrid grid = new FlexGrid();
-        FlexRow left = new FlexRow();
-        FlexRow right = new FlexRow();
+        FlexGrid grid  = new FlexGrid();
+        FlexRow  left  = new FlexRow();
+        FlexRow  right = new FlexRow();
         if (mPrereq.getParent() != null) {
             AndOrLabel andOrLabel = new AndOrLabel(mPrereq);
             add(andOrLabel);
@@ -160,8 +160,8 @@ public abstract class PrereqEditor extends EditorPanel {
     /**
      * Sub-classes must implement this method to add any components they want to be visible.
      *
-     * @param left The left-side {@link FlexRow}, situated in grid row 0, column 0.
-     * @param grid The general {@link FlexGrid}. Add items in column 1.
+     * @param left  The left-side {@link FlexRow}, situated in grid row 0, column 0.
+     * @param grid  The general {@link FlexGrid}. Add items in column 1.
      * @param right The right-side {@link FlexRow}, situated in grid row 0, column 2.
      */
     protected abstract void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right);
@@ -177,8 +177,8 @@ public abstract class PrereqEditor extends EditorPanel {
     /** @return The {@link JComboBox} that allows the base prereq type to be changed. */
     protected JComboBox<Object> addChangeBaseTypeCombo() {
         Object[] choices = new Object[] { ATTRIBUTE, ADVANTAGE, SKILL, SPELL, CONTAINED_WEIGHT };
-        Class<?> type = mPrereq.getClass();
-        Object current = choices[0];
+        Class<?> type    = mPrereq.getClass();
+        Object   current = choices[0];
         for (int i = 0; i < BASE_TYPES.length; i++) {
             if (type.equals(BASE_TYPES[i])) {
                 current = choices[i];
@@ -201,8 +201,8 @@ public abstract class PrereqEditor extends EditorPanel {
 
     private void remove() {
         JComponent parent = (JComponent) getParent();
-        int index = UIUtilities.getIndexOf(parent, this);
-        int count = countSelfAndDescendents(mPrereq);
+        int        index  = UIUtilities.getIndexOf(parent, this);
+        int        count  = countSelfAndDescendents(mPrereq);
         for (int i = 0; i < count; i++) {
             parent.remove(index);
         }
@@ -218,8 +218,8 @@ public abstract class PrereqEditor extends EditorPanel {
             Class<?> type = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];
             if (!mPrereq.getClass().equals(type)) {
                 JComponent parent = (JComponent) getParent();
-                PrereqList list = mPrereq.getParent();
-                int lIndex = list.getIndexOf(mPrereq);
+                PrereqList list   = mPrereq.getParent();
+                int        lIndex = list.getIndexOf(mPrereq);
 
                 try {
                     Prereq prereq = (Prereq) type.getConstructor(PrereqList.class).newInstance(list);

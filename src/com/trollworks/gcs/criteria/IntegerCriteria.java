@@ -23,7 +23,7 @@ public class IntegerCriteria extends NumericCriteria {
     /**
      * Creates a new integer comparison.
      * 
-     * @param type The {@link NumericCompareType} to use.
+     * @param type      The {@link NumericCompareType} to use.
      * @param qualifier The qualifier to match against.
      */
     public IntegerCriteria(NumericCompareType type, int qualifier) {
@@ -85,13 +85,13 @@ public class IntegerCriteria extends NumericCriteria {
      */
     public boolean matches(int data) {
         switch (getType()) {
-            case IS:
-                return data == mQualifier;
-            case AT_LEAST:
-            default:
-                return data >= mQualifier;
-            case AT_MOST:
-                return data <= mQualifier;
+        case IS:
+            return data == mQualifier;
+        case AT_LEAST:
+        default:
+            return data >= mQualifier;
+        case AT_MOST:
+            return data <= mQualifier;
         }
     }
 }

@@ -50,7 +50,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 
     public PdfPanel(PdfDockable owner, PDDocument pdf, PdfRef pdfRef, int page, String highlight) {
         mOwner = owner;
-        mPdf = pdf;
+        mPdf   = pdf;
         setFocusable(true);
         addMouseListener(this);
         addKeyListener(this);
@@ -139,12 +139,12 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
             mPageIndex = numberOfPages - 1;
         }
         if (mPageIndex >= 0 && mPageIndex < numberOfPages) {
-            PDPage page = mPdf.getPage(mPageIndex);
+            PDPage      page    = mPdf.getPage(mPageIndex);
             PDRectangle cropBox = page.getCropBox();
-            float scale = SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution();
-            mWidth = (int) Math.ceil(cropBox.getWidth() / 72 * scale);
-            mHeight = (int) Math.ceil(cropBox.getHeight() / 72 * scale);
-            mImg = null;
+            float       scale   = SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution();
+            mWidth    = (int) Math.ceil(cropBox.getWidth() / 72 * scale);
+            mHeight   = (int) Math.ceil(cropBox.getHeight() / 72 * scale);
+            mImg      = null;
             mNeedLoad = true;
             Dimension size = new Dimension(mWidth, mHeight);
             UIUtilities.setOnlySize(this, size);
@@ -160,7 +160,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (mNeedLoad && mPdf != null) {
-            mImg = PdfRenderer.create(mPdf, mPageIndex, SCALES[mScaleIndex] * (GraphicsUtilities.isRetinaDisplay(g) ? 2 : 1), mHighlight);
+            mImg      = PdfRenderer.create(mPdf, mPageIndex, SCALES[mScaleIndex] * (GraphicsUtilities.isRetinaDisplay(g) ? 2 : 1), mHighlight);
             mNeedLoad = false;
         }
         if (mImg != null) {
@@ -223,17 +223,17 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
         if (!event.isConsumed()) {
             char ch = event.getKeyChar();
             switch (ch) {
-                case '-':
-                    zoomOut();
-                    break;
-                case '=':
-                    zoomIn();
-                    break;
-                case '1':
-                    actualSize();
-                    break;
-                default:
-                    return;
+            case '-':
+                zoomOut();
+                break;
+            case '=':
+                zoomIn();
+                break;
+            case '1':
+                actualSize();
+                break;
+            default:
+                return;
             }
             event.consume();
         }
@@ -243,14 +243,14 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
     public void keyPressed(KeyEvent event) {
         if (!event.isConsumed()) {
             switch (event.getKeyCode()) {
-                case KeyEvent.VK_UP:
-                    previousPage();
-                    break;
-                case KeyEvent.VK_DOWN:
-                    nextPage();
-                    break;
-                default:
-                    return;
+            case KeyEvent.VK_UP:
+                previousPage();
+                break;
+            case KeyEvent.VK_DOWN:
+                nextPage();
+                break;
+            default:
+                return;
             }
             event.consume();
         }

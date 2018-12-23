@@ -60,17 +60,23 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
     @Localize(locale = "es", value = "Nivel de carga")
     private static String ENCUMBRANCE_TOOLTIP;
     @Localize("The maximum load a character can carry and still remain within a specific encumbrance level")
-    @Localize(locale = "de", value = "Das maximale Gewicht, das ein Charakter tragen und immer noch in einer bestimmten Belastungsstufe bleiben kann")
-    @Localize(locale = "ru", value = "Максимальная нагрузка, которую персонаж может нести, оставаясь в пределах указанного уровня нагрузки")
-    @Localize(locale = "es", value = "Carga máxima que un personaje puede soportar y mantenerse todavia en el nivel actual de carga")
+    @Localize(locale = "de",
+              value = "Das maximale Gewicht, das ein Charakter tragen und immer noch in einer bestimmten Belastungsstufe bleiben kann")
+    @Localize(locale = "ru",
+              value = "Максимальная нагрузка, которую персонаж может нести, оставаясь в пределах указанного уровня нагрузки")
+    @Localize(locale = "es",
+              value = "Carga máxima que un personaje puede soportar y mantenerse todavia en el nivel actual de carga")
     private static String MAX_CARRY_TOOLTIP;
     @Localize("The character's ground movement rate for a specific encumbrance level")
-    @Localize(locale = "de", value = "Die Bewegungswert eines Charakters am Boden für eine bestimmte Belastungsstufe")
+    @Localize(locale = "de",
+              value = "Die Bewegungswert eines Charakters am Boden für eine bestimmte Belastungsstufe")
     @Localize(locale = "ru", value = "Единицы движения персонажа при указанном уровне нагрузки")
-    @Localize(locale = "es", value = "Ritmo de movimento de un personaje para un nivel especifico de carga")
+    @Localize(locale = "es",
+              value = "Ritmo de movimento de un personaje para un nivel especifico de carga")
     private static String MOVE_TOOLTIP;
     @Localize("The character's dodge for a specific encumbrance level")
-    @Localize(locale = "de", value = "Der Ausweichen-Wert eines Charakters für eine bestimmte Belastungsstufe")
+    @Localize(locale = "de",
+              value = "Der Ausweichen-Wert eines Charakters für eine bestimmte Belastungsstufe")
     @Localize(locale = "ru", value = "Уклонение персонажа для указанного уровня нагрузки")
     @Localize(locale = "es", value = "Esquiva del personaje para un nivel especifico de carga")
     private static String DODGE_TOOLTIP;
@@ -109,7 +115,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         addVerticalBackground(createDivider(), Color.black);
         createHeader(this, DODGE, DODGE_TOOLTIP);
         GURPSCharacter character = mSheet.getCharacter();
-        Encumbrance current = character.getEncumbranceLevel();
+        Encumbrance    current   = character.getEncumbranceLevel();
         for (Encumbrance encumbrance : encumbranceValues) {
             int index = encumbrance.ordinal();
             mMarkers[index] = new PageLabel(getMarkerText(encumbrance, current), header);
@@ -141,7 +147,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
     @Override
     public void handleNotification(Object producer, String type, Object data) {
         GURPSCharacter character = mSheet.getCharacter();
-        Encumbrance current = character.getEncumbranceLevel();
+        Encumbrance    current   = character.getEncumbranceLevel();
         for (Encumbrance encumbrance : Encumbrance.values()) {
             int index = encumbrance.ordinal();
             if (encumbrance == current) {

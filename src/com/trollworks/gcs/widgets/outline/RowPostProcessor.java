@@ -39,7 +39,7 @@ public class RowPostProcessor implements Runnable {
      * Creates a new post processor for name substitution.
      *
      * @param outline The outline containing the rows.
-     * @param list The list to process.
+     * @param list    The list to process.
      */
     public RowPostProcessor(Outline outline, ArrayList<ListRow> list) {
         mMap = new HashMap<>();
@@ -49,8 +49,8 @@ public class RowPostProcessor implements Runnable {
     @Override
     public void run() {
         for (Outline outline : mMap.keySet()) {
-            ArrayList<ListRow> rows = mMap.get(outline);
-            boolean modified = ModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
+            ArrayList<ListRow> rows     = mMap.get(outline);
+            boolean            modified = ModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
             modified |= Namer.name(outline, rows);
             if (modified) {
                 outline.updateRowHeights(rows);

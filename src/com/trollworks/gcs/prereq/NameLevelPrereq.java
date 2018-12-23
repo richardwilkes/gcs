@@ -39,13 +39,13 @@ public abstract class NameLevelPrereq extends HasPrereq {
     /**
      * Creates a new prerequisite.
      *
-     * @param tag The tag for this prerequisite.
+     * @param tag    The tag for this prerequisite.
      * @param parent The owning prerequisite list, if any.
      */
     public NameLevelPrereq(String tag, PrereqList parent) {
         super(parent);
-        mTag = tag;
-        mNameCriteria = new StringCriteria(StringCompareType.IS, ""); //$NON-NLS-1$
+        mTag           = tag;
+        mNameCriteria  = new StringCriteria(StringCompareType.IS, ""); //$NON-NLS-1$
         mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
     }
 
@@ -76,8 +76,8 @@ public abstract class NameLevelPrereq extends HasPrereq {
      */
     protected NameLevelPrereq(PrereqList parent, NameLevelPrereq prereq) {
         super(parent, prereq);
-        mTag = prereq.mTag;
-        mNameCriteria = new StringCriteria(prereq.mNameCriteria);
+        mTag           = prereq.mTag;
+        mNameCriteria  = new StringCriteria(prereq.mNameCriteria);
         mLevelCriteria = new IntegerCriteria(prereq.mLevelCriteria);
     }
 

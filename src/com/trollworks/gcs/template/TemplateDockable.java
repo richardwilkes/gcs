@@ -83,8 +83,8 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
     public TemplateDockable(Template template) {
         super(template);
         Template dataFile = getDataFile();
-        mTemplate = new TemplateSheet(dataFile);
-        mToolbar = new Toolbar();
+        mTemplate   = new TemplateSheet(dataFile);
+        mToolbar    = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> mTemplate.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
@@ -219,9 +219,9 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 
     @Override
     public void searchSelect(List<Object> selection) {
-        HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<>();
-        Outline primary = null;
-        ArrayList<Row> list;
+        HashMap<OutlineModel, ArrayList<Row>> map     = new HashMap<>();
+        Outline                               primary = null;
+        ArrayList<Row>                        list;
 
         mTemplate.getAdvantageOutline().getModel().deselect();
         mTemplate.getSkillOutline().getModel().deselect();
@@ -229,13 +229,13 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
         mTemplate.getEquipmentOutline().getModel().deselect();
 
         for (Object obj : selection) {
-            Row row = (Row) obj;
-            Row parent = row.getParent();
-            OutlineModel model = row.getOwner();
+            Row          row    = (Row) obj;
+            Row          parent = row.getParent();
+            OutlineModel model  = row.getOwner();
 
             while (parent != null) {
                 parent.setOpen(true);
-                model = parent.getOwner();
+                model  = parent.getOwner();
                 parent = parent.getParent();
             }
             list = map.get(model);
@@ -277,10 +277,10 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
      * @param rows The rows to add.
      */
     public void addRows(List<Row> rows) {
-        HashMap<ListOutline, StateEdit> map = new HashMap<>();
-        HashMap<Outline, ArrayList<Row>> selMap = new HashMap<>();
+        HashMap<ListOutline, StateEdit>      map     = new HashMap<>();
+        HashMap<Outline, ArrayList<Row>>     selMap  = new HashMap<>();
         HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<>();
-        ListOutline outline = null;
+        ListOutline                          outline = null;
 
         for (Row row : rows) {
             if (row instanceof Advantage) {

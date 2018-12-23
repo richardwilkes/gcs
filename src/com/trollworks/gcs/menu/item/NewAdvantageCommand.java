@@ -73,12 +73,12 @@ public class NewAdvantageCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        ListOutline outline;
-        DataFile dataFile;
+        ListOutline        outline;
+        DataFile           dataFile;
         AdvantagesDockable adq = getTarget(AdvantagesDockable.class);
         if (adq != null) {
             dataFile = adq.getDataFile();
-            outline = adq.getOutline();
+            outline  = adq.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -86,12 +86,12 @@ public class NewAdvantageCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline = sheet.getSheet().getAdvantageOutline();
+                outline  = sheet.getSheet().getAdvantageOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline = template.getTemplate().getAdvantageOutline();
+                    outline  = template.getTemplate().getAdvantageOutline();
                 } else {
                     return;
                 }

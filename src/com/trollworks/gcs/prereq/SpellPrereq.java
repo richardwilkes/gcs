@@ -89,8 +89,8 @@ public class SpellPrereq extends HasPrereq {
      */
     public SpellPrereq(PrereqList parent) {
         super(parent);
-        mType = TAG_NAME;
-        mStringCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
+        mType             = TAG_NAME;
+        mStringCriteria   = new StringCriteria(StringCompareType.IS, EMPTY);
         mQuantityCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 1);
     }
 
@@ -139,8 +139,8 @@ public class SpellPrereq extends HasPrereq {
      */
     protected SpellPrereq(PrereqList parent, SpellPrereq prereq) {
         super(parent, prereq);
-        mType = prereq.mType;
-        mStringCriteria = new StringCriteria(prereq.mStringCriteria);
+        mType             = prereq.mType;
+        mStringCriteria   = new StringCriteria(prereq.mStringCriteria);
         mQuantityCriteria = new IntegerCriteria(prereq.mQuantityCriteria);
     }
 
@@ -193,7 +193,7 @@ public class SpellPrereq extends HasPrereq {
 
     /**
      * @param type The type of comparison to make. Must be one of {@link #TAG_NAME},
-     *            {@link #TAG_ANY}, {@link #TAG_COLLEGE}, or {@link #TAG_COLLEGE_COUNT}.
+     *             {@link #TAG_ANY}, {@link #TAG_COLLEGE}, or {@link #TAG_COLLEGE_COUNT}.
      */
     public void setType(String type) {
         if (type == TAG_NAME || type == TAG_COLLEGE || type == TAG_COLLEGE_COUNT || type == TAG_ANY) {
@@ -223,10 +223,10 @@ public class SpellPrereq extends HasPrereq {
 
     @Override
     public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
-        HashSet<String> colleges = new HashSet<>();
-        String techLevel = null;
-        int count = 0;
-        boolean satisfied;
+        HashSet<String> colleges  = new HashSet<>();
+        String          techLevel = null;
+        int             count     = 0;
+        boolean         satisfied;
 
         if (exclude instanceof Spell) {
             techLevel = ((Spell) exclude).getTechLevel();

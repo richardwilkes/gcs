@@ -25,10 +25,10 @@ public class GCSInfoPlistCreator {
     @SuppressWarnings("nls")
     public static void main(String[] args) {
         File plist = new File("Info.plist");
-        File pkg = new File("PkgInfo");
+        File pkg   = new File("PkgInfo");
         if (args.length > 0) {
             plist = new File(args[0], "Info.plist");
-            pkg = new File(args[0], "PkgInfo");
+            pkg   = new File(args[0], "PkgInfo");
         }
         App.setup(GCS.class);
         GCS.registerFileTypes(null);

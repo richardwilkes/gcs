@@ -52,7 +52,7 @@ public abstract class Names {
      * Loads names from a file into an array of strings. The names in the file should be listed one
      * per line.
      *
-     * @param url The {@link URL} to load the name data from.
+     * @param url      The {@link URL} to load the name data from.
      * @param fallback A single name to use in case the file couldn't be loaded.
      * @return An array of strings representing the contents of the file.
      */

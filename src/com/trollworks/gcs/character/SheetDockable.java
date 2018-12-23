@@ -116,7 +116,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
     }
 
     private void createToolbar() {
-        mToolbar = new Toolbar();
+        mToolbar    = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> mSheet.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
@@ -189,8 +189,8 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 
     @Override
     public FileType[] getAllowedFileTypes() {
-        File textTemplate = TextTemplate.resolveTextTemplate(null);
-        String extension = PathUtils.getExtension(textTemplate.getName());
+        File     textTemplate = TextTemplate.resolveTextTemplate(null);
+        String   extension    = PathUtils.getExtension(textTemplate.getName());
         FileType templateType = FileType.getByExtension(extension);
         if (templateType == null) {
             FileType.register(extension, null, String.format(TEXT_TEMPLATE_DESCRIPTION, extension), "", null, false, false); //$NON-NLS-1$
@@ -206,10 +206,10 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 
     @Override
     public File[] saveTo(File file) {
-        ArrayList<File> result = new ArrayList<>();
-        String extension = PathUtils.getExtension(file.getName());
-        File textTemplate = TextTemplate.resolveTextTemplate(null);
-        String templateExtension = PathUtils.getExtension(textTemplate.getName());
+        ArrayList<File> result            = new ArrayList<>();
+        String          extension         = PathUtils.getExtension(file.getName());
+        File            textTemplate      = TextTemplate.resolveTextTemplate(null);
+        String          templateExtension = PathUtils.getExtension(textTemplate.getName());
         if (FileType.PNG_EXTENSION.equals(extension)) {
             if (!mSheet.saveAsPNG(file, result)) {
                 WindowUtils.showError(this, EXPORT_PNG_ERROR);
@@ -269,9 +269,9 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 
     @Override
     public void searchSelect(List<Object> selection) {
-        HashMap<OutlineModel, ArrayList<Row>> map = new HashMap<>();
-        Outline primary = null;
-        ArrayList<Row> list;
+        HashMap<OutlineModel, ArrayList<Row>> map     = new HashMap<>();
+        Outline                               primary = null;
+        ArrayList<Row>                        list;
 
         mSheet.getAdvantageOutline().getModel().deselect();
         mSheet.getSkillOutline().getModel().deselect();
@@ -280,13 +280,13 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
         mSheet.getNoteOutline().getModel().deselect();
 
         for (Object obj : selection) {
-            Row row = (Row) obj;
-            Row parent = row.getParent();
-            OutlineModel model = row.getOwner();
+            Row          row    = (Row) obj;
+            Row          parent = row.getParent();
+            OutlineModel model  = row.getOwner();
 
             while (parent != null) {
                 parent.setOpen(true);
-                model = parent.getOwner();
+                model  = parent.getOwner();
                 parent = parent.getParent();
             }
             list = map.get(model);
@@ -334,10 +334,10 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
      * @param rows The rows to add.
      */
     public void addRows(List<Row> rows) {
-        HashMap<ListOutline, StateEdit> map = new HashMap<>();
-        HashMap<Outline, ArrayList<Row>> selMap = new HashMap<>();
+        HashMap<ListOutline, StateEdit>      map     = new HashMap<>();
+        HashMap<Outline, ArrayList<Row>>     selMap  = new HashMap<>();
         HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<>();
-        ListOutline outline = null;
+        ListOutline                          outline = null;
 
         for (Row row : rows) {
             if (row instanceof Advantage) {
