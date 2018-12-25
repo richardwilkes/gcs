@@ -731,13 +731,15 @@ public class Skill extends ListRow implements HasSourceReference {
                         level = mDefaultedFrom.getAdjLevel();
                     }
                 }
-                int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
-                level         += bonus;
-                relativeLevel += bonus;
-                bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
-                level         += bonus;
-                relativeLevel += bonus;
-                level         += character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                if (character != null) {
+                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
+                    level         += bonus;
+                    relativeLevel += bonus;
+                    bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+                    level         += bonus;
+                    relativeLevel += bonus;
+                    level         += character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                }
             }
         }
         return new SkillLevel(level, relativeLevel);
