@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.widget.tree.TreeContainerRow;
 import com.trollworks.toolkit.ui.widget.tree.TreeRow;
 
@@ -31,8 +31,8 @@ public class LibraryDirectoryRow extends TreeContainerRow implements LibraryExpl
     }
 
     @Override
-    public StdImage getIcon() {
-        return StdImage.FOLDER.getImage(16);
+    public RetinaIcon getIcon() {
+        return new RetinaIcon("folder"); //$NON-NLS-1$
     }
 
     @Override

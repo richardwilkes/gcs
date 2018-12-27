@@ -32,6 +32,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
+import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.menu.edit.Openable;
 import com.trollworks.toolkit.ui.menu.file.RecentFilesMenu;
@@ -169,7 +170,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
     }
 
     @Override
-    public StdImage getIcon(TreeRow row) {
+    public RetinaIcon getIcon(TreeRow row) {
         return ((LibraryExplorerRow) row).getIcon();
     }
 
