@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2018 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,6 +19,7 @@ import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.toolkit.ui.RetinaIcon;
+import com.trollworks.toolkit.ui.image.AnnotatedImage;
 import com.trollworks.toolkit.ui.image.ModuleImageLoader;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.image.StdImageSet;
@@ -193,7 +194,7 @@ public class GCSImages {
             dir.mkdirs();
             if (app) {
                 File file = new File(dir, "gcs.png");
-                if (StdImage.writePNG(file, getAppIcons().getImage(128), 72)) {
+                if (AnnotatedImage.writePNG(file, getAppIcons().getImage(128), 72, null)) {
                     System.out.println("Created: " + file);
                 } else {
                     System.err.println("Unable to create: " + file);

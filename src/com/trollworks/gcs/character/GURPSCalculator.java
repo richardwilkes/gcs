@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2018 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,7 +19,7 @@ import com.trollworks.gcs.services.WebServiceClient;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.ui.image.AnnotatedImage;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
@@ -99,7 +99,7 @@ public class GURPSCalculator {
                                     throw new IOException("Bad response from the web server for template write"); //$NON-NLS-1$
                                 }
                                 try (TemporaryFile image = new TemporaryFile("gcalcImage", ".png")) { //$NON-NLS-1$ //$NON-NLS-2$
-                                    StdImage.writePNG(image, character.getDescription().getPortrait().getRetina(), 150);
+                                    AnnotatedImage.writePNG(image, character.getDescription().getPortrait().getRetina(), 150, null);
                                     path   = String.format("api/SaveCharacterImage/%s/%s", id, key); //$NON-NLS-1$
                                     result = client.sendRequest(HttpMethodType.POST, path, Files.readAllBytes(image.toPath()));
                                     if (!result.isEmpty()) {

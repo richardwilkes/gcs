@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2018 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -30,7 +30,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.ui.image.StdImage;
+import com.trollworks.toolkit.ui.image.AnnotatedImage;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -294,7 +294,7 @@ public class TextTemplate {
             break;
         case KEY_PORTRAIT:
             String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG_EXTENSION);
-            StdImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait().getRetina(), 150);
+            AnnotatedImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait().getRetina(), 150, null);
             writeEncodedData(out, fileName);
             break;
         case KEY_NAME:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2018 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -46,6 +46,7 @@ import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
+import com.trollworks.toolkit.ui.image.AnnotatedImage;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
@@ -1240,7 +1241,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 print(gc, format, pageNum++);
                 gc.dispose();
                 pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
-                if (!StdImage.writePNG(pngFile, buffer, dpi)) {
+                if (!AnnotatedImage.writePNG(pngFile, buffer, dpi, null)) {
                     throw new IOException();
                 }
                 createdFiles.add(pngFile);
