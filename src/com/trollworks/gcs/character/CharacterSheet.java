@@ -101,7 +101,6 @@ import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1241,9 +1240,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 print(gc, format, pageNum++);
                 gc.dispose();
                 pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
-                if (!AnnotatedImage.writePNG(pngFile, buffer, dpi, null)) {
-                    throw new IOException();
-                }
+                AnnotatedImage.writePNG(pngFile, buffer, dpi, null);
                 createdFiles.add(pngFile);
             }
             return true;

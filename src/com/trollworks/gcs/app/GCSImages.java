@@ -194,10 +194,12 @@ public class GCSImages {
             dir.mkdirs();
             if (app) {
                 File file = new File(dir, "gcs.png");
-                if (AnnotatedImage.writePNG(file, getAppIcons().getImage(128), 72, null)) {
+                try {
+                    AnnotatedImage.writePNG(file, getAppIcons().getImage(128), 72, null);
                     System.out.println("Created: " + file);
-                } else {
+                } catch (Exception exception) {
                     System.err.println("Unable to create: " + file);
+                    System.err.println(exception);
                 }
             }
             if (icns || ico) {
