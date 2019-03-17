@@ -39,6 +39,10 @@
 	<property if:true="${platform.windows}" name="app.root" value="${dist.root}"/>
 
 	<target name="build">
+        <delete>
+            <fileset dir="." includes="**/.DS_Store" defaultexcludes="false"/>
+        </delete>
+
 		<symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
 	    <delete dir="${build.dir}"/>
 		<mkdir dir="${build.dir}"/>
