@@ -120,8 +120,10 @@
         </exec>
 
     	<delete dir="${dist.root}"/>
-        <property name="dist.content.root" value="${app.root}/${app.name}.app/Contents"/>
-        <property name="dist.jdk.root" value="${dist.content.root}/MacOS/support"/>
+        <property if:true="${platform.mac}" name="dist.content.root" value="${app.root}/${app.name}.app/Contents"/>
+        <property unless:true="${platform.mac}" name="dist.content.root" value="${app.root}"/>
+        <property if:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/MacOS/support"/>
+        <property unless:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/support"/>
         <exec executable="jlink">
             <arg value="--module-path"/>
             <arg path="${modules.dir}"/>
@@ -135,17 +137,23 @@
             <arg value="--add-modules"/>
             <arg value="${module.name}"/>
         </exec>
-        <move file="${dist.jdk.root}/bin/java" tofile="${dist.jdk.root}/bin/${exe.name}"/>
-        <mkdir dir="${dist.content.root}/Resources"/>
+    	<delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}"/>
+    	<delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}.bat"/>
+        <move unless:true="${platform.windows}" file="${dist.jdk.root}/bin/java" tofile="${dist.jdk.root}/bin/${exe.name}"/>
+        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/javaw.exe" tofile="${dist.jdk.root}/bin/${exe.name}.exe"/>
+        <mkdir if:true="${platform.mac}" dir="${dist.content.root}/Resources"/>
         <java if:true="${platform.mac}" modulepath="${modules.dir}" module="com.trollworks.gcs/com.trollworks.gcs.app.GCSInfoPlistCreator" fork="true">
             <arg value="${dist.content.root}"/>
         </java>
         <copy if:true="${platform.mac}" todir="${dist.content.root}/Resources">
             <fileset dir="${build.dir}/icons"/>
         </copy>
-        <copy file="artifacts/${exe.name}" todir="${dist.content.root}/MacOS"/>
-        <chmod perm="0755" file="${dist.content.root}/MacOS/${exe.name}"/>
-        <exec executable="touch">
+        <copy if:true="${platform.mac}" file="artifacts/${exe.name}" todir="${dist.content.root}/MacOS"/>
+        <copy if:true="${platform.windows}" file="artifacts/${exe.name}.bat" todir="${dist.content.root}"/>
+        <copy if:true="${platform.linux}" file="artifacts/${exe.name}" todir="${dist.content.root}"/>
+        <chmod if:true="${platform.mac}" perm="0755" file="${dist.content.root}/MacOS/${exe.name}"/>
+        <chmod if:true="${platform.linux}" perm="0755" file="${dist.content.root}/${exe.name}"/>
+        <exec if:true="${platform.mac}" executable="touch">
             <arg path="${app.root}/${app.name}.app"/>
         </exec>
 
