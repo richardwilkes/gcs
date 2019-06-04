@@ -104,6 +104,13 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged"; //$NON-NLS-1$
     /** The field ID for when the equipment becomes or stops being a weapon. */
     public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus"; //$NON-NLS-1$
+
+    private static final String    LEGALITY_CLASS_0         = "LC0: Banned";
+    private static final String    LEGALITY_CLASS_1         = "LC1: Military";
+    private static final String    LEGALITY_CLASS_2         = "LC2: Restricted";
+    private static final String    LEGALITY_CLASS_3         = "LC3: Licensed";
+    private static final String    LEGALITY_CLASS_4         = "LC4: Open";
+
     private EquipmentState         mState;
     private int                    mQuantity;
     private String                 mDescription;
@@ -377,6 +384,11 @@ public class Equipment extends ListRow implements HasSourceReference {
         return mTechLevel;
     }
 
+    @Override
+    public boolean isEquipment() {
+        return true;
+    }
+
     /**
      * @param techLevel The tech level to set.
      * @return Whether it was modified.
@@ -393,6 +405,26 @@ public class Equipment extends ListRow implements HasSourceReference {
     /** @return The legality class. */
     public String getLegalityClass() {
         return mLegalityClass;
+    }
+
+    public String getDisplayLegalityClass() {
+        String lc = getLegalityClass();
+        if (lc != null) {
+            lc = lc.trim();
+        }
+        switch (lc) {
+        case "0":
+            return LEGALITY_CLASS_0;
+        case "1":
+            return LEGALITY_CLASS_1;
+        case "2":
+            return LEGALITY_CLASS_2;
+        case "3":
+            return LEGALITY_CLASS_3;
+        case "4":
+            return LEGALITY_CLASS_4;
+        }
+        return lc;
     }
 
     /**
@@ -623,6 +655,17 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     public Object getData(Column column) {
         return EquipmentColumn.values()[column.getID()].getData(this);
+    }
+
+    public int getCarriedStatus() {
+        int carried = 0;
+        if (isCarried()) {
+            carried = 1;
+        }
+        if (isEquipped()) {
+            carried = 2;
+        }
+        return carried;
     }
 
     @Override

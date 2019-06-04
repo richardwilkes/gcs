@@ -48,7 +48,7 @@ import java.util.List;
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
     @Localize("Advantage")
     @Localize(locale = "de", value = "Vorteil")
-    @Localize(locale = "ru", value = "Преимущество")
+    @Localize(locale = "ru", value = "ÐŸÑ€ÐµÐ¸Ð¼ÑƒÑ‰ÐµÑ�Ñ‚Ð²Ð¾")
     @Localize(locale = "es", value = "Ventaja")
     private static String DEFAULT_NAME;
 
@@ -1038,6 +1038,21 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             return true;
         }
         return false;
+    }
+
+    /**
+     * Find the first modifier that matches 'name'.  
+     *
+     * @param name case insensitive
+     * @return
+     */
+    public Modifier getActiveModifierFor(String name) {
+        for (Modifier m : getModifiers()) {
+            if (m.isEnabled() && m.getName().equalsIgnoreCase(name)) {
+                return m;
+            }
+        }
+        return null;
     }
 
     private static final String MODIFIER_SEPARATOR = "; "; //$NON-NLS-1$

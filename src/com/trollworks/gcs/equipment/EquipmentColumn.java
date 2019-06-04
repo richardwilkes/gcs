@@ -601,6 +601,14 @@ public enum EquipmentColumn {
     }
 
     public static String getDisplayWeight(WeightValue weight) {
+        return getConvertedWeight(weight).toString();
+    }
+
+    public static double getNormalizedDisplayWeight(WeightValue weight) {
+        return getConvertedWeight(weight).getNormalizedValue();
+    }
+
+    public static WeightValue getConvertedWeight(WeightValue weight) {
         WeightUnits defaultWeightUnits = SheetPreferences.getWeightUnits();
         if (SheetPreferences.areGurpsMetricRulesUsed()) {
             if (defaultWeightUnits.isMetric()) {
@@ -611,6 +619,6 @@ public enum EquipmentColumn {
         } else {
             weight = new WeightValue(weight, defaultWeightUnits);
         }
-        return weight.toString();
+        return weight;
     }
 }
