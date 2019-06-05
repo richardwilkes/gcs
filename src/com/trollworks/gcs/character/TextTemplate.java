@@ -1320,8 +1320,8 @@ public class TextTemplate {
         StringBuilder                                keyBuffer        = new StringBuilder();
         boolean                                      lookForKeyMarker = true;
         int                                          counter          = 0;
-        HashMap<String, ArrayList<MeleeWeaponStats>> weaponsMap       = new HashMap<String, ArrayList<MeleeWeaponStats>>();
-        HashMap<String, MeleeWeaponStats>            weapons          = new HashMap<String, MeleeWeaponStats>();
+        HashMap<String, ArrayList<MeleeWeaponStats>> weaponsMap       = new HashMap();
+        HashMap<String, MeleeWeaponStats>            weapons          = new HashMap();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
             weapons.put(weapon.getDescription(), weapon);
@@ -1369,8 +1369,8 @@ public class TextTemplate {
         StringBuilder                                 keyBuffer        = new StringBuilder();
         boolean                                       lookForKeyMarker = true;
         int                                           counter          = 0;
-        HashMap<String, ArrayList<RangedWeaponStats>> weaponsMap       = new HashMap<String, ArrayList<RangedWeaponStats>>();
-        HashMap<String, RangedWeaponStats>            weapons          = new HashMap<String, RangedWeaponStats>();
+        HashMap<String, ArrayList<RangedWeaponStats>> weaponsMap       = new HashMap();
+        HashMap<String, RangedWeaponStats>            weapons          = new HashMap();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
             weapons.put(weapon.getDescription(), weapon);
@@ -1563,10 +1563,9 @@ public class TextTemplate {
         int                  counter          = 0;
         // Create child-to-parent maps to determine where items are being stored.
         // Used by KEY_LOCATION
-        ArrayList<List<Row>> children         = new ArrayList<List<Row>>();
-        ArrayList<Equipment> parents          = new ArrayList<Equipment>();
-
-        ArrayList<Equipment> equipmentList    = new ArrayList<Equipment>();
+        ArrayList<List<Row>> children         = new ArrayList();
+        ArrayList<Equipment> parents          = new ArrayList();
+        ArrayList<Equipment> equipmentList    = new ArrayList();
         for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
             if (shouldInclude(equipment)) {   // Allows category filtering
                 equipmentList.add(equipment);
