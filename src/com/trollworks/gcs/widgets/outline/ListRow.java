@@ -221,6 +221,10 @@ public abstract class ListRow extends Row {
         return mIsSatisfied;
     }
 
+    public boolean isEquipment() {
+        return false;
+    }
+
     /** @param satisfied Whether or not this row's prerequisites are currently satisfied. */
     public void setSatisfied(boolean satisfied) {
         mIsSatisfied = satisfied;
@@ -500,6 +504,25 @@ public abstract class ListRow extends Row {
             buffer.append(category);
         }
         return buffer.toString();
+    }
+
+    /*
+     * Does this belong to a category?   Added the ability to check for compound
+     * categories like "Money: US", "Concoctions:Potions" using "Money" or "Concoctions".
+     */
+    public boolean hasCategory(String cat) {
+        for (String category : mCategories) {
+            int indexOfColon = category.indexOf(':');
+            if (indexOfColon > 0) {
+                if (category.substring(0, indexOfColon).equalsIgnoreCase(cat)) {
+                    return true;
+                }
+            }
+            if (category.equalsIgnoreCase(cat)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

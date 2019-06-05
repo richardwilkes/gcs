@@ -266,6 +266,7 @@ public class GCS {
 
         FileType.registerPdf(GCSImages.getPDFDocumentIcons(), fileProxyCreator, true, false);
         FileType.registerHtml(null, null, false, false);
+        FileType.registerXml(null, null, false, false);
         FileType.registerPng(null, null, false, false);
     }
 

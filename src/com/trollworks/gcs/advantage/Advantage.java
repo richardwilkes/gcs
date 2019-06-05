@@ -1040,6 +1040,19 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return false;
     }
 
+    /**
+     * @param name The name to match against. Case-insensitive.
+     * @return The first modifier that matches the name.
+     */
+    public Modifier getActiveModifierFor(String name) {
+        for (Modifier m : getModifiers()) {
+            if (m.isEnabled() && m.getName().equalsIgnoreCase(name)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     private static final String MODIFIER_SEPARATOR = "; "; //$NON-NLS-1$
 
     @Override

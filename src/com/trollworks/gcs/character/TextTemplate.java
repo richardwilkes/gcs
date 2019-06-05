@@ -15,6 +15,9 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
+import com.trollworks.gcs.feature.DRBonus;
+import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -31,6 +34,7 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.AnnotatedImage;
+import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -44,7 +48,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.function.Function;
 
 /** Provides text template output. */
@@ -54,14 +63,27 @@ public class TextTemplate {
 
     private static final String CURRENT                               = "current";
     private static final String ITEM                                  = "ITEM";
+    private static final String ONE                                   = "1";
+    private static final String UNDERSCORE                            = "_";
+    private static final String PARAGRAPH_START                       = "<p>";
+    private static final String PARAGRAPH_END                         = "</p>";
+    private static final String NEWLINE                               = "\n";
+    private static final String COMMA_SEPARATOR                       = ", ";
+    private static final String STRENGTH_NOTE                         = "†";
+    private static final String PLUS                                  = "+";
 
     private static final String KEY_ACCURACY                          = "ACCURACY";
     private static final String KEY_ADVANTAGE_POINTS                  = "ADVANTAGE_POINTS";
+    private static final String KEY_ADVANTAGES_ALL_LOOP_END           = "ADVANTAGES_ALL_LOOP_END";
+    private static final String KEY_ADVANTAGES_ALL_LOOP_START         = "ADVANTAGES_ALL_LOOP_START";
     private static final String KEY_ADVANTAGES_LOOP_END               = "ADVANTAGES_LOOP_END";
     private static final String KEY_ADVANTAGES_LOOP_START             = "ADVANTAGES_LOOP_START";
     private static final String KEY_ADVANTAGES_ONLY_LOOP_END          = "ADVANTAGES_ONLY_LOOP_END";
     private static final String KEY_ADVANTAGES_ONLY_LOOP_START        = "ADVANTAGES_ONLY_LOOP_START";
     private static final String KEY_AGE                               = "AGE";
+    private static final String KEY_AMMO                              = "AMMO";
+    private static final String KEY_ATTACK_MODES_LOOP_END             = "ATTACK_MODES_LOOP_END";
+    private static final String KEY_ATTACK_MODES_LOOP_START           = "ATTACK_MODES_LOOP_START";
     private static final String KEY_ATTRIBUTE_POINTS                  = "ATTRIBUTE_POINTS";
     private static final String KEY_BASIC_FP                          = "BASIC_FP";
     private static final String KEY_BASIC_HP                          = "BASIC_HP";
@@ -76,9 +98,11 @@ public class TextTemplate {
     private static final String KEY_BLOCK                             = "BLOCK";
     private static final String KEY_BULK                              = "BULK";
     private static final String KEY_CAMPAIGN                          = "CAMPAIGN";
+    private static final String KEY_CARRIED_STATUS                    = "CARRIED_STATUS";
     private static final String KEY_CARRIED_VALUE                     = "CARRIED_VALUE";
     private static final String KEY_CARRIED_WEIGHT                    = "CARRIED_WEIGHT";
     private static final String KEY_CARRY_ON_BACK                     = "CARRY_ON_BACK";
+    private static final String KEY_CATEGORIES                        = "CATEGORIES";
     private static final String KEY_CLASS                             = "CLASS";
     private static final String KEY_COLLEGE                           = "COLLEGE";
     private static final String KEY_COST                              = "COST";
@@ -88,6 +112,8 @@ public class TextTemplate {
     private static final String KEY_CULTURAL_FAMILIARITIES_LOOP_START = "CULTURAL_FAMILIARITIES_LOOP_START";
     private static final String KEY_CURRENT_DODGE                     = "CURRENT_DODGE";
     private static final String KEY_CURRENT_MARKER                    = "CURRENT_MARKER";
+    private static final String KEY_CURRENT_MARKER_1                  = "CURRENT_MARKER_1";
+    private static final String KEY_CURRENT_MOVE                      = "CURRENT_MOVE";
     private static final String KEY_DAMAGE                            = "DAMAGE";
     private static final String KEY_UNMODIFIED_DAMAGE                 = "UNMODIFIED_DAMAGE";
     private static final String KEY_DEAD                              = "DEAD";
@@ -101,6 +127,8 @@ public class TextTemplate {
     private static final String KEY_DESCRIPTION_PRIMARY               = "DESCRIPTION_PRIMARY";
     private static final String KEY_DIFFICULTY                        = "DIFFICULTY";
     private static final String KEY_DISADVANTAGE_POINTS               = "DISADVANTAGE_POINTS";
+    private static final String KEY_DISADVANTAGES_ALL_LOOP_END        = "DISADVANTAGES_ALL_LOOP_END";
+    private static final String KEY_DISADVANTAGES_ALL_LOOP_START      = "DISADVANTAGES_ALL_LOOP_START";
     private static final String KEY_DISADVANTAGES_LOOP_END            = "DISADVANTAGES_LOOP_END";
     private static final String KEY_DISADVANTAGES_LOOP_START          = "DISADVANTAGES_LOOP_START";
     private static final String KEY_DODGE                             = "DODGE";
@@ -113,8 +141,12 @@ public class TextTemplate {
     private static final String KEY_ENCODING_OFF                      = "ENCODING_OFF";
     private static final String KEY_ENCUMBRANCE_LOOP_END              = "ENCUMBRANCE_LOOP_END";
     private static final String KEY_ENCUMBRANCE_LOOP_START            = "ENCUMBRANCE_LOOP_START";
+    private static final String KEY_ENHANCED_KEY_PARSING              = "ENHANCED_KEY_PARSING";
+    private static final String KEY_EQUIPMENT                         = "EQUIPMENT";
+    private static final String KEY_EQUIPMENT_FORMATTED               = "EQUIPMENT_FORMATTED";
     private static final String KEY_EQUIPMENT_LOOP_END                = "EQUIPMENT_LOOP_END";
     private static final String KEY_EQUIPMENT_LOOP_START              = "EQUIPMENT_LOOP_START";
+    private static final String KEY_EXCLUDE_CATEGORIES                = "EXCLUDE_CATEGORIES_";
     private static final String KEY_EYES                              = "EYES";
     private static final String KEY_FP                                = "FP";
     private static final String KEY_FP_COLLAPSE                       = "FP_COLLAPSE";
@@ -127,6 +159,10 @@ public class TextTemplate {
     private static final String KEY_HAND                              = "HAND";
     private static final String KEY_HEARING                           = "HEARING";
     private static final String KEY_HEIGHT                            = "HEIGHT";
+    private static final String KEY_HIERARCHICAL_MELEE_LOOP_END       = "HIERARCHICAL_MELEE_LOOP_END";
+    private static final String KEY_HIERARCHICAL_MELEE_LOOP_START     = "HIERARCHICAL_MELEE_LOOP_START";
+    private static final String KEY_HIERARCHICAL_RANGED_LOOP_END      = "HIERARCHICAL_RANGED_LOOP_END";
+    private static final String KEY_HIERARCHICAL_RANGED_LOOP_START    = "HIERARCHICAL_RANGED_LOOP_START";
     private static final String KEY_HIT_LOCATION_LOOP_END             = "HIT_LOCATION_LOOP_END";
     private static final String KEY_HIT_LOCATION_LOOP_START           = "HIT_LOCATION_LOOP_START";
     private static final String KEY_HP                                = "HP";
@@ -139,20 +175,26 @@ public class TextTemplate {
     private static final String KEY_IQ_POINTS                         = "IQ_POINTS";
     private static final String KEY_LANGUAGES_LOOP_END                = "LANGUAGES_LOOP_END";
     private static final String KEY_LANGUAGES_LOOP_START              = "LANGUAGES_LOOP_START";
+    private static final String KEY_LEGAILITY_CLASS                   = "LEGALITY_CLASS";
     private static final String KEY_LEVEL                             = "LEVEL";
+    private static final String KEY_LEVEL_ONLY                        = "LEVEL_ONLY";
+    private static final String KEY_LOCATION                          = "LOCATION";
     private static final String KEY_MANA_CAST                         = "MANA_CAST";
     private static final String KEY_MANA_MAINTAIN                     = "MANA_MAINTAIN";
     private static final String KEY_MAX_LOAD                          = "MAX_LOAD";
     private static final String KEY_MELEE_LOOP_END                    = "MELEE_LOOP_END";
     private static final String KEY_MELEE_LOOP_START                  = "MELEE_LOOP_START";
     private static final String KEY_MODIFIED_ON                       = "MODIFIED_ON";
+    private static final String KEY_MODIFIER_NOTES_FOR                = "MODIFIER_NOTES_FOR_";
     private static final String KEY_MOVE                              = "MOVE";
     private static final String KEY_NAME                              = "NAME";
     private static final String KEY_NOTE                              = "NOTE";
+    private static final String KEY_NOTE_FORMATTED                    = "NOTE_FORMATTED";
     private static final String KEY_NOTES                             = "NOTES";
     private static final String KEY_NOTES_LOOP_END                    = "NOTES_LOOP_END";
     private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
     private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
+    private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
     private static final String KEY_PARRY                             = "PARRY";
     private static final String KEY_PENALTY                           = "PENALTY";
     private static final String KEY_PERCEPTION                        = "PERCEPTION";
@@ -214,14 +256,22 @@ public class TextTemplate {
     private static final String KEY_USAGE                             = "USAGE";
     private static final String KEY_VISION                            = "VISION";
     private static final String KEY_WEAPON_STRENGTH                   = "STRENGTH";
+    private static final String KEY_WEAPON_STRENGTH_NUM               = "WEAPON_STRENGTH";
     private static final String KEY_WEIGHT                            = "WEIGHT";
+    private static final String KEY_WEIGHT_RAW                        = "WEIGHT_RAW";
     private static final String KEY_WEIGHT_SUMMARY                    = "WEIGHT_SUMMARY";
     private static final String KEY_WHERE                             = "WHERE";
     private static final String KEY_WILL                              = "WILL";
     private static final String KEY_WILL_POINTS                       = "WILL_POINTS";
 
+    private static final String KEY_AMMO_TYPE                         = "AmmoType:";
+    private static final String KEY_USES_AMMO_TYPE                    = "UsesAmmoType:";
+
     private CharacterSheet      mSheet;
     private boolean             mEncodeText                           = true;
+    private boolean             mEnhancedKeyParsing                   = false;
+    HashSet<String>             mOnlyCategories                       = new HashSet<String>();
+    HashSet<String>             mExcludedCategories                   = new HashSet<String>();
 
     public static File resolveTextTemplate(File template) {
         if (template == null || !template.isFile() || !template.canRead()) {
@@ -264,7 +314,9 @@ public class TextTemplate {
                                 keyBuffer.append(ch);
                                 in.mark(1);
                             } else {
-                                in.reset();
+                                if (!mEnhancedKeyParsing || ch != '@') {
+                                    in.reset();        // Allow KEYs to be surrounded by @KEY@
+                                }
                                 emitKey(in, out, keyBuffer.toString(), exportTo);
                                 keyBuffer.setLength(0);
                                 lookForKeyMarker = true;
@@ -292,6 +344,9 @@ public class TextTemplate {
         case KEY_ENCODING_OFF:
             mEncodeText = false;
             break;
+        case KEY_ENHANCED_KEY_PARSING:      // Turn on the ability to enclose a KEY with @.
+            mEnhancedKeyParsing = true;     // ex: @KEY@. Useful for when output needs to
+            break;                          // be embedded. ex: "<HTML@KEY@TAG>"
         case KEY_PORTRAIT:
             String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG_EXTENSION);
             AnnotatedImage.writePNG(new File(base.getParentFile(), fileName), description.getPortrait().getRetina(), 150, null);
@@ -464,14 +519,21 @@ public class TextTemplate {
         case KEY_CURRENT_DODGE:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel())));
             break;
+        case KEY_CURRENT_MOVE:
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel())));
+            break;
         case KEY_BEST_CURRENT_PARRY:
             writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedParry());
             break;
         case KEY_BEST_CURRENT_BLOCK:
             writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedBlock());
             break;
-        case KEY_FP:
-            writeEncodedText(out, gurpsCharacter.getCurrentFatiguePoints());
+        case KEY_FP:        // If current FP is null or blank (unused), then show MAX FP instead
+            if (gurpsCharacter.getCurrentFatiguePoints() == null || gurpsCharacter.getCurrentFatiguePoints().isEmpty()) {
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePoints()));
+            } else {
+                writeEncodedText(out, gurpsCharacter.getCurrentFatiguePoints());
+            }
             break;
         case KEY_BASIC_FP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePoints()));
@@ -485,8 +547,12 @@ public class TextTemplate {
         case KEY_UNCONSCIOUS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousFatiguePoints()));
             break;
-        case KEY_HP:
-            writeEncodedText(out, gurpsCharacter.getCurrentHitPoints());
+        case KEY_HP:        // If current HP is null or blank (unused), then show MAX HP instead
+            if (gurpsCharacter.getCurrentHitPoints() == null || gurpsCharacter.getCurrentHitPoints().isEmpty()) {
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPoints()));
+            } else {
+                writeEncodedText(out, gurpsCharacter.getCurrentHitPoints());
+            }
             break;
         case KEY_BASIC_HP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPoints()));
@@ -556,10 +622,14 @@ public class TextTemplate {
                 processHitLocationLoop(out, extractUpToMarker(in, KEY_HIT_LOCATION_LOOP_END));
             } else if (key.startsWith(KEY_ADVANTAGES_LOOP_START)) {
                 processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_LOOP_END), AdvantagesLoopType.ALL);
+            } else if (key.startsWith(KEY_ADVANTAGES_ALL_LOOP_START)) {
+                processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ALL_LOOP_END), AdvantagesLoopType.ADS_ALL);
             } else if (key.startsWith(KEY_ADVANTAGES_ONLY_LOOP_START)) {
                 processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ONLY_LOOP_END), AdvantagesLoopType.ADS);
             } else if (key.startsWith(KEY_DISADVANTAGES_LOOP_START)) {
                 processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES_LOOP_END), AdvantagesLoopType.DISADS);
+            } else if (key.startsWith(KEY_DISADVANTAGES_ALL_LOOP_START)) {
+                processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES_ALL_LOOP_END), AdvantagesLoopType.DISADS_ALL);
             } else if (key.startsWith(KEY_QUIRKS_LOOP_START)) {
                 processAdvantagesLoop(out, extractUpToMarker(in, KEY_QUIRKS_LOOP_END), AdvantagesLoopType.QUIRKS);
             } else if (key.startsWith(KEY_PERKS_LOOP_START)) {
@@ -574,17 +644,35 @@ public class TextTemplate {
                 processSpellsLoop(out, extractUpToMarker(in, KEY_SPELLS_LOOP_END));
             } else if (key.startsWith(KEY_MELEE_LOOP_START)) {
                 processMeleeLoop(out, extractUpToMarker(in, KEY_MELEE_LOOP_END));
+            } else if (key.startsWith(KEY_HIERARCHICAL_MELEE_LOOP_START)) {
+                processHierarchicalMeleeLoop(out, extractUpToMarker(in, KEY_HIERARCHICAL_MELEE_LOOP_END));
             } else if (key.startsWith(KEY_RANGED_LOOP_START)) {
                 processRangedLoop(out, extractUpToMarker(in, KEY_RANGED_LOOP_END));
+            } else if (key.startsWith(KEY_HIERARCHICAL_RANGED_LOOP_START)) {
+                processHierarchicalRangedLoop(out, extractUpToMarker(in, KEY_HIERARCHICAL_RANGED_LOOP_END));
             } else if (key.startsWith(KEY_EQUIPMENT_LOOP_START)) {
                 processEquipmentLoop(out, extractUpToMarker(in, KEY_EQUIPMENT_LOOP_END));
             } else if (key.startsWith(KEY_NOTES_LOOP_START)) {
                 processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
+            } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
+                setOnlyCategories(key);
+            } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
+                setExcludeCategories(key);
             } else {
                 writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
             }
             break;
         }
+    }
+
+    private void setOnlyCategories(String key) {
+        String[] categories = key.substring(KEY_ONLY_CATEGORIES.length()).split(UNDERSCORE);
+        mOnlyCategories.addAll(Arrays.asList(categories));
+    }
+
+    private void setExcludeCategories(String key) {
+        String[] categories = key.substring(KEY_EXCLUDE_CATEGORIES.length()).split(UNDERSCORE);
+        mExcludedCategories.addAll(Arrays.asList(categories));
     }
 
     private void writeBestWeaponDefense(BufferedWriter out, Function<MeleeWeaponStats, String> resolver) throws IOException {
@@ -612,7 +700,7 @@ public class TextTemplate {
         out.write(mEncodeText ? XMLWriter.encodeData(text).replaceAll("&#10;", "<br>").replaceAll("\"", "&quot;") : text);
     }
 
-    private static String extractUpToMarker(BufferedReader in, String marker) throws IOException {
+    private String extractUpToMarker(BufferedReader in, String marker) throws IOException {
         char[]        buffer           = new char[1];
         StringBuilder keyBuffer        = new StringBuilder();
         StringBuilder extraction       = new StringBuilder();
@@ -631,6 +719,9 @@ public class TextTemplate {
                     keyBuffer.append(ch);
                     in.mark(1);
                 } else {
+                    if (!mEnhancedKeyParsing || ch != '@') {
+                        in.reset();        // Allow KEYs to be surrounded by @KEY@
+                    }
                     String key = keyBuffer.toString();
                     in.reset();
                     if (key.equals(marker)) {
@@ -666,6 +757,9 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
@@ -674,8 +768,16 @@ public class TextTemplate {
                                 out.write(CURRENT);
                             }
                             break;
+                        case KEY_CURRENT_MARKER_1:
+                            if (encumbrance == gurpsCharacter.getEncumbranceLevel()) {
+                                out.write(ONE);
+                            }
+                            break;
                         case KEY_LEVEL:
                             writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? EncumbrancePanel.CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.ENCUMBRANCE_FORMAT, encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                            break;
+                        case KEY_LEVEL_ONLY:
+                            writeEncodedText(out, Numbers.format(-encumbrance.getEncumbrancePenalty()));
                             break;
                         case KEY_MAX_LOAD:
                             writeEncodedText(out, gurpsCharacter.getMaximumCarry(encumbrance).toString());
@@ -701,8 +803,10 @@ public class TextTemplate {
         int              length           = contents.length();
         StringBuilder    keyBuffer        = new StringBuilder();
         boolean          lookForKeyMarker = true;
+        int              counter          = 0;
         HitLocationTable table            = gurpsCharacter.getDescription().getHitLocationTable();
         for (HitLocationTableEntry entry : table.getEntries()) {
+            counter++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -717,6 +821,9 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
@@ -732,6 +839,15 @@ public class TextTemplate {
                         case KEY_DR:
                             writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
                             break;
+                        case KEY_ID:
+                            writeEncodedText(out, Integer.toString(counter));
+                            break;
+                        case KEY_EQUIPMENT:     // Show the equipment that is providing the DR bonus
+                            writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
+                            break;
+                        case KEY_EQUIPMENT_FORMATTED:
+                            writeEncodedText(out, PARAGRAPH_START + hitLocationEquipment(entry).replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                            break;
                         default:
                             writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                             break;
@@ -742,13 +858,43 @@ public class TextTemplate {
         }
     }
 
+    /* A kludgy method to relate a hitlocation to the armor that is providing the DR for that hit location. */
+    private String hitLocationEquipment(HitLocationTableEntry entry) {
+        StringBuilder sb    = new StringBuilder();
+        boolean       first = true;
+        for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
+            if (equipment.isEquipped()) {
+                for (Feature feature : equipment.getFeatures()) {
+                    if (feature instanceof DRBonus) {
+                        String locationKey = entry.getLocation().getKey();
+                        if (locationKey.equals(HitLocation.VITALS.getKey())) {
+                            // Assume Vitals uses the same equipment as Torso
+                            locationKey = HitLocation.TORSO.getKey();
+                        }
+                        if (locationKey.endsWith(((DRBonus) feature).getLocation().name())) {
+                            // HUGE Kludge. Only way I could equate the 2
+                            // different HitLocations. I know that one is derived
+                            // from the other, so this check will ALWAYS work.
+                            if (!first) {
+                                sb.append("\n");
+                            }
+                            sb.append(equipment.getDescription());
+                            first = false;
+                        }
+                    }
+                }
+            }
+        }
+        return sb.toString();
+    }
+
     private void processAdvantagesLoop(BufferedWriter out, String contents, AdvantagesLoopType loopType) throws IOException {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
         int           counter          = 0;
         for (Advantage advantage : mSheet.getCharacter().getAdvantagesIterator(false)) {
-            if (loopType.shouldInclude(advantage)) {
+            if (loopType.shouldInclude(advantage, mOnlyCategories, mExcludedCategories)) {
                 counter++;
                 for (int i = 0; i < length; i++) {
                     char ch = contents.charAt(i);
@@ -764,6 +910,9 @@ public class TextTemplate {
                         } else {
                             String key = keyBuffer.toString();
                             i--;
+                            if (mEnhancedKeyParsing && ch == '@') {
+                                i++;        // Allow KEYs to be surrounded with @, e.g. @KEY@
+                            }
                             keyBuffer.setLength(0);
                             lookForKeyMarker = true;
                             if (!processStyleIndentWarning(key, out, advantage)) {
@@ -782,7 +931,17 @@ public class TextTemplate {
                                         writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
                                         break;
                                     default:
-                                        writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                        /* Allows the access to notes on modifiers.  Currently only used in the 'Language' loop.
+                                         * e.g. Advantage:Language, Modifier:Spoken -> Note:Native, Advantage:Language, Modifier:Written -> Note:Accented
+                                         */
+                                        if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
+                                            Modifier m = advantage.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
+                                            if (m != null) {
+                                                writeEncodedText(out, m.getNotes());
+                                            }
+                                        } else {
+                                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                        }
                                         break;
                                     }
                                 }
@@ -792,6 +951,8 @@ public class TextTemplate {
                 }
             }
         }
+        mOnlyCategories.clear();
+        mExcludedCategories.clear();
     }
 
     private boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
@@ -853,6 +1014,9 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         if (!processStyleIndentWarning(key, out, skill)) {
@@ -939,6 +1103,9 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         if (!processStyleIndentWarning(key, out, spell)) {
@@ -1014,46 +1181,331 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        if (!processDescription(key, out, weapon)) {
-                            switch (key) {
-                            case KEY_USAGE:
-                                writeEncodedText(out, weapon.getUsage());
-                                break;
-                            case KEY_LEVEL:
-                                writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
-                                break;
-                            case KEY_PARRY:
-                                writeEncodedText(out, weapon.getResolvedParry());
-                                break;
-                            case KEY_BLOCK:
-                                writeEncodedText(out, weapon.getResolvedBlock());
-                                break;
-                            case KEY_DAMAGE:
-                                writeEncodedText(out, weapon.getResolvedDamage());
-                                break;
-                            case KEY_UNMODIFIED_DAMAGE:
-                                writeEncodedText(out, weapon.getDamage());
-                                break;
-                            case KEY_REACH:
-                                writeEncodedText(out, weapon.getReach());
-                                break;
-                            case KEY_WEAPON_STRENGTH:
-                                writeEncodedText(out, weapon.getStrength());
-                                break;
-                            case KEY_ID:
-                                writeEncodedText(out, Integer.toString(counter));
-                                break;
-                            default:
-                                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                                break;
-                            }
-                        }
+                        i                = processMeleeWeaponKeys(out, key, counter, weapon, i, contents, null);
                     }
                 }
             }
         }
+    }
+
+    /* Handle keys specific to MeleeWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
+    private int processMeleeWeaponKeys(BufferedWriter out, String key, int counter, MeleeWeaponStats weapon, int index, String contents, ArrayList<MeleeWeaponStats> attackModes) throws IOException {
+        switch (key) {
+        case KEY_PARRY:
+            writeEncodedText(out, weapon.getResolvedParry());
+            return index;
+        case KEY_BLOCK:
+            writeEncodedText(out, weapon.getResolvedBlock());
+            return index;
+        case KEY_REACH:
+            writeEncodedText(out, weapon.getReach());
+            return index;
+        default:
+            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES_LOOP_START)) {
+                int endIndex = contents.indexOf(KEY_ATTACK_MODES_LOOP_END);
+                if (endIndex > 0) {
+                    String subContents = contents.substring(index + 1, endIndex - 1);
+                    processMeleeAttackModes(out, subContents, attackModes);
+                    return endIndex + KEY_ATTACK_MODES_LOOP_END.length();
+                }
+            }
+            return processWeaponKeys(out, key, counter, weapon, index, contents);
+        }
+    }
+
+    /* Handle keys specific to RangedWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
+    private int processRangedWeaponKeys(BufferedWriter out, String key, int counter, RangedWeaponStats weapon, int index, String contents, ArrayList<RangedWeaponStats> attackModes) throws IOException {
+        switch (key) {
+        case KEY_BULK:
+            writeEncodedText(out, weapon.getBulk());
+            return index;
+        case KEY_ACCURACY:
+            writeEncodedText(out, weapon.getAccuracy());
+            return index;
+        case KEY_RANGE:
+            writeEncodedText(out, weapon.getRange());
+            return index;
+        case KEY_ROF:
+            writeEncodedText(out, weapon.getRateOfFire());
+            return index;
+        case KEY_SHOTS:
+            writeEncodedText(out, weapon.getShots());
+            return index;
+        case KEY_RECOIL:
+            writeEncodedText(out, weapon.getRecoil());
+            return index;
+        default:
+            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES_LOOP_START)) {
+                int endIndex = contents.indexOf(KEY_ATTACK_MODES_LOOP_END);
+                if (endIndex > 0) {
+                    String subContents = contents.substring(index + 1, endIndex - 1);
+                    processRangedAttackModes(out, subContents, attackModes);
+                    return endIndex + KEY_ATTACK_MODES_LOOP_END.length();
+                }
+            }
+            return processWeaponKeys(out, key, counter, weapon, index, contents);
+        }
+    }
+
+    /* Break out handling of general weapons information.  Anything known by WeaponStats or the equipment.  */
+    private int processWeaponKeys(BufferedWriter out, String key, int counter, WeaponStats weapon, int index, String contents) throws IOException {
+        Equipment equipment = null;
+        if (weapon.getOwner().isEquipment()) {
+            equipment = (Equipment) weapon.getOwner();
+        }
+        if (!processDescription(key, out, weapon)) {
+            switch (key) {
+            case KEY_USAGE:
+                writeEncodedText(out, weapon.getUsage());
+                break;
+            case KEY_LEVEL:
+                writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
+                break;
+            case KEY_DAMAGE:
+                writeEncodedText(out, weapon.getResolvedDamage());
+                break;
+            case KEY_UNMODIFIED_DAMAGE:
+                writeEncodedText(out, weapon.getDamage());
+                break;
+            case KEY_WEAPON_STRENGTH_NUM:
+                writeEncodedText(out, weapon.getStrength().replaceAll("[^0-9]", ""));
+                break;
+            case KEY_ID:
+                writeEncodedText(out, Integer.toString(counter));
+                break;
+            case KEY_COST:
+                if (equipment != null) {
+                    writeEncodedText(out, Numbers.format(equipment.getValue()));
+                }
+                break;
+            case KEY_LEGAILITY_CLASS:
+                if (equipment != null) {
+                    writeEncodedText(out, equipment.getLegalityClass());
+                }
+                break;
+            case KEY_TL:
+                if (equipment != null) {
+                    writeEncodedText(out, equipment.getTechLevel());
+                }
+                break;
+            case KEY_WEIGHT:
+                if (equipment != null) {
+                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getWeight()));
+                }
+                break;
+            case KEY_AMMO:
+                if (equipment != null) {
+                    writeEncodedText(out, Numbers.format(ammoFor(equipment)));
+                }
+                break;
+            default:
+                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                break;
+            }
+        }
+        return index;
+    }
+
+    /* Process the weapons in a hierarchical format.   One time for each weapon with a unique name,
+     * and then possibly one time for each different "attack mode" that the weapon can support.
+     * e.g. Weapon Name: Spear, attack modes "1 Handed" and "2 Handed"
+     */
+    private void processHierarchicalMeleeLoop(BufferedWriter out, String contents) throws IOException {
+        int                                          length           = contents.length();
+        StringBuilder                                keyBuffer        = new StringBuilder();
+        boolean                                      lookForKeyMarker = true;
+        int                                          counter          = 0;
+        HashMap<String, ArrayList<MeleeWeaponStats>> weaponsMap       = new HashMap();
+        HashMap<String, MeleeWeaponStats>            weapons          = new HashMap();
+        for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+            MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
+            weapons.put(weapon.getDescription(), weapon);
+            ArrayList<MeleeWeaponStats> attackModes = weaponsMap.get(weapon.getDescription());
+            if (attackModes == null) {
+                attackModes = new ArrayList<MeleeWeaponStats>();
+                weaponsMap.put(weapon.getDescription(), attackModes);
+            }
+            attackModes.add(weapon);
+        }
+        for (MeleeWeaponStats weapon : weapons.values()) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        i                = processMeleeWeaponKeys(out, key, counter, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
+                    }
+                }
+            }
+        }
+    }
+
+    /* Process the weapons in a hierarchical format.   One time for each weapon with a unique name,
+     * and then possibly one time for each different "attack mode" that the weapon can support.
+     * e.g. Weapon Name: Atlatl, attack modes "Shoot Dart" and "Shoot Javelin"
+     */
+    private void processHierarchicalRangedLoop(BufferedWriter out, String contents) throws IOException {
+        int                                           length           = contents.length();
+        StringBuilder                                 keyBuffer        = new StringBuilder();
+        boolean                                       lookForKeyMarker = true;
+        int                                           counter          = 0;
+        HashMap<String, ArrayList<RangedWeaponStats>> weaponsMap       = new HashMap();
+        HashMap<String, RangedWeaponStats>            weapons          = new HashMap();
+        for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
+            RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
+            weapons.put(weapon.getDescription(), weapon);
+            ArrayList<RangedWeaponStats> attackModes = weaponsMap.get(weapon.getDescription());
+            if (attackModes == null) {
+                attackModes = new ArrayList<RangedWeaponStats>();
+                weaponsMap.put(weapon.getDescription(), attackModes);
+            }
+            attackModes.add(weapon);
+        }
+        for (RangedWeaponStats weapon : weapons.values()) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        i                = processRangedWeaponKeys(out, key, counter, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
+                    }
+                }
+            }
+        }
+    }
+
+    /* Loop through all of the attackModes for a particular weapon.   We need to make melee/ranged specific
+     * versions of this method because they must call the correct "processXXWeaponKeys" method.
+     */
+    private void processMeleeAttackModes(BufferedWriter out, String contents, ArrayList<MeleeWeaponStats> attackModes) throws IOException {
+        int           length           = contents.length();
+        StringBuilder keyBuffer        = new StringBuilder();
+        boolean       lookForKeyMarker = true;
+        int           counter          = 0;
+        for (MeleeWeaponStats weapon : attackModes) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        i                = processMeleeWeaponKeys(out, key, counter, weapon, i, contents, null);
+                    }
+                }
+            }
+        }
+    }
+
+    /* Loop through all of the attackModes for a particular weapon.   We need to make melee/ranged specific
+     * versions of this method because they must call the correct "processXXWeaponKeys" method.
+     */
+    private void processRangedAttackModes(BufferedWriter out, String contents, ArrayList<RangedWeaponStats> attackModes) throws IOException {
+        int           length           = contents.length();
+        StringBuilder keyBuffer        = new StringBuilder();
+        boolean       lookForKeyMarker = true;
+        int           counter          = 0;
+        for (RangedWeaponStats weapon : attackModes) {
+            counter++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        i                = processRangedWeaponKeys(out, key, counter, weapon, i, contents, null);
+                    }
+                }
+            }
+        }
+    }
+
+    /* report the quantity of ammo used by this weapon, if any */
+    private int ammoFor(Equipment weapon) {
+        String usesAmmoType = null;
+        String ammoType     = null;
+        for (String category : weapon.getCategories()) {
+            if (category.startsWith(KEY_USES_AMMO_TYPE)) {
+                usesAmmoType = category.substring(KEY_USES_AMMO_TYPE.length()).trim();
+            }
+        }
+        if (usesAmmoType == null) {
+            return 0;
+        }
+        for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
+            if (equipment.isEquipped()) {
+                for (String category : equipment.getCategories()) {
+                    if (category.startsWith(KEY_AMMO_TYPE)) {
+                        ammoType = category.substring(KEY_AMMO_TYPE.length()).trim();
+                    }
+                }
+                if (usesAmmoType.equalsIgnoreCase(ammoType)) {
+                    return equipment.getQuantity();
+                }
+            }
+        }
+        return 0;
     }
 
     private boolean processDescription(String key, BufferedWriter out, WeaponStats stats) throws IOException {
@@ -1092,51 +1544,12 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        if (!processDescription(key, out, weapon)) {
-                            switch (key) {
-                            case KEY_USAGE:
-                                writeEncodedText(out, weapon.getUsage());
-                                break;
-                            case KEY_LEVEL:
-                                writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
-                                break;
-                            case KEY_ACCURACY:
-                                writeEncodedText(out, weapon.getAccuracy());
-                                break;
-                            case KEY_DAMAGE:
-                                writeEncodedText(out, weapon.getResolvedDamage());
-                                break;
-                            case KEY_UNMODIFIED_DAMAGE:
-                                writeEncodedText(out, weapon.getDamage());
-                                break;
-                            case KEY_RANGE:
-                                writeEncodedText(out, weapon.getResolvedRange());
-                                break;
-                            case KEY_ROF:
-                                writeEncodedText(out, weapon.getRateOfFire());
-                                break;
-                            case KEY_SHOTS:
-                                writeEncodedText(out, weapon.getShots());
-                                break;
-                            case KEY_BULK:
-                                writeEncodedText(out, weapon.getBulk());
-                                break;
-                            case KEY_RECOIL:
-                                writeEncodedText(out, weapon.getRecoil());
-                                break;
-                            case KEY_WEAPON_STRENGTH:
-                                writeEncodedText(out, weapon.getStrength());
-                                break;
-                            case KEY_ID:
-                                writeEncodedText(out, Integer.toString(counter));
-                                break;
-                            default:
-                                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                                break;
-                            }
-                        }
+                        i                = processRangedWeaponKeys(out, key, counter, weapon, i, contents, null);
                     }
                 }
             }
@@ -1144,11 +1557,25 @@ public class TextTemplate {
     }
 
     private void processEquipmentLoop(BufferedWriter out, String contents) throws IOException {
-        int           length           = contents.length();
-        StringBuilder keyBuffer        = new StringBuilder();
-        boolean       lookForKeyMarker = true;
-        int           counter          = 0;
+        int                  length           = contents.length();
+        StringBuilder        keyBuffer        = new StringBuilder();
+        boolean              lookForKeyMarker = true;
+        int                  counter          = 0;
+        // Create child-to-parent maps to determine where items are being stored.
+        // Used by KEY_LOCATION
+        ArrayList<List<Row>> children         = new ArrayList();
+        ArrayList<Equipment> parents          = new ArrayList();
+        ArrayList<Equipment> equipmentList    = new ArrayList();
         for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
+            if (shouldInclude(equipment)) {   // Allows category filtering
+                equipmentList.add(equipment);
+                if (equipment.hasChildren()) {
+                    children.add(equipment.getChildren());
+                    parents.add(equipment);
+                }
+            }
+        }
+        for (Equipment equipment : equipmentList) {
             counter++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -1164,6 +1591,9 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         if (!processStyleIndentWarning(key, out, equipment)) {
@@ -1187,11 +1617,33 @@ public class TextTemplate {
                                 case KEY_WEIGHT_SUMMARY:
                                     writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getExtendedWeight()));
                                     break;
+                                case KEY_WEIGHT_RAW:
+                                    writeEncodedText(out, Numbers.format(equipment.getWeight().getNormalizedValue()));
+                                    break;
                                 case KEY_REF:
                                     writeEncodedText(out, equipment.getReference());
                                     break;
                                 case KEY_ID:
                                     writeEncodedText(out, Integer.toString(counter));
+                                    break;
+                                case KEY_TL:
+                                    writeEncodedText(out, equipment.getTechLevel());
+                                    break;
+                                case KEY_LEGAILITY_CLASS:
+                                    writeEncodedText(out, equipment.getDisplayLegalityClass());
+                                    break;
+                                case KEY_CARRIED_STATUS:
+                                    writeEncodedText(out, Numbers.format(equipment.getCarriedStatus()));
+                                    break;
+                                case KEY_CATEGORIES:
+                                    writeEncodedText(out, equipment.getCategoriesAsString());
+                                    break;
+                                case KEY_LOCATION:
+                                    for (int j = 0; j < children.size(); j++) {
+                                        if (children.get(j).contains(equipment)) {
+                                            writeEncodedText(out, parents.get(j).getDescription());
+                                        }
+                                    }
                                     break;
                                 default:
                                     writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
@@ -1203,6 +1655,26 @@ public class TextTemplate {
                 }
             }
         }
+        mOnlyCategories.clear();
+        mExcludedCategories.clear();
+    }
+
+    private boolean shouldInclude(Equipment equipment) {
+        for (String cat : mOnlyCategories) {
+            if (equipment.hasCategory(cat)) {
+                return true;
+            }
+        }
+        if (!mOnlyCategories.isEmpty()) {  // If 'only' categories were provided, and none matched,
+                                           // then false
+            return false;
+        }
+        for (String cat : mExcludedCategories) {
+            if (equipment.hasCategory(cat)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void processNotesLoop(BufferedWriter out, String contents) throws IOException {
@@ -1226,12 +1698,18 @@ public class TextTemplate {
                     } else {
                         String key = keyBuffer.toString();
                         i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         if (!processStyleIndentWarning(key, out, note)) {
                             switch (key) {
                             case KEY_NOTE:
                                 writeEncodedText(out, note.getDescription());
+                                break;
+                            case KEY_NOTE_FORMATTED:
+                                writeEncodedText(out, PARAGRAPH_START + note.getDescription().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
                                 break;
                             case KEY_ID:
                                 writeEncodedText(out, Integer.toString(counter));
@@ -1249,48 +1727,94 @@ public class TextTemplate {
 
     private enum AdvantagesLoopType {
         ALL {
+
             @Override
-            public boolean shouldInclude(Advantage advantage) {
-                return true;
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return includeByCategories(advantage, included, excluded);
             }
+
         },
         ADS {
+
             @Override
-            public boolean shouldInclude(Advantage advantage) {
-                return advantage.getAdjustedPoints() > 1;
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getAdjustedPoints() > 1 && includeByCategories(advantage, included, excluded);
             }
+
+        },
+        ADS_ALL {
+
+            @Override
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getAdjustedPoints() > 0 && includeByCategories(advantage, included, excluded);
+            }
+
         },
         DISADS {
+
             @Override
-            public boolean shouldInclude(Advantage advantage) {
-                return advantage.getAdjustedPoints() < -1;
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getAdjustedPoints() < -1 && includeByCategories(advantage, included, excluded);
             }
+
+        },
+        DISADS_ALL {
+
+            @Override
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getAdjustedPoints() < 0 && includeByCategories(advantage, included, excluded);
+            }
+
         },
         PERKS {
+
             @Override
-            public boolean shouldInclude(Advantage advantage) {
-                return advantage.getAdjustedPoints() == 1;
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getAdjustedPoints() == 1 && includeByCategories(advantage, included, excluded);
             }
+
         },
         QUIRKS {
+
             @Override
-            public boolean shouldInclude(Advantage advantage) {
-                return advantage.getAdjustedPoints() == -1;
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getAdjustedPoints() == -1 && includeByCategories(advantage, included, excluded);
             }
+
         },
         LANGUAGES {
+
             @Override
-            public boolean shouldInclude(Advantage advantage) {
-                return advantage.getCategories().contains("Language");
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getCategories().contains("Language") && includeByCategories(advantage, included, excluded);
             }
+
         },
         CULTURAL_FAMILIARITIES {
-            @Override
-            public boolean shouldInclude(Advantage advantage) {
-                return advantage.getName().startsWith("Cultural Familiarity (");
-            }
-        };
 
-        public abstract boolean shouldInclude(Advantage advantage);
+            @Override
+            public boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+                return advantage.getName().startsWith("Cultural Familiarity (") && includeByCategories(advantage, included, excluded);
+            }
+
+        };
+        public abstract boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded);
+
+        private static boolean includeByCategories(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {
+            for (String cat : included) {
+                if (advantage.hasCategory(cat)) {
+                    return true;
+                }
+            }
+            if (!included.isEmpty()) {
+                return false;
+            }
+            for (String cat : excluded) {
+                if (advantage.hasCategory(cat)) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
