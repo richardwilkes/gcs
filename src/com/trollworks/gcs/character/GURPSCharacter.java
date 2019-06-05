@@ -2057,25 +2057,24 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of points spent on hit points. */
     public int getHitPointPoints() {
-        int pts          = 2 * mHitPoints;
-        int sizeModifier = mDescription.getSizeModifier();
-
-        if (sizeModifier > 0) {
-            int rem;
-
-            if (sizeModifier > 8) {
-                sizeModifier = 8;
-            }
-            pts *= 10 - sizeModifier;
-            rem  = pts % 10;
-            pts /= 10;
-            if (rem > 4) {
-                pts++;
-            } else if (rem < -5) {
-                pts--;
+        int pts = 2 * mHitPoints;
+        if (!SheetPreferences.areOptionalStrengthRulesUsed()) {
+            int sizeModifier = mDescription.getSizeModifier();
+            if (sizeModifier > 0) {
+                int rem;
+                if (sizeModifier > 8) {
+                    sizeModifier = 8;
+                }
+                pts *= 10 - sizeModifier;
+                rem  = pts % 10;
+                pts /= 10;
+                if (rem > 4) {
+                    pts++;
+                } else if (rem < -5) {
+                    pts--;
+                }
             }
         }
-
         return pts;
     }
 
