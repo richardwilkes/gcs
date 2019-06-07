@@ -33,6 +33,11 @@ public class SkillBonusEditor extends FeatureEditor {
     @Localize(locale = "ru", value = "и специализация ")
     @Localize(locale = "es", value = "y especialización ")
     private static String SPECIALIZATION;
+    @Localize("and category ")
+    @Localize(locale = "de", value = "und Kategorie ")
+    @Localize(locale = "ru", value = "и категория ")
+    @Localize(locale = "es", value = "y categoria ")
+    private static String CATEGORY;
 
     static {
         Localization.initialize();
@@ -73,5 +78,12 @@ public class SkillBonusEditor extends FeatureEditor {
         row.add(addStringCompareCombo(criteria, SPECIALIZATION));
         row.add(addStringCompareField(criteria));
         grid.add(row, 2, 0);
+
+        row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        criteria = bonus.getCategoryCriteria();
+        row.add(addStringCompareCombo(criteria, CATEGORY));
+        row.add(addStringCompareField(criteria));
+        grid.add(row, 3, 0);
     }
 }

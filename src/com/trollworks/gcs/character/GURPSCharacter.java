@@ -2678,7 +2678,7 @@ public class GURPSCharacter extends DataFile {
      * @param specializationQualifier The specialization qualifier.
      * @return The bonuses.
      */
-    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier) {
+    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, String categories) {
         ArrayList<WeaponBonus> bonuses = new ArrayList<>();
         int                    rsl     = Integer.MIN_VALUE;
 
@@ -2696,7 +2696,7 @@ public class GURPSCharacter extends DataFile {
                 for (Feature feature : list) {
                     if (feature instanceof WeaponBonus) {
                         WeaponBonus bonus = (WeaponBonus) feature;
-                        if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl)) {
+                        if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl) && bonus.matchesCategories(categories)) {
                             bonuses.add(bonus);
                         }
                     }
@@ -2706,20 +2706,26 @@ public class GURPSCharacter extends DataFile {
         return bonuses;
     }
 
+    // public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String
+    // specializationQualifier)
+    // {
+    // return getSkillComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, "");
+    // }
+
     /**
      * @param id                      The feature ID to search for.
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
      * @return The bonus.
      */
-    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier) {
+    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SkillBonus) {
                     SkillBonus bonus = (SkillBonus) feature;
-                    if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier)) {
+                    if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                     }
                 }

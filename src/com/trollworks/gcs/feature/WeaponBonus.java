@@ -31,10 +31,13 @@ public class WeaponBonus extends Bonus {
     private static final String TAG_NAME           = "name"; //$NON-NLS-1$
     private static final String TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
     private static final String TAG_LEVEL          = "level"; //$NON-NLS-1$
+    private static final String TAG_CATEGORY       = "category"; //$NON-NLS-1$
     private static final String EMPTY              = ""; //$NON-NLS-1$
+    private static final String COMMA              = ","; //$NON-NLS-1$
     private StringCriteria      mNameCriteria;
     private StringCriteria      mSpecializationCriteria;
     private IntegerCriteria     mLevelCriteria;
+    private StringCriteria      mCategoryCriteria;
 
     /** Creates a new skill bonus. */
     public WeaponBonus() {
@@ -42,11 +45,12 @@ public class WeaponBonus extends Bonus {
         mNameCriteria           = new StringCriteria(StringCompareType.IS, EMPTY);
         mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
         mLevelCriteria          = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
+        mCategoryCriteria       = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
     }
 
     /**
      * Loads a {@link WeaponBonus}.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     public WeaponBonus(XMLReader reader) throws IOException {
@@ -56,7 +60,7 @@ public class WeaponBonus extends Bonus {
 
     /**
      * Creates a clone of the specified bonus.
-     * 
+     *
      * @param other The bonus to clone.
      */
     public WeaponBonus(WeaponBonus other) {
@@ -64,6 +68,7 @@ public class WeaponBonus extends Bonus {
         mNameCriteria           = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
         mLevelCriteria          = new IntegerCriteria(other.mLevelCriteria);
+        mCategoryCriteria       = new StringCriteria(other.mCategoryCriteria);
     }
 
     @Override
@@ -73,7 +78,7 @@ public class WeaponBonus extends Bonus {
         }
         if (obj instanceof WeaponBonus && super.equals(obj)) {
             WeaponBonus wb = (WeaponBonus) obj;
-            return mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria);
+            return mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria) && mCategoryCriteria.equals(wb.mCategoryCriteria);
         }
         return false;
     }
@@ -93,13 +98,23 @@ public class WeaponBonus extends Bonus {
         StringBuffer buffer = new StringBuffer();
 
         buffer.append(Skill.ID_NAME);
-        if (mNameCriteria.getType() == StringCompareType.IS && mSpecializationCriteria.getType() == StringCompareType.IS_ANYTHING) {
+        if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
             buffer.append("*"); //$NON-NLS-1$
         }
         return buffer.toString();
+    }
+
+    public boolean matchesCategories(String categories) {
+        String[] cats = categories.split(COMMA);
+        for (String category : cats) {
+            if (mCategoryCriteria.matches(category.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -110,6 +125,8 @@ public class WeaponBonus extends Bonus {
             mSpecializationCriteria.load(reader);
         } else if (TAG_LEVEL.equals(reader.getName())) {
             mLevelCriteria.load(reader);
+        } else if (TAG_CATEGORY.equals(reader.getName())) {
+            mCategoryCriteria.load(reader);
         } else {
             super.loadSelf(reader);
         }
@@ -117,7 +134,7 @@ public class WeaponBonus extends Bonus {
 
     /**
      * Saves the bonus.
-     * 
+     *
      * @param out The XML writer to use.
      */
     @Override
@@ -126,6 +143,7 @@ public class WeaponBonus extends Bonus {
         mNameCriteria.save(out, TAG_NAME);
         mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
         mLevelCriteria.save(out, TAG_LEVEL);
+        mCategoryCriteria.save(out, TAG_CATEGORY);
         saveBase(out);
         out.endTagEOL(TAG_ROOT, true);
     }
@@ -145,15 +163,22 @@ public class WeaponBonus extends Bonus {
         return mLevelCriteria;
     }
 
+    /** @return The category criteria. */
+    public StringCriteria getCategoryCriteria() {
+        return mCategoryCriteria;
+    }
+
     @Override
     public void fillWithNameableKeys(HashSet<String> set) {
         ListRow.extractNameables(set, mNameCriteria.getQualifier());
         ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
+        ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
     }
 
     @Override
     public void applyNameableKeys(HashMap<String, String> map) {
         mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
         mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
+        mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
     }
 }

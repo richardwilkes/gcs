@@ -221,13 +221,15 @@ public abstract class WeaponStats {
         String   damage = mDamage;
 
         if (df instanceof GURPSCharacter) {
-            GURPSCharacter       character = (GURPSCharacter) df;
-            HashSet<WeaponBonus> bonuses   = new HashSet<>();
+            GURPSCharacter       character  = (GURPSCharacter) df;
+            HashSet<WeaponBonus> bonuses    = new HashSet<>();
+            Equipment            equipment  = getOwner().isEquipment() ? (Equipment) getOwner() : null;
+            String               categories = equipment == null ? "" : equipment.getCategoriesAsString();
 
             for (SkillDefault one : getDefaults()) {
                 if (one.getType().isSkillBased()) {
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization())); //$NON-NLS-1$
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization())); //$NON-NLS-1$
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), categories)); //$NON-NLS-1$
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), categories)); //$NON-NLS-1$
                 }
             }
             damage = resolveDamage(damage, bonuses);

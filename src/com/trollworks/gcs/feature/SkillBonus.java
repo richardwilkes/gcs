@@ -28,20 +28,24 @@ public class SkillBonus extends Bonus {
     public static final String  TAG_ROOT           = "skill_bonus"; //$NON-NLS-1$
     private static final String TAG_NAME           = "name"; //$NON-NLS-1$
     private static final String TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
+    private static final String TAG_CATEGORY       = "category"; //$NON-NLS-1$
     private static final String EMPTY              = ""; //$NON-NLS-1$
+    private static final String COMMA              = ","; //$NON-NLS-1$
     private StringCriteria      mNameCriteria;
     private StringCriteria      mSpecializationCriteria;
+    private StringCriteria      mCategoryCriteria;
 
     /** Creates a new skill bonus. */
     public SkillBonus() {
         super(1);
         mNameCriteria           = new StringCriteria(StringCompareType.IS, EMPTY);
         mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
+        mCategoryCriteria       = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
     }
 
     /**
      * Loads a {@link SkillBonus}.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     public SkillBonus(XMLReader reader) throws IOException {
@@ -51,13 +55,14 @@ public class SkillBonus extends Bonus {
 
     /**
      * Creates a clone of the specified bonus.
-     * 
+     *
      * @param other The bonus to clone.
      */
     public SkillBonus(SkillBonus other) {
         super(other);
         mNameCriteria           = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
+        mCategoryCriteria       = new StringCriteria(other.mCategoryCriteria);
     }
 
     @Override
@@ -67,9 +72,7 @@ public class SkillBonus extends Bonus {
         }
         if (obj instanceof SkillBonus && super.equals(obj)) {
             SkillBonus sb = (SkillBonus) obj;
-            if (mNameCriteria.equals(sb.mNameCriteria)) {
-                return mSpecializationCriteria.equals(sb.mSpecializationCriteria);
-            }
+            return mNameCriteria.equals(sb.mNameCriteria) && mSpecializationCriteria.equals(sb.mSpecializationCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
         }
         return false;
     }
@@ -89,13 +92,23 @@ public class SkillBonus extends Bonus {
         StringBuffer buffer = new StringBuffer();
 
         buffer.append(Skill.ID_NAME);
-        if (mNameCriteria.getType() == StringCompareType.IS && mSpecializationCriteria.getType() == StringCompareType.IS_ANYTHING) {
+        if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
             buffer.append("*"); //$NON-NLS-1$
         }
         return buffer.toString();
+    }
+
+    public boolean matchesCategories(String categories) {
+        String[] cats = categories.split(COMMA);
+        for (String category : cats) {
+            if (mCategoryCriteria.matches(category.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -105,6 +118,8 @@ public class SkillBonus extends Bonus {
             mNameCriteria.load(reader);
         } else if (TAG_SPECIALIZATION.equals(name)) {
             mSpecializationCriteria.load(reader);
+        } else if (TAG_CATEGORY.equals(name)) {
+            mCategoryCriteria.load(reader);
         } else {
             super.loadSelf(reader);
         }
@@ -112,7 +127,7 @@ public class SkillBonus extends Bonus {
 
     /**
      * Saves the bonus.
-     * 
+     *
      * @param out The XML writer to use.
      */
     @Override
@@ -120,6 +135,7 @@ public class SkillBonus extends Bonus {
         out.startSimpleTagEOL(TAG_ROOT);
         mNameCriteria.save(out, TAG_NAME);
         mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
+        mCategoryCriteria.save(out, TAG_CATEGORY);
         saveBase(out);
         out.endTagEOL(TAG_ROOT, true);
     }
@@ -129,20 +145,27 @@ public class SkillBonus extends Bonus {
         return mNameCriteria;
     }
 
-    /** @return The name criteria. */
+    /** @return The specialization criteria. */
     public StringCriteria getSpecializationCriteria() {
         return mSpecializationCriteria;
+    }
+
+    /** @return The category criteria. */
+    public StringCriteria getCategoryCriteria() {
+        return mCategoryCriteria;
     }
 
     @Override
     public void fillWithNameableKeys(HashSet<String> set) {
         ListRow.extractNameables(set, mNameCriteria.getQualifier());
         ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
+        ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
     }
 
     @Override
     public void applyNameableKeys(HashMap<String, String> map) {
         mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
         mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
+        mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
     }
 }

@@ -111,4 +111,13 @@ public class StringCriteria {
     public String toString() {
         return mType.describe(mQualifier);
     }
+
+    public boolean isTypeIs() {
+        return mType.isTypeIs();
+    }
+
+    public boolean isTypeAnything() {
+        return mType.isTypeAnything();
+    }
+
 }

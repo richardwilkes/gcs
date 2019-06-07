@@ -501,7 +501,7 @@ public class Skill extends ListRow implements HasSourceReference {
     /** @return The calculated skill level. */
     protected SkillLevel calculateLevelSelf() {
         mDefaultedFrom = getBestDefaultWithPoints();
-        return calculateLevel(getCharacter(), getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
+        return calculateLevel(getCharacter(), getName(), getSpecialization(), getCategoriesAsString(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
     }
 
     /**
@@ -509,7 +509,7 @@ public class Skill extends ListRow implements HasSourceReference {
      * @return The calculated level.
      */
     public int getLevel(HashSet<String> excludes) {
-        return calculateLevel(getCharacter(), getName(), getSpecialization(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes, getEncumbrancePenaltyMultiplier()).mLevel;
+        return calculateLevel(getCharacter(), getName(), getSpecialization(), getCategoriesAsString(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes, getEncumbrancePenaltyMultiplier()).mLevel;
     }
 
     /** @return The attribute. */
@@ -703,7 +703,7 @@ public class Skill extends ListRow implements HasSourceReference {
      * @param encPenaltyMult The encumbrance penalty multiplier.
      * @return The calculated skill level.
      */
-    public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
+    public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, String category, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
         int relativeLevel = difficulty.getBaseRelativeLevel();
         int level         = attribute.getBaseSkillLevel(character);
         if (level != Integer.MIN_VALUE) {
@@ -732,7 +732,7 @@ public class Skill extends ListRow implements HasSourceReference {
                     }
                 }
                 if (character != null) {
-                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
+                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization, category);
                     level         += bonus;
                     relativeLevel += bonus;
                     bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
@@ -851,7 +851,7 @@ public class Skill extends ListRow implements HasSourceReference {
                         int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
                         if (skillDefault.getType().isSkillBased()) {
                             String name = skillDefault.getName();
-                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, skillDefault.getSpecialization());
+                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, skillDefault.getSpecialization(), "");
                             level -= character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
                         }
                         if (level > best) {

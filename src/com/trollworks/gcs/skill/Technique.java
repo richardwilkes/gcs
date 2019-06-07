@@ -71,7 +71,7 @@ public class Technique extends Skill {
      * @param limitModifier  The maximum bonus the technique can grant.
      * @return The calculated technique level.
      */
-    public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
+    public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, String categories, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
         int relativeLevel = 0;
         int level         = Integer.MIN_VALUE;
         if (character != null) {
@@ -86,7 +86,7 @@ public class Technique extends Skill {
                     relativeLevel = points;
                 }
                 if (level != Integer.MIN_VALUE) {
-                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization); //$NON-NLS-1$ //$NON-NLS-2$
+                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 if (limited) {
                     int max = baseLevel + limitModifier;
@@ -265,7 +265,7 @@ public class Technique extends Skill {
 
     @Override
     protected SkillLevel calculateLevelSelf() {
-        return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getDefault(), getDifficulty(), getPoints(), isLimited(), getLimitModifier());
+        return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getCategoriesAsString(), getDefault(), getDifficulty(), getPoints(), isLimited(), getLimitModifier());
     }
 
     @Override

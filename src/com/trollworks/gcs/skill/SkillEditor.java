@@ -438,7 +438,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private void recalculateLevel() {
         if (mLevelField != null) {
             SkillAttribute attribute = getSkillAttribute();
-            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
+            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), mCategoriesField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
             mLevelField.setText(Skill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
         }
     }
