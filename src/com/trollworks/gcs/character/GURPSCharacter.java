@@ -2710,6 +2710,7 @@ public class GURPSCharacter extends DataFile {
      * @param id                      The feature ID to search for.
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
+     * @param categoryQualifier       The category qualifier.
      * @return The bonus.
      */
     public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier) {

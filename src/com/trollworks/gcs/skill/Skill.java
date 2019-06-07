@@ -695,6 +695,7 @@ public class Skill extends ListRow implements HasSourceReference {
      * @param character      The character the skill will be attached to.
      * @param name           The name of the skill.
      * @param specialization The specialization of the skill.
+     * @param categories     The categories of the skill.
      * @param defaults       The defaults the skill has.
      * @param attribute      The attribute the skill is based on.
      * @param difficulty     The difficulty of the skill.
@@ -703,7 +704,7 @@ public class Skill extends ListRow implements HasSourceReference {
      * @param encPenaltyMult The encumbrance penalty multiplier.
      * @return The calculated skill level.
      */
-    public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, String category, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
+    public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, String categories, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
         int relativeLevel = difficulty.getBaseRelativeLevel();
         int level         = attribute.getBaseSkillLevel(character);
         if (level != Integer.MIN_VALUE) {
@@ -732,7 +733,7 @@ public class Skill extends ListRow implements HasSourceReference {
                     }
                 }
                 if (character != null) {
-                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization, category);
+                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization, categories);
                     level         += bonus;
                     relativeLevel += bonus;
                     bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
