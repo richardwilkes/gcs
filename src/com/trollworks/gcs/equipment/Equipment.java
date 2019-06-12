@@ -51,6 +51,16 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Localize(locale = "ru", value = "Снаряжение")
     @Localize(locale = "es", value = "Equipo")
     private static String DEFAULT_NAME;
+    @Localize("LC0: Banned")
+    private static String LEGALITY_CLASS_0;
+    @Localize("LC1: Military")
+    private static String LEGALITY_CLASS_1;
+    @Localize("LC2: Restricted")
+    private static String LEGALITY_CLASS_2;
+    @Localize("LC3: Licensed")
+    private static String LEGALITY_CLASS_3;
+    @Localize("LC4: Open")
+    private static String LEGALITY_CLASS_4;
 
     static {
         Localization.initialize();
@@ -104,12 +114,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged"; //$NON-NLS-1$
     /** The field ID for when the equipment becomes or stops being a weapon. */
     public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus"; //$NON-NLS-1$
-
-    private static final String    LEGALITY_CLASS_0         = "LC0: Banned";
-    private static final String    LEGALITY_CLASS_1         = "LC1: Military";
-    private static final String    LEGALITY_CLASS_2         = "LC2: Restricted";
-    private static final String    LEGALITY_CLASS_3         = "LC3: Licensed";
-    private static final String    LEGALITY_CLASS_4         = "LC4: Open";
 
     private EquipmentState         mState;
     private int                    mQuantity;
@@ -384,11 +388,6 @@ public class Equipment extends ListRow implements HasSourceReference {
         return mTechLevel;
     }
 
-    @Override
-    public boolean isEquipment() {
-        return true;
-    }
-
     /**
      * @param techLevel The tech level to set.
      * @return Whether it was modified.
@@ -408,23 +407,21 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     public String getDisplayLegalityClass() {
-        String lc = getLegalityClass();
-        if (lc != null) {
-            lc = lc.trim();
-        }
+        String lc = getLegalityClass().trim();
         switch (lc) {
-        case "0":
+        case "0": //$NON-NLS-1$
             return LEGALITY_CLASS_0;
-        case "1":
+        case "1": //$NON-NLS-1$
             return LEGALITY_CLASS_1;
-        case "2":
+        case "2": //$NON-NLS-1$
             return LEGALITY_CLASS_2;
-        case "3":
+        case "3": //$NON-NLS-1$
             return LEGALITY_CLASS_3;
-        case "4":
+        case "4": //$NON-NLS-1$
             return LEGALITY_CLASS_4;
+        default:
+            return lc;
         }
-        return lc;
     }
 
     /**

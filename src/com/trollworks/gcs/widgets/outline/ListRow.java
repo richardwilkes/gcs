@@ -221,10 +221,6 @@ public abstract class ListRow extends Row {
         return mIsSatisfied;
     }
 
-    public boolean isEquipment() {
-        return false;
-    }
-
     /** @param satisfied Whether or not this row's prerequisites are currently satisfied. */
     public void setSatisfied(boolean satisfied) {
         mIsSatisfied = satisfied;
