@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2018 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,20 +19,9 @@ import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.toolkit.ui.RetinaIcon;
-import com.trollworks.toolkit.ui.image.AnnotatedImage;
 import com.trollworks.toolkit.ui.image.ModuleImageLoader;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.image.StdImageSet;
-import com.trollworks.toolkit.utility.BundleInfo;
-import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.cmdline.CmdLine;
-import com.trollworks.toolkit.utility.cmdline.CmdLineOption;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.jar.Attributes;
 
 /** Provides standardized image access. */
 @SuppressWarnings("nls")
@@ -150,11 +139,6 @@ public class GCSImages {
         return getDocumentIcons(NoteList.EXTENSION);
     }
 
-    /** @return The PDF icons. */
-    public static final StdImageSet getPDFDocumentIcons() {
-        return getDocumentIcons(FileType.PDF_EXTENSION);
-    }
-
     private static StdImageSet getDocumentIcons(String prefix) {
         String      name = prefix + "_doc";
         StdImageSet set  = StdImageSet.get(name);
@@ -162,80 +146,5 @@ public class GCSImages {
             set = new StdImageSet(name, StdImageSet.getOrLoad("document"), StdImageSet.getOrLoad(prefix));
         }
         return set;
-    }
-
-    /** Utility for creating GCS's icon sets. */
-    public static void main(String[] args) {
-        String     name       = "GenerateIcons";
-        Attributes attributes = new Attributes();
-        attributes.putValue(BundleInfo.BUNDLE_NAME, name);
-        attributes.putValue(BundleInfo.BUNDLE_VERSION, "1.0");
-        attributes.putValue(BundleInfo.BUNDLE_COPYRIGHT_OWNER, "Richard A. Wilkes");
-        attributes.putValue(BundleInfo.BUNDLE_COPYRIGHT_YEARS, "2014");
-        attributes.putValue(BundleInfo.BUNDLE_LICENSE, "Mozilla Public License 2.0");
-        BundleInfo.setDefault(new BundleInfo(attributes, name));
-        CmdLineOption icnsOption = new CmdLineOption("Generate ICNS files", null, "icns");
-        CmdLineOption icoOption  = new CmdLineOption("Generate ICO files", null, "ico");
-        CmdLineOption appOption  = new CmdLineOption("Generate just the 128x128 app icon", null, "app");
-        CmdLineOption dirOption  = new CmdLineOption("The directory to place the generated files into", "DIR", "dir");
-        CmdLine       cmdline    = new CmdLine();
-        cmdline.addOptions(icnsOption, icoOption, appOption, dirOption);
-        cmdline.processArguments(args);
-        boolean icns = cmdline.isOptionUsed(icnsOption);
-        boolean ico  = cmdline.isOptionUsed(icoOption);
-        boolean app  = cmdline.isOptionUsed(appOption);
-        if (!icns && !ico && !app) {
-            System.err.printf("At least one of %s, %s, or %s must be specified.\n", icnsOption, icoOption, appOption);
-            System.exit(1);
-        }
-        try {
-            File dir = new File(cmdline.isOptionUsed(dirOption) ? cmdline.getOptionArgument(dirOption) : ".");
-            System.out.println("Generating icons into " + dir);
-            dir.mkdirs();
-            if (app) {
-                File file = new File(dir, "gcs.png");
-                try {
-                    AnnotatedImage.writePNG(file, getAppIcons().getImage(128), 72, null);
-                    System.out.println("Created: " + file);
-                } catch (Exception exception) {
-                    System.err.println("Unable to create: " + file);
-                    System.err.println(exception);
-                }
-            }
-            if (icns || ico) {
-                createIconFiles(getAppIcons(), dir, "app", icns, ico);
-                createIconFiles(getAdvantagesDocumentIcons(), dir, AdvantageList.EXTENSION, icns, ico);
-                createIconFiles(getEquipmentDocumentIcons(), dir, EquipmentList.EXTENSION, icns, ico);
-                createIconFiles(getCharacterSheetDocumentIcons(), dir, GURPSCharacter.EXTENSION, icns, ico);
-                createIconFiles(getTemplateDocumentIcons(), dir, Template.EXTENSION, icns, ico);
-                createIconFiles(getSkillsDocumentIcons(), dir, SkillList.EXTENSION, icns, ico);
-                createIconFiles(getSpellsDocumentIcons(), dir, SpellList.EXTENSION, icns, ico);
-                createIconFiles(getNoteDocumentIcons(), dir, NoteList.EXTENSION, icns, ico);
-                createIconFiles(getPDFDocumentIcons(), dir, FileType.PDF_EXTENSION, icns, ico);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace(System.err);
-        }
-    }
-
-    private static void createIconFiles(StdImageSet set, File dir, String name, boolean generateICNS, boolean generateICO) throws IOException {
-        for (int size : StdImageSet.STD_SIZES) {
-            set.getImage(size);
-        }
-        File file;
-        if (generateICNS) {
-            file = new File(dir, name + ".icns");
-            try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
-                set.saveAsIcns(out);
-                System.out.println("Created: " + file);
-            }
-        }
-        if (generateICO) {
-            file = new File(dir, name + ".ico");
-            try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
-                set.saveAsIco(out);
-                System.out.println("Created: " + file);
-            }
-        }
     }
 }
