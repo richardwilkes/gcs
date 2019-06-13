@@ -143,6 +143,12 @@ public enum SkillColumn {
             }
             return Numbers.format(level);
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
     },
     /** The relative skill level. */
     RELATIVE_LEVEL {
@@ -448,5 +454,9 @@ public enum SkillColumn {
                 model.addColumn(column);
             }
         }
+    }
+
+    public boolean showToolTip() {
+        return false;
     }
 }

@@ -53,6 +53,21 @@ public class Skill extends ListRow implements HasSourceReference {
     @Localize(locale = "ru", value = "По умолчанию: ")
     @Localize(locale = "es", value = "Valore por defecto: ")
     static String DEFAULTED_FROM;
+    @Localize("Encumberance: ")
+    @Localize(locale = "de", value = "Belastung: ")
+    @Localize(locale = "ru", value = "Oбременение: ")
+    @Localize(locale = "es", value = "Entumecimiento: ")
+    static String ENCUMBRANCE;
+    @Localize("Includes modifiers from")
+    @Localize(locale = "de", value = "Enthält Modifikatoren von")
+    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
+    @Localize(locale = "es", value = "Incluye modificadores de")
+    static String INCLUDES;
+    @Localize("No additional modifiers")
+    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
+    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
+    @Localize(locale = "es", value = "No hay modificadores adicionales")
+    static String NO_MODIFIERS;
 
     static {
         Localization.initialize();
@@ -540,6 +555,19 @@ public class Skill extends ListRow implements HasSourceReference {
         return false;
     }
 
+    @Override
+    public boolean alwaysShowToolTip(Column column) {
+        return SkillColumn.values()[column.getID()].showToolTip();
+    }
+
+    @Override
+    public String getToolTip(Column column) {
+        if (SkillColumn.values()[column.getID()].showToolTip()) {
+            return calculateLevelSelf().getToolTip();
+        }
+        return super.getToolTip(column);
+    }
+
     /** @return The encumbrance penalty multiplier. */
     public int getEncumbrancePenaltyMultiplier() {
         return mEncumbrancePenaltyMultiplier;
@@ -705,8 +733,10 @@ public class Skill extends ListRow implements HasSourceReference {
      * @return The calculated skill level.
      */
     public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, String categories, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
-        int relativeLevel = difficulty.getBaseRelativeLevel();
-        int level         = attribute.getBaseSkillLevel(character);
+        StringBuilder toolTip       = new StringBuilder();
+
+        int           relativeLevel = difficulty.getBaseRelativeLevel();
+        int           level         = attribute.getBaseSkillLevel(character);
         if (level != Integer.MIN_VALUE) {
             if (difficulty != SkillDifficulty.W) {
                 if (mDefaultedFrom != null && mDefaultedFrom.getPoints() > 0) {
@@ -733,17 +763,21 @@ public class Skill extends ListRow implements HasSourceReference {
                     }
                 }
                 if (character != null) {
-                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization, categories);
+                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization, categories, toolTip);
                     level         += bonus;
                     relativeLevel += bonus;
-                    bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+                    bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase(), toolTip);
                     level         += bonus;
                     relativeLevel += bonus;
-                    level         += character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                    bonus          = character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                    level         += bonus;
+                    if (bonus != 0) {
+                        toolTip.append("\n").append(ENCUMBRANCE).append(" (").append(bonus).append(")");  //$NON-NLS-1$
+                    }
                 }
             }
         }
-        return new SkillLevel(level, relativeLevel);
+        return new SkillLevel(level, relativeLevel, toolTip.length() > 0 ? INCLUDES + toolTip.toString() : NO_MODIFIERS);
     }
 
     /**

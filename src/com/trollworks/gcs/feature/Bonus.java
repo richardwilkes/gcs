@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
@@ -23,11 +24,20 @@ import java.util.HashSet;
 public abstract class Bonus implements Feature {
     /** The "amount" tag. */
     public static final String TAG_AMOUNT = "amount"; //$NON-NLS-1$
+
+    @Localize("Unknown")
+    @Localize(locale = "de", value = "Unbekannte")
+    @Localize(locale = "ru", value = "неизвестный")
+    @Localize(locale = "es", value = "Desconocido")
+    private static String      UNKNOWN;
+
     private LeveledAmount      mAmount;
+    // The "parent" thing that is providing this particular bonus (for information only).
+    private String             mParent;
 
     /**
      * Creates a new bonus.
-     * 
+     *
      * @param amount The initial amount.
      */
     public Bonus(double amount) {
@@ -36,7 +46,7 @@ public abstract class Bonus implements Feature {
 
     /**
      * Creates a new bonus.
-     * 
+     *
      * @param amount The initial amount.
      */
     public Bonus(int amount) {
@@ -45,11 +55,19 @@ public abstract class Bonus implements Feature {
 
     /**
      * Creates a clone of the specified bonus.
-     * 
+     *
      * @param other The bonus to clone.
      */
     public Bonus(Bonus other) {
         mAmount = new LeveledAmount(other.mAmount);
+    }
+
+    public void setParent(String name) {
+        mParent = name;
+    }
+
+    public String getParent() {
+        return mParent == null ? UNKNOWN : mParent;
     }
 
     @Override
@@ -92,7 +110,7 @@ public abstract class Bonus implements Feature {
 
     /**
      * Saves the bonus base information.
-     * 
+     *
      * @param out The XML writer to use..
      */
     public void saveBase(XMLWriter out) {

@@ -34,6 +34,8 @@ import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 import com.trollworks.toolkit.utility.text.Text;
 
+import javax.swing.ToolTipManager;
+
 /** The main application user interface. */
 public class GCSApp extends App {
     @Localize("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n")
@@ -67,6 +69,9 @@ public class GCSApp extends App {
         PreferencesWindow.addCategory(FontPreferences::new);
         PreferencesWindow.addCategory(MenuKeyPreferences::new);
         PreferencesWindow.addCategory(ReferenceLookupPreferences::new);
+        
+        // Increase TooTip time so the user has time to read the skill modifiers
+        ToolTipManager.sharedInstance().setDismissDelay(60000);
     }
 
     @Override

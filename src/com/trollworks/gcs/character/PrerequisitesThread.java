@@ -174,16 +174,23 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
             }
             for (Feature feature : row.getFeatures()) {
                 processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
+                if (feature instanceof Bonus) {
+                    ((Bonus) feature).setParent(row.toString());
+                }
             }
             if (row instanceof Advantage) {
                 Advantage advantage = (Advantage) row;
                 for (Bonus bonus : advantage.getCRAdj().getBonuses(advantage.getCR())) {
                     processFeature(map, 0, bonus);
+                    bonus.setParent(row.toString());
                 }
                 for (Modifier modifier : advantage.getModifiers()) {
                     if (modifier.isEnabled()) {
                         for (Feature feature : modifier.getFeatures()) {
                             processFeature(map, modifier.getLevels(), feature);
+                            if (feature instanceof Bonus) {
+                                ((Bonus) feature).setParent(row.toString());
+                            }
                         }
                     }
                 }

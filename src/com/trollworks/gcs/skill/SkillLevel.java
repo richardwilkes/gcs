@@ -14,13 +14,19 @@ package com.trollworks.gcs.skill;
 /** Provides simple storage for the skill level/relative level pair. */
 public class SkillLevel {
     /** The skill level. */
-    public int mLevel;
+    public int     mLevel;
     /** The relative skill level. */
-    public int mRelativeLevel;
+    public int     mRelativeLevel;
+
+    private String mToolTip;
+
+    public String getToolTip() {
+        return mToolTip == null ? "" : mToolTip;
+    }
 
     /**
      * Creates a new {@link SkillLevel}.
-     * 
+     *
      * @param level         The skill level.
      * @param relativeLevel The relative skill level.
      */
@@ -28,4 +34,18 @@ public class SkillLevel {
         mLevel         = level;
         mRelativeLevel = relativeLevel;
     }
+
+    /**
+     * Creates a new {@link SkillLevel}.
+     *
+     * @param level         The skill level.
+     * @param relativeLevel The relative skill level.
+     * @param tip           The the tooltip to display for this skill.
+     */
+    public SkillLevel(int level, int relativeLevel, String toolTip) {
+        mLevel         = level;
+        mRelativeLevel = relativeLevel;
+        mToolTip       = toolTip;
+    }
+
 }

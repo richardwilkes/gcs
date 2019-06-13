@@ -46,6 +46,16 @@ public class Technique extends Skill {
     @Localize(locale = "ru", value = "{0}Требуется хотя бы 1 очко в умении {1}\n")
     @Localize(locale = "es", value = "{0}Requiere al menos 1 punto en la habilidad {1}\n")
     private static String REQUIRES_POINTS;
+    @Localize("Includes modifiers from")
+    @Localize(locale = "de", value = "Enthält Modifikatoren von")
+    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
+    @Localize(locale = "es", value = "Incluye modificadores de")
+    static String         INCLUDES;
+    @Localize("No additional modifiers")
+    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
+    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
+    @Localize(locale = "es", value = "No hay modificadores adicionales")
+    static String         NO_MODIFIERS;
 
     static {
         Localization.initialize();
@@ -72,8 +82,10 @@ public class Technique extends Skill {
      * @return The calculated technique level.
      */
     public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, String categories, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
-        int relativeLevel = 0;
-        int level         = Integer.MIN_VALUE;
+        int           relativeLevel = 0;
+        int           level         = Integer.MIN_VALUE;
+        StringBuilder toolTip       = new StringBuilder();
+
         if (character != null) {
             level = getBaseLevel(character, def);
             if (level != Integer.MIN_VALUE) {
@@ -86,7 +98,7 @@ public class Technique extends Skill {
                     relativeLevel = points;
                 }
                 if (level != Integer.MIN_VALUE) {
-                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories); //$NON-NLS-1$ //$NON-NLS-2$
+                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 if (limited) {
                     int max = baseLevel + limitModifier;
@@ -97,7 +109,7 @@ public class Technique extends Skill {
                 }
             }
         }
-        return new SkillLevel(level, relativeLevel);
+        return new SkillLevel(level, relativeLevel, toolTip.length() > 0 ? INCLUDES + toolTip.toString() : NO_MODIFIERS);
     }
 
     private static int getBaseLevel(GURPSCharacter character, SkillDefault def) {

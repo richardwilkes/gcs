@@ -2660,12 +2660,27 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getIntegerBonusFor(String id) {
+        return getIntegerBonusFor(id, null);
+    }
+
+    /**
+     * @param id     The feature ID to search for.
+     * @param tooTip The StringBuilder used to explain how the level was calculated
+     * @return       The bonus.
+     */
+
+    public int getIntegerBonusFor(String id, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
-                    total += ((Bonus) feature).getAmount().getIntegerAdjustedAmount();
+                    Bonus bonus = (Bonus) feature;
+                    int   add   = bonus.getAmount().getIntegerAdjustedAmount();
+                    if (toolTip != null) {
+                        toolTip.append("\n").append(bonus.getParent()).append(" (").append(add).append(")"); //$NON-NLS-1$
+                    }
+                    total += add;
                 }
             }
         }
@@ -2714,6 +2729,18 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier) {
+        return getSkillComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, categoryQualifier, null);
+    }
+
+    /**
+     * @param id                      The feature ID to search for.
+     * @param nameQualifier           The name qualifier.
+     * @param specializationQualifier The specialization qualifier.
+     * @param categoryQualifier       The category qualifier.
+     * @param tooTip                  The StringBuilder used to explain how the level was calculated
+     * @return The bonus.
+     */
+    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
@@ -2721,7 +2748,11 @@ public class GURPSCharacter extends DataFile {
                 if (feature instanceof SkillBonus) {
                     SkillBonus bonus = (SkillBonus) feature;
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
-                        total += bonus.getAmount().getIntegerAdjustedAmount();
+                        int add = bonus.getAmount().getIntegerAdjustedAmount();
+                        total += add;
+                        if (toolTip != null) {
+                            toolTip.append("\n").append(bonus.getParent()).append(" (").append(add).append(")"); //$NON-NLS-1$
+                        }
                     }
                 }
             }
