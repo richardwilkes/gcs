@@ -135,6 +135,7 @@
         <copy if:true="${platform.mac}" todir="${dist.content.root}/Resources">
             <fileset dir="artifacts/icns"/>
         </copy>
+        <copy if:true="${platform.mac}" file="resources/com/trollworks/gcs/app/images/app_1024.png" tofile="${dist.content.root}/Resources/app.png"/>
         <copy if:true="${platform.mac}" file="artifacts/${exe.name}" todir="${dist.content.root}/MacOS"/>
         <copy if:true="${platform.windows}" file="artifacts/${exe.name}.bat" todir="${dist.content.root}"/>
         <copy if:true="${platform.linux}" file="artifacts/${exe.name}" todir="${dist.content.root}"/>

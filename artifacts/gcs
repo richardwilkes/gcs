@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /usr/bin/env bash
 set -eo pipefail
 
 # Determine the directory this script is in.
@@ -15,4 +15,4 @@ pushd "$(dirname "$SCRIPT")" >/dev/null
 BASEDIR="$(pwd -P)"
 popd >/dev/null
 
-"$BASEDIR/support/bin/gcs" -m com.trollworks.gcs/com.trollworks.gcs.app.GCS $@
+"$BASEDIR/support/bin/gcs" "-Xdock:icon=$BASEDIR/../Resources/app.png" -m com.trollworks.gcs/com.trollworks.gcs.app.GCS $@

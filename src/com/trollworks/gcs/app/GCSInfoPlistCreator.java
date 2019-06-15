@@ -33,7 +33,7 @@ public class GCSInfoPlistCreator {
         App.setup(GCS.class);
         GCS.registerFileTypes(null);
         BundleInfo info = BundleInfo.getDefault();
-        info.write(plist, "gcs.icns");
+        info.write(plist, "app.icns");
         try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(pkg)))) {
             out.print("APPL");
             out.print(info.getSignature());
