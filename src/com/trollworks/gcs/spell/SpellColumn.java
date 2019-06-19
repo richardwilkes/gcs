@@ -290,6 +290,11 @@ public enum SpellColumn {
             }
             return ""; //$NON-NLS-1$
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
     },
     /** The points spent in the spell. */
     POINTS {

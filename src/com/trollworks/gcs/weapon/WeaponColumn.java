@@ -201,6 +201,12 @@ public enum WeaponColumn {
         public String getDataAsText(WeaponStats weapon) {
             return weapon.getResolvedDamage();
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
     },
     /** The weapon reach. */
     REACH {
@@ -582,5 +588,9 @@ public enum WeaponColumn {
                 model.addColumn(column);
             }
         }
+    }
+
+    public boolean showToolTip() {
+        return false;
     }
 }

@@ -2676,11 +2676,11 @@ public class GURPSCharacter extends DataFile {
             for (Feature feature : list) {
                 if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
                     Bonus bonus = (Bonus) feature;
-                    int   add   = bonus.getAmount().getIntegerAdjustedAmount();
+                    total += bonus.getAmount().getIntegerAdjustedAmount();
+                    ;
                     if (toolTip != null) {
-                        toolTip.append("\n").append(bonus.getParent()).append(" (").append(add).append(")"); //$NON-NLS-1$
+                        toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsString()).append("]"); //$NON-NLS-1$
                     }
-                    total += add;
                 }
             }
         }
@@ -2693,7 +2693,7 @@ public class GURPSCharacter extends DataFile {
      * @param specializationQualifier The specialization qualifier.
      * @return The bonuses.
      */
-    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, String categories) {
+    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, String categories, StringBuilder toolTip) {
         ArrayList<WeaponBonus> bonuses = new ArrayList<>();
         int                    rsl     = Integer.MIN_VALUE;
 
@@ -2713,6 +2713,9 @@ public class GURPSCharacter extends DataFile {
                         WeaponBonus bonus = (WeaponBonus) feature;
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl) && bonus.matchesCategories(categories)) {
                             bonuses.add(bonus);
+                            if (toolTip != null) {
+                                toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsWeaponBonus()).append("]"); //$NON-NLS-1$
+                            }
                         }
                     }
                 }
@@ -2748,10 +2751,10 @@ public class GURPSCharacter extends DataFile {
                 if (feature instanceof SkillBonus) {
                     SkillBonus bonus = (SkillBonus) feature;
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
-                        int add = bonus.getAmount().getIntegerAdjustedAmount();
-                        total += add;
+                        total += bonus.getAmount().getIntegerAdjustedAmount();
+                        ;
                         if (toolTip != null) {
-                            toolTip.append("\n").append(bonus.getParent()).append(" (").append(add).append(")"); //$NON-NLS-1$
+                            toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsString()).append("]"); //$NON-NLS-1$
                         }
                     }
                 }
@@ -2773,10 +2776,10 @@ public class GURPSCharacter extends DataFile {
                 if (feature instanceof SpellBonus) {
                     SpellBonus bonus = (SpellBonus) feature;
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.matchesCategories(categories)) {
-                        int add = bonus.getAmount().getIntegerAdjustedAmount();
-                        total += add;
+                        total += bonus.getAmount().getIntegerAdjustedAmount();
+                        ;
                         if (toolTip != null) {
-                            toolTip.append("\n").append(bonus.getParent()).append(" (").append(add).append(")"); //$NON-NLS-1$
+                            toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsString()).append("]"); //$NON-NLS-1$
                         }
                     }
                 }

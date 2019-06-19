@@ -62,4 +62,18 @@ public class WeaponDisplayRow extends Row {
     public void setData(Column column, Object data) {
         // Not used
     }
+
+    @Override
+    public boolean alwaysShowToolTip(Column column) {
+        return WeaponColumn.values()[column.getID()].showToolTip();
+    }
+
+    @Override
+    public String getToolTip(Column column) {
+        if (WeaponColumn.values()[column.getID()].showToolTip()) {
+            return mWeapon.getDamageToolTip();
+        }
+        return super.getToolTip(column);
+    }
+
 }
