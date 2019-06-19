@@ -47,6 +47,11 @@ public class SpellBonusEditor extends FeatureEditor {
     @Localize(locale = "ru", value = "источнику силы, чьё название")
     @Localize(locale = "es", value = "a la fuente de poder cuyo nombre sea")
     private static String POWER_SOURCE_NAME;
+    @Localize("and category ")
+    @Localize(locale = "de", value = "und Kategorie ")
+    @Localize(locale = "ru", value = "и категория ")
+    @Localize(locale = "es", value = "y categoria ")
+    private static String CATEGORY;
 
     static {
         Localization.initialize();
@@ -88,6 +93,14 @@ public class SpellBonusEditor extends FeatureEditor {
             row.add(new FlexSpacer(0, 0, true, false));
         }
         grid.add(row, 1, 0);
+
+        row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        StringCriteria criteria = bonus.getCategoryCriteria();
+        row.add(addStringCompareCombo(criteria, CATEGORY));
+        row.add(addStringCompareField(criteria));
+        grid.add(row, 2, 0);
+
     }
 
     private static String getMatchText(boolean allColleges, String matchType) {

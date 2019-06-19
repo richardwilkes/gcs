@@ -581,7 +581,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     private void recalculateLevel() {
         if (mLevelField != null) {
             SkillAttribute attribute = getAttribute();
-            SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText());
+            SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), mCategoriesField.getText());
             mLevelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
         }
     }

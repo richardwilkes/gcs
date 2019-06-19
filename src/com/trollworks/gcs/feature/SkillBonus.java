@@ -168,4 +168,10 @@ public class SkillBonus extends Bonus {
         mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
         mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (name:" + mNameCriteria + ", specialization:" + mSpecializationCriteria + ", category:" + mCategoryCriteria + ")";  //$NON-NLS-1$
+    }
+
 }

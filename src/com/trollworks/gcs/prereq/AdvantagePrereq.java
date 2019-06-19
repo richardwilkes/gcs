@@ -154,7 +154,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
         }
         if (!satisfied && builder != null) {
             builder.append(MessageFormat.format(NAME_PART, prefix, has() ? HasPrereq.HAS : HasPrereq.DOES_NOT_HAVE, nameCriteria.toString()));
-            if (mNotesCriteria.getType() != StringCompareType.IS_ANYTHING) {
+            if (!mNotesCriteria.isTypeAnything()) {
                 builder.append(MessageFormat.format(NOTES_PART, mNotesCriteria.toString()));
             }
             builder.append(MessageFormat.format(LEVEL_PART, levelCriteria.toString()));

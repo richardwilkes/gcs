@@ -2666,7 +2666,7 @@ public class GURPSCharacter extends DataFile {
     /**
      * @param id     The feature ID to search for.
      * @param tooTip The StringBuilder used to explain how the level was calculated
-     * @return       The bonus.
+     * @return The bonus.
      */
 
     public int getIntegerBonusFor(String id, StringBuilder toolTip) {
@@ -2765,15 +2765,19 @@ public class GURPSCharacter extends DataFile {
      * @param qualifier The qualifier.
      * @return The bonus.
      */
-    public int getSpellComparedIntegerBonusFor(String id, String qualifier) {
+    public int getSpellComparedIntegerBonusFor(String id, String nameQualifier, String categories, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SpellBonus) {
                     SpellBonus bonus = (SpellBonus) feature;
-                    if (bonus.getNameCriteria().matches(qualifier)) {
-                        total += bonus.getAmount().getIntegerAdjustedAmount();
+                    if (bonus.getNameCriteria().matches(nameQualifier) && bonus.matchesCategories(categories)) {
+                        int add = bonus.getAmount().getIntegerAdjustedAmount();
+                        total += add;
+                        if (toolTip != null) {
+                            toolTip.append("\n").append(bonus.getParent()).append(" (").append(add).append(")"); //$NON-NLS-1$
+                        }
                     }
                 }
             }

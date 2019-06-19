@@ -152,7 +152,7 @@ public class SkillPrereq extends NameLevelPrereq {
         }
         if (!satisfied && builder != null) {
             builder.append(MessageFormat.format(SKILL_NAME_PART, prefix, has() ? HAS : DOES_NOT_HAVE, nameCriteria.toString()));
-            boolean notAnySpecialization = mSpecializationCriteria.getType() != StringCompareType.IS_ANYTHING;
+            boolean notAnySpecialization = !mSpecializationCriteria.isTypeAnything();
 
             if (notAnySpecialization) {
                 builder.append(MessageFormat.format(SPECIALIZATION_PART, mSpecializationCriteria.toString()));

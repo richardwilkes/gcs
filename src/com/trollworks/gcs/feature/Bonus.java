@@ -131,4 +131,9 @@ public abstract class Bonus implements Feature {
     public void applyNameableKeys(HashMap<String, String> map) {
         // Nothing to do.
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (" + mAmount.getAmountAsString() + ", parent:" + mParent + ")";  //$NON-NLS-1$
+    }
 }

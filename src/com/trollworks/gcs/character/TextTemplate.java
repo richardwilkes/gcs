@@ -175,7 +175,7 @@ public class TextTemplate {
     private static final String KEY_IQ_POINTS                         = "IQ_POINTS";
     private static final String KEY_LANGUAGES_LOOP_END                = "LANGUAGES_LOOP_END";
     private static final String KEY_LANGUAGES_LOOP_START              = "LANGUAGES_LOOP_START";
-    private static final String KEY_LEGAILITY_CLASS                   = "LEGALITY_CLASS";
+    private static final String KEY_LEGALITY_CLASS                    = "LEGALITY_CLASS";
     private static final String KEY_LEVEL                             = "LEVEL";
     private static final String KEY_LEVEL_ONLY                        = "LEVEL_ONLY";
     private static final String KEY_LOCATION                          = "LOCATION";
@@ -1283,7 +1283,7 @@ public class TextTemplate {
                     writeEncodedText(out, Numbers.format(equipment.getValue()));
                 }
                 break;
-            case KEY_LEGAILITY_CLASS:
+            case KEY_LEGALITY_CLASS:
                 if (equipment != null) {
                     writeEncodedText(out, equipment.getLegalityClass());
                 }
@@ -1629,7 +1629,7 @@ public class TextTemplate {
                                 case KEY_TL:
                                     writeEncodedText(out, equipment.getTechLevel());
                                     break;
-                                case KEY_LEGAILITY_CLASS:
+                                case KEY_LEGALITY_CLASS:
                                     writeEncodedText(out, equipment.getDisplayLegalityClass());
                                     break;
                                 case KEY_CARRIED_STATUS:

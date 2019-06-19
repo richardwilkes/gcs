@@ -20,7 +20,6 @@ import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
-import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -185,19 +184,7 @@ public abstract class WeaponStats {
 
     /** @return A description of the weapon. */
     public String getDescription() {
-        if (mOwner instanceof Equipment) {
-            return ((Equipment) mOwner).getDescription();
-        }
-        if (mOwner instanceof Advantage) {
-            return ((Advantage) mOwner).getName();
-        }
-        if (mOwner instanceof Spell) {
-            return ((Spell) mOwner).getName();
-        }
-        if (mOwner instanceof Skill) {
-            return ((Skill) mOwner).getName();
-        }
-        return EMPTY;
+        return mOwner.getDescription();
     }
 
     @Override

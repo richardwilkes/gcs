@@ -53,10 +53,10 @@ public class Skill extends ListRow implements HasSourceReference {
     @Localize(locale = "ru", value = "По умолчанию: ")
     @Localize(locale = "es", value = "Valore por defecto: ")
     static String DEFAULTED_FROM;
-    @Localize("Encumberance: ")
-    @Localize(locale = "de", value = "Belastung: ")
-    @Localize(locale = "ru", value = "Oбременение: ")
-    @Localize(locale = "es", value = "Entumecimiento: ")
+    @Localize("Encumberance ")
+    @Localize(locale = "de", value = "Belastung ")
+    @Localize(locale = "ru", value = "Oбременение ")
+    @Localize(locale = "es", value = "Entumecimiento ")
     static String ENCUMBRANCE;
     @Localize("Includes modifiers from")
     @Localize(locale = "de", value = "Enthält Modifikatoren von")
@@ -945,6 +945,11 @@ public class Skill extends ListRow implements HasSourceReference {
                 one.applyNameableKeys(map);
             }
         }
+    }
+
+    @Override
+    public String getDescription() {
+        return getName();
     }
 
     @Override

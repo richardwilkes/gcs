@@ -51,6 +51,7 @@ public abstract class ListRow extends Row {
     private static final String     TAG_NOTES      = "notes"; //$NON-NLS-1$
     private static final String     TAG_CATEGORIES = "categories"; //$NON-NLS-1$
     private static final String     TAG_CATEGORY   = "category"; //$NON-NLS-1$
+    private static final String     EMPTY          = ""; //$NON-NLS-1$
     /** The data file the row is associated with. */
     protected DataFile              mDataFile;
     private ArrayList<Feature>      mFeatures;
@@ -223,6 +224,10 @@ public abstract class ListRow extends Row {
 
     public boolean isEquipment() {
         return false;
+    }
+
+    public String getDescription() {
+        return EMPTY;
     }
 
     /** @param satisfied Whether or not this row's prerequisites are currently satisfied. */

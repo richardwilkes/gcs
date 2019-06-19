@@ -71,6 +71,16 @@ public class Spell extends ListRow implements HasSourceReference {
     @Localize(locale = "ru", value = "Мгновенное")
     @Localize(locale = "es", value = "Instantáneo")
     private static String DEFAULT_DURATION;
+    @Localize("Includes modifiers from")
+    @Localize(locale = "de", value = "Enthält Modifikatoren von")
+    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
+    @Localize(locale = "es", value = "Incluye modificadores de")
+    static String         INCLUDES;
+    @Localize("No additional modifiers")
+    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
+    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
+    @Localize(locale = "es", value = "No hay modificadores adicionales")
+    static String         NO_MODIFIERS;
 
     static {
         Localization.initialize();
@@ -457,7 +467,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public void updateLevel(boolean notify) {
         int        savedLevel         = mLevel;
         int        savedRelativeLevel = mRelativeLevel;
-        SkillLevel level              = calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName);
+        SkillLevel level              = calculateLevelSelf();
 
         mLevel         = level.mLevel;
         mRelativeLevel = level.mRelativeLevel;
@@ -465,6 +475,11 @@ public class Spell extends ListRow implements HasSourceReference {
         if (notify && (savedLevel != mLevel || savedRelativeLevel != mRelativeLevel)) {
             notify(ID_LEVEL, this);
         }
+    }
+
+    /** @return The calculated spell skill level. */
+    private SkillLevel calculateLevelSelf() {
+        return calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName, getCategoriesAsString());
     }
 
     /**
@@ -478,9 +493,10 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param name        The name of the spell.
      * @return The calculated spell level.
      */
-    public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, boolean isVeryHard, String college, String powerSource, String name) {
-        int relativeLevel = isVeryHard ? -3 : -2;
-        int level;
+    public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, boolean isVeryHard, String college, String powerSource, String name, String categories) {
+        StringBuilder toolTip       = new StringBuilder();
+        int           relativeLevel = isVeryHard ? -3 : -2;
+        int           level;
 
         if (character != null) {
             level = attribute.getBaseSkillLevel(character);
@@ -496,22 +512,22 @@ public class Spell extends ListRow implements HasSourceReference {
             }
 
             if (level != -1) {
-                relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college);
-                relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource);
-                relativeLevel += getSpellBonusesFor(character, ID_NAME, name);
+                relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college, categories, toolTip);
+                relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, toolTip);
+                relativeLevel += getSpellBonusesFor(character, ID_NAME, name, categories, toolTip);
                 level         += relativeLevel;
             }
         } else {
             level = -1;
         }
 
-        return new SkillLevel(level, relativeLevel);
+        return new SkillLevel(level, relativeLevel, toolTip.length() > 0 ? INCLUDES + toolTip.toString() : NO_MODIFIERS);
     }
 
-    private static int getSpellBonusesFor(GURPSCharacter character, String id, String qualifier) {
-        int level = character.getIntegerBonusFor(id);
-        level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase());
-        level += character.getSpellComparedIntegerBonusFor(id + '*', qualifier);
+    private static int getSpellBonusesFor(GURPSCharacter character, String id, String name, String categories, StringBuilder toolTip) {
+        int level = character.getIntegerBonusFor(id, toolTip);
+        level += character.getIntegerBonusFor(id + '/' + name.toLowerCase(), toolTip);
+        level += character.getSpellComparedIntegerBonusFor(id + '*', name, categories, toolTip);
         return level;
     }
 
@@ -531,6 +547,11 @@ public class Spell extends ListRow implements HasSourceReference {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String getDescription() {
+        return getName();
     }
 
     /** @return The college. */
@@ -725,6 +746,19 @@ public class Spell extends ListRow implements HasSourceReference {
             return true;
         }
         return super.contains(text, lowerCaseOnly);
+    }
+
+    @Override
+    public boolean alwaysShowToolTip(Column column) {
+        return SpellColumn.values()[column.getID()].showToolTip();
+    }
+
+    @Override
+    public String getToolTip(Column column) {
+        if (SpellColumn.values()[column.getID()].showToolTip()) {
+            return calculateLevelSelf().getToolTip();
+        }
+        return super.getToolTip(column);
     }
 
     @Override

@@ -232,6 +232,12 @@ public enum SpellColumn {
             }
             return Numbers.format(level);
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
     },
     /** The relative spell level. */
     RELATIVE_LEVEL {
@@ -524,4 +530,9 @@ public enum SpellColumn {
             }
         }
     }
+
+    public boolean showToolTip() {
+        return false;
+    }
+
 }
