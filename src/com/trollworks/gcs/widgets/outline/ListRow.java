@@ -222,14 +222,6 @@ public abstract class ListRow extends Row {
         return mIsSatisfied;
     }
 
-    public boolean isEquipment() {
-        return false;
-    }
-
-    public String getDescription() {
-        return EMPTY;
-    }
-
     /** @param satisfied Whether or not this row's prerequisites are currently satisfied. */
     public void setSatisfied(boolean satisfied) {
         mIsSatisfied = satisfied;
@@ -246,6 +238,14 @@ public abstract class ListRow extends Row {
     /** @param reason The reason {@link #isSatisfied()} is returning <code>false</code>. */
     public void setReasonForUnsatisfied(String reason) {
         mUnsatisfiedReason = reason;
+    }
+
+    public boolean isEquipment() {
+        return false;
+    }
+
+    public String getDescription() {
+        return EMPTY;
     }
 
     /**

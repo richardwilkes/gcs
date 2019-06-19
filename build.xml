@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project name="com.trollworks.gcs" default="build" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<property name="module.name" value="com.trollworks.gcs"/>
-	<property name="module.version" value="4.11.1"/>
-	<property name="module.version.medium" value="4.11.1"/>
+	<property name="module.version" value="4.12.0"/>
 	<property name="app.name" value="GURPS Character Sheet"/>
     <property name="exe.name" value="gcs"/>
 	<property name="target.version" value="12"/>
@@ -10,7 +9,7 @@
     <property name="dist.dir" value="dist"/>
 	<property name="modules.dir" value="../java_modules"/>
 	<tstamp>
-		<format property="module.version.long" pattern="${module.version.medium}.yyyyMMddHHmmss"/>
+		<format property="module.version.long" pattern="${module.version}.yyyyMMddHHmmss"/>
 	</tstamp>
 	<tstamp>
 		<format property="module.version.year" pattern="yyyy"/>
@@ -106,18 +105,6 @@
     <target name="bundle" depends="deps,build">
         <symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
         <delete dir="${build.dir}"/>
-        <mkdir dir="${build.dir}/icons"/>
-        <exec executable="java">
-            <arg value="--module-path"/>
-            <arg value="${modules.dir}"/>
-            <arg value="--module"/>
-            <arg value="com.trollworks.gcs/com.trollworks.gcs.app.GCSImages"/>
-            <arg if:true="${platform.mac}" value="-icns"/>
-            <arg if:true="${platform.windows}" value="-ico"/>
-            <arg if:true="${platform.linux}" value="-app"/>
-            <arg value="-dir"/>
-            <arg value="${build.dir}/icons"/>
-        </exec>
 
     	<delete dir="${dist.root}"/>
         <property if:true="${platform.mac}" name="dist.content.root" value="${app.root}/${app.name}.app/Contents"/>
@@ -146,8 +133,9 @@
             <arg value="${dist.content.root}"/>
         </java>
         <copy if:true="${platform.mac}" todir="${dist.content.root}/Resources">
-            <fileset dir="${build.dir}/icons"/>
+            <fileset dir="artifacts/icns"/>
         </copy>
+        <copy if:true="${platform.mac}" file="resources/com/trollworks/gcs/app/images/app_1024.png" tofile="${dist.content.root}/Resources/app.png"/>
         <copy if:true="${platform.mac}" file="artifacts/${exe.name}" todir="${dist.content.root}/MacOS"/>
         <copy if:true="${platform.windows}" file="artifacts/${exe.name}.bat" todir="${dist.content.root}"/>
         <copy if:true="${platform.linux}" file="artifacts/${exe.name}" todir="${dist.content.root}"/>

@@ -69,8 +69,6 @@ public class TextTemplate {
     private static final String PARAGRAPH_END                         = "</p>";
     private static final String NEWLINE                               = "\n";
     private static final String COMMA_SEPARATOR                       = ", ";
-    private static final String STRENGTH_NOTE                         = "†";
-    private static final String PLUS                                  = "+";
 
     private static final String KEY_ACCURACY                          = "ACCURACY";
     private static final String KEY_ADVANTAGE_POINTS                  = "ADVANTAGE_POINTS";
@@ -255,7 +253,6 @@ public class TextTemplate {
     private static final String KEY_UNCONSCIOUS                       = "UNCONSCIOUS";
     private static final String KEY_USAGE                             = "USAGE";
     private static final String KEY_VISION                            = "VISION";
-    private static final String KEY_WEAPON_STRENGTH                   = "STRENGTH";
     private static final String KEY_WEAPON_STRENGTH_NUM               = "WEAPON_STRENGTH";
     private static final String KEY_WEIGHT                            = "WEIGHT";
     private static final String KEY_WEIGHT_RAW                        = "WEIGHT_RAW";
@@ -270,8 +267,8 @@ public class TextTemplate {
     private CharacterSheet      mSheet;
     private boolean             mEncodeText                           = true;
     private boolean             mEnhancedKeyParsing                   = false;
-    HashSet<String>             mOnlyCategories                       = new HashSet<String>();
-    HashSet<String>             mExcludedCategories                   = new HashSet<String>();
+    HashSet<String>             mOnlyCategories                       = new HashSet<>();
+    HashSet<String>             mExcludedCategories                   = new HashSet<>();
 
     public static File resolveTextTemplate(File template) {
         if (template == null || !template.isFile() || !template.canRead()) {
@@ -1214,7 +1211,7 @@ public class TextTemplate {
                     return endIndex + KEY_ATTACK_MODES_LOOP_END.length();
                 }
             }
-            return processWeaponKeys(out, key, counter, weapon, index, contents);
+            return processWeaponKeys(out, key, counter, weapon, index);
         }
     }
 
@@ -1248,14 +1245,14 @@ public class TextTemplate {
                     return endIndex + KEY_ATTACK_MODES_LOOP_END.length();
                 }
             }
-            return processWeaponKeys(out, key, counter, weapon, index, contents);
+            return processWeaponKeys(out, key, counter, weapon, index);
         }
     }
 
-    /* Break out handling of general weapons information.  Anything known by WeaponStats or the equipment.  */
-    private int processWeaponKeys(BufferedWriter out, String key, int counter, WeaponStats weapon, int index, String contents) throws IOException {
+    /* Break out handling of general weapons information. Anything known by WeaponStats or the equipment.  */
+    private int processWeaponKeys(BufferedWriter out, String key, int counter, WeaponStats weapon, int index) throws IOException {
         Equipment equipment = null;
-        if (weapon.getOwner().isEquipment()) {
+        if (weapon.getOwner() instanceof Equipment) {
             equipment = (Equipment) weapon.getOwner();
         }
         if (!processDescription(key, out, weapon)) {
@@ -1320,14 +1317,14 @@ public class TextTemplate {
         StringBuilder                                keyBuffer        = new StringBuilder();
         boolean                                      lookForKeyMarker = true;
         int                                          counter          = 0;
-        HashMap<String, ArrayList<MeleeWeaponStats>> weaponsMap       = new HashMap();
-        HashMap<String, MeleeWeaponStats>            weapons          = new HashMap();
+        HashMap<String, ArrayList<MeleeWeaponStats>> weaponsMap       = new HashMap<>();
+        HashMap<String, MeleeWeaponStats>            weapons          = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
             weapons.put(weapon.getDescription(), weapon);
             ArrayList<MeleeWeaponStats> attackModes = weaponsMap.get(weapon.getDescription());
             if (attackModes == null) {
-                attackModes = new ArrayList<MeleeWeaponStats>();
+                attackModes = new ArrayList<>();
                 weaponsMap.put(weapon.getDescription(), attackModes);
             }
             attackModes.add(weapon);
@@ -1369,14 +1366,14 @@ public class TextTemplate {
         StringBuilder                                 keyBuffer        = new StringBuilder();
         boolean                                       lookForKeyMarker = true;
         int                                           counter          = 0;
-        HashMap<String, ArrayList<RangedWeaponStats>> weaponsMap       = new HashMap();
-        HashMap<String, RangedWeaponStats>            weapons          = new HashMap();
+        HashMap<String, ArrayList<RangedWeaponStats>> weaponsMap       = new HashMap<>();
+        HashMap<String, RangedWeaponStats>            weapons          = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
             weapons.put(weapon.getDescription(), weapon);
             ArrayList<RangedWeaponStats> attackModes = weaponsMap.get(weapon.getDescription());
             if (attackModes == null) {
-                attackModes = new ArrayList<RangedWeaponStats>();
+                attackModes = new ArrayList<>();
                 weaponsMap.put(weapon.getDescription(), attackModes);
             }
             attackModes.add(weapon);
@@ -1563,9 +1560,9 @@ public class TextTemplate {
         int                  counter          = 0;
         // Create child-to-parent maps to determine where items are being stored.
         // Used by KEY_LOCATION
-        ArrayList<List<Row>> children         = new ArrayList();
-        ArrayList<Equipment> parents          = new ArrayList();
-        ArrayList<Equipment> equipmentList    = new ArrayList();
+        ArrayList<List<Row>> children         = new ArrayList<>();
+        ArrayList<Equipment> parents          = new ArrayList<>();
+        ArrayList<Equipment> equipmentList    = new ArrayList<>();
         for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
             if (shouldInclude(equipment)) {   // Allows category filtering
                 equipmentList.add(equipment);
