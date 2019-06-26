@@ -539,7 +539,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     private void updateContainingWeights(boolean okToNotify) {
         Row parent = this;
-        while (parent != null && parent.isEquipment()) {
+        while (parent != null && parent instanceof Equipment) {
             Equipment parentRow = (Equipment) parent;
             if (parentRow.updateExtendedWeight(okToNotify)) {
                 parent = parentRow.getParent();
@@ -568,7 +568,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     private void updateContainingValues(boolean okToNotify) {
         Row parent = this;
-        while (parent != null && parent.isEquipment()) {
+        while (parent != null && parent instanceof Equipment) {
             Equipment parentRow = (Equipment) parent;
             if (parentRow.updateExtendedValue(okToNotify)) {
                 parent = parentRow.getParent();

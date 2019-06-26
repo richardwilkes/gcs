@@ -462,7 +462,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             mPointsField.addActionListener(this);
 
             if (forCharacter) {
-                mLevelField = createField(panel, panel, EDITOR_LEVEL, getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), EDITOR_LEVEL_TOOLTIP, 7);
+                mLevelField = createField(panel, panel, EDITOR_LEVEL, getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), EDITOR_LEVEL_TOOLTIP + ".\n" + mRow.getToolTip(), 7);  //$NON-NLS-1$
                 mLevelField.setEnabled(false);
             }
         }

@@ -152,8 +152,7 @@ public class Spell extends ListRow implements HasSourceReference {
     private String                 mCastingTime;
     private String                 mDuration;
     private int                    mPoints;
-    private int                    mLevel;
-    private int                    mRelativeLevel;
+    private SkillLevel             mLevel;
     private SkillAttribute         mAttribute;
     private String                 mReference;
     private boolean                mIsVeryHard;
@@ -253,7 +252,7 @@ public class Spell extends ListRow implements HasSourceReference {
         }
         if (obj instanceof Spell && super.isEquivalentTo(obj)) {
             Spell row = (Spell) obj;
-            if (mIsVeryHard == row.mIsVeryHard && mPoints == row.mPoints && mLevel == row.mLevel && mAttribute == row.mAttribute && mRelativeLevel == row.mRelativeLevel) {
+            if (mIsVeryHard == row.mIsVeryHard && mPoints == row.mPoints && mLevel.isSameLevelAs(row.mLevel) && mAttribute == row.mAttribute) {
                 if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
                     if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mPowerSource.equals(row.mPowerSource) && mSpellClass.equals(row.mSpellClass) && mReference.equals(row.mReference)) {
                         if (mCastingCost.equals(row.mCastingCost) && mMaintenance.equals(row.mMaintenance) && mCastingTime.equals(row.mCastingTime) && mDuration.equals(row.mDuration)) {
@@ -451,12 +450,12 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return The level. */
     public int getLevel() {
-        return mLevel;
+        return mLevel.getLevel();
     }
 
     /** @return The relative level. */
     public int getRelativeLevel() {
-        return mRelativeLevel;
+        return mLevel.getRelativeLevel();
     }
 
     /**
@@ -465,14 +464,9 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param notify Whether or not a notification should be issued on a change.
      */
     public void updateLevel(boolean notify) {
-        int        savedLevel         = mLevel;
-        int        savedRelativeLevel = mRelativeLevel;
-        SkillLevel level              = calculateLevelSelf();
-
-        mLevel         = level.mLevel;
-        mRelativeLevel = level.mRelativeLevel;
-
-        if (notify && (savedLevel != mLevel || savedRelativeLevel != mRelativeLevel)) {
+        SkillLevel savedLevel = mLevel;
+        mLevel = calculateLevelSelf();
+        if (notify && (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel))) {
             notify(ID_LEVEL, this);
         }
     }
@@ -756,9 +750,13 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     public String getToolTip(Column column) {
         if (SpellColumn.values()[column.getID()].showToolTip()) {
-            return calculateLevelSelf().getToolTip();
+            return getToolTip();
         }
         return super.getToolTip(column);
+    }
+
+    public String getToolTip() {
+        return mLevel.getToolTip();
     }
 
     @Override

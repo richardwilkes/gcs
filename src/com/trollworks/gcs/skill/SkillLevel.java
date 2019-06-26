@@ -48,4 +48,26 @@ public class SkillLevel {
         mToolTip       = toolTip;
     }
 
+    /** @return The level. */
+    public int getLevel() {
+        return mLevel;
+    }
+
+    /** @return The relativeLevel. */
+    public int getRelativeLevel() {
+        return mRelativeLevel;
+    }
+
+    public boolean isDifferentLevelThan(SkillLevel other) {
+        return mLevel != other.mLevel;
+    }
+
+    public boolean isDifferentRelativeLevelThan(SkillLevel other) {
+        return mRelativeLevel != other.mRelativeLevel;
+    }
+
+    public boolean isSameLevelAs(SkillLevel other) {
+        return mLevel == other.mLevel && mRelativeLevel == other.mRelativeLevel;
+    }
+
 }

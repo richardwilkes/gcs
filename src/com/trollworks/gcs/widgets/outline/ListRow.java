@@ -682,4 +682,12 @@ public abstract class ListRow extends Row {
         }
         return false;
     }
+
+    public boolean isEquipment() {
+        return false;
+    }
+
+    public boolean isAdvantage() {
+        return false;
+    }
 }

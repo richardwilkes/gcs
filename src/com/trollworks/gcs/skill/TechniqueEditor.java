@@ -398,7 +398,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         mPointsField.addActionListener(this);
 
         if (forCharacter) {
-            mLevelField = createField(parent, parent, EDITOR_LEVEL, Technique.getTechniqueDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getDefault().getModifier()), EDITOR_LEVEL_TOOLTIP, 6);
+            mLevelField = createField(parent, parent, EDITOR_LEVEL, Technique.getTechniqueDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getDefault().getModifier()), EDITOR_LEVEL_TOOLTIP + ".\n" + mRow.getToolTip(), 6);  //$NON-NLS-1$
             mLevelField.setEnabled(false);
         }
     }

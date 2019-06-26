@@ -340,7 +340,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         mPointsField.addActionListener(this);
 
         if (forCharacter) {
-            mLevelField = createField(parent, parent, EDITOR_LEVEL, Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), EDITOR_LEVEL_TOOLTIP, 8);
+            mLevelField = createField(parent, parent, EDITOR_LEVEL, Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), EDITOR_LEVEL_TOOLTIP + ".\n" + mRow.getToolTip(), 8);  //$NON-NLS-1$
             mLevelField.setEnabled(false);
         }
     }

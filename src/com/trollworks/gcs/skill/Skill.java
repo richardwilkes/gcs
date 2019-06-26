@@ -121,8 +121,7 @@ public class Skill extends ListRow implements HasSourceReference {
     private String                 mName;
     private String                 mSpecialization;
     private String                 mTechLevel;
-    private int                    mLevel;
-    private int                    mRelativeLevel;
+    private SkillLevel             mLevel;
     private SkillAttribute         mAttribute;
     private SkillDifficulty        mDifficulty;
     /** The points spent. */
@@ -238,18 +237,16 @@ public class Skill extends ListRow implements HasSourceReference {
         }
         if (obj instanceof Skill && getClass() == obj.getClass() && super.isEquivalentTo(obj)) {
             Skill row = (Skill) obj;
-            if (mLevel == row.mLevel) {
+            if (mLevel.isSameLevelAs(row.mLevel)) {
                 if (mPoints == row.mPoints) {
                     if (mEncumbrancePenaltyMultiplier == row.mEncumbrancePenaltyMultiplier) {
-                        if (mRelativeLevel == row.mRelativeLevel) {
-                            if (mAttribute == row.mAttribute) {
-                                if (mDifficulty == row.mDifficulty) {
-                                    if (mName.equals(row.mName)) {
-                                        if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
-                                            if (mSpecialization.equals(row.mSpecialization)) {
-                                                if (mReference.equals(row.mReference)) {
-                                                    return mWeapons.equals(row.mWeapons);
-                                                }
+                        if (mAttribute == row.mAttribute) {
+                            if (mDifficulty == row.mDifficulty) {
+                                if (mName.equals(row.mName)) {
+                                    if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
+                                        if (mSpecialization.equals(row.mSpecialization)) {
+                                            if (mReference.equals(row.mReference)) {
+                                                return mWeapons.equals(row.mWeapons);
                                             }
                                         }
                                     }
@@ -396,12 +393,16 @@ public class Skill extends ListRow implements HasSourceReference {
 
     /** @return The level. */
     public int getLevel() {
-        return mLevel;
+        return mLevel.getLevel();
     }
 
     /** @return The relative level. */
     public int getRelativeLevel() {
-        return mRelativeLevel;
+        return mLevel.getRelativeLevel();
+    }
+
+    public String getToolTip() {
+        return mLevel.getToolTip();
     }
 
     /** @return The name. */
@@ -494,19 +495,15 @@ public class Skill extends ListRow implements HasSourceReference {
      * @param notify Whether or not a notification should be issued on a change.
      */
     public void updateLevel(boolean notify) {
-        int        savedLevel         = mLevel;
-        int        savedRelativeLevel = mRelativeLevel;
-        SkillLevel level              = calculateLevelSelf();
-
-        mLevel         = level.mLevel;
-        mRelativeLevel = level.mRelativeLevel;
+        SkillLevel savedLevel = mLevel;
+        mLevel = calculateLevelSelf();
 
         if (notify) {
             startNotify();
-            if (savedLevel != mLevel) {
+            if (savedLevel.isDifferentLevelThan(mLevel)) {
                 notify(ID_LEVEL, this);
             }
-            if (savedRelativeLevel != mRelativeLevel) {
+            if (savedLevel.isDifferentRelativeLevelThan(mLevel)) {
                 notify(ID_RELATIVE_LEVEL, this);
             }
             endNotify();
@@ -563,7 +560,7 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     public String getToolTip(Column column) {
         if (SkillColumn.values()[column.getID()].showToolTip()) {
-            return calculateLevelSelf().getToolTip();
+            return getToolTip();
         }
         return super.getToolTip(column);
     }
