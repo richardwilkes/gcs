@@ -615,6 +615,11 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return getName();
     }
 
+    @Override
+    public boolean isAdvantage() {
+        return true;
+    }
+
     /** @return <code>true</code> if this {@link Advantage} is enabled. */
     @Override
     public boolean isEnabled() {

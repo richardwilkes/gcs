@@ -181,4 +181,14 @@ public class WeaponBonus extends Bonus {
         mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
         mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
     }
+
+    @Override
+    public boolean isWeaponBonus() {
+        return true;
+    }
+
+    @Override
+    public String getToolTipAmount() {
+        return getAmount().getAmountAsWeaponBonus();
+    }
 }

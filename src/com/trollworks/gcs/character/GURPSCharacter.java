@@ -2668,19 +2668,15 @@ public class GURPSCharacter extends DataFile {
      * @param tooTip The StringBuilder used to explain how the level was calculated
      * @return The bonus.
      */
-
     public int getIntegerBonusFor(String id, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
+                if (feature.isBonus() && !feature.isWeaponBonus()) {
                     Bonus bonus = (Bonus) feature;
                     total += bonus.getAmount().getIntegerAdjustedAmount();
-                    ;
-                    if (toolTip != null) {
-                        toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsString()).append("]"); //$NON-NLS-1$
-                    }
+                    bonus.addToToolTip(toolTip);
                 }
             }
         }
@@ -2709,13 +2705,11 @@ public class GURPSCharacter extends DataFile {
             ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
             if (list != null) {
                 for (Feature feature : list) {
-                    if (feature instanceof WeaponBonus) {
+                    if (feature.isWeaponBonus()) {
                         WeaponBonus bonus = (WeaponBonus) feature;
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl) && bonus.matchesCategories(categories)) {
                             bonuses.add(bonus);
-                            if (toolTip != null) {
-                                toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsWeaponBonus()).append("]"); //$NON-NLS-1$
-                            }
+                            bonus.addToToolTip(toolTip);
                         }
                     }
                 }
@@ -2748,14 +2742,11 @@ public class GURPSCharacter extends DataFile {
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof SkillBonus) {
+                if (feature.isSkillBonus()) {
                     SkillBonus bonus = (SkillBonus) feature;
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
-                        ;
-                        if (toolTip != null) {
-                            toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsString()).append("]"); //$NON-NLS-1$
-                        }
+                        bonus.addToToolTip(toolTip);
                     }
                 }
             }
@@ -2773,14 +2764,11 @@ public class GURPSCharacter extends DataFile {
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof SpellBonus) {
+                if (feature.isSpellBonus()) {
                     SpellBonus bonus = (SpellBonus) feature;
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.matchesCategories(categories)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
-                        ;
-                        if (toolTip != null) {
-                            toolTip.append("\n").append(bonus.getParent()).append(" [").append(bonus.getAmount().getAmountAsString()).append("]"); //$NON-NLS-1$
-                        }
+                        bonus.addToToolTip(toolTip);
                     }
                 }
             }
@@ -2797,7 +2785,7 @@ public class GURPSCharacter extends DataFile {
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
+                if (feature.isBonus() && !feature.isWeaponBonus()) {
                     total += ((Bonus) feature).getAmount().getAdjustedAmount();
                 }
             }

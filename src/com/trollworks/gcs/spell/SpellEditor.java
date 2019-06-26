@@ -583,6 +583,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             SkillAttribute attribute = getAttribute();
             SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), mCategoriesField.getText());
             mLevelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
+            mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_LEVEL_TOOLTIP + ".\n" + level.getToolTip()));  //$NON-NLS-1$
         }
     }
 

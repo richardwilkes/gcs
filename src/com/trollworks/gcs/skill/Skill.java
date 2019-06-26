@@ -53,7 +53,7 @@ public class Skill extends ListRow implements HasSourceReference {
     @Localize(locale = "ru", value = "По умолчанию: ")
     @Localize(locale = "es", value = "Valore por defecto: ")
     static String DEFAULTED_FROM;
-    @Localize("Encumberance ")
+    @Localize("Encumbrance ")
     @Localize(locale = "de", value = "Belastung ")
     @Localize(locale = "ru", value = "Oбременение ")
     @Localize(locale = "es", value = "Entumecimiento ")

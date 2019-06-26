@@ -1252,7 +1252,7 @@ public class TextTemplate {
     /* Break out handling of general weapons information. Anything known by WeaponStats or the equipment.  */
     private int processWeaponKeys(BufferedWriter out, String key, int counter, WeaponStats weapon, int index) throws IOException {
         Equipment equipment = null;
-        if (weapon.getOwner() instanceof Equipment) {
+        if (weapon.getOwner().isEquipment()) {
             equipment = (Equipment) weapon.getOwner();
         }
         if (!processDescription(key, out, weapon)) {

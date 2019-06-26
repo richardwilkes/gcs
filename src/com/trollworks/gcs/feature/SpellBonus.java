@@ -234,4 +234,8 @@ public class SpellBonus extends Bonus {
         return super.toString() + " (name:" + mNameCriteria + ", match type:" + mMatchType + ", category:" + mCategoryCriteria + ", allColleges:" + mAllColleges + ")";  //$NON-NLS-1$
     }
 
+    @Override
+    public boolean isSpellBonus() {
+        return true;
+    }
 }

@@ -165,7 +165,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
     private void buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) throws Exception {
         while (iterator.hasNext()) {
             ListRow row = iterator.next();
-            if (row instanceof Equipment) {
+            if (row.isEquipment()) {
                 Equipment equipment = (Equipment) row;
                 if (!equipment.isEquipped() || equipment.getQuantity() < 1) {
                     // Don't allow unequipped equipment to affect the character
@@ -173,23 +173,23 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
                 }
             }
             for (Feature feature : row.getFeatures()) {
-                processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
-                if (feature instanceof Bonus) {
-                    ((Bonus) feature).setParent(row.toString());
+                processFeature(map, row.isAdvantage() ? ((Advantage) row).getLevels() : 0, feature);
+                if (feature.isBonus()) {
+                    ((Bonus) feature).setParent(row);
                 }
             }
-            if (row instanceof Advantage) {
+            if (row.isAdvantage()) {
                 Advantage advantage = (Advantage) row;
                 for (Bonus bonus : advantage.getCRAdj().getBonuses(advantage.getCR())) {
                     processFeature(map, 0, bonus);
-                    bonus.setParent(row.toString());
+                    bonus.setParent(row);
                 }
                 for (Modifier modifier : advantage.getModifiers()) {
                     if (modifier.isEnabled()) {
                         for (Feature feature : modifier.getFeatures()) {
                             processFeature(map, modifier.getLevels(), feature);
-                            if (feature instanceof Bonus) {
-                                ((Bonus) feature).setParent(row.toString());
+                            if (feature.isBonus()) {
+                                ((Bonus) feature).setParent(row);
                             }
                         }
                     }
@@ -206,7 +206,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
             list = new ArrayList<>(1);
             map.put(key, list);
         }
-        if (feature instanceof Bonus) {
+        if (feature.isBonus()) {
             ((Bonus) feature).getAmount().setLevel(levels);
         }
         list.add(feature);

@@ -40,7 +40,7 @@ public class CostReduction implements Feature {
 
     /**
      * Creates a clone of the specified cost reduction.
-     * 
+     *
      * @param other The bonus to clone.
      */
     public CostReduction(CostReduction other) {
@@ -50,7 +50,7 @@ public class CostReduction implements Feature {
 
     /**
      * Loads a {@link CostReduction}.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     public CostReduction(XMLReader reader) throws IOException {
@@ -97,7 +97,7 @@ public class CostReduction implements Feature {
 
     /**
      * Loads a cost reduction.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     protected void load(XMLReader reader) throws IOException {
@@ -149,5 +149,25 @@ public class CostReduction implements Feature {
     @Override
     public void applyNameableKeys(HashMap<String, String> map) {
         // Nothing to do.
+    }
+
+    @Override
+    public boolean isBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isWeaponBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isSpellBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isSkillBonus() {
+        return false;
     }
 }

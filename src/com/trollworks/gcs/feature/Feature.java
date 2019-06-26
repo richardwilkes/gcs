@@ -29,7 +29,7 @@ public interface Feature {
 
     /**
      * Saves the feature.
-     * 
+     *
      * @param out The XML writer to use.
      */
     void save(XMLWriter out);
@@ -39,4 +39,12 @@ public interface Feature {
 
     /** @param map The map of nameable keys to names to apply. */
     void applyNameableKeys(HashMap<String, String> map);
+
+    boolean isBonus();
+
+    boolean isWeaponBonus();
+
+    boolean isSpellBonus();
+
+    boolean isSkillBonus();
 }

@@ -197,4 +197,24 @@ public class ContainedWeightReduction implements Feature {
     public void applyNameableKeys(HashMap<String, String> map) {
         // Nothing to do.
     }
+
+    @Override
+    public boolean isBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isWeaponBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isSpellBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isSkillBonus() {
+        return false;
+    }
 }

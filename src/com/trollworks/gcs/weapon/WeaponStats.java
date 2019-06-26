@@ -219,6 +219,7 @@ public abstract class WeaponStats {
         return mDamage;
     }
 
+    /** @return The damage, fully resolved for the user's sw or thr, if possible. */
     public String getResolvedDamage() {
         return getResolvedDamage(null);
     }

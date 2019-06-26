@@ -174,4 +174,8 @@ public class SkillBonus extends Bonus {
         return super.toString() + " (name:" + mNameCriteria + ", specialization:" + mSpecializationCriteria + ", category:" + mCategoryCriteria + ")";  //$NON-NLS-1$
     }
 
+    @Override
+    public boolean isSkillBonus() {
+        return true;
+    }
 }

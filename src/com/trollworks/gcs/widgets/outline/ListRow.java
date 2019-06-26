@@ -240,10 +240,6 @@ public abstract class ListRow extends Row {
         mUnsatisfiedReason = reason;
     }
 
-    public boolean isEquipment() {
-        return false;
-    }
-
     public String getDescription() {
         return EMPTY;
     }

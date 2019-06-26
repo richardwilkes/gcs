@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -33,7 +34,7 @@ public abstract class Bonus implements Feature {
 
     private LeveledAmount      mAmount;
     // The "parent" thing that is providing this particular bonus (for information only).
-    private String             mParent;
+    private ListRow            mParent;
 
     /**
      * Creates a new bonus.
@@ -62,12 +63,16 @@ public abstract class Bonus implements Feature {
         mAmount = new LeveledAmount(other.mAmount);
     }
 
-    public void setParent(String name) {
-        mParent = name;
+    public void setParent(ListRow parent) {
+        mParent = parent;
     }
 
-    public String getParent() {
-        return mParent == null ? UNKNOWN : mParent;
+    public ListRow getParent() {
+        return mParent;
+    }
+
+    public String getParentName() {
+        return mParent == null ? UNKNOWN : mParent.toString();
     }
 
     @Override
@@ -135,5 +140,35 @@ public abstract class Bonus implements Feature {
     @Override
     public String toString() {
         return super.toString() + " (" + mAmount.getAmountAsString() + ", parent:" + mParent + ")";  //$NON-NLS-1$
+    }
+
+    public void addToToolTip(StringBuilder toolTip) {
+        if (toolTip != null) {
+            toolTip.append("\n").append(getParentName()).append(" [").append(getToolTipAmount()).append("]"); //$NON-NLS-1$
+        }
+    }
+
+    public String getToolTipAmount() {
+        return getAmount().getAmountAsString();
+    }
+
+    @Override
+    public boolean isBonus() {
+        return true;
+    }
+
+    @Override
+    public boolean isWeaponBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isSpellBonus() {
+        return false;
+    }
+
+    @Override
+    public boolean isSkillBonus() {
+        return false;
     }
 }
