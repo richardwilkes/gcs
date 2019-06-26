@@ -868,10 +868,17 @@ public class TextTemplate {
                             // Assume Vitals uses the same equipment as Torso
                             locationKey = HitLocation.TORSO.getKey();
                         }
+                        boolean showEquipment = ((DRBonus) feature).getLocation() == com.trollworks.gcs.feature.HitLocation.FULL_BODY;
+                        if (((DRBonus) feature).getLocation() == com.trollworks.gcs.feature.HitLocation.FULL_BODY_EXCEPT_EYES) {
+                            showEquipment = !locationKey.equals(HitLocation.EYE.getKey());
+                        }
                         if (locationKey.endsWith(((DRBonus) feature).getLocation().name())) {
                             // HUGE Kludge. Only way I could equate the 2
                             // different HitLocations. I know that one is derived
                             // from the other, so this check will ALWAYS work.
+                            showEquipment = true;
+                        }
+                        if (showEquipment) {
                             if (!first) {
                                 sb.append("\n");
                             }
