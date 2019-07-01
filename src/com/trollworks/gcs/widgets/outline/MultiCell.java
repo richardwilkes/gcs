@@ -205,7 +205,6 @@ public class MultiCell implements Cell {
         return Cursor.getDefaultCursor();
     }
 
-    /** Allow a satified row to display a tooltip */
     @Override
     public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
         ListRow theRow = (ListRow) row;
