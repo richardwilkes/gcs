@@ -205,15 +205,11 @@ public class MultiCell implements Cell {
         return Cursor.getDefaultCursor();
     }
 
-    /** Allow a satified row to display a tooltip */
+    /** Allow a satisfied row to display a tooltip */
     @Override
     public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
         ListRow theRow = (ListRow) row;
-        if (theRow.isSatisfied()) {
-            return getToolTip(row, column);
-        } else {
-            return theRow.getReasonForUnsatisfied();
-        }
+        return theRow.isSatisfied() ? getToolTip(row, column) : theRow.getReasonForUnsatisfied();
     }
 
     protected String getToolTip(Row row, Column column) {
