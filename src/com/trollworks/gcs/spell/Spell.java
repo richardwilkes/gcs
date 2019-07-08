@@ -842,4 +842,14 @@ public class Spell extends ListRow implements HasSourceReference {
     protected String getCategoryID() {
         return ID_CATEGORY;
     }
+
+    @Override
+    public boolean alwaysShowToolTip(Column column) {
+        return SpellColumn.values()[column.getID()].showToolTip();
+    }
+
+    @Override
+    public String getToolTip(Column column) {
+        return SpellColumn.values()[column.getID()].getToolTip(this);
+    }
 }

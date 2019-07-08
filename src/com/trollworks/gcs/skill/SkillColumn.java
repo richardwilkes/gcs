@@ -449,4 +449,12 @@ public enum SkillColumn {
             }
         }
     }
+
+    public boolean showToolTip() {
+        return false;
+    }
+
+    public String getToolTip(Skill skill) {
+        return getToolTip();
+    }
 }

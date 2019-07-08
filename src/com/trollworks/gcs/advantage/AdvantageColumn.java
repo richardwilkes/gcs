@@ -333,4 +333,13 @@ public enum AdvantageColumn {
             }
         }
     }
+
+    public boolean showToolTip() {
+        return false;
+    }
+
+    public String getToolTip(Advantage advantage) {
+        return getToolTip();
+    }
+
 }

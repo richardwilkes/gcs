@@ -939,4 +939,14 @@ public class Skill extends ListRow implements HasSourceReference {
     public Skill getDefaultSkill() {
         return getBaseSkill(getCharacter(), mDefaultedFrom);
     }
+
+    @Override
+    public boolean alwaysShowToolTip(Column column) {
+        return SkillColumn.values()[column.getID()].showToolTip();
+    }
+
+    @Override
+    public String getToolTip(Column column) {
+        return SkillColumn.values()[column.getID()].getToolTip(this);
+    }
 }

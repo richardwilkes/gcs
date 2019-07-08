@@ -621,4 +621,12 @@ public enum EquipmentColumn {
         }
         return weight;
     }
+
+    public boolean showToolTip() {
+        return false;
+    }
+
+    public String getToolTip(Equipment equipment) {
+        return getToolTip();
+    }
 }

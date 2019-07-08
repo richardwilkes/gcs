@@ -524,4 +524,12 @@ public enum SpellColumn {
             }
         }
     }
+
+    public boolean showToolTip() {
+        return false;
+    }
+
+    public String getToolTip(Spell spell) {
+        return getToolTip();
+    }
 }
