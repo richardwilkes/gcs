@@ -1084,4 +1084,14 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     protected String getCategoryID() {
         return ID_CATEGORY;
     }
+
+    @Override
+    public boolean alwaysShowToolTip(Column column) {
+        return AdvantageColumn.values()[column.getID()].showToolTip();
+    }
+
+    @Override
+    public String getToolTip(Column column) {
+        return AdvantageColumn.values()[column.getID()].getToolTip(this);
+    }
 }

@@ -583,4 +583,12 @@ public enum WeaponColumn {
             }
         }
     }
+
+    public boolean showToolTip() {
+        return false;
+    }
+
+    public String getToolTip(WeaponDisplayRow weapon) {
+        return getToolTip();
+    }
 }
