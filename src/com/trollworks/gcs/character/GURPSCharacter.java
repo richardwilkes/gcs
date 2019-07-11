@@ -2660,12 +2660,23 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getIntegerBonusFor(String id) {
+        return getIntegerBonusFor(id, null);
+    }
+
+    /**
+     * @param id      The feature ID to search for.
+     * @param toolTip The toolTip being built.
+     * @return The bonus.
+     */
+    public int getIntegerBonusFor(String id, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
-                    total += ((Bonus) feature).getAmount().getIntegerAdjustedAmount();
+                    Bonus bonus = (Bonus) feature;
+                    total += bonus.getAmount().getIntegerAdjustedAmount();
+                    bonus.addToToolTip(toolTip);
                 }
             }
         }
@@ -2713,6 +2724,17 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier) {
+        return getSkillComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, null);
+    }
+
+    /**
+     * @param id                      The feature ID to search for.
+     * @param nameQualifier           The name qualifier.
+     * @param specializationQualifier The specialization qualifier.
+     * @param toolTip                 The toolTip being built
+     * @return The bonus.
+     */
+    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
@@ -2721,6 +2743,7 @@ public class GURPSCharacter extends DataFile {
                     SkillBonus bonus = (SkillBonus) feature;
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
+                        bonus.addToToolTip(toolTip);
                     }
                 }
             }

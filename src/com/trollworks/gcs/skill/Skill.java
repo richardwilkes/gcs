@@ -401,6 +401,7 @@ public class Skill extends ListRow implements HasSourceReference {
         return mLevel.getRelativeLevel();
     }
 
+    /** @return The tooltTip to describe how the level was calculated */
     public String getLevelToolTip() {
         return mLevel.getToolTip();
     }
@@ -716,8 +717,9 @@ public class Skill extends ListRow implements HasSourceReference {
      * @return The calculated skill level.
      */
     public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
-        int relativeLevel = difficulty.getBaseRelativeLevel();
-        int level         = attribute.getBaseSkillLevel(character);
+        StringBuilder toolTip       = new StringBuilder();
+        int           relativeLevel = difficulty.getBaseRelativeLevel();
+        int           level         = attribute.getBaseSkillLevel(character);
         if (level != Integer.MIN_VALUE) {
             if (difficulty != SkillDifficulty.W) {
                 if (mDefaultedFrom != null && mDefaultedFrom.getPoints() > 0) {
@@ -744,17 +746,21 @@ public class Skill extends ListRow implements HasSourceReference {
                     }
                 }
                 if (character != null) {
-                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization);
+                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization, toolTip);
                     level         += bonus;
                     relativeLevel += bonus;
-                    bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+                    bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase(), toolTip);
                     level         += bonus;
                     relativeLevel += bonus;
-                    level         += character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                    bonus          = character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                    level         += bonus;
+                    if (bonus != 0) {
+                        toolTip.append("\n").append(ENCUMBRANCE).append(" [").append(bonus).append("]");  //$NON-NLS-1$
+                    }
                 }
             }
         }
-        return new SkillLevel(level, relativeLevel);
+        return new SkillLevel(level, relativeLevel, toolTip);
     }
 
     /**

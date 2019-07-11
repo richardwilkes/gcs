@@ -143,6 +143,16 @@ public enum SkillColumn {
             }
             return Numbers.format(level);
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
+        @Override
+        public String getToolTip(Skill skill) {
+            return skill.getLevelToolTip();
+        }
     },
     /** The relative skill level. */
     RELATIVE_LEVEL {
@@ -228,6 +238,16 @@ public enum SkillColumn {
                 return builder.toString();
             }
             return ""; //$NON-NLS-1$
+        }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
+        @Override
+        public String getToolTip(Skill skill) {
+            return skill.getLevelToolTip();
         }
     },
     /** The points spent in the skill. */

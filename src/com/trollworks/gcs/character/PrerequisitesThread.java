@@ -174,6 +174,9 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
             }
             for (Feature feature : row.getFeatures()) {
                 processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
+                if (feature instanceof Bonus) {
+                    ((Bonus) feature).setParent(row);
+                }
             }
             if (row instanceof Advantage) {
                 Advantage advantage = (Advantage) row;
