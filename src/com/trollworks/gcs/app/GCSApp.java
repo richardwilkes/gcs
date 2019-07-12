@@ -20,6 +20,7 @@ import com.trollworks.gcs.menu.item.ItemMenuProvider;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.ReferenceLookupPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.SystemPreferences;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
@@ -67,6 +68,7 @@ public class GCSApp extends App {
         PreferencesWindow.addCategory(FontPreferences::new);
         PreferencesWindow.addCategory(MenuKeyPreferences::new);
         PreferencesWindow.addCategory(ReferenceLookupPreferences::new);
+        PreferencesWindow.addCategory(SystemPreferences::new);
     }
 
     @Override
