@@ -11,8 +11,26 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.utility.Localization;
+
 /** Provides simple storage for the skill level/relative level pair. */
 public class SkillLevel {
+    @Localize("Includes modifiers from")
+    @Localize(locale = "de", value = "Enthält Modifikatoren von")
+    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
+    @Localize(locale = "es", value = "Incluye modificadores de")
+    static String INCLUDES;
+    @Localize("No additional modifiers")
+    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
+    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
+    @Localize(locale = "es", value = "No hay modificadores adicionales")
+    static String NO_MODIFIERS;
+
+    static {
+        Localization.initialize();
+    }
+
     /** The skill level. */
     public int    mLevel;
     /** The relative skill level. */
@@ -21,7 +39,7 @@ public class SkillLevel {
     public String mToolTip;
 
     public String getToolTip() {
-        return mToolTip == null ? "" : mToolTip;
+        return mToolTip;
     }
 
     /**
@@ -33,6 +51,7 @@ public class SkillLevel {
     public SkillLevel(int level, int relativeLevel) {
         mLevel         = level;
         mRelativeLevel = relativeLevel;
+        mToolTip       = NO_MODIFIERS;
     }
 
     /**
@@ -40,12 +59,15 @@ public class SkillLevel {
      *
      * @param level         The skill level.
      * @param relativeLevel The relative skill level.
-     * @param tip           The tooltip to display for this skill.
+     * @param toolTip       The tooltip to display for this skill.
      */
-    public SkillLevel(int level, int relativeLevel, String toolTip) {
+    public SkillLevel(int level, int relativeLevel, StringBuilder toolTip) {
         mLevel         = level;
         mRelativeLevel = relativeLevel;
-        mToolTip       = toolTip;
+        mToolTip       = NO_MODIFIERS;
+        if (toolTip != null && toolTip.length() > 0) {
+            mToolTip = INCLUDES + toolTip.toString();
+        }
     }
 
     /** @return The level. */

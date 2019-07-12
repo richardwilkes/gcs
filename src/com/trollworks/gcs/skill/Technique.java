@@ -72,8 +72,9 @@ public class Technique extends Skill {
      * @return The calculated technique level.
      */
     public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
-        int relativeLevel = 0;
-        int level         = Integer.MIN_VALUE;
+        StringBuilder toolTip       = new StringBuilder();
+        int           relativeLevel = 0;
+        int           level         = Integer.MIN_VALUE;
         if (character != null) {
             level = getBaseLevel(character, def);
             if (level != Integer.MIN_VALUE) {
@@ -86,7 +87,7 @@ public class Technique extends Skill {
                     relativeLevel = points;
                 }
                 if (level != Integer.MIN_VALUE) {
-                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase()) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization); //$NON-NLS-1$ //$NON-NLS-2$
+                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, toolTip); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 if (limited) {
                     int max = baseLevel + limitModifier;
@@ -97,7 +98,7 @@ public class Technique extends Skill {
                 }
             }
         }
-        return new SkillLevel(level, relativeLevel);
+        return new SkillLevel(level, relativeLevel, toolTip);
     }
 
     private static int getBaseLevel(GURPSCharacter character, SkillDefault def) {
