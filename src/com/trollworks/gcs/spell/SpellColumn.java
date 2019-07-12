@@ -232,6 +232,16 @@ public enum SpellColumn {
             }
             return Numbers.format(level);
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
+        @Override
+        public String getToolTip(Spell spell) {
+            return spell.getLevelToolTip();
+        }
     },
     /** The relative spell level. */
     RELATIVE_LEVEL {
@@ -283,6 +293,16 @@ public enum SpellColumn {
                 return spell.getAttribute().toString() + Numbers.formatWithForcedSign(level);
             }
             return ""; //$NON-NLS-1$
+        }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
+        @Override
+        public String getToolTip(Spell spell) {
+            return spell.getLevelToolTip();
         }
     },
     /** The points spent in the spell. */

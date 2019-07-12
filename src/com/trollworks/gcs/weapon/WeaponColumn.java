@@ -201,6 +201,17 @@ public enum WeaponColumn {
         public String getDataAsText(WeaponStats weapon) {
             return weapon.getResolvedDamage();
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
+        @Override
+        public String getToolTip(WeaponDisplayRow weapon) {
+            return weapon.getDamageToolTip();
+        }
+
     },
     /** The weapon reach. */
     REACH {

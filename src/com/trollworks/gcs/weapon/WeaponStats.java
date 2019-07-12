@@ -22,10 +22,12 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.Dice;
+import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -54,6 +56,21 @@ public abstract class WeaponStats {
     private String                  mStrength;
     private String                  mUsage;
     private ArrayList<SkillDefault> mDefaults;
+
+    @Localize("Includes modifiers from")
+    @Localize(locale = "de", value = "Enthält Modifikatoren von")
+    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
+    @Localize(locale = "es", value = "Incluye modificadores de")
+    static String                   INCLUDES;
+    @Localize("No additional modifiers")
+    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
+    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
+    @Localize(locale = "es", value = "No hay modificadores adicionales")
+    static String                   NO_MODIFIERS;
+
+    static {
+        Localization.initialize();
+    }
 
     /**
      * Creates a new weapon.
@@ -217,6 +234,17 @@ public abstract class WeaponStats {
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
     public String getResolvedDamage() {
+        return getResolvedDamage(null);
+    }
+
+    public String getDamageToolTip() {
+        StringBuilder toolTip = new StringBuilder();
+        getResolvedDamage(toolTip);
+        return toolTip.length() > 0 ? INCLUDES + toolTip.toString() : NO_MODIFIERS;
+    }
+
+    /** @return The damage, fully resolved for the user's sw or thr, if possible. */
+    public String getResolvedDamage(StringBuilder toolTip) {
         DataFile df     = mOwner.getDataFile();
         String   damage = mDamage;
 
@@ -226,8 +254,8 @@ public abstract class WeaponStats {
 
             for (SkillDefault one : getDefaults()) {
                 if (one.getType().isSkillBased()) {
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization())); //$NON-NLS-1$
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization())); //$NON-NLS-1$
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), toolTip)); //$NON-NLS-1$
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), toolTip)); //$NON-NLS-1$
                 }
             }
             damage = resolveDamage(damage, bonuses);
