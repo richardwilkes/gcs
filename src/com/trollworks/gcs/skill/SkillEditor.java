@@ -340,7 +340,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         mPointsField.addActionListener(this);
 
         if (forCharacter) {
-            mLevelField = createField(parent, parent, EDITOR_LEVEL, Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), EDITOR_LEVEL_TOOLTIP, 8);
+            mLevelField = createField(parent, parent, EDITOR_LEVEL, Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), EDITOR_LEVEL_TOOLTIP + ".\n" + mRow.getLevelToolTip(), 8);
             mLevelField.setEnabled(false);
         }
     }
@@ -440,6 +440,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             SkillAttribute attribute = getSkillAttribute();
             SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
             mLevelField.setText(Skill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
+            mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_LEVEL_TOOLTIP + ".\n" + level.getToolTip()));  //$NON-NLS-1$
         }
     }
 
