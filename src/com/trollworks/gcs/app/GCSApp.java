@@ -69,7 +69,6 @@ public class GCSApp extends App {
         PreferencesWindow.addCategory(MenuKeyPreferences::new);
         PreferencesWindow.addCategory(ReferenceLookupPreferences::new);
         PreferencesWindow.addCategory(SystemPreferences::new);
-
     }
 
     @Override
