@@ -2689,7 +2689,7 @@ public class GURPSCharacter extends DataFile {
      * @param specializationQualifier The specialization qualifier.
      * @return The bonuses.
      */
-    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier) {
+    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, StringBuilder toolTip) {
         ArrayList<WeaponBonus> bonuses = new ArrayList<>();
         int                    rsl     = Integer.MIN_VALUE;
 
@@ -2709,6 +2709,7 @@ public class GURPSCharacter extends DataFile {
                         WeaponBonus bonus = (WeaponBonus) feature;
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl)) {
                             bonuses.add(bonus);
+                            bonus.addToToolTip(toolTip);
                         }
                     }
                 }
@@ -2756,7 +2757,7 @@ public class GURPSCharacter extends DataFile {
      * @param qualifier The qualifier.
      * @return The bonus.
      */
-    public int getSpellComparedIntegerBonusFor(String id, String qualifier) {
+    public int getSpellComparedIntegerBonusFor(String id, String qualifier, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
@@ -2765,6 +2766,7 @@ public class GURPSCharacter extends DataFile {
                     SpellBonus bonus = (SpellBonus) feature;
                     if (bonus.getNameCriteria().matches(qualifier)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
+                        bonus.addToToolTip(toolTip);
                     }
                 }
             }

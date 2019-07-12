@@ -48,6 +48,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import javax.swing.ToolTipManager;
+
 /** The main entry point for the character sheet. */
 public class GCS {
     @Localize("GURPS Character Sheet")
@@ -233,6 +235,9 @@ public class GCS {
         Fonts.loadFromPreferences();
         App.setAboutPanel(AboutPanel.class);
         registerFileTypes(new GCSFileProxyCreator());
+
+        // Increase TooTip time so the user has time to read the skill modifiers
+        ToolTipManager.sharedInstance().setDismissDelay(60000);
     }
 
     /** @return The path to the GCS library files. */
