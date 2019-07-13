@@ -2724,7 +2724,7 @@ public class GURPSCharacter extends DataFile {
      * @param specializationQualifier The specialization qualifier.
      * @return The bonus.
      */
-    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier) {
+    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier) {
         return getSkillComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, null);
     }
 
@@ -2735,14 +2735,14 @@ public class GURPSCharacter extends DataFile {
      * @param toolTip                 The toolTip being built
      * @return The bonus.
      */
-    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, StringBuilder toolTip) {
+    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SkillBonus) {
                     SkillBonus bonus = (SkillBonus) feature;
-                    if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier)) {
+                    if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                         bonus.addToToolTip(toolTip);
                     }

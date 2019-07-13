@@ -111,4 +111,14 @@ public class StringCriteria {
     public String toString() {
         return mType.describe(mQualifier);
     }
+
+    /** @return Is this criteria for an exact match? */
+    public boolean isTypeIs() {
+        return mType.isTypeIs();
+    }
+
+    /** @return Is this criteria for any match? */
+    public boolean isTypeAnything() {
+        return mType.isTypeAnything();
+    }
 }

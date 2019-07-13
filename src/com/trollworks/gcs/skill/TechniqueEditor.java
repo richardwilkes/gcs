@@ -398,7 +398,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         mPointsField.addActionListener(this);
 
         if (forCharacter) {
-            mLevelField = createField(parent, parent, EDITOR_LEVEL, Technique.getTechniqueDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getDefault().getModifier()), EDITOR_LEVEL_TOOLTIP, 6);
+            mLevelField = createField(parent, parent, EDITOR_LEVEL, Technique.getTechniqueDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getDefault().getModifier()), EDITOR_LEVEL_TOOLTIP + ".\n" + mRow.getLevelToolTip(), 6); //$NON-NLS-1$
             mLevelField.setEnabled(false);
         }
     }
@@ -427,9 +427,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     private void recalculateLevel() {
         if (mLevelField != null) {
-            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(), mNameField.getText(), getSpecialization(), createNewDefault(), getSkillDifficulty(), getPoints(), mLimitCheckbox.isSelected(), getLimitModifier());
-
+            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(), mNameField.getText(), getSpecialization(), mCategoriesField.getText(), createNewDefault(), getSkillDifficulty(), getPoints(), mLimitCheckbox.isSelected(), getLimitModifier());
             mLevelField.setText(Technique.getTechniqueDisplayLevel(level.mLevel, level.mRelativeLevel, getDefaultModifier()));
+            mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_LEVEL_TOOLTIP + ".\n" + level.getToolTip()));  //$NON-NLS-1$
         }
     }
 
