@@ -755,7 +755,7 @@ public class Skill extends ListRow implements HasSourceReference {
                     bonus          = character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
                     level         += bonus;
                     if (bonus != 0) {
-                        toolTip.append("\n").append(ENCUMBRANCE).append(" [").append(bonus).append("]");  //$NON-NLS-1$
+                        toolTip.append("\n").append(ENCUMBRANCE).append(" [").append(bonus).append("]");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     }
                 }
             }

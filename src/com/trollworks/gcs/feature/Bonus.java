@@ -139,12 +139,12 @@ public abstract class Bonus implements Feature {
 
     @Override
     public String toString() {
-        return super.toString() + " (" + getToolTipAmount() + ", parent:" + mParent + ")";  //$NON-NLS-1$
+        return super.toString() + " (" + getToolTipAmount() + ", parent:" + mParent + ")";  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     public void addToToolTip(StringBuilder toolTip) {
         if (toolTip != null) {
-            toolTip.append("\n").append(getParentName()).append(" [").append(getToolTipAmount()).append("]"); //$NON-NLS-1$
+            toolTip.append("\n").append(getParentName()).append(" [").append(getToolTipAmount()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 

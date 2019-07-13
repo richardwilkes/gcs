@@ -212,6 +212,7 @@ public class MultiCell implements Cell {
         return theRow.isSatisfied() ? getToolTip(row, column) : theRow.getReasonForUnsatisfied();
     }
 
+    @SuppressWarnings("static-method")
     protected String getToolTip(Row row, Column column) {
         if (row != null) {
             return row.getToolTip(column);

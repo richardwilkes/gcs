@@ -545,11 +545,12 @@ public enum SpellColumn {
         }
     }
 
+    @SuppressWarnings("static-method")
     public boolean showToolTip() {
         return false;
     }
 
-    public String getToolTip(Spell spell) {
+    public String getToolTip(@SuppressWarnings("unused") Spell spell) {
         return getToolTip();
     }
 }

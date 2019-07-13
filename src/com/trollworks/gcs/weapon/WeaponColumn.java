@@ -595,11 +595,12 @@ public enum WeaponColumn {
         }
     }
 
+    @SuppressWarnings("static-method")
     public boolean showToolTip() {
         return false;
     }
 
-    public String getToolTip(WeaponDisplayRow weapon) {
+    public String getToolTip(@SuppressWarnings("unused") WeaponDisplayRow weapon) {
         return getToolTip();
     }
 }

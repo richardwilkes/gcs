@@ -470,11 +470,12 @@ public enum SkillColumn {
         }
     }
 
+    @SuppressWarnings("static-method")
     public boolean showToolTip() {
         return false;
     }
 
-    public String getToolTip(Skill skill) {
+    public String getToolTip(@SuppressWarnings("unused") Skill skill) {
         return getToolTip();
     }
 }

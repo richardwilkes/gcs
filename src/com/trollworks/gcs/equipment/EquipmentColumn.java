@@ -622,11 +622,12 @@ public enum EquipmentColumn {
         return weight;
     }
 
+    @SuppressWarnings("static-method")
     public boolean showToolTip() {
         return false;
     }
 
-    public String getToolTip(Equipment equipment) {
+    public String getToolTip(@SuppressWarnings("unused") Equipment equipment) {
         return getToolTip();
     }
 }

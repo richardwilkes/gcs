@@ -334,11 +334,12 @@ public enum AdvantageColumn {
         }
     }
 
+    @SuppressWarnings("static-method")
     public boolean showToolTip() {
         return false;
     }
 
-    public String getToolTip(Advantage advantage) {
+    public String getToolTip(@SuppressWarnings("unused") Advantage advantage) {
         return getToolTip();
     }
 
