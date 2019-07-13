@@ -170,7 +170,7 @@ public class LeveledAmount {
 
     /** @return The amount, as a {@link String} of dice damage. */
     public String getAmountAsWeaponBonus() {
-        return getAmountAsString() + (isPerLevel() ? PER_DIE : "");
+        return getAmountAsString() + (isPerLevel() ? PER_DIE : "");   //$NON-NLS-1$
     }
 
     /** @param amount The amount. */
