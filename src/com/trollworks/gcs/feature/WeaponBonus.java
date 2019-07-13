@@ -46,7 +46,7 @@ public class WeaponBonus extends Bonus {
 
     /**
      * Loads a {@link WeaponBonus}.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     public WeaponBonus(XMLReader reader) throws IOException {
@@ -56,7 +56,7 @@ public class WeaponBonus extends Bonus {
 
     /**
      * Creates a clone of the specified bonus.
-     * 
+     *
      * @param other The bonus to clone.
      */
     public WeaponBonus(WeaponBonus other) {
@@ -117,7 +117,7 @@ public class WeaponBonus extends Bonus {
 
     /**
      * Saves the bonus.
-     * 
+     *
      * @param out The XML writer to use.
      */
     @Override
@@ -156,4 +156,10 @@ public class WeaponBonus extends Bonus {
         mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
         mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
     }
+
+    @Override
+    public String getToolTipAmount() {
+        return getAmount().getAmountAsWeaponBonus();
+    }
+
 }
