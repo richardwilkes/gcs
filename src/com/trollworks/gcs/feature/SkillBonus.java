@@ -104,13 +104,7 @@ public class SkillBonus extends Bonus {
     }
 
     public boolean matchesCategories(String categories) {
-        String[] cats = categories.split(COMMA);
-        for (String category : cats) {
-            if (mCategoryCriteria.matches(category.trim())) {
-                return true;
-            }
-        }
-        return false;
+        return ListRow.matchesCategories(mCategoryCriteria, categories);
     }
 
     @Override

@@ -2722,17 +2722,19 @@ public class GURPSCharacter extends DataFile {
      * @param id                      The feature ID to search for.
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
+     * @parem categoryQualifier The categories qualifier
      * @return The bonus.
      */
     public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier) {
-        return getSkillComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, null);
+        return getSkillComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, categoryQualifier, null);
     }
 
     /**
      * @param id                      The feature ID to search for.
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
-     * @param toolTip                 The toolTip being built
+     * @parem categoryQualifier The categories qualifier
+     * @param toolTip The toolTip being built
      * @return The bonus.
      */
     public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier, StringBuilder toolTip) {

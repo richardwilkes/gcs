@@ -868,8 +868,9 @@ public class Skill extends ListRow implements HasSourceReference {
                     if (!skillDefault.equals(excludedDefault) && !isInDefaultChain(this, skillDefault, new HashSet<>())) {
                         int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
                         if (skillDefault.getType().isSkillBased()) {
-                            String name = skillDefault.getName();
-                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, skillDefault.getSpecialization(), "");  //$NON-NLS-1$
+                            String name  = skillDefault.getName();
+                            Skill  skill = character.getBestSkillNamed(name, skillDefault.getSpecialization(), true, excludes);
+                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, skillDefault.getSpecialization(), skill.getCategoriesAsString());
                             level -= character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
                         }
                         if (level > best) {
