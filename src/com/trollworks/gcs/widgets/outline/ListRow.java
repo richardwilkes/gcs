@@ -14,7 +14,6 @@ package com.trollworks.gcs.widgets.outline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.feature.AttributeBonus;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.CostReduction;
@@ -119,21 +118,17 @@ public abstract class ListRow extends Row {
         return buffer.toString();
     }
 
+    public static Set<String> createCategoriesList(String categories) {
+        TreeSet cats = new TreeSet();
+        for (String category : createList(categories)) {
+            cats.add(category);
+        }
+        return cats;
+    }
+
     // This is the decompose method that works with the compose method (getCategoriesAsString())
     private static Collection<String> createList(String categories) {
         return Arrays.asList(categories.split(COMMA));
-    }
-
-    /* Static method to determine if a string criteria matches against one of the categories
-     * stored in the categories string.   The ListRow class knows how to compose and decompose
-     * categories as strings. */
-    public static boolean matchesCategories(StringCriteria criteria, String categories) {
-        for (String category : createList(categories)) {
-            if (criteria.matches(category)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

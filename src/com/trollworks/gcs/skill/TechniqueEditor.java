@@ -17,6 +17,7 @@ import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
+import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
@@ -427,7 +428,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     private void recalculateLevel() {
         if (mLevelField != null) {
-            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(), mNameField.getText(), getSpecialization(), mCategoriesField.getText(), createNewDefault(), getSkillDifficulty(), getPoints(), mLimitCheckbox.isSelected(), getLimitModifier());
+            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(), mNameField.getText(), getSpecialization(), ListRow.createCategoriesList(mCategoriesField.getText()), createNewDefault(), getSkillDifficulty(), getPoints(), mLimitCheckbox.isSelected(), getLimitModifier());
             mLevelField.setText(Technique.getTechniqueDisplayLevel(level.mLevel, level.mRelativeLevel, getDefaultModifier()));
             mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_LEVEL_TOOLTIP + ".\n" + level.getToolTip()));  //$NON-NLS-1$
         }

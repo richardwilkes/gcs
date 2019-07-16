@@ -21,6 +21,7 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /** A skill bonus. */
 public class SkillBonus extends Bonus {
@@ -103,8 +104,13 @@ public class SkillBonus extends Bonus {
         return buffer.toString();
     }
 
-    public boolean matchesCategories(String categories) {
-        return ListRow.matchesCategories(mCategoryCriteria, categories);
+    public boolean matchesCategories(Set<String> categories) {
+        for (String category : categories) {
+            if (mCategoryCriteria.matches(category)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

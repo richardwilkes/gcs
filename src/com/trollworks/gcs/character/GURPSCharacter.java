@@ -66,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
@@ -2722,10 +2723,10 @@ public class GURPSCharacter extends DataFile {
      * @param id                      The feature ID to search for.
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
-     * @parem categoryQualifier The categories qualifier
+     * @param categoryQualifier       The categories qualifier
      * @return The bonus.
      */
-    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier) {
+    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoryQualifier) {
         return getSkillComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, categoryQualifier, null);
     }
 
@@ -2733,11 +2734,11 @@ public class GURPSCharacter extends DataFile {
      * @param id                      The feature ID to search for.
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
-     * @parem categoryQualifier The categories qualifier
-     * @param toolTip The toolTip being built
+     * @param categoryQualifier       The categories qualifier
+     * @param toolTip                 The toolTip being built
      * @return The bonus.
      */
-    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, String categoryQualifier, StringBuilder toolTip) {
+    public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoryQualifier, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {

@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /** A GURPS Technique. */
 public class Technique extends Skill {
@@ -71,7 +72,7 @@ public class Technique extends Skill {
      * @param limitModifier  The maximum bonus the technique can grant.
      * @return The calculated technique level.
      */
-    public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, String categories, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
+    public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, Set<String> categories, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
         StringBuilder toolTip       = new StringBuilder();
         int           relativeLevel = 0;
         int           level         = Integer.MIN_VALUE;
@@ -266,7 +267,7 @@ public class Technique extends Skill {
 
     @Override
     protected SkillLevel calculateLevelSelf() {
-        return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getCategoriesAsString(), getDefault(), getDifficulty(), getPoints(), isLimited(), getLimitModifier());
+        return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getCategories(), getDefault(), getDifficulty(), getPoints(), isLimited(), getLimitModifier());
     }
 
     @Override
