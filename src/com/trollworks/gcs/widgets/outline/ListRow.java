@@ -51,6 +51,8 @@ public abstract class ListRow extends Row {
     private static final String     TAG_NOTES      = "notes"; //$NON-NLS-1$
     private static final String     TAG_CATEGORIES = "categories"; //$NON-NLS-1$
     private static final String     TAG_CATEGORY   = "category"; //$NON-NLS-1$
+    private static final String     COMMA          = ","; //$NON-NLS-1$
+    private static final String     SPACE          = " "; //$NON-NLS-1$
     /** The data file the row is associated with. */
     protected DataFile              mDataFile;
     private ArrayList<Feature>      mFeatures;
@@ -114,6 +116,19 @@ public abstract class ListRow extends Row {
         }
         buffer.append(data);
         return buffer.toString();
+    }
+
+    public static Set<String> createCategoriesList(String categories) {
+        TreeSet cats = new TreeSet();
+        for (String category : createList(categories)) {
+            cats.add(category);
+        }
+        return cats;
+    }
+
+    // This is the decompose method that works with the compose method (getCategoriesAsString())
+    private static Collection<String> createList(String categories) {
+        return Arrays.asList(categories.split(COMMA));
     }
 
     /**
@@ -495,7 +510,8 @@ public abstract class ListRow extends Row {
         StringBuilder buffer = new StringBuilder();
         for (String category : mCategories) {
             if (buffer.length() > 0) {
-                buffer.append(", "); //$NON-NLS-1$
+                buffer.append(COMMA);
+                buffer.append(SPACE);
             }
             buffer.append(category);
         }
@@ -549,7 +565,7 @@ public abstract class ListRow extends Row {
      * @return Whether there was a change or not.
      */
     public final boolean setCategories(String categories) {
-        return setCategories(Arrays.asList(categories.split(","))); //$NON-NLS-1$
+        return setCategories(createList(categories));
     }
 
     /**

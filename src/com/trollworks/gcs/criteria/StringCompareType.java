@@ -27,6 +27,11 @@ public enum StringCompareType {
         public boolean matches(String qualifier, String data) {
             return true;
         }
+
+        @Override
+        public boolean isTypeAnything() {
+            return true;
+        }
     },
     /** The comparison for "is". */
     IS {
@@ -38,6 +43,11 @@ public enum StringCompareType {
         @Override
         public boolean matches(String qualifier, String data) {
             return data.equalsIgnoreCase(qualifier);
+        }
+
+        @Override
+        public boolean isTypeIs() {
+            return true;
         }
     },
     /** The comparison for "is not". */
@@ -196,4 +206,12 @@ public enum StringCompareType {
      * @return Whether the data matches the criteria or not.
      */
     public abstract boolean matches(String qualifier, String data);
+
+    public boolean isTypeIs() {
+        return false;
+    }
+
+    public boolean isTypeAnything() {
+        return false;
+    }
 }
