@@ -2756,8 +2756,9 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id        The feature ID to search for.
-     * @param qualifier The qualifier. #param categories The categories qualifier
+     * @param id         The feature ID to search for.
+     * @param qualifier  The qualifier.
+     * @param categories The categories qualifier
      * @return The bonus.
      */
     public int getSpellComparedIntegerBonusFor(String id, String qualifier, Set<String> categories, StringBuilder toolTip) {

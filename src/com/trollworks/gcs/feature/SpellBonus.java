@@ -48,7 +48,7 @@ public class SpellBonus extends Bonus {
         super(1);
         mAllColleges      = true;
         mMatchType        = TAG_COLLEGE_NAME;
-        mNameCriteria     = new StringCriteria(StringCompareType.IS, ""); //$NON-NLS-1$
+        mNameCriteria     = new StringCriteria(StringCompareType.IS, EMPTY);
         mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
     }
 
