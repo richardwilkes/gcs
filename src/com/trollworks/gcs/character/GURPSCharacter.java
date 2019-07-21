@@ -2688,9 +2688,10 @@ public class GURPSCharacter extends DataFile {
      * @param id                      The feature ID to search for.
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
+     * @param categoriesQualifier     The categories qualifier.
      * @return The bonuses.
      */
-    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, StringBuilder toolTip) {
+    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
         ArrayList<WeaponBonus> bonuses = new ArrayList<>();
         int                    rsl     = Integer.MIN_VALUE;
 
@@ -2708,7 +2709,7 @@ public class GURPSCharacter extends DataFile {
                 for (Feature feature : list) {
                     if (feature instanceof WeaponBonus) {
                         WeaponBonus bonus = (WeaponBonus) feature;
-                        if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl)) {
+                        if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
                             bonuses.add(bonus);
                             bonus.addToToolTip(toolTip);
                         }
