@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
@@ -448,6 +449,11 @@ public class Spell extends ListRow implements HasSourceReference {
         return mLevel.getRelativeLevel();
     }
 
+    /** @return The calculated spell skill level. */
+    private SkillLevel calculateLevelSelf() {
+        return calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName, getCategories());
+    }
+
     /**
      * Call to force an update of the level and relative level for this spell.
      *
@@ -455,7 +461,7 @@ public class Spell extends ListRow implements HasSourceReference {
      */
     public void updateLevel(boolean notify) {
         SkillLevel savedLevel = mLevel;
-        mLevel = calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName);
+        mLevel = calculateLevelSelf();
 
         if (notify && (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel))) {
             notify(ID_LEVEL, this);
@@ -473,7 +479,7 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param name        The name of the spell.
      * @return The calculated spell level.
      */
-    public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, boolean isVeryHard, String college, String powerSource, String name) {
+    public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, boolean isVeryHard, String college, String powerSource, String name, Set<String> categories) {
         StringBuilder toolTip       = new StringBuilder();
         int           relativeLevel = isVeryHard ? -3 : -2;
         int           level;
@@ -492,9 +498,9 @@ public class Spell extends ListRow implements HasSourceReference {
             }
 
             if (level != -1) {
-                relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college, toolTip);
-                relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, toolTip);
-                relativeLevel += getSpellBonusesFor(character, ID_NAME, name, toolTip);
+                relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college, categories, toolTip);
+                relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, toolTip);
+                relativeLevel += getSpellBonusesFor(character, ID_NAME, name, categories, toolTip);
                 level         += relativeLevel;
             }
         } else {
@@ -504,10 +510,10 @@ public class Spell extends ListRow implements HasSourceReference {
         return new SkillLevel(level, relativeLevel, toolTip);
     }
 
-    private static int getSpellBonusesFor(GURPSCharacter character, String id, String qualifier, StringBuilder toolTip) {
+    private static int getSpellBonusesFor(GURPSCharacter character, String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
         int level = character.getIntegerBonusFor(id, toolTip);
         level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase(), toolTip);
-        level += character.getSpellComparedIntegerBonusFor(id + '*', qualifier, toolTip);
+        level += character.getSpellComparedIntegerBonusFor(id + '*', qualifier, categories, toolTip);
         return level;
     }
 

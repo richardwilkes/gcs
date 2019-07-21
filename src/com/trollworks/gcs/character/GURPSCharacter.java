@@ -2756,18 +2756,19 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id        The feature ID to search for.
-     * @param qualifier The qualifier.
+     * @param id         The feature ID to search for.
+     * @param qualifier  The qualifier.
+     * @param categories The categories qualifier
      * @return The bonus.
      */
-    public int getSpellComparedIntegerBonusFor(String id, String qualifier, StringBuilder toolTip) {
+    public int getSpellComparedIntegerBonusFor(String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
         int                total = 0;
         ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SpellBonus) {
                     SpellBonus bonus = (SpellBonus) feature;
-                    if (bonus.getNameCriteria().matches(qualifier)) {
+                    if (bonus.getNameCriteria().matches(qualifier) && bonus.matchesCategories(categories)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                         bonus.addToToolTip(toolTip);
                     }

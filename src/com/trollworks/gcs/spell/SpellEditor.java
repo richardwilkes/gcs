@@ -19,6 +19,7 @@ import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
+import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
@@ -581,7 +582,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     private void recalculateLevel() {
         if (mLevelField != null) {
             SkillAttribute attribute = getAttribute();
-            SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText());
+            SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
             mLevelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
             mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_LEVEL_TOOLTIP + ".\n" + level.getToolTip()));  //$NON-NLS-1$
         }
