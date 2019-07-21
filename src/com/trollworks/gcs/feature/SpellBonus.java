@@ -21,34 +21,40 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /** A spell bonus. */
 public class SpellBonus extends Bonus {
     /** The XML tag. */
-    public static final String TAG_ROOT               = "spell_bonus"; //$NON-NLS-1$
+    public static final String  TAG_ROOT               = "spell_bonus"; //$NON-NLS-1$
     /** Matches against the college name. */
-    public static final String TAG_COLLEGE_NAME       = "college_name"; //$NON-NLS-1$
+    public static final String  TAG_COLLEGE_NAME       = "college_name"; //$NON-NLS-1$
     /** Matches against the power source name. */
-    public static final String TAG_POWER_SOURCE_NAME  = "power_source_name"; //$NON-NLS-1$
+    public static final String  TAG_POWER_SOURCE_NAME  = "power_source_name"; //$NON-NLS-1$
     /** Matches against the spell name. */
-    public static final String TAG_SPELL_NAME         = "spell_name"; //$NON-NLS-1$
+    public static final String  TAG_SPELL_NAME         = "spell_name"; //$NON-NLS-1$
     /** The XML attribute name for the "all colleges" flag. */
-    public static final String ATTRIBUTE_ALL_COLLEGES = "all_colleges"; //$NON-NLS-1$
-    private boolean            mAllColleges;
-    private String             mMatchType;
-    private StringCriteria     mNameCriteria;
+    public static final String  ATTRIBUTE_ALL_COLLEGES = "all_colleges"; //$NON-NLS-1$
+    private static final String TAG_CATEGORY           = "category"; //$NON-NLS-1$
+    private static final String EMPTY                  = ""; //$NON-NLS-1$
+    private static final String COMMA                  = ","; //$NON-NLS-1$
+    private boolean             mAllColleges;
+    private String              mMatchType;
+    private StringCriteria      mNameCriteria;
+    private StringCriteria      mCategoryCriteria;
 
     /** Creates a new spell bonus. */
     public SpellBonus() {
         super(1);
-        mAllColleges  = true;
-        mMatchType    = TAG_COLLEGE_NAME;
-        mNameCriteria = new StringCriteria(StringCompareType.IS, ""); //$NON-NLS-1$
+        mAllColleges      = true;
+        mMatchType        = TAG_COLLEGE_NAME;
+        mNameCriteria     = new StringCriteria(StringCompareType.IS, ""); //$NON-NLS-1$
+        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
     }
 
     /**
      * Loads a {@link SpellBonus}.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     public SpellBonus(XMLReader reader) throws IOException {
@@ -60,14 +66,15 @@ public class SpellBonus extends Bonus {
 
     /**
      * Creates a clone of the specified bonus.
-     * 
+     *
      * @param other The bonus to clone.
      */
     public SpellBonus(SpellBonus other) {
         super(other);
-        mAllColleges  = other.mAllColleges;
-        mMatchType    = other.mMatchType;
-        mNameCriteria = new StringCriteria(other.mNameCriteria);
+        mAllColleges      = other.mAllColleges;
+        mMatchType        = other.mMatchType;
+        mNameCriteria     = new StringCriteria(other.mNameCriteria);
+        mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
     }
 
     @Override
@@ -77,7 +84,7 @@ public class SpellBonus extends Bonus {
         }
         if (obj instanceof SpellBonus && super.equals(obj)) {
             SpellBonus sb = (SpellBonus) obj;
-            return mAllColleges == sb.mAllColleges && mMatchType == sb.mMatchType && mNameCriteria.equals(sb.mNameCriteria);
+            return mAllColleges == sb.mAllColleges && mMatchType == sb.mMatchType && mNameCriteria.equals(sb.mNameCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
         }
         return false;
     }
@@ -92,25 +99,37 @@ public class SpellBonus extends Bonus {
         return TAG_ROOT;
     }
 
+    public boolean matchesCategories(Set<String> categories) {
+        for (String category : categories) {
+            if (mCategoryCriteria.matches(category)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String getKey() {
         StringBuffer buffer = new StringBuffer();
-
-        if (mAllColleges) {
-            buffer.append(Spell.ID_COLLEGE);
+        if (!mCategoryCriteria.isTypeAnything()) {
+            buffer.append(Spell.ID_NAME).append("*"); //$NON-NLS-1$
         } else {
-            if (mMatchType == TAG_COLLEGE_NAME) {
+            if (mAllColleges) {
                 buffer.append(Spell.ID_COLLEGE);
-            } else if (mMatchType == TAG_POWER_SOURCE_NAME) {
-                buffer.append(Spell.ID_POWER_SOURCE);
             } else {
-                buffer.append(Spell.ID_NAME);
-            }
-            if (mNameCriteria.getType() == StringCompareType.IS) {
-                buffer.append('/');
-                buffer.append(mNameCriteria.getQualifier());
-            } else {
-                buffer.append("*"); //$NON-NLS-1$
+                if (mMatchType == TAG_COLLEGE_NAME) {
+                    buffer.append(Spell.ID_COLLEGE);
+                } else if (mMatchType == TAG_POWER_SOURCE_NAME) {
+                    buffer.append(Spell.ID_POWER_SOURCE);
+                } else {
+                    buffer.append(Spell.ID_NAME);
+                }
+                if (mNameCriteria.isTypeIs()) {
+                    buffer.append('/');
+                    buffer.append(mNameCriteria.getQualifier());
+                } else {
+                    buffer.append("*"); //$NON-NLS-1$
+                }
             }
         }
         return buffer.toString();
@@ -128,6 +147,8 @@ public class SpellBonus extends Bonus {
         } else if (TAG_SPELL_NAME.equals(name)) {
             mMatchType = TAG_SPELL_NAME;
             mNameCriteria.load(reader);
+        } else if (TAG_CATEGORY.equals(name)) {
+            mCategoryCriteria.load(reader);
         } else {
             super.loadSelf(reader);
         }
@@ -135,7 +156,7 @@ public class SpellBonus extends Bonus {
 
     /**
      * Saves the bonus.
-     * 
+     *
      * @param out The XML writer to use.
      */
     @Override
@@ -149,6 +170,7 @@ public class SpellBonus extends Bonus {
             mNameCriteria.save(out, mMatchType);
         }
         saveBase(out);
+        mCategoryCriteria.save(out, TAG_CATEGORY);
         out.endTagEOL(TAG_ROOT, true);
     }
 
@@ -168,6 +190,11 @@ public class SpellBonus extends Bonus {
      */
     public String getMatchType() {
         return mMatchType;
+    }
+
+    /** @return The category criteria. */
+    public StringCriteria getCategoryCriteria() {
+        return mCategoryCriteria;
     }
 
     public void setMatchType(String type) {
@@ -190,6 +217,7 @@ public class SpellBonus extends Bonus {
         if (!mAllColleges) {
             ListRow.extractNameables(set, mNameCriteria.getQualifier());
         }
+        ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
     }
 
     @Override
@@ -197,5 +225,6 @@ public class SpellBonus extends Bonus {
         if (!mAllColleges) {
             mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
         }
+        mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
     }
 }
