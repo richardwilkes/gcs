@@ -39,6 +39,11 @@ public class WeaponBonusEditor extends FeatureEditor {
     @Localize(locale = "ru", value = "и специализация ")
     @Localize(locale = "es", value = "y especialización ")
     private static String SPECIALIZATION;
+    @Localize("and category ")
+    @Localize(locale = "de", value = "und Kategorie ")
+    @Localize(locale = "ru", value = "и категория ")
+    @Localize(locale = "es", value = "y categoria ")
+    private static String CATEGORY;
 
     static {
         Localization.initialize();
@@ -87,5 +92,13 @@ public class WeaponBonusEditor extends FeatureEditor {
         row.add(addNumericCompareField(levelCriteria, -999, 999, true));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 3, 0);
+
+        row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        criteria = bonus.getCategoryCriteria();
+        row.add(addStringCompareCombo(criteria, CATEGORY));
+        row.add(addStringCompareField(criteria));
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 4, 0);
     }
 }

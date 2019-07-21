@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
@@ -249,13 +250,14 @@ public abstract class WeaponStats {
         String   damage = mDamage;
 
         if (df instanceof GURPSCharacter) {
-            GURPSCharacter       character = (GURPSCharacter) df;
-            HashSet<WeaponBonus> bonuses   = new HashSet<>();
+            GURPSCharacter       character  = (GURPSCharacter) df;
+            HashSet<WeaponBonus> bonuses    = new HashSet<>();
+            Set<String>          categories = getOwner() instanceof Equipment ? ((Equipment) getOwner()).getCategories() : null;
 
             for (SkillDefault one : getDefaults()) {
                 if (one.getType().isSkillBased()) {
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), toolTip)); //$NON-NLS-1$
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), toolTip)); //$NON-NLS-1$
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), getCategories(), toolTip)); //$NON-NLS-1$
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), getCategories(), toolTip)); //$NON-NLS-1$
                 }
             }
             damage = resolveDamage(damage, bonuses);
@@ -530,6 +532,10 @@ public abstract class WeaponStats {
     /** @return The owner. */
     public ListRow getOwner() {
         return mOwner;
+    }
+
+    public Set<String> getCategories() {
+        return mOwner.getCategories();
     }
 
     /**
