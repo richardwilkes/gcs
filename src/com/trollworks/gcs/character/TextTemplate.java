@@ -239,6 +239,8 @@ public class TextTemplate {
     private static final String KEY_STATE                             = "STATE";
     private static final String KEY_STYLE_INDENT_WARNING              = "STYLE_INDENT_WARNING";
     private static final String KEY_SUFFIX_PAREN                      = "_PAREN";
+    private static final String KEY_SUFFIX_BRACKETS                   = "_BRACKET";
+    private static final String KEY_SUFFIX_CURLY                      = "_CURLY";
     private static final String KEY_SWING                             = "SWING";
     private static final String KEY_TASTE_SMELL                       = "TASTE_SMELL";
     private static final String KEY_THRUST                            = "THRUST";
@@ -971,14 +973,21 @@ public class TextTemplate {
 
     private void writeXMLTextWithOptionalParens(String key, BufferedWriter out, String text) throws IOException {
         if (text.length() > 0) {
-            boolean parenVersion = key.endsWith(KEY_SUFFIX_PAREN);
-            if (parenVersion) {
-                out.write(" (");
+            String pre  = "";
+            String post = "";
+            if (key.endsWith(KEY_SUFFIX_PAREN)) {
+                pre  = " (";
+                post = ")";
+            } else if (key.endsWith(KEY_SUFFIX_BRACKETS)) {
+                pre  = " [";
+                post = "]";
+            } else if (key.endsWith(KEY_SUFFIX_CURLY)) {
+                pre  = " {";
+                post = "}";
             }
+            out.write(pre);
             writeEncodedText(out, text);
-            if (parenVersion) {
-                out.write(')');
-            }
+            out.write(post);
         }
     }
 
