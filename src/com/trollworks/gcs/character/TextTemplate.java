@@ -239,7 +239,7 @@ public class TextTemplate {
     private static final String KEY_STATE                             = "STATE";
     private static final String KEY_STYLE_INDENT_WARNING              = "STYLE_INDENT_WARNING";
     private static final String KEY_SUFFIX_PAREN                      = "_PAREN";
-    private static final String KEY_SUFFIX_BRACKETS                   = "_BRACKET";
+    private static final String KEY_SUFFIX_BRACKET                    = "_BRACKET";
     private static final String KEY_SUFFIX_CURLY                      = "_CURLY";
     private static final String KEY_SWING                             = "SWING";
     private static final String KEY_TASTE_SMELL                       = "TASTE_SMELL";
@@ -978,7 +978,7 @@ public class TextTemplate {
             if (key.endsWith(KEY_SUFFIX_PAREN)) {
                 pre  = " (";
                 post = ")";
-            } else if (key.endsWith(KEY_SUFFIX_BRACKETS)) {
+            } else if (key.endsWith(KEY_SUFFIX_BRACKET)) {
                 pre  = " [";
                 post = "]";
             } else if (key.endsWith(KEY_SUFFIX_CURLY)) {
