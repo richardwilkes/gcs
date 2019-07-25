@@ -15,6 +15,7 @@ import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.ModifierListEditor;
+import com.trollworks.gcs.notes.NoteEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
@@ -31,7 +32,6 @@ import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
-import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
@@ -61,7 +61,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -286,6 +285,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private JComboBox<AdvantageContainerType>     mContainerTypeCombo;
     private JComboBox<SelfControlRoll>            mCRCombo;
     private JComboBox<SelfControlRollAdjustments> mCRAdjCombo;
+    private String                                mUserDesc;
 
     /**
      * Creates a new {@link Advantage} editor.
@@ -397,6 +397,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         row = new FlexRow();
         row.add(mNotesField);
         if (mRow.getDataFile() instanceof GURPSCharacter) {
+            mUserDesc = mRow.getUserDesc();
             row.add(userdesc);
         }
         innerGrid.add(new FlexComponent(createLabel(NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
@@ -628,6 +629,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         modified |= mRow.setReference((String) mReferenceField.getValue());
         modified |= mRow.setNotes((String) mNotesField.getValue());
         modified |= mRow.setCategories((String) mCategoriesField.getValue());
+        if (mUserDesc != null) {
+            modified |= mRow.setUserDesc(mUserDesc);
+        }
         return modified;
     }
 
@@ -639,39 +643,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void openUserDescDialog() {
-        JPanel    editor  = new JPanel(new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
-        JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
-        JLabel    icon    = new JLabel(GCSImages.getNoteIcons().getImage(64));
-        String    orig    = mRow.getUserDesc();
-        JTextArea mEditor = new JTextArea(orig);
-        mEditor.setLineWrap(true);
-        mEditor.setWrapStyleWord(true);
-        mEditor.setEnabled(true);
-        JScrollPane scroller = new JScrollPane(mEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scroller.setMinimumSize(new Dimension(400, 300));
-        icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
-        content.add(icon);
-        content.add(scroller);
-        editor.add(content);
-        String title   = MessageFormat.format(WINDOW_TITLE, USER_DESC_TITLE);
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.add(editor, BorderLayout.CENTER);
+        JPanel    parent  = new JPanel(new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JTextArea editor  = NoteEditor.addContentTo(parent, mUserDesc, GCSImages.getNoteIcons().getImage(64), true);
+        String    title   = MessageFormat.format(WINDOW_TITLE, USER_DESC_TITLE);
+        JPanel    wrapper = new JPanel(new BorderLayout());
+        wrapper.add(parent, BorderLayout.CENTER);
         int      type    = JOptionPane.YES_NO_OPTION;
         String[] options = new String[] { APPLY, CANCEL };
-        switch (WindowUtils.showOptionDialog(this, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, APPLY)) {
-        case JOptionPane.YES_OPTION:
-            Commitable.sendCommitToFocusOwner();
-            if (!orig.equals(mEditor.getText())) {
-                mRow.setUserDesc(mEditor.getText());
-                mRow.getDataFile().setModified(true);
-            }
-            break;
-        case JOptionPane.NO_OPTION:
-        case JOptionPane.CANCEL_OPTION:
-        case JOptionPane.CLOSED_OPTION:
-        default:
-            break;
+        if (WindowUtils.showOptionDialog(this, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, APPLY) == JOptionPane.YES_OPTION) {
+            mUserDesc = editor.getText();
         }
     }
 

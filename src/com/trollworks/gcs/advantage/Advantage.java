@@ -112,6 +112,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public static final String         ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus"; //$NON-NLS-1$
     /** The field ID for when the advantage gets Modifiers. */
     public static final String         ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier"; //$NON-NLS-1$
+    /** The field ID for user description changes. */
+    public static final String         ID_USER_DESC               = PREFIX + "UserDesc"; //$NON-NLS-1$
     /** The type mask for mental advantages. */
     public static final int            TYPE_MASK_MENTAL           = 1 << 0;
     /** The type mask for physical advantages. */
@@ -463,8 +465,13 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return mUserDesc;
     }
 
-    public void setUserDesc(String desc) {
-        mUserDesc = desc;
+    public boolean setUserDesc(String desc) {
+        if (!mUserDesc.equals(desc)) {
+            mUserDesc = desc;
+            notifySingle(ID_USER_DESC);
+            return true;
+        }
+        return false;
     }
 
     /**
