@@ -12,6 +12,7 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.app.GCSImages;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.ModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
@@ -24,16 +25,21 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.Alignment;
+import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.FlexComponent;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.ui.layout.RowDistribution;
+import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
+import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import com.trollworks.toolkit.utility.text.Text;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -42,15 +48,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -229,6 +240,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Localize(locale = "ru", value = "Сверхъестественное")
     @Localize(locale = "es", value = "Sobrenatural")
     private static String SUPERNATURAL;
+    @Localize("User Desc.")
+    private static String USER_DESC;
+    @Localize("User Description")
+    @Localize(locale = "de", value = "Benutzerbeschreibung")
+    @Localize(locale = "ru", value = "Описание пользователя")
+    @Localize(locale = "es", value = "Descripción de usuario")
+    private static String USER_DESC_TITLE;
     @Localize("Enabled")
     private static String ENABLED_TITLE;
     @Localize("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")
@@ -372,8 +390,17 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
 
         mNotesField = createField(advantage.getNotes(), null, NOTES_TOOLTIP);
+        JButton userdesc = new JButton(USER_DESC);
+        userdesc.addActionListener(e -> openUserDescDialog());
+        userdesc.setEnabled(mIsEditable);
+        add(userdesc);
+        row = new FlexRow();
+        row.add(mNotesField);
+        if (mRow.getDataFile() instanceof GURPSCharacter) {
+            row.add(userdesc);
+        }
         innerGrid.add(new FlexComponent(createLabel(NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
-        innerGrid.add(mNotesField, ri++, 1);
+        innerGrid.add(row, ri++, 1);
 
         mCategoriesField = createField(advantage.getCategoriesAsString(), null, CATEGORIES_TOOLTIP);
         innerGrid.add(new FlexComponent(createLabel(CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
@@ -608,6 +635,43 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     public void finished() {
         if (mTabPanel != null) {
             updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
+        }
+    }
+
+    private void openUserDescDialog() {
+        JPanel    editor  = new JPanel(new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JLabel    icon    = new JLabel(GCSImages.getNoteIcons().getImage(64));
+        String    orig    = mRow.getUserDesc();
+        JTextArea mEditor = new JTextArea(orig);
+        mEditor.setLineWrap(true);
+        mEditor.setWrapStyleWord(true);
+        mEditor.setEnabled(true);
+        JScrollPane scroller = new JScrollPane(mEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setMinimumSize(new Dimension(400, 300));
+        icon.setVerticalAlignment(SwingConstants.TOP);
+        icon.setAlignmentY(-1f);
+        content.add(icon);
+        content.add(scroller);
+        editor.add(content);
+        String title   = MessageFormat.format(WINDOW_TITLE, USER_DESC_TITLE);
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.add(editor, BorderLayout.CENTER);
+        int      type    = JOptionPane.YES_NO_OPTION;
+        String[] options = new String[] { APPLY, CANCEL };
+        switch (WindowUtils.showOptionDialog(this, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, APPLY)) {
+        case JOptionPane.YES_OPTION:
+            Commitable.sendCommitToFocusOwner();
+            if (!orig.equals(mEditor.getText())) {
+                mRow.setUserDesc(mEditor.getText());
+                mRow.getDataFile().setModified(true);
+            }
+            break;
+        case JOptionPane.NO_OPTION:
+        case JOptionPane.CANCEL_OPTION:
+        case JOptionPane.CLOSED_OPTION:
+        default:
+            break;
         }
     }
 
