@@ -184,7 +184,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mDisabled        = advantage.mDisabled;
         mReference       = advantage.mReference;
         mContainerType   = advantage.mContainerType;
-        mUserDesc        = advantage.mUserDesc;
+        mUserDesc        = dataFile instanceof GURPSCharacter ? advantage.mUserDesc : "";  //$NON-NLS-1$
         mWeapons         = new ArrayList<>(advantage.mWeapons.size());
         for (WeaponStats weapon : advantage.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
@@ -293,7 +293,9 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         } else if (Modifier.TAG_MODIFIER.equals(name)) {
             mModifiers.add(new Modifier(getDataFile(), reader, state));
         } else if (TAG_USER_DESC.equals(name)) {
-            mUserDesc = Text.standardizeLineEndings(reader.readText());
+            if (getDataFile() instanceof GURPSCharacter) {
+                mUserDesc = Text.standardizeLineEndings(reader.readText());
+            }
         } else if (!canHaveChildren()) {
             if (TAG_TYPE.equals(name)) {
                 mType = getTypeFromText(reader.readText());
@@ -411,7 +413,9 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         for (Modifier modifier : mModifiers) {
             modifier.save(out, forUndo);
         }
-        out.simpleTagNotEmpty(TAG_USER_DESC, mUserDesc);
+        if (getDataFile() instanceof GURPSCharacter) {
+            out.simpleTagNotEmpty(TAG_USER_DESC, mUserDesc);
+        }
         out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
     }
 
