@@ -1122,4 +1122,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public String getToolTip(Column column) {
         return AdvantageColumn.values()[column.getID()].getToolTip(this);
     }
+
+    public String getDescriptionToolTip() {
+        return SheetPreferences.showUserDescAsTooltip() ? getUserDesc() : null;
+    }
 }

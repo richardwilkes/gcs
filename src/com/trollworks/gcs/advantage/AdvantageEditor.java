@@ -15,7 +15,6 @@ import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.ModifierListEditor;
-import com.trollworks.gcs.notes.NoteEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
@@ -34,12 +33,10 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
-import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import com.trollworks.toolkit.utility.text.Text;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -48,19 +45,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -273,6 +268,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private MeleeWeaponEditor                     mMeleeWeapons;
     private RangedWeaponEditor                    mRangedWeapons;
     private ModifierListEditor                    mModifiers;
+    private JPanel                                mUserDescEditor;
     private int                                   mLastLevel;
     private int                                   mLastPointsPerLevel;
     private boolean                               mLastHalfLevel;
@@ -390,18 +386,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
 
         mNotesField = createField(advantage.getNotes(), null, NOTES_TOOLTIP);
-        JButton userdesc = new JButton(USER_DESC);
-        userdesc.addActionListener(e -> openUserDescDialog());
-        userdesc.setEnabled(mIsEditable);
-        add(userdesc);
-        row = new FlexRow();
-        row.add(mNotesField);
-        if (mRow.getDataFile() instanceof GURPSCharacter) {
-            mUserDesc = mRow.getUserDesc();
-            row.add(userdesc);
-        }
+        add(mNotesField);
         innerGrid.add(new FlexComponent(createLabel(NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
-        innerGrid.add(row, ri++, 1);
+        innerGrid.add(mNotesField, ri++, 1);
 
         mCategoriesField = createField(advantage.getCategoriesAsString(), null, CATEGORIES_TOOLTIP);
         innerGrid.add(new FlexComponent(createLabel(CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
@@ -496,6 +483,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         } else {
             mTabPanel.addTab(mModifiers.getName(), mModifiers);
         }
+
+        if (mRow.getDataFile() instanceof GURPSCharacter) {
+            mUserDesc       = mRow.getUserDesc();
+            mUserDescEditor = createUserDescEditor();
+            mTabPanel.addTab(USER_DESC_TITLE, mUserDescEditor);
+        }
+
         if (!mIsEditable) {
             UIUtilities.disableControls(mModifiers);
         }
@@ -505,6 +499,41 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         add(mTabPanel);
         outerGrid.add(mTabPanel, 1, 0, 1, 2);
         outerGrid.apply(this);
+    }
+
+    private JPanel createUserDescEditor() {
+        JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JLabel    icon    = new JLabel(GCSImages.getNoteIcons().getImage(64));
+        JTextArea editor  = new JTextArea(mUserDesc);
+        editor.setLineWrap(true);
+        editor.setWrapStyleWord(true);
+        editor.setEnabled(mIsEditable);
+        JScrollPane scroller = new JScrollPane(editor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setMinimumSize(new Dimension(500, 300));
+        icon.setVerticalAlignment(SwingConstants.TOP);
+        icon.setAlignmentY(-1f);
+        content.add(icon);
+        content.add(scroller);
+
+        // editor.setPreferredSize(new Dimension(600, 400));
+        editor.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                mUserDesc = editor.getText();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                mUserDesc = editor.getText();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent arg0) {
+                mUserDesc = editor.getText();
+            }
+        });
+        return content;
     }
 
     private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
@@ -639,19 +668,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     public void finished() {
         if (mTabPanel != null) {
             updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
-        }
-    }
-
-    private void openUserDescDialog() {
-        JPanel    parent  = new JPanel(new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
-        JTextArea editor  = NoteEditor.addContentTo(parent, mUserDesc, GCSImages.getNoteIcons().getImage(64), true);
-        String    title   = MessageFormat.format(WINDOW_TITLE, USER_DESC_TITLE);
-        JPanel    wrapper = new JPanel(new BorderLayout());
-        wrapper.add(parent, BorderLayout.CENTER);
-        int      type    = JOptionPane.YES_NO_OPTION;
-        String[] options = new String[] { APPLY, CANCEL };
-        if (WindowUtils.showOptionDialog(this, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, APPLY) == JOptionPane.YES_OPTION) {
-            mUserDesc = editor.getText();
         }
     }
 

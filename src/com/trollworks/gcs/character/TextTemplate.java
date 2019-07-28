@@ -123,6 +123,8 @@ public class TextTemplate {
     private static final String KEY_DESCRIPTION_MODIFIER_NOTES        = "DESCRIPTION_MODIFIER_NOTES";
     private static final String KEY_DESCRIPTION_NOTES                 = "DESCRIPTION_NOTES";
     private static final String KEY_DESCRIPTION_PRIMARY               = "DESCRIPTION_PRIMARY";
+    private static final String KEY_DESCRIPTION_USER                  = "DESCRIPTION_USER";
+    private static final String KEY_DESCRIPTION_USER_FORMATTED        = "DESCRIPTION_USER_FORMATTED";
     private static final String KEY_DIFFICULTY                        = "DIFFICULTY";
     private static final String KEY_DISADVANTAGE_POINTS               = "DISADVANTAGE_POINTS";
     private static final String KEY_DISADVANTAGES_ALL_LOOP_END        = "DISADVANTAGES_ALL_LOOP_END";
@@ -845,7 +847,10 @@ public class TextTemplate {
                             writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
                             break;
                         case KEY_EQUIPMENT_FORMATTED:
-                            writeEncodedText(out, PARAGRAPH_START + hitLocationEquipment(entry).replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                            String loc = hitLocationEquipment(entry);
+                            if (!loc.isEmpty()) {
+                                writeEncodedText(out, PARAGRAPH_START + loc.replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                            }
                             break;
                         default:
                             writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
@@ -928,6 +933,14 @@ public class TextTemplate {
                                         break;
                                     case KEY_TYPE:
                                         writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
+                                        break;
+                                    case KEY_DESCRIPTION_USER:
+                                        writeEncodedText(out, advantage.getUserDesc());
+                                        break;
+                                    case KEY_DESCRIPTION_USER_FORMATTED:
+                                        if (advantage.getUserDesc().isEmpty()) {
+                                            writeEncodedText(out, PARAGRAPH_START + advantage.getUserDesc().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                                        }
                                         break;
                                     default:
                                         /* Allows the access to notes on modifiers.  Currently only used in the 'Language' loop.
@@ -1715,7 +1728,9 @@ public class TextTemplate {
                                 writeEncodedText(out, note.getDescription());
                                 break;
                             case KEY_NOTE_FORMATTED:
-                                writeEncodedText(out, PARAGRAPH_START + note.getDescription().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                                if (!note.getDescription().isEmpty()) {
+                                    writeEncodedText(out, PARAGRAPH_START + note.getDescription().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                                }
                                 break;
                             case KEY_ID:
                                 writeEncodedText(out, Integer.toString(counter));
