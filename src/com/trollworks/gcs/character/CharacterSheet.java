@@ -242,7 +242,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
         }
-        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, OutputPreferences.BLOCK_LAYOUT_PREF_KEY);
+        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, OutputPreferences.BLOCK_LAYOUT_PREF_KEY, SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY);
     }
 
     /** Call when the sheet is no longer in use. */
@@ -844,7 +844,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
-        if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type) || Profile.ID_BODY_TYPE.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY.equals(type) || OutputPreferences.BLOCK_LAYOUT_PREF_KEY.equals(type)) {
+        if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type) || Profile.ID_BODY_TYPE.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY.equals(type) || OutputPreferences.BLOCK_LAYOUT_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY.equals(type)) {
             markForRebuild();
         } else {
             if (type.startsWith(Advantage.PREFIX)) {

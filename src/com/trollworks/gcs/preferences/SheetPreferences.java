@@ -140,6 +140,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private static String OPTIONAL_DICE_RULES;
     @Localize("Use optional strength rules from the \"Knowing Your Own Strength\" Pyramid article")
     private static String OPTIONAL_STRENGTH_RULES;
+    @Localize("Use optional Thrust damage (Thrust = Swing -2)")
+    private static String OPTIONAL_THRUST_DAMAGE;
     @Localize("Use optional Reduced Swing rules from the  \"Adjusting Swing Damage in Dungeon Fantasy\" No School Grognard article")
     private static String OPTIONAL_REDUCED_SWING;
     @Localize("for the initial scale when opening character sheets, templates and lists")
@@ -271,6 +273,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     /** The auto-naming preference key. */
     public static final String       AUTO_NAME_PREF_KEY               = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
     private static final boolean     DEFAULT_AUTO_NAME                = true;
+    /** The optional Thrust Damage rules preference key. */
+    private static final String      OPTIONAL_THRUST_DAMAGE_KEY       = "UseOptionalThurstDamage"; //$NON-NLS-1$
+    public static final String       OPTIONAL_THRUST_DAMAGE_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
+    private static final boolean     DEFAULT_OPTIONAL_THRUST_DAMAGE   = false;
     private static final String      LENGTH_UNITS_KEY                 = "LengthUnits"; //$NON-NLS-1$
     /** The default length units preference key. */
     public static final String       LENGTH_UNITS_PREF_KEY            = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
@@ -307,6 +313,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JCheckBox                mIncludeUnspentPointsInTotal;
     private JCheckBox                mUseGurpsMetricRules;
     private JCheckBox                mAutoName;
+    private JCheckBox                mUseOptionalThrustDamage;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
@@ -347,6 +354,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     /** @return Whether the optional strength rules (KYOS) are in use. */
     public static boolean areOptionalStrengthRulesUsed() {
         return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_STRENGTH_RULES_KEY, DEFAULT_OPTIONAL_STRENGTH_RULES);
+    }
+
+    /** @return Whether the optional thrust damage (sw-2) rules are in use. */
+    public static boolean areOptionalThrustDamageUsed() {
+        return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_THRUST_DAMAGE_KEY, DEFAULT_OPTIONAL_THRUST_DAMAGE);
     }
 
     /**
@@ -456,6 +468,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
         mUseOptionalReducedSwing = createCheckBox(OPTIONAL_REDUCED_SWING, null, areOptionalReducedSwingUsed());
         column.add(mUseOptionalReducedSwing);
+
+        mUseOptionalThrustDamage = createCheckBox(OPTIONAL_THRUST_DAMAGE, null, areOptionalThrustDamageUsed());
+        column.add(mUseOptionalThrustDamage);
 
         mIncludeUnspentPointsInTotal = createCheckBox(TOTAL_POINTS_INCLUDES_UNSPENT_POINTS, null, shouldIncludeUnspentPointsInTotalPointDisplay());
         column.add(mIncludeUnspentPointsInTotal);
@@ -576,6 +591,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
         mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
         mUseOptionalStrengthRules.setSelected(DEFAULT_OPTIONAL_STRENGTH_RULES);
+        mUseOptionalThrustDamage.setSelected(DEFAULT_OPTIONAL_THRUST_DAMAGE);
         mUseOptionalReducedSwing.setSelected(DEFAULT_OPTIONAL_REDUCED_SWING);
         mIncludeUnspentPointsInTotal.setSelected(DEFAULT_TOTAL_POINTS_DISPLAY);
         mUseGurpsMetricRules.setSelected(DEFAULT_GURPS_METRIC_RULES);
@@ -630,6 +646,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
             Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, mUseOptionalModifierRules.isSelected());
         } else if (source == mUseOptionalStrengthRules) {
             Preferences.getInstance().setValue(MODULE, OPTIONAL_STRENGTH_RULES_KEY, mUseOptionalStrengthRules.isSelected());
+        } else if (source == mUseOptionalThrustDamage) {
+            Preferences.getInstance().setValue(MODULE, OPTIONAL_THRUST_DAMAGE_KEY, mUseOptionalThrustDamage.isSelected());
         } else if (source == mUseOptionalReducedSwing) {
             Preferences.getInstance().setValue(MODULE, OPTIONAL_REDUCED_SWING_KEY, mUseOptionalReducedSwing.isSelected());
         } else if (source == mIncludeUnspentPointsInTotal) {

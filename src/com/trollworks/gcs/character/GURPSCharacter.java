@@ -1132,6 +1132,11 @@ public class GURPSCharacter extends DataFile {
      * @return The basic thrusting damage.
      */
     public static Dice getThrust(int strength) {
+        if (SheetPreferences.areOptionalThrustDamageUsed()) {
+            Dice dice = getSwing(strength);
+            dice.add(-2);
+            return dice;
+        }
         if (SheetPreferences.areOptionalReducedSwingUsed()) {
             if (strength < 19) {
                 return new Dice(1, -(6 - (strength - 1) / 2));
