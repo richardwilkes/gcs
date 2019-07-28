@@ -938,7 +938,7 @@ public class TextTemplate {
                                         writeEncodedText(out, advantage.getUserDesc());
                                         break;
                                     case KEY_DESCRIPTION_USER_FORMATTED:
-                                        if (advantage.getUserDesc().isEmpty()) {
+                                        if (!advantage.getUserDesc().isEmpty()) {
                                             writeEncodedText(out, PARAGRAPH_START + advantage.getUserDesc().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
                                         }
                                         break;

@@ -241,7 +241,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private static String WHERE_OBTAIN;
     @Localize("Unable to open {0}")
     private static String UNABLE_TO_OPEN_URL;
-    @Localize("Show User Description as a Tooltip")
+    @Localize("Show Advantage User Description as a Tooltip")
+    @Localize(locale = "de", value = "Vorteilsbenutzerbeschreibung als QuickInfo anzeigen")
+    @Localize(locale = "ru",
+              value = "Показать описание пользователя Advantage в виде всплывающей подсказки")
+    @Localize(locale = "es",
+              value = "Mostrar la descripción del usuario de Advantage como información sobre herramientas")
     private static String SHOW_USER_DESC_AS_TOOL_TIP;
 
     static {
@@ -289,6 +294,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     /** The GURPS Metric preference key. */
     public static final String       GURPS_METRIC_RULES_PREF_KEY        = Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
 
+    public static final String       SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip";
     private static final boolean     DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP = true;
 
     private static final boolean     DEFAULT_GURPS_METRIC_RULES         = true;
@@ -398,7 +404,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     }
 
     public static boolean showUserDescAsTooltip() {
-        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_USER_DESC_AS_TOOL_TIP, DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP);
+        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_USER_DESC_AS_TOOL_TIP_KEY, DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP);
     }
 
     /**
@@ -649,6 +655,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
             Preferences.getInstance().setValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, mIncludeUnspentPointsInTotal.isSelected());
         } else if (source == mUseGurpsMetricRules) {
             Preferences.getInstance().setValue(MODULE, GURPS_METRIC_RULES_KEY, mUseGurpsMetricRules.isSelected());
+        } else if (source == mShowUserDescAsToolTips) {
+            Preferences.getInstance().setValue(MODULE, SHOW_USER_DESC_AS_TOOL_TIP_KEY, mShowUserDescAsToolTips.isSelected());
         } else if (source == mAutoName) {
             Preferences.getInstance().setValue(MODULE, AUTO_NAME_KEY, mAutoName.isSelected());
         }
