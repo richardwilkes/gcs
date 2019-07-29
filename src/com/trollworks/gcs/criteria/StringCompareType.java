@@ -207,10 +207,12 @@ public enum StringCompareType {
      */
     public abstract boolean matches(String qualifier, String data);
 
+    @SuppressWarnings("static-method")
     public boolean isTypeIs() {
         return false;
     }
 
+    @SuppressWarnings("static-method")
     public boolean isTypeAnything() {
         return false;
     }

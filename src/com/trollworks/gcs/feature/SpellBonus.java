@@ -37,7 +37,6 @@ public class SpellBonus extends Bonus {
     public static final String  ATTRIBUTE_ALL_COLLEGES = "all_colleges"; //$NON-NLS-1$
     private static final String TAG_CATEGORY           = "category"; //$NON-NLS-1$
     private static final String EMPTY                  = ""; //$NON-NLS-1$
-    private static final String COMMA                  = ","; //$NON-NLS-1$
     private boolean             mAllColleges;
     private String              mMatchType;
     private StringCriteria      mNameCriteria;

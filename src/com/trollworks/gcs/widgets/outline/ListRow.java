@@ -119,7 +119,7 @@ public abstract class ListRow extends Row {
     }
 
     public static Set<String> createCategoriesList(String categories) {
-        TreeSet cats = new TreeSet();
+        TreeSet<String> cats = new TreeSet<>();
         for (String category : createList(categories)) {
             cats.add(category);
         }

@@ -248,12 +248,9 @@ public abstract class WeaponStats {
     public String getResolvedDamage(StringBuilder toolTip) {
         DataFile df     = mOwner.getDataFile();
         String   damage = mDamage;
-
         if (df instanceof GURPSCharacter) {
-            GURPSCharacter       character  = (GURPSCharacter) df;
-            HashSet<WeaponBonus> bonuses    = new HashSet<>();
-            Set<String>          categories = getOwner() instanceof Equipment ? ((Equipment) getOwner()).getCategories() : null;
-
+            GURPSCharacter       character = (GURPSCharacter) df;
+            HashSet<WeaponBonus> bonuses   = new HashSet<>();
             for (SkillDefault one : getDefaults()) {
                 if (one.getType().isSkillBased()) {
                     bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), getCategories(), toolTip)); //$NON-NLS-1$

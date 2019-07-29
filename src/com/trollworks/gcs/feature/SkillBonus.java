@@ -31,7 +31,6 @@ public class SkillBonus extends Bonus {
     private static final String TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
     private static final String TAG_CATEGORY       = "category"; //$NON-NLS-1$
     private static final String EMPTY              = ""; //$NON-NLS-1$
-    private static final String COMMA              = ","; //$NON-NLS-1$
     private StringCriteria      mNameCriteria;
     private StringCriteria      mSpecializationCriteria;
     private StringCriteria      mCategoryCriteria;
