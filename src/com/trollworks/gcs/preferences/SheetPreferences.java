@@ -280,11 +280,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     /** The auto-naming preference key. */
     public static final String       AUTO_NAME_PREF_KEY                 = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
     private static final boolean     DEFAULT_AUTO_NAME                  = true;
-    private static final String      LENGTH_UNITS_KEY                   = "LengthUnits"; //$NON-NLS-1$
     /** The optional Thrust Damage rules preference key. */
     private static final String      OPTIONAL_THRUST_DAMAGE_KEY         = "UseOptionalThurstDamage"; //$NON-NLS-1$
     public static final String       OPTIONAL_THRUST_DAMAGE_PREF_KEY    = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
     private static final boolean     DEFAULT_OPTIONAL_THRUST_DAMAGE     = false;
+    private static final String      LENGTH_UNITS_KEY                   = "LengthUnits"; //$NON-NLS-1$
     /** The default length units preference key. */
     public static final String       LENGTH_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
     private static final LengthUnits DEFAULT_LENGTH_UNITS               = LengthUnits.FT_IN;
