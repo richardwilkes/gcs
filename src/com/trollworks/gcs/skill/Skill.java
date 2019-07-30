@@ -846,7 +846,11 @@ public class Skill extends ListRow implements HasSourceReference {
             } else if (level > baseLine + 1) {
                 best.setPoints(4 * (level - (baseLine + 1)));
             } else {
-                best.setPoints(-best.getLevel());
+                level = best.getLevel();
+                if (level < 0) {
+                    level = 0;
+                }
+                best.setPoints(-level);
             }
         }
         return best;
