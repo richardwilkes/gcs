@@ -12,6 +12,7 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.app.GCSImages;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.ModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
@@ -24,10 +25,12 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.Alignment;
+import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.FlexComponent;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
+import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.Localization;
@@ -51,6 +54,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -229,6 +234,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Localize(locale = "ru", value = "Сверхъестественное")
     @Localize(locale = "es", value = "Sobrenatural")
     private static String SUPERNATURAL;
+    @Localize("User Desc.")
+    private static String USER_DESC;
+    @Localize("User Description")
+    @Localize(locale = "de", value = "Benutzerbeschreibung")
+    @Localize(locale = "ru", value = "Описание пользователя")
+    @Localize(locale = "es", value = "Descripción de usuario")
+    private static String USER_DESC_TITLE;
     @Localize("Enabled")
     private static String ENABLED_TITLE;
     @Localize("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")
@@ -256,6 +268,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private MeleeWeaponEditor                     mMeleeWeapons;
     private RangedWeaponEditor                    mRangedWeapons;
     private ModifierListEditor                    mModifiers;
+    private JPanel                                mUserDescEditor;
     private int                                   mLastLevel;
     private int                                   mLastPointsPerLevel;
     private boolean                               mLastHalfLevel;
@@ -268,6 +281,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private JComboBox<AdvantageContainerType>     mContainerTypeCombo;
     private JComboBox<SelfControlRoll>            mCRCombo;
     private JComboBox<SelfControlRollAdjustments> mCRAdjCombo;
+    private String                                mUserDesc;
 
     /**
      * Creates a new {@link Advantage} editor.
@@ -372,6 +386,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
 
         mNotesField = createField(advantage.getNotes(), null, NOTES_TOOLTIP);
+        add(mNotesField);
         innerGrid.add(new FlexComponent(createLabel(NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
         innerGrid.add(mNotesField, ri++, 1);
 
@@ -468,6 +483,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         } else {
             mTabPanel.addTab(mModifiers.getName(), mModifiers);
         }
+
+        if (mRow.getDataFile() instanceof GURPSCharacter) {
+            mUserDesc       = mRow.getUserDesc();
+            mUserDescEditor = createUserDescEditor();
+            mTabPanel.addTab(USER_DESC_TITLE, mUserDescEditor);
+        }
+
         if (!mIsEditable) {
             UIUtilities.disableControls(mModifiers);
         }
@@ -477,6 +499,41 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         add(mTabPanel);
         outerGrid.add(mTabPanel, 1, 0, 1, 2);
         outerGrid.apply(this);
+    }
+
+    private JPanel createUserDescEditor() {
+        JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JLabel    icon    = new JLabel(GCSImages.getNoteIcons().getImage(64));
+        JTextArea editor  = new JTextArea(mUserDesc);
+        editor.setLineWrap(true);
+        editor.setWrapStyleWord(true);
+        editor.setEnabled(mIsEditable);
+        JScrollPane scroller = new JScrollPane(editor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setMinimumSize(new Dimension(500, 300));
+        icon.setVerticalAlignment(SwingConstants.TOP);
+        icon.setAlignmentY(-1f);
+        content.add(icon);
+        content.add(scroller);
+
+        // editor.setPreferredSize(new Dimension(600, 400));
+        editor.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                mUserDesc = editor.getText();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                mUserDesc = editor.getText();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent arg0) {
+                mUserDesc = editor.getText();
+            }
+        });
+        return content;
     }
 
     private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
@@ -601,6 +658,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         modified |= mRow.setReference((String) mReferenceField.getValue());
         modified |= mRow.setNotes((String) mNotesField.getValue());
         modified |= mRow.setCategories((String) mCategoriesField.getValue());
+        if (mUserDesc != null) {
+            modified |= mRow.setUserDesc(mUserDesc);
+        }
         return modified;
     }
 

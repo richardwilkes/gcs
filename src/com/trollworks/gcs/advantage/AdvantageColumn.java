@@ -81,6 +81,16 @@ public enum AdvantageColumn {
             }
             return builder.toString();
         }
+
+        @Override
+        public boolean showToolTip() {
+            return true;
+        }
+
+        @Override
+        public String getToolTip(Advantage advantage) {
+            return advantage.getDescriptionToolTip();
+        }
     },
     /** The points spent in the advantage. */
     POINTS {

@@ -15,6 +15,7 @@ import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.utility.Localization;
@@ -67,6 +68,10 @@ public class SystemPreferences extends PreferencePanel implements DocumentListen
         mToolTipTimeout = createTextField(TOOLTIP_TIMEOUT, Integer.toString(getToolTipTimeout()));
         row.add(mToolTipTimeout);
         column.add(row);
+
+        column.add(new FlexSpacer(0, 0, false, true));
+
+        column.apply(this);
     }
 
     private JTextField createTextField(String tooltip, String value) {
