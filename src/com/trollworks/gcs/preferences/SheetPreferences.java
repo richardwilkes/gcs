@@ -243,60 +243,71 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private static String WHERE_OBTAIN;
     @Localize("Unable to open {0}")
     private static String UNABLE_TO_OPEN_URL;
+    @Localize("Show Advantage User Description as a Tooltip")
+    @Localize(locale = "de", value = "Vorteilsbenutzerbeschreibung als QuickInfo anzeigen")
+    @Localize(locale = "ru",
+              value = "Показать описание пользователя Advantage в виде всплывающей подсказки")
+    @Localize(locale = "es",
+              value = "Mostrar la descripción del usuario de Advantage como información sobre herramientas")
+    private static String SHOW_USER_DESC_AS_TOOL_TIP;
 
     static {
         Localization.initialize();
     }
 
-    static final String              MODULE                           = "Sheet"; //$NON-NLS-1$
-    private static final String      OPTIONAL_DICE_RULES_KEY          = "UseOptionDiceRules"; //$NON-NLS-1$
+    static final String              MODULE                             = "Sheet"; //$NON-NLS-1$
+    private static final String      OPTIONAL_DICE_RULES_KEY            = "UseOptionDiceRules"; //$NON-NLS-1$
     /** The optional dice rules preference key. */
-    public static final String       OPTIONAL_DICE_RULES_PREF_KEY     = Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES_KEY);
-    private static final boolean     DEFAULT_OPTIONAL_DICE_RULES      = false;
-    private static final String      OPTIONAL_IQ_RULES_KEY            = "UseOptionIQRules"; //$NON-NLS-1$
+    public static final String       OPTIONAL_DICE_RULES_PREF_KEY       = Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES_KEY);
+    private static final boolean     DEFAULT_OPTIONAL_DICE_RULES        = false;
+    private static final String      OPTIONAL_IQ_RULES_KEY              = "UseOptionIQRules"; //$NON-NLS-1$
     /** The optional IQ rules preference key. */
-    public static final String       OPTIONAL_IQ_RULES_PREF_KEY       = Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES_KEY);
-    private static final boolean     DEFAULT_OPTIONAL_IQ_RULES        = false;
-    private static final String      OPTIONAL_MODIFIER_RULES_KEY      = "UseOptionModifierRules"; //$NON-NLS-1$
+    public static final String       OPTIONAL_IQ_RULES_PREF_KEY         = Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES_KEY);
+    private static final boolean     DEFAULT_OPTIONAL_IQ_RULES          = false;
+    private static final String      OPTIONAL_MODIFIER_RULES_KEY        = "UseOptionModifierRules"; //$NON-NLS-1$
     /** The optional modifier rules preference key. */
-    public static final String       OPTIONAL_MODIFIER_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES_KEY);
-    private static final boolean     DEFAULT_OPTIONAL_MODIFIER_RULES  = false;
-    private static final String      OPTIONAL_STRENGTH_RULES_KEY      = "UseOptionalStrengthRules"; //$NON-NLS-1$
+    public static final String       OPTIONAL_MODIFIER_RULES_PREF_KEY   = Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES_KEY);
+    private static final boolean     DEFAULT_OPTIONAL_MODIFIER_RULES    = false;
+    private static final String      OPTIONAL_STRENGTH_RULES_KEY        = "UseOptionalStrengthRules"; //$NON-NLS-1$
     /** The optional Strength rules preference key. */
-    public static final String       OPTIONAL_STRENGTH_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_STRENGTH_RULES_KEY);
-    private static final boolean     DEFAULT_OPTIONAL_STRENGTH_RULES  = false;
-    private static final String      OPTIONAL_REDUCED_SWING_KEY       = "UseOptionalReducedSwing"; //$NON-NLS-1$
+    public static final String       OPTIONAL_STRENGTH_RULES_PREF_KEY   = Preferences.getModuleKey(MODULE, OPTIONAL_STRENGTH_RULES_KEY);
+    private static final boolean     DEFAULT_OPTIONAL_STRENGTH_RULES    = false;
+    private static final String      OPTIONAL_REDUCED_SWING_KEY         = "UseOptionalReducedSwing"; //$NON-NLS-1$
     /** The optional Reduced Swing rules preference key. */
-    public static final String       OPTIONAL_REDUCED_SWING_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_REDUCED_SWING_KEY);
-    private static final boolean     DEFAULT_OPTIONAL_REDUCED_SWING   = false;
-    private static final String      AUTO_NAME_KEY                    = "AutoNameNewCharacters"; //$NON-NLS-1$
+    public static final String       OPTIONAL_REDUCED_SWING_PREF_KEY    = Preferences.getModuleKey(MODULE, OPTIONAL_REDUCED_SWING_KEY);
+    private static final boolean     DEFAULT_OPTIONAL_REDUCED_SWING     = false;
+    private static final String      AUTO_NAME_KEY                      = "AutoNameNewCharacters"; //$NON-NLS-1$
     /** The auto-naming preference key. */
-    public static final String       AUTO_NAME_PREF_KEY               = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
-    private static final boolean     DEFAULT_AUTO_NAME                = true;
+    public static final String       AUTO_NAME_PREF_KEY                 = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
+    private static final boolean     DEFAULT_AUTO_NAME                  = true;
     /** The optional Thrust Damage rules preference key. */
-    private static final String      OPTIONAL_THRUST_DAMAGE_KEY       = "UseOptionalThurstDamage"; //$NON-NLS-1$
-    public static final String       OPTIONAL_THRUST_DAMAGE_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
-    private static final boolean     DEFAULT_OPTIONAL_THRUST_DAMAGE   = false;
-    private static final String      LENGTH_UNITS_KEY                 = "LengthUnits"; //$NON-NLS-1$
+    private static final String      OPTIONAL_THRUST_DAMAGE_KEY         = "UseOptionalThurstDamage"; //$NON-NLS-1$
+    public static final String       OPTIONAL_THRUST_DAMAGE_PREF_KEY    = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
+    private static final boolean     DEFAULT_OPTIONAL_THRUST_DAMAGE     = false;
+    private static final String      LENGTH_UNITS_KEY                   = "LengthUnits"; //$NON-NLS-1$
     /** The default length units preference key. */
-    public static final String       LENGTH_UNITS_PREF_KEY            = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
-    private static final LengthUnits DEFAULT_LENGTH_UNITS             = LengthUnits.FT_IN;
-    private static final String      WEIGHT_UNITS_KEY                 = "WeightUnits"; //$NON-NLS-1$
+    public static final String       LENGTH_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
+    private static final LengthUnits DEFAULT_LENGTH_UNITS               = LengthUnits.FT_IN;
+    private static final String      WEIGHT_UNITS_KEY                   = "WeightUnits"; //$NON-NLS-1$
     /** The default weight units preference key. */
-    public static final String       WEIGHT_UNITS_PREF_KEY            = Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
-    private static final WeightUnits DEFAULT_WEIGHT_UNITS             = WeightUnits.LB;
-    private static final String      TOTAL_POINTS_DISPLAY_KEY         = "TotalPointsIncludesUnspentPoints"; //$NON-NLS-1$
+    public static final String       WEIGHT_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
+    private static final WeightUnits DEFAULT_WEIGHT_UNITS               = WeightUnits.LB;
+    private static final String      TOTAL_POINTS_DISPLAY_KEY           = "TotalPointsIncludesUnspentPoints"; //$NON-NLS-1$
     /** The total points includes unspent points preference key. */
-    public static final String       TOTAL_POINTS_DISPLAY_PREF_KEY    = Preferences.getModuleKey(MODULE, TOTAL_POINTS_DISPLAY_KEY);
-    private static final boolean     DEFAULT_TOTAL_POINTS_DISPLAY     = true;
-    private static final String      GURPS_METRIC_RULES_KEY           = "UseGurpsMetricRules"; //$NON-NLS-1$
+    public static final String       TOTAL_POINTS_DISPLAY_PREF_KEY      = Preferences.getModuleKey(MODULE, TOTAL_POINTS_DISPLAY_KEY);
+    private static final boolean     DEFAULT_TOTAL_POINTS_DISPLAY       = true;
+    private static final String      GURPS_METRIC_RULES_KEY             = "UseGurpsMetricRules"; //$NON-NLS-1$
     /** The GURPS Metric preference key. */
-    public static final String       GURPS_METRIC_RULES_PREF_KEY      = Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
-    private static final boolean     DEFAULT_GURPS_METRIC_RULES       = true;
-    private static final Scales      DEFAULT_SCALE                    = Scales.ACTUAL_SIZE;
-    private static final String      SCALE_KEY                        = "UIScale"; //$NON-NLS-1$
-    private static final String      INITIAL_POINTS_KEY               = "InitialPoints"; //$NON-NLS-1$
-    private static final int         DEFAULT_INITIAL_POINTS           = 100;
+    public static final String       GURPS_METRIC_RULES_PREF_KEY        = Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
+
+    public static final String       SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip";
+    private static final boolean     DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP = true;
+
+    private static final boolean     DEFAULT_GURPS_METRIC_RULES         = true;
+    private static final Scales      DEFAULT_SCALE                      = Scales.ACTUAL_SIZE;
+    private static final String      SCALE_KEY                          = "UIScale"; //$NON-NLS-1$
+    private static final String      INITIAL_POINTS_KEY                 = "InitialPoints"; //$NON-NLS-1$
+    private static final int         DEFAULT_INITIAL_POINTS             = 100;
     private JTextField               mPlayerName;
     private JTextField               mCampaign;
     private JTextField               mTechLevel;
@@ -313,6 +324,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JCheckBox                mIncludeUnspentPointsInTotal;
     private JCheckBox                mUseGurpsMetricRules;
     private JCheckBox                mAutoName;
+    private JCheckBox                mShowUserDescAsToolTips;
     private JCheckBox                mUseOptionalThrustDamage;
 
     /** Initializes the services controlled by these preferences. */
@@ -403,6 +415,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         return Preferences.getInstance().getIntValue(MODULE, INITIAL_POINTS_KEY, DEFAULT_INITIAL_POINTS);
     }
 
+    public static boolean showUserDescAsTooltip() {
+        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_USER_DESC_AS_TOOL_TIP_KEY, DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP);
+    }
+
     /**
      * Creates a new {@link SheetPreferences}.
      *
@@ -477,6 +493,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
         mUseGurpsMetricRules = createCheckBox(USE_METRIC_RULES, null, areGurpsMetricRulesUsed());
         column.add(mUseGurpsMetricRules);
+
+        mShowUserDescAsToolTips = createCheckBox(SHOW_USER_DESC_AS_TOOL_TIP, SHOW_USER_DESC_AS_TOOL_TIP, showUserDescAsTooltip());
+        column.add(mShowUserDescAsToolTips);
 
         row = new FlexRow();
         row.add(createLabel(USE, null));
@@ -654,6 +673,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
             Preferences.getInstance().setValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, mIncludeUnspentPointsInTotal.isSelected());
         } else if (source == mUseGurpsMetricRules) {
             Preferences.getInstance().setValue(MODULE, GURPS_METRIC_RULES_KEY, mUseGurpsMetricRules.isSelected());
+        } else if (source == mShowUserDescAsToolTips) {
+            Preferences.getInstance().setValue(MODULE, SHOW_USER_DESC_AS_TOOL_TIP_KEY, mShowUserDescAsToolTips.isSelected());
         } else if (source == mAutoName) {
             Preferences.getInstance().setValue(MODULE, AUTO_NAME_KEY, mAutoName.isSelected());
         }

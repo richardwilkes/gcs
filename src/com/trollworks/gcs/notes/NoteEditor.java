@@ -13,6 +13,7 @@ package com.trollworks.gcs.notes;
 
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.utility.Localization;
@@ -35,6 +36,24 @@ public class NoteEditor extends RowEditor<Note> {
         Localization.initialize();
     }
 
+    public static JTextArea addContentTo(JPanel parent, String description, StdImage image, boolean editable) {
+        JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JLabel    icon    = new JLabel(image);
+
+        JTextArea editor  = new JTextArea(description);
+        editor.setLineWrap(true);
+        editor.setWrapStyleWord(true);
+        editor.setEnabled(editable);
+        JScrollPane scroller = new JScrollPane(editor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroller.setMinimumSize(new Dimension(400, 300));
+        icon.setVerticalAlignment(SwingConstants.TOP);
+        icon.setAlignmentY(-1f);
+        content.add(icon);
+        content.add(scroller);
+        parent.add(content);
+        return editor;
+    }
+
     private JTextArea mEditor;
 
     /**
@@ -44,21 +63,7 @@ public class NoteEditor extends RowEditor<Note> {
      */
     public NoteEditor(Note note) {
         super(note);
-
-        JPanel content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
-        JLabel icon    = new JLabel(note.getIcon(true));
-
-        mEditor = new JTextArea(note.getDescription());
-        mEditor.setLineWrap(true);
-        mEditor.setWrapStyleWord(true);
-        mEditor.setEnabled(mIsEditable);
-        JScrollPane scroller = new JScrollPane(mEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scroller.setMinimumSize(new Dimension(400, 300));
-        icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
-        content.add(icon);
-        content.add(scroller);
-        add(content);
+        mEditor = addContentTo(this, note.getDescription(), note.getIcon(true), mIsEditable);
     }
 
     @Override

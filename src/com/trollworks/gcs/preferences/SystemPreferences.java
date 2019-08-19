@@ -67,6 +67,8 @@ public class SystemPreferences extends PreferencePanel implements DocumentListen
         mToolTipTimeout = createTextField(TOOLTIP_TIMEOUT, Integer.toString(getToolTipTimeout()));
         row.add(mToolTipTimeout);
         column.add(row);
+
+        column.apply(this);
     }
 
     private JTextField createTextField(String tooltip, String value) {

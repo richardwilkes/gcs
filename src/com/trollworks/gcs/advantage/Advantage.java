@@ -35,6 +35,7 @@ import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.Localization;
 import com.trollworks.toolkit.utility.text.Enums;
+import com.trollworks.toolkit.utility.text.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String        TAG_TYPE                   = "type"; //$NON-NLS-1$
     private static final String        TAG_NAME                   = "name"; //$NON-NLS-1$
     private static final String        TAG_CR                     = "cr"; //$NON-NLS-1$
+    private static final String        TAG_USER_DESC              = "userdesc"; //$NON-NLS-1$
     private static final String        TYPE_MENTAL                = "Mental"; //$NON-NLS-1$
     private static final String        TYPE_PHYSICAL              = "Physical"; //$NON-NLS-1$
     private static final String        TYPE_SOCIAL                = "Social"; //$NON-NLS-1$
@@ -110,6 +112,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public static final String         ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus"; //$NON-NLS-1$
     /** The field ID for when the advantage gets Modifiers. */
     public static final String         ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier"; //$NON-NLS-1$
+    /** The field ID for user description changes. */
+    public static final String         ID_USER_DESC               = PREFIX + "UserDesc"; //$NON-NLS-1$
     /** The type mask for mental advantages. */
     public static final int            TYPE_MASK_MENTAL           = 1 << 0;
     /** The type mask for physical advantages. */
@@ -136,6 +140,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private ArrayList<Modifier>        mModifiers;
     private boolean                    mRoundCostDown;
     private boolean                    mDisabled;
+    private String                     mUserDesc;
 
     /**
      * Creates a new advantage.
@@ -154,6 +159,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mContainerType = AdvantageContainerType.GROUP;
         mWeapons       = new ArrayList<>();
         mModifiers     = new ArrayList<>();
+        mUserDesc      = ""; //$NON-NLS-1$
     }
 
     /**
@@ -178,6 +184,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mDisabled        = advantage.mDisabled;
         mReference       = advantage.mReference;
         mContainerType   = advantage.mContainerType;
+        mUserDesc        = dataFile instanceof GURPSCharacter ? advantage.mUserDesc : "";  //$NON-NLS-1$
         mWeapons         = new ArrayList<>(advantage.mWeapons.size());
         for (WeaponStats weapon : advantage.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
@@ -256,6 +263,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mOldPointsString = null;
         mWeapons         = new ArrayList<>();
         mModifiers       = new ArrayList<>();
+        mUserDesc        = "";//$NON-NLS-1$
     }
 
     @Override
@@ -284,6 +292,10 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             addChild(new Advantage(mDataFile, reader, state));
         } else if (Modifier.TAG_MODIFIER.equals(name)) {
             mModifiers.add(new Modifier(getDataFile(), reader, state));
+        } else if (TAG_USER_DESC.equals(name)) {
+            if (getDataFile() instanceof GURPSCharacter) {
+                mUserDesc = Text.standardizeLineEndings(reader.readText());
+            }
         } else if (!canHaveChildren()) {
             if (TAG_TYPE.equals(name)) {
                 mType = getTypeFromText(reader.readText());
@@ -401,6 +413,9 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         for (Modifier modifier : mModifiers) {
             modifier.save(out, forUndo);
         }
+        if (getDataFile() instanceof GURPSCharacter) {
+            out.simpleTagNotEmpty(TAG_USER_DESC, mUserDesc);
+        }
         out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
     }
 
@@ -448,6 +463,19 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     /** @return The name. */
     public String getName() {
         return mName;
+    }
+
+    public String getUserDesc() {
+        return mUserDesc;
+    }
+
+    public boolean setUserDesc(String desc) {
+        if (!mUserDesc.equals(desc)) {
+            mUserDesc = desc;
+            notifySingle(ID_USER_DESC);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1093,5 +1121,9 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     public String getToolTip(Column column) {
         return AdvantageColumn.values()[column.getID()].getToolTip(this);
+    }
+
+    public String getDescriptionToolTip() {
+        return SheetPreferences.showUserDescAsTooltip() ? getUserDesc() : null;
     }
 }
