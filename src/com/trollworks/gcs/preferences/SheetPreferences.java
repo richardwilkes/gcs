@@ -300,7 +300,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     /** The GURPS Metric preference key. */
     public static final String       GURPS_METRIC_RULES_PREF_KEY        = Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
 
-    public static final String       SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip";
+    public static final String       SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip"; //$NON-NLS-1$
     private static final boolean     DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP = true;
 
     private static final boolean     DEFAULT_GURPS_METRIC_RULES         = true;
@@ -452,10 +452,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mInitialPoints = createTextField(INITIAL_POINTS_TOOLTIP, Integer.toString(getInitialPoints()));
         grid.add(mInitialPoints, rowIndex++, 2);
 
-        grid.add(new FlexSpacer(0, 0, false, true), rowIndex, 1);
-        grid.add(new FlexSpacer(0, 0, true, true), rowIndex, 2);
-
-        addSeparator(column);
+        grid.add(new FlexSpacer(0, 0, false, false), rowIndex, 1);
+        grid.add(new FlexSpacer(0, 0, true, false), rowIndex, 2);
 
         FlexRow row = new FlexRow();
         row.add(createLabel(USE, null));
