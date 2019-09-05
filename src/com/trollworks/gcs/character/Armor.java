@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,7 +16,7 @@ import com.trollworks.gcs.feature.HitLocation;
 /** Tracks the current armor levels. */
 public class Armor {
     /** The prefix used in front of all IDs for damage resistance. */
-    public static final String  DR_PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "dr."; //$NON-NLS-1$
+    public static final String  DR_PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "dr.";
     /** The skull hit location's DR. */
     public static final String  ID_SKULL_DR                 = DR_PREFIX + HitLocation.SKULL.name();
     /** The eyes hit location's DR. */

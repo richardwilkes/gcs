@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,48 +12,22 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import javax.swing.SwingConstants;
 
 /** The character player info panel. */
 public class PlayerInfoPanel extends DropPanel {
-    @Localize("Player Information")
-    @Localize(locale = "de", value = "Spielerinformation")
-    @Localize(locale = "ru", value = "Информация об игроке")
-    @Localize(locale = "es", value = "Información del Juagador")
-    private static String PLAYER_INFO;
-    @Localize("Player:")
-    @Localize(locale = "de", value = "Spieler:")
-    @Localize(locale = "ru", value = "Игрок:")
-    @Localize(locale = "es", value = "Jugador:")
-    private static String PLAYER_NAME;
-    @Localize("Campaign:")
-    @Localize(locale = "de", value = "Kampagne:")
-    @Localize(locale = "ru", value = "Компания:")
-    @Localize(locale = "es", value = "Campaña:")
-    private static String CAMPAIGN;
-    @Localize("Created On:")
-    @Localize(locale = "de", value = "Erstellt am:")
-    @Localize(locale = "ru", value = "Создан:")
-    @Localize(locale = "es", value = "Creado el:")
-    private static String CREATED_ON;
-
-    static {
-        Localization.initialize();
-    }
-
     /**
      * Creates a new player info panel.
      *
      * @param sheet The sheet to display the data for.
      */
     public PlayerInfoPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(2, 2, 0), PLAYER_INFO);
-        createLabelAndField(this, sheet, Profile.ID_PLAYER_NAME, PLAYER_NAME, null, SwingConstants.LEFT);
-        createLabelAndField(this, sheet, Profile.ID_CAMPAIGN, CAMPAIGN, null, SwingConstants.LEFT);
-        createLabelAndField(this, sheet, GURPSCharacter.ID_CREATED_ON, CREATED_ON, null, SwingConstants.LEFT);
+        super(new ColumnLayout(2, 2, 0), I18n.Text("Player Information"));
+        createLabelAndField(this, sheet, Profile.ID_PLAYER_NAME, I18n.Text("Player:"), null, SwingConstants.LEFT);
+        createLabelAndField(this, sheet, Profile.ID_CAMPAIGN, I18n.Text("Campaign:"), null, SwingConstants.LEFT);
+        createLabelAndField(this, sheet, GURPSCharacter.ID_CREATED_ON, I18n.Text("Created On:"), null, SwingConstants.LEFT);
     }
 }

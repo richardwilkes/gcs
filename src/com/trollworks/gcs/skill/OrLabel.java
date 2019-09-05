@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.Graphics;
@@ -24,16 +23,6 @@ import javax.swing.SwingConstants;
 
 /** A label that displays the "or" message, or nothing if it is the first one. */
 public class OrLabel extends JLabel {
-    @Localize("or")
-    @Localize(locale = "de", value = "oder")
-    @Localize(locale = "ru", value = "или")
-    @Localize(locale = "es", value = "o")
-    private static String OR;
-
-    static {
-        Localization.initialize();
-    }
-
     private Component mOwner;
 
     /**
@@ -42,14 +31,14 @@ public class OrLabel extends JLabel {
      * @param owner The owning component.
      */
     public OrLabel(Component owner) {
-        super(OR, SwingConstants.RIGHT);
+        super(I18n.Text("or"), SwingConstants.RIGHT);
         mOwner = owner;
         UIUtilities.setOnlySize(this, getPreferredSize());
     }
 
     @Override
     protected void paintComponent(Graphics gc) {
-        setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? OR : ""); //$NON-NLS-1$
+        setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? I18n.Text("or") : "");
         super.paintComponent(GraphicsUtilities.prepare(gc));
     }
 }

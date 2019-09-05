@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -28,12 +28,11 @@ import java.util.Set;
 /** A weapon bonus. */
 public class WeaponBonus extends Bonus {
     /** The XML tag. */
-    public static final String  TAG_ROOT           = "weapon_bonus"; //$NON-NLS-1$
-    private static final String TAG_NAME           = "name"; //$NON-NLS-1$
-    private static final String TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
-    private static final String TAG_LEVEL          = "level"; //$NON-NLS-1$
-    private static final String TAG_CATEGORY       = "category"; //$NON-NLS-1$
-    private static final String EMPTY              = ""; //$NON-NLS-1$
+    public static final String  TAG_ROOT           = "weapon_bonus";
+    private static final String TAG_NAME           = "name";
+    private static final String TAG_SPECIALIZATION = "specialization";
+    private static final String TAG_LEVEL          = "level";
+    private static final String TAG_CATEGORY       = "category";
     private StringCriteria      mNameCriteria;
     private StringCriteria      mSpecializationCriteria;
     private IntegerCriteria     mLevelCriteria;
@@ -42,10 +41,10 @@ public class WeaponBonus extends Bonus {
     /** Creates a new skill bonus. */
     public WeaponBonus() {
         super(1);
-        mNameCriteria           = new StringCriteria(StringCompareType.IS, EMPTY);
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
+        mNameCriteria           = new StringCriteria(StringCompareType.IS, "");
+        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
         mLevelCriteria          = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
-        mCategoryCriteria       = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
+        mCategoryCriteria       = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     /**
@@ -102,7 +101,7 @@ public class WeaponBonus extends Bonus {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
-            buffer.append("*"); //$NON-NLS-1$
+            buffer.append("*");
         }
         return buffer.toString();
     }

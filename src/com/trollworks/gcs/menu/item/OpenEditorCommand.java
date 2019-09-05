@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,10 +12,9 @@
 package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -23,24 +22,13 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Open Detail Editor" command. */
 public class OpenEditorCommand extends Command {
-    @Localize("Open Detail Editor")
-    @Localize(locale = "de", value = "Öffne Detail-Editor")
-    @Localize(locale = "ru", value = "Открыть расширенный редактор")
-    @Localize(locale = "es", value = "Abrir editor de detalles")
-    private static String OPEN_EDITOR;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String            CMD_OPEN_EDITOR = "OpenEditor"; //$NON-NLS-1$
-
+    public static final String            CMD_OPEN_EDITOR = "OpenEditor";
     /** The singleton {@link OpenEditorCommand}. */
     public static final OpenEditorCommand INSTANCE        = new OpenEditorCommand();
 
     private OpenEditorCommand() {
-        super(OPEN_EDITOR, CMD_OPEN_EDITOR, KeyEvent.VK_I);
+        super(I18n.Text("Open Detail Editor"), CMD_OPEN_EDITOR, KeyEvent.VK_I);
     }
 
     @Override

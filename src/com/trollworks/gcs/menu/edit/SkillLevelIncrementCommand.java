@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -22,20 +21,11 @@ import java.awt.event.KeyEvent;
 
 /** Provides "Increase Skill Level" command */
 public class SkillLevelIncrementCommand extends Command {
-    @Localize("Increase Skill Level")
-    @Localize(locale = "ru", value = "Увеличить уровень умения")
-    private static String INCREASE_LEVEL;
-
-    static {
-        Localization.initialize();
-    }
-
-    public static final String                     CMD_INCREASE_LEVEL = "IncreaseLevel"; //$NON-NLS-1$
-
+    public static final String                     CMD_INCREASE_LEVEL = "IncreaseLevel";
     public static final SkillLevelIncrementCommand INSTANCE           = new SkillLevelIncrementCommand();
 
     private SkillLevelIncrementCommand() {
-        super(INCREASE_LEVEL, CMD_INCREASE_LEVEL, KeyEvent.VK_SLASH);
+        super(I18n.Text("Increase Skill Level"), CMD_INCREASE_LEVEL, KeyEvent.VK_SLASH);
     }
 
     @Override
@@ -50,7 +40,7 @@ public class SkillLevelIncrementCommand extends Command {
             setTitle(inc.getIncrementSkillLevelTitle());
         } else {
             setEnabled(false);
-            setTitle(INCREASE_LEVEL);
+            setTitle(I18n.Text("Increase Skill Level"));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,32 +14,20 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.advantage.AdvantagesDockable;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Advantages Library" command. */
 public class NewAdvantagesLibraryCommand extends Command {
-    @Localize("New Advantages Library")
-    @Localize(locale = "de", value = "Neue Vorteils-Liste")
-    @Localize(locale = "ru", value = "Новая библиотека преимуществ")
-    @Localize(locale = "es", value = "Librería de nuevas Ventajas")
-    private static String TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                      CMD_NEW_LIBRARY = "NewAdvantagesLibrary"; //$NON-NLS-1$
-
+    public static final String                      CMD_NEW_LIBRARY = "NewAdvantagesLibrary";
     /** The singleton {@link NewAdvantagesLibraryCommand}. */
     public static final NewAdvantagesLibraryCommand INSTANCE        = new NewAdvantagesLibraryCommand();
 
     private NewAdvantagesLibraryCommand() {
-        super(TITLE, CMD_NEW_LIBRARY);
+        super(I18n.Text("New Advantages Library"), CMD_NEW_LIBRARY);
     }
 
     @Override

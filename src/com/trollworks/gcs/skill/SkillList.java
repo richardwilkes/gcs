@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -27,9 +27,9 @@ public class SkillList extends ListFile {
     /** The current version. */
     public static final int    CURRENT_VERSION = 1;
     /** The XML tag for {@link SkillList}s. */
-    public static final String TAG_ROOT        = "skill_list"; //$NON-NLS-1$
+    public static final String TAG_ROOT        = "skill_list";
     /** The extension for {@link SkillList}s. */
-    public static final String EXTENSION       = "skl"; //$NON-NLS-1$
+    public static final String EXTENSION       = "skl";
 
     @Override
     public int getXMLTagVersion() {

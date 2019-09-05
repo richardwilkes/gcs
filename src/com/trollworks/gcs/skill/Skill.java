@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,13 +23,12 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -43,81 +42,46 @@ import java.util.Set;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
-    @Localize("Skill")
-    @Localize(locale = "de", value = "Fertigkeit")
-    @Localize(locale = "ru", value = "Умение")
-    @Localize(locale = "es", value = "Habilidad")
-    static String DEFAULT_NAME;
-    @Localize("Default: ")
-    @Localize(locale = "de", value = "Grundwert: ")
-    @Localize(locale = "ru", value = "По умолчанию: ")
-    @Localize(locale = "es", value = "Valore por defecto: ")
-    static String DEFAULTED_FROM;
-    @Localize("Encumbrance ")
-    @Localize(locale = "de", value = "Belastung ")
-    @Localize(locale = "ru", value = "Oбременение ")
-    @Localize(locale = "es", value = "Entumecimiento ")
-    static String ENCUMBRANCE;
-    @Localize("Includes modifiers from")
-    @Localize(locale = "de", value = "Enthält Modifikatoren von")
-    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
-    @Localize(locale = "es", value = "Incluye modificadores de")
-    static String INCLUDES;
-    @Localize("No additional modifiers")
-    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
-    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
-    @Localize(locale = "es", value = "No hay modificadores adicionales")
-    static String NO_MODIFIERS;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final int       CURRENT_VERSION          = 2;
     /** The extension for Skill lists. */
-    public static final String     OLD_SKILL_EXTENSION      = "skl"; //$NON-NLS-1$
+    public static final String     OLD_SKILL_EXTENSION      = "skl";
     /** The XML tag used for items. */
-    public static final String     TAG_SKILL                = "skill"; //$NON-NLS-1$
+    public static final String     TAG_SKILL                = "skill";
     /** The XML tag used for containers. */
-    public static final String     TAG_SKILL_CONTAINER      = "skill_container"; //$NON-NLS-1$
-    private static final String    TAG_NAME                 = "name"; //$NON-NLS-1$
-    private static final String    TAG_SPECIALIZATION       = "specialization"; //$NON-NLS-1$
-    private static final String    TAG_TECH_LEVEL           = "tech_level"; //$NON-NLS-1$
-    private static final String    TAG_DIFFICULTY           = "difficulty"; //$NON-NLS-1$
-    private static final String    TAG_POINTS               = "points"; //$NON-NLS-1$
-    private static final String    TAG_REFERENCE            = "reference"; //$NON-NLS-1$
-    private static final String    TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier"; //$NON-NLS-1$
+    public static final String     TAG_SKILL_CONTAINER      = "skill_container";
+    private static final String    TAG_NAME                 = "name";
+    private static final String    TAG_SPECIALIZATION       = "specialization";
+    private static final String    TAG_TECH_LEVEL           = "tech_level";
+    private static final String    TAG_DIFFICULTY           = "difficulty";
+    private static final String    TAG_POINTS               = "points";
+    private static final String    TAG_REFERENCE            = "reference";
+    private static final String    TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";
     /** The prefix used in front of all IDs for the skills. */
-    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill."; //$NON-NLS-1$
+    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill.";
     /** The field ID for name changes. */
-    public static final String     ID_NAME                  = PREFIX + "Name"; //$NON-NLS-1$
+    public static final String     ID_NAME                  = PREFIX + "Name";
     /** The field ID for specialization changes. */
-    public static final String     ID_SPECIALIZATION        = PREFIX + "Specialization"; //$NON-NLS-1$
+    public static final String     ID_SPECIALIZATION        = PREFIX + "Specialization";
     /** The field ID for tech level changes. */
-    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel"; //$NON-NLS-1$
+    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";
     /** The field ID for level changes. */
-    public static final String     ID_LEVEL                 = PREFIX + "Level"; //$NON-NLS-1$
+    public static final String     ID_LEVEL                 = PREFIX + "Level";
     /** The field ID for relative level changes. */
-    public static final String     ID_RELATIVE_LEVEL        = PREFIX + "RelativeLevel"; //$NON-NLS-1$
+    public static final String     ID_RELATIVE_LEVEL        = PREFIX + "RelativeLevel";
     /** The field ID for difficulty changes. */
-    public static final String     ID_DIFFICULTY            = PREFIX + "Difficulty"; //$NON-NLS-1$
+    public static final String     ID_DIFFICULTY            = PREFIX + "Difficulty";
     /** The field ID for point changes. */
-    public static final String     ID_POINTS                = PREFIX + "Points"; //$NON-NLS-1$
+    public static final String     ID_POINTS                = PREFIX + "Points";
     /** The field ID for page reference changes. */
-    public static final String     ID_REFERENCE             = PREFIX + "Reference"; //$NON-NLS-1$
+    public static final String     ID_REFERENCE             = PREFIX + "Reference";
     /** The field ID for enumbrance penalty multiplier changes. */
-    public static final String     ID_ENCUMBRANCE_PENALTY   = PREFIX + "EncMultplier"; //$NON-NLS-1$
+    public static final String     ID_ENCUMBRANCE_PENALTY   = PREFIX + "EncMultplier";
     /** The field ID for when the categories change. */
-    public static final String     ID_CATEGORY              = PREFIX + "Category"; //$NON-NLS-1$
+    public static final String     ID_CATEGORY              = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged"; //$NON-NLS-1$
+    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";
     /** The field ID for when the skill becomes or stops being a weapon. */
-    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus"; //$NON-NLS-1$
-    private static final String    NEWLINE                  = "\n"; //$NON-NLS-1$
-    private static final String    SPACE                    = " "; //$NON-NLS-1$
-    private static final String    EMPTY                    = ""; //$NON-NLS-1$
-    private static final String    ASTERISK                 = "*"; //$NON-NLS-1$
-    private static final String    SLASH                    = "/"; //$NON-NLS-1$
+    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
     private String                 mName;
     private String                 mSpecialization;
     private String                 mTechLevel;
@@ -142,12 +106,12 @@ public class Skill extends ListRow implements HasSourceReference {
      */
     public static String getSkillDisplayLevel(int level, int relativeLevel, SkillAttribute attribute, boolean isContainer) {
         if (isContainer) {
-            return EMPTY;
+            return "";
         }
         if (level < 0) {
-            return "-"; //$NON-NLS-1$
+            return "-";
         }
-        return Numbers.format(level) + SLASH + attribute + Numbers.formatWithForcedSign(relativeLevel);
+        return Numbers.format(level) + "/" + attribute + Numbers.formatWithForcedSign(relativeLevel);
     }
 
     /**
@@ -159,12 +123,12 @@ public class Skill extends ListRow implements HasSourceReference {
     public Skill(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
         mName           = getLocalizedName();
-        mSpecialization = EMPTY;
+        mSpecialization = "";
         mTechLevel      = null;
         mAttribute      = SkillAttribute.DX;
         mDifficulty     = SkillDifficulty.A;
         mPoints         = 1;
-        mReference      = EMPTY;
+        mReference      = "";
         mWeapons        = new ArrayList<>();
         updateLevel(false);
     }
@@ -193,7 +157,7 @@ public class Skill extends ListRow implements HasSourceReference {
             }
         } else {
             if (mTechLevel != null && mTechLevel.trim().length() > 0) {
-                mTechLevel = EMPTY;
+                mTechLevel = "";
             }
         }
         mWeapons = new ArrayList<>(skill.mWeapons.size());
@@ -262,7 +226,7 @@ public class Skill extends ListRow implements HasSourceReference {
 
     @Override
     public String getLocalizedName() {
-        return DEFAULT_NAME;
+        return I18n.Text("Skill");
     }
 
     @Override
@@ -282,19 +246,19 @@ public class Skill extends ListRow implements HasSourceReference {
 
     @Override
     public String getRowType() {
-        return DEFAULT_NAME;
+        return I18n.Text("Skill");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mName                         = getLocalizedName();
-        mSpecialization               = EMPTY;
+        mSpecialization               = "";
         mTechLevel                    = null;
         mAttribute                    = SkillAttribute.DX;
         mDifficulty                   = SkillDifficulty.A;
         mPoints                       = 1;
-        mReference                    = EMPTY;
+        mReference                    = "";
         mEncumbrancePenaltyMultiplier = 0;
         mWeapons                      = new ArrayList<>();
     }
@@ -303,26 +267,26 @@ public class Skill extends ListRow implements HasSourceReference {
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
         String name = reader.getName();
         if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace(NEWLINE, SPACE);
+            mName = reader.readText().replace("\n", " ");
         } else if (TAG_SPECIALIZATION.equals(name)) {
-            mSpecialization = reader.readText().replace(NEWLINE, SPACE);
+            mSpecialization = reader.readText().replace("\n", " ");
         } else if (TAG_TECH_LEVEL.equals(name)) {
-            mTechLevel = reader.readText().replace(NEWLINE, SPACE);
+            mTechLevel = reader.readText().replace("\n", " ");
             if (mTechLevel != null) {
                 DataFile dataFile = getDataFile();
                 if (dataFile instanceof ListFile || dataFile instanceof LibraryFile) {
-                    mTechLevel = EMPTY;
+                    mTechLevel = "";
                 }
             }
         } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace(NEWLINE, SPACE);
+            mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_SKILL.equals(name) || TAG_SKILL_CONTAINER.equals(name))) {
             addChild(new Skill(mDataFile, reader, state));
         } else if (!state.mForUndo && Technique.TAG_TECHNIQUE.equals(name)) {
             addChild(new Technique(mDataFile, reader, state));
         } else if (!canHaveChildren()) {
             if (TAG_DIFFICULTY.equals(name)) {
-                setDifficultyFromText(reader.readText().replace(NEWLINE, SPACE));
+                setDifficultyFromText(reader.readText().replace("\n", " "));
             } else if (TAG_POINTS.equals(name)) {
                 mPoints = reader.readInteger(1);
             } else if (TAG_ENCUMBRANCE_PENALTY.equals(name)) {
@@ -623,7 +587,7 @@ public class Skill extends ListRow implements HasSourceReference {
             // We have to go backwards through the list to avoid the
             // regex grabbing the "H" in "VH".
             for (int j = difficulty.length - 1; j >= 0; j--) {
-                if (input.matches("(?i).*" + element.name() + ".*/.*" + difficulty[j].name() + ".*")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                if (input.matches("(?i).*" + element.name() + ".*/.*" + difficulty[j].name() + ".*")) {
                     setDifficulty(element, difficulty[j]);
                     return;
                 }
@@ -642,11 +606,11 @@ public class Skill extends ListRow implements HasSourceReference {
      */
     public String getDifficultyAsText(boolean localized) {
         if (canHaveChildren()) {
-            return EMPTY;
+            return "";
         }
         StringBuilder buffer = new StringBuilder();
         buffer.append(localized ? mAttribute.toString() : mAttribute.name());
-        buffer.append(SLASH);
+        buffer.append("/");
         buffer.append(localized ? mDifficulty.toString() : mDifficulty.name());
         return buffer.toString();
     }
@@ -661,14 +625,14 @@ public class Skill extends ListRow implements HasSourceReference {
             String specialization = getSpecialization();
 
             if (techLevel != null) {
-                builder.append("/TL"); //$NON-NLS-1$
+                builder.append("/TL");
                 if (techLevel.length() > 0) {
                     builder.append(techLevel);
                 }
             }
 
             if (specialization.length() > 0) {
-                builder.append(" ("); //$NON-NLS-1$
+                builder.append(" (");
                 builder.append(specialization);
                 builder.append(')');
             }
@@ -684,7 +648,7 @@ public class Skill extends ListRow implements HasSourceReference {
             if (buffer.length() > 0) {
                 buffer.append(' ');
             }
-            buffer.append(DEFAULTED_FROM);
+            buffer.append(I18n.Text("Default: "));
             buffer.append(skill);
             buffer.append(mDefaultedFrom.getModifierAsString());
         }
@@ -746,16 +710,16 @@ public class Skill extends ListRow implements HasSourceReference {
                     }
                 }
                 if (character != null) {
-                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, specialization, categories, toolTip);
+                    int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip);
                     level         += bonus;
                     relativeLevel += bonus;
-                    bonus          = character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase(), toolTip);
+                    bonus          = character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip);
                     level         += bonus;
                     relativeLevel += bonus;
                     bonus          = character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
                     level         += bonus;
                     if (bonus != 0) {
-                        toolTip.append("\n").append(ENCUMBRANCE).append(" [").append(bonus).append("]");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        toolTip.append(String.format(I18n.Text("\nEncumbrance [%d]"), Integer.valueOf(bonus)));
                     }
                 }
             }
@@ -874,8 +838,8 @@ public class Skill extends ListRow implements HasSourceReference {
                         if (skillDefault.getType().isSkillBased()) {
                             String name  = skillDefault.getName();
                             Skill  skill = character.getBestSkillNamed(name, skillDefault.getSpecialization(), true, excludes);
-                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + ASTERISK, name, skillDefault.getSpecialization(), skill.getCategories());
-                            level -= character.getIntegerBonusFor(ID_NAME + SLASH + name.toLowerCase());
+                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, skillDefault.getSpecialization(), skill.getCategories());
+                            level -= character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase());
                         }
                         if (level > best) {
                             best      = level;

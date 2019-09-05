@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,40 +16,14 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.EditorField;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Container;
 import java.util.List;
 
 /** An editor for melee weapon statistics. */
 public class MeleeWeaponEditor extends WeaponEditor {
-    @Localize("Melee Weapon")
-    @Localize(locale = "de", value = "Nahkampfwaffe")
-    @Localize(locale = "ru", value = "Контактное оружие")
-    @Localize(locale = "es", value = "Arma de cuerpo a cuerpo")
-    private static String MELEE_WEAPON;
-    @Localize("Reach")
-    @Localize(locale = "de", value = "Reichweite")
-    @Localize(locale = "ru", value = "Досягаемость")
-    @Localize(locale = "es", value = "Alcance")
-    private static String REACH;
-    @Localize("Parry Modifier")
-    @Localize(locale = "de", value = "Paradewert")
-    @Localize(locale = "ru", value = "Модификатор парирования")
-    @Localize(locale = "es", value = "Modificador de parada")
-    private static String PARRY;
-    @Localize("Block Modifier")
-    @Localize(locale = "de", value = "Abblockwert")
-    @Localize(locale = "ru", value = "Модификатор блока")
-    @Localize(locale = "es", value = "Modificador de bloqueo")
-    private static String BLOCK;
-
-    static {
-        Localization.initialize();
-    }
-
     private EditorField mReach;
     private EditorField mParry;
     private EditorField mBlock;
@@ -85,9 +59,9 @@ public class MeleeWeaponEditor extends WeaponEditor {
 
     @Override
     protected void createFields(Container parent) {
-        mParry = createTextField(parent, PARRY, EMPTY);
-        mReach = createTextField(parent, REACH, EMPTY);
-        mBlock = createTextField(parent, BLOCK, EMPTY);
+        mParry = createTextField(parent, I18n.Text("Parry Modifier"), "");
+        mReach = createTextField(parent, I18n.Text("Reach"), "");
+        mBlock = createTextField(parent, I18n.Text("Block Modifier"), "");
     }
 
     @Override
@@ -140,14 +114,14 @@ public class MeleeWeaponEditor extends WeaponEditor {
 
     @Override
     protected void blankFields() {
-        mReach.setValue(EMPTY);
-        mParry.setValue(EMPTY);
-        mBlock.setValue(EMPTY);
+        mReach.setValue("");
+        mParry.setValue("");
+        mBlock.setValue("");
         super.blankFields();
     }
 
     @Override
     public String toString() {
-        return MELEE_WEAPON;
+        return I18n.Text("Melee Weapon");
     }
 }

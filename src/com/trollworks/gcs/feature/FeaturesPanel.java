@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,25 +12,14 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.BandedPanel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /** Displays and edits {@link Feature} objects. */
 public class FeaturesPanel extends BandedPanel {
-    @Localize("Features")
-    @Localize(locale = "de", value = "Eigenschaften")
-    @Localize(locale = "ru", value = "Особенности")
-    @Localize(locale = "es", value = "Características")
-    private static String FEATURES;
-
-    static {
-        Localization.initialize();
-    }
-
     /**
      * Creates a new feature editor.
      *
@@ -38,7 +27,7 @@ public class FeaturesPanel extends BandedPanel {
      * @param features The initial features to display.
      */
     public FeaturesPanel(ListRow row, List<Feature> features) {
-        super(FEATURES);
+        super(I18n.Text("Features"));
         for (Feature feature : features) {
             add(FeatureEditor.create(row, feature.cloneFeature()));
         }

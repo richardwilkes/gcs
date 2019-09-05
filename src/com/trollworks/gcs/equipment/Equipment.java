@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,13 +26,12 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.units.WeightUnits;
 import com.trollworks.toolkit.utility.units.WeightValue;
@@ -46,74 +45,51 @@ import java.util.List;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
-    @Localize("Equipment")
-    @Localize(locale = "de", value = "Ausrüstung")
-    @Localize(locale = "ru", value = "Снаряжение")
-    @Localize(locale = "es", value = "Equipo")
-    private static String DEFAULT_NAME;
-    @Localize("LC0: Banned")
-    private static String LEGALITY_CLASS_0;
-    @Localize("LC1: Military")
-    private static String LEGALITY_CLASS_1;
-    @Localize("LC2: Restricted")
-    private static String LEGALITY_CLASS_2;
-    @Localize("LC3: Licensed")
-    private static String LEGALITY_CLASS_3;
-    @Localize("LC4: Open")
-    private static String LEGALITY_CLASS_4;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final int       CURRENT_VERSION          = 4;
-    private static final String    NEWLINE                  = "\n"; //$NON-NLS-1$
-    private static final String    SPACE                    = " "; //$NON-NLS-1$
-    private static final String    DEFAULT_LEGALITY_CLASS   = "4"; //$NON-NLS-1$
-    private static final String    EMPTY                    = ""; //$NON-NLS-1$
+    private static final String    DEFAULT_LEGALITY_CLASS   = "4";
     /** The extension for Equipment lists. */
-    public static final String     OLD_EQUIPMENT_EXTENSION  = "eqp"; //$NON-NLS-1$
+    public static final String     OLD_EQUIPMENT_EXTENSION  = "eqp";
     /** The XML tag used for items. */
-    public static final String     TAG_EQUIPMENT            = "equipment"; //$NON-NLS-1$
+    public static final String     TAG_EQUIPMENT            = "equipment";
     /** The XML tag used for containers. */
-    public static final String     TAG_EQUIPMENT_CONTAINER  = "equipment_container"; //$NON-NLS-1$
-    private static final String    ATTRIBUTE_STATE          = "state"; //$NON-NLS-1$
-    private static final String    ATTRIBUTE_EQUIPPED       = "equipped"; //$NON-NLS-1$
-    private static final String    TAG_QUANTITY             = "quantity"; //$NON-NLS-1$
-    private static final String    TAG_DESCRIPTION          = "description"; //$NON-NLS-1$
-    private static final String    TAG_TECH_LEVEL           = "tech_level"; //$NON-NLS-1$
-    private static final String    TAG_LEGALITY_CLASS       = "legality_class"; //$NON-NLS-1$
-    private static final String    TAG_VALUE                = "value"; //$NON-NLS-1$
-    private static final String    TAG_WEIGHT               = "weight"; //$NON-NLS-1$
-    private static final String    TAG_REFERENCE            = "reference"; //$NON-NLS-1$
+    public static final String     TAG_EQUIPMENT_CONTAINER  = "equipment_container";
+    private static final String    ATTRIBUTE_STATE          = "state";
+    private static final String    ATTRIBUTE_EQUIPPED       = "equipped";
+    private static final String    TAG_QUANTITY             = "quantity";
+    private static final String    TAG_DESCRIPTION          = "description";
+    private static final String    TAG_TECH_LEVEL           = "tech_level";
+    private static final String    TAG_LEGALITY_CLASS       = "legality_class";
+    private static final String    TAG_VALUE                = "value";
+    private static final String    TAG_WEIGHT               = "weight";
+    private static final String    TAG_REFERENCE            = "reference";
     /** The prefix used in front of all IDs for the equipment. */
-    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment."; //$NON-NLS-1$
+    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment.";
     /** The field ID for equipped/carried/not carried changes. */
-    public static final String     ID_STATE                 = PREFIX + "State"; //$NON-NLS-1$
+    public static final String     ID_STATE                 = PREFIX + "State";
     /** The field ID for quantity changes. */
-    public static final String     ID_QUANTITY              = PREFIX + "Quantity"; //$NON-NLS-1$
+    public static final String     ID_QUANTITY              = PREFIX + "Quantity";
     /** The field ID for description changes. */
-    public static final String     ID_DESCRIPTION           = PREFIX + "Description"; //$NON-NLS-1$
+    public static final String     ID_DESCRIPTION           = PREFIX + "Description";
     /** The field ID for tech level changes. */
-    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel"; //$NON-NLS-1$
+    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";
     /** The field ID for legality changes. */
-    public static final String     ID_LEGALITY_CLASS        = PREFIX + "LegalityClass"; //$NON-NLS-1$
+    public static final String     ID_LEGALITY_CLASS        = PREFIX + "LegalityClass";
     /** The field ID for value changes. */
-    public static final String     ID_VALUE                 = PREFIX + "Value"; //$NON-NLS-1$
+    public static final String     ID_VALUE                 = PREFIX + "Value";
     /** The field ID for weight changes. */
-    public static final String     ID_WEIGHT                = PREFIX + "Weight"; //$NON-NLS-1$
+    public static final String     ID_WEIGHT                = PREFIX + "Weight";
     /** The field ID for extended value changes */
-    public static final String     ID_EXTENDED_VALUE        = PREFIX + "ExtendedValue"; //$NON-NLS-1$
+    public static final String     ID_EXTENDED_VALUE        = PREFIX + "ExtendedValue";
     /** The field ID for extended weight changes */
-    public static final String     ID_EXTENDED_WEIGHT       = PREFIX + "ExtendedWeight"; //$NON-NLS-1$
+    public static final String     ID_EXTENDED_WEIGHT       = PREFIX + "ExtendedWeight";
     /** The field ID for page reference changes. */
-    public static final String     ID_REFERENCE             = PREFIX + "Reference"; //$NON-NLS-1$
+    public static final String     ID_REFERENCE             = PREFIX + "Reference";
     /** The field ID for when the categories change. */
-    public static final String     ID_CATEGORY              = PREFIX + "Category"; //$NON-NLS-1$
+    public static final String     ID_CATEGORY              = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged"; //$NON-NLS-1$
+    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";
     /** The field ID for when the equipment becomes or stops being a weapon. */
-    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus"; //$NON-NLS-1$
+    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
 
     private EquipmentState         mState;
     private int                    mQuantity;
@@ -137,10 +113,10 @@ public class Equipment extends ListRow implements HasSourceReference {
         super(dataFile, isContainer);
         mState          = EquipmentState.EQUIPPED;
         mQuantity       = 1;
-        mDescription    = DEFAULT_NAME;
-        mTechLevel      = EMPTY;
+        mDescription    = I18n.Text("Equipment");
+        mTechLevel      = "";
         mLegalityClass  = DEFAULT_LEGALITY_CLASS;
-        mReference      = EMPTY;
+        mReference      = "";
         mWeight         = new WeightValue(0, SheetPreferences.getWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
         mWeapons        = new ArrayList<>();
@@ -212,7 +188,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public String getLocalizedName() {
-        return DEFAULT_NAME;
+        return I18n.Text("Equipment");
     }
 
     @Override
@@ -232,7 +208,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public String getRowType() {
-        return DEFAULT_NAME;
+        return I18n.Text("Equipment");
     }
 
     @Override
@@ -240,10 +216,10 @@ public class Equipment extends ListRow implements HasSourceReference {
         super.prepareForLoad(state);
         mState         = EquipmentState.EQUIPPED;
         mQuantity      = 1;
-        mDescription   = DEFAULT_NAME;
-        mTechLevel     = EMPTY;
+        mDescription   = I18n.Text("Equipment");
+        mTechLevel     = "";
         mLegalityClass = DEFAULT_LEGALITY_CLASS;
-        mReference     = EMPTY;
+        mReference     = "";
         mValue         = 0.0;
         mWeight.setValue(0.0);
         mWeapons = new ArrayList<>();
@@ -269,17 +245,17 @@ public class Equipment extends ListRow implements HasSourceReference {
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
         String name = reader.getName();
         if (TAG_DESCRIPTION.equals(name)) {
-            mDescription = reader.readText().replace(NEWLINE, SPACE);
+            mDescription = reader.readText().replace("\n", " ");
         } else if (TAG_TECH_LEVEL.equals(name)) {
-            mTechLevel = reader.readText().replace(NEWLINE, SPACE);
+            mTechLevel = reader.readText().replace("\n", " ");
         } else if (TAG_LEGALITY_CLASS.equals(name)) {
-            mLegalityClass = reader.readText().replace(NEWLINE, SPACE);
+            mLegalityClass = reader.readText().replace("\n", " ");
         } else if (TAG_VALUE.equals(name)) {
             mValue = reader.readDouble(0.0);
         } else if (TAG_WEIGHT.equals(name)) {
             mWeight = WeightValue.extract(reader.readText(), false);
         } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace(NEWLINE, SPACE);
+            mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
             addChild(new Equipment(mDataFile, reader, state));
         } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
@@ -409,16 +385,16 @@ public class Equipment extends ListRow implements HasSourceReference {
     public String getDisplayLegalityClass() {
         String lc = getLegalityClass().trim();
         switch (lc) {
-        case "0": //$NON-NLS-1$
-            return LEGALITY_CLASS_0;
-        case "1": //$NON-NLS-1$
-            return LEGALITY_CLASS_1;
-        case "2": //$NON-NLS-1$
-            return LEGALITY_CLASS_2;
-        case "3": //$NON-NLS-1$
-            return LEGALITY_CLASS_3;
-        case "4": //$NON-NLS-1$
-            return LEGALITY_CLASS_4;
+        case "0":
+            return I18n.Text("LC0: Banned");
+        case "1":
+            return I18n.Text("LC1: Military");
+        case "2":
+            return I18n.Text("LC2: Restricted");
+        case "3":
+            return I18n.Text("LC3: Licensed");
+        case "4":
+            return I18n.Text("LC4: Open");
         default:
             return lc;
         }

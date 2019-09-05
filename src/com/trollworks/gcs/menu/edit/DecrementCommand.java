@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -22,24 +21,13 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Decrement" command. */
 public class DecrementCommand extends Command {
-    @Localize("Decrement")
-    @Localize(locale = "de", value = "Verringern")
-    @Localize(locale = "ru", value = "Уменьшить")
-    @Localize(locale = "es", value = "Disminuir")
-    private static String DECREMENT;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String           CMD_DECREMENT = "Decrement"; //$NON-NLS-1$
-
+    public static final String           CMD_DECREMENT = "Decrement";
     /** The singleton {@link DecrementCommand}. */
     public static final DecrementCommand INSTANCE      = new DecrementCommand();
 
     private DecrementCommand() {
-        super(DECREMENT, CMD_DECREMENT, KeyEvent.VK_MINUS);
+        super(I18n.Text("Decrement"), CMD_DECREMENT, KeyEvent.VK_MINUS);
     }
 
     @Override
@@ -53,7 +41,7 @@ public class DecrementCommand extends Command {
             setTitle(inc.getDecrementTitle());
             setEnabled(inc.canDecrement());
         } else {
-            setTitle(DECREMENT);
+            setTitle(I18n.Text("Decrement"));
             setEnabled(false);
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2018 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -57,10 +57,8 @@ import java.util.List;
 import java.util.function.Function;
 
 /** Provides text template output. */
-@SuppressWarnings("nls")
 public class TextTemplate {
-    private static String       UNIDENTIFIED_KEY                      = "Unidentified key: '%s'";
-
+    private static final String UNIDENTIFIED_KEY                      = "Unidentified key: '%s'";
     private static final String CURRENT                               = "current";
     private static final String ITEM                                  = "ITEM";
     private static final String ONE                                   = "1";
@@ -69,7 +67,6 @@ public class TextTemplate {
     private static final String PARAGRAPH_END                         = "</p>";
     private static final String NEWLINE                               = "\n";
     private static final String COMMA_SEPARATOR                       = ", ";
-
     private static final String KEY_ACCURACY                          = "ACCURACY";
     private static final String KEY_ADVANTAGE_POINTS                  = "ADVANTAGE_POINTS";
     private static final String KEY_ADVANTAGES_ALL_LOOP_END           = "ADVANTAGES_ALL_LOOP_END";
@@ -264,15 +261,13 @@ public class TextTemplate {
     private static final String KEY_WHERE                             = "WHERE";
     private static final String KEY_WILL                              = "WILL";
     private static final String KEY_WILL_POINTS                       = "WILL_POINTS";
-
     private static final String KEY_AMMO_TYPE                         = "AmmoType:";
     private static final String KEY_USES_AMMO_TYPE                    = "UsesAmmoType:";
-
     private CharacterSheet      mSheet;
     private boolean             mEncodeText                           = true;
     private boolean             mEnhancedKeyParsing                   = false;
-    HashSet<String>             mOnlyCategories                       = new HashSet<>();
-    HashSet<String>             mExcludedCategories                   = new HashSet<>();
+    private HashSet<String>     mOnlyCategories                       = new HashSet<>();
+    private HashSet<String>     mExcludedCategories                   = new HashSet<>();
 
     public static File resolveTextTemplate(File template) {
         if (template == null || !template.isFile() || !template.canRead()) {
@@ -775,7 +770,7 @@ public class TextTemplate {
                             }
                             break;
                         case KEY_LEVEL:
-                            writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? EncumbrancePanel.CURRENT_ENCUMBRANCE_FORMAT : EncumbrancePanel.ENCUMBRANCE_FORMAT, encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                            writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? "\u2022 {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
                             break;
                         case KEY_LEVEL_ONLY:
                             writeEncodedText(out, Numbers.format(-encumbrance.getEncumbrancePenalty()));

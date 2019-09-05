@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,7 +21,6 @@ import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.ReferenceLookupPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.preferences.SystemPreferences;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
@@ -30,24 +29,17 @@ import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 import com.trollworks.toolkit.utility.text.Text;
 
 /** The main application user interface. */
 public class GCSApp extends App {
-    @Localize("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n")
-    private static String TRANSLOCATION_INSTRUCTIONS;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The one and only instance of this class. */
     public static final GCSApp INSTANCE  = new GCSApp();
-    public static final String WEB_SITE  = "http://gurpscharactersheet.com";                              //$NON-NLS-1$
-    private static String      XATTR_CMD = "xattr -d com.apple.quarantine \"GURPS Character Sheet.app\""; //$NON-NLS-1$
+    public static final String WEB_SITE  = "http://gurpscharactersheet.com";
+    private static String      XATTR_CMD = "xattr -d com.apple.quarantine \"GURPS Character Sheet.app\"";
 
     private GCSApp() {
         super();
@@ -56,7 +48,7 @@ public class GCSApp extends App {
 
     @Override
     public void configureApplication(CmdLine cmdLine) {
-        UpdateChecker.check("gcs", WEB_SITE + "/versions.txt", WEB_SITE); //$NON-NLS-1$ //$NON-NLS-2$
+        UpdateChecker.check("gcs", WEB_SITE + "/versions.txt", WEB_SITE);
 
         ListCollectionThread.get();
 
@@ -80,8 +72,8 @@ public class GCSApp extends App {
     public void finalStartup() {
         super.finalStartup();
         setDefaultMenuBar(new StdMenuBar());
-        if (Platform.isMacintosh() && App.getHomePath().toString().toLowerCase().contains("/apptranslocation/")) { //$NON-NLS-1$
-            WindowUtils.showError(null, Text.wrapToCharacterCount(TRANSLOCATION_INSTRUCTIONS, 60) + XATTR_CMD);
+        if (Platform.isMacintosh() && App.getHomePath().toString().toLowerCase().contains("/apptranslocation/")) {
+            WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.Text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + XATTR_CMD);
         }
     }
 }

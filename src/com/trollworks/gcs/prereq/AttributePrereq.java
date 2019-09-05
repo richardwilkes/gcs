@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,10 +16,9 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
@@ -27,26 +26,13 @@ import java.text.MessageFormat;
 
 /** A Attribute prerequisite. */
 public class AttributePrereq extends HasPrereq {
-    @Localize("{0}{1} {2} which {3}")
-    @Localize(locale = "de", value = "{0}{1} {2} die {3}")
-    @Localize(locale = "ru", value = "{0}{1} {2} который {3}")
-    @Localize(locale = "es", value = "{0}{1} {2} el cual {3}")
-    private static String DESCRIPTION;
-    @Localize("{0}+{1}")
-    @Localize(locale = "de", value = "{0}+{1}")
-    private static String COMBINED;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The possible {@link BonusAttributeType}s that can be affected. */
     public static final BonusAttributeType[] TYPES                   = { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL, BonusAttributeType.PERCEPTION };
     /** The XML tag for this class. */
-    public static final String               TAG_ROOT                = "attribute_prereq"; //$NON-NLS-1$
-    private static final String              ATTRIBUTE_WHICH         = "which"; //$NON-NLS-1$
-    private static final String              ATTRIBUTE_COMBINED_WITH = "combined_with"; //$NON-NLS-1$
-    private static final String              ATTRIBUTE_COMPARE       = "compare"; //$NON-NLS-1$
+    public static final String               TAG_ROOT                = "attribute_prereq";
+    private static final String              ATTRIBUTE_WHICH         = "which";
+    private static final String              ATTRIBUTE_COMBINED_WITH = "combined_with";
+    private static final String              ATTRIBUTE_COMPARE       = "compare";
     private BonusAttributeType               mWhich;
     private BonusAttributeType               mCombinedWith;
     private IntegerCriteria                  mValueCompare;
@@ -187,7 +173,7 @@ public class AttributePrereq extends HasPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(DESCRIPTION, prefix, has() ? HAS : DOES_NOT_HAVE, mCombinedWith == null ? mWhich.getPresentationName() : MessageFormat.format(COMBINED, mWhich.getPresentationName(), mCombinedWith.getPresentationName()), mValueCompare.toString()));
+            builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} which {3}"), prefix, hasText(), mCombinedWith == null ? mWhich.getPresentationName() : MessageFormat.format("{0}+{1}", mWhich.getPresentationName(), mCombinedWith.getPresentationName()), mValueCompare.toString()));
         }
         return satisfied;
     }

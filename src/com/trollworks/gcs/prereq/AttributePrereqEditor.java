@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,11 +13,10 @@ package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
@@ -26,24 +25,9 @@ import javax.swing.JComboBox;
 
 /** An attribute prerequisite editor panel. */
 public class AttributePrereqEditor extends PrereqEditor {
-    @Localize("combined with {0}")
-    @Localize(locale = "de", value = "addiert mit {0}")
-    @Localize(locale = "ru", value = "в сочетании с {0}")
-    @Localize(locale = "es", value = "combinada con {0}")
-    private static String COMBINED_WITH;
-    @Localize("which ")
-    @Localize(locale = "de", value = "die ")
-    @Localize(locale = "ru", value = "который ")
-    @Localize(locale = "es", value = "el cual ")
-    private static String WHICH;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String CHANGE_TYPE        = "ChangeType"; //$NON-NLS-1$
-    private static final String CHANGE_SECOND_TYPE = "ChangeSecondType"; //$NON-NLS-1$
-    private static final String BLANK              = " "; //$NON-NLS-1$
+    private static final String CHANGE_TYPE        = "ChangeType";
+    private static final String CHANGE_SECOND_TYPE = "ChangeSecondType";
+    private static final String BLANK              = " ";
 
     /**
      * Creates a new attribute prerequisite editor panel.
@@ -69,7 +53,7 @@ public class AttributePrereqEditor extends PrereqEditor {
         row = new FlexRow();
         row.add(addChangeTypePopup());
         row.add(addChangeSecondTypePopup());
-        row.add(addNumericCompareCombo(prereq.getValueCompare(), WHICH));
+        row.add(addNumericCompareCombo(prereq.getValueCompare(), I18n.Text("which ")));
         row.add(addNumericCompareField(prereq.getValueCompare(), 0, 99999, false));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 1);
@@ -91,7 +75,7 @@ public class AttributePrereqEditor extends PrereqEditor {
         String               selection = BLANK;
         titles[0] = BLANK;
         for (int i = 0; i < types.length; i++) {
-            titles[i + 1] = MessageFormat.format(COMBINED_WITH, types[i].getPresentationName());
+            titles[i + 1] = MessageFormat.format(I18n.Text("combined with {0}"), types[i].getPresentationName());
             if (current == types[i]) {
                 selection = titles[i + 1];
             }

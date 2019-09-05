@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -22,12 +22,11 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.Dice;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -39,39 +38,22 @@ import java.util.Set;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
-    private static final String     TAG_DAMAGE   = "damage"; //$NON-NLS-1$
-    private static final String     TAG_STRENGTH = "strength"; //$NON-NLS-1$
-    private static final String     TAG_USAGE    = "usage"; //$NON-NLS-1$
+    private static final String     TAG_DAMAGE   = "damage";
+    private static final String     TAG_STRENGTH = "strength";
+    private static final String     TAG_USAGE    = "usage";
     /** The prefix used in front of all IDs for weapons. */
-    public static final String      PREFIX       = GURPSCharacter.CHARACTER_PREFIX + "weapon."; //$NON-NLS-1$
+    public static final String      PREFIX       = GURPSCharacter.CHARACTER_PREFIX + "weapon.";
     /** The field ID for damage changes. */
     public static final String      ID_DAMAGE    = PREFIX + TAG_DAMAGE;
     /** The field ID for strength changes. */
     public static final String      ID_STRENGTH  = PREFIX + TAG_STRENGTH;
     /** The field ID for usage changes. */
     public static final String      ID_USAGE     = PREFIX + TAG_USAGE;
-    /** An empty string. */
-    protected static final String   EMPTY        = ""; //$NON-NLS-1$
     private ListRow                 mOwner;
     private String                  mDamage;
     private String                  mStrength;
     private String                  mUsage;
     private ArrayList<SkillDefault> mDefaults;
-
-    @Localize("Includes modifiers from")
-    @Localize(locale = "de", value = "Enthält Modifikatoren von")
-    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
-    @Localize(locale = "es", value = "Incluye modificadores de")
-    static String                   INCLUDES;
-    @Localize("No additional modifiers")
-    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
-    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
-    @Localize(locale = "es", value = "No hay modificadores adicionales")
-    static String                   NO_MODIFIERS;
-
-    static {
-        Localization.initialize();
-    }
 
     /**
      * Creates a new weapon.
@@ -80,9 +62,9 @@ public abstract class WeaponStats {
      */
     protected WeaponStats(ListRow owner) {
         mOwner    = owner;
-        mDamage   = EMPTY;
-        mStrength = EMPTY;
-        mUsage    = EMPTY;
+        mDamage   = "";
+        mStrength = "";
+        mUsage    = "";
         mDefaults = new ArrayList<>();
         initialize();
     }
@@ -215,7 +197,7 @@ public abstract class WeaponStats {
         if (mOwner instanceof Skill) {
             return ((Skill) mOwner).getName();
         }
-        return EMPTY;
+        return "";
     }
 
     @Override
@@ -225,7 +207,7 @@ public abstract class WeaponStats {
 
     /** @return The notes for this weapon. */
     public String getNotes() {
-        return mOwner != null ? mOwner.getNotes() : EMPTY;
+        return mOwner != null ? mOwner.getNotes() : "";
     }
 
     /** @return The damage. */
@@ -241,7 +223,7 @@ public abstract class WeaponStats {
     public String getDamageToolTip() {
         StringBuilder toolTip = new StringBuilder();
         getResolvedDamage(toolTip);
-        return toolTip.length() > 0 ? INCLUDES + toolTip.toString() : NO_MODIFIERS;
+        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip.toString() : I18n.Text("No additional modifiers");
     }
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
@@ -253,8 +235,8 @@ public abstract class WeaponStats {
             HashSet<WeaponBonus> bonuses   = new HashSet<>();
             for (SkillDefault one : getDefaults()) {
                 if (one.getType().isSkillBased()) {
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), getCategories(), toolTip)); //$NON-NLS-1$
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), getCategories(), toolTip)); //$NON-NLS-1$
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), getCategories(), toolTip));
+                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), getCategories(), toolTip));
                 }
             }
             damage = resolveDamage(damage, bonuses);
@@ -276,13 +258,13 @@ public abstract class WeaponStats {
         dice = GURPSCharacter.getSwing(st);
         do {
             savedDamage = damage;
-            damage      = resolveDamage(damage, "sw", dice); //$NON-NLS-1$
+            damage      = resolveDamage(damage, "sw", dice);
         } while (!savedDamage.equals(damage));
 
         dice = GURPSCharacter.getThrust(st);
         do {
             savedDamage = damage;
-            damage      = resolveDamage(damage, "thr", dice); //$NON-NLS-1$
+            damage      = resolveDamage(damage, "thr", dice);
         } while (!savedDamage.equals(damage));
 
         return resolveDamageBonuses(damage, bonuses);
@@ -464,7 +446,7 @@ public abstract class WeaponStats {
                 best -= minST;
             }
             if (this instanceof MeleeWeaponStats) {
-                if (((MeleeWeaponStats) this).getParry().contains("F")) { //$NON-NLS-1$
+                if (((MeleeWeaponStats) this).getParry().contains("F")) {
                     best += character.getEncumbranceLevel().getEncumbrancePenalty();
                 }
             }
@@ -568,7 +550,7 @@ public abstract class WeaponStats {
     @SuppressWarnings("static-method")
     protected String sanitize(String data) {
         if (data == null) {
-            return EMPTY;
+            return "";
         }
         return data;
     }

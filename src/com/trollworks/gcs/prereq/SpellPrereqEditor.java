@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,12 +12,11 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.widget.Commitable;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
@@ -25,33 +24,8 @@ import javax.swing.JComboBox;
 
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
-    @Localize("whose name")
-    @Localize(locale = "de", value = "deren/dessen Name")
-    @Localize(locale = "ru", value = "чьё название")
-    @Localize(locale = "es", value = "cuyo nombre es ")
-    private static String WHOSE_SPELL_NAME;
-    @Localize("of any kind")
-    @Localize(locale = "de", value = "jeglicher Art")
-    @Localize(locale = "ru", value = "любого вида")
-    @Localize(locale = "es", value = "de cualquier tipo")
-    private static String ANY;
-    @Localize("whose college name")
-    @Localize(locale = "de", value = "deren/dessen Schule")
-    @Localize(locale = "ru", value = "чьё название школы")
-    @Localize(locale = "es", value = "cuya escuela se llama ")
-    private static String COLLEGE;
-    @Localize("from different colleges")
-    @Localize(locale = "de", value = "von unterschiedlichen Schulen")
-    @Localize(locale = "ru", value = "из разных школ")
-    @Localize(locale = "es", value = "de diferentes escuelas")
-    private static String COLLEGE_COUNT;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String   CHANGE_TYPE = "ChangeSpellType"; //$NON-NLS-1$
-    private static final String   EMPTY       = ""; //$NON-NLS-1$
+    private static final String   CHANGE_TYPE = "ChangeSpellType";
+    private static final String   EMPTY       = "";
     private static final String[] TYPES       = { SpellPrereq.TAG_NAME, SpellPrereq.TAG_ANY, SpellPrereq.TAG_COLLEGE, SpellPrereq.TAG_COLLEGE_COUNT };
 
     /**
@@ -93,7 +67,7 @@ public class SpellPrereqEditor extends PrereqEditor {
     }
 
     private JComboBox<Object> addChangeTypePopup() {
-        String[] titles    = { WHOSE_SPELL_NAME, ANY, COLLEGE, COLLEGE_COUNT };
+        String[] titles    = { I18n.Text("whose name"), I18n.Text("of any kind"), I18n.Text("whose college name"), I18n.Text("from different colleges") };
         int      selection = 0;
         String   current   = ((SpellPrereq) mPrereq).getType();
         for (int i = 0; i < TYPES.length; i++) {

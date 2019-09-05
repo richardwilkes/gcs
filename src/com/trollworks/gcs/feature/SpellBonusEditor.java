@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,12 +13,11 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.widget.Commitable;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -27,37 +26,7 @@ import javax.swing.JComboBox;
 
 /** A spell bonus editor. */
 public class SpellBonusEditor extends FeatureEditor {
-    @Localize("to all colleges")
-    @Localize(locale = "de", value = "auf alle Schulen")
-    @Localize(locale = "ru", value = "всем школам")
-    @Localize(locale = "es", value = "a todos los Colegios")
-    private static String ALL_COLLEGES;
-    @Localize("to the college whose name")
-    @Localize(locale = "de", value = "auf die Schule, deren Namen")
-    @Localize(locale = "ru", value = "школе с названием")
-    @Localize(locale = "es", value = "al Colegio cuyo nombre sea ")
-    private static String ONE_COLLEGE;
-    @Localize("to the spell whose name")
-    @Localize(locale = "de", value = "auf den Zauber, deren Namen")
-    @Localize(locale = "ru", value = "заклинанию с названием")
-    @Localize(locale = "es", value = "al sortilegio cuyo nombre sea")
-    private static String SPELL_NAME;
-    @Localize("to the power source whose name")
-    @Localize(locale = "de", value = "auf die Energiequelle, deren Namen")
-    @Localize(locale = "ru", value = "источнику силы, чьё название")
-    @Localize(locale = "es", value = "a la fuente de poder cuyo nombre sea")
-    private static String POWER_SOURCE_NAME;
-    @Localize("and category ")
-    @Localize(locale = "de", value = "und Kategorie ")
-    @Localize(locale = "ru", value = "и категория ")
-    @Localize(locale = "es", value = "y categoria ")
-    private static String CATEGORY;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String COLLEGE_TYPE = "CollegeType"; //$NON-NLS-1$
+    private static final String COLLEGE_TYPE = "CollegeType";
 
     /**
      * Create a new spell bonus editor.
@@ -84,10 +53,10 @@ public class SpellBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
 
-        row.add(addComboBox(COLLEGE_TYPE, new Object[] { ALL_COLLEGES, ONE_COLLEGE, SPELL_NAME, POWER_SOURCE_NAME }, getMatchText(bonus.allColleges(), bonus.getMatchType())));
+        row.add(addComboBox(COLLEGE_TYPE, new Object[] { getMatchText(true, ""), getMatchText(false, SpellBonus.TAG_COLLEGE_NAME), getMatchText(false, ""), getMatchText(false, SpellBonus.TAG_POWER_SOURCE_NAME) }, getMatchText(bonus.allColleges(), bonus.getMatchType())));
         if (!bonus.allColleges()) {
             StringCriteria criteria = bonus.getNameCriteria();
-            row.add(addStringCompareCombo(criteria, "")); //$NON-NLS-1$
+            row.add(addStringCompareCombo(criteria, ""));
             row.add(addStringCompareField(criteria));
         } else {
             row.add(new FlexSpacer(0, 0, true, false));
@@ -97,22 +66,22 @@ public class SpellBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         StringCriteria criteria = bonus.getCategoryCriteria();
-        row.add(addStringCompareCombo(criteria, CATEGORY));
+        row.add(addStringCompareCombo(criteria, I18n.Text("and category ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, 2, 0);
     }
 
     private static String getMatchText(boolean allColleges, String matchType) {
         if (allColleges) {
-            return ALL_COLLEGES;
+            return I18n.Text("to all colleges");
         }
         if (SpellBonus.TAG_COLLEGE_NAME.equals(matchType)) {
-            return ONE_COLLEGE;
+            return I18n.Text("to the college whose name");
         }
         if (SpellBonus.TAG_POWER_SOURCE_NAME.equals(matchType)) {
-            return POWER_SOURCE_NAME;
+            return I18n.Text("to the power source whose name");
         }
-        return SPELL_NAME;
+        return I18n.Text("to the spell whose name");
     }
 
     @Override

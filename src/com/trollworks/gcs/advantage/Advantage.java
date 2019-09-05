@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,14 +26,13 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.gcs.widgets.outline.Switchable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Text;
 
@@ -47,73 +46,63 @@ import java.util.List;
 
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
-    @Localize("Advantage")
-    @Localize(locale = "de", value = "Vorteil")
-    @Localize(locale = "ru", value = "Преимущество")
-    @Localize(locale = "es", value = "Ventaja")
-    private static String DEFAULT_NAME;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final int           CURRENT_VERSION            = 2;
     /** The XML tag used for items. */
-    public static final String         TAG_ADVANTAGE              = "advantage"; //$NON-NLS-1$
+    public static final String         TAG_ADVANTAGE              = "advantage";
     /** The XML tag used for containers. */
-    public static final String         TAG_ADVANTAGE_CONTAINER    = "advantage_container"; //$NON-NLS-1$
-    private static final String        TAG_REFERENCE              = "reference"; //$NON-NLS-1$
-    private static final String        TAG_OLD_POINTS             = "points"; //$NON-NLS-1$
-    private static final String        TAG_BASE_POINTS            = "base_points"; //$NON-NLS-1$
-    private static final String        TAG_POINTS_PER_LEVEL       = "points_per_level"; //$NON-NLS-1$
-    private static final String        TAG_LEVELS                 = "levels"; //$NON-NLS-1$
-    private static final String        TAG_TYPE                   = "type"; //$NON-NLS-1$
-    private static final String        TAG_NAME                   = "name"; //$NON-NLS-1$
-    private static final String        TAG_CR                     = "cr"; //$NON-NLS-1$
-    private static final String        TAG_USER_DESC              = "userdesc"; //$NON-NLS-1$
-    private static final String        TYPE_MENTAL                = "Mental"; //$NON-NLS-1$
-    private static final String        TYPE_PHYSICAL              = "Physical"; //$NON-NLS-1$
-    private static final String        TYPE_SOCIAL                = "Social"; //$NON-NLS-1$
-    private static final String        TYPE_EXOTIC                = "Exotic"; //$NON-NLS-1$
-    private static final String        TYPE_SUPERNATURAL          = "Supernatural"; //$NON-NLS-1$
-    private static final String        ATTR_DISABLED              = "disabled"; //$NON-NLS-1$
-    private static final String        ATTR_ROUND_COST_DOWN       = "round_down"; //$NON-NLS-1$
-    private static final String        ATTR_ALLOW_HALF_LEVELS     = "allow_half_levels"; //$NON-NLS-1$
-    private static final String        ATTR_HALF_LEVEL            = "half_level"; //$NON-NLS-1$
+    public static final String         TAG_ADVANTAGE_CONTAINER    = "advantage_container";
+    private static final String        TAG_REFERENCE              = "reference";
+    private static final String        TAG_OLD_POINTS             = "points";
+    private static final String        TAG_BASE_POINTS            = "base_points";
+    private static final String        TAG_POINTS_PER_LEVEL       = "points_per_level";
+    private static final String        TAG_LEVELS                 = "levels";
+    private static final String        TAG_TYPE                   = "type";
+    private static final String        TAG_NAME                   = "name";
+    private static final String        TAG_CR                     = "cr";
+    private static final String        TAG_USER_DESC              = "userdesc";
+    private static final String        TYPE_MENTAL                = "Mental";
+    private static final String        TYPE_PHYSICAL              = "Physical";
+    private static final String        TYPE_SOCIAL                = "Social";
+    private static final String        TYPE_EXOTIC                = "Exotic";
+    private static final String        TYPE_SUPERNATURAL          = "Supernatural";
+    private static final String        ATTR_DISABLED              = "disabled";
+    private static final String        ATTR_ROUND_COST_DOWN       = "round_down";
+    private static final String        ATTR_ALLOW_HALF_LEVELS     = "allow_half_levels";
+    private static final String        ATTR_HALF_LEVEL            = "half_level";
     /** The prefix used in front of all IDs for the advantages. */
-    public static final String         PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage."; //$NON-NLS-1$
+    public static final String         PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage.";
     /** The field ID for type changes. */
-    public static final String         ID_TYPE                    = PREFIX + "Type"; //$NON-NLS-1$
+    public static final String         ID_TYPE                    = PREFIX + "Type";
     /** The field ID for container type changes. */
-    public static final String         ID_CONTAINER_TYPE          = PREFIX + "ContainerType"; //$NON-NLS-1$
+    public static final String         ID_CONTAINER_TYPE          = PREFIX + "ContainerType";
     /** The field ID for name changes. */
-    public static final String         ID_NAME                    = PREFIX + "Name"; //$NON-NLS-1$
+    public static final String         ID_NAME                    = PREFIX + "Name";
     /** The field ID for CR changes. */
-    public static final String         ID_CR                      = PREFIX + "CR"; //$NON-NLS-1$
+    public static final String         ID_CR                      = PREFIX + "CR";
     /** The field ID for level changes. */
-    public static final String         ID_LEVELS                  = PREFIX + "Levels"; //$NON-NLS-1$
+    public static final String         ID_LEVELS                  = PREFIX + "Levels";
     /** The field ID for half level. */
-    public static final String         ID_HALF_LEVEL              = PREFIX + "HalfLevel"; //$NON-NLS-1$
+    public static final String         ID_HALF_LEVEL              = PREFIX + "HalfLevel";
     /** The field ID for round cost down changes. */
-    public static final String         ID_ROUND_COST_DOWN         = PREFIX + "RoundCostDown"; //$NON-NLS-1$
+    public static final String         ID_ROUND_COST_DOWN         = PREFIX + "RoundCostDown";
     /** The field ID for disabled changes. */
-    public static final String         ID_DISABLED                = PREFIX + "Disabled"; //$NON-NLS-1$
+    public static final String         ID_DISABLED                = PREFIX + "Disabled";
     /** The field ID for allowing half levels. */
-    public static final String         ID_ALLOW_HALF_LEVELS       = PREFIX + "AllowHalfLevels"; //$NON-NLS-1$
+    public static final String         ID_ALLOW_HALF_LEVELS       = PREFIX + "AllowHalfLevels";
     /** The field ID for point changes. */
-    public static final String         ID_POINTS                  = PREFIX + "Points"; //$NON-NLS-1$
+    public static final String         ID_POINTS                  = PREFIX + "Points";
     /** The field ID for page reference changes. */
-    public static final String         ID_REFERENCE               = PREFIX + "Reference"; //$NON-NLS-1$
+    public static final String         ID_REFERENCE               = PREFIX + "Reference";
     /** The field ID for when the categories change. */
-    public static final String         ID_CATEGORY                = PREFIX + "Category"; //$NON-NLS-1$
+    public static final String         ID_CATEGORY                = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final String         ID_LIST_CHANGED            = PREFIX + "ListChanged"; //$NON-NLS-1$
+    public static final String         ID_LIST_CHANGED            = PREFIX + "ListChanged";
     /** The field ID for when the advantage becomes or stops being a weapon. */
-    public static final String         ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus"; //$NON-NLS-1$
+    public static final String         ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus";
     /** The field ID for when the advantage gets Modifiers. */
-    public static final String         ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier"; //$NON-NLS-1$
+    public static final String         ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier";
     /** The field ID for user description changes. */
-    public static final String         ID_USER_DESC               = PREFIX + "UserDesc"; //$NON-NLS-1$
+    public static final String         ID_USER_DESC               = PREFIX + "UserDesc";
     /** The type mask for mental advantages. */
     public static final int            TYPE_MASK_MENTAL           = 1 << 0;
     /** The type mask for physical advantages. */
@@ -151,15 +140,15 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public Advantage(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
         mType          = TYPE_MASK_PHYSICAL;
-        mName          = DEFAULT_NAME;
+        mName          = I18n.Text("Advantage");
         mCR            = SelfControlRoll.NONE_REQUIRED;
         mCRAdj         = SelfControlRollAdjustments.NONE;
         mLevels        = -1;
-        mReference     = ""; //$NON-NLS-1$
+        mReference     = "";
         mContainerType = AdvantageContainerType.GROUP;
         mWeapons       = new ArrayList<>();
         mModifiers     = new ArrayList<>();
-        mUserDesc      = ""; //$NON-NLS-1$
+        mUserDesc      = "";
     }
 
     /**
@@ -184,7 +173,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mDisabled        = advantage.mDisabled;
         mReference       = advantage.mReference;
         mContainerType   = advantage.mContainerType;
-        mUserDesc        = dataFile instanceof GURPSCharacter ? advantage.mUserDesc : "";  //$NON-NLS-1$
+        mUserDesc        = dataFile instanceof GURPSCharacter ? advantage.mUserDesc : "";
         mWeapons         = new ArrayList<>(advantage.mWeapons.size());
         for (WeaponStats weapon : advantage.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
@@ -241,20 +230,20 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     @Override
     public String getRowType() {
-        return DEFAULT_NAME;
+        return I18n.Text("Advantage");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mType            = TYPE_MASK_PHYSICAL;
-        mName            = DEFAULT_NAME;
+        mName            = I18n.Text("Advantage");
         mCR              = SelfControlRoll.NONE_REQUIRED;
         mCRAdj           = SelfControlRollAdjustments.NONE;
         mLevels          = -1;
         mHalfLevel       = false;
         mAllowHalfLevels = false;
-        mReference       = ""; //$NON-NLS-1$
+        mReference       = "";
         mContainerType   = AdvantageContainerType.GROUP;
         mPoints          = 0;
         mPointsPerLevel  = 0;
@@ -263,7 +252,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mOldPointsString = null;
         mWeapons         = new ArrayList<>();
         mModifiers       = new ArrayList<>();
-        mUserDesc        = "";//$NON-NLS-1$
+        mUserDesc        = "";
     }
 
     @Override
@@ -282,12 +271,12 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         String name = reader.getName();
 
         if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
+            mName = reader.readText().replace("\n", " ");
         } else if (TAG_CR.equals(name)) {
             mCRAdj = Enums.extract(reader.getAttribute(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
             mCR    = SelfControlRoll.get(reader.readText());
         } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
+            mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
             addChild(new Advantage(mDataFile, reader, state));
         } else if (Modifier.TAG_MODIFIER.equals(name)) {
@@ -457,7 +446,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     @Override
     public String getLocalizedName() {
-        return DEFAULT_NAME;
+        return I18n.Text("Advantage");
     }
 
     /** @return The name. */
@@ -927,7 +916,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     /** @return The type as a text string. */
     public String getTypeAsText() {
         if (!canHaveChildren()) {
-            String        separator = ", "; //$NON-NLS-1$
+            String        separator = ", ";
             StringBuilder buffer    = new StringBuilder();
             int           type      = getType();
 
@@ -936,7 +925,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             }
             if ((type & Advantage.TYPE_MASK_PHYSICAL) != 0) {
                 if (buffer.length() > 0) {
-                    buffer.append("/"); //$NON-NLS-1$
+                    buffer.append("/");
                 }
                 buffer.append(TYPE_PHYSICAL);
             }
@@ -960,7 +949,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             }
             return buffer.toString();
         }
-        return ""; //$NON-NLS-1$
+        return "";
     }
 
     @Override
@@ -1081,7 +1070,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return null;
     }
 
-    private static final String MODIFIER_SEPARATOR = "; "; //$NON-NLS-1$
+    private static final String MODIFIER_SEPARATOR = "; ";
 
     @Override
     public String getModifierNotes() {
@@ -1089,7 +1078,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         if (mCR != SelfControlRoll.NONE_REQUIRED) {
             builder.append(mCR);
             if (mCRAdj != SelfControlRollAdjustments.NONE) {
-                builder.append(", "); //$NON-NLS-1$
+                builder.append(", ");
                 builder.append(mCRAdj.getDescription(getCR()));
             }
             builder.append(MODIFIER_SEPARATOR);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,11 +12,9 @@
 package com.trollworks.gcs.notes;
 
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
-import com.trollworks.toolkit.utility.Localization;
 
 import java.awt.Dimension;
 
@@ -29,13 +27,6 @@ import javax.swing.SwingConstants;
 
 /** The detailed editor for {@link Note}s. */
 public class NoteEditor extends RowEditor<Note> {
-    @Localize("Note")
-    private static String NAME;
-
-    static {
-        Localization.initialize();
-    }
-
     public static JTextArea addContentTo(JPanel parent, String description, StdImage image, boolean editable) {
         JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
         JLabel    icon    = new JLabel(image);

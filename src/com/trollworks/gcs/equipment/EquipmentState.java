@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,8 +12,7 @@
 package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.feature.Feature;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** The possible states for a piece of equipment. */
 public enum EquipmentState {
@@ -24,12 +23,12 @@ public enum EquipmentState {
     EQUIPPED {
         @Override
         public String toShortName() {
-            return EQUIPPED_SHORT;
+            return "E";
         }
 
         @Override
         public String toString() {
-            return EQUIPPED_TITLE;
+            return I18n.Text("Equipped");
         }
     },
     /**
@@ -39,60 +38,26 @@ public enum EquipmentState {
     CARRIED {
         @Override
         public String toShortName() {
-            return CARRIED_SHORT;
+            return "C";
         }
 
         @Override
         public String toString() {
-            return CARRIED_TITLE;
+            return I18n.Text("Carried");
         }
     },
     /** The state of a piece of equipment that is not being carried. */
     NOT_CARRIED {
         @Override
         public String toShortName() {
-            return NOT_CARRIED_SHORT;
+            return "-";
         }
 
         @Override
         public String toString() {
-            return NOT_CARRIED_TITLE;
+            return I18n.Text("Not Carried");
         }
     };
-
-    @Localize("E")
-    @Localize(locale = "de", value = "A")
-    @Localize(locale = "ru", value = "Э")
-    @Localize(locale = "es", value = "E")
-    static String EQUIPPED_SHORT;
-    @Localize("Equipped")
-    @Localize(locale = "de", value = "Ausgerüstet")
-    @Localize(locale = "ru", value = "Экипирован")
-    @Localize(locale = "es", value = "Equipado")
-    static String EQUIPPED_TITLE;
-    @Localize("C")
-    @Localize(locale = "de", value = "M")
-    @Localize(locale = "ru", value = "Н")
-    @Localize(locale = "es", value = "P")
-    static String CARRIED_SHORT;
-    @Localize("Carried")
-    @Localize(locale = "de", value = "Mitgeführt")
-    @Localize(locale = "ru", value = "Носимый")
-    @Localize(locale = "es", value = "Portado")
-    static String CARRIED_TITLE;
-    @Localize("-")
-    @Localize(locale = "de", value = "-")
-    @Localize(locale = "es", value = "-")
-    static String NOT_CARRIED_SHORT;
-    @Localize("Not Carried")
-    @Localize(locale = "de", value = "Nicht mitgeführt")
-    @Localize(locale = "ru", value = "Не носимый")
-    @Localize(locale = "es", value = "Sin portadar")
-    static String NOT_CARRIED_TITLE;
-
-    static {
-        Localization.initialize();
-    }
 
     /** @return The short form of its description, typically a single character. */
     public abstract String toShortName();

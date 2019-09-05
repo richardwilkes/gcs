@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,13 +13,12 @@ package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.widget.IconButton;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
@@ -28,58 +27,8 @@ import javax.swing.JComponent;
 
 /** A generic prerequisite editor panel. */
 public abstract class PrereqEditor extends EditorPanel {
-    @Localize("Remove this prerequisite")
-    @Localize(locale = "de", value = "Diese Bedingung entfernen")
-    @Localize(locale = "ru", value = "Удалить это требование")
-    @Localize(locale = "es", value = "Eliminar este prerrequisito")
-    private static String REMOVE_PREREQ_TOOLTIP;
-    @Localize("Remove this prerequisite list")
-    @Localize(locale = "de", value = "Diese Bedingungsliste entfernen")
-    @Localize(locale = "ru", value = "Удалить этот список требований")
-    @Localize(locale = "es", value = "Eliminar esta lista de prerrequisitos")
-    private static String REMOVE_PREREQ_LIST_TOOLTIP;
-    @Localize("has")
-    @Localize(locale = "de", value = "hat")
-    @Localize(locale = "ru", value = "имеет")
-    @Localize(locale = "es", value = "tiene")
-    private static String HAS;
-    @Localize("doesn't have")
-    @Localize(locale = "de", value = "hat nicht")
-    @Localize(locale = "ru", value = "не имеет")
-    @Localize(locale = "es", value = "no tiene")
-    private static String DOES_NOT_HAVE;
-    @Localize("advantage")
-    @Localize(locale = "de", value = "Vorteil")
-    @Localize(locale = "ru", value = "преимущество")
-    @Localize(locale = "es", value = "ventaja")
-    private static String ADVANTAGE;
-    @Localize("attribute")
-    @Localize(locale = "de", value = "Attribut")
-    @Localize(locale = "ru", value = "атрибут")
-    @Localize(locale = "es", value = "atributo")
-    private static String ATTRIBUTE;
-    @Localize("contained weight")
-    @Localize(locale = "de", value = "Zuladung")
-    @Localize(locale = "ru", value = "содержит вес")
-    @Localize(locale = "es", value = "peso del contenido")
-    private static String CONTAINED_WEIGHT;
-    @Localize("skill")
-    @Localize(locale = "de", value = "Fertigkeit")
-    @Localize(locale = "ru", value = "умение")
-    @Localize(locale = "es", value = "habilidad")
-    private static String SKILL;
-    @Localize("spell(s)")
-    @Localize(locale = "de", value = "Zauber")
-    @Localize(locale = "ru", value = "заклинание(я)")
-    @Localize(locale = "es", value = "sortilegio(s)")
-    private static String SPELL;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType"; //$NON-NLS-1$
-    private static final String     CHANGE_HAS       = "ChangeHas"; //$NON-NLS-1$
+    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";
+    private static final String     CHANGE_HAS       = "ChangeHas";
     private static final Class<?>[] BASE_TYPES       = new Class<?>[] { AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class };
     /** The prerequisite this panel represents. */
     protected Prereq                mPrereq;
@@ -147,7 +96,7 @@ public abstract class PrereqEditor extends EditorPanel {
         grid.add(left, 0, 0);
         rebuildSelf(left, grid, right);
         if (mDepth > 0) {
-            IconButton button = new IconButton(StdImage.REMOVE, mPrereq instanceof PrereqList ? REMOVE_PREREQ_LIST_TOOLTIP : REMOVE_PREREQ_TOOLTIP, () -> remove());
+            IconButton button = new IconButton(StdImage.REMOVE, mPrereq instanceof PrereqList ? I18n.Text("Remove this prerequisite list") : I18n.Text("Remove this prerequisite"), () -> remove());
             add(button);
             right.add(button);
         }
@@ -171,12 +120,14 @@ public abstract class PrereqEditor extends EditorPanel {
      * @return The {@link JComboBox} that allows the "has" attribute to be changed.
      */
     protected JComboBox<Object> addHasCombo(boolean has) {
-        return addComboBox(CHANGE_HAS, new Object[] { HAS, DOES_NOT_HAVE }, has ? HAS : DOES_NOT_HAVE);
+        String hasText         = I18n.Text("has");
+        String doesNotHaveText = I18n.Text("doesn't have");
+        return addComboBox(CHANGE_HAS, new Object[] { hasText, doesNotHaveText }, has ? hasText : doesNotHaveText);
     }
 
     /** @return The {@link JComboBox} that allows the base prereq type to be changed. */
     protected JComboBox<Object> addChangeBaseTypeCombo() {
-        Object[] choices = new Object[] { ATTRIBUTE, ADVANTAGE, SKILL, SPELL, CONTAINED_WEIGHT };
+        Object[] choices = new Object[] { I18n.Text("attribute"), I18n.Text("advantage"), I18n.Text("skill"), I18n.Text("spell(s)"), I18n.Text("contained weight") };
         Class<?> type    = mPrereq.getClass();
         Object   current = choices[0];
         for (int i = 0; i < BASE_TYPES.length; i++) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,13 +13,12 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.border.LineBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.BorderLayout;
@@ -42,41 +41,6 @@ import javax.swing.border.CompoundBorder;
 
 /** Asks the user to enable/disable modifiers. */
 public class ModifierEnabler extends JPanel {
-    @Localize("Enable Modifiers")
-    @Localize(locale = "de", value = "Modifikatoren auswählen")
-    @Localize(locale = "ru", value = "Включить модификаторы")
-    @Localize(locale = "es", value = "Activar Modificadores")
-    private static String MODIFIER_TITLE;
-    @Localize("1 advantage remaining to be processed.")
-    @Localize(locale = "de", value = "1 weiterer Vorteil zu bearbeiten.")
-    @Localize(locale = "ru", value = "осталось обработать 1 преимущество.")
-    @Localize(locale = "es", value = "1 ventaja pendientede procesarse.")
-    private static String MODIFIER_ONE_REMAINING;
-    @Localize("{0} advantages remaining to be processed.")
-    @Localize(locale = "de", value = "{0} weitere Vorteile zu bearbeiten.")
-    @Localize(locale = "ru", value = "{0} преимуществ(а) осталось обработать.")
-    @Localize(locale = "es", value = "{0} ventajas pendientes de procesarse.")
-    private static String MODIFIER_REMAINING;
-    @Localize("Cancel Remaining")
-    @Localize(locale = "de", value = "Alles Abbrechen")
-    @Localize(locale = "ru", value = "Пропустить остальные")
-    @Localize(locale = "es", value = "Cancelar las restantes")
-    private static String CANCEL_REST;
-    @Localize("Cancel")
-    @Localize(locale = "de", value = "Abbrechen")
-    @Localize(locale = "ru", value = "Отмена")
-    @Localize(locale = "es", value = "Cancelar")
-    private static String CANCEL;
-    @Localize("Apply")
-    @Localize(locale = "de", value = "Anwenden")
-    @Localize(locale = "ru", value = "Применить")
-    @Localize(locale = "es", value = "Aplicar")
-    private static String APPLY;
-
-    static {
-        Localization.initialize();
-    }
-
     private Advantage         mAdvantage;
     private JCheckBox[]       mEnabled;
     private Modifier[]        mModifiers;
@@ -103,10 +67,12 @@ public class ModifierEnabler extends JPanel {
 
         count = list.size();
         for (int i = 0; i < count; i++) {
-            Advantage       advantage = list.get(i);
-            boolean         hasMore   = i != count - 1;
-            ModifierEnabler panel     = new ModifierEnabler(advantage, count - i - 1);
-            switch (WindowUtils.showOptionDialog(comp, panel, MODIFIER_TITLE, true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL }, APPLY)) {
+            Advantage       advantage   = list.get(i);
+            boolean         hasMore     = i != count - 1;
+            ModifierEnabler panel       = new ModifierEnabler(advantage, count - i - 1);
+            String          applyTitle  = I18n.Text("Apply");
+            String          cancelTitle = I18n.Text("Cancel");
+            switch (WindowUtils.showOptionDialog(comp, panel, I18n.Text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[] { applyTitle, cancelTitle, I18n.Text("Cancel Remaining") } : new String[] { applyTitle, cancelTitle }, applyTitle)) {
             case JOptionPane.YES_OPTION:
                 panel.applyChanges();
                 modified = true;
@@ -139,9 +105,9 @@ public class ModifierEnabler extends JPanel {
         if (remaining > 0) {
             String msg;
             if (remaining == 1) {
-                msg = MODIFIER_ONE_REMAINING;
+                msg = I18n.Text("1 advantage remaining to be processed.");
             } else {
-                msg = MessageFormat.format(MODIFIER_REMAINING, Integer.valueOf(remaining));
+                msg = MessageFormat.format(I18n.Text("{0} advantages remaining to be processed."), Integer.valueOf(remaining));
             }
             top.add(new JLabel(msg, SwingConstants.CENTER));
         }

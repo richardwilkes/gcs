@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,17 +26,17 @@ import java.util.Set;
 /** A spell bonus. */
 public class SpellBonus extends Bonus {
     /** The XML tag. */
-    public static final String  TAG_ROOT               = "spell_bonus"; //$NON-NLS-1$
+    public static final String  TAG_ROOT               = "spell_bonus";
     /** Matches against the college name. */
-    public static final String  TAG_COLLEGE_NAME       = "college_name"; //$NON-NLS-1$
+    public static final String  TAG_COLLEGE_NAME       = "college_name";
     /** Matches against the power source name. */
-    public static final String  TAG_POWER_SOURCE_NAME  = "power_source_name"; //$NON-NLS-1$
+    public static final String  TAG_POWER_SOURCE_NAME  = "power_source_name";
     /** Matches against the spell name. */
-    public static final String  TAG_SPELL_NAME         = "spell_name"; //$NON-NLS-1$
+    public static final String  TAG_SPELL_NAME         = "spell_name";
     /** The XML attribute name for the "all colleges" flag. */
-    public static final String  ATTRIBUTE_ALL_COLLEGES = "all_colleges"; //$NON-NLS-1$
-    private static final String TAG_CATEGORY           = "category"; //$NON-NLS-1$
-    private static final String EMPTY                  = ""; //$NON-NLS-1$
+    public static final String  ATTRIBUTE_ALL_COLLEGES = "all_colleges";
+    private static final String TAG_CATEGORY           = "category";
+    private static final String EMPTY                  = "";
     private boolean             mAllColleges;
     private String              mMatchType;
     private StringCriteria      mNameCriteria;
@@ -111,7 +111,7 @@ public class SpellBonus extends Bonus {
     public String getKey() {
         StringBuffer buffer = new StringBuffer();
         if (!mCategoryCriteria.isTypeAnything()) {
-            buffer.append(Spell.ID_NAME).append("*"); //$NON-NLS-1$
+            buffer.append(Spell.ID_NAME).append("*");
         } else {
             if (mAllColleges) {
                 buffer.append(Spell.ID_COLLEGE);
@@ -127,7 +127,7 @@ public class SpellBonus extends Bonus {
                     buffer.append('/');
                     buffer.append(mNameCriteria.getQualifier());
                 } else {
-                    buffer.append("*"); //$NON-NLS-1$
+                    buffer.append("*");
                 }
             }
         }

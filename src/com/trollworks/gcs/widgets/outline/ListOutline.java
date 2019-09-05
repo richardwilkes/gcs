@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,14 +15,13 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDropEvent;
@@ -35,16 +34,6 @@ import javax.swing.undo.StateEdit;
 
 /** Base outline class. */
 public class ListOutline extends Outline implements Runnable, ActionListener {
-    @Localize("Remove Rows")
-    @Localize(locale = "de", value = "Zeilen entfernen")
-    @Localize(locale = "ru", value = "Удалить строки")
-    @Localize(locale = "es", value = "Eliminar Filas")
-    private static String CLEAR_UNDO;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The owning data file. */
     protected DataFile mDataFile;
     private String     mRowSetChangedID;
@@ -95,7 +84,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     public void deleteSelection() {
         if (canDeleteSelection()) {
             OutlineModel model = getModel();
-            StateEdit    edit  = new StateEdit(model, CLEAR_UNDO);
+            StateEdit    edit  = new StateEdit(model, I18n.Text("Remove Rows"));
             Row[]        rows  = model.getSelectionAsList(true).toArray(new Row[0]);
             mDataFile.startNotify();
             model.removeSelection();

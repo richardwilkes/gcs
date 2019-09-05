@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -18,48 +18,26 @@ import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Skill" command. */
 public class NewSkillCommand extends Command {
-    @Localize("New Skill")
-    @Localize(locale = "de", value = "Neue Fertigkeit")
-    @Localize(locale = "ru", value = "Новое умение")
-    @Localize(locale = "es", value = "Nueva habilidad")
-    private static String SKILL;
-    @Localize("New Skill Container")
-    @Localize(locale = "de", value = "Neuer Fertigkeiten-Container")
-    @Localize(locale = "ru", value = "Новый контейнер умения")
-    @Localize(locale = "es", value = "Nuevo Contenedor de habilidades")
-    private static String SKILL_CONTAINER;
-    @Localize("New Technique")
-    @Localize(locale = "de", value = "Neue Technik")
-    @Localize(locale = "ru", value = "Новая техника")
-    @Localize(locale = "es", value = "Nueva Técnica")
-    private static String TECHNIQUE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String          CMD_NEW_SKILL           = "NewSkill"; //$NON-NLS-1$
+    public static final String          CMD_NEW_SKILL           = "NewSkill";
     /** The action command this command will issue. */
-    public static final String          CMD_NEW_SKILL_CONTAINER = "NewSkillContainer"; //$NON-NLS-1$
+    public static final String          CMD_NEW_SKILL_CONTAINER = "NewSkillContainer";
     /** The action command this command will issue. */
-    public static final String          CMD_NEW_TECHNIQUE       = "NewTechnique"; //$NON-NLS-1$
-
+    public static final String          CMD_NEW_TECHNIQUE       = "NewTechnique";
     /** The "New Skill" command. */
-    public static final NewSkillCommand INSTANCE                = new NewSkillCommand(false, false, SKILL, CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
+    public static final NewSkillCommand INSTANCE                = new NewSkillCommand(false, false, I18n.Text("New Skill"), CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
     /** The "New Skill Container" command. */
-    public static final NewSkillCommand CONTAINER_INSTANCE      = new NewSkillCommand(true, false, SKILL_CONTAINER, CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
+    public static final NewSkillCommand CONTAINER_INSTANCE      = new NewSkillCommand(true, false, I18n.Text("New Skill Container"), CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
     /** The "New Technique" command. */
-    public static final NewSkillCommand TECHNIQUE_INSTANCE      = new NewSkillCommand(false, true, TECHNIQUE, CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
+    public static final NewSkillCommand TECHNIQUE_INSTANCE      = new NewSkillCommand(false, true, I18n.Text("New Technique"), CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
     private boolean                     mContainer;
     private boolean                     mTechnique;
 

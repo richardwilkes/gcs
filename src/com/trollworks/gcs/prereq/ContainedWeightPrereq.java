@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,10 +17,9 @@ import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
@@ -29,19 +28,9 @@ import java.text.MessageFormat;
 
 /** An equipment contained weight prerequisite. */
 public class ContainedWeightPrereq extends HasPrereq {
-    @Localize("{0}{1} a contained weight which {2}\n")
-    @Localize(locale = "de", value = "{0}{1} eine Zuladung die {2}")
-    @Localize(locale = "ru", value = "{0}{1} имеет вес равный {2}\n")
-    @Localize(locale = "es", value = "{0}{1} contiene un peso de {2}\n")
-    private static String CONTAINED_WEIGHT;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT          = "contained_weight_prereq"; //$NON-NLS-1$
-    private static final String ATTRIBUTE_COMPARE = "compare"; //$NON-NLS-1$
+    public static final String  TAG_ROOT          = "contained_weight_prereq";
+    private static final String ATTRIBUTE_COMPARE = "compare";
     private WeightCriteria      mWeightCompare;
 
     /**
@@ -135,7 +124,7 @@ public class ContainedWeightPrereq extends HasPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(CONTAINED_WEIGHT, prefix, has() ? HAS : DOES_NOT_HAVE, mWeightCompare));
+            builder.append(MessageFormat.format(I18n.Text("{0}{1} a contained weight which {2}\n"), prefix, hasText(), mWeightCompare));
         }
         return satisfied;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -47,12 +47,10 @@ import java.util.TreeSet;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row {
-    private static final String     ATTRIBUTE_OPEN = "open"; //$NON-NLS-1$
-    private static final String     TAG_NOTES      = "notes"; //$NON-NLS-1$
-    private static final String     TAG_CATEGORIES = "categories"; //$NON-NLS-1$
-    private static final String     TAG_CATEGORY   = "category"; //$NON-NLS-1$
-    private static final String     COMMA          = ","; //$NON-NLS-1$
-    private static final String     SPACE          = " "; //$NON-NLS-1$
+    private static final String     ATTRIBUTE_OPEN = "open";
+    private static final String     TAG_NOTES      = "notes";
+    private static final String     TAG_CATEGORIES = "categories";
+    private static final String     TAG_CATEGORY   = "category";
     /** The data file the row is associated with. */
     protected DataFile              mDataFile;
     private ArrayList<Feature>      mFeatures;
@@ -109,7 +107,7 @@ public abstract class ListRow extends Row {
             if (last + 1 != data.length()) {
                 data = data.substring(last + 1);
             } else {
-                data = ""; //$NON-NLS-1$
+                data = "";
             }
             first = data.indexOf('@');
             last  = data.indexOf('@', first + 1);
@@ -128,7 +126,7 @@ public abstract class ListRow extends Row {
 
     // This is the decompose method that works with the compose method (getCategoriesAsString())
     private static Collection<String> createList(String categories) {
-        return Arrays.asList(categories.split(COMMA));
+        return Arrays.asList(categories.split(","));
     }
 
     /**
@@ -146,7 +144,7 @@ public abstract class ListRow extends Row {
         mPrereqList  = new PrereqList(null, true);
         mDefaults    = new ArrayList<>();
         mIsSatisfied = true;
-        mNotes       = ""; //$NON-NLS-1$
+        mNotes       = "";
         mCategories  = new TreeSet<>();
     }
 
@@ -317,7 +315,7 @@ public abstract class ListRow extends Row {
      * @param state The {@link LoadState} to use.
      */
     protected void prepareForLoad(LoadState state) {
-        mNotes = ""; //$NON-NLS-1$
+        mNotes = "";
         mFeatures.clear();
         mDefaults.clear();
         mPrereqList = new PrereqList(null, true);
@@ -510,8 +508,8 @@ public abstract class ListRow extends Row {
         StringBuilder buffer = new StringBuilder();
         for (String category : mCategories) {
             if (buffer.length() > 0) {
-                buffer.append(COMMA);
-                buffer.append(SPACE);
+                buffer.append(",");
+                buffer.append(" ");
             }
             buffer.append(category);
         }
@@ -679,7 +677,7 @@ public abstract class ListRow extends Row {
     /** @return The notes due to modifiers. */
     @SuppressWarnings("static-method")
     public String getModifierNotes() {
-        return ""; //$NON-NLS-1$
+        return "";
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,8 +12,7 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.util.HashSet;
 
@@ -23,7 +22,7 @@ public enum SkillDefaultType {
     ST {
         @Override
         public String toString() {
-            return ST_TITLE;
+            return I18n.Text("ST");
         }
 
         @Override
@@ -35,7 +34,7 @@ public enum SkillDefaultType {
     DX {
         @Override
         public String toString() {
-            return DX_TITLE;
+            return I18n.Text("DX");
         }
 
         @Override
@@ -47,7 +46,7 @@ public enum SkillDefaultType {
     IQ {
         @Override
         public String toString() {
-            return IQ_TITLE;
+            return I18n.Text("IQ");
         }
 
         @Override
@@ -59,7 +58,7 @@ public enum SkillDefaultType {
     HT {
         @Override
         public String toString() {
-            return HT_TITLE;
+            return I18n.Text("HT");
         }
 
         @Override
@@ -71,7 +70,7 @@ public enum SkillDefaultType {
     Will {
         @Override
         public String toString() {
-            return WILL_TITLE;
+            return I18n.Text("Will");
         }
 
         @Override
@@ -83,7 +82,7 @@ public enum SkillDefaultType {
     Per {
         @Override
         public String toString() {
-            return PER_TITLE;
+            return I18n.Text("Perception");
         }
 
         @Override
@@ -95,7 +94,7 @@ public enum SkillDefaultType {
     Skill {
         @Override
         public String toString() {
-            return SKILL_NAMED;
+            return I18n.Text("Skill named");
         }
 
         @Override
@@ -133,7 +132,7 @@ public enum SkillDefaultType {
     Parry {
         @Override
         public String toString() {
-            return PARRY_SKILL_NAMED;
+            return I18n.Text("Parrying skill named");
         }
 
         @Override
@@ -171,7 +170,7 @@ public enum SkillDefaultType {
     Block {
         @Override
         public String toString() {
-            return BLOCK_SKILL_NAMED;
+            return I18n.Text("Blocking skill named");
         }
 
         @Override
@@ -209,7 +208,7 @@ public enum SkillDefaultType {
     Base10 {
         @Override
         public String toString() {
-            return BASE_10_TITLE;
+            return "10";
         }
 
         @Override
@@ -217,58 +216,6 @@ public enum SkillDefaultType {
             return finalLevel(skillDefault, SkillAttribute.Base10.getBaseSkillLevel(character));
         }
     };
-
-    @Localize("ST")
-    @Localize(locale = "de", value = "ST")
-    @Localize(locale = "ru", value = "СЛ")
-    @Localize(locale = "es", value = "FZ")
-    static String ST_TITLE;
-    @Localize("DX")
-    @Localize(locale = "de", value = "GE")
-    @Localize(locale = "ru", value = "ЛВ")
-    @Localize(locale = "es", value = "DS")
-    static String DX_TITLE;
-    @Localize("IQ")
-    @Localize(locale = "de", value = "IQ")
-    @Localize(locale = "ru", value = "ИН")
-    @Localize(locale = "es", value = "CI")
-    static String IQ_TITLE;
-    @Localize("HT")
-    @Localize(locale = "de", value = "KO")
-    @Localize(locale = "ru", value = "ЗД")
-    @Localize(locale = "es", value = "SL")
-    static String HT_TITLE;
-    @Localize("Will")
-    @Localize(locale = "de", value = "Wille")
-    @Localize(locale = "ru", value = "Воля")
-    @Localize(locale = "es", value = "Vol")
-    static String WILL_TITLE;
-    @Localize("Perception")
-    @Localize(locale = "de", value = "Wahrnehmung")
-    @Localize(locale = "ru", value = "Восприятие")
-    @Localize(locale = "es", value = "Percepción")
-    static String PER_TITLE;
-    @Localize("Skill named")
-    @Localize(locale = "de", value = "Fertigkeit namens")
-    @Localize(locale = "ru", value = "Название умения")
-    @Localize(locale = "es", value = "Habilidad llamada")
-    static String SKILL_NAMED;
-    @Localize("Parrying skill named")
-    @Localize(locale = "de", value = "Parieren-Fertigkeit namens")
-    @Localize(locale = "ru", value = "Название умения парирования")
-    @Localize(locale = "es", value = "Habilidad de parada llamada")
-    static String PARRY_SKILL_NAMED;
-    @Localize("Blocking skill named")
-    @Localize(locale = "de", value = "Abblocken-Fertigkeit namens")
-    @Localize(locale = "ru", value = "Название умения блока")
-    @Localize(locale = "es", value = "Habilidad de bloqueo llamada")
-    static String BLOCK_SKILL_NAMED;
-    @Localize("10")
-    static String BASE_10_TITLE;
-
-    static {
-        Localization.initialize();
-    }
 
     /**
      * @param name The name of a {@link SkillDefaultType}, as returned from {@link #name()} or

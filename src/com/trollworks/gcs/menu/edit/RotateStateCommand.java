@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -20,11 +20,10 @@ import com.trollworks.gcs.equipment.EquipmentState;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowUndo;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -33,21 +32,13 @@ import java.util.ArrayList;
 
 /** Provides the "Rotate State" command. */
 public class RotateStateCommand extends Command {
-    @Localize("Rotate State")
-    private static String TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String             CMD_ROTATE_STATE = "RotateState"; //$NON-NLS-1$
-
+    public static final String             CMD_ROTATE_STATE = "RotateState";
     /** The singleton {@link RotateStateCommand}. */
     public static final RotateStateCommand INSTANCE         = new RotateStateCommand();
 
     private RotateStateCommand() {
-        super(TITLE, CMD_ROTATE_STATE, KeyEvent.VK_QUOTE);
+        super(I18n.Text("Rotate State"), CMD_ROTATE_STATE, KeyEvent.VK_QUOTE);
     }
 
     @Override

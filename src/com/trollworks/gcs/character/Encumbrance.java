@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,71 +11,40 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** Valid encumbrance levels. */
 public enum Encumbrance {
     NONE(1) {
         @Override
         public String toString() {
-            return NONE_TITLE;
+            return I18n.Text("None");
         }
     },
     LIGHT(2) {
         @Override
         public String toString() {
-            return LIGHT_TITLE;
+            return I18n.Text("Light");
         }
     },
     MEDIUM(3) {
         @Override
         public String toString() {
-            return MEDIUM_TITLE;
+            return I18n.Text("Medium");
         }
     },
     HEAVY(6) {
         @Override
         public String toString() {
-            return HEAVY_TITLE;
+            return I18n.Text("Heavy");
         }
     },
     EXTRA_HEAVY(10) {
         @Override
         public String toString() {
-            return EXTRA_HEAVY_TITLE;
+            return I18n.Text("X-Heavy");
         }
     };
-
-    @Localize("None")
-    @Localize(locale = "de", value = "Keine")
-    @Localize(locale = "ru", value = "Нет")
-    @Localize(locale = "es", value = "Ninguno")
-    protected static String NONE_TITLE;
-    @Localize("Light")
-    @Localize(locale = "de", value = "Leicht")
-    @Localize(locale = "ru", value = "Лёгкая")
-    @Localize(locale = "es", value = "Ligero")
-    protected static String LIGHT_TITLE;
-    @Localize("Medium")
-    @Localize(locale = "de", value = "Mittel")
-    @Localize(locale = "ru", value = "Средние")
-    @Localize(locale = "es", value = "Medio")
-    protected static String MEDIUM_TITLE;
-    @Localize("Heavy")
-    @Localize(locale = "de", value = "Schwer")
-    @Localize(locale = "ru", value = "Тяжелый")
-    @Localize(locale = "es", value = "Pesado")
-    protected static String HEAVY_TITLE;
-    @Localize("X-Heavy")
-    @Localize(locale = "de", value = "Extrem")
-    @Localize(locale = "ru", value = "Сверхтяж")
-    @Localize(locale = "es", value = "Superpesado")
-    protected static String EXTRA_HEAVY_TITLE;
-
-    static {
-        Localization.initialize();
-    }
 
     private int mMultiplier;
 

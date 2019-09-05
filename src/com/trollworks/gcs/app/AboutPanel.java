@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,11 +11,10 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.utility.BundleInfo;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Version;
 
 import java.awt.Color;
@@ -31,35 +30,7 @@ import javax.swing.UIManager;
 
 /** The about box contents. */
 public class AboutPanel extends JPanel {
-    @Localize("Version %s")
-    @Localize(locale = "de", value = "Version %s")
-    @Localize(locale = "ru", value = "Версия %s")
-    @Localize(locale = "es", value = "Versión %s")
-    private static String VERSION_FORMAT;
-    @Localize("%s %s\n%s Architecture\nJava %s")
-    @Localize(locale = "de", value = "%s %s\n%s-Architektur\nJava %s")
-    @Localize(locale = "ru", value = "%s %s\n%s Архитектура\nJava %s")
-    @Localize(locale = "es", value = "%s %s\n%s Arquitectura\nJava %s")
-    private static String PLATFORM_FORMAT;
-    @Localize("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games.\nThe iText Library is licensed under LGPL 2.1 by Bruno Lowagie and Paulo Soares.\nThe Trove Library is licensed under LGPL 2.1 by Eric D. Friedman and Rob Eden.\nThe PDFBox and FontBox libraries are licensed under the Apache License v2 by the Apache Software Foundation.")
-    private static String LICENSES;
-    @Localize("Unknown build date")
-    @Localize(locale = "de", value = "Unbekanntes Erstellungsdatum")
-    @Localize(locale = "ru", value = "Неизвестная дата сборки")
-    @Localize(locale = "es", value = "Fecha de compilación desconocida")
-    private static String UNKNOWN_BUILD_DATE;
-    @Localize("Development Version")
-    @Localize(locale = "de", value = "Entwicklungsversion")
-    @Localize(locale = "ru", value = "Разрабатываемая версия")
-    @Localize(locale = "es", value = "Versión de Desarrollo")
-    private static String DEVELOPMENT;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String SEPARATOR = "\n"; //$NON-NLS-1$
-    private static final int    HMARGIN   = 4;
+    private static final int HMARGIN = 4;
 
     /** Creates a new about panel. */
     public AboutPanel() {
@@ -77,23 +48,23 @@ public class AboutPanel extends JPanel {
         RenderingHints saved = (RenderingHints) gc.getRenderingHints().clone();
         gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         gc.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        Font baseFont = UIManager.getFont("TextField.font"); //$NON-NLS-1$
+        Font baseFont = UIManager.getFont("TextField.font");
         gc.setFont(baseFont.deriveFont(10f));
         gc.setColor(Color.WHITE);
         int        right      = getWidth() - HMARGIN;
-        int        y          = draw(gc, LICENSES, getHeight() - HMARGIN, right, true, true);
+        int        y          = draw(gc, I18n.Text("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games.\nThe iText Library is licensed under LGPL 2.1 by Bruno Lowagie and Paulo Soares.\nThe Trove Library is licensed under LGPL 2.1 by Eric D. Friedman and Rob Eden.\nThe PDFBox and FontBox libraries are licensed under the Apache License v2 by the Apache Software Foundation."), getHeight() - HMARGIN, right, true, true);
         BundleInfo bundleInfo = BundleInfo.getDefault();
         long       version    = bundleInfo.getVersion();
         int        y2         = draw(gc, bundleInfo.getCopyrightBanner(), y, right, false, true);
-        draw(gc, String.format(PLATFORM_FORMAT, System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        y2 = draw(gc, version != 0 ? Version.toBuildTimestamp(version) : UNKNOWN_BUILD_DATE, y2, right, false, true);
+        draw(gc, String.format(I18n.Text("%s %s\n%s Architecture\nJava %s"), System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false);  //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        y2 = draw(gc, version != 0 ? Version.toBuildTimestamp(version) : I18n.Text("Unknown build date"), y2, right, false, true);
         gc.setFont(baseFont.deriveFont(Font.BOLD, 12f));
-        draw(gc, version != 0 ? String.format(VERSION_FORMAT, Version.toString(version, false)) : DEVELOPMENT, y2, right, false, true);
+        draw(gc, version != 0 ? String.format(I18n.Text("Version %s"), Version.toString(version, false)) : I18n.Text("Development Version"), y2, right, false, true);
         gc.setRenderingHints(saved);
     }
 
     private static int draw(Graphics2D gc, String text, int y, int right, boolean addGap, boolean onLeft) {
-        String[]    one     = text.split(SEPARATOR);
+        String[]    one     = text.split("\n");
         FontMetrics fm      = gc.getFontMetrics();
         int         fHeight = fm.getAscent() + fm.getDescent();
         for (int i = one.length - 1; i >= 0; i--) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,13 +23,13 @@ import java.io.IOException;
 /** The stats for a ranged weapon. */
 public class RangedWeaponStats extends WeaponStats {
     /** The root XML tag. */
-    public static final String  TAG_ROOT         = "ranged_weapon"; //$NON-NLS-1$
-    private static final String TAG_ACCURACY     = "accuracy"; //$NON-NLS-1$
-    private static final String TAG_RANGE        = "range"; //$NON-NLS-1$
-    private static final String TAG_RATE_OF_FIRE = "rate_of_fire"; //$NON-NLS-1$
-    private static final String TAG_SHOTS        = "shots"; //$NON-NLS-1$
-    private static final String TAG_BULK         = "bulk"; //$NON-NLS-1$
-    private static final String TAG_RECOIL       = "recoil"; //$NON-NLS-1$
+    public static final String  TAG_ROOT         = "ranged_weapon";
+    private static final String TAG_ACCURACY     = "accuracy";
+    private static final String TAG_RANGE        = "range";
+    private static final String TAG_RATE_OF_FIRE = "rate_of_fire";
+    private static final String TAG_SHOTS        = "shots";
+    private static final String TAG_BULK         = "bulk";
+    private static final String TAG_RECOIL       = "recoil";
     /** The field ID for accuracy changes. */
     public static final String  ID_ACCURACY      = PREFIX + TAG_ACCURACY;
     /** The field ID for range changes. */
@@ -51,7 +51,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Creates a new {@link RangedWeaponStats}.
-     * 
+     *
      * @param owner The owning piece of equipment or advantage.
      */
     public RangedWeaponStats(ListRow owner) {
@@ -60,7 +60,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Creates a clone of the specified {@link RangedWeaponStats}.
-     * 
+     *
      * @param owner The owning piece of equipment or advantage.
      * @param other The {@link RangedWeaponStats} to clone.
      */
@@ -76,7 +76,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Creates a {@link RangedWeaponStats}.
-     * 
+     *
      * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
@@ -91,12 +91,12 @@ public class RangedWeaponStats extends WeaponStats {
 
     @Override
     protected void initialize() {
-        mAccuracy   = EMPTY;
-        mRange      = EMPTY;
-        mRateOfFire = EMPTY;
-        mShots      = EMPTY;
-        mBulk       = EMPTY;
-        mRecoil     = EMPTY;
+        mAccuracy   = "";
+        mRange      = "";
+        mRateOfFire = "";
+        mShots      = "";
+        mBulk       = "";
+        mRecoil     = "";
     }
 
     @Override
@@ -142,7 +142,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of accuracy.
-     * 
+     *
      * @param accuracy The value to set.
      */
     public void setAccuracy(String accuracy) {
@@ -160,7 +160,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of bulk.
-     * 
+     *
      * @param bulk The value to set.
      */
     public void setBulk(String bulk) {
@@ -194,7 +194,7 @@ public class RangedWeaponStats extends WeaponStats {
     }
 
     private String resolveRange(String range, int strength) {
-        int where = range.indexOf("x"); //$NON-NLS-1$
+        int where = range.indexOf("x");
 
         if (where != -1) {
             int last = where + 1;
@@ -243,7 +243,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of range.
-     * 
+     *
      * @param range The value to set.
      */
     public void setRange(String range) {
@@ -261,7 +261,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of rate of fire.
-     * 
+     *
      * @param rateOfFire The value to set.
      */
     public void setRateOfFire(String rateOfFire) {
@@ -279,7 +279,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of recoil.
-     * 
+     *
      * @param recoil The value to set.
      */
     public void setRecoil(String recoil) {
@@ -297,7 +297,7 @@ public class RangedWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of shots.
-     * 
+     *
      * @param shots The value to set.
      */
     public void setShots(String shots) {

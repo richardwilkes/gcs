@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,9 +11,8 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.app.GCS;
 import com.trollworks.gcs.app.GCSImages;
-import com.trollworks.toolkit.annotation.Localize;
+import com.trollworks.gcs.app.GCSCmdLine;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -29,7 +28,7 @@ import com.trollworks.toolkit.ui.print.PageOrientation;
 import com.trollworks.toolkit.ui.print.PrintManager;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.Text;
@@ -63,97 +62,20 @@ import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
 public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    @Localize("Output")
-    private static String TITLE;
-    @Localize("when saving sheets to PNG")
-    @Localize(locale = "de", value = "beim Export als PNG-Datei")
-    @Localize(locale = "ru", value = "при сохранении листов в формате PNG")
-    @Localize(locale = "es", value = "cuando se salva la hoja de personaje en formato PNG")
-    private static String PNG_RESOLUTION_POST;
-    @Localize("The resolution, in dots-per-inch, to use when saving sheets as PNG files")
-    @Localize(locale = "de",
-              value = "Die Auflösung in DPI, mit der die Charakterblätter als PNG-Datei gespeichert werden.")
-    @Localize(locale = "ru",
-              value = "Разрешение в точках на дюйм, которое используется при сохранении листов в формате PNG-файла")
-    @Localize(locale = "es",
-              value = "Resolución, en puntos por pulgada (ppp), cuando se salva la hoja de personaje en formato PNG")
-    private static String PNG_RESOLUTION_TOOLTIP;
-    @Localize("{0} dpi")
-    @Localize(locale = "de", value = "{0} DPI")
-    @Localize(locale = "es", value = "{0} ppp")
-    private static String DPI_FORMAT;
-    @Localize("Text Export Template")
-    private static String TEXT_TEMPLATE_OVERRIDE;
-    @Localize("Choose\u2026")
-    @Localize(locale = "de", value = "wählen\u2026")
-    @Localize(locale = "ru", value = "Выбрать\u2026")
-    @Localize(locale = "es", value = "Elegir\u2026")
-    private static String TEXT_TEMPLATE_PICKER;
-    @Localize("Specify a file to use as the template when exporting to a text format, such as HTML")
-    private static String TEXT_TEMPLATE_OVERRIDE_TOOLTIP;
-    @Localize("Select A Text Template")
-    private static String SELECT_TEXT_TEMPLATE;
-    @Localize("Use platform native print dialogs (settings cannot be saved)")
-    @Localize(locale = "de",
-              value = "Verwende Druckdialoge des Betriebssystems (Einstellungen können nicht gespeichert werden)")
-    @Localize(locale = "ru",
-              value = "Использовать диалоги печати родные для ОС (в этом случае не сохраняются настройки диалогов)")
-    @Localize(locale = "es",
-              value = "Usar los diálogos de impresión del sistema operativo (No pueden guardarse las preferencias)")
-    private static String NATIVE_PRINTER;
-    @Localize("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>")
-    @Localize(locale = "de",
-              value = "<html><body>Ob die Druckdialoge des Betriebssystems verwendet werden sollen.<br>Das Auswählen dieser Option wird das Programm daran hindern,<br>die Druckeinstellungen im Dokument zu speichern und werderherzustellen.</body></html>")
-    @Localize(locale = "ru",
-              value = "<html><body>Использовать родные диалоги печати ОС.<br>При выборе этого параметра программа не будет сохранять<br>настройки печати документа.</body></html>")
-    @Localize(locale = "es",
-              value = "<html><body>Indica si se usan o no los diálogos de impresión del sistema operativo.<br>Si se selecciona esta opción, el programa no podrá salvar<br>y restaurar configuración del documento.</body></html>")
-    private static String NATIVE_PRINTER_TOOLTIP;
-    @Localize("Use")
-    @Localize(locale = "de", value = "Verwende")
-    @Localize(locale = "ru", value = "Использовать")
-    @Localize(locale = "es", value = "usar")
-    private static String USE;
-    @Localize("and")
-    @Localize(locale = "de", value = "und")
-    @Localize(locale = "ru", value = "и")
-    @Localize(locale = "es", value = "y")
-    private static String AND;
-    @Localize("All Readable Image Files")
-    private static String ALL_READABLE_IMAGE_FILES;
-    @Localize("JPEG Files")
-    private static String JPEG_FILES;
-    @Localize("GIF Files")
-    private static String GIF_FILES;
-    @Localize("GURPS Calculator Key")
-    private static String GURPS_CALCULATOR_KEY;
-    @Localize("Find mine")
-    private static String WHERE_OBTAIN;
-    @Localize("Unable to open {0}")
-    private static String UNABLE_TO_OPEN_URL;
-    @Localize("Block Layout")
-    private static String BLOCK_LAYOUT;
-    @Localize("Specifies the layout of the various blocks of data on the character sheet")
-    private static String BLOCK_LAYOUT_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String MODULE                    = "Output"; //$NON-NLS-1$
+    private static final String MODULE                    = "Output";
     private static final int    DEFAULT_PNG_RESOLUTION    = 200;
-    private static final String PNG_RESOLUTION_KEY        = "PNGResolution"; //$NON-NLS-1$
+    private static final String PNG_RESOLUTION_KEY        = "PNGResolution";
     private static final int[]  DPI                       = { 72, 96, 144, 150, 200, 300 };
-    private static final String USE_TEMPLATE_OVERRIDE_KEY = "UseTextTemplateOverride"; //$NON-NLS-1$
-    private static final String TEMPLATE_OVERRIDE_KEY     = "TextTemplateOverride"; //$NON-NLS-1$
-    private static final String GURPS_CALCULATOR_KEY_KEY  = "GurpsCalculatorKey"; //$NON-NLS-1$
-    public static final String  BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com"; //$NON-NLS-1$
-    public static final String  GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS"; //$NON-NLS-1$
-    private static final String DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings"; //$NON-NLS-1$
-    private static final String BLOCK_LAYOUT_KEY          = "BlockLayout"; //$NON-NLS-1$
+    private static final String USE_TEMPLATE_OVERRIDE_KEY = "UseTextTemplateOverride";
+    private static final String TEMPLATE_OVERRIDE_KEY     = "TextTemplateOverride";
+    private static final String GURPS_CALCULATOR_KEY_KEY  = "GurpsCalculatorKey";
+    public static final String  BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
+    public static final String  GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
+    private static final String DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings";
+    private static final String BLOCK_LAYOUT_KEY          = "BlockLayout";
     /** The block layout preference key. */
     public static final String  BLOCK_LAYOUT_PREF_KEY     = Preferences.getModuleKey(MODULE, BLOCK_LAYOUT_KEY);
-    private static final String DEFAULT_BLOCK_LAYOUT      = "melee\nranged\nadvantages skills\nspells\nequipment\nnotes"; //$NON-NLS-1$
+    private static final String DEFAULT_BLOCK_LAYOUT      = "melee\nranged\nadvantages skills\nspells\nequipment\nnotes";
     private JComboBox<String>   mPNGResolutionCombo;
     private JCheckBox           mUseTextTemplateOverride;
     private JTextField          mTextTemplatePath;
@@ -213,7 +135,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 
     /** @return The default text template to use when exporting to a text format. */
     public static String getDefaultTextTemplate() {
-        return GCS.getLibraryRootPath().resolve("Output Templates").resolve("html_template.html").toString(); //$NON-NLS-1$ //$NON-NLS-2$
+        return GCSCmdLine.getLibraryRootPath().resolve("Output Templates").resolve("html_template.html").toString();
     }
 
     public static String getGurpsCalculatorKey() {
@@ -281,53 +203,63 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
      * @param owner The owning {@link PreferencesWindow}.
      */
     public OutputPreferences(PreferencesWindow owner) {
-        super(TITLE, owner);
+        super(I18n.Text("Output"), owner);
         FlexColumn column = new FlexColumn();
 
         FlexGrid   grid   = new FlexGrid();
         column.add(grid);
 
-        FlexRow row = new FlexRow();
-        row.add(createLabel(GURPS_CALCULATOR_KEY, GURPS_CALCULATOR_KEY, GCSImages.getGCalcLogo()));
-        mGurpsCalculatorKey = createTextField(GURPS_CALCULATOR_KEY, getGurpsCalculatorKey());
+        FlexRow row        = new FlexRow();
+        String  gcalcTitle = I18n.Text("GURPS Calculator Key");
+        row.add(createLabel(gcalcTitle, gcalcTitle, GCSImages.getGCalcLogo()));
+        mGurpsCalculatorKey = createTextField(gcalcTitle, getGurpsCalculatorKey());
         row.add(mGurpsCalculatorKey);
-        mGurpsCalculatorLink = createHyperlinkButton(WHERE_OBTAIN, GURPS_CALCULATOR_URL);
+        mGurpsCalculatorLink = createHyperlinkButton(I18n.Text("Find mine"), GURPS_CALCULATOR_URL);
         if (Desktop.isDesktopSupported()) {
             row.add(mGurpsCalculatorLink);
         }
         column.add(row);
 
-        mUseNativePrinter = createCheckBox(NATIVE_PRINTER, NATIVE_PRINTER_TOOLTIP, PrintManager.useNativeDialogs());
+        mUseNativePrinter = createCheckBox(I18n.Text("Use platform native print dialogs (settings cannot be saved)"), I18n.Text("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>"), PrintManager.useNativeDialogs());
         column.add(mUseNativePrinter);
 
         row                      = new FlexRow();
-        mUseTextTemplateOverride = createCheckBox(TEXT_TEMPLATE_OVERRIDE, TEXT_TEMPLATE_OVERRIDE_TOOLTIP, isTextTemplateOverridden());
+        mUseTextTemplateOverride = createCheckBox(I18n.Text("Text Export Template"), textTemplateOverrideTooltip(), isTextTemplateOverridden());
         row.add(mUseTextTemplateOverride);
         mTextTemplatePath = createTextTemplatePathField();
         row.add(mTextTemplatePath);
-        mTextTemplatePicker = createButton(TEXT_TEMPLATE_PICKER, TEXT_TEMPLATE_OVERRIDE_TOOLTIP);
+        mTextTemplatePicker = createButton(I18n.Text("Choose\u2026"), textTemplateOverrideTooltip());
         mTextTemplatePicker.setEnabled(isTextTemplateOverridden());
         row.add(mTextTemplatePicker);
         column.add(row);
 
         row = new FlexRow();
-        row.add(createLabel(USE, PNG_RESOLUTION_TOOLTIP));
+        row.add(createLabel(I18n.Text("Use"), pngDPIMsg()));
         mPNGResolutionCombo = createPNGResolutionPopup();
         row.add(mPNGResolutionCombo);
-        row.add(createLabel(PNG_RESOLUTION_POST, PNG_RESOLUTION_TOOLTIP, SwingConstants.LEFT));
+        row.add(createLabel(I18n.Text("when saving sheets to PNG"), pngDPIMsg(), SwingConstants.LEFT));
         column.add(row);
 
         row = new FlexRow();
-        row.add(createLabel(BLOCK_LAYOUT, BLOCK_LAYOUT_TOOLTIP));
+        String blockLayoutTooltip = I18n.Text("Specifies the layout of the various blocks of data on the character sheet");
+        row.add(createLabel(I18n.Text("Block Layout"), blockLayoutTooltip));
         column.add(row);
 
         row               = new FlexRow();
-        mBlockLayoutField = createTextArea(BLOCK_LAYOUT_TOOLTIP, getBlockLayout());
+        mBlockLayoutField = createTextArea(blockLayoutTooltip, getBlockLayout());
         row.add(mBlockLayoutField);
         row.setFillVertical(true);
         column.add(row);
 
         column.apply(this);
+    }
+
+    private static final String textTemplateOverrideTooltip() {
+        return I18n.Text("Specify a file to use as the template when exporting to a text format, such as HTML");
+    }
+
+    private static final String pngDPIMsg() {
+        return I18n.Text("The resolution, in dots-per-inch, to use when saving sheets as PNG files");
     }
 
     private JButton createButton(String title, String tooltip) {
@@ -341,7 +273,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 
     private JTextField createTextTemplatePathField() {
         JTextField field = new JTextField(getTextTemplate());
-        field.setToolTipText(Text.wrapPlainTextForToolTip(TEXT_TEMPLATE_OVERRIDE_TOOLTIP));
+        field.setToolTipText(Text.wrapPlainTextForToolTip(textTemplateOverrideTooltip()));
         field.setEnabled(isTextTemplateOverridden());
         field.getDocument().addDocumentListener(this);
         Dimension size    = field.getPreferredSize();
@@ -353,7 +285,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     }
 
     private JButton createHyperlinkButton(String linkText, String tooltip) {
-        JButton button = new JButton(String.format("<html><body><font color=\"#000099\"><u>%s</u></font></body></html>", linkText)); //$NON-NLS-1$
+        JButton button = new JButton(String.format("<html><body><font color=\"#000099\"><u>%s</u></font></body></html>", linkText));
         button.setFocusPainted(false);
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setContentAreaFilled(false);
@@ -371,9 +303,9 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         int               selection  = 0;
         int               resolution = getPNGResolution();
         JComboBox<String> combo      = new JComboBox<>();
-        setupCombo(combo, PNG_RESOLUTION_TOOLTIP);
+        setupCombo(combo, pngDPIMsg());
         for (int i = 0; i < DPI.length; i++) {
-            combo.addItem(MessageFormat.format(DPI_FORMAT, Integer.valueOf(DPI[i])));
+            combo.addItem(MessageFormat.format(I18n.Text("{0} dpi"), Integer.valueOf(DPI[i])));
             if (DPI[i] == resolution) {
                 selection = i;
             }
@@ -412,7 +344,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         if (source == mPNGResolutionCombo) {
             Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION_KEY, DPI[mPNGResolutionCombo.getSelectedIndex()]);
         } else if (source == mTextTemplatePicker) {
-            File file = StdFileDialog.showOpenDialog(this, SELECT_TEXT_TEMPLATE);
+            File file = StdFileDialog.showOpenDialog(this, I18n.Text("Select A Text Template"));
             if (file != null) {
                 mTextTemplatePath.setText(PathUtils.getFullPath(file));
             }
@@ -420,7 +352,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
             try {
                 Desktop.getDesktop().browse(new URI(GURPS_CALCULATOR_URL));
             } catch (Exception exception) {
-                WindowUtils.showError(this, MessageFormat.format(UNABLE_TO_OPEN_URL, GURPS_CALCULATOR_URL));
+                WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to open {0}"), GURPS_CALCULATOR_URL));
             }
         }
         adjustResetButton();
@@ -428,7 +360,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 
     @Override
     public void reset() {
-        mGurpsCalculatorKey.setText(""); //$NON-NLS-1$
+        mGurpsCalculatorKey.setText("");
         for (int i = 0; i < DPI.length; i++) {
             if (DPI[i] == DEFAULT_PNG_RESOLUTION) {
                 mPNGResolutionCombo.setSelectedIndex(i);
@@ -442,7 +374,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 
     @Override
     public boolean isSetToDefaults() {
-        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals("") && mBlockLayoutField.getText().equals(DEFAULT_BLOCK_LAYOUT); //$NON-NLS-1$
+        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals("") && mBlockLayoutField.getText().equals(DEFAULT_BLOCK_LAYOUT);
     }
 
     @Override

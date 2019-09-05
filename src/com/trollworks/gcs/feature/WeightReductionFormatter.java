@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -22,8 +22,8 @@ import javax.swing.JFormattedTextField;
 public class WeightReductionFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
     public Object stringToValue(String text) throws ParseException {
-        text = text != null ? text.trim() : ""; //$NON-NLS-1$
-        if (text.endsWith("%")) { //$NON-NLS-1$
+        text = text != null ? text.trim() : "";
+        if (text.endsWith("%")) {
             return Integer.valueOf(Numbers.extractInteger(text.substring(0, text.length() - 1), 0, true));
         }
         return WeightValue.extract(text, true);
@@ -34,16 +34,16 @@ public class WeightReductionFormatter extends JFormattedTextField.AbstractFormat
         if (value instanceof Integer) {
             int percentage = ((Integer) value).intValue();
             if (percentage != 0) {
-                return Numbers.format(percentage) + "%"; //$NON-NLS-1$
+                return Numbers.format(percentage) + "%";
             }
-            return ""; //$NON-NLS-1$
+            return "";
         } else if (value instanceof WeightValue) {
             WeightValue weight = (WeightValue) value;
             if (weight.getValue() == 0) {
-                return ""; //$NON-NLS-1$
+                return "";
             }
             return weight.toString();
         }
-        return ""; //$NON-NLS-1$
+        return "";
     }
 }

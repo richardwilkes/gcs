@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,14 +11,13 @@
 
 package com.trollworks.gcs.widgets.outline;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -38,41 +37,6 @@ import javax.swing.SwingConstants;
  * @param <T> The row class being edited.
  */
 public abstract class RowEditor<T extends ListRow> extends ActionPanel {
-    @Localize("Edit {0}")
-    @Localize(locale = "de", value = "Bearbeite {0}")
-    @Localize(locale = "ru", value = "Изменить {0}")
-    @Localize(locale = "es", value = "Editar {0}")
-    protected static String WINDOW_TITLE;
-    @Localize("Cancel Remaining")
-    @Localize(locale = "de", value = "Alles Abbrechen")
-    @Localize(locale = "ru", value = "Пропустить остальные")
-    @Localize(locale = "es", value = "Cancelar lo restante")
-    private static String   CANCEL_REST;
-    @Localize("Cancel")
-    @Localize(locale = "de", value = "Abbrechen")
-    @Localize(locale = "ru", value = "Отмена")
-    @Localize(locale = "es", value = "Cancelar")
-    protected static String CANCEL;
-    @Localize("Apply")
-    @Localize(locale = "de", value = "Anwenden")
-    @Localize(locale = "ru", value = "Применить")
-    @Localize(locale = "es", value = "Aplicar")
-    protected static String APPLY;
-    @Localize("1 item remaining to be edited.")
-    @Localize(locale = "de", value = "1 weiteres Element zu bearbeiten.")
-    @Localize(locale = "ru", value = "осталось отредактировать 1 элемент.")
-    @Localize(locale = "es", value = "Queda un elemento pendiente de editar")
-    private static String   ONE_REMAINING;
-    @Localize("{0} items remaining to be edited.")
-    @Localize(locale = "de", value = "{0} weitere Elemente zu bearbeiten.")
-    @Localize(locale = "ru", value = "{0} элементов осталось отредактировать.")
-    @Localize(locale = "es", value = "Quedan {0} elementos pendientes de editar")
-    private static String   REMAINING;
-
-    static {
-        Localization.initialize();
-    }
-
     private static HashMap<Class<?>, String> LAST_TAB_MAP = new HashMap<>();
     /** Whether the underlying data should be editable. */
     protected boolean                        mIsEditable;
@@ -95,21 +59,23 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             boolean                      hasMore = i != rows.length - 1;
             ListRow                      row     = rows[i];
             RowEditor<? extends ListRow> editor  = row.createEditor();
-            String                       title   = MessageFormat.format(WINDOW_TITLE, row.getRowType());
+            String                       title   = MessageFormat.format(I18n.Text("Edit {0}"), row.getRowType());
             JPanel                       wrapper = new JPanel(new BorderLayout());
 
             if (hasMore) {
                 int    remaining = rows.length - i - 1;
-                String msg       = remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, Integer.valueOf(remaining));
+                String msg       = remaining == 1 ? I18n.Text("1 item remaining to be edited.") : MessageFormat.format(I18n.Text("{0} items remaining to be edited."), Integer.valueOf(remaining));
                 JLabel panel     = new JLabel(msg, SwingConstants.CENTER);
                 panel.setBorder(new EmptyBorder(0, 0, 10, 0));
                 wrapper.add(panel, BorderLayout.NORTH);
             }
             wrapper.add(editor, BorderLayout.CENTER);
 
-            int      type    = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-            String[] options = hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL };
-            switch (WindowUtils.showOptionDialog(owner, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, APPLY)) {
+            int      type       = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
+            String   applyText  = I18n.Text("Apply");
+            String   cancelText = I18n.Text("Cancel");
+            String[] options    = hasMore ? new String[] { applyText, cancelText, I18n.Text("Cancel Remaining") } : new String[] { applyText, cancelText };
+            switch (WindowUtils.showOptionDialog(owner, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, applyText)) {
             case JOptionPane.YES_OPTION:
                 RowUndo undo = new RowUndo(row);
                 if (editor.applyChanges()) {

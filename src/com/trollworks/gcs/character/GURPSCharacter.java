@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -38,7 +38,6 @@ import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
@@ -51,7 +50,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.Dice;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 import com.trollworks.toolkit.utility.units.LengthUnits;
@@ -70,136 +69,38 @@ import java.util.Set;
 
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
-    @Localize("Modified at {0} on {1}")
-    @Localize(locale = "de", value = "Verändert um {0} am {1}.")
-    @Localize(locale = "ru", value = "Изменен в {0} {1}")
-    @Localize(locale = "es", value = "Modificado el {0} a las {1}")
-    private static String LAST_MODIFIED;
-    @Localize("Created On Change")
-    @Localize(locale = "de", value = "Erstellt am ändern")
-    @Localize(locale = "ru", value = "Изменить дату создания")
-    @Localize(locale = "es", value = "Cambiar Fecha de creacción")
-    private static String CREATED_ON_UNDO;
-    @Localize("Strength Change")
-    @Localize(locale = "de", value = "Stärke ändern")
-    @Localize(locale = "ru", value = "Изменить силу")
-    @Localize(locale = "es", value = "Cambiar Fuerza")
-    private static String STRENGTH_UNDO;
-    @Localize("Dexterity Change")
-    @Localize(locale = "de", value = "Geschick ändern")
-    @Localize(locale = "ru", value = "Изменить ловкость")
-    @Localize(locale = "es", value = "Cambiar Destreza")
-    private static String DEXTERITY_UNDO;
-    @Localize("Intelligence Change")
-    @Localize(locale = "de", value = "Intelligenz ändern")
-    @Localize(locale = "ru", value = "Смена интеллекта")
-    @Localize(locale = "es", value = "Cambiar Inteligencia")
-    private static String INTELLIGENCE_UNDO;
-    @Localize("Health Change")
-    @Localize(locale = "de", value = "Konstitution ändern")
-    @Localize(locale = "ru", value = "Смена уровня здоровья")
-    @Localize(locale = "es", value = "Cambiar Salud")
-    private static String HEALTH_UNDO;
-    @Localize("Basic Speed Change")
-    @Localize(locale = "de", value = "Grundgeschwindigkeit ändern")
-    @Localize(locale = "ru", value = "Смена Базовой Скорости")
-    @Localize(locale = "es", value = "Cambiar Velocidad Básica")
-    private static String BASIC_SPEED_UNDO;
-    @Localize("Basic Move Change")
-    @Localize(locale = "de", value = "Grundbewegung ändern")
-    @Localize(locale = "ru", value = "Смена Базового Движения")
-    @Localize(locale = "es", value = "Cambiar Movimiento Básico")
-    private static String BASIC_MOVE_UNDO;
-    @Localize("Perception Change")
-    @Localize(locale = "de", value = "Wahrnehmung ändern")
-    @Localize(locale = "ru", value = "Смена восприятия")
-    @Localize(locale = "es", value = "Cambiar Percepción")
-    private static String PERCEPTION_UNDO;
-    @Localize("Will Change")
-    @Localize(locale = "de", value = "Wille ändern")
-    @Localize(locale = "ru", value = "Изменить волю")
-    @Localize(locale = "es", value = "Cambiar Voluntad")
-    private static String WILL_UNDO;
-    @Localize("Unspent Points Change")
-    private static String UNSPENT_POINTS_UNDO;
-    @Localize("Hit Points Change")
-    @Localize(locale = "de", value = "Normale Trefferpunkte ändern")
-    @Localize(locale = "ru", value = "Изменить единицы здоровья")
-    @Localize(locale = "es", value = "Cambiar Puntos de Vida")
-    private static String HIT_POINTS_UNDO;
-    @Localize("Current Hit Points Change")
-    @Localize(locale = "de", value = "Aktuelle Trefferpunkte ändern")
-    @Localize(locale = "ru", value = "Смена текущих очков (единиц) жизни")
-    @Localize(locale = "es", value = "Cambiar Puntos de Vida Actuales")
-    private static String CURRENT_HIT_POINTS_UNDO;
-    @Localize("Fatigue Points Change")
-    @Localize(locale = "de", value = "Normale Erschöpfungspunkte ändern")
-    @Localize(locale = "ru", value = "Изменить очки усталости")
-    @Localize(locale = "es", value = "Cambiar Puntos de Fatiga")
-    private static String FATIGUE_POINTS_UNDO;
-    @Localize("Current Fatigue Points Change")
-    @Localize(locale = "de", value = "Aktuelle Erschöpfungspunkte ändern")
-    @Localize(locale = "ru", value = "Изменить текущие единицы усталости")
-    @Localize(locale = "es", value = "Cambiar Puntos de Fatiga Actuales")
-    private static String CURRENT_FATIGUE_POINTS_UNDO;
-    @Localize("Include Punch In Weapons")
-    @Localize(locale = "de", value = "Schlag als Waffe aufführen")
-    @Localize(locale = "ru", value = "Отображать удар в оружии")
-    @Localize(locale = "es", value = "Incluir Puñetazo como Arma")
-    private static String INCLUDE_PUNCH_UNDO;
-    @Localize("Include Kick In Weapons")
-    @Localize(locale = "de", value = "Tritt als Waffe aufführen")
-    @Localize(locale = "ru", value = "Отображать пинок в оружии")
-    @Localize(locale = "es", value = "Incluir Patada como Arma")
-    private static String INCLUDE_KICK_UNDO;
-    @Localize("Include Kick w/Boots In Weapons")
-    @Localize(locale = "de", value = "Tritt mit Schuh als Waffe aufführen")
-    @Localize(locale = "ru", value = "Отображать пинок (в ботинке) в оружии")
-    @Localize(locale = "es", value = "Incluir Patada con botas como Arma")
-    private static String INCLUDE_BOOTS_UNDO;
-    @Localize("Unable to set a value for %s")
-    @Localize(locale = "de", value = "Kann keinen Wert für %s setzen")
-    @Localize(locale = "ru", value = "Невозможно установить значение для %s")
-    @Localize(locale = "es", value = "No puede establecerse un valor para %s")
-    private static String UNABLE_TO_SET_VALUE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The extension for character sheets. */
-    public static final String                  EXTENSION                            = "gcs"; //$NON-NLS-1$
+    public static final String                  EXTENSION                            = "gcs";
     private static final int                    CURRENT_VERSION                      = 3;
-    private static final String                 EMPTY                                = ""; //$NON-NLS-1$
-    private static final String                 TAG_ROOT                             = "character"; //$NON-NLS-1$
-    private static final String                 TAG_CREATED_DATE                     = "created_date"; //$NON-NLS-1$
-    private static final String                 TAG_MODIFIED_DATE                    = "modified_date"; //$NON-NLS-1$
-    private static final String                 TAG_CURRENT_HP                       = "current_hp"; //$NON-NLS-1$
-    private static final String                 TAG_CURRENT_FP                       = "current_fp"; //$NON-NLS-1$
-    private static final String                 TAG_UNSPENT_POINTS                   = "unspent_points"; //$NON-NLS-1$
-    private static final String                 TAG_TOTAL_POINTS                     = "total_points"; //$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch"; //$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_KICK                     = "include_kick"; //$NON-NLS-1$
-    private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots"; //$NON-NLS-1$
-    private static final String                 ATTRIBUTE_CARRIED                    = "carried"; //$NON-NLS-1$
+    private static final String                 TAG_ROOT                             = "character";
+    private static final String                 TAG_CREATED_DATE                     = "created_date";
+    private static final String                 TAG_MODIFIED_DATE                    = "modified_date";
+    private static final String                 TAG_CURRENT_HP                       = "current_hp";
+    private static final String                 TAG_CURRENT_FP                       = "current_fp";
+    private static final String                 TAG_UNSPENT_POINTS                   = "unspent_points";
+    private static final String                 TAG_TOTAL_POINTS                     = "total_points";
+    private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch";
+    private static final String                 TAG_INCLUDE_KICK                     = "include_kick";
+    private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";
+    private static final String                 ATTRIBUTE_CARRIED                    = "carried";
     /** The prefix for all character IDs. */
-    public static final String                  CHARACTER_PREFIX                     = "gcs."; //$NON-NLS-1$
+    public static final String                  CHARACTER_PREFIX                     = "gcs.";
     /** The field ID for last modified date changes. */
-    public static final String                  ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate"; //$NON-NLS-1$
+    public static final String                  ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate";
     /** The field ID for created on date changes. */
-    public static final String                  ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn"; //$NON-NLS-1$
+    public static final String                  ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn";
     /** The field ID for include punch changes. */
-    public static final String                  ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch"; //$NON-NLS-1$
+    public static final String                  ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";
     /** The field ID for include kick changes. */
-    public static final String                  ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet"; //$NON-NLS-1$
+    public static final String                  ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet";
     /** The field ID for include kick with boots changes. */
-    public static final String                  ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots"; //$NON-NLS-1$
+    public static final String                  ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots";
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
-    public static final String                  POINTS_PREFIX                        = CHARACTER_PREFIX + "points."; //$NON-NLS-1$
+    public static final String                  POINTS_PREFIX                        = CHARACTER_PREFIX + "points.";
     /** The prefix used in front of all IDs for basic attributes. */
-    public static final String                  ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba."; //$NON-NLS-1$
+    public static final String                  ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";
     /** The field ID for strength (ST) changes. */
     public static final String                  ID_STRENGTH                          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
     /** The field ID for lifting strength bonuses -- used by features. */
@@ -231,7 +132,7 @@ public class GURPSCharacter extends DataFile {
     /** The field ID for basic move changes. */
     public static final String                  ID_BASIC_MOVE                        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
     /** The prefix used in front of all IDs for dodge changes. */
-    public static final String                  DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#."; //$NON-NLS-1$
+    public static final String                  DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#.";
     /** The field ID for dodge bonus changes. */
     public static final String                  ID_DODGE_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
     /** The field ID for parry bonus changes. */
@@ -239,84 +140,84 @@ public class GURPSCharacter extends DataFile {
     /** The field ID for block bonus changes. */
     public static final String                  ID_BLOCK_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
     /** The prefix used in front of all IDs for move changes. */
-    public static final String                  MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#."; //$NON-NLS-1$
+    public static final String                  MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#.";
     /** The field ID for carried weight changes. */
-    public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight"; //$NON-NLS-1$
+    public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";
     /** The field ID for carried wealth changes. */
-    public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth"; //$NON-NLS-1$
+    public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";
     /** The prefix used in front of all IDs for encumbrance changes. */
-    public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry"; //$NON-NLS-1$
-    private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift."; //$NON-NLS-1$
+    public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";
+    private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";
     /** The field ID for basic lift changes. */
-    public static final String                  ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift"; //$NON-NLS-1$
+    public static final String                  ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift";
     /** The field ID for one-handed lift changes. */
-    public static final String                  ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift"; //$NON-NLS-1$
+    public static final String                  ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift";
     /** The field ID for two-handed lift changes. */
-    public static final String                  ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift"; //$NON-NLS-1$
+    public static final String                  ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift";
     /** The field ID for shove and knock over changes. */
-    public static final String                  ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver"; //$NON-NLS-1$
+    public static final String                  ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver";
     /** The field ID for running shove and knock over changes. */
-    public static final String                  ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver"; //$NON-NLS-1$
+    public static final String                  ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver";
     /** The field ID for carry on back changes. */
-    public static final String                  ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack"; //$NON-NLS-1$
+    public static final String                  ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack";
     /** The field ID for carry on back changes. */
-    public static final String                  ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly"; //$NON-NLS-1$
+    public static final String                  ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly";
     /** The prefix used in front of all IDs for point summaries. */
-    public static final String                  POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps."; //$NON-NLS-1$
+    public static final String                  POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";
     /** The field ID for point total changes. */
-    public static final String                  ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints"; //$NON-NLS-1$
+    public static final String                  ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints";
     /** The field ID for attribute point summary changes. */
-    public static final String                  ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints"; //$NON-NLS-1$
+    public static final String                  ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints";
     /** The field ID for advantage point summary changes. */
-    public static final String                  ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints"; //$NON-NLS-1$
+    public static final String                  ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints";
     /** The field ID for disadvantage point summary changes. */
-    public static final String                  ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints"; //$NON-NLS-1$
+    public static final String                  ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints";
     /** The field ID for quirk point summary changes. */
-    public static final String                  ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints"; //$NON-NLS-1$
+    public static final String                  ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints";
     /** The field ID for skill point summary changes. */
-    public static final String                  ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints"; //$NON-NLS-1$
+    public static final String                  ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints";
     /** The field ID for spell point summary changes. */
-    public static final String                  ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints"; //$NON-NLS-1$
+    public static final String                  ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints";
     /** The field ID for racial point summary changes. */
-    public static final String                  ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints"; //$NON-NLS-1$
+    public static final String                  ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints";
     /** The field ID for unspent point changes. */
-    public static final String                  ID_UNSPENT_POINTS                    = POINT_SUMMARY_PREFIX + "UnspentPoints"; //$NON-NLS-1$
+    public static final String                  ID_UNSPENT_POINTS                    = POINT_SUMMARY_PREFIX + "UnspentPoints";
     /** The prefix used in front of all IDs for basic damage. */
-    public static final String                  BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd."; //$NON-NLS-1$
+    public static final String                  BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";
     /** The field ID for basic thrust damage changes. */
-    public static final String                  ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust"; //$NON-NLS-1$
+    public static final String                  ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust";
     /** The field ID for basic swing damage changes. */
-    public static final String                  ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing"; //$NON-NLS-1$
-    private static final String                 HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp."; //$NON-NLS-1$
+    public static final String                  ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing";
+    private static final String                 HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";
     /** The field ID for hit point changes. */
     public static final String                  ID_HIT_POINTS                        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
     /** The field ID for current hit point changes. */
-    public static final String                  ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current"; //$NON-NLS-1$
+    public static final String                  ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current";
     /** The field ID for reeling hit point changes. */
-    public static final String                  ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling"; //$NON-NLS-1$
+    public static final String                  ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";
     /** The field ID for unconscious check hit point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks"; //$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks";
     /** The field ID for death check #1 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1"; //$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1";
     /** The field ID for death check #2 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2"; //$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2";
     /** The field ID for death check #3 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3"; //$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3";
     /** The field ID for death check #4 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4"; //$NON-NLS-1$
+    public static final String                  ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4";
     /** The field ID for dead hit point changes. */
-    public static final String                  ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead"; //$NON-NLS-1$
-    private static final String                 FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp."; //$NON-NLS-1$
+    public static final String                  ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead";
+    private static final String                 FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";
     /** The field ID for fatigue point changes. */
     public static final String                  ID_FATIGUE_POINTS                    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
     /** The field ID for current fatigue point changes. */
-    public static final String                  ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current"; //$NON-NLS-1$
+    public static final String                  ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current";
     /** The field ID for tired fatigue point changes. */
-    public static final String                  ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired"; //$NON-NLS-1$
+    public static final String                  ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";
     /** The field ID for unconscious check fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks"; //$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";
     /** The field ID for unconscious fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious"; //$NON-NLS-1$
+    public static final String                  ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";
     private long                                mLastModified;
     private long                                mCreatedOn;
     private HashMap<String, ArrayList<Feature>> mFeatureMap;
@@ -417,8 +318,8 @@ public class GURPSCharacter extends DataFile {
         mDexterity            = 10;
         mIntelligence         = 10;
         mHealth               = 10;
-        mCurrentHitPoints     = EMPTY;
-        mCurrentFatiguePoints = EMPTY;
+        mCurrentHitPoints     = "";
+        mCurrentFatiguePoints = "";
         mDescription          = new Profile(this, full);
         mArmor                = new Armor(this);
         mIncludePunch         = true;
@@ -865,7 +766,7 @@ public class GURPSCharacter extends DataFile {
             } else if (id.startsWith(Armor.DR_PREFIX)) {
                 mArmor.setValueForID(id, value);
             } else {
-                Log.error(String.format(UNABLE_TO_SET_VALUE, id));
+                Log.error(String.format(I18n.Text("Unable to set a value for %s"), id));
             }
         }
     }
@@ -945,7 +846,7 @@ public class GURPSCharacter extends DataFile {
     /** @return The last modified date and time. */
     public String getLastModified() {
         Date date = new Date(mLastModified);
-        return MessageFormat.format(LAST_MODIFIED, DateFormat.getTimeInstance(DateFormat.SHORT).format(date), DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
+        return MessageFormat.format(I18n.Text("Modified at {0} on {1}"), DateFormat.getTimeInstance(DateFormat.SHORT).format(date), DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
     }
 
     /** @return The created on date. */
@@ -961,7 +862,7 @@ public class GURPSCharacter extends DataFile {
     public void setCreatedOn(long date) {
         if (mCreatedOn != date) {
             Long value = Long.valueOf(date);
-            postUndoEdit(CREATED_ON_UNDO, ID_CREATED_ON, Long.valueOf(mCreatedOn), value);
+            postUndoEdit(I18n.Text("Created On Change"), ID_CREATED_ON, Long.valueOf(mCreatedOn), value);
             mCreatedOn = date;
             notifySingle(ID_CREATED_ON, value);
         }
@@ -1004,7 +905,7 @@ public class GURPSCharacter extends DataFile {
         int oldStrength = getStrength();
 
         if (oldStrength != strength) {
-            postUndoEdit(STRENGTH_UNDO, ID_STRENGTH, Integer.valueOf(oldStrength), Integer.valueOf(strength));
+            postUndoEdit(I18n.Text("Strength Change"), ID_STRENGTH, Integer.valueOf(oldStrength), Integer.valueOf(strength));
             updateStrengthInfo(strength - mStrengthBonus, mStrengthBonus, mLiftingStrengthBonus, mStrikingStrengthBonus);
         }
     }
@@ -1357,7 +1258,7 @@ public class GURPSCharacter extends DataFile {
         double oldBasicSpeed = getBasicSpeed();
 
         if (oldBasicSpeed != speed) {
-            postUndoEdit(BASIC_SPEED_UNDO, ID_BASIC_SPEED, Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
+            postUndoEdit(I18n.Text("Basic Speed Change"), ID_BASIC_SPEED, Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
             updateBasicSpeedInfo(speed - (mSpeedBonus + getRawBasicSpeed()), mSpeedBonus);
         }
     }
@@ -1420,7 +1321,7 @@ public class GURPSCharacter extends DataFile {
         int oldBasicMove = getBasicMove();
 
         if (oldBasicMove != move) {
-            postUndoEdit(BASIC_MOVE_UNDO, ID_BASIC_MOVE, Integer.valueOf(oldBasicMove), Integer.valueOf(move));
+            postUndoEdit(I18n.Text("Basic Move Change"), ID_BASIC_MOVE, Integer.valueOf(oldBasicMove), Integer.valueOf(move));
             updateBasicMoveInfo(move - (mMoveBonus + getRawBasicMove()), mMoveBonus);
         }
     }
@@ -1667,7 +1568,7 @@ public class GURPSCharacter extends DataFile {
         int oldDexterity = getDexterity();
 
         if (oldDexterity != dexterity) {
-            postUndoEdit(DEXTERITY_UNDO, ID_DEXTERITY, Integer.valueOf(oldDexterity), Integer.valueOf(dexterity));
+            postUndoEdit(I18n.Text("Dexterity Change"), ID_DEXTERITY, Integer.valueOf(oldDexterity), Integer.valueOf(dexterity));
             updateDexterityInfo(dexterity - mDexterityBonus, mDexterityBonus);
         }
     }
@@ -1736,7 +1637,7 @@ public class GURPSCharacter extends DataFile {
     public void setIntelligence(int intelligence) {
         int oldIntelligence = getIntelligence();
         if (oldIntelligence != intelligence) {
-            postUndoEdit(INTELLIGENCE_UNDO, ID_INTELLIGENCE, Integer.valueOf(oldIntelligence), Integer.valueOf(intelligence));
+            postUndoEdit(I18n.Text("Intelligence Change"), ID_INTELLIGENCE, Integer.valueOf(oldIntelligence), Integer.valueOf(intelligence));
             updateIntelligenceInfo(intelligence - mIntelligenceBonus, mIntelligenceBonus);
         }
     }
@@ -1810,7 +1711,7 @@ public class GURPSCharacter extends DataFile {
         int oldHealth = getHealth();
 
         if (oldHealth != health) {
-            postUndoEdit(HEALTH_UNDO, ID_HEALTH, Integer.valueOf(oldHealth), Integer.valueOf(health));
+            postUndoEdit(I18n.Text("Health Change"), ID_HEALTH, Integer.valueOf(oldHealth), Integer.valueOf(health));
             updateHealthInfo(health - mHealthBonus, mHealthBonus);
         }
     }
@@ -1895,7 +1796,7 @@ public class GURPSCharacter extends DataFile {
         if (current != unspent) {
             Integer value = Integer.valueOf(unspent);
 
-            postUndoEdit(UNSPENT_POINTS_UNDO, ID_UNSPENT_POINTS, Integer.valueOf(current), value);
+            postUndoEdit(I18n.Text("Unspent Points Change"), ID_UNSPENT_POINTS, Integer.valueOf(current), value);
             mTotalPoints = unspent + getSpentPoints();
             startNotify();
             notify(ID_UNSPENT_POINTS, value);
@@ -2004,7 +1905,7 @@ public class GURPSCharacter extends DataFile {
     /** @param include Whether to include the punch natural weapon or not. */
     public void setIncludePunch(boolean include) {
         if (mIncludePunch != include) {
-            postUndoEdit(INCLUDE_PUNCH_UNDO, ID_INCLUDE_PUNCH, Boolean.valueOf(mIncludePunch), Boolean.valueOf(include));
+            postUndoEdit(I18n.Text("Include Punch In Weapons"), ID_INCLUDE_PUNCH, Boolean.valueOf(mIncludePunch), Boolean.valueOf(include));
             mIncludePunch = include;
             notifySingle(ID_INCLUDE_PUNCH, Boolean.valueOf(mIncludePunch));
         }
@@ -2018,7 +1919,7 @@ public class GURPSCharacter extends DataFile {
     /** @param include Whether to include the kick natural weapon or not. */
     public void setIncludeKick(boolean include) {
         if (mIncludeKick != include) {
-            postUndoEdit(INCLUDE_KICK_UNDO, ID_INCLUDE_KICK, Boolean.valueOf(mIncludeKick), Boolean.valueOf(include));
+            postUndoEdit(I18n.Text("Include Kick In Weapons"), ID_INCLUDE_KICK, Boolean.valueOf(mIncludeKick), Boolean.valueOf(include));
             mIncludeKick = include;
             notifySingle(ID_INCLUDE_KICK, Boolean.valueOf(mIncludeKick));
         }
@@ -2032,7 +1933,7 @@ public class GURPSCharacter extends DataFile {
     /** @param include Whether to include the kick w/boots natural weapon or not. */
     public void setIncludeKickBoots(boolean include) {
         if (mIncludeKickBoots != include) {
-            postUndoEdit(INCLUDE_BOOTS_UNDO, ID_INCLUDE_BOOTS, Boolean.valueOf(mIncludeKickBoots), Boolean.valueOf(include));
+            postUndoEdit(I18n.Text("Include Kick w/Boots In Weapons"), ID_INCLUDE_BOOTS, Boolean.valueOf(mIncludeKickBoots), Boolean.valueOf(include));
             mIncludeKickBoots = include;
             notifySingle(ID_INCLUDE_BOOTS, Boolean.valueOf(mIncludeKickBoots));
         }
@@ -2052,7 +1953,7 @@ public class GURPSCharacter extends DataFile {
         int oldHP = getHitPoints();
 
         if (oldHP != hp) {
-            postUndoEdit(HIT_POINTS_UNDO, ID_HIT_POINTS, Integer.valueOf(oldHP), Integer.valueOf(hp));
+            postUndoEdit(I18n.Text("Hit Points Change"), ID_HIT_POINTS, Integer.valueOf(oldHP), Integer.valueOf(hp));
             startNotify();
             mHitPoints                     = hp - (getStrength() + mHitPointBonus);
             mNeedAttributePointCalculation = true;
@@ -2121,7 +2022,7 @@ public class GURPSCharacter extends DataFile {
      */
     public void setCurrentHitPoints(String hp) {
         if (!mCurrentHitPoints.equals(hp)) {
-            postUndoEdit(CURRENT_HIT_POINTS_UNDO, ID_CURRENT_HIT_POINTS, mCurrentHitPoints, hp);
+            postUndoEdit(I18n.Text("Current Hit Points Change"), ID_CURRENT_HIT_POINTS, mCurrentHitPoints, hp);
             mCurrentHitPoints = hp;
             notifySingle(ID_CURRENT_HIT_POINTS, mCurrentHitPoints);
         }
@@ -2174,7 +2075,7 @@ public class GURPSCharacter extends DataFile {
     public void setWill(int will) {
         int oldWill = getWill();
         if (oldWill != will) {
-            postUndoEdit(WILL_UNDO, ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(will));
+            postUndoEdit(I18n.Text("Will Change"), ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(will));
             updateWillInfo(will - (mWillBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mWillBonus);
         }
     }
@@ -2327,7 +2228,7 @@ public class GURPSCharacter extends DataFile {
     public void setPerception(int perception) {
         int oldPerception = getPerception();
         if (oldPerception != perception) {
-            postUndoEdit(PERCEPTION_UNDO, ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perception));
+            postUndoEdit(I18n.Text("Perception Change"), ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perception));
             updatePerceptionInfo(perception - (mPerceptionBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mPerceptionBonus);
         }
     }
@@ -2378,7 +2279,7 @@ public class GURPSCharacter extends DataFile {
         int oldFP = getFatiguePoints();
 
         if (oldFP != fp) {
-            postUndoEdit(FATIGUE_POINTS_UNDO, ID_FATIGUE_POINTS, Integer.valueOf(oldFP), Integer.valueOf(fp));
+            postUndoEdit(I18n.Text("Fatigue Points Change"), ID_FATIGUE_POINTS, Integer.valueOf(oldFP), Integer.valueOf(fp));
             startNotify();
             mFatiguePoints                 = fp - (getHealth() + mFatiguePointBonus);
             mNeedAttributePointCalculation = true;
@@ -2426,7 +2327,7 @@ public class GURPSCharacter extends DataFile {
      */
     public void setCurrentFatiguePoints(String fp) {
         if (!mCurrentFatiguePoints.equals(fp)) {
-            postUndoEdit(CURRENT_FATIGUE_POINTS_UNDO, ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints, fp);
+            postUndoEdit(I18n.Text("Current Fatigue Points Change"), ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints, fp);
             mCurrentFatiguePoints = fp;
             notifySingle(ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints);
         }

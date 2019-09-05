@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,12 +17,11 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Text;
 
 import java.io.IOException;
@@ -31,25 +30,18 @@ import java.util.HashSet;
 
 /** A note. */
 public class Note extends ListRow {
-    @Localize("Note")
-    private static String DEFAULT_NAME;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final int    CURRENT_VERSION    = 1;
     /** The XML tag used for items. */
-    public static final String  TAG_NOTE           = "note"; //$NON-NLS-1$
+    public static final String  TAG_NOTE           = "note";
     /** The XML tag used for containers. */
-    public static final String  TAG_NOTE_CONTAINER = "note_container"; //$NON-NLS-1$
-    private static final String TAG_TEXT           = "text"; //$NON-NLS-1$
+    public static final String  TAG_NOTE_CONTAINER = "note_container";
+    private static final String TAG_TEXT           = "text";
     /** The prefix used in front of all IDs for the notes. */
-    public static final String  PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note."; //$NON-NLS-1$
+    public static final String  PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note.";
     /** The field ID for text changes. */
-    public static final String  ID_TEXT            = PREFIX + "Text"; //$NON-NLS-1$
+    public static final String  ID_TEXT            = PREFIX + "Text";
     /** The field ID for when the row hierarchy changes. */
-    public static final String  ID_LIST_CHANGED    = PREFIX + "ListChanged"; //$NON-NLS-1$
+    public static final String  ID_LIST_CHANGED    = PREFIX + "ListChanged";
     private String              mText;
 
     /**
@@ -60,7 +52,7 @@ public class Note extends ListRow {
      */
     public Note(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mText = ""; //$NON-NLS-1$
+        mText = "";
     }
 
     /**
@@ -106,7 +98,7 @@ public class Note extends ListRow {
 
     @Override
     public String getLocalizedName() {
-        return DEFAULT_NAME;
+        return I18n.Text("Note");
     }
 
     @Override
@@ -126,13 +118,13 @@ public class Note extends ListRow {
 
     @Override
     public String getRowType() {
-        return DEFAULT_NAME;
+        return I18n.Text("Note");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mText = ""; //$NON-NLS-1$
+        mText = "";
     }
 
     @Override

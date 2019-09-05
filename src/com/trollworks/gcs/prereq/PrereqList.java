@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,11 +15,10 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -32,25 +31,10 @@ import java.util.List;
 
 /** A prerequisite list. */
 public class PrereqList extends Prereq {
-    @Localize("{0}Requires all of:\n")
-    @Localize(locale = "de", value = "{0}Benötigt alles von:\n")
-    @Localize(locale = "ru", value = "{0}Требует всё из:\n")
-    @Localize(locale = "es", value = "{0}Requiere todo lo siguiente:\n")
-    private static String REQUIRES_ALL;
-    @Localize("{0}Requires at least one of:\n")
-    @Localize(locale = "de", value = "{0}Benötigt mindestens eines von:\n")
-    @Localize(locale = "ru", value = "{0}Требует одно из:\n")
-    @Localize(locale = "es", value = "{0}Requiere al menos uno de los siguientes:\n")
-    private static String REQUIRES_ANY;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The XML tag used for the prereq list. */
-    public static final String  TAG_ROOT      = "prereq_list"; //$NON-NLS-1$
-    private static final String TAG_WHEN_TL   = "when_tl"; //$NON-NLS-1$
-    private static final String ATTRIBUTE_ALL = "all"; //$NON-NLS-1$
+    public static final String  TAG_ROOT      = "prereq_list";
+    private static final String TAG_WHEN_TL   = "when_tl";
+    private static final String ATTRIBUTE_ALL = "all";
     private boolean             mAll;
     private IntegerCriteria     mWhenTLCriteria;
     private ArrayList<Prereq>   mPrereqs;
@@ -252,13 +236,13 @@ public class PrereqList extends Prereq {
             }
         }
         if (localBuilder != null && localBuilder.length() > 0) {
-            localBuilder.insert(0, "<ul>"); //$NON-NLS-1$
-            localBuilder.append("</ul>"); //$NON-NLS-1$
+            localBuilder.insert(0, "<ul>");
+            localBuilder.append("</ul>");
         }
 
         boolean satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
         if (!satisfied && localBuilder != null && builder != null) {
-            builder.append(MessageFormat.format(requiresAll ? REQUIRES_ALL : REQUIRES_ANY, prefix));
+            builder.append(MessageFormat.format(requiresAll ? I18n.Text("{0}Requires all of:\n") : I18n.Text("{0}Requires at least one of:\n"), prefix));
             builder.append(localBuilder.toString());
         }
         return satisfied;

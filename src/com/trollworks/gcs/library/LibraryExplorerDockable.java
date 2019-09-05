@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -30,7 +30,6 @@ import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -56,7 +55,7 @@ import com.trollworks.toolkit.ui.widget.tree.TreeRow;
 import com.trollworks.toolkit.ui.widget.tree.TreeRowViewIterator;
 import com.trollworks.toolkit.utility.FileProxy;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.notification.Notifier;
 
@@ -78,29 +77,6 @@ import javax.swing.event.DocumentListener;
 
 /** A list of available library files. */
 public class LibraryExplorerDockable extends Dockable implements DocumentListener, SearchTarget, ListCollectionListener, FieldAccessor, IconAccessor, Openable {
-    @Localize("Library Explorer")
-    @Localize(locale = "de", value = "Listen-Bibliothek")
-    @Localize(locale = "ru", value = "Библиотека")
-    @Localize(locale = "es", value = "Listado de la librería")
-    private static String TITLE;
-    @Localize("Enter text here to narrow the list to only those rows containing matching items")
-    @Localize(locale = "de",
-              value = "Hier Text eingeben, um eine Liste der passenden Einträge anzuzeigen")
-    @Localize(locale = "ru",
-              value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
-    @Localize(locale = "es",
-              value = "Escribe un texto aquí para acortar la lista y mostrar sólo las filas que contengan el texto")
-    private static String SEARCH_FIELD_TOOLTIP;
-    @Localize("Opens/closes all hierarchical rows")
-    @Localize(locale = "de", value = "Öffnet / Schließt alle Untereinträge")
-    @Localize(locale = "ru", value = "Развернуть/свернуть все вложенные строки")
-    @Localize(locale = "es", value = "Pliega/despliega todas las filas jerarquicamente")
-    private static String TOGGLE_ROWS_OPEN_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private Toolbar   mToolbar;
     private Search    mSearch;
     private TreePanel mTreePanel;
@@ -124,7 +100,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         fillTree(listCollectionThread.getLists(), root);
         mTreePanel = new TreePanel(root);
         mTreePanel.setShowHeader(false);
-        mTreePanel.addColumn(new TextTreeColumn(TITLE, this, this));
+        mTreePanel.addColumn(new TextTreeColumn(I18n.Text("Library Explorer"), this, this));
         mTreePanel.setAllowColumnDrag(false);
         mTreePanel.setAllowColumnResize(false);
         mTreePanel.setAllowColumnContextMenu(false);
@@ -138,7 +114,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         mToolbar = new Toolbar();
         mSearch  = new Search(this);
         mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
-        mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, TOGGLE_ROWS_OPEN_TOOLTIP, () -> mTreePanel.toggleDisclosure()));
+        mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, I18n.Text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
         add(mToolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
         listCollectionThread.addListener(this);
@@ -146,7 +122,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 
     @Override
     public String getDescriptor() {
-        return "library_explorer"; //$NON-NLS-1$
+        return "library_explorer";
     }
 
     @Override
@@ -156,12 +132,12 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
 
     @Override
     public String getTitle() {
-        return TITLE;
+        return I18n.Text("Library Explorer");
     }
 
     @Override
     public String getTitleTooltip() {
-        return TITLE;
+        return getTitle();
     }
 
     @Override

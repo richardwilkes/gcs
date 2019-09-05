@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,7 +12,6 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.common.EditorPanel;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.Alignment;
@@ -22,7 +21,7 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.IconButton;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
 import java.awt.Insets;
@@ -37,26 +36,6 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A skill default editor panel. */
 public class SkillDefaultEditor extends EditorPanel {
-    @Localize("Add a default")
-    @Localize(locale = "de", value = "Grundwert hinzufügen")
-    @Localize(locale = "ru", value = "Добавить новую строку")
-    @Localize(locale = "es", value = "Añadir valor por defecto")
-    private static String ADD_DEFAULT;
-    @Localize("Remove this default")
-    @Localize(locale = "de", value = "Diesen Grundwert entfernen")
-    @Localize(locale = "ru", value = "Удалить это строку")
-    @Localize(locale = "es", value = "Quitar valor por defecto")
-    private static String REMOVE_DEFAULT;
-    @Localize("Optional Specialization")
-    @Localize(locale = "de", value = "Optionale Spezialisierung")
-    @Localize(locale = "ru", value = "Необязательная специализация")
-    @Localize(locale = "es", value = "Especialización opcional")
-    private static String SPECIALIZATION_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private static SkillDefaultType LAST_ITEM_TYPE = SkillDefaultType.DX;
     private SkillDefault            mDefault;
     private JComboBox<?>            mTypeCombo;
@@ -121,8 +100,9 @@ public class SkillDefaultEditor extends EditorPanel {
                 mSkillNameField = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, mDefault.getName(), null);
                 add(mSkillNameField);
                 row.add(mSkillNameField);
-                mSpecializationField = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, mDefault.getSpecialization(), SPECIALIZATION_TOOLTIP);
-                mSpecializationField.setHint(SPECIALIZATION_TOOLTIP);
+                String optionalSpecialization = I18n.Text("Optional Specialization");
+                mSpecializationField = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, mDefault.getSpecialization(), optionalSpecialization);
+                mSpecializationField.setHint(optionalSpecialization);
                 add(mSpecializationField);
                 row.add(mSpecializationField);
                 row.add(mModifierField);
@@ -134,10 +114,10 @@ public class SkillDefaultEditor extends EditorPanel {
 
             row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-            IconButton button = new IconButton(StdImage.REMOVE, REMOVE_DEFAULT, () -> removeDefault());
+            IconButton button = new IconButton(StdImage.REMOVE, I18n.Text("Remove this default"), () -> removeDefault());
             add(button);
             row.add(button);
-            button = new IconButton(StdImage.ADD, ADD_DEFAULT, () -> addDefault());
+            button = new IconButton(StdImage.ADD, I18n.Text("Add a default"), () -> addDefault());
             add(button);
             row.add(button);
             grid.add(row, 0, 2);
@@ -146,7 +126,7 @@ public class SkillDefaultEditor extends EditorPanel {
             FlexRow row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
             row.add(new FlexSpacer(0, 0, true, false));
-            IconButton button = new IconButton(StdImage.ADD, ADD_DEFAULT, () -> addDefault());
+            IconButton button = new IconButton(StdImage.ADD, I18n.Text("Add a default"), () -> addDefault());
             add(button);
             row.add(button);
             row.apply(this);

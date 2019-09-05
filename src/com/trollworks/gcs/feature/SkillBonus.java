@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,11 +26,11 @@ import java.util.Set;
 /** A skill bonus. */
 public class SkillBonus extends Bonus {
     /** The XML tag. */
-    public static final String  TAG_ROOT           = "skill_bonus"; //$NON-NLS-1$
-    private static final String TAG_NAME           = "name"; //$NON-NLS-1$
-    private static final String TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
-    private static final String TAG_CATEGORY       = "category"; //$NON-NLS-1$
-    private static final String EMPTY              = ""; //$NON-NLS-1$
+    public static final String  TAG_ROOT           = "skill_bonus";
+    private static final String TAG_NAME           = "name";
+    private static final String TAG_SPECIALIZATION = "specialization";
+    private static final String TAG_CATEGORY       = "category";
+    private static final String EMPTY              = "";
     private StringCriteria      mNameCriteria;
     private StringCriteria      mSpecializationCriteria;
     private StringCriteria      mCategoryCriteria;
@@ -98,7 +98,7 @@ public class SkillBonus extends Bonus {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
-            buffer.append("*"); //$NON-NLS-1$
+            buffer.append("*");
         }
         return buffer.toString();
     }

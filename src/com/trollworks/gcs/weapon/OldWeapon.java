@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -22,17 +22,17 @@ import java.util.ArrayList;
 /** Helper class to convert old weapon data into the new weapon data. */
 public class OldWeapon {
     /** The root XML tag. */
-    public static final String  TAG_ROOT         = "weapon"; //$NON-NLS-1$
-    private static final String TAG_DAMAGE       = "damage"; //$NON-NLS-1$
-    private static final String TAG_STRENGTH     = "strength"; //$NON-NLS-1$
-    private static final String TAG_REACH        = "reach"; //$NON-NLS-1$
-    private static final String TAG_PARRY        = "parry"; //$NON-NLS-1$
-    private static final String TAG_ACCURACY     = "accuracy"; //$NON-NLS-1$
-    private static final String TAG_RANGE        = "range"; //$NON-NLS-1$
-    private static final String TAG_RATE_OF_FIRE = "rate_of_fire"; //$NON-NLS-1$
-    private static final String TAG_SHOTS        = "shots"; //$NON-NLS-1$
-    private static final String TAG_BULK         = "bulk"; //$NON-NLS-1$
-    private static final String TAG_RECOIL       = "recoil"; //$NON-NLS-1$
+    public static final String  TAG_ROOT         = "weapon";
+    private static final String TAG_DAMAGE       = "damage";
+    private static final String TAG_STRENGTH     = "strength";
+    private static final String TAG_REACH        = "reach";
+    private static final String TAG_PARRY        = "parry";
+    private static final String TAG_ACCURACY     = "accuracy";
+    private static final String TAG_RANGE        = "range";
+    private static final String TAG_RATE_OF_FIRE = "rate_of_fire";
+    private static final String TAG_SHOTS        = "shots";
+    private static final String TAG_BULK         = "bulk";
+    private static final String TAG_RECOIL       = "recoil";
     private String[]            mDamage;
     private String[]            mStrength;
     private String[]            mAccuracy;
@@ -46,7 +46,7 @@ public class OldWeapon {
 
     /**
      * Creates a new {@link OldWeapon}.
-     * 
+     *
      * @param reader The XML reader to load from.
      */
     public OldWeapon(XMLReader reader) throws IOException {
@@ -132,7 +132,7 @@ public class OldWeapon {
         if (data != null && data.length > index) {
             return data[index];
         }
-        return ""; //$NON-NLS-1$
+        return "";
     }
 
     private int count() {

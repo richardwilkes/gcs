@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,28 +11,17 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 
 /** Manages numeric comparison criteria. */
 public abstract class NumericCriteria {
-    @Localize("is ")
-    @Localize(locale = "de", value = "ist ")
-    @Localize(locale = "ru", value = "  ")
-    @Localize(locale = "es", value = "es ")
-    private static String IS_PREFIX;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The comparison attribute. */
-    public static final String ATTRIBUTE_COMPARE = "compare"; //$NON-NLS-1$
+    public static final String ATTRIBUTE_COMPARE = "compare";
     private NumericCompareType mType;
 
     /**
@@ -98,7 +87,7 @@ public abstract class NumericCriteria {
 
     @Override
     public String toString() {
-        return toString(IS_PREFIX);
+        return toString(I18n.Text("is "));
     }
 
     /**

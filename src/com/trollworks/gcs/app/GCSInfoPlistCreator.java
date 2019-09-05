@@ -22,16 +22,23 @@ import java.io.PrintWriter;
 
 /** Utility to generate the Info.plist file for GCS. */
 public class GCSInfoPlistCreator {
-    @SuppressWarnings("nls")
+    private static final String PLIST   = "Info.plist";
+    private static final String PKGINFO = "PkgInfo";
+
     public static void main(String[] args) {
-        File plist = new File("Info.plist");
-        File pkg   = new File("PkgInfo");
+        File plist = new File(PLIST);
+        File pkg   = new File(PKGINFO);
         if (args.length > 0) {
-            plist = new File(args[0], "Info.plist");
-            pkg   = new File(args[0], "PkgInfo");
+            plist = new File(args[0], PLIST);
+            pkg   = new File(args[0], PKGINFO);
         }
         App.setup(GCS.class);
-        GCS.registerFileTypes(null);
+        new GCSInfoPlistCreator().run(plist, pkg);
+    }
+
+    @SuppressWarnings("static-method")
+    private void run(File plist, File pkg) {
+        GCSCmdLine.registerFileTypes(null);
         BundleInfo info = BundleInfo.getDefault();
         info.write(plist, "app.icns");
         try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(pkg)))) {

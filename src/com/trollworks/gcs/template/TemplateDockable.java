@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -22,7 +22,6 @@ import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowItemRenderer;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
@@ -36,7 +35,7 @@ import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.search.Search;
 import com.trollworks.toolkit.ui.widget.search.SearchTarget;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
@@ -58,21 +57,6 @@ import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
 public class TemplateDockable extends CommonDockable implements NotifierTarget, SearchTarget, RetargetableFocus {
-    @Localize("Untitled Template")
-    @Localize(locale = "de", value = "Unbenannte Vorlage")
-    @Localize(locale = "ru", value = "Безымянный шаблон")
-    @Localize(locale = "es", value = "Plantilla sin título")
-    private static String UNTITLED;
-    @Localize("Add Rows")
-    @Localize(locale = "de", value = "Zeilen hinzufügen")
-    @Localize(locale = "ru", value = "Добавить строки")
-    @Localize(locale = "es", value = "Añadir filas")
-    private static String ADD_ROWS;
-
-    static {
-        Localization.initialize();
-    }
-
     private static TemplateDockable LAST_ACTIVATED;
     private TemplateSheet           mTemplate;
     private Toolbar                 mToolbar;
@@ -157,7 +141,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 
     @Override
     protected String getUntitledBaseName() {
-        return UNTITLED;
+        return I18n.Text("Untitled Template");
     }
 
     @Override
@@ -277,44 +261,44 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
      * @param rows The rows to add.
      */
     public void addRows(List<Row> rows) {
-        HashMap<ListOutline, StateEdit>      map     = new HashMap<>();
-        HashMap<Outline, ArrayList<Row>>     selMap  = new HashMap<>();
-        HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<>();
-        ListOutline                          outline = null;
-
+        HashMap<ListOutline, StateEdit>      map         = new HashMap<>();
+        HashMap<Outline, ArrayList<Row>>     selMap      = new HashMap<>();
+        HashMap<Outline, ArrayList<ListRow>> nameMap     = new HashMap<>();
+        ListOutline                          outline     = null;
+        String                               addRowsText = I18n.Text("Add Rows");
         for (Row row : rows) {
             if (row instanceof Advantage) {
                 outline = mTemplate.getAdvantageOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Advantage(getDataFile(), (Advantage) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Technique) {
                 outline = mTemplate.getSkillOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Technique(getDataFile(), (Technique) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Skill) {
                 outline = mTemplate.getSkillOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Skill(getDataFile(), (Skill) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Spell) {
                 outline = mTemplate.getSpellOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Spell(getDataFile(), (Spell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Equipment) {
                 outline = mTemplate.getEquipmentOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Equipment(getDataFile(), (Equipment) row, true);
                 addCompleteRow(outline, row, selMap);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,10 +17,9 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -29,34 +28,9 @@ import java.util.HashSet;
 
 /** A Skill prerequisite. */
 public class SkillPrereq extends NameLevelPrereq {
-    @Localize("{0}{1} a skill whose name {2}")
-    @Localize(locale = "de", value = "{0}{1} eine Fertigkeit, deren Name {2}")
-    @Localize(locale = "ru", value = "{0}{1} умение с названием {2}")
-    @Localize(locale = "es", value = "{0}{1} una habilidad cuyo nombre es {2}")
-    private static String SKILL_NAME_PART;
-    @Localize(", specialization {0},")
-    @Localize(locale = "de", value = ", Spezialisierung {0},")
-    @Localize(locale = "ru", value = ", специализация {0},")
-    @Localize(locale = "es", value = ", especialización {0},")
-    private static String SPECIALIZATION_PART;
-    @Localize(" and level {0}")
-    @Localize(locale = "de", value = " und Fertigkeitswert {0}")
-    @Localize(locale = "ru", value = " и уровень {0}\n ")
-    @Localize(locale = "es", value = " y nivel {0}")
-    private static String LEVEL_PART;
-    @Localize(" level {0} and tech level matches\n")
-    @Localize(locale = "de", value = " Fertigkeitswert {0} und Techlevel stimmt überein")
-    @Localize(locale = "ru", value = " уровень {0} и ТУ совпадают\n")
-    @Localize(locale = "es", value = " nivel {0} y nivel tecnológico coincidente\n")
-    private static String LEVEL_AND_TL_PART;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT           = "skill_prereq"; //$NON-NLS-1$
-    private static final String TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
+    public static final String  TAG_ROOT           = "skill_prereq";
+    private static final String TAG_SPECIALIZATION = "specialization";
     private StringCriteria      mSpecializationCriteria;
 
     /**
@@ -66,7 +40,7 @@ public class SkillPrereq extends NameLevelPrereq {
      */
     public SkillPrereq(PrereqList parent) {
         super(TAG_ROOT, parent);
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, ""); //$NON-NLS-1$
+        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     /**
@@ -86,7 +60,7 @@ public class SkillPrereq extends NameLevelPrereq {
 
     @Override
     protected void initializeForLoad() {
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, ""); //$NON-NLS-1$
+        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     @Override
@@ -151,19 +125,19 @@ public class SkillPrereq extends NameLevelPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(SKILL_NAME_PART, prefix, has() ? HAS : DOES_NOT_HAVE, nameCriteria.toString()));
+            builder.append(MessageFormat.format(I18n.Text("{0}{1} a skill whose name {2}"), prefix, hasText(), nameCriteria.toString()));
             boolean notAnySpecialization = mSpecializationCriteria.getType() != StringCompareType.IS_ANYTHING;
 
             if (notAnySpecialization) {
-                builder.append(MessageFormat.format(SPECIALIZATION_PART, mSpecializationCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text(", specialization {0},"), mSpecializationCriteria.toString()));
             }
             if (techLevel == null) {
-                builder.append(MessageFormat.format(LEVEL_PART, levelCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text(" and level {0}"), levelCriteria.toString()));
             } else {
                 if (notAnySpecialization) {
-                    builder.append(","); //$NON-NLS-1$
+                    builder.append(",");
                 }
-                builder.append(MessageFormat.format(LEVEL_AND_TL_PART, levelCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text(" level {0} and tech level matches\n"), levelCriteria.toString()));
             }
         }
         return satisfied;

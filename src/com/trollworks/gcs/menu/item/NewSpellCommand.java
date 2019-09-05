@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,39 +17,22 @@ import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Spell" command. */
 public class NewSpellCommand extends Command {
-    @Localize("New Spell")
-    @Localize(locale = "de", value = "Neuer Zauber")
-    @Localize(locale = "ru", value = "Новое заклинание")
-    @Localize(locale = "es", value = "Nuevo Sortilegio")
-    private static String SPELL;
-    @Localize("New Spell Container")
-    @Localize(locale = "de", value = "Neuer Zauber-Container")
-    @Localize(locale = "ru", value = "Новый контейнер заклинаний")
-    @Localize(locale = "es", value = "Nuevo Contenedor de Sortilegios")
-    private static String SPELL_CONTAINER;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String          CMD_SPELL           = "NewSpell"; //$NON-NLS-1$
+    public static final String          CMD_SPELL           = "NewSpell";
     /** The action command this command will issue. */
-    public static final String          CMD_SPELL_CONTAINER = "NewSpellContainer"; //$NON-NLS-1$
-
+    public static final String          CMD_SPELL_CONTAINER = "NewSpellContainer";
     /** The "New Spell" command. */
-    public static final NewSpellCommand INSTANCE            = new NewSpellCommand(false, SPELL, CMD_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);
+    public static final NewSpellCommand INSTANCE            = new NewSpellCommand(false, I18n.Text("New Spell"), CMD_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);
     /** The "New Spell Container" command. */
-    public static final NewSpellCommand CONTAINER_INSTANCE  = new NewSpellCommand(true, SPELL_CONTAINER, CMD_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
+    public static final NewSpellCommand CONTAINER_INSTANCE  = new NewSpellCommand(true, I18n.Text("New Spell Container"), CMD_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
     private boolean                     mContainer;
 
     private NewSpellCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {

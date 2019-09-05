@@ -13,32 +13,20 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
 /** Provides the "Add Natural Punch" command. */
 public class AddNaturalPunchCommand extends Command {
-    @Localize("Include Punch In Weapons")
-    @Localize(locale = "de", value = "Führe Schlag als Waffe auf")
-    @Localize(locale = "ru", value = "Отображать удар в оружии")
-    @Localize(locale = "es", value = "Incluir Puñetazo entre las Armas")
-    private static String ADD_NATURAL_PUNCH;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                 CMD_ADD_NATURAL_PUNCH = "AddNaturalPunch"; //$NON-NLS-1$
-
+    public static final String                 CMD_ADD_NATURAL_PUNCH = "AddNaturalPunch";
     /** The singleton {@link AddNaturalPunchCommand}. */
     public static final AddNaturalPunchCommand INSTANCE              = new AddNaturalPunchCommand();
 
     private AddNaturalPunchCommand() {
-        super(ADD_NATURAL_PUNCH, CMD_ADD_NATURAL_PUNCH);
+        super(I18n.Text("Include Punch In Weapons"), CMD_ADD_NATURAL_PUNCH);
     }
 
     @Override

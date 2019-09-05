@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,55 +16,14 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.EditorField;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Container;
 import java.util.List;
 
 /** An editor for ranged weapon statistics. */
 public class RangedWeaponEditor extends WeaponEditor {
-    @Localize("Ranged Weapon")
-    @Localize(locale = "de", value = "Fernkampfwaffe")
-    @Localize(locale = "ru", value = "Дистанционное оружие")
-    @Localize(locale = "es", value = "Arma de ataque a distancia")
-    private static String RANGED_WEAPON;
-    @Localize("Accuracy")
-    @Localize(locale = "de", value = "Genauigkeit")
-    @Localize(locale = "ru", value = "Точность")
-    @Localize(locale = "es", value = "Precisión")
-    private static String ACCURACY;
-    @Localize("Range")
-    @Localize(locale = "de", value = "Reichweite")
-    @Localize(locale = "ru", value = "Дальность")
-    @Localize(locale = "es", value = "Alcance")
-    private static String RANGE;
-    @Localize("Rate of Fire")
-    @Localize(locale = "de", value = "Schussrate")
-    @Localize(locale = "ru", value = "Скорострельность")
-    @Localize(locale = "es", value = "Cadencia de disparo")
-    private static String RATE_OF_FIRE;
-    @Localize("Shots")
-    @Localize(locale = "de", value = "Schüsse")
-    @Localize(locale = "ru", value = "Боезапас")
-    @Localize(locale = "es", value = "Disparos")
-    private static String SHOTS;
-    @Localize("Bulk")
-    @Localize(locale = "de", value = "Handlichkeit")
-    @Localize(locale = "ru", value = "Размер")
-    @Localize(locale = "es", value = "Tamaño")
-    private static String BULK;
-    @Localize("Recoil")
-    @Localize(locale = "de", value = "Rückstoß")
-    @Localize(locale = "ru", value = "Отдача")
-    @Localize(locale = "es", value = "Retroceso")
-    private static String RECOIL;
-
-    static {
-        Localization.initialize();
-    }
-
     private EditorField mAccuracy;
     private EditorField mRange;
     private EditorField mRateOfFire;
@@ -103,12 +62,12 @@ public class RangedWeaponEditor extends WeaponEditor {
 
     @Override
     protected void createFields(Container parent) {
-        mAccuracy   = createTextField(parent, ACCURACY, EMPTY);
-        mRange      = createTextField(parent, RANGE, EMPTY);
-        mRateOfFire = createTextField(parent, RATE_OF_FIRE, EMPTY);
-        mShots      = createTextField(parent, SHOTS, EMPTY);
-        mRecoil     = createTextField(parent, RECOIL, EMPTY);
-        mBulk       = createTextField(parent, BULK, EMPTY);
+        mAccuracy   = createTextField(parent, I18n.Text("Accuracy"), "");
+        mRange      = createTextField(parent, I18n.Text("Range"), "");
+        mRateOfFire = createTextField(parent, I18n.Text("Rate of Fire"), "");
+        mShots      = createTextField(parent, I18n.Text("Shots"), "");
+        mRecoil     = createTextField(parent, I18n.Text("Recoil"), "");
+        mBulk       = createTextField(parent, I18n.Text("Bulk"), "");
     }
 
     @Override
@@ -188,17 +147,17 @@ public class RangedWeaponEditor extends WeaponEditor {
 
     @Override
     protected void blankFields() {
-        mAccuracy.setValue(EMPTY);
-        mRange.setValue(EMPTY);
-        mRateOfFire.setValue(EMPTY);
-        mShots.setValue(EMPTY);
-        mBulk.setValue(EMPTY);
-        mRecoil.setValue(EMPTY);
+        mAccuracy.setValue("");
+        mRange.setValue("");
+        mRateOfFire.setValue("");
+        mShots.setValue("");
+        mBulk.setValue("");
+        mRecoil.setValue("");
         super.blankFields();
     }
 
     @Override
     public String toString() {
-        return RANGED_WEAPON;
+        return I18n.Text("Ranged Weapon");
     }
 }

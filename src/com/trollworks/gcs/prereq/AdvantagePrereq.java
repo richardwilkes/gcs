@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,10 +17,9 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -29,30 +28,10 @@ import java.util.HashSet;
 
 /** An Advantage prerequisite. */
 public class AdvantagePrereq extends NameLevelPrereq {
-    @Localize("{0}{1} an advantage whose name {2}")
-    @Localize(locale = "de", value = "{0}{1} einen Vorteil, dessen Name {2}")
-    @Localize(locale = "ru", value = "{0}{1}преимущество с названием {2}")
-    @Localize(locale = "es", value = "{0}{1} una Ventaja llamada {2}")
-    private static String NAME_PART;
-    @Localize(", notes {0},")
-    @Localize(locale = "de", value = ", Notizen {0},")
-    @Localize(locale = "ru", value = ", заметок {0},")
-    @Localize(locale = "es", value = ", Notas {0},")
-    private static String NOTES_PART;
-    @Localize(" and level {0}")
-    @Localize(locale = "de", value = " und Stufe {0}")
-    @Localize(locale = "ru", value = " и уровень {0}\n ")
-    @Localize(locale = "es", value = " y Nivel {0}")
-    private static String LEVEL_PART;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT  = "advantage_prereq"; //$NON-NLS-1$
-    private static final String TAG_NOTES = "notes"; //$NON-NLS-1$
-    private static final String EMPTY     = ""; //$NON-NLS-1$
+    public static final String  TAG_ROOT  = "advantage_prereq";
+    private static final String TAG_NOTES = "notes";
+    private static final String EMPTY     = "";
     private StringCriteria      mNotesCriteria;
 
     /**
@@ -153,11 +132,11 @@ public class AdvantagePrereq extends NameLevelPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(NAME_PART, prefix, has() ? HasPrereq.HAS : HasPrereq.DOES_NOT_HAVE, nameCriteria.toString()));
+            builder.append(MessageFormat.format(I18n.Text("{0}{1} an advantage whose name {2}"), prefix, hasText(), nameCriteria.toString()));
             if (mNotesCriteria.getType() != StringCompareType.IS_ANYTHING) {
-                builder.append(MessageFormat.format(NOTES_PART, mNotesCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text(", notes {0},"), mNotesCriteria.toString()));
             }
-            builder.append(MessageFormat.format(LEVEL_PART, levelCriteria.toString()));
+            builder.append(MessageFormat.format(I18n.Text(" and level {0}"), levelCriteria.toString()));
         }
         return satisfied;
     }

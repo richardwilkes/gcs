@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -18,38 +18,23 @@ import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
 
 import java.io.File;
 import java.io.IOException;
 
 /** Holds the contents of a library file. */
 public class LibraryFile extends DataFile {
-    @Localize("The file \"{0}\" was imported into a data library.\nThe original file has not been modified.")
-    @Localize(locale = "de",
-              value = "Die Datei \"{0}\" wurde in eine Datenbibliothek importiert.\nDie Originaldatei wurde nicht verändert.")
-    @Localize(locale = "ru",
-              value = "Файл \"{0}\" был импортирован в библиотеку данных.\nИсходный файл не был изменен.")
-    @Localize(locale = "es",
-              value = "El archivo \"{0}\" se importó a la librería de datos.\nEl archivo original no se ha modificado.")
-    static String WARNING;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The current version. */
     public static final int    CURRENT_VERSION = 1;
     /** The XML tag for library files. */
-    public static final String TAG_ROOT        = "gcs_library"; //$NON-NLS-1$
+    public static final String TAG_ROOT        = "gcs_library";
     /** The extension for library files. */
-    public static final String EXTENSION       = "glb"; //$NON-NLS-1$
+    public static final String EXTENSION       = "glb";
     private AdvantageList      mAdvantages;
     private SkillList          mSkills;
     private SpellList          mSpells;

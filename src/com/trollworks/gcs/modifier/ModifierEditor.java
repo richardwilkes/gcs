@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,12 +13,11 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
@@ -43,95 +42,6 @@ import javax.swing.event.DocumentListener;
 
 /** Editor for {@link Modifier}s. */
 public class ModifierEditor extends RowEditor<Modifier> implements ActionListener, DocumentListener {
-    @Localize("Name")
-    @Localize(locale = "de", value = "Name")
-    @Localize(locale = "ru", value = "Название")
-    @Localize(locale = "es", value = "Nombre")
-    private static String NAME;
-    @Localize("Name of Modifier")
-    @Localize(locale = "de", value = "Name des Modifikators.")
-    @Localize(locale = "ru", value = "Название модификатора")
-    @Localize(locale = "es", value = "Nombre del Modificador")
-    private static String NAME_TOOLTIP;
-    @Localize("Notes")
-    @Localize(locale = "de", value = "Anmerkungen")
-    @Localize(locale = "ru", value = "Заметка")
-    @Localize(locale = "es", value = "Notas")
-    private static String NOTES;
-    @Localize("Any notes that you would like to show up in the list along with this modifier")
-    @Localize(locale = "de",
-              value = "Anmerkungen, die in der Liste neben dem Modifikator erscheinen sollen.")
-    @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с модификатором")
-    @Localize(locale = "es", value = "Cualquier nota que te gustaría mostar con este modificador")
-    private static String NOTES_TOOLTIP;
-    @Localize("The name field may not be empty")
-    @Localize(locale = "de", value = "Das Namensfeld darf nicht leer sein.")
-    @Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
-    @Localize(locale = "es", value = "El nombre no puede estar en blanco")
-    private static String NAME_CANNOT_BE_EMPTY;
-    @Localize("Cost")
-    @Localize(locale = "de", value = "Kosten")
-    @Localize(locale = "ru", value = "Стоимость")
-    @Localize(locale = "es", value = "Coste")
-    private static String COST;
-    @Localize("The base cost modifier")
-    @Localize(locale = "de", value = "Die Grundkosten.")
-    @Localize(locale = "ru", value = "Базовая стоимость модификатора")
-    @Localize(locale = "es", value = "Coste básico del modificador")
-    private static String COST_TOOLTIP;
-    @Localize("Levels")
-    @Localize(locale = "de", value = "Stufen")
-    @Localize(locale = "ru", value = "Уровни")
-    @Localize(locale = "es", value = "Niveles")
-    private static String LEVELS;
-    @Localize("The number of levels this modifier has")
-    @Localize(locale = "de", value = "Die Anzahl der Stufen, die dieser Modifkiator hat.")
-    @Localize(locale = "ru", value = "Число уровней, которое имеет этот модификатор")
-    @Localize(locale = "es", value = "Número de niveles que este modificador tiene")
-    private static String LEVELS_TOOLTIP;
-    @Localize("Total")
-    @Localize(locale = "de", value = "Gesamt")
-    @Localize(locale = "ru", value = "Всего")
-    @Localize(locale = "es", value = "Total")
-    private static String TOTAL_COST;
-    @Localize("The cost modifier's total value")
-    @Localize(locale = "de", value = "Die Gesamtkosten des Modifikators.")
-    @Localize(locale = "ru", value = "Общая стоимость модификатора")
-    @Localize(locale = "es", value = "Valor del coste total del modificador")
-    private static String TOTAL_COST_TOOLTIP;
-    @Localize("{0} Per Level")
-    @Localize(locale = "de", value = "{0} pro Stufe")
-    @Localize(locale = "ru", value = "{0} за уровень")
-    @Localize(locale = "es", value = "{0} por Nivel")
-    private static String HAS_LEVELS;
-    @Localize("Enabled")
-    @Localize(locale = "de", value = "Aktiv")
-    @Localize(locale = "ru", value = "Включено")
-    @Localize(locale = "es", value = "Activo")
-    private static String ENABLED;
-    @Localize("Whether this modifier has been enabled or not")
-    @Localize(locale = "de", value = "Ob dieser Modifikator aktiv ist oder nicht.")
-    @Localize(locale = "ru", value = "Включить этот модификатор")
-    @Localize(locale = "es", value = "Determina si el modificador está activo o no")
-    private static String ENABLED_TOOLTIP;
-    @Localize("Ref")
-    @Localize(locale = "de", value = "Ref.")
-    @Localize(locale = "ru", value = "Ссыл")
-    private static String REFERENCE;
-    @Localize("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de",
-              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-    @Localize(locale = "ru",
-              value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
-    @Localize(locale = "es",
-              value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
-    private static String REFERENCE_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String EMPTY = ""; //$NON-NLS-1$
     private JTextField          mNameField;
     private JCheckBox           mEnabledField;
     private JTextField          mNotesField;
@@ -164,9 +74,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         }
 
         JPanel wrapper = new JPanel(new ColumnLayout(2));
-        mNameField    = createCorrectableField(fields, wrapper, NAME, modifier.getName(), NAME_TOOLTIP);
-        mEnabledField = new JCheckBox(ENABLED, modifier.isEnabled());
-        mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(ENABLED_TOOLTIP));
+        mNameField    = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
+        mEnabledField = new JCheckBox(I18n.Text("Enabled"), modifier.isEnabled());
+        mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
         mEnabledField.setEnabled(mIsEditable);
         wrapper.add(mEnabledField);
         fields.add(wrapper);
@@ -174,8 +84,8 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         createCostModifierFields(fields);
 
         wrapper         = new JPanel(new ColumnLayout(3));
-        mNotesField     = createField(fields, wrapper, NOTES, modifier.getNotes(), NOTES_TOOLTIP, 0);
-        mReferenceField = createField(wrapper, wrapper, REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
+        mNotesField     = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
+        mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         fields.add(wrapper);
 
         icon.setVerticalAlignment(SwingConstants.TOP);
@@ -277,7 +187,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
     @SuppressWarnings("unused")
     private JTextField createNumberField(Container labelParent, Container fieldParent, String title, boolean allowSign, int value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : EMPTY)); //$NON-NLS-1$
+        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : ""));
         UIUtilities.setOnlySize(field, field.getPreferredSize());
         field.setText(Numbers.format(value));
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -309,18 +219,20 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         if (mLastLevel < 1) {
             mLastLevel = 1;
         }
+        String costTitle   = I18n.Text("Cost");
+        String costTooltip = I18n.Text("The base cost modifier");
         if (mRow.getCostType() == CostType.MULTIPLIER) {
-            mCostField = createNumberField(parent, wrapper, COST, mRow.getCostMultiplier(), COST_TOOLTIP, 5);
+            mCostField = createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip, 5);
         } else {
-            mCostField = createNumberField(parent, wrapper, COST, true, mRow.getCost(), COST_TOOLTIP, 5);
+            mCostField = createNumberField(parent, wrapper, costTitle, true, mRow.getCost(), costTooltip, 5);
         }
         createCostType(wrapper);
-        mLevelField        = createNumberField(wrapper, wrapper, LEVELS, false, mLastLevel, LEVELS_TOOLTIP, 3);
-        mCostModifierField = createNumberField(wrapper, wrapper, TOTAL_COST, true, 0, TOTAL_COST_TOOLTIP, 9);
+        mLevelField        = createNumberField(wrapper, wrapper, I18n.Text("Levels"), false, mLastLevel, I18n.Text("The number of levels this modifier has"), 3);
+        mCostModifierField = createNumberField(wrapper, wrapper, I18n.Text("Total"), true, 0, I18n.Text("The cost modifier's total value"), 9);
         mAffects           = createComboBox(wrapper, Affects.values(), mRow.getAffects());
         mCostModifierField.setEnabled(false);
         if (!mRow.hasLevels()) {
-            mLevelField.setText(EMPTY);
+            mLevelField.setText("");
             mLevelField.setEnabled(false);
         }
         parent.add(wrapper);
@@ -339,7 +251,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     private void createCostType(Container parent) {
         CostType[] types  = CostType.values();
         Object[]   values = new Object[types.length + 1];
-        values[0] = MessageFormat.format(HAS_LEVELS, CostType.PERCENTAGE.toString());
+        values[0] = MessageFormat.format(I18n.Text("{0} Per Level"), CostType.PERCENTAGE.toString());
         System.arraycopy(types, 0, values, 1, types.length);
         mCostType = createComboBox(parent, values, mRow.hasLevels() ? values[0] : mRow.getCostType());
     }
@@ -351,7 +263,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
             mLevelField.setText(Numbers.format(mLastLevel));
         } else {
             mLastLevel = Numbers.extractInteger(mLevelField.getText(), 0, true);
-            mLevelField.setText(EMPTY);
+            mLevelField.setText("");
         }
         mLevelField.setEnabled(hasLevels);
         updateCostField();
@@ -373,7 +285,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         boolean enabled = true;
 
         if (hasLevels()) {
-            mCostModifierField.setText(Numbers.formatWithForcedSign(getCost() * getLevels()) + "%"); //$NON-NLS-1$
+            mCostModifierField.setText(Numbers.formatWithForcedSign(getCost() * getLevels()) + "%");
         } else {
             CostType costType = getCostType();
             switch (costType) {
@@ -430,6 +342,6 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     }
 
     private void nameChanged() {
-        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
+        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
     }
 }

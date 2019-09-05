@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,22 +13,11 @@ package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.scale.Scale;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** A list of spells from a library. */
 public class SpellsDockable extends LibraryDockable {
-    @Localize("Untitled Spells")
-    @Localize(locale = "de", value = "Unbenannte Zauber-Liste")
-    @Localize(locale = "ru", value = "Безымянный список заклинаний")
-    @Localize(locale = "es", value = "Sortilegios Sin Nombre")
-    private static String UNTITLED;
-
-    static {
-        Localization.initialize();
-    }
-
     /** Creates a new {@link SpellsDockable}. */
     public SpellsDockable(SpellList list) {
         super(list);
@@ -41,7 +30,7 @@ public class SpellsDockable extends LibraryDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return UNTITLED;
+        return I18n.Text("Untitled Spells");
     }
 
     @Override

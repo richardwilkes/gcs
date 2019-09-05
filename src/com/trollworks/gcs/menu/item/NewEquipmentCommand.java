@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,38 +17,22 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Equipment" command. */
 public class NewEquipmentCommand extends Command {
-    @Localize("New Equipment")
-    @Localize(locale = "de", value = "Neue Ausrüstung")
-    @Localize(locale = "ru", value = "Новое снаряжение")
-    @Localize(locale = "es", value = "Nuevo Equipo")
-    private static String EQUIPMENT;
-    @Localize("New Equipment Container")
-    @Localize(locale = "de", value = "Neuer Ausrüstungs-Container")
-    @Localize(locale = "ru", value = "Новый контейнер снаряжения")
-    @Localize(locale = "es", value = "Nuevo contenedor de Equipo")
-    private static String EQUIPMENT_CONTAINER;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_EQUIPMENT           = "NewEquipment"; //$NON-NLS-1$
+    public static final String              CMD_NEW_EQUIPMENT           = "NewEquipment";
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_EQUIPMENT_CONTAINER = "NewEquipmentContainer"; //$NON-NLS-1$
+    public static final String              CMD_NEW_EQUIPMENT_CONTAINER = "NewEquipmentContainer";
     /** The "New Carried Equipment" command. */
-    public static final NewEquipmentCommand CARRIED_INSTANCE            = new NewEquipmentCommand(false, EQUIPMENT, CMD_NEW_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER);
+    public static final NewEquipmentCommand CARRIED_INSTANCE            = new NewEquipmentCommand(false, I18n.Text("New Equipment"), CMD_NEW_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER);
     /** The "New Carried Equipment Container" command. */
-    public static final NewEquipmentCommand CARRIED_CONTAINER_INSTANCE  = new NewEquipmentCommand(true, EQUIPMENT_CONTAINER, CMD_NEW_EQUIPMENT_CONTAINER, KeyEvent.VK_E, SHIFTED_COMMAND_MODIFIER);
+    public static final NewEquipmentCommand CARRIED_CONTAINER_INSTANCE  = new NewEquipmentCommand(true, I18n.Text("New Equipment Container"), CMD_NEW_EQUIPMENT_CONTAINER, KeyEvent.VK_E, SHIFTED_COMMAND_MODIFIER);
     private boolean                         mContainer;
 
     private NewEquipmentCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {

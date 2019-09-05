@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,26 +11,10 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** Provides simple storage for the skill level/relative level pair. */
 public class SkillLevel {
-    @Localize("Includes modifiers from")
-    @Localize(locale = "de", value = "Enthält Modifikatoren von")
-    @Localize(locale = "ru", value = "Включает в себя модификаторы из")
-    @Localize(locale = "es", value = "Incluye modificadores de")
-    static String INCLUDES;
-    @Localize("No additional modifiers")
-    @Localize(locale = "de", value = "Keine zusätzlichen Modifikatoren")
-    @Localize(locale = "ru", value = "Никаких дополнительных модификаторов")
-    @Localize(locale = "es", value = "No hay modificadores adicionales")
-    static String NO_MODIFIERS;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The skill level. */
     public int    mLevel;
     /** The relative skill level. */
@@ -51,7 +35,7 @@ public class SkillLevel {
     public SkillLevel(int level, int relativeLevel) {
         mLevel         = level;
         mRelativeLevel = relativeLevel;
-        mToolTip       = NO_MODIFIERS;
+        mToolTip       = I18n.Text("No additional modifiers");
     }
 
     /**
@@ -62,11 +46,9 @@ public class SkillLevel {
      * @param toolTip       The tooltip to display for this skill.
      */
     public SkillLevel(int level, int relativeLevel, StringBuilder toolTip) {
-        mLevel         = level;
-        mRelativeLevel = relativeLevel;
-        mToolTip       = NO_MODIFIERS;
+        this(level, relativeLevel);
         if (toolTip != null && toolTip.length() > 0) {
-            mToolTip = INCLUDES + toolTip.toString();
+            mToolTip = I18n.Text("Includes modifiers from") + toolTip.toString();
         }
     }
 
@@ -91,5 +73,4 @@ public class SkillLevel {
     public boolean isSameLevelAs(SkillLevel other) {
         return mLevel == other.mLevel && mRelativeLevel == other.mRelativeLevel;
     }
-
 }

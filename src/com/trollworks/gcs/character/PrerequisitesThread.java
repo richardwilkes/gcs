@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,8 +21,7 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
 
@@ -34,13 +33,6 @@ import java.util.Iterator;
  * A thread for doing background updates of the prerequisite status of a character sheet.
  */
 public class PrerequisitesThread extends Thread implements NotifierTarget {
-    @Localize("Reason:")
-    private static String REASON;
-
-    static {
-        Localization.initialize();
-    }
-
     private static HashMap<GURPSCharacter, PrerequisitesThread> MAP     = new HashMap<>();
     private static int                                          COUNTER = 0;
     private CharacterSheet                                      mSheet;
@@ -89,7 +81,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
      * @param sheet The sheet we're attached to.
      */
     public PrerequisitesThread(CharacterSheet sheet) {
-        super("Prerequisites #" + ++COUNTER); //$NON-NLS-1$
+        super("Prerequisites #" + ++COUNTER);
         setPriority(NORM_PRIORITY);
         setDaemon(true);
         mSheet      = sheet;
@@ -227,18 +219,18 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
         while (iterator.hasNext()) {
             ListRow row = iterator.next();
             builder.setLength(0);
-            boolean satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, "<li>"); //$NON-NLS-1$
+            boolean satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, "<li>");
             if (satisfied && row instanceof Technique) {
-                satisfied = ((Technique) row).satisfied(builder, "<li>"); //$NON-NLS-1$
+                satisfied = ((Technique) row).satisfied(builder, "<li>");
             }
             if (row.isSatisfied() != satisfied) {
                 row.setSatisfied(satisfied);
                 mNeedRepaint = true;
             }
             if (!satisfied) {
-                builder.insert(0, "<html><body>" + REASON + "<ul>"); //$NON-NLS-1$ //$NON-NLS-2$
-                builder.append("</ul></body></html>"); //$NON-NLS-1$
-                row.setReasonForUnsatisfied(builder.toString().replaceAll("<ul>", "<ul style='margin-top: 0; margin-bottom: 0;'>")); //$NON-NLS-1$ //$NON-NLS-2$
+                builder.insert(0, "<html><body>" + I18n.Text("Reason:") + "<ul>");
+                builder.append("</ul></body></html>");
+                row.setReasonForUnsatisfied(builder.toString().replaceAll("<ul>", "<ul style='margin-top: 0; margin-bottom: 0;'>"));
             }
             checkIfUpdated();
         }

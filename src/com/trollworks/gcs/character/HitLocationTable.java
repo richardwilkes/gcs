@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,8 +11,7 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.NumericComparator;
 
 import java.util.ArrayList;
@@ -23,88 +22,22 @@ import java.util.Map;
 
 /** Hit location tables. */
 public class HitLocationTable implements Comparable<HitLocationTable> {
-    @Localize("Humanoid")
-    private static String                             HUMANOID_TITLE;
-    @Localize("Quadruped")
-    private static String                             QUADRUPED_TITLE;
-    @Localize("Winged Quadruped")
-    private static String                             WINGED_QUADRUPED_TITLE;
-    @Localize("Hexapod")
-    private static String                             HEXAPOD_TITLE;
-    @Localize("Winged Hexapod")
-    private static String                             WINGED_HEXAPOD_TITLE;
-    @Localize("Centaur")
-    private static String                             CENTAUR_TITLE;
-    @Localize("Avian")
-    private static String                             AVIAN_TITLE;
-    @Localize("Vermiform")
-    private static String                             VERMIFORM_TITLE;
-    @Localize("Winged Vermiform")
-    private static String                             WINGED_VERMIFORM_TITLE;
-    @Localize("Snakemen")
-    private static String                             SNAKEMEN_TITLE;
-    @Localize("Octopod")
-    private static String                             OCTOPOD_TITLE;
-    @Localize("Squid")
-    private static String                             SQUID_TITLE;
-    @Localize("Cancroid")
-    private static String                             CANCROID_TITLE;
-    @Localize("Scorpion")
-    private static String                             SCORPION_TITLE;
-    @Localize("Ichthyoid")
-    private static String                             ICHTHYOID_TITLE;
-    @Localize("Arachnoid")
-    private static String                             ARACHNOID_TITLE;
-    @Localize("Left Leg")
-    private static String                             LEFT_LEG_TITLE;
-    @Localize("Right Leg")
-    private static String                             RIGHT_LEG_TITLE;
-    @Localize("Foreleg")
-    private static String                             FORELEG_TITLE;
-    @Localize("Midleg")
-    private static String                             MIDLEG_TITLE;
-    @Localize("Hindleg")
-    private static String                             HINDLEG_TITLE;
-    @Localize("Leg 1-2")
-    private static String                             LEG12_TITLE;
-    @Localize("Leg 3-4")
-    private static String                             LEG34_TITLE;
-    @Localize("Leg 5-6")
-    private static String                             LEG56_TITLE;
-    @Localize("Leg 7-8")
-    private static String                             LEG78_TITLE;
-    @Localize("Left Arm")
-    private static String                             LEFT_ARM_TITLE;
-    @Localize("Right Arm")
-    private static String                             RIGHT_ARM_TITLE;
-    @Localize("Arm 1-2")
-    private static String                             ARM12_TITLE;
-    @Localize("Arm 3-4")
-    private static String                             ARM34_TITLE;
-    @Localize("Arm 5-6")
-    private static String                             ARM56_TITLE;
-    @Localize("Arm 7-8")
-    private static String                             ARM78_TITLE;
-    @Localize("Extremity")
-    private static String                             EXTREMITY_TITLE;
-
-    public static final String                        KEY_HUMANOID         = "humanoid"; //$NON-NLS-1$
-    public static final String                        KEY_QUADRUPED        = "quadruped"; //$NON-NLS-1$
-    public static final String                        KEY_WINGED_QUADRUPED = "winged_quadruped"; //$NON-NLS-1$
-    public static final String                        KEY_HEXAPOD          = "hexapod"; //$NON-NLS-1$
-    public static final String                        KEY_WINGED_HEXAPOD   = "winged_hexapod"; //$NON-NLS-1$
-    public static final String                        KEY_CENTAUR          = "centaur"; //$NON-NLS-1$
-    public static final String                        KEY_AVIAN            = "avian"; //$NON-NLS-1$
-    public static final String                        KEY_VERMIFORM        = "vermiform"; //$NON-NLS-1$
-    public static final String                        KEY_WINGED_VERMIFORM = "winged_vermiform"; //$NON-NLS-1$
-    public static final String                        KEY_SNAKEMEN         = "snakemen"; //$NON-NLS-1$
-    public static final String                        KEY_OCTOPOD          = "octopod"; //$NON-NLS-1$
-    public static final String                        KEY_SQUID            = "squid"; //$NON-NLS-1$
-    public static final String                        KEY_CANCROID         = "cancroid"; //$NON-NLS-1$
-    public static final String                        KEY_SCORPION         = "scorpion"; //$NON-NLS-1$
-    public static final String                        KEY_ICHTHYOID        = "ichthyoid"; //$NON-NLS-1$
-    public static final String                        KEY_ARACHNOID        = "arachnoid"; //$NON-NLS-1$
-
+    public static final String                        KEY_HUMANOID         = "humanoid";
+    public static final String                        KEY_QUADRUPED        = "quadruped";
+    public static final String                        KEY_WINGED_QUADRUPED = "winged_quadruped";
+    public static final String                        KEY_HEXAPOD          = "hexapod";
+    public static final String                        KEY_WINGED_HEXAPOD   = "winged_hexapod";
+    public static final String                        KEY_CENTAUR          = "centaur";
+    public static final String                        KEY_AVIAN            = "avian";
+    public static final String                        KEY_VERMIFORM        = "vermiform";
+    public static final String                        KEY_WINGED_VERMIFORM = "winged_vermiform";
+    public static final String                        KEY_SNAKEMEN         = "snakemen";
+    public static final String                        KEY_OCTOPOD          = "octopod";
+    public static final String                        KEY_SQUID            = "squid";
+    public static final String                        KEY_CANCROID         = "cancroid";
+    public static final String                        KEY_SCORPION         = "scorpion";
+    public static final String                        KEY_ICHTHYOID        = "ichthyoid";
+    public static final String                        KEY_ARACHNOID        = "arachnoid";
     public static final HitLocationTable              HUMANOID;
     public static final HitLocationTable              QUADRUPED;
     public static final HitLocationTable              WINGED_QUADRUPED;
@@ -125,95 +58,93 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
     public static final Map<String, HitLocationTable> MAP                  = new HashMap<>();
 
     static {
-        Localization.initialize();
-
         List<HitLocationTableEntry> entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, RIGHT_LEG_TITLE, 6, 7));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, RIGHT_ARM_TITLE, 8, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Right Leg"), 6, 7));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Right Arm"), 8, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 10));
         entries.add(new HitLocationTableEntry(HitLocation.GROIN, 11, 11));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, LEFT_ARM_TITLE, 12, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, LEFT_LEG_TITLE, 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Left Arm"), 12, 12));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Left Leg"), 13, 14));
         entries.add(new HitLocationTableEntry(HitLocation.HAND, 15, 15));
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 16, 16));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        HUMANOID = new HitLocationTable(KEY_HUMANOID, HUMANOID_TITLE, entries);
+        HUMANOID = new HitLocationTable(KEY_HUMANOID, I18n.Text("Humanoid"), entries);
 
         entries  = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, FORELEG_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Foreleg"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 11));
         entries.add(new HitLocationTableEntry(HitLocation.GROIN, 12, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, HINDLEG_TITLE, 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Hindleg"), 13, 14));
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 15, 16));
         entries.add(new HitLocationTableEntry(HitLocation.TAIL, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        QUADRUPED = new HitLocationTable(KEY_QUADRUPED, QUADRUPED_TITLE, entries);
+        QUADRUPED = new HitLocationTable(KEY_QUADRUPED, I18n.Text("Quadruped"), entries);
 
         entries   = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, FORELEG_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Foreleg"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 11));
         entries.add(new HitLocationTableEntry(HitLocation.WING, 12, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, HINDLEG_TITLE, 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Hindleg"), 13, 14));
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 15, 16));
         entries.add(new HitLocationTableEntry(HitLocation.TAIL, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        WINGED_QUADRUPED = new HitLocationTable(KEY_WINGED_QUADRUPED, WINGED_QUADRUPED_TITLE, entries);
+        WINGED_QUADRUPED = new HitLocationTable(KEY_WINGED_QUADRUPED, I18n.Text("Winged Quadruped"), entries);
 
         entries          = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, FORELEG_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Foreleg"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 10));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, MIDLEG_TITLE, 11, 11));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Midleg"), 11, 11));
         entries.add(new HitLocationTableEntry(HitLocation.GROIN, 12, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, HINDLEG_TITLE, 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Hindleg"), 13, 14));
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 15, 16));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, MIDLEG_TITLE, 17, 18));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Midleg"), 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        HEXAPOD = new HitLocationTable(KEY_HEXAPOD, HEXAPOD_TITLE, entries);
+        HEXAPOD = new HitLocationTable(KEY_HEXAPOD, I18n.Text("Hexapod"), entries);
 
         entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, FORELEG_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Foreleg"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 10));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, MIDLEG_TITLE, 11, 11));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Midleg"), 11, 11));
         entries.add(new HitLocationTableEntry(HitLocation.WING, 12, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, HINDLEG_TITLE, 13, 14));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, MIDLEG_TITLE, 15, 16));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Hindleg"), 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Midleg"), 15, 16));
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        WINGED_HEXAPOD = new HitLocationTable(KEY_WINGED_HEXAPOD, WINGED_HEXAPOD_TITLE, entries);
+        WINGED_HEXAPOD = new HitLocationTable(KEY_WINGED_HEXAPOD, I18n.Text("Winged Hexapod"), entries);
 
         entries        = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, FORELEG_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Foreleg"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 11));
         entries.add(new HitLocationTableEntry(HitLocation.GROIN, 12, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, HINDLEG_TITLE, 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Hindleg"), 13, 14));
         entries.add(new HitLocationTableEntry(HitLocation.ARM, 15, 16));
-        entries.add(new HitLocationTableEntry(HitLocation.HAND, EXTREMITY_TITLE, 17, 18));
+        entries.add(new HitLocationTableEntry(HitLocation.HAND, I18n.Text("Extremity"), 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        CENTAUR = new HitLocationTable(KEY_CENTAUR, CENTAUR_TITLE, entries);
+        CENTAUR = new HitLocationTable(KEY_CENTAUR, I18n.Text("Centaur"), entries);
 
         entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -227,7 +158,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 15, 16));
         entries.add(new HitLocationTableEntry(HitLocation.TAIL, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        AVIAN   = new HitLocationTable(KEY_AVIAN, AVIAN_TITLE, entries);
+        AVIAN   = new HitLocationTable(KEY_AVIAN, I18n.Text("Avian"), entries);
 
         entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -236,7 +167,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 6, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        VERMIFORM = new HitLocationTable(KEY_VERMIFORM, VERMIFORM_TITLE, entries);
+        VERMIFORM = new HitLocationTable(KEY_VERMIFORM, I18n.Text("Vermiform"), entries);
 
         entries   = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -246,7 +177,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 14));
         entries.add(new HitLocationTableEntry(HitLocation.WING, 15, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        WINGED_VERMIFORM = new HitLocationTable(KEY_WINGED_VERMIFORM, WINGED_VERMIFORM_TITLE, entries);
+        WINGED_VERMIFORM = new HitLocationTable(KEY_WINGED_VERMIFORM, I18n.Text("Winged Vermiform"), entries);
 
         entries          = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -259,32 +190,32 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 15, 16));
         entries.add(new HitLocationTableEntry(HitLocation.HAND, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        SNAKEMEN = new HitLocationTable(KEY_SNAKEMEN, SNAKEMEN_TITLE, entries);
+        SNAKEMEN = new HitLocationTable(KEY_SNAKEMEN, I18n.Text("Snakemen"), entries);
 
         entries  = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE, 1));
         entries.add(new HitLocationTableEntry(HitLocation.BRAIN, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, ARM12_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Arm 1-2"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, ARM34_TITLE, 13, 14));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, ARM56_TITLE, 15, 16));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, ARM78_TITLE, 17, 18));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Arm 3-4"), 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Arm 5-6"), 15, 16));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Arm 7-8"), 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        OCTOPOD = new HitLocationTable(KEY_OCTOPOD, OCTOPOD_TITLE, entries);
+        OCTOPOD = new HitLocationTable(KEY_OCTOPOD, I18n.Text("Octopod"), entries);
 
         entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE, 1));
         entries.add(new HitLocationTableEntry(HitLocation.BRAIN, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, ARM12_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Arm 1-2"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.ARM, EXTREMITY_TITLE, 13, 16));
+        entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Extremity"), 13, 16));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        SQUID   = new HitLocationTable(KEY_SQUID, SQUID_TITLE, entries);
+        SQUID   = new HitLocationTable(KEY_SQUID, I18n.Text("Squid"), entries);
 
         entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -296,7 +227,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.LEG, 13, 16));
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        CANCROID = new HitLocationTable(KEY_CANCROID, CANCROID_TITLE, entries);
+        CANCROID = new HitLocationTable(KEY_CANCROID, I18n.Text("Cancroid"), entries);
 
         entries  = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -309,7 +240,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.LEG, 13, 16));
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        SCORPION = new HitLocationTable(KEY_SCORPION, SCORPION_TITLE, entries);
+        SCORPION = new HitLocationTable(KEY_SCORPION, I18n.Text("Scorpion"), entries);
 
         entries  = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE, 1));
@@ -320,21 +251,21 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.FIN, 13, 16));
         entries.add(new HitLocationTableEntry(HitLocation.TAIL, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        ICHTHYOID = new HitLocationTable(KEY_ICHTHYOID, ICHTHYOID_TITLE, entries);
+        ICHTHYOID = new HitLocationTable(KEY_ICHTHYOID, I18n.Text("Ichthyoid"), entries);
 
         entries   = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.BRAIN, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 5, 5));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 6, 6));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, LEG12_TITLE, 7, 8));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Leg 1-2"), 7, 8));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 9, 11));
         entries.add(new HitLocationTableEntry(HitLocation.GROIN, 12, 12));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, LEG34_TITLE, 13, 14));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, LEG56_TITLE, 15, 16));
-        entries.add(new HitLocationTableEntry(HitLocation.LEG, LEG78_TITLE, 17, 18));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Leg 3-4"), 13, 14));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Leg 5-6"), 15, 16));
+        entries.add(new HitLocationTableEntry(HitLocation.LEG, I18n.Text("Leg 7-8"), 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        ARACHNOID = new HitLocationTable(KEY_ARACHNOID, ARACHNOID_TITLE, entries);
+        ARACHNOID = new HitLocationTable(KEY_ARACHNOID, I18n.Text("Arachnoid"), entries);
 
         ALL       = new HitLocationTable[] { HUMANOID, QUADRUPED, WINGED_QUADRUPED, HEXAPOD, WINGED_HEXAPOD, CENTAUR, AVIAN, VERMIFORM, WINGED_VERMIFORM, SNAKEMEN, OCTOPOD, SQUID, CANCROID, SCORPION, ICHTHYOID, ARACHNOID };
         Arrays.sort(ALL);

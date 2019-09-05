@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,10 +14,9 @@ package com.trollworks.gcs.menu.edit;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DescriptionRandomizer;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
@@ -25,39 +24,13 @@ import javax.swing.JOptionPane;
 
 /** Provides the "Randomize Description" command. */
 public class RandomizeDescriptionCommand extends Command {
-    @Localize("Randomize Description\u2026")
-    @Localize(locale = "de", value = "Zufällige Beschreibung erstellen\u2026")
-    @Localize(locale = "ru", value = "Случайное описание\u2026")
-    @Localize(locale = "es", value = "Descripción al azar\u2026")
-    private static String RANDOMIZE_DESCRIPTION;
-    @Localize("Description Randomizer")
-    @Localize(locale = "de", value = "Zufallsgenerator für Beschreibungen")
-    @Localize(locale = "ru", value = "Сгенерировать описание")
-    @Localize(locale = "es", value = "Descripción al azar")
-    private static String RANDOMIZER;
-    @Localize("Apply")
-    @Localize(locale = "de", value = "Anwenden")
-    @Localize(locale = "ru", value = "Применить")
-    @Localize(locale = "es", value = "Aceptar")
-    private static String APPLY;
-    @Localize("Cancel")
-    @Localize(locale = "de", value = "Abbrechen")
-    @Localize(locale = "ru", value = "Отмена")
-    @Localize(locale = "es", value = "Cancelar")
-    private static String CANCEL;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                      CMD_RANDOMIZE_DESCRIPTION = "RandomizeDescription"; //$NON-NLS-1$
-
+    public static final String                      CMD_RANDOMIZE_DESCRIPTION = "RandomizeDescription";
     /** The singleton {@link RandomizeDescriptionCommand}. */
     public static final RandomizeDescriptionCommand INSTANCE                  = new RandomizeDescriptionCommand();
 
     private RandomizeDescriptionCommand() {
-        super(RANDOMIZE_DESCRIPTION, CMD_RANDOMIZE_DESCRIPTION);
+        super(I18n.Text("Randomize Description\u2026"), CMD_RANDOMIZE_DESCRIPTION);
     }
 
     @Override
@@ -70,7 +43,7 @@ public class RandomizeDescriptionCommand extends Command {
         CharacterSheet target = getTarget(CharacterSheet.class);
         if (target != null) {
             DescriptionRandomizer panel = new DescriptionRandomizer(target.getCharacter());
-            if (WindowUtils.showOptionDialog(null, panel, RANDOMIZER, true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getImage(32), new String[] { APPLY, CANCEL }, APPLY) == JOptionPane.OK_OPTION) {
+            if (WindowUtils.showOptionDialog(null, panel, I18n.Text("Description Randomizer"), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getImage(32), new String[] { I18n.Text("Apply"), I18n.Text("Cancel") }, I18n.Text("Apply")) == JOptionPane.OK_OPTION) {
                 panel.applyChanges();
             }
         }

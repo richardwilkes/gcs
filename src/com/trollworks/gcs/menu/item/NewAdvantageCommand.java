@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,38 +17,22 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Advantage" command. */
 public class NewAdvantageCommand extends Command {
-    @Localize("New Advantage")
-    @Localize(locale = "de", value = "Neuer Vorteil")
-    @Localize(locale = "ru", value = "Новое преимущество")
-    @Localize(locale = "es", value = "Nueva Ventaja")
-    private static String ADVANTAGE;
-    @Localize("New Advantage Container")
-    @Localize(locale = "de", value = "Neuer Vorteils-Container")
-    @Localize(locale = "ru", value = "Новый контейнер преимущества")
-    @Localize(locale = "es", value = "Nuevo Contenedor de Ventajas")
-    private static String ADVANTAGE_CONTAINER;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_ADVANTAGE           = "NewAdvantage"; //$NON-NLS-1$
+    public static final String              CMD_NEW_ADVANTAGE           = "NewAdvantage";
     /** The action command this command will issue. */
-    public static final String              CMD_NEW_ADVANTAGE_CONTAINER = "NewAdvantageContainer"; //$NON-NLS-1$
+    public static final String              CMD_NEW_ADVANTAGE_CONTAINER = "NewAdvantageContainer";
     /** The "New Advantage" command. */
-    public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, ADVANTAGE, CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
+    public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, I18n.Text("New Advantage"), CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
     /** The "New Advantage Container" command. */
-    public static final NewAdvantageCommand CONTAINER_INSTANCE          = new NewAdvantageCommand(true, ADVANTAGE_CONTAINER, CMD_NEW_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
+    public static final NewAdvantageCommand CONTAINER_INSTANCE          = new NewAdvantageCommand(true, I18n.Text("New Advantage Container"), CMD_NEW_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
     private boolean                         mContainer;
 
     private NewAdvantageCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {

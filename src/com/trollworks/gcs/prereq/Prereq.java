@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,7 +25,7 @@ public abstract class Prereq {
 
     /**
      * Creates a new prerequisite.
-     * 
+     *
      * @param parent The owning prerequisite list, if any.
      */
     protected Prereq(PrereqList parent) {
@@ -49,7 +49,7 @@ public abstract class Prereq {
 
     /**
      * Saves the prerequisite.
-     * 
+     *
      * @param out The XML writer to use.
      */
     public abstract void save(XMLWriter out);
@@ -66,7 +66,7 @@ public abstract class Prereq {
 
     /**
      * Creates a deep clone of the prerequisite.
-     * 
+     *
      * @param parent The new owning prerequisite list, if any.
      * @return The clone.
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -44,28 +44,28 @@ import java.util.Iterator;
 /** A template. */
 public class Template extends DataFile {
     /** The extension for templates. */
-    public static final String  EXTENSION              = "gct"; //$NON-NLS-1$
+    public static final String  EXTENSION              = "gct";
     private static final int    CURRENT_VERSION        = 2;
-    private static final String TAG_ROOT               = "template"; //$NON-NLS-1$
-    private static final String TAG_OLD_NOTES          = "notes"; //$NON-NLS-1$
+    private static final String TAG_ROOT               = "template";
+    private static final String TAG_OLD_NOTES          = "notes";
     /** The prefix for all template IDs. */
-    public static final String  TEMPLATE_PREFIX        = "gct."; //$NON-NLS-1$
+    public static final String  TEMPLATE_PREFIX        = "gct.";
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
-    public static final String  POINTS_PREFIX          = TEMPLATE_PREFIX + "points."; //$NON-NLS-1$
+    public static final String  POINTS_PREFIX          = TEMPLATE_PREFIX + "points.";
     /** The field ID for point total changes. */
-    public static final String  ID_TOTAL_POINTS        = POINTS_PREFIX + "Total"; //$NON-NLS-1$
+    public static final String  ID_TOTAL_POINTS        = POINTS_PREFIX + "Total";
     /** The field ID for advantage point summary changes. */
-    public static final String  ID_ADVANTAGE_POINTS    = POINTS_PREFIX + "Advantages"; //$NON-NLS-1$
+    public static final String  ID_ADVANTAGE_POINTS    = POINTS_PREFIX + "Advantages";
     /** The field ID for disadvantage point summary changes. */
-    public static final String  ID_DISADVANTAGE_POINTS = POINTS_PREFIX + "Disadvantages"; //$NON-NLS-1$
+    public static final String  ID_DISADVANTAGE_POINTS = POINTS_PREFIX + "Disadvantages";
     /** The field ID for quirk point summary changes. */
-    public static final String  ID_QUIRK_POINTS        = POINTS_PREFIX + "Quirks"; //$NON-NLS-1$
+    public static final String  ID_QUIRK_POINTS        = POINTS_PREFIX + "Quirks";
     /** The field ID for skill point summary changes. */
-    public static final String  ID_SKILL_POINTS        = POINTS_PREFIX + "Skills"; //$NON-NLS-1$
+    public static final String  ID_SKILL_POINTS        = POINTS_PREFIX + "Skills";
     /** The field ID for spell point summary changes. */
-    public static final String  ID_SPELL_POINTS        = POINTS_PREFIX + "Spells"; //$NON-NLS-1$
+    public static final String  ID_SPELL_POINTS        = POINTS_PREFIX + "Spells";
     private OutlineModel        mAdvantages;
     private OutlineModel        mSkills;
     private OutlineModel        mSpells;

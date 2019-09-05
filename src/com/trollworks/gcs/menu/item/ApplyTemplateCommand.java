@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,10 +14,9 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.undo.MultipleUndo;
 
 import java.awt.event.ActionEvent;
@@ -26,28 +25,13 @@ import java.util.ArrayList;
 
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
-    @Localize("Apply Template To Character Sheet")
-    @Localize(locale = "de", value = "Wende Vorlage auf Charakterblatt an")
-    @Localize(locale = "ru", value = "Применить шаблон к листу персонажа")
-    @Localize(locale = "es", value = "Aplicar nueva plantilla de hoja de personaje")
-    private static String APPLY_TEMPLATE_TO_SHEET;
-    @Localize("Apply Template")
-    @Localize(locale = "de", value = "Vorlage anwenden")
-    @Localize(locale = "ru", value = "Применить шаблон")
-    @Localize(locale = "es", value = "Aplicar plantilla")
-    private static String UNDO;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String               CMD_APPLY_TEMPLATE = "ApplyTemplate"; //$NON-NLS-1$
+    public static final String               CMD_APPLY_TEMPLATE = "ApplyTemplate";
     /** The singleton {@link ApplyTemplateCommand}. */
     public static final ApplyTemplateCommand INSTANCE           = new ApplyTemplateCommand();
 
     private ApplyTemplateCommand() {
-        super(APPLY_TEMPLATE_TO_SHEET, CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.Text("Apply Template To Character Sheet"), CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override
@@ -67,7 +51,7 @@ public class ApplyTemplateCommand extends Command {
             SheetDockable sheetDockable = SheetDockable.getLastActivated();
             if (sheetDockable != null) {
                 Template       template = templateDockable.getDataFile();
-                MultipleUndo   edit     = new MultipleUndo(UNDO);
+                MultipleUndo   edit     = new MultipleUndo(I18n.Text("Apply Template"));
                 ArrayList<Row> rows     = new ArrayList<>();
                 template.addEdit(edit);
                 rows.addAll(template.getAdvantagesModel().getTopLevelRows());

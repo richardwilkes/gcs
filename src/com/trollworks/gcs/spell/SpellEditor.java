@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,12 +21,11 @@ import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
@@ -52,217 +51,6 @@ import javax.swing.text.Document;
 
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends RowEditor<Spell> implements ActionListener, DocumentListener {
-    @Localize("Name")
-    @Localize(locale = "de", value = "Name")
-    @Localize(locale = "ru", value = "Название")
-    @Localize(locale = "es", value = "Nombre")
-    private static String NAME;
-    @Localize("The name of the spell, without any notes")
-    @Localize(locale = "de", value = "Der Name des Zaubers ohne Anmerkungen")
-    @Localize(locale = "ru", value = "Название заклинания без заметок")
-    @Localize(locale = "es", value = "Nombre del sortilegio, sin notas ni otra información")
-    private static String NAME_TOOLTIP;
-    @Localize("The name field may not be empty")
-    @Localize(locale = "de", value = "Der Name darf nicht leer sein")
-    @Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
-    @Localize(locale = "es", value = "El nombre no puede estar en blanco")
-    private static String NAME_CANNOT_BE_EMPTY;
-    @Localize("Tech Level")
-    @Localize(locale = "de", value = "Techlevel")
-    @Localize(locale = "ru", value = "Технологический уровень")
-    @Localize(locale = "es", value = "Nivel Tecnológico")
-    private static String TECH_LEVEL;
-    @Localize("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned")
-    @Localize(locale = "de",
-              value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist und wenn, mit welchem Techlevel er gelernt wurde")
-    @Localize(locale = "ru",
-              value = "Для заклинания необходима специализация с технологическим уровнем с указанием уровня изучения")
-    @Localize(locale = "es",
-              value = "Si el sortilegio requiere especialización por nivel tecnológico, este es para el que se ha aprendido")
-    private static String TECH_LEVEL_TOOLTIP;
-    @Localize("Tech Level Required")
-    @Localize(locale = "de", value = "Techlevel benötigt")
-    @Localize(locale = "ru", value = "Необходимый технологический уровень")
-    @Localize(locale = "es", value = "Nivel tecnologíco requerido")
-    private static String TECH_LEVEL_REQUIRED;
-    @Localize("Whether this spell requires tech level specialization")
-    @Localize(locale = "de",
-              value = "Ob dieser Zauber auf einen bestimmten Techlevel spezialisiert ist")
-    @Localize(locale = "ru",
-              value = "Для заклинания необходима специализация с технологическим уровнем")
-    @Localize(locale = "es",
-              value = "Este sortilegio requiere especializarse por nivel tecnológico")
-    private static String TECH_LEVEL_REQUIRED_TOOLTIP;
-    @Localize("College")
-    @Localize(locale = "de", value = "Schule")
-    @Localize(locale = "ru", value = "Школа")
-    @Localize(locale = "es", value = "Escuela")
-    private static String COLLEGE;
-    @Localize("The college the spell belongs to")
-    @Localize(locale = "de", value = "Die Schule, die dieser Zauber angehört")
-    @Localize(locale = "ru", value = "Школа, к которой относится заклинание")
-    @Localize(locale = "es", value = "Escuela a la que pertenece el sortilegio")
-    private static String COLLEGE_TOOLTIP;
-    @Localize("Power Source")
-    @Localize(locale = "de", value = "Energiequelle")
-    @Localize(locale = "ru", value = "Источник силы")
-    @Localize(locale = "es", value = "Fuente de Poder")
-    private static String POWER_SOURCE;
-    @Localize("The source of power for the spell")
-    @Localize(locale = "de", value = "Die Quelle der Energie für den Zauber")
-    @Localize(locale = "ru", value = "Источник силы для заклинания")
-    @Localize(locale = "es", value = "Fuente de Poder para el sortilegio")
-    private static String POWER_SOURCE_TOOLTIP;
-    @Localize("Class")
-    @Localize(locale = "de", value = "Klasse")
-    @Localize(locale = "ru", value = "Класс")
-    @Localize(locale = "es", value = "Tipo")
-    private static String CLASS;
-    @Localize("The class of spell (Area, Missile, etc.)")
-    @Localize(locale = "de", value = "Die Klasse des Zaubers (Gebiet, Geschoss, usw.)")
-    @Localize(locale = "ru", value = "Класс заклинания (областные, метательные и т.д.)")
-    @Localize(locale = "es", value = "Tipo de sortilegio (Área, Proyectil, etc.)")
-    private static String CLASS_ONLY_TOOLTIP;
-    @Localize("The class field may not be empty")
-    @Localize(locale = "de", value = "Die Klasse darf nicht leer sein")
-    @Localize(locale = "ru", value = "Поле \"Класс\" не может быть пустым")
-    @Localize(locale = "es", value = "El tipo no puede estar en blanco")
-    private static String CLASS_CANNOT_BE_EMPTY;
-    @Localize("Casting Cost")
-    @Localize(locale = "de", value = "Zauberkosten")
-    @Localize(locale = "ru", value = "Стоимость заклинания")
-    @Localize(locale = "es", value = "Coste de lanzamiento")
-    private static String CASTING_COST;
-    @Localize("The casting cost of the spell")
-    @Localize(locale = "de", value = "Die Kosten, um den Zauber zu wirken")
-    @Localize(locale = "ru", value = "Стоимость сотворения заклинания")
-    @Localize(locale = "es", value = "Coste de lanzar el sertilegio")
-    private static String CASTING_COST_TOOLTIP;
-    @Localize("The casting cost field may not be empty")
-    @Localize(locale = "de", value = "Die Zauberkosten dürfen nicht leer sein")
-    @Localize(locale = "ru", value = "Поле \"Мана-Стоимость\" не может быть пустым")
-    @Localize(locale = "es", value = "El coste de mantenimiento no puede estar en blanco")
-    private static String CASTING_COST_CANNOT_BE_EMPTY;
-    @Localize("Maintenance Cost")
-    @Localize(locale = "de", value = "Erhaltungskosten")
-    @Localize(locale = "ru", value = "Стоимость обслуживания")
-    @Localize(locale = "es", value = "Coste de mantenimiento")
-    private static String MAINTENANCE_COST;
-    @Localize("The cost to maintain a spell after its initial duration")
-    @Localize(locale = "de", value = "Die Kosten, um den Zauber aufrecht zu erhalten")
-    @Localize(locale = "ru", value = "Стоимость поддержки заклинания свыше исходной длительности")
-    @Localize(locale = "es",
-              value = "Coste para manterner el sortilegio superada la duración inicial")
-    private static String MAINTENANCE_COST_TOOLTIP;
-    @Localize("Casting Time")
-    @Localize(locale = "de", value = "Zauberzeit")
-    @Localize(locale = "ru", value = "Время сотворения")
-    @Localize(locale = "es", value = "Tiempo para lanzar")
-    private static String CASTING_TIME;
-    @Localize("The casting time of the spell")
-    @Localize(locale = "de", value = "Die Zeit, um den Zauber zu wirken")
-    @Localize(locale = "ru", value = "Время сотворения заклинания")
-    @Localize(locale = "es", value = "Tiempo necesario para lanzar el sortilegi")
-    private static String CASTING_TIME_TOOLTIP;
-    @Localize("The casting time field may not be empty")
-    @Localize(locale = "de", value = "Die Zauberzeit darf nicht leer sein")
-    @Localize(locale = "ru", value = "Поле \"Время сотворения\" не может быть пустым")
-    @Localize(locale = "es",
-              value = "El tiempo necesario para lanzar el sotilegio no puede estar en blanco")
-    private static String CASTING_TIME_CANNOT_BE_EMPTY;
-    @Localize("Duration")
-    @Localize(locale = "de", value = "Dauer")
-    @Localize(locale = "ru", value = "Длительность")
-    @Localize(locale = "es", value = "Duración")
-    private static String DURATION;
-    @Localize("The duration of the spell once its cast")
-    @Localize(locale = "de", value = "Die Dauer des Zaubers, nachdem er gewirkt wurde")
-    @Localize(locale = "ru", value = "Длительность заклинания после сотворения")
-    @Localize(locale = "es", value = "Duración del sortilegio una vez lanzado")
-    private static String DURATION_TOOLTIP;
-    @Localize("The duration field may not be empty")
-    @Localize(locale = "de", value = "Die Dauer darf nicht leer sein")
-    @Localize(locale = "ru", value = "Поле \"Длительность\" не может быть пустым")
-    @Localize(locale = "es", value = "La duración no puede estar en blanco")
-    private static String DURATION_CANNOT_BE_EMPTY;
-    @Localize("Categories")
-    @Localize(locale = "de", value = "Kategorie")
-    @Localize(locale = "ru", value = "Категории")
-    @Localize(locale = "es", value = "Categorías")
-    private static String CATEGORIES;
-    @Localize("The category or categories the spell belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de",
-              value = "Die Kategorie oder Kategorien, denen dieser Zauber angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru",
-              value = "Категория или категории, к которым относится заклинание (перечислить через запятую)")
-    @Localize(locale = "es",
-              value = "Categoría o categorías a las que pertenece el sortilegio (separa categorías multiples con una coma)")
-    private static String CATEGORIES_TOOLTIP;
-    @Localize("Notes")
-    @Localize(locale = "de", value = "Anmerkungen")
-    @Localize(locale = "ru", value = "Заметка")
-    @Localize(locale = "es", value = "Notas")
-    private static String NOTES;
-    @Localize("Any notes that you would like to show up in the list along with this spell")
-    @Localize(locale = "de",
-              value = "Anmerkungen, die in der Liste neben dem Zauber erscheinen sollen")
-    @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с заклинанием")
-    @Localize(locale = "es",
-              value = "Cualquier nota que te gustaría que se mostrara junto al sortilegio")
-    private static String NOTES_TOOLTIP;
-    @Localize("Points")
-    @Localize(locale = "de", value = "Punkte")
-    @Localize(locale = "ru", value = "Очки")
-    @Localize(locale = "es", value = "Puntos")
-    private static String EDITOR_POINTS;
-    @Localize("The number of points spent on this spell")
-    @Localize(locale = "de", value = "Die Punkte, die für diesen Zauber aufgewendet wurden")
-    @Localize(locale = "ru", value = "Потрачено на заклинание количество очков")
-    @Localize(locale = "es", value = "Puntos consumidos en el sortilegio")
-    private static String EDITOR_POINTS_TOOLTIP;
-    @Localize("Level")
-    @Localize(locale = "de", value = "Fertigkeitswert")
-    @Localize(locale = "ru", value = "Уровень")
-    @Localize(locale = "es", value = "Nivel")
-    private static String EDITOR_LEVEL;
-    @Localize("The spell level and relative spell level to roll against")
-    @Localize(locale = "de",
-              value = "Der Fertigkeitswert und relativer Fertigkeitswert des Zaubers, gegen die gewürfelt werden muss")
-    @Localize(locale = "ru",
-              value = "Уровень заклинания и относительный уровень заклинания для повторного броска")
-    @Localize(locale = "es",
-              value = "Nivel y nivel relativo del sortilegio a superar con la tirada")
-    private static String EDITOR_LEVEL_TOOLTIP;
-    @Localize("The attribute this spell is based on")
-    private static String ATTRIBUTE_POPUP_TOOLTIP;
-    @Localize("Difficulty")
-    @Localize(locale = "de", value = "Schwierigkeit")
-    @Localize(locale = "ru", value = "Сложность")
-    @Localize(locale = "es", value = "Dificultad")
-    private static String DIFFICULTY;
-    @Localize("The difficulty of the spell")
-    @Localize(locale = "de", value = "Die Schwierigkeit des Zaubers")
-    @Localize(locale = "ru", value = "Сложность заклинания")
-    @Localize(locale = "es", value = "Dificultad del sortilegio")
-    private static String DIFFICULTY_TOOLTIP;
-    @Localize("Page Reference")
-    @Localize(locale = "de", value = "Seitenangabe")
-    @Localize(locale = "ru", value = "Ссылка на страницу")
-    @Localize(locale = "es", value = "Página de referencia")
-    private static String EDITOR_REFERENCE;
-    @Localize("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de",
-              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru",
-              value = "Ссылка на страницу и книгу, описывающая заклинание (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es",
-              value = "Referencia al libro y página en donde se menciona el sortilegio (p.e. B22 se refiere al \"Manual Básico\", página 22)")
-    private static String REFERENCE_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private JTextField         mNameField;
     private JTextField         mCollegeField;
     private JTextField         mPowerSourceField;
@@ -306,26 +94,26 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         Dimension size         = new Dimension();
         Container refParent    = wrapper3;
 
-        mNameField = createCorrectableField(wrapper1, wrapper1, NAME, spell.getName(), NAME_TOOLTIP);
+        mNameField = createCorrectableField(wrapper1, wrapper1, I18n.Text("Name"), spell.getName(), I18n.Text("The name of the spell, without any notes"));
         fields.add(wrapper1);
         if (notContainer) {
             createTechLevelFields(wrapper1);
-            mCollegeField     = createField(wrapper2, wrapper2, COLLEGE, spell.getCollege(), COLLEGE_TOOLTIP, 0);
-            mPowerSourceField = createField(wrapper2, wrapper2, POWER_SOURCE, spell.getPowerSource(), POWER_SOURCE_TOOLTIP, 0);
-            mClassField       = createCorrectableField(wrapper2, wrapper2, CLASS, spell.getSpellClass(), CLASS_ONLY_TOOLTIP);
-            mCastingCostField = createCorrectableField(wrapper2, wrapper2, CASTING_COST, spell.getCastingCost(), CASTING_COST_TOOLTIP);
-            mMaintenanceField = createField(wrapper2, wrapper2, MAINTENANCE_COST, spell.getMaintenance(), MAINTENANCE_COST_TOOLTIP, 0);
-            mCastingTimeField = createCorrectableField(wrapper2, wrapper2, CASTING_TIME, spell.getCastingTime(), CASTING_TIME_TOOLTIP);
-            mDurationField    = createCorrectableField(wrapper2, wrapper2, DURATION, spell.getDuration(), DURATION_TOOLTIP);
+            mCollegeField     = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
+            mPowerSourceField = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
+            mClassField       = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
+            mCastingCostField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
+            mMaintenanceField = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), spell.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
+            mCastingTimeField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), spell.getCastingTime(), I18n.Text("The casting time of the spell"));
+            mDurationField    = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spell.getDuration(), I18n.Text("The duration of the spell once its cast"));
             fields.add(wrapper2);
 
             ptsPanel = createPointsFields();
             fields.add(ptsPanel);
             refParent = ptsPanel;
         }
-        mNotesField      = createField(wrapper3, wrapper3, NOTES, spell.getNotes(), NOTES_TOOLTIP, 0);
-        mCategoriesField = createField(wrapper3, wrapper3, CATEGORIES, spell.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
-        mReferenceField  = createField(refParent, noGapWrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
+        mNotesField      = createField(wrapper3, wrapper3, I18n.Text("Notes"), spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
+        mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), spell.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
+        mReferenceField  = createField(refParent, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         noGapWrapper.add(new JPanel());
         refParent.add(noGapWrapper);
         fields.add(wrapper3);
@@ -410,22 +198,23 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         mSavedTechLevel = mRow.getTechLevel();
         hasTL           = mSavedTechLevel != null;
         if (!hasTL) {
-            mSavedTechLevel = ""; //$NON-NLS-1$
+            mSavedTechLevel = "";
         }
 
         if (character != null) {
             JPanel wrapper = new JPanel(new ColumnLayout(2));
 
-            mHasTechLevel = new JCheckBox(TECH_LEVEL, hasTL);
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_TOOLTIP));
+            mHasTechLevel = new JCheckBox(I18n.Text("Tech Level"), hasTL);
+            String tlTooltip = I18n.Text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
+            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
             mHasTechLevel.setEnabled(enabled);
             mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
 
-            mTechLevel = new JTextField("9999"); //$NON-NLS-1$
+            mTechLevel = new JTextField("9999");
             UIUtilities.setOnlySize(mTechLevel, mTechLevel.getPreferredSize());
             mTechLevel.setText(mSavedTechLevel);
-            mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_TOOLTIP));
+            mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
             mTechLevel.setEnabled(enabled && hasTL);
             wrapper.add(mTechLevel);
             parent.add(wrapper);
@@ -435,8 +224,8 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             }
         } else {
             mTechLevel    = new JTextField(mSavedTechLevel);
-            mHasTechLevel = new JCheckBox(TECH_LEVEL_REQUIRED, hasTL);
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(TECH_LEVEL_REQUIRED_TOOLTIP));
+            mHasTechLevel = new JCheckBox(I18n.Text("Tech Level Required"), hasTL);
+            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this spell requires tech level specialization")));
             mHasTechLevel.setEnabled(enabled);
             mHasTechLevel.addActionListener(this);
             parent.add(mHasTechLevel);
@@ -449,25 +238,29 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         boolean forTemplate  = mRow.getTemplate() != null;
         JPanel  panel        = new JPanel(new ColumnLayout(forCharacter ? 10 : forTemplate ? 8 : 6));
 
-        JLabel  label        = new JLabel(DIFFICULTY, SwingConstants.RIGHT);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(DIFFICULTY_TOOLTIP));
+        JLabel  label        = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
+        label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of the spell")));
         panel.add(label);
 
-        mAttributePopup = createComboBox(panel, SkillAttribute.values(), mRow.getAttribute(), ATTRIBUTE_POPUP_TOOLTIP);
-        panel.add(new JLabel(" /")); //$NON-NLS-1$
-        mDifficultyCombo = createComboBox(panel, new Object[] { SkillDifficulty.H, SkillDifficulty.VH }, mRow.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H, DIFFICULTY_TOOLTIP);
+        mAttributePopup = createComboBox(panel, SkillAttribute.values(), mRow.getAttribute(), I18n.Text("The attribute this spell is based on"));
+        panel.add(new JLabel(" /"));
+        mDifficultyCombo = createComboBox(panel, new Object[] { SkillDifficulty.H, SkillDifficulty.VH }, mRow.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H, I18n.Text("The difficulty of the spell"));
 
         if (forCharacter || forTemplate) {
-            mPointsField = createField(panel, panel, EDITOR_POINTS, Integer.toString(mRow.getPoints()), EDITOR_POINTS_TOOLTIP, 4);
+            mPointsField = createField(panel, panel, I18n.Text("Points"), Integer.toString(mRow.getPoints()), I18n.Text("The number of points spent on this spell"), 4);
             new NumberFilter(mPointsField, false, false, false, 4);
             mPointsField.addActionListener(this);
 
             if (forCharacter) {
-                mLevelField = createField(panel, panel, EDITOR_LEVEL, getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), EDITOR_LEVEL_TOOLTIP + ".\n" + mRow.getLevelToolTip(), 7);  //$NON-NLS-1$
+                mLevelField = createField(panel, panel, I18n.Text("Level"), getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), editorLevelTooltip() + mRow.getLevelToolTip(), 7);
                 mLevelField.setEnabled(false);
             }
         }
         return panel;
+    }
+
+    private static final String editorLevelTooltip() {
+        return I18n.Text("The spell level and relative spell level to roll against.\n");
     }
 
     private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
@@ -484,9 +277,9 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
     private static String getDisplayLevel(SkillAttribute attribute, int level, int relativeLevel) {
         if (level < 0) {
-            return "-"; //$NON-NLS-1$
+            return "-";
         }
-        return Numbers.format(level) + "/" + attribute + Numbers.formatWithForcedSign(relativeLevel); //$NON-NLS-1$
+        return Numbers.format(level) + "/" + attribute + Numbers.formatWithForcedSign(relativeLevel);
     }
 
     private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
@@ -572,7 +365,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
                 mTechLevel.requestFocus();
             } else {
                 mSavedTechLevel = mTechLevel.getText();
-                mTechLevel.setText(""); //$NON-NLS-1$
+                mTechLevel.setText("");
             }
         } else if (src == mPointsField || src == mAttributePopup || src == mDifficultyCombo) {
             recalculateLevel();
@@ -584,7 +377,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             SkillAttribute attribute = getAttribute();
             SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
             mLevelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
-            mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(EDITOR_LEVEL_TOOLTIP + ".\n" + level.getToolTip()));  //$NON-NLS-1$
+            mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
         }
     }
 
@@ -604,15 +397,15 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
+            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().length() != 0 ? null : CLASS_CANNOT_BE_EMPTY);
+            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().length() != 0 ? null : I18n.Text("The class field may not be empty"));
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().length() != 0 ? null : CASTING_COST_CANNOT_BE_EMPTY);
+            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().length() != 0 ? null : I18n.Text("The casting cost field may not be empty"));
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().length() != 0 ? null : CASTING_TIME_CANNOT_BE_EMPTY);
+            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().length() != 0 ? null : I18n.Text("The casting time field may not be empty"));
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().length() != 0 ? null : DURATION_CANNOT_BE_EMPTY);
+            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().length() != 0 ? null : I18n.Text("The duration field may not be empty"));
         }
     }
 

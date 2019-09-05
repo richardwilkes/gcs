@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,7 +21,7 @@ import java.util.List;
 
 /** Tracks data for opening and navigating PDFs. */
 public class PdfRef implements Comparable<PdfRef> {
-    private static final String MODULE  = "PageReferences"; //$NON-NLS-1$
+    private static final String MODULE  = "PageReferences";
     private static final int    VERSION = 2;
 
     /** @return <code>true</code> if the {@link PdfRef} preferences are equal to their defaults. */
@@ -99,7 +99,7 @@ public class PdfRef implements Comparable<PdfRef> {
      * @param offset The amount to add to a symbolic page number to find the actual index.
      */
     public PdfRef(String id, File file, int offset) {
-        mId                = id == null ? "" : id; //$NON-NLS-1$
+        mId                = id == null ? "" : id;
         mFile              = file;
         mPageToIndexOffset = offset;
     }
@@ -140,7 +140,7 @@ public class PdfRef implements Comparable<PdfRef> {
                 prefs.resetIfVersionMisMatch(MODULE, VERSION);
                 prefs.removePreference(MODULE, mId);
             }
-            mId = ""; //$NON-NLS-1$
+            mId = "";
         }
     }
 
@@ -150,7 +150,7 @@ public class PdfRef implements Comparable<PdfRef> {
             synchronized (PdfRef.class) {
                 Preferences prefs = Preferences.getInstance();
                 prefs.resetIfVersionMisMatch(MODULE, VERSION);
-                prefs.setValue(MODULE, mId, mPageToIndexOffset + ":" + mFile.getAbsolutePath()); //$NON-NLS-1$
+                prefs.setValue(MODULE, mId, mPageToIndexOffset + ":" + mFile.getAbsolutePath());
             }
         }
     }

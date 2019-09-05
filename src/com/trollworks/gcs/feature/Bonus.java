@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,10 +12,10 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,14 +24,7 @@ import java.util.HashSet;
 /** Describes a bonus. */
 public abstract class Bonus implements Feature {
     /** The "amount" tag. */
-    public static final String TAG_AMOUNT = "amount"; //$NON-NLS-1$
-
-    @Localize("Unknown")
-    @Localize(locale = "de", value = "Unbekannte")
-    @Localize(locale = "ru", value = "неизвестный")
-    @Localize(locale = "es", value = "Desconocido")
-    private static String      UNKNOWN;
-
+    public static final String TAG_AMOUNT = "amount";
     private LeveledAmount      mAmount;
     // The "parent" item that is providing this particular bonus (for information only).
     private ListRow            mParent;
@@ -134,17 +127,17 @@ public abstract class Bonus implements Feature {
     }
 
     public String getParentName() {
-        return mParent == null ? UNKNOWN : mParent.toString();
+        return mParent == null ? I18n.Text("Unknown") : mParent.toString();
     }
 
     @Override
     public String toString() {
-        return super.toString() + " (" + getToolTipAmount() + ", parent:" + mParent + ")";  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return super.toString() + " (" + getToolTipAmount() + ", parent:" + mParent + ")";
     }
 
     public void addToToolTip(StringBuilder toolTip) {
         if (toolTip != null) {
-            toolTip.append("\n").append(getParentName()).append(" [").append(getToolTipAmount()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            toolTip.append("\n").append(getParentName()).append(" [").append(getToolTipAmount()).append("]");
         }
     }
 

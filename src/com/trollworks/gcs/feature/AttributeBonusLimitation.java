@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,8 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** The limitations applicable to a {@link AttributeBonus}. */
 public enum AttributeBonusLimitation {
@@ -20,39 +19,21 @@ public enum AttributeBonusLimitation {
     NONE {
         @Override
         public String toString() {
-            return NONE_TITLE;
+            return " ";
         }
     },
     /** Striking only. */
     STRIKING_ONLY {
         @Override
         public String toString() {
-            return STRIKING_ONLY_TITLE;
+            return I18n.Text("for striking only");
         }
     },
     /** Lifting only */
     LIFTING_ONLY {
         @Override
         public String toString() {
-            return LIFTING_ONLY_TITLE;
+            return I18n.Text("for lifting only");
         }
     };
-
-    @Localize(" ")
-    @Localize(locale = "de", value = " ")
-    static String NONE_TITLE;
-    @Localize("for striking only")
-    @Localize(locale = "de", value = "nur für Schläge")
-    @Localize(locale = "ru", value = "только вплотную")
-    @Localize(locale = "es", value = "Sólo para golpear")
-    static String STRIKING_ONLY_TITLE;
-    @Localize("for lifting only")
-    @Localize(locale = "de", value = "nur für Heben")
-    @Localize(locale = "ru", value = "только для подъема")
-    @Localize(locale = "es", value = "sólo para levantar")
-    static String LIFTING_ONLY_TITLE;
-
-    static {
-        Localization.initialize();
-    }
 }

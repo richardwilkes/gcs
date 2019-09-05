@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,14 +16,13 @@ import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.SheetPreferences;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.Text;
 import com.trollworks.toolkit.utility.units.LengthUnits;
@@ -36,7 +35,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Random;
@@ -45,377 +43,121 @@ import javax.imageio.ImageIO;
 
 /** Holds the character profile. */
 public class Profile {
-    @Localize("{0}, {1}, {2}")
-    @Localize(locale = "de", value = "{0}, {1}, {2}")
-    private static String HAIR_FORMAT;
-    @Localize("MMMM d")
-    @Localize(locale = "de", value = "d. MMM.")
-    @Localize(locale = "es", value = "d. MMMM")
-    private static String BIRTHDAY_FORMAT;
-    @Localize("Brown")
-    @Localize(locale = "de", value = "Braun")
-    @Localize(locale = "ru", value = "Коричнев(ые,ая)")
-    @Localize(locale = "es", value = "Castaño")
-    private static String BROWN;
-    @Localize("Black")
-    @Localize(locale = "de", value = "Schwarz")
-    @Localize(locale = "ru", value = "Чёрный")
-    @Localize(locale = "es", value = "Moreno")
-    private static String BLACK;
-    @Localize("Blond")
-    @Localize(locale = "de", value = "Blond")
-    @Localize(locale = "ru", value = "Белокурые")
-    @Localize(locale = "es", value = "Rubio")
-    private static String BLOND;
-    @Localize("Redhead")
-    @Localize(locale = "de", value = "Rot")
-    @Localize(locale = "ru", value = "Рыжые")
-    @Localize(locale = "es", value = "Pelirojo")
-    private static String REDHEAD;
-    @Localize("Bald")
-    @Localize(locale = "de", value = "Glatze")
-    @Localize(locale = "ru", value = "Лысый")
-    @Localize(locale = "es", value = "Calvo")
-    private static String BALD;
-    @Localize("Straight")
-    @Localize(locale = "de", value = "glatt")
-    @Localize(locale = "ru", value = "Прямые")
-    @Localize(locale = "es", value = "Liso")
-    private static String STRAIGHT;
-    @Localize("Curly")
-    @Localize(locale = "de", value = "lockig")
-    @Localize(locale = "ru", value = "Вьющиеся")
-    @Localize(locale = "es", value = "Rizado")
-    private static String CURLY;
-    @Localize("Wavy")
-    @Localize(locale = "de", value = "gewellt")
-    @Localize(locale = "ru", value = "Волнистые")
-    @Localize(locale = "es", value = "Ondulado")
-    private static String WAVY;
-    @Localize("Short")
-    @Localize(locale = "de", value = "kurz")
-    @Localize(locale = "ru", value = "Короткие")
-    @Localize(locale = "es", value = "Corto")
-    private static String SHORT;
-    @Localize("Medium")
-    @Localize(locale = "de", value = "mittel")
-    @Localize(locale = "ru", value = "Средние")
-    @Localize(locale = "es", value = "Medio")
-    private static String MEDIUM;
-    @Localize("Long")
-    @Localize(locale = "de", value = "lang")
-    @Localize(locale = "ru", value = "Длинные")
-    @Localize(locale = "es", value = "Largo")
-    private static String LONG;
-    @Localize("Blue")
-    @Localize(locale = "de", value = "Blau")
-    @Localize(locale = "ru", value = "Синие")
-    @Localize(locale = "es", value = "Azul")
-    private static String BLUE;
-    @Localize("Green")
-    @Localize(locale = "de", value = "Grün")
-    @Localize(locale = "ru", value = "Зелёные")
-    @Localize(locale = "es", value = "Verde")
-    private static String GREEN;
-    @Localize("Grey")
-    @Localize(locale = "de", value = "Grau")
-    @Localize(locale = "ru", value = "Серые")
-    @Localize(locale = "es", value = "Gris")
-    private static String GREY;
-    @Localize("Violet")
-    @Localize(locale = "de", value = "Violett")
-    @Localize(locale = "ru", value = "Фиолетовые")
-    @Localize(locale = "es", value = "Violeta")
-    private static String VIOLET;
-    @Localize("Freckled")
-    @Localize(locale = "de", value = "Sommersprossen")
-    @Localize(locale = "ru", value = "Веснушчатая")
-    @Localize(locale = "es", value = "Pecoso")
-    private static String FRECKLED;
-    @Localize("Tan")
-    @Localize(locale = "de", value = "Gebräunt")
-    @Localize(locale = "ru", value = "Загорелая")
-    @Localize(locale = "es", value = "Bronceado")
-    private static String TAN;
-    @Localize("Light Tan")
-    @Localize(locale = "de", value = "Leicht gebräunt")
-    @Localize(locale = "ru", value = "Слегка загорелая")
-    @Localize(locale = "es", value = "Ligeramente bronceado")
-    private static String LIGHT_TAN;
-    @Localize("Dark Tan")
-    @Localize(locale = "de", value = "Stark gebräunt")
-    @Localize(locale = "ru", value = "Сильно-загорелая")
-    @Localize(locale = "es", value = "Muy bronceado")
-    private static String DARK_TAN;
-    @Localize("Light Brown")
-    @Localize(locale = "de", value = "Hellbraun")
-    @Localize(locale = "ru", value = "Светло-коричневая")
-    @Localize(locale = "es", value = "ligeramente bronceado")
-    private static String LIGHT_BROWN;
-    @Localize("Dark Brown")
-    @Localize(locale = "de", value = "Dunkelbraun")
-    @Localize(locale = "ru", value = "Тёмно-коричневая")
-    @Localize(locale = "es", value = "Muy bronceado")
-    private static String DARK_BROWN;
-    @Localize("Pale")
-    @Localize(locale = "de", value = "Bleich")
-    @Localize(locale = "ru", value = "Бледная")
-    @Localize(locale = "es", value = "Pálido")
-    private static String PALE;
-    @Localize("Right")
-    @Localize(locale = "de", value = "Rechts")
-    @Localize(locale = "ru", value = "Правая")
-    @Localize(locale = "es", value = "Diestro")
-    private static String RIGHT;
-    @Localize("Left")
-    @Localize(locale = "de", value = "Links")
-    @Localize(locale = "ru", value = "Левая")
-    @Localize(locale = "es", value = "Zurdo")
-    private static String LEFT;
-    @Localize("Male")
-    @Localize(locale = "de", value = "Männlich")
-    @Localize(locale = "ru", value = "муж.")
-    @Localize(locale = "es", value = "Varón")
-    private static String MALE;
-    @Localize("Female")
-    @Localize(locale = "de", value = "Weiblich")
-    @Localize(locale = "ru", value = "жен.")
-    @Localize(locale = "es", value = "Hembra")
-    private static String FEMALE;
-    @Localize("Human")
-    @Localize(locale = "de", value = "Mensch")
-    @Localize(locale = "ru", value = "Человек")
-    @Localize(locale = "es", value = "Humano")
-    private static String DEFAULT_RACE;
-    @Localize("Name Change")
-    @Localize(locale = "de", value = "Namen ändern")
-    @Localize(locale = "ru", value = "Изменить имя")
-    @Localize(locale = "es", value = "Cambiar nombre")
-    private static String NAME_UNDO;
-    @Localize("Title Change")
-    @Localize(locale = "de", value = "Titel ändern")
-    @Localize(locale = "ru", value = "Изменить статус")
-    @Localize(locale = "es", value = "Cambiar título")
-    private static String TITLE_UNDO;
-    @Localize("Age Change")
-    @Localize(locale = "de", value = "Alter ändern")
-    @Localize(locale = "ru", value = "Изменить возраст")
-    @Localize(locale = "es", value = "Cambiar edad")
-    private static String AGE_UNDO;
-    @Localize("Birthday Change")
-    @Localize(locale = "de", value = "Geburtstag ändern")
-    @Localize(locale = "ru", value = "Смена дня рождения")
-    @Localize(locale = "es", value = "Cambiar cumpleaños")
-    private static String BIRTHDAY_UNDO;
-    @Localize("Eye Color Change")
-    @Localize(locale = "de", value = "Augenfarbe ändern")
-    @Localize(locale = "ru", value = "Изменить цвет глаз")
-    @Localize(locale = "es", value = "Cambiae el color de los ojos")
-    private static String EYE_COLOR_UNDO;
-    @Localize("Hair Change")
-    @Localize(locale = "de", value = "Haar ändern")
-    @Localize(locale = "ru", value = "Изменить причёску")
-    @Localize(locale = "es", value = "Cambiar pelo")
-    private static String HAIR_UNDO;
-    @Localize("Skin Color Change")
-    @Localize(locale = "de", value = "Hautfarbe ändern")
-    @Localize(locale = "ru", value = "Изменить цвет кожи")
-    @Localize(locale = "es", value = "Cambiar color de la piel")
-    private static String SKIN_COLOR_UNDO;
-    @Localize("Handedness Change")
-    @Localize(locale = "de", value = "Händigkeit ändern")
-    @Localize(locale = "ru", value = "Смена основной руки")
-    @Localize(locale = "es", value = "Cambiar Mano dominante")
-    private static String HANDEDNESS_UNDO;
-    @Localize("Height Change")
-    @Localize(locale = "de", value = "Höhe ändern")
-    @Localize(locale = "ru", value = "Изменить рост")
-    @Localize(locale = "es", value = "Cambiar Altura")
-    private static String HEIGHT_UNDO;
-    @Localize("Weight Change")
-    @Localize(locale = "de", value = "Gewicht ändern")
-    @Localize(locale = "ru", value = "Изменить вес")
-    @Localize(locale = "es", value = "Cambiar Peso")
-    private static String WEIGHT_UNDO;
-    @Localize("Gender Change")
-    @Localize(locale = "de", value = "Geschlecht ändern")
-    @Localize(locale = "ru", value = "Изменить пол")
-    @Localize(locale = "es", value = "Cambiar género")
-    private static String GENDER_UNDO;
-    @Localize("Race Change")
-    @Localize(locale = "de", value = "Rasse ändern")
-    @Localize(locale = "ru", value = "Смена расы")
-    @Localize(locale = "es", value = "Cambiar raza")
-    private static String RACE_UNDO;
-    @Localize("Religion Change")
-    @Localize(locale = "de", value = "Religion ändern")
-    @Localize(locale = "ru", value = "Изменить религию")
-    @Localize(locale = "es", value = "Cambiar Religión")
-    private static String RELIGION_UNDO;
-    @Localize("Player Name Change")
-    @Localize(locale = "de", value = "Spielernamen ändern")
-    @Localize(locale = "ru", value = "Изменить имя игрока")
-    @Localize(locale = "es", value = "Cambiar Nombre del Jugador")
-    private static String PLAYER_NAME_UNDO;
-    @Localize("Campaign Change")
-    @Localize(locale = "de", value = "Kampagne ändern")
-    @Localize(locale = "ru", value = "Изменить компанию")
-    @Localize(locale = "es", value = "Cambiar Nombre de Camapaña")
-    private static String CAMPAIGN_UNDO;
-    @Localize("Size Modifier Change")
-    @Localize(locale = "de", value = "Größenmodifikator ändern")
-    @Localize(locale = "ru", value = "Изменить модификатор размера")
-    @Localize(locale = "es", value = "Cambiar Modificador por talla")
-    private static String SIZE_MODIFIER_UNDO;
-    @Localize("Tech Level Change")
-    @Localize(locale = "de", value = "Techlevel ändern")
-    @Localize(locale = "ru", value = "Смена технологического уровня")
-    @Localize(locale = "es", value = "Cambiar Nivel Tecnológico")
-    private static String TECH_LEVEL_UNDO;
-    @Localize("Portrait Change")
-    @Localize(locale = "de", value = "Portrait ändern")
-    @Localize(locale = "ru", value = "Смена изображения")
-    @Localize(locale = "es", value = "Cambiar Retrato")
-    private static String PORTRAIT_UNDO;
-    @Localize("The portrait is a PNG file encoded as Base64.")
-    @Localize(locale = "de", value = "Das Portrait ist eine Base64-kodierte PNG-Datei.")
-    @Localize(locale = "ru",
-              value = "Изображение представляет собой файл PNG (закодирован в Base64).")
-    @Localize(locale = "es", value = "El retrato es un archivo PNG codificado como Base64 ")
-    private static String PORTRAIT_COMMENT;
-    @Localize("Could not write portrait.")
-    @Localize(locale = "de", value = "Kann Portrait nicht schreiben.")
-    @Localize(locale = "ru", value = "Не удалось записать изображение.")
-    @Localize(locale = "es", value = "No se puede escribir el retrato")
-    private static String PORTRAIT_WRITE_ERROR;
-    @Localize("Body Type Change")
-    private static String BODY_TYPE_UNDO;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The root XML tag. */
-    public static final String    TAG_ROOT           = "profile"; //$NON-NLS-1$
+    public static final String  TAG_ROOT           = "profile";
     /** The preferences module name. */
-    public static final String    MODULE             = "GURPSCharacter"; //$NON-NLS-1$
+    public static final String  MODULE             = "GURPSCharacter";
     /** The prefix used in front of all IDs for profile. */
-    public static final String    PROFILE_PREFIX     = GURPSCharacter.CHARACTER_PREFIX + "pi."; //$NON-NLS-1$
+    public static final String  PROFILE_PREFIX     = GURPSCharacter.CHARACTER_PREFIX + "pi.";
     /** The field ID for portrait changes. */
-    public static final String    ID_PORTRAIT        = PROFILE_PREFIX + "Portrait"; //$NON-NLS-1$
+    public static final String  ID_PORTRAIT        = PROFILE_PREFIX + "Portrait";
     /** The field ID for name changes. */
-    public static final String    ID_NAME            = PROFILE_PREFIX + "Name"; //$NON-NLS-1$
+    public static final String  ID_NAME            = PROFILE_PREFIX + "Name";
     /** The field ID for title changes. */
-    public static final String    ID_TITLE           = PROFILE_PREFIX + "Title"; //$NON-NLS-1$
+    public static final String  ID_TITLE           = PROFILE_PREFIX + "Title";
     /** The field ID for age changes. */
-    public static final String    ID_AGE             = PROFILE_PREFIX + "Age"; //$NON-NLS-1$
+    public static final String  ID_AGE             = PROFILE_PREFIX + "Age";
     /** The field ID for birthday changes. */
-    public static final String    ID_BIRTHDAY        = PROFILE_PREFIX + "Birthday"; //$NON-NLS-1$
+    public static final String  ID_BIRTHDAY        = PROFILE_PREFIX + "Birthday";
     /** The field ID for eye color changes. */
-    public static final String    ID_EYE_COLOR       = PROFILE_PREFIX + "EyeColor"; //$NON-NLS-1$
+    public static final String  ID_EYE_COLOR       = PROFILE_PREFIX + "EyeColor";
     /** The field ID for hair color changes. */
-    public static final String    ID_HAIR            = PROFILE_PREFIX + "Hair"; //$NON-NLS-1$
+    public static final String  ID_HAIR            = PROFILE_PREFIX + "Hair";
     /** The field ID for skin color changes. */
-    public static final String    ID_SKIN_COLOR      = PROFILE_PREFIX + "SkinColor"; //$NON-NLS-1$
+    public static final String  ID_SKIN_COLOR      = PROFILE_PREFIX + "SkinColor";
     /** The field ID for handedness changes. */
-    public static final String    ID_HANDEDNESS      = PROFILE_PREFIX + "Handedness"; //$NON-NLS-1$
+    public static final String  ID_HANDEDNESS      = PROFILE_PREFIX + "Handedness";
     /** The field ID for height changes. */
-    public static final String    ID_HEIGHT          = PROFILE_PREFIX + "Height"; //$NON-NLS-1$
+    public static final String  ID_HEIGHT          = PROFILE_PREFIX + "Height";
     /** The field ID for weight changes. */
-    public static final String    ID_WEIGHT          = PROFILE_PREFIX + "Weight"; //$NON-NLS-1$
+    public static final String  ID_WEIGHT          = PROFILE_PREFIX + "Weight";
     /** The field ID for gender changes. */
-    public static final String    ID_GENDER          = PROFILE_PREFIX + "Gender"; //$NON-NLS-1$
+    public static final String  ID_GENDER          = PROFILE_PREFIX + "Gender";
     /** The field ID for race changes. */
-    public static final String    ID_RACE            = PROFILE_PREFIX + "Race"; //$NON-NLS-1$
+    public static final String  ID_RACE            = PROFILE_PREFIX + "Race";
     /** The field ID for religion changes. */
-    public static final String    ID_RELIGION        = PROFILE_PREFIX + "Religion"; //$NON-NLS-1$
+    public static final String  ID_RELIGION        = PROFILE_PREFIX + "Religion";
     /** The field ID for player name changes. */
-    public static final String    ID_PLAYER_NAME     = PROFILE_PREFIX + "PlayerName"; //$NON-NLS-1$
+    public static final String  ID_PLAYER_NAME     = PROFILE_PREFIX + "PlayerName";
     /** The field ID for campaign changes. */
-    public static final String    ID_CAMPAIGN        = PROFILE_PREFIX + "Campaign"; //$NON-NLS-1$
+    public static final String  ID_CAMPAIGN        = PROFILE_PREFIX + "Campaign";
     /** The field ID for tech level changes. */
-    public static final String    ID_TECH_LEVEL      = PROFILE_PREFIX + "TechLevel"; //$NON-NLS-1$
+    public static final String  ID_TECH_LEVEL      = PROFILE_PREFIX + "TechLevel";
     /** The field ID for size modifier changes. */
-    public static final String    ID_SIZE_MODIFIER   = PROFILE_PREFIX + BonusAttributeType.SM.name();
+    public static final String  ID_SIZE_MODIFIER   = PROFILE_PREFIX + BonusAttributeType.SM.name();
     /** The field ID for body type changes. */
-    public static final String    ID_BODY_TYPE       = PROFILE_PREFIX + "BodyType"; //$NON-NLS-1$
+    public static final String  ID_BODY_TYPE       = PROFILE_PREFIX + "BodyType";
     /** The default portrait marker. */
-    public static final String    DEFAULT_PORTRAIT   = "!\000"; //$NON-NLS-1$
+    public static final String  DEFAULT_PORTRAIT   = "!\000";
     /** The default Tech Level. */
-    public static final String    DEFAULT_TECH_LEVEL = "3"; //$NON-NLS-1$
+    public static final String  DEFAULT_TECH_LEVEL = "3";
     /** The height, in 1/72nds of an inch, of the portrait. */
-    public static final int       PORTRAIT_HEIGHT    = 96;
+    public static final int     PORTRAIT_HEIGHT    = 96;
     /** The width, in 1/72nds of an inch, of the portrait. */
-    public static final int       PORTRAIT_WIDTH     = 3 * PORTRAIT_HEIGHT / 4;
-    private static final String   TAG_PLAYER_NAME    = "player_name"; //$NON-NLS-1$
-    private static final String   TAG_CAMPAIGN       = "campaign"; //$NON-NLS-1$
-    private static final String   TAG_NAME           = "name"; //$NON-NLS-1$
-    private static final String   TAG_TITLE          = "title"; //$NON-NLS-1$
-    private static final String   TAG_AGE            = "age"; //$NON-NLS-1$
-    private static final String   TAG_BIRTHDAY       = "birthday"; //$NON-NLS-1$
-    private static final String   TAG_EYES           = "eyes"; //$NON-NLS-1$
-    private static final String   TAG_HAIR           = "hair"; //$NON-NLS-1$
-    private static final String   TAG_SKIN           = "skin"; //$NON-NLS-1$
-    private static final String   TAG_HANDEDNESS     = "handedness"; //$NON-NLS-1$
-    private static final String   TAG_HEIGHT         = "height"; //$NON-NLS-1$
-    private static final String   TAG_WEIGHT         = "weight"; //$NON-NLS-1$
-    private static final String   TAG_GENDER         = "gender"; //$NON-NLS-1$
-    private static final String   TAG_RACE           = "race"; //$NON-NLS-1$
-    private static final String   TAG_TECH_LEVEL     = "tech_level"; //$NON-NLS-1$
-    private static final String   TAG_RELIGION       = "religion"; //$NON-NLS-1$
-    private static final String   TAG_PORTRAIT       = "portrait"; //$NON-NLS-1$
-    private static final String   TAG_OLD_NOTES      = "notes"; //$NON-NLS-1$
-    private static final String   TAG_BODY_TYPE      = "body_type"; //$NON-NLS-1$
-    private static final String   EMPTY              = ""; //$NON-NLS-1$
-    private static final Random   RANDOM             = new Random();
-    private static final String[] EYE_OPTIONS        = new String[] { BROWN, BROWN, BLUE, BLUE, GREEN, GREY, VIOLET };
-    private static final String[] SKIN_OPTIONS       = new String[] { FRECKLED, TAN, LIGHT_TAN, DARK_TAN, BROWN, LIGHT_BROWN, DARK_BROWN, PALE };
-    private static final String[] HANDEDNESS_OPTIONS = new String[] { RIGHT, RIGHT, RIGHT, LEFT };
-    private static final String[] GENDER_OPTIONS     = new String[] { MALE, MALE, MALE, FEMALE };
-    private static final String[] HAIR_OPTIONS;
-    private GURPSCharacter        mCharacter;
-    private boolean               mCustomPortrait;
-    private RetinaIcon            mPortrait;
-    private String                mName;
-    private String                mTitle;
-    private int                   mAge;
-    private String                mBirthday;
-    private String                mEyeColor;
-    private String                mHair;
-    private String                mSkinColor;
-    private String                mHandedness;
-    private LengthValue           mHeight;
-    private WeightValue           mWeight;
-    private int                   mSizeModifier;
-    private int                   mSizeModifierBonus;
-    private String                mGender;
-    private String                mRace;
-    private String                mReligion;
-    private String                mPlayerName;
-    private String                mCampaign;
-    private String                mTechLevel;
-    private HitLocationTable      mHitLocationTable;
+    public static final int     PORTRAIT_WIDTH     = 3 * PORTRAIT_HEIGHT / 4;
+    private static final String TAG_PLAYER_NAME    = "player_name";
+    private static final String TAG_CAMPAIGN       = "campaign";
+    private static final String TAG_NAME           = "name";
+    private static final String TAG_TITLE          = "title";
+    private static final String TAG_AGE            = "age";
+    private static final String TAG_BIRTHDAY       = "birthday";
+    private static final String TAG_EYES           = "eyes";
+    private static final String TAG_HAIR           = "hair";
+    private static final String TAG_SKIN           = "skin";
+    private static final String TAG_HANDEDNESS     = "handedness";
+    private static final String TAG_HEIGHT         = "height";
+    private static final String TAG_WEIGHT         = "weight";
+    private static final String TAG_GENDER         = "gender";
+    private static final String TAG_RACE           = "race";
+    private static final String TAG_TECH_LEVEL     = "tech_level";
+    private static final String TAG_RELIGION       = "religion";
+    private static final String TAG_PORTRAIT       = "portrait";
+    private static final String TAG_OLD_NOTES      = "notes";
+    private static final String TAG_BODY_TYPE      = "body_type";
+    private static final Random RANDOM             = new Random();
+    private GURPSCharacter      mCharacter;
+    private boolean             mCustomPortrait;
+    private RetinaIcon          mPortrait;
+    private String              mName;
+    private String              mTitle;
+    private int                 mAge;
+    private String              mBirthday;
+    private String              mEyeColor;
+    private String              mHair;
+    private String              mSkinColor;
+    private String              mHandedness;
+    private LengthValue         mHeight;
+    private WeightValue         mWeight;
+    private int                 mSizeModifier;
+    private int                 mSizeModifierBonus;
+    private String              mGender;
+    private String              mRace;
+    private String              mReligion;
+    private String              mPlayerName;
+    private String              mCampaign;
+    private String              mTechLevel;
+    private HitLocationTable    mHitLocationTable;
 
     Profile(GURPSCharacter character, boolean full) {
         mCharacter        = character;
         mCustomPortrait   = false;
         mPortrait         = null;
-        mTitle            = EMPTY;
+        mTitle            = "";
         mAge              = full ? getRandomAge() : 0;
-        mBirthday         = full ? getRandomMonthAndDay() : EMPTY;
-        mEyeColor         = full ? getRandomEyeColor() : EMPTY;
-        mHair             = full ? getRandomHair() : EMPTY;
-        mSkinColor        = full ? getRandomSkinColor() : EMPTY;
-        mHandedness       = full ? getRandomHandedness() : EMPTY;
+        mBirthday         = full ? getRandomMonthAndDay() : "";
+        mEyeColor         = full ? getRandomEyeColor() : "";
+        mHair             = full ? getRandomHair() : "";
+        mSkinColor        = full ? getRandomSkinColor() : "";
+        mHandedness       = full ? getRandomHandedness() : "";
         mHeight           = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, SheetPreferences.getLengthUnits());
         mWeight           = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, SheetPreferences.getWeightUnits());
-        mGender           = full ? getRandomGender() : EMPTY;
-        mName             = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == MALE) : EMPTY;
-        mRace             = full ? DEFAULT_RACE : EMPTY;
-        mTechLevel        = full ? getDefaultTechLevel() : EMPTY;
-        mReligion         = EMPTY;
-        mPlayerName       = full ? getDefaultPlayerName() : EMPTY;
-        mCampaign         = full ? getDefaultCampaign() : EMPTY;
+        mGender           = full ? getRandomGender() : "";
+        mName             = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == I18n.Text("Male")) : "";
+        mRace             = full ? I18n.Text("Human") : "";
+        mTechLevel        = full ? getDefaultTechLevel() : "";
+        mReligion         = "";
+        mPlayerName       = full ? getDefaultPlayerName() : "";
+        mCampaign         = full ? getDefaultCampaign() : "";
         mPortrait         = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
         mHitLocationTable = HitLocationTable.HUMANOID;
     }
@@ -461,7 +203,7 @@ public class Profile {
             mHeight = LengthValue.extract(reader.readText(), false);
         } else if (TAG_WEIGHT.equals(tag)) {
             mWeight = WeightValue.extract(reader.readText(), false);
-        } else if (BonusAttributeType.SM.getXMLTag().equals(tag) || "size_modifier".equals(tag)) { //$NON-NLS-1$
+        } else if (BonusAttributeType.SM.getXMLTag().equals(tag) || "size_modifier".equals(tag)) {
             mSizeModifier = reader.readInteger(0);
         } else if (TAG_GENDER.equals(tag)) {
             mGender = reader.readText();
@@ -517,13 +259,13 @@ public class Profile {
             try {
                 try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                     ImageIO.write(mPortrait.getRetina(), FileType.PNG_EXTENSION, baos);
-                    out.writeComment(PORTRAIT_COMMENT);
+                    out.writeComment("The portrait is a PNG file encoded as Base64");
                     out.startSimpleTagEOL(TAG_PORTRAIT);
                     out.println(Text.standardizeLineEndings(Base64.getMimeEncoder().encodeToString(baos.toByteArray())));
                     out.endTagEOL(TAG_PORTRAIT, true);
                 }
             } catch (Exception ex) {
-                throw new RuntimeException(PORTRAIT_WRITE_ERROR);
+                throw new RuntimeException("Could not write portrait.");
             }
         }
         out.endTagEOL(TAG_ROOT, true);
@@ -546,7 +288,7 @@ public class Profile {
     public void setPortrait(StdImage portrait) {
         if (portrait == null ? mPortrait != null : mPortrait.getRetina() != portrait) {
             mCustomPortrait = true;
-            mCharacter.postUndoEdit(PORTRAIT_UNDO, ID_PORTRAIT, mPortrait, portrait);
+            mCharacter.postUndoEdit(I18n.Text("Portrait Change"), ID_PORTRAIT, mPortrait, portrait);
             mPortrait = createPortrait(portrait);
             mCharacter.notifySingle(ID_PORTRAIT, mPortrait);
         }
@@ -585,7 +327,7 @@ public class Profile {
      */
     public void setName(String name) {
         if (!mName.equals(name)) {
-            mCharacter.postUndoEdit(NAME_UNDO, ID_NAME, mName, name);
+            mCharacter.postUndoEdit(I18n.Text("Name Change"), ID_NAME, mName, name);
             mName = name;
             mCharacter.notifySingle(ID_NAME, mName);
         }
@@ -603,7 +345,7 @@ public class Profile {
      */
     public void setGender(String gender) {
         if (!mGender.equals(gender)) {
-            mCharacter.postUndoEdit(GENDER_UNDO, ID_GENDER, mGender, gender);
+            mCharacter.postUndoEdit(I18n.Text("Gender Change"), ID_GENDER, mGender, gender);
             mGender = gender;
             mCharacter.notifySingle(ID_GENDER, mGender);
         }
@@ -621,7 +363,7 @@ public class Profile {
      */
     public void setRace(String race) {
         if (!mRace.equals(race)) {
-            mCharacter.postUndoEdit(RACE_UNDO, ID_RACE, mRace, race);
+            mCharacter.postUndoEdit(I18n.Text("Race Change"), ID_RACE, mRace, race);
             mRace = race;
             mCharacter.notifySingle(ID_RACE, mRace);
         }
@@ -639,7 +381,7 @@ public class Profile {
      */
     public void setReligion(String religion) {
         if (!mReligion.equals(religion)) {
-            mCharacter.postUndoEdit(RELIGION_UNDO, ID_RELIGION, mReligion, religion);
+            mCharacter.postUndoEdit(I18n.Text("Religion Change"), ID_RELIGION, mReligion, religion);
             mReligion = religion;
             mCharacter.notifySingle(ID_RELIGION, mReligion);
         }
@@ -657,7 +399,7 @@ public class Profile {
      */
     public void setPlayerName(String player) {
         if (!mPlayerName.equals(player)) {
-            mCharacter.postUndoEdit(PLAYER_NAME_UNDO, ID_PLAYER_NAME, mPlayerName, player);
+            mCharacter.postUndoEdit(I18n.Text("Player Name Change"), ID_PLAYER_NAME, mPlayerName, player);
             mPlayerName = player;
             mCharacter.notifySingle(ID_PLAYER_NAME, mPlayerName);
         }
@@ -675,7 +417,7 @@ public class Profile {
      */
     public void setCampaign(String campaign) {
         if (!mCampaign.equals(campaign)) {
-            mCharacter.postUndoEdit(CAMPAIGN_UNDO, ID_CAMPAIGN, mCampaign, campaign);
+            mCharacter.postUndoEdit(I18n.Text("Campaign Change"), ID_CAMPAIGN, mCampaign, campaign);
             mCampaign = campaign;
             mCharacter.notifySingle(ID_CAMPAIGN, mCampaign);
         }
@@ -693,7 +435,7 @@ public class Profile {
      */
     public void setTechLevel(String techLevel) {
         if (!mTechLevel.equals(techLevel)) {
-            mCharacter.postUndoEdit(TECH_LEVEL_UNDO, ID_TECH_LEVEL, mTechLevel, techLevel);
+            mCharacter.postUndoEdit(I18n.Text("Tech Level Change"), ID_TECH_LEVEL, mTechLevel, techLevel);
             mTechLevel = techLevel;
             mCharacter.notifySingle(ID_TECH_LEVEL, mTechLevel);
         }
@@ -711,7 +453,7 @@ public class Profile {
      */
     public void setTitle(String title) {
         if (!mTitle.equals(title)) {
-            mCharacter.postUndoEdit(TITLE_UNDO, ID_TITLE, mTitle, title);
+            mCharacter.postUndoEdit(I18n.Text("Title Change"), ID_TITLE, mTitle, title);
             mTitle = title;
             mCharacter.notifySingle(ID_TITLE, mTitle);
         }
@@ -731,7 +473,7 @@ public class Profile {
         if (mAge != age) {
             Integer value = Integer.valueOf(age);
 
-            mCharacter.postUndoEdit(AGE_UNDO, ID_AGE, Integer.valueOf(mAge), value);
+            mCharacter.postUndoEdit(I18n.Text("Age Change"), ID_AGE, Integer.valueOf(mAge), value);
             mAge = age;
             mCharacter.notifySingle(ID_AGE, value);
         }
@@ -739,7 +481,7 @@ public class Profile {
 
     /** @return A random age. */
     public int getRandomAge() {
-        Advantage lifespan = mCharacter.getAdvantageNamed("Unaging"); //$NON-NLS-1$
+        Advantage lifespan = mCharacter.getAdvantageNamed("Unaging");
         int       base     = 16;
         int       mod      = 7;
         int       levels;
@@ -755,13 +497,13 @@ public class Profile {
             }
         }
 
-        lifespan = mCharacter.getAdvantageNamed("Short Lifespan"); //$NON-NLS-1$
+        lifespan = mCharacter.getAdvantageNamed("Short Lifespan");
         if (lifespan != null) {
             levels = lifespan.getLevels();
             base   = base >> levels;
             mod    = mod >> levels;
         } else {
-            lifespan = mCharacter.getAdvantageNamed("Extended Lifespan"); //$NON-NLS-1$
+            lifespan = mCharacter.getAdvantageNamed("Extended Lifespan");
             if (lifespan != null) {
                 levels = lifespan.getLevels();
                 base   = base << levels;
@@ -787,7 +529,7 @@ public class Profile {
      */
     public void setBirthday(String birthday) {
         if (!mBirthday.equals(birthday)) {
-            mCharacter.postUndoEdit(BIRTHDAY_UNDO, ID_BIRTHDAY, mBirthday, birthday);
+            mCharacter.postUndoEdit(I18n.Text("Birthday Change"), ID_BIRTHDAY, mBirthday, birthday);
             mBirthday = birthday;
             mCharacter.notifySingle(ID_BIRTHDAY, mBirthday);
         }
@@ -805,7 +547,7 @@ public class Profile {
      */
     public void setEyeColor(String eyeColor) {
         if (!mEyeColor.equals(eyeColor)) {
-            mCharacter.postUndoEdit(EYE_COLOR_UNDO, ID_EYE_COLOR, mEyeColor, eyeColor);
+            mCharacter.postUndoEdit(I18n.Text("Eye Color Change"), ID_EYE_COLOR, mEyeColor, eyeColor);
             mEyeColor = eyeColor;
             mCharacter.notifySingle(ID_EYE_COLOR, mEyeColor);
         }
@@ -823,7 +565,7 @@ public class Profile {
      */
     public void setHair(String hair) {
         if (!mHair.equals(hair)) {
-            mCharacter.postUndoEdit(HAIR_UNDO, ID_HAIR, mHair, hair);
+            mCharacter.postUndoEdit(I18n.Text("Hair Change"), ID_HAIR, mHair, hair);
             mHair = hair;
             mCharacter.notifySingle(ID_HAIR, mHair);
         }
@@ -841,7 +583,7 @@ public class Profile {
      */
     public void setSkinColor(String skinColor) {
         if (!mSkinColor.equals(skinColor)) {
-            mCharacter.postUndoEdit(SKIN_COLOR_UNDO, ID_SKIN_COLOR, mSkinColor, skinColor);
+            mCharacter.postUndoEdit(I18n.Text("Skin Color Change"), ID_SKIN_COLOR, mSkinColor, skinColor);
             mSkinColor = skinColor;
             mCharacter.notifySingle(ID_SKIN_COLOR, mSkinColor);
         }
@@ -859,7 +601,7 @@ public class Profile {
      */
     public void setHandedness(String handedness) {
         if (!mHandedness.equals(handedness)) {
-            mCharacter.postUndoEdit(HANDEDNESS_UNDO, ID_HANDEDNESS, mHandedness, handedness);
+            mCharacter.postUndoEdit(I18n.Text("Handedness Change"), ID_HANDEDNESS, mHandedness, handedness);
             mHandedness = handedness;
             mCharacter.notifySingle(ID_HANDEDNESS, mHandedness);
         }
@@ -878,7 +620,7 @@ public class Profile {
     public void setHeight(LengthValue height) {
         if (!mHeight.equals(height)) {
             height = new LengthValue(height);
-            mCharacter.postUndoEdit(HEIGHT_UNDO, ID_HEIGHT, new LengthValue(mHeight), height);
+            mCharacter.postUndoEdit(I18n.Text("Height Change"), ID_HEIGHT, new LengthValue(mHeight), height);
             mHeight = height;
             mCharacter.notifySingle(ID_HEIGHT, height);
         }
@@ -897,7 +639,7 @@ public class Profile {
     public void setWeight(WeightValue weight) {
         if (!mWeight.equals(weight)) {
             weight = new WeightValue(weight);
-            mCharacter.postUndoEdit(WEIGHT_UNDO, ID_WEIGHT, new WeightValue(mWeight), weight);
+            mCharacter.postUndoEdit(I18n.Text("Weight Change"), ID_WEIGHT, new WeightValue(mWeight), weight);
             mWeight = weight;
             mCharacter.notifySingle(ID_WEIGHT, weight);
         }
@@ -905,13 +647,13 @@ public class Profile {
 
     /** @return The multiplier compared to average weight for this character. */
     public double getWeightMultiplier() {
-        if (mCharacter.hasAdvantageNamed("Very Fat")) { //$NON-NLS-1$
+        if (mCharacter.hasAdvantageNamed("Very Fat")) {
             return 2.0;
-        } else if (mCharacter.hasAdvantageNamed("Fat")) { //$NON-NLS-1$
+        } else if (mCharacter.hasAdvantageNamed("Fat")) {
             return 1.5;
-        } else if (mCharacter.hasAdvantageNamed("Overweight")) { //$NON-NLS-1$
+        } else if (mCharacter.hasAdvantageNamed("Overweight")) {
             return 1.3;
-        } else if (mCharacter.hasAdvantageNamed("Skinny")) { //$NON-NLS-1$
+        } else if (mCharacter.hasAdvantageNamed("Skinny")) {
             return 0.67;
         }
         return 1.0;
@@ -934,7 +676,7 @@ public class Profile {
         if (totalSizeModifier != size) {
             Integer value = Integer.valueOf(size);
 
-            mCharacter.postUndoEdit(SIZE_MODIFIER_UNDO, ID_SIZE_MODIFIER, Integer.valueOf(totalSizeModifier), value);
+            mCharacter.postUndoEdit(I18n.Text("Size Modifier Change"), ID_SIZE_MODIFIER, Integer.valueOf(totalSizeModifier), value);
             mSizeModifier = size - mSizeModifierBonus;
             mCharacter.notifySingle(ID_SIZE_MODIFIER, value);
         }
@@ -1045,51 +787,122 @@ public class Profile {
         }
     }
 
-    static {
-        ArrayList<String> hair    = new ArrayList<>(100);
-        String[]          colors  = { BROWN, BROWN, BROWN, BLACK, BLACK, BLACK, BLOND, BLOND, REDHEAD };
-        String[]          styles  = { STRAIGHT, CURLY, WAVY };
-        String[]          lengths = { SHORT, MEDIUM, LONG };
-
-        for (String element : colors) {
-            for (String style : styles) {
-                for (String length : lengths) {
-                    hair.add(MessageFormat.format(HAIR_FORMAT, element, style, length));
-                }
-            }
-        }
-        hair.add(BALD);
-        HAIR_OPTIONS = hair.toArray(new String[hair.size()]);
-    }
-
     /** @return A random hair color, style & length. */
     public static String getRandomHair() {
-        return HAIR_OPTIONS[RANDOM.nextInt(HAIR_OPTIONS.length)];
+        if (RANDOM.nextInt(5) == 0) {
+            return I18n.Text("Bald");
+        }
+
+        String color;
+        switch (RANDOM.nextInt(9)) {
+        case 0:
+        case 1:
+        case 2:
+            color = I18n.Text("Black");
+            break;
+        case 3:
+        case 4:
+            color = I18n.Text("Blond");
+            break;
+        case 5:
+            color = I18n.Text("Readhead");
+            break;
+        default:
+            color = I18n.Text("Brown");
+            break;
+        }
+
+        String style;
+        switch (RANDOM.nextInt(3)) {
+        case 0:
+            style = I18n.Text("Curly");
+            break;
+        case 1:
+            style = I18n.Text("Wavy");
+            break;
+        default:
+            style = I18n.Text("Straight");
+            break;
+        }
+
+        String length;
+        switch (RANDOM.nextInt(3)) {
+        case 0:
+            length = I18n.Text("Short");
+            break;
+        case 1:
+            length = I18n.Text("Long");
+            break;
+        default:
+            length = I18n.Text("Medium");
+            break;
+        }
+
+        return MessageFormat.format("{0}, {1}, {2}", color, style, length);
     }
 
     /** @return A random eye color. */
     public static String getRandomEyeColor() {
-        return EYE_OPTIONS[RANDOM.nextInt(EYE_OPTIONS.length)];
+        switch (RANDOM.nextInt(8)) {
+        case 0:
+        case 1:
+            return I18n.Text("Blue");
+        case 2:
+            return I18n.Text("Green");
+        case 3:
+            return I18n.Text("Grey");
+        case 4:
+            return I18n.Text("Violet");
+        default:
+            return I18n.Text("Brown");
+        }
     }
 
     /** @return A random sking color. */
     public static String getRandomSkinColor() {
-        return SKIN_OPTIONS[RANDOM.nextInt(SKIN_OPTIONS.length)];
+        switch (RANDOM.nextInt(8)) {
+        case 0:
+            return I18n.Text("Freckled");
+        case 1:
+            return I18n.Text("Light Tan");
+        case 2:
+            return I18n.Text("Dark Tan");
+        case 3:
+            return I18n.Text("Brown");
+        case 4:
+            return I18n.Text("Light Brown");
+        case 5:
+            return I18n.Text("Dark Brown");
+        case 6:
+            return I18n.Text("Pale");
+        default:
+            return I18n.Text("Tan");
+        }
     }
 
     /** @return A random handedness. */
     public static String getRandomHandedness() {
-        return HANDEDNESS_OPTIONS[RANDOM.nextInt(HANDEDNESS_OPTIONS.length)];
+        switch (RANDOM.nextInt(4)) {
+        case 0:
+            return I18n.Text("Left");
+        default:
+            return I18n.Text("Right");
+        }
     }
 
     /** @return A random gender. */
     public static String getRandomGender() {
-        return GENDER_OPTIONS[RANDOM.nextInt(GENDER_OPTIONS.length)];
+        switch (RANDOM.nextInt(2)) {
+        case 0:
+            return I18n.Text("Female");
+        default:
+            return I18n.Text("Male");
+        }
     }
 
     /** @return A random month and day. */
     public static String getRandomMonthAndDay() {
-        SimpleDateFormat formatter = new SimpleDateFormat(BIRTHDAY_FORMAT);
+        SimpleDateFormat formatter = new SimpleDateFormat(I18n.Text("MMMM d"));
         return formatter.format(new Date(RANDOM.nextLong()));
     }
 
@@ -1170,7 +983,7 @@ public class Profile {
 
     /** @return The default player name. */
     public static String getDefaultPlayerName() {
-        return Preferences.getInstance().getStringValue(MODULE, Profile.ID_NAME, System.getProperty("user.name")); //$NON-NLS-1$
+        return Preferences.getInstance().getStringValue(MODULE, Profile.ID_NAME, System.getProperty("user.name"));
     }
 
     /** @param name The default player name. */
@@ -1180,7 +993,7 @@ public class Profile {
 
     /** @return The default campaign value. */
     public static String getDefaultCampaign() {
-        return Preferences.getInstance().getStringValue(MODULE, Profile.ID_CAMPAIGN, EMPTY);
+        return Preferences.getInstance().getStringValue(MODULE, Profile.ID_CAMPAIGN, "");
     }
 
     /** @param campaign The default campaign value. */
@@ -1204,7 +1017,7 @@ public class Profile {
      */
     public static StdImage getPortraitFromPortraitPath(String path) {
         if (DEFAULT_PORTRAIT.equals(path)) {
-            return StdImage.get("default_portrait"); //$NON-NLS-1$
+            return StdImage.get("default_portrait");
         }
         return path != null ? StdImage.loadImage(new File(path)) : null;
     }
@@ -1227,7 +1040,7 @@ public class Profile {
     /** @param table The hit location table. */
     public void setHitLocationTable(HitLocationTable table) {
         if (mHitLocationTable != table) {
-            mCharacter.postUndoEdit(BODY_TYPE_UNDO, ID_BODY_TYPE, mHitLocationTable, table);
+            mCharacter.postUndoEdit(I18n.Text("Body Type Change"), ID_BODY_TYPE, mHitLocationTable, table);
             mHitLocationTable = table;
             mCharacter.notifySingle(ID_BODY_TYPE, mHitLocationTable);
         }

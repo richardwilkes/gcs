@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,7 +12,6 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.pdfview.PdfRef;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.border.LineBorder;
@@ -21,7 +20,7 @@ import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.BandedPanel;
 import com.trollworks.toolkit.ui.widget.EditorField;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
 import java.awt.BorderLayout;
@@ -38,17 +37,6 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** The page reference lookup preferences panel. */
 public class ReferenceLookupPreferences extends PreferencePanel {
-    @Localize("Page References")
-    private static String TITLE;
-    @Localize("Remove")
-    private static String REMOVE;
-    @Localize("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate.")
-    private static String OFFSET_FIELD_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private BandedPanel mPanel;
 
     /**
@@ -57,15 +45,15 @@ public class ReferenceLookupPreferences extends PreferencePanel {
      * @param owner The owning {@link PreferencesWindow}.
      */
     public ReferenceLookupPreferences(PreferencesWindow owner) {
-        super(TITLE, owner);
+        super(I18n.Text("Page References"), owner);
         setLayout(new BorderLayout());
-        mPanel = new BandedPanel(TITLE);
+        mPanel = new BandedPanel(I18n.Text("Page References"));
         mPanel.setLayout(new ColumnLayout(4, 5, 0));
         mPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
         mPanel.setOpaque(true);
         mPanel.setBackground(Color.WHITE);
         for (PdfRef ref : PdfRef.getKnown(false)) {
-            JButton button = new JButton(REMOVE);
+            JButton button = new JButton(I18n.Text("Remove"));
             UIUtilities.setOnlySize(button, button.getPreferredSize());
             button.addActionListener(event -> {
                 ref.remove();
@@ -88,7 +76,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
             mPanel.add(idLabel);
             EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> {
                 ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue());
-            }, SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), OFFSET_FIELD_TOOLTIP);
+            }, SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), I18n.Text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
             mPanel.add(field);
             mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
         }

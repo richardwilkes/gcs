@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.menu.DynamicCheckBoxMenuItem;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
@@ -26,31 +25,17 @@ import com.trollworks.toolkit.ui.menu.edit.PreferencesCommand;
 import com.trollworks.toolkit.ui.menu.edit.RedoCommand;
 import com.trollworks.toolkit.ui.menu.edit.SelectAllCommand;
 import com.trollworks.toolkit.ui.menu.edit.UndoCommand;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Platform;
 
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
 /** Provides the standard "Edit" menu. */
 public class EditMenuProvider implements MenuProvider {
-    @Localize("Edit")
-    @Localize(locale = "de", value = "Bearbeiten")
-    @Localize(locale = "ru", value = "Правка")
-    @Localize(locale = "es", value = "Editar")
-    private static String EDIT;
-    @Localize("User Interface Language")
-    private static String LANGUAGE;
-
-    static {
-        Localization.initialize();
-    }
-
-    public static final String NAME = "Edit"; //$NON-NLS-1$
+    public static final String NAME = "Edit";
 
     @Override
     public Set<Command> getModifiableCommands() {
@@ -86,7 +71,7 @@ public class EditMenuProvider implements MenuProvider {
 
     @Override
     public JMenu createMenu() {
-        JMenu menu = new JMenu(EDIT);
+        JMenu menu = new JMenu(I18n.Text("Edit"));
         menu.setName(NAME);
         menu.add(new DynamicMenuItem(UndoCommand.INSTANCE));
         menu.add(new DynamicMenuItem(RedoCommand.INSTANCE));
@@ -116,23 +101,10 @@ public class EditMenuProvider implements MenuProvider {
         menu.add(new DynamicCheckBoxMenuItem(AddNaturalPunchCommand.INSTANCE));
         menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickCommand.INSTANCE));
         menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickWithBootsCommand.INSTANCE));
-        menu.addSeparator();
         if (!Platform.isMacintosh()) {
+            menu.addSeparator();
             menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
         }
-        menu.add(createLanguageMenu());
-        DynamicMenuEnabler.add(menu);
-        return menu;
-    }
-
-    public static JMenu createLanguageMenu() {
-        JMenu menu = new JMenu(LANGUAGE);
-        menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(null)));
-        menu.addSeparator();
-        menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("en")))); //$NON-NLS-1$
-        menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("de")))); //$NON-NLS-1$
-        menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("ru")))); //$NON-NLS-1$
-        menu.add(new JCheckBoxMenuItem(new SetLanguageCommand(new Locale("es")))); //$NON-NLS-1$
         DynamicMenuEnabler.add(menu);
         return menu;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,7 +23,6 @@ import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowItemRenderer;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
 import com.trollworks.toolkit.ui.scale.Scales;
@@ -37,7 +36,7 @@ import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.search.Search;
 import com.trollworks.toolkit.ui.widget.search.SearchTarget;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.notification.NotifierTarget;
@@ -61,29 +60,6 @@ import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
 public class SheetDockable extends CommonDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
-    @Localize("Untitled Sheet")
-    @Localize(locale = "de", value = "Unbenanntes Charakterblatt")
-    @Localize(locale = "ru", value = "Лист без названия")
-    @Localize(locale = "es", value = "Hoja sin título")
-    private static String UNTITLED;
-    @Localize("An error occurred while trying to export the sheet as a PNG.")
-    private static String EXPORT_PNG_ERROR;
-    @Localize("An error occurred while trying to export the sheet as a PDF.")
-    private static String EXPORT_PDF_ERROR;
-    @Localize("An error occurred while trying to export the sheet using the text template.")
-    private static String EXPORT_TEXT_TEMPLATE_ERROR;
-    @Localize("Add Rows")
-    @Localize(locale = "de", value = "Zeilen hinzufügen")
-    @Localize(locale = "ru", value = "Добавить строки")
-    @Localize(locale = "es", value = "Añadir filas")
-    private static String ADD_ROWS;
-    @Localize(".%s Files")
-    private static String TEXT_TEMPLATE_DESCRIPTION;
-
-    static {
-        Localization.initialize();
-    }
-
     private static SheetDockable        LAST_ACTIVATED;
     private CharacterSheet              mSheet;
     private Toolbar                     mToolbar;
@@ -173,7 +149,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
 
     @Override
     protected String getUntitledBaseName() {
-        return UNTITLED;
+        return I18n.Text("Untitled Sheet");
     }
 
     @Override
@@ -193,7 +169,7 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
         String   extension    = PathUtils.getExtension(textTemplate.getName());
         FileType templateType = FileType.getByExtension(extension);
         if (templateType == null) {
-            FileType.register(extension, null, String.format(TEXT_TEMPLATE_DESCRIPTION, extension), "", null, false, false); //$NON-NLS-1$
+            FileType.register(extension, null, String.format(I18n.Text(".%s Files"), extension), "", null, false, false);
         }
         templateType = FileType.getByExtension(extension);
         return new FileType[] { FileType.getByExtension(GURPSCharacter.EXTENSION), FileType.getByExtension(FileType.PDF_EXTENSION), FileType.getByExtension(FileType.PNG_EXTENSION), templateType };
@@ -212,19 +188,19 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
         String          templateExtension = PathUtils.getExtension(textTemplate.getName());
         if (FileType.PNG_EXTENSION.equals(extension)) {
             if (!mSheet.saveAsPNG(file, result)) {
-                WindowUtils.showError(this, EXPORT_PNG_ERROR);
+                WindowUtils.showError(this, I18n.Text("An error occurred while trying to export the sheet as a PNG."));
             }
         } else if (FileType.PDF_EXTENSION.equals(extension)) {
             if (mSheet.saveAsPDF(file)) {
                 result.add(file);
             } else {
-                WindowUtils.showError(this, EXPORT_PDF_ERROR);
+                WindowUtils.showError(this, I18n.Text("An error occurred while trying to export the sheet as a PDF."));
             }
         } else if (templateExtension.equals(extension)) {
             if (new TextTemplate(mSheet).export(file, null)) {
                 result.add(file);
             } else {
-                WindowUtils.showError(this, EXPORT_TEXT_TEMPLATE_ERROR);
+                WindowUtils.showError(this, I18n.Text("An error occurred while trying to export the sheet using the text template."));
             }
         } else {
             return super.saveTo(file);
@@ -338,47 +314,48 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
         HashMap<Outline, ArrayList<Row>>     selMap  = new HashMap<>();
         HashMap<Outline, ArrayList<ListRow>> nameMap = new HashMap<>();
         ListOutline                          outline = null;
+        String                               addRows = I18n.Text("Add Rows");
 
         for (Row row : rows) {
             if (row instanceof Advantage) {
                 outline = mSheet.getAdvantageOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }
                 row = new Advantage(getDataFile(), (Advantage) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Technique) {
                 outline = mSheet.getSkillOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }
                 row = new Technique(getDataFile(), (Technique) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Skill) {
                 outline = mSheet.getSkillOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }
                 row = new Skill(getDataFile(), (Skill) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Spell) {
                 outline = mSheet.getSpellOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }
                 row = new Spell(getDataFile(), (Spell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Equipment) {
                 outline = mSheet.getEquipmentOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }
                 row = new Equipment(getDataFile(), (Equipment) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Note) {
                 outline = mSheet.getNoteOutline();
                 if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), ADD_ROWS));
+                    map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }
                 row = new Note(getDataFile(), (Note) row, true);
                 addCompleteRow(outline, row, selMap);

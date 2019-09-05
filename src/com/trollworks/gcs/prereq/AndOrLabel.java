@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Graphics;
 
@@ -23,21 +22,6 @@ import javax.swing.SwingConstants;
 
 /** A label that displays the "and" or the "or" message, or nothing if it is the first one. */
 public class AndOrLabel extends JLabel {
-    @Localize("and")
-    @Localize(locale = "de", value = "und")
-    @Localize(locale = "ru", value = "и")
-    @Localize(locale = "es", value = "y")
-    private static String AND;
-    @Localize("or")
-    @Localize(locale = "de", value = "oder")
-    @Localize(locale = "ru", value = "или")
-    @Localize(locale = "es", value = "o")
-    private static String OR;
-
-    static {
-        Localization.initialize();
-    }
-
     private Prereq mOwner;
 
     /**
@@ -46,7 +30,7 @@ public class AndOrLabel extends JLabel {
      * @param owner The owning {@link Prereq}.
      */
     public AndOrLabel(Prereq owner) {
-        super(AND, SwingConstants.RIGHT);
+        super(I18n.Text("and"), SwingConstants.RIGHT);
         mOwner = owner;
         UIUtilities.setOnlySize(this, getPreferredSize());
     }
@@ -55,7 +39,7 @@ public class AndOrLabel extends JLabel {
     protected void paintComponent(Graphics gc) {
         PrereqList parent = mOwner.getParent();
         if (parent != null && parent.getChildren().get(0) != mOwner) {
-            setText(parent.requiresAll() ? AND : OR);
+            setText(parent.requiresAll() ? I18n.Text("and") : I18n.Text("or"));
         } else {
             setText(""); //$NON-NLS-1$
         }

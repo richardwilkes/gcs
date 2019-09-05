@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.gcs.app.GCS;
+import com.trollworks.gcs.app.GCSCmdLine;
 import com.trollworks.toolkit.collections.Stack;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.utility.FileType;
@@ -51,7 +51,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
     }
 
     private ListCollectionThread() {
-        super("List Collection"); //$NON-NLS-1$
+        super("List Collection");
         setPriority(NORM_PRIORITY);
         setDaemon(true);
         mListeners = new ArrayList<>();
@@ -115,7 +115,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
         mCurrent = new ArrayList<>();
         mStack   = new Stack<>();
         try {
-            Files.walkFileTree(GCS.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, this);
+            Files.walkFileTree(GCSCmdLine.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, this);
         } catch (Exception exception) {
             Log.error(exception);
         }
@@ -126,7 +126,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
     }
 
     private static boolean shouldSkip(Path path) {
-        return path.getFileName().toString().startsWith("."); //$NON-NLS-1$
+        return path.getFileName().toString().startsWith(".");
     }
 
     @Override
@@ -186,6 +186,6 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
         if (obj instanceof List) {
             return ((List<?>) obj).get(0).toString();
         }
-        return ""; //$NON-NLS-1$
+        return "";
     }
 }

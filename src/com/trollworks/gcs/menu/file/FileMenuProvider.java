@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.DynamicMenuItem;
@@ -24,7 +23,7 @@ import com.trollworks.toolkit.ui.menu.file.QuitCommand;
 import com.trollworks.toolkit.ui.menu.file.RecentFilesMenu;
 import com.trollworks.toolkit.ui.menu.file.SaveAsCommand;
 import com.trollworks.toolkit.ui.menu.file.SaveCommand;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Platform;
 
 import java.util.HashSet;
@@ -34,17 +33,7 @@ import javax.swing.JMenu;
 
 /** Provides the standard "File" menu. */
 public class FileMenuProvider implements MenuProvider {
-    @Localize("File")
-    @Localize(locale = "de", value = "Datei")
-    @Localize(locale = "ru", value = "Файл")
-    @Localize(locale = "es", value = "Archivo")
-    private static String FILE;
-
-    static {
-        Localization.initialize();
-    }
-
-    public static final String NAME = "File"; //$NON-NLS-1$
+    public static final String NAME = "File";
 
     @Override
     public Set<Command> getModifiableCommands() {
@@ -71,7 +60,7 @@ public class FileMenuProvider implements MenuProvider {
 
     @Override
     public JMenu createMenu() {
-        JMenu menu = new JMenu(FILE);
+        JMenu menu = new JMenu(I18n.Text("File"));
         menu.setName(NAME);
         menu.add(new DynamicMenuItem(NewCharacterSheetCommand.INSTANCE));
         menu.add(new DynamicMenuItem(NewCharacterTemplateCommand.INSTANCE));

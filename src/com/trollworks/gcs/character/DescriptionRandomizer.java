@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.border.EmptyBorder;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
 import com.trollworks.toolkit.utility.undo.MultipleUndo;
@@ -33,21 +32,6 @@ import javax.swing.JTextField;
 
 /** A character description randomizer. */
 public class DescriptionRandomizer extends JPanel implements ActionListener {
-    @Localize("Randomize")
-    @Localize(locale = "de", value = "Zufallswerte erzeugen")
-    @Localize(locale = "ru", value = "Сгенерировать")
-    @Localize(locale = "es", value = "Al azar")
-    private static String RANDOMIZE;
-    @Localize("Description Randomization")
-    @Localize(locale = "de", value = "Zufällige Beschreibungen")
-    @Localize(locale = "ru", value = "Создать описание")
-    @Localize(locale = "es", value = "Descripción al azar")
-    private static String UNDO_RANDOMIZE;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final int GENDER_INDEX   = 0;
     private static final int AGE_INDEX      = 1;
     private static final int BIRTHDAY_INDEX = 2;
@@ -76,17 +60,17 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
         JPanel wrapper = new JPanel(new ColumnLayout(2));
         wrapper.setBorder(new EmptyBorder(10));
         Profile description = mCharacter.getDescription();
-        addField(wrapper, DescriptionPanel.GENDER, null, GENDER_INDEX, description.getGender());
-        addField(wrapper, DescriptionPanel.AGE, null, AGE_INDEX, Numbers.format(description.getAge()));
-        addField(wrapper, DescriptionPanel.BIRTHDAY, null, BIRTHDAY_INDEX, description.getBirthday());
-        addField(wrapper, DescriptionPanel.HEIGHT_FIELD, null, HEIGHT_INDEX, description.getHeight().toString());
-        addField(wrapper, DescriptionPanel.WEIGHT, null, WEIGHT_INDEX, description.getWeight().toString());
-        addField(wrapper, DescriptionPanel.HAIR, DescriptionPanel.HAIR_TOOLTIP, HAIR_INDEX, description.getHair());
-        addField(wrapper, DescriptionPanel.EYE_COLOR, DescriptionPanel.EYE_COLOR_TOOLTIP, EYES_INDEX, description.getEyeColor());
-        addField(wrapper, DescriptionPanel.SKIN_COLOR, DescriptionPanel.SKIN_COLOR_TOOLTIP, SKIN_INDEX, description.getSkinColor());
-        addField(wrapper, DescriptionPanel.HANDEDNESS, DescriptionPanel.HANDEDNESS_TOOLTIP, HAND_INDEX, description.getHandedness());
+        addField(wrapper, I18n.Text("Gender:"), null, GENDER_INDEX, description.getGender());
+        addField(wrapper, I18n.Text("Age:"), null, AGE_INDEX, Numbers.format(description.getAge()));
+        addField(wrapper, I18n.Text("Birthday:"), null, BIRTHDAY_INDEX, description.getBirthday());
+        addField(wrapper, I18n.Text("Height:"), null, HEIGHT_INDEX, description.getHeight().toString());
+        addField(wrapper, I18n.Text("Weight:"), null, WEIGHT_INDEX, description.getWeight().toString());
+        addField(wrapper, I18n.Text("Hair:"), I18n.Text("The character's hair style and color"), HAIR_INDEX, description.getHair());
+        addField(wrapper, I18n.Text("Eyes:"), I18n.Text("The character's eye color"), EYES_INDEX, description.getEyeColor());
+        addField(wrapper, I18n.Text("Skin:"), I18n.Text("The character's skin color"), SKIN_INDEX, description.getSkinColor());
+        addField(wrapper, I18n.Text("Hand:"), I18n.Text("The character's preferred hand"), HAND_INDEX, description.getHandedness());
         add(wrapper, BorderLayout.CENTER);
-        mRandomize = new JButton(RANDOMIZE);
+        mRandomize = new JButton(I18n.Text("Randomize"));
         mRandomize.addActionListener(this);
         add(mRandomize, BorderLayout.SOUTH);
     }
@@ -136,7 +120,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 
     /** Apply the changes. */
     public void applyChanges() {
-        MultipleUndo edit        = new MultipleUndo(UNDO_RANDOMIZE);
+        MultipleUndo edit        = new MultipleUndo(I18n.Text("Description Randomization"));
         Profile      description = mCharacter.getDescription();
         mCharacter.addEdit(edit);
         mCharacter.startNotify();

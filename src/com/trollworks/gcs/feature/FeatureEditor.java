@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,7 +14,6 @@ package com.trollworks.gcs.feature;
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
@@ -22,7 +21,7 @@ import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.IconButton;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.DoubleFormatter;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 
@@ -39,65 +38,7 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
-    @Localize("Add a feature")
-    @Localize(locale = "de", value = "Eine Eigenschaft hinzufügen")
-    @Localize(locale = "ru", value = "Добавить особенность")
-    @Localize(locale = "es", value = "Añade una característica")
-    private static String ADD_FEATURE_TOOLTIP;
-    @Localize("Remove this feature")
-    @Localize(locale = "de", value = "Diese Eigenschaft entfernen")
-    @Localize(locale = "ru", value = "Убрать эту особенность")
-    @Localize(locale = "es", value = "Eliminar esta característica")
-    private static String REMOVE_FEATURE_TOOLTIP;
-    @Localize("Gives an attribute bonus of")
-    @Localize(locale = "de", value = "Gibt einen Attributs-Bonus von")
-    @Localize(locale = "ru", value = "Даёт премию атрибуту")
-    @Localize(locale = "es", value = "Da una bonificación al atributo de")
-    private static String ATTRIBUTE_BONUS;
-    @Localize("Reduces the attribute cost of")
-    @Localize(locale = "de", value = "Reduziert die Attributskosten von")
-    @Localize(locale = "ru", value = "Снижает стоимость атрибута")
-    @Localize(locale = "es", value = "Reduce el coste del atributo en ")
-    private static String COST_REDUCTION;
-    @Localize("Reduces the contained weight by")
-    private static String CONTAINED_WEIGHT_REDUCTION;
-    @Localize("Gives a DR bonus of")
-    @Localize(locale = "de", value = "Gibt einen SR-Bonus von")
-    @Localize(locale = "ru", value = "Даёт премию СП")
-    @Localize(locale = "es", value = "Da una bonificación a RD de ")
-    private static String DR_BONUS;
-    @Localize("Gives a skill level bonus of")
-    @Localize(locale = "de", value = "Gibt einen Fertigkeitswert-Bonus von")
-    @Localize(locale = "ru", value = "Даёт премию к уровню умения")
-    @Localize(locale = "es", value = "Da una bonificación a la habilidad de")
-    private static String SKILL_BONUS;
-    @Localize("Gives a spell level bonus of")
-    @Localize(locale = "de", value = "Gibt für Zauber einen Fertigkeitswert-Bonus von")
-    @Localize(locale = "ru", value = "Даёт премию у уровню заклинания")
-    @Localize(locale = "es", value = "Da una bonificación al sortilegio de")
-    private static String SPELL_BONUS;
-    @Localize("Gives a weapon damage bonus of")
-    @Localize(locale = "de", value = "Gibt einen Waffen-Schaden-Bonus von")
-    @Localize(locale = "ru", value = "Даёт премию к урону от оружия")
-    @Localize(locale = "es", value = "Da una bonificación al daño de")
-    private static String WEAPON_BONUS;
-    @Localize("per level")
-    @Localize(locale = "de", value = "je Stufe")
-    @Localize(locale = "ru", value = "за уровень")
-    @Localize(locale = "es", value = "por nivel")
-    private static String PER_LEVEL;
-    @Localize("per die")
-    @Localize(locale = "de", value = "je Würfel")
-    @Localize(locale = "ru", value = "за кубик")
-    @Localize(locale = "es", value = "por dado")
-    private static String PER_DIE;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType"; //$NON-NLS-1$
-    private static final String     BLANK            = " "; //$NON-NLS-1$
+    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";
     private static final Class<?>[] BASE_TYPES       = new Class<?>[] { AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class, ContainedWeightReduction.class };
     private static Class<?>         LAST_ITEM_TYPE   = SkillBonus.class;
     private ListRow                 mRow;
@@ -157,11 +98,11 @@ public abstract class FeatureEditor extends EditorPanel {
         FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
-            IconButton button = new IconButton(StdImage.REMOVE, REMOVE_FEATURE_TOOLTIP, () -> removeFeature());
+            IconButton button = new IconButton(StdImage.REMOVE, I18n.Text("Remove this feature"), () -> removeFeature());
             add(button);
             right.add(button);
         }
-        IconButton button = new IconButton(StdImage.ADD, ADD_FEATURE_TOOLTIP, () -> addFeature());
+        IconButton button = new IconButton(StdImage.ADD, I18n.Text("Add a feature"), () -> addFeature());
         add(button);
         right.add(button);
         grid.add(right, 0, 1);
@@ -181,14 +122,14 @@ public abstract class FeatureEditor extends EditorPanel {
     /** @return The {@link JComboBox} that allows the base feature type to be changed. */
     protected JComboBox<Object> addChangeBaseTypeCombo() {
         List<String> choices = new ArrayList<>();
-        choices.add(ATTRIBUTE_BONUS);
-        choices.add(DR_BONUS);
-        choices.add(SKILL_BONUS);
-        choices.add(SPELL_BONUS);
-        choices.add(WEAPON_BONUS);
-        choices.add(COST_REDUCTION);
+        choices.add(I18n.Text("Gives an attribute bonus of"));
+        choices.add(I18n.Text("Gives a DR bonus of"));
+        choices.add(I18n.Text("Gives a skill level bonus of"));
+        choices.add(I18n.Text("Gives a spell level bonus of"));
+        choices.add(I18n.Text("Gives a weapon damage bonus of"));
+        choices.add(I18n.Text("Reduces the attribute cost of"));
         if (mRow instanceof Equipment) {
-            choices.add(CONTAINED_WEIGHT_REDUCTION);
+            choices.add(I18n.Text("Reduces the contained weight by"));
         }
         Class<?> type    = mFeature.getClass();
         Object   current = choices.get(0);
@@ -235,8 +176,8 @@ public abstract class FeatureEditor extends EditorPanel {
      * @return The {@link JComboBox} that allows a {@link LeveledAmount} to be changed.
      */
     protected JComboBox<Object> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
-        String per = usePerDie ? PER_DIE : PER_LEVEL;
-        mLeveledAmountCombo = addComboBox(LeveledAmount.ATTRIBUTE_PER_LEVEL, new Object[] { BLANK, per }, amt.isPerLevel() ? per : BLANK);
+        String per = usePerDie ? I18n.Text("per die") : I18n.Text("per level");
+        mLeveledAmountCombo = addComboBox(LeveledAmount.ATTRIBUTE_PER_LEVEL, new Object[] { " ", per }, amt.isPerLevel() ? per : " ");
         mLeveledAmountCombo.putClientProperty(LeveledAmount.class, amt);
         return mLeveledAmountCombo;
     }
@@ -298,7 +239,7 @@ public abstract class FeatureEditor extends EditorPanel {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
+        if ("value".equals(event.getPropertyName())) {
             EditorField   field = (EditorField) event.getSource();
             LeveledAmount amt   = (LeveledAmount) field.getClientProperty(LeveledAmount.class);
             if (amt != null) {

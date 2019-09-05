@@ -11,14 +11,13 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
@@ -32,30 +31,17 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 public class SystemPreferences extends PreferencePanel implements DocumentListener {
-    @Localize("System")
-    @Localize(locale = "de", value = "")
-    @Localize(locale = "ru", value = "")
-    @Localize(locale = "es", value = "")
-    private static String SYSTEM;
-
-    @Localize("Tooltip Timeout (in milliseconds)")
-    private static String TOOLTIP_TIMEOUT;
-
-    static {
-        Localization.initialize();
-    }
-
-    static final String      MODULE                  = "System"; //$NON-NLS-1$
-    private static final int DEFAULT_TOOLTIP_TIMEOUT = 60000;
-
-    private JTextField       mToolTipTimeout;
+    private static final String MODULE                  = "System";
+    private static final String TOOLTIP_TIMEOUT_KEY     = "TooltipTimeout";
+    private static final int    DEFAULT_TOOLTIP_TIMEOUT = 60000;
+    private JTextField          mToolTipTimeout;
 
     public static int getToolTipTimeout() {
-        return Preferences.getInstance().getIntValue(MODULE, TOOLTIP_TIMEOUT, DEFAULT_TOOLTIP_TIMEOUT);
+        return Preferences.getInstance().getIntValue(MODULE, TOOLTIP_TIMEOUT_KEY, DEFAULT_TOOLTIP_TIMEOUT);
     }
 
     public SystemPreferences(PreferencesWindow owner) {
-        super(SYSTEM, owner);
+        super(I18n.Text("System"), owner);
 
         FlexColumn column = new FlexColumn();
 
@@ -63,9 +49,10 @@ public class SystemPreferences extends PreferencePanel implements DocumentListen
         column.add(grid);
         grid.setFillHorizontal(true);
 
-        FlexRow row = new FlexRow();
-        row.add(createLabel(TOOLTIP_TIMEOUT, TOOLTIP_TIMEOUT));
-        mToolTipTimeout = createTextField(TOOLTIP_TIMEOUT, Integer.toString(getToolTipTimeout()));
+        FlexRow row          = new FlexRow();
+        String  milliseconds = I18n.Text("Milliseconds");
+        row.add(createLabel(I18n.Text("Tooltip Timeout"), milliseconds));
+        mToolTipTimeout = createTextField(milliseconds, Integer.toString(getToolTipTimeout()));
         row.add(mToolTipTimeout);
         column.add(row);
 
@@ -100,7 +87,7 @@ public class SystemPreferences extends PreferencePanel implements DocumentListen
     public void changedUpdate(DocumentEvent event) {
         Document document = event.getDocument();
         if (mToolTipTimeout.getDocument() == document) {
-            Preferences.getInstance().setValue(MODULE, TOOLTIP_TIMEOUT, Numbers.extractInteger(mToolTipTimeout.getText(), 0, true));
+            Preferences.getInstance().setValue(MODULE, TOOLTIP_TIMEOUT_KEY, Numbers.extractInteger(mToolTipTimeout.getText(), DEFAULT_TOOLTIP_TIMEOUT, true));
             ToolTipManager.sharedInstance().setDismissDelay(getToolTipTimeout());
         }
         adjustResetButton();

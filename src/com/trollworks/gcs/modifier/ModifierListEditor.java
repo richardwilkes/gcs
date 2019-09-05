@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,7 +17,6 @@ import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -25,7 +24,7 @@ import com.trollworks.toolkit.ui.widget.ActionPanel;
 import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -39,21 +38,6 @@ import javax.swing.ScrollPaneConstants;
 
 /** Editor for {@link ModifierList}s. */
 public class ModifierListEditor extends ActionPanel implements ActionListener {
-    @Localize("Modifiers")
-    @Localize(locale = "de", value = "Modifikatoren")
-    @Localize(locale = "ru", value = "Модификаторы")
-    @Localize(locale = "es", value = "Modificadores")
-    private static String MODIFIERS;
-    @Localize("Add a modifier")
-    @Localize(locale = "de", value = "Einen Modifikator hinzufügen.")
-    @Localize(locale = "ru", value = "Добавить модификатор")
-    @Localize(locale = "es", value = "Añadir un modificador")
-    private static String ADD_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private DataFile mOwner;
     private Outline  mOutline;
     IconButton       mAddButton;
@@ -114,7 +98,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
         JScrollPane  scroller;
         OutlineModel model;
 
-        mAddButton = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addModifier());
+        mAddButton = new IconButton(StdImage.ADD, I18n.Text("Add a modifier"), () -> addModifier());
 
         mOutline   = new ModifierOutline();
         model      = mOutline.getModel();
@@ -196,7 +180,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
     @Override
     public String toString() {
-        return MODIFIERS;
+        return I18n.Text("Modifiers");
     }
 
     class ModifierOutline extends Outline {

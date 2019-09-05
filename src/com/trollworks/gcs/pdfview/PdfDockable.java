@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.pdfview;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -24,7 +23,7 @@ import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.FileProxy;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
@@ -47,21 +46,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 /** Provides the ability to view a PDF. */
 public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
-    @Localize("Previous Page")
-    private static String PREVIOUS_PAGE;
-    @Localize("Next Page")
-    private static String NEXT_PAGE;
-    @Localize("Scale Document Up")
-    private static String SCALE_DOC_UP;
-    @Localize("Scale Document Down")
-    private static String SCALE_DOC_DOWN;
-    @Localize("Actual Size")
-    private static String ACTUAL_SIZE;
-
-    static {
-        Localization.initialize();
-    }
-
     private File        mFile;
     private PDDocument  mPdf;
     private Toolbar     mToolbar;
@@ -87,13 +71,13 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
         }
         mToolbar      = new Toolbar();
 
-        mZoomInButton = new IconButton(StdImage.get("ZoomIn"), formatWithKey(SCALE_DOC_UP, KeyStroke.getKeyStroke('=')), () -> mPanel.zoomIn()); //$NON-NLS-1$
+        mZoomInButton = new IconButton(StdImage.get("ZoomIn"), formatWithKey(I18n.Text("Scale Document Up"), KeyStroke.getKeyStroke('=')), () -> mPanel.zoomIn());
         mToolbar.add(mZoomInButton);
-        mZoomOutButton = new IconButton(StdImage.get("ZoomOut"), formatWithKey(SCALE_DOC_DOWN, KeyStroke.getKeyStroke('-')), () -> mPanel.zoomOut()); //$NON-NLS-1$
+        mZoomOutButton = new IconButton(StdImage.get("ZoomOut"), formatWithKey(I18n.Text("Scale Document Down"), KeyStroke.getKeyStroke('-')), () -> mPanel.zoomOut());
         mToolbar.add(mZoomOutButton);
-        mActualSizeButton = new IconButton(StdImage.get("ActualSize"), formatWithKey(ACTUAL_SIZE, KeyStroke.getKeyStroke('1')), () -> mPanel.actualSize()); //$NON-NLS-1$
+        mActualSizeButton = new IconButton(StdImage.get("ActualSize"), formatWithKey(I18n.Text("Actual Size"), KeyStroke.getKeyStroke('1')), () -> mPanel.actualSize());
         mToolbar.add(mActualSizeButton);
-        mZoomStatus = new JLabel("100%"); //$NON-NLS-1$
+        mZoomStatus = new JLabel("100%");
         mToolbar.add(mZoomStatus);
 
         mPageField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(1, pageCount, false)), event -> {
@@ -108,11 +92,11 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
             }
         }, SwingConstants.RIGHT, Integer.valueOf(page), Integer.valueOf(9999), null);
         mToolbar.add(mPageField, Toolbar.LAYOUT_EXTRA_BEFORE);
-        mPageStatus = new JLabel("/ -"); //$NON-NLS-1$
+        mPageStatus = new JLabel("/ -");
         mToolbar.add(mPageStatus);
-        mPreviousPageButton = new IconButton(StdImage.get("PageUp"), formatWithKey(PREVIOUS_PAGE, KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)), () -> mPanel.previousPage()); //$NON-NLS-1$
+        mPreviousPageButton = new IconButton(StdImage.get("PageUp"), formatWithKey(I18n.Text("Previous Page"), KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)), () -> mPanel.previousPage());
         mToolbar.add(mPreviousPageButton);
-        mNextPageButton = new IconButton(StdImage.get("PageDown"), formatWithKey(NEXT_PAGE, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)), () -> mPanel.nextPage()); //$NON-NLS-1$
+        mNextPageButton = new IconButton(StdImage.get("PageDown"), formatWithKey(I18n.Text("Next Page"), KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)), () -> mPanel.nextPage());
         mToolbar.add(mNextPageButton);
 
         add(mToolbar, BorderLayout.NORTH);
@@ -124,7 +108,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
     }
 
     private static String formatWithKey(String title, KeyStroke key) {
-        return title + " [" + KeyStrokeDisplay.getKeyStrokeDisplay(key) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+        return title + " [" + KeyStrokeDisplay.getKeyStrokeDisplay(key) + "]";
     }
 
     public void updateStatus(int page, int pageCount, float scale) {
@@ -140,7 +124,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
     }
 
     private boolean updateZoomInfo(float scale) {
-        String text = (int) (scale * 100) + "%"; //$NON-NLS-1$
+        String text = (int) (scale * 100) + "%";
         if (!text.equals(mZoomStatus.getText())) {
             mZoomStatus.setText(text);
             return true;
@@ -152,7 +136,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
         mPreviousPageButton.setEnabled(page > 0);
         mNextPageButton.setEnabled(page < pageCount - 1);
         mPageField.setValue(Integer.valueOf(page + 1));
-        String text = "/ " + (pageCount > 0 ? Integer.valueOf(pageCount) : "-"); //$NON-NLS-1$ //$NON-NLS-2$
+        String text = "/ " + (pageCount > 0 ? Integer.valueOf(pageCount) : "-");
         if (!text.equals(mPageStatus.getText())) {
             mPageStatus.setText(text);
             return true;

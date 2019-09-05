@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -22,21 +21,11 @@ import java.io.IOException;
 /** Manages a leveled amount. */
 public class LeveledAmount {
     /** The "per level" attribute. */
-    public static final String ATTRIBUTE_PER_LEVEL = "per_level"; //$NON-NLS-1$
+    public static final String ATTRIBUTE_PER_LEVEL = "per_level";
     private boolean            mPerLevel;
     private int                mLevel;
     private double             mAmount;
     private boolean            mInteger;
-
-    @Localize(" per die")
-    @Localize(locale = "de", value = " pro Würfel")
-    @Localize(locale = "ru", value = " за кубик")
-    @Localize(locale = "es", value = " por dados")
-    static String              PER_DIE;
-
-    static {
-        Localization.initialize();
-    }
 
     /**
      * Creates a new leveled amount.
@@ -170,7 +159,7 @@ public class LeveledAmount {
 
     /** @return The amount, as a {@link String} of dice damage. */
     public String getAmountAsWeaponBonus() {
-        return getAmountAsString() + (isPerLevel() ? PER_DIE : "");   //$NON-NLS-1$
+        return getAmountAsString() + (isPerLevel() ? I18n.Text(" per die") : "");
     }
 
     /** @param amount The amount. */

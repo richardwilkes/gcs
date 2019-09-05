@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -24,7 +24,6 @@ import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.EmptyBorder;
@@ -36,7 +35,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
 import com.trollworks.toolkit.ui.widget.outline.OutlineSyncer;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowSelection;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
 
 import java.awt.Color;
@@ -59,36 +58,6 @@ import javax.swing.SwingConstants;
 
 /** The template sheet. */
 public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener, ScaleRoot {
-    @Localize("Advantages, Disadvantages & Quirks")
-    @Localize(locale = "de", value = "Vorteile, Nachteile & Marotten")
-    @Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
-    @Localize(locale = "es", value = "Ventajas, Desventajas y Singularidades")
-    private static String ADVANTAGES;
-    @Localize("Skills")
-    @Localize(locale = "de", value = "Fertigkeiten")
-    @Localize(locale = "ru", value = "Умения")
-    @Localize(locale = "es", value = "Habilidades")
-    private static String SKILLS;
-    @Localize("Spells")
-    @Localize(locale = "de", value = "Zauber")
-    @Localize(locale = "ru", value = "Заклинания")
-    @Localize(locale = "es", value = "Sortilegios")
-    private static String SPELLS;
-    @Localize("Equipment")
-    @Localize(locale = "de", value = "Ausrüstung")
-    @Localize(locale = "ru", value = "Снаряжение")
-    @Localize(locale = "es", value = "Equipo")
-    private static String EQUIPMENT;
-    @Localize("Notes")
-    @Localize(locale = "de", value = "Notizen")
-    @Localize(locale = "ru", value = "Заметка")
-    @Localize(locale = "es", value = "Notas")
-    private static String NOTES;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final EmptyBorder NORMAL_BORDER = new EmptyBorder(5);
     private Scale                    mScale;
     private Template                 mTemplate;
@@ -123,11 +92,11 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         mSpellOutline     = new SpellOutline(mTemplate);
         mEquipmentOutline = new EquipmentOutline(mTemplate);
         mNoteOutline      = new NoteOutline(mTemplate);
-        add(new TemplateOutlinePanel(mAdvantageOutline, ADVANTAGES));
-        add(new TemplateOutlinePanel(mSkillOutline, SKILLS));
-        add(new TemplateOutlinePanel(mSpellOutline, SPELLS));
-        add(new TemplateOutlinePanel(mEquipmentOutline, EQUIPMENT));
-        add(new TemplateOutlinePanel(mNoteOutline, NOTES));
+        add(new TemplateOutlinePanel(mAdvantageOutline, I18n.Text("Advantages, Disadvantages & Quirks")));
+        add(new TemplateOutlinePanel(mSkillOutline, I18n.Text("Skills")));
+        add(new TemplateOutlinePanel(mSpellOutline, I18n.Text("Spells")));
+        add(new TemplateOutlinePanel(mEquipmentOutline, I18n.Text("Equipment")));
+        add(new TemplateOutlinePanel(mNoteOutline, I18n.Text("Notes")));
         mAdvantageOutline.addActionListener(this);
         mSkillOutline.addActionListener(this);
         mSpellOutline.addActionListener(this);

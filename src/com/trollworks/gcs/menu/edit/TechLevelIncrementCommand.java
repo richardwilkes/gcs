@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -22,21 +21,13 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "Increment" command. */
 public class TechLevelIncrementCommand extends Command {
-    @Localize("Increment Tech Level")
-    private static String TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                    CMD_INCREMENT_TL = "IncrementTL"; //$NON-NLS-1$
-
+    public static final String                    CMD_INCREMENT_TL = "IncrementTL";
     /** The singleton {@link TechLevelIncrementCommand}. */
     public static final TechLevelIncrementCommand INSTANCE         = new TechLevelIncrementCommand();
 
     private TechLevelIncrementCommand() {
-        super(TITLE, CMD_INCREMENT_TL, KeyEvent.VK_CLOSE_BRACKET);
+        super(I18n.Text("Increment Tech Level"), CMD_INCREMENT_TL, KeyEvent.VK_CLOSE_BRACKET);
     }
 
     @Override

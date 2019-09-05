@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,9 +21,9 @@ import java.io.IOException;
 /** An attribute bonus. */
 public class AttributeBonus extends Bonus {
     /** The XML tag. */
-    public static final String       TAG_ROOT             = "attribute_bonus"; //$NON-NLS-1$
-    private static final String      TAG_ATTRIBUTE        = "attribute"; //$NON-NLS-1$
-    private static final String      ATTRIBUTE_LIMITATION = "limitation"; //$NON-NLS-1$
+    public static final String       TAG_ROOT             = "attribute_bonus";
+    private static final String      TAG_ATTRIBUTE        = "attribute";
+    private static final String      ATTRIBUTE_LIMITATION = "limitation";
     private BonusAttributeType       mAttribute;
     private AttributeBonusLimitation mLimitation;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,11 +12,10 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,32 +23,17 @@ import java.util.HashSet;
 
 /** Describes a skill default. */
 public class SkillDefault {
-    @Localize(" Parry")
-    @Localize(locale = "de", value = " Parieren")
-    @Localize(locale = "ru", value = " Парирование")
-    @Localize(locale = "es", value = " Parada")
-    private static String PARRY;
-    @Localize(" Block")
-    @Localize(locale = "de", value = " Abblocken")
-    @Localize(locale = "ru", value = " Блок")
-    @Localize(locale = "es", value = " Bloqueo")
-    private static String BLOCK;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The XML tag. */
-    public static final String  TAG_ROOT           = "default"; //$NON-NLS-1$
+    public static final String  TAG_ROOT           = "default";
     /** The tag used for the type. */
-    public static final String  TAG_TYPE           = "type"; //$NON-NLS-1$
+    public static final String  TAG_TYPE           = "type";
     /** The tag used for the skill name. */
-    public static final String  TAG_NAME           = "name"; //$NON-NLS-1$
+    public static final String  TAG_NAME           = "name";
     /** The tag used for the skill specialization. */
-    public static final String  TAG_SPECIALIZATION = "specialization"; //$NON-NLS-1$
+    public static final String  TAG_SPECIALIZATION = "specialization";
     /** The tag used for the modifier. */
-    public static final String  TAG_MODIFIER       = "modifier"; //$NON-NLS-1$
-    private static final String EMPTY              = ""; //$NON-NLS-1$
+    public static final String  TAG_MODIFIER       = "modifier";
+    private static final String EMPTY              = "";
     private SkillDefaultType    mType;
     private String              mName;
     private String              mSpecialization;
@@ -189,14 +173,14 @@ public class SkillDefault {
             StringBuilder builder = new StringBuilder();
             builder.append(mName);
             if (mSpecialization.length() > 0) {
-                builder.append(" ("); //$NON-NLS-1$
+                builder.append(" (");
                 builder.append(mSpecialization);
                 builder.append(')');
             }
             if (mType == SkillDefaultType.Parry) {
-                builder.append(PARRY);
+                builder.append(I18n.Text(" Parry"));
             } else if (mType == SkillDefaultType.Block) {
-                builder.append(BLOCK);
+                builder.append(I18n.Text(" Block"));
             }
             return builder.toString();
         }
@@ -277,10 +261,10 @@ public class SkillDefault {
 
     public String getModifierAsString() {
         if (mModifier > 0) {
-            return " + " + mModifier; //$NON-NLS-1$
+            return " + " + mModifier;
         } else if (mModifier < 0) {
-            return " - " + -mModifier; //$NON-NLS-1$
+            return " - " + -mModifier;
         }
-        return ""; //$NON-NLS-1$
+        return "";
     }
 }

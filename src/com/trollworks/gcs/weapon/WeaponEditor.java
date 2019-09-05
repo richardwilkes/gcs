@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,7 +14,6 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.EmptyBorder;
@@ -29,7 +28,7 @@ import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -51,37 +50,6 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** An abstract editor for weapon statistics. */
 public abstract class WeaponEditor extends JPanel implements ActionListener, PropertyChangeListener {
-    @Localize("Usage")
-    @Localize(locale = "de", value = "Nutzungsart")
-    @Localize(locale = "ru", value = "Применение")
-    @Localize(locale = "es", value = "Uso")
-    private static String USAGE;
-    @Localize("Damage")
-    @Localize(locale = "de", value = "Schaden")
-    @Localize(locale = "ru", value = "Повреждения")
-    @Localize(locale = "es", value = "Daño")
-    private static String DAMAGE;
-    @Localize("Minimum Strength")
-    @Localize(locale = "de", value = "Mindeststärke")
-    @Localize(locale = "ru", value = "Минимальная сила")
-    @Localize(locale = "es", value = "Mínimo en fuerza")
-    private static String MINIMUM_STRENGTH;
-    @Localize("Add an attack")
-    @Localize(locale = "de", value = "Angriff hinzufügen")
-    @Localize(locale = "ru", value = "Добавить атаку")
-    @Localize(locale = "es", value = "Añadir un ataque")
-    private static String ADD_TOOLTIP;
-    @Localize("Remove the selected attacks")
-    @Localize(locale = "de", value = "Ausgewählte Angriffe entfernen")
-    @Localize(locale = "ru", value = "Удалить выбранные атаки")
-    @Localize(locale = "es", value = "Eliminar los ataques seleccionados")
-    private static String REMOVE_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
-    protected static final String        EMPTY = ""; //$NON-NLS-1$
     private ListRow                      mOwner;
     private WeaponOutline                mOutline;
     private IconButton                   mAddButton;
@@ -106,8 +74,8 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         super(new BorderLayout());
         mOwner        = owner;
         mWeaponClass  = weaponClass;
-        mAddButton    = new IconButton(StdImage.ADD, ADD_TOOLTIP, () -> addWeapon());
-        mDeleteButton = new IconButton(StdImage.REMOVE, REMOVE_TOOLTIP, () -> mOutline.deleteSelection());
+        mAddButton    = new IconButton(StdImage.ADD, I18n.Text("Add an attack"), () -> addWeapon());
+        mDeleteButton = new IconButton(StdImage.REMOVE, I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
         Panel top  = new Panel(new BorderLayout());
         Panel left = new Panel(new PrecisionLayout());
@@ -170,10 +138,10 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         wrapper.setBorder(new EmptyBorder(5));
         mEditorPanel = new JPanel(new ColumnLayout(1, RowDistribution.GIVE_EXCESS_TO_LAST));
         mEditorPanel.add(wrapper);
-        mUsage  = createTextField(wrapper, USAGE, EMPTY);
-        mDamage = createTextField(wrapper, DAMAGE, EMPTY);
+        mUsage  = createTextField(wrapper, I18n.Text("Usage"), "");
+        mDamage = createTextField(wrapper, I18n.Text("Damage"), "");
         createFields(wrapper);
-        mStrength = createTextField(wrapper, MINIMUM_STRENGTH, EMPTY);
+        mStrength = createTextField(wrapper, I18n.Text("Minimum Strength"), "");
         createDefaults(mEditorPanel);
         setWeaponState(false);
         return mEditorPanel;
@@ -353,9 +321,9 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
     /** Called to blank all fields. */
     protected void blankFields() {
-        mUsage.setValue(EMPTY);
-        mDamage.setValue(EMPTY);
-        mStrength.setValue(EMPTY);
+        mUsage.setValue("");
+        mDamage.setValue("");
+        mStrength.setValue("");
         mDefaults.removeAll();
         mDefaults.revalidate();
         mDefaults.repaint();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -41,7 +41,7 @@ import javax.swing.text.DefaultFormatterFactory;
 /** A generic editor panel. */
 public abstract class EditorPanel extends ActionPanel implements ActionListener, PropertyChangeListener {
     private static final int    GAP        = 5;
-    private static final String COMPARISON = "Comparison"; //$NON-NLS-1$
+    private static final String COMPARISON = "Comparison";
 
     /** Creates a new {@link EditorPanel}. */
     protected EditorPanel() {
@@ -183,7 +183,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
+        if ("value".equals(event.getPropertyName())) {
             EditorField    field    = (EditorField) event.getSource();
             StringCriteria criteria = (StringCriteria) field.getClientProperty(StringCriteria.class);
             if (criteria != null) {

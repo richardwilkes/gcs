@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -30,8 +30,8 @@ import java.util.HashSet;
  */
 public abstract class NameLevelPrereq extends HasPrereq {
     /** Provided for sub-classes. */
-    private static final String TAG_NAME  = "name"; //$NON-NLS-1$
-    private static final String TAG_LEVEL = "level"; //$NON-NLS-1$
+    private static final String TAG_NAME  = "name";
+    private static final String TAG_LEVEL = "level";
     private String              mTag;
     private StringCriteria      mNameCriteria;
     private IntegerCriteria     mLevelCriteria;
@@ -45,7 +45,7 @@ public abstract class NameLevelPrereq extends HasPrereq {
     public NameLevelPrereq(String tag, PrereqList parent) {
         super(parent);
         mTag           = tag;
-        mNameCriteria  = new StringCriteria(StringCompareType.IS, ""); //$NON-NLS-1$
+        mNameCriteria  = new StringCriteria(StringCompareType.IS, "");
         mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
     }
 

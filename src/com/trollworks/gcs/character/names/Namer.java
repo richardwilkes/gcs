@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,7 +12,6 @@
 package com.trollworks.gcs.character.names;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
@@ -22,7 +21,7 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.layout.LayoutSize;
 import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Color;
@@ -42,41 +41,6 @@ import javax.swing.SwingConstants;
 
 /** Asks the user to name items that have been marked to be customized. */
 public class Namer extends JPanel {
-    @Localize("Name {0}")
-    @Localize(locale = "de", value = "Benenne {0}")
-    @Localize(locale = "ru", value = "Имя {0}")
-    @Localize(locale = "es", value = "Nombre {0}")
-    private static String NAME_TITLE;
-    @Localize("1 item remaining to be named.")
-    @Localize(locale = "de", value = "1 weiteres Element zu benennen.")
-    @Localize(locale = "ru", value = "осталось назвать 1 элемент.")
-    @Localize(locale = "es", value = "Queda un elemento pendiente de nombrar")
-    private static String ONE_REMAINING;
-    @Localize("{0} items remaining to be named.")
-    @Localize(locale = "de", value = "{0} weitere Elemente zu benennen.")
-    @Localize(locale = "ru", value = "{0} элементов осталось назвать.")
-    @Localize(locale = "es", value = "Quedan {0} elementos pendientes de nombrar")
-    private static String REMAINING;
-    @Localize("Apply")
-    @Localize(locale = "de", value = "Anwenden")
-    @Localize(locale = "ru", value = "Применить")
-    @Localize(locale = "es", value = "Aplicar")
-    private static String APPLY;
-    @Localize("Cancel")
-    @Localize(locale = "de", value = "Abbrechen")
-    @Localize(locale = "ru", value = "Отмена")
-    @Localize(locale = "es", value = "Cancelar")
-    private static String CANCEL;
-    @Localize("Cancel Remaining")
-    @Localize(locale = "de", value = "Alles Abbrechen")
-    @Localize(locale = "ru", value = "Пропустить остальные")
-    @Localize(locale = "es", value = "Cancelar lo restante")
-    private static String CANCEL_REST;
-
-    static {
-        Localization.initialize();
-    }
-
     private ListRow               mRow;
     private ArrayList<JTextField> mFields;
 
@@ -108,9 +72,9 @@ public class Namer extends JPanel {
             ListRow  row     = rowList.get(i);
             boolean  hasMore = i != count - 1;
             int      type    = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-            String[] options = hasMore ? new String[] { APPLY, CANCEL, CANCEL_REST } : new String[] { APPLY, CANCEL };
+            String[] options = hasMore ? new String[] { I18n.Text("Apply"), I18n.Text("Cancel"), I18n.Text("Cancel Remaining") } : new String[] { I18n.Text("Apply"), I18n.Text("Cancel") };
             Namer    panel   = new Namer(row, setList.get(i), count - i - 1);
-            switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(NAME_TITLE, row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, APPLY)) {
+            switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(I18n.Text("Name {0}"), row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, I18n.Text("Apply"))) {
             case JOptionPane.YES_OPTION:
                 panel.applyChanges();
                 modified = true;
@@ -133,7 +97,7 @@ public class Namer extends JPanel {
 
         FlexColumn column = new FlexColumn();
         if (remaining > 0) {
-            label = new JLabel(remaining == 1 ? ONE_REMAINING : MessageFormat.format(REMAINING, Integer.valueOf(remaining)), SwingConstants.CENTER);
+            label = new JLabel(remaining == 1 ? I18n.Text("1 item remaining to be named.") : MessageFormat.format(I18n.Text("{0} items remaining to be named."), Integer.valueOf(remaining)), SwingConstants.CENTER);
             Dimension size = label.getMaximumSize();
             size.width = LayoutSize.MAXIMUM_SIZE;
             label.setMaximumSize(size);

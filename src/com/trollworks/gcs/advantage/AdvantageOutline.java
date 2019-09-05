@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,11 +21,10 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.outline.RowUndo;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDragEvent;
@@ -34,21 +33,6 @@ import java.util.List;
 
 /** An outline specifically for Advantages. */
 public class AdvantageOutline extends ListOutline implements Incrementable {
-    @Localize("Increment Level")
-    @Localize(locale = "de", value = "Stufe erhöhen")
-    @Localize(locale = "ru", value = "Повысить уровень")
-    @Localize(locale = "es", value = "Subir Nivel")
-    private static String INCREMENT;
-    @Localize("Decrement Level")
-    @Localize(locale = "de", value = "Stufe verringen")
-    @Localize(locale = "ru", value = "Понизить уровень")
-    @Localize(locale = "es", value = "Bajar Nivel")
-    private static String DECREMENT;
-
-    static {
-        Localization.initialize();
-    }
-
     private static OutlineModel extractModel(DataFile dataFile) {
         if (dataFile instanceof GURPSCharacter) {
             return ((GURPSCharacter) dataFile).getAdvantagesModel();
@@ -107,12 +91,12 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 
     @Override
     public String getIncrementTitle() {
-        return INCREMENT;
+        return I18n.Text("Increment Level");
     }
 
     @Override
     public String getDecrementTitle() {
-        return DECREMENT;
+        return I18n.Text("Decrement Level");
     }
 
     @Override

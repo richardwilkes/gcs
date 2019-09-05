@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,32 +14,20 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Skills Library" command. */
 public class NewSkillsLibraryCommand extends Command {
-    @Localize("New Skills Library")
-    @Localize(locale = "de", value = "Neue Fertigkeiten-Liste")
-    @Localize(locale = "ru", value = "Новая библиотека умений")
-    @Localize(locale = "es", value = "Nueva Librería de Habilidades")
-    private static String TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                  CMD_NEW_LIBRARY = "NewSkillsLibrary"; //$NON-NLS-1$
-
+    public static final String                  CMD_NEW_LIBRARY = "NewSkillsLibrary";
     /** The singleton {@link NewSkillsLibraryCommand}. */
     public static final NewSkillsLibraryCommand INSTANCE        = new NewSkillsLibraryCommand();
 
     private NewSkillsLibraryCommand() {
-        super(TITLE, CMD_NEW_LIBRARY);
+        super(I18n.Text("New Skills Library"), CMD_NEW_LIBRARY);
     }
 
     @Override

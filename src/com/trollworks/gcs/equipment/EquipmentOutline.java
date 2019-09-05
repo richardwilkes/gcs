@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,11 +23,10 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowPostProcessor;
 import com.trollworks.gcs.widgets.outline.RowUndo;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.awt.EventQueue;
@@ -37,21 +36,6 @@ import java.util.List;
 
 /** An outline specifically for equipment. */
 public class EquipmentOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
-    @Localize("Increment Quantity")
-    @Localize(locale = "de", value = "Anzahl erhöhen")
-    @Localize(locale = "ru", value = "Увеличить количество")
-    @Localize(locale = "es", value = "Aumentar cantidad")
-    private static String INCREMENT;
-    @Localize("Decrement Quantity")
-    @Localize(locale = "de", value = "Anzahl verringen")
-    @Localize(locale = "ru", value = "Уменьшить количество")
-    @Localize(locale = "es", value = "Disminuir cantidad")
-    private static String DECREMENT;
-
-    static {
-        Localization.initialize();
-    }
-
     private static OutlineModel extractModel(DataFile dataFile) {
         if (dataFile instanceof GURPSCharacter) {
             return ((GURPSCharacter) dataFile).getEquipmentRoot();
@@ -87,12 +71,12 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
 
     @Override
     public String getDecrementTitle() {
-        return DECREMENT;
+        return I18n.Text("Decrement Quantity");
     }
 
     @Override
     public String getIncrementTitle() {
-        return INCREMENT;
+        return I18n.Text("Increment Quantity");
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,9 +26,9 @@ public class CostReduction implements Feature {
     /** The possible {@link BonusAttributeType}s that can be affected. */
     public static final BonusAttributeType[] TYPES          = { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT };
     /** The XML tag. */
-    public static final String               TAG_ROOT       = "cost_reduction"; //$NON-NLS-1$
-    private static final String              TAG_ATTRIBUTE  = "attribute"; //$NON-NLS-1$
-    private static final String              TAG_PERCENTAGE = "percentage"; //$NON-NLS-1$
+    public static final String               TAG_ROOT       = "cost_reduction";
+    private static final String              TAG_ATTRIBUTE  = "attribute";
+    private static final String              TAG_PERCENTAGE = "percentage";
     private BonusAttributeType               mAttribute;
     private int                              mPercentage;
 
@@ -40,7 +40,7 @@ public class CostReduction implements Feature {
 
     /**
      * Creates a clone of the specified cost reduction.
-     * 
+     *
      * @param other The bonus to clone.
      */
     public CostReduction(CostReduction other) {
@@ -50,7 +50,7 @@ public class CostReduction implements Feature {
 
     /**
      * Loads a {@link CostReduction}.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     public CostReduction(XMLReader reader) throws IOException {
@@ -97,7 +97,7 @@ public class CostReduction implements Feature {
 
     /**
      * Loads a cost reduction.
-     * 
+     *
      * @param reader The XML reader to use.
      */
     protected void load(XMLReader reader) throws IOException {

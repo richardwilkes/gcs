@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,7 +25,7 @@ import java.util.HashSet;
 /** Describes a contained weight reduction. */
 public class ContainedWeightReduction implements Feature {
     /** The XML tag. */
-    public static final String TAG_ROOT = "contained_weight_reduction"; //$NON-NLS-1$
+    public static final String TAG_ROOT = "contained_weight_reduction";
     private Object             mValue;
 
     /** Creates a new contained weight reduction. */
@@ -149,7 +149,7 @@ public class ContainedWeightReduction implements Feature {
      */
     protected void load(XMLReader reader) throws IOException {
         String value = reader.readText().trim();
-        if (value.endsWith("%")) { //$NON-NLS-1$
+        if (value.endsWith("%")) {
             mValue = Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false));
         } else {
             mValue = WeightValue.extract(value, false);
@@ -173,11 +173,11 @@ public class ContainedWeightReduction implements Feature {
 
     @Override
     public void save(XMLWriter out) {
-        String text = ""; //$NON-NLS-1$
+        String text = "";
         if (mValue instanceof Integer) {
             int percentage = ((Integer) mValue).intValue();
             if (percentage != 0) {
-                text = Integer.toString(percentage) + "%"; //$NON-NLS-1$
+                text = Integer.toString(percentage) + "%";
             }
         } else if (mValue instanceof WeightValue) {
             WeightValue weight = (WeightValue) mValue;

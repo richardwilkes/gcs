@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,13 +14,12 @@ package com.trollworks.gcs.modifier;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.TextCell;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import javax.swing.SwingConstants;
 
@@ -30,12 +29,12 @@ public enum ModifierColumnID {
     ENABLED {
         @Override
         public String toString() {
-            return ENABLED_TITLE;
+            return I18n.Text("Enabled");
         }
 
         @Override
         public String getToolTip() {
-            return ENABLED_TOOLTIP;
+            return I18n.Text("Whether this modifier has been enabled or not");
         }
 
         @Override
@@ -48,19 +47,19 @@ public enum ModifierColumnID {
 
         @Override
         public String getDataAsText(Modifier modifier) {
-            return modifier.isEnabled() ? ENABLED_COLUMN : ""; //$NON-NLS-1$
+            return modifier.isEnabled() ? "\u2713" : "";
         }
     },
     /** The advantage name/description. */
     DESCRIPTION {
         @Override
         public String toString() {
-            return DESCRIPTION_TITLE;
+            return I18n.Text("Enhancements & Limitations");
         }
 
         @Override
         public String getToolTip() {
-            return DESCRIPTION_TOOLTIP;
+            return I18n.Text("The name and notes describing this enhancement or limitation");
         }
 
         @Override
@@ -75,7 +74,7 @@ public enum ModifierColumnID {
 
             builder.append(modifier.toString());
             if (notes.length() > 0) {
-                builder.append(" ("); //$NON-NLS-1$
+                builder.append(" (");
                 builder.append(notes);
                 builder.append(')');
             }
@@ -86,12 +85,12 @@ public enum ModifierColumnID {
     COST_MODIFIER_TOTAL {
         @Override
         public String toString() {
-            return COST_MODIFIER_TITLE;
+            return I18n.Text("Cost Modifier");
         }
 
         @Override
         public String getToolTip() {
-            return COST_MODIFIER_TOOLTIP;
+            return I18n.Text("The cost modifier for this enhancement or limitation");
         }
 
         @Override
@@ -112,12 +111,12 @@ public enum ModifierColumnID {
     REFERENCE {
         @Override
         public String toString() {
-            return REFERENCE_TITLE;
+            return I18n.Text("Ref");
         }
 
         @Override
         public String getToolTip() {
-            return REFERENCE_TOOLTIP;
+            return I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)");
         }
 
         @Override
@@ -133,58 +132,6 @@ public enum ModifierColumnID {
             return modifier.getReference();
         }
     };
-
-    @Localize("Enabled")
-    @Localize(locale = "de", value = "Aktiv")
-    @Localize(locale = "ru", value = "Включено")
-    @Localize(locale = "es", value = "Activo")
-    static String ENABLED_TITLE;
-    @Localize("Whether this modifier has been enabled or not")
-    @Localize(locale = "de", value = "Ob dieser Modifikator aktiv ist oder nicht.")
-    @Localize(locale = "ru", value = "Включить этот модификатор")
-    @Localize(locale = "es", value = "Determina si el modificador está activo o no")
-    static String ENABLED_TOOLTIP;
-    @Localize("\u2713")
-    @Localize(locale = "de", value = "\u2713")
-    static String ENABLED_COLUMN;
-    @Localize("Enhancements & Limitations")
-    @Localize(locale = "de", value = "Verbesserungen & Einschränkungen")
-    @Localize(locale = "ru", value = "Улучшения и ограничения")
-    @Localize(locale = "es", value = "Mejoras y Limitaciones")
-    static String DESCRIPTION_TITLE;
-    @Localize("The name and notes describing this enhancement or limitation")
-    @Localize(locale = "de",
-              value = "Die Namen und Anmerkungen, die diese Verbesserung oder Einschränkung beschreiben.")
-    @Localize(locale = "ru", value = "Название и заметки, описывающие улучшение или ограничение")
-    @Localize(locale = "es", value = "Nombre y Notas describiendo esta mejora o limitación")
-    static String DESCRIPTION_TOOLTIP;
-    @Localize("Cost Modifier")
-    @Localize(locale = "de", value = "Kostenmodifikator")
-    @Localize(locale = "ru", value = "Модификатор стоимости")
-    @Localize(locale = "es", value = "Coste del modificador")
-    static String COST_MODIFIER_TITLE;
-    @Localize("The cost modifier for this enhancement or limitation")
-    @Localize(locale = "de",
-              value = "Der Kostenmodifikator für diese Verbesserung oder Einschränkung.")
-    @Localize(locale = "ru", value = "Стоимость модификатора за улучшение или ограничение")
-    @Localize(locale = "es", value = "Coste del modificador de esta mejora o limitación")
-    static String COST_MODIFIER_TOOLTIP;
-    @Localize("Ref")
-    @Localize(locale = "de", value = "Ref.")
-    @Localize(locale = "ru", value = "Ссыл")
-    static String REFERENCE_TITLE;
-    @Localize("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de",
-              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Modifikator beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-    @Localize(locale = "ru",
-              value = "Ссылка на страницу и книгу, описывающая модификатор (например B22 - \"Базовые правила\", страница 22)")
-    @Localize(locale = "es",
-              value = "Referencia al libro y página donde se menciona el modificador (p.e. B22 se refiere al \"Manual Básico\", página 22).")
-    static String REFERENCE_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
 
     /**
      * @param modifier The {@link Modifier} to get the data from.

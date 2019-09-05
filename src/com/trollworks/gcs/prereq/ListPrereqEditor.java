@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,14 +14,13 @@ package com.trollworks.gcs.prereq;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.widget.IconButton;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
@@ -30,52 +29,9 @@ import javax.swing.JComponent;
 
 /** A prerequisite list editor panel. */
 public class ListPrereqEditor extends PrereqEditor {
-    @Localize("Requires all of:")
-    @Localize(locale = "de", value = "Benötigt alle von:")
-    @Localize(locale = "ru", value = "Требует всё из:")
-    @Localize(locale = "es", value = "Requiere todos los siguientes: ")
-    private static String REQUIRES_ALL;
-    @Localize("Requires at least one of:")
-    @Localize(locale = "de", value = "Benötigt mindestens einen von:")
-    @Localize(locale = "ru", value = "Требует одно из:")
-    @Localize(locale = "es", value = "Requiere al menos uno de:")
-    private static String REQUIRES_ANY;
-    @Localize("Add a prerequisite to this list")
-    @Localize(locale = "de", value = "Füge eine Bedingung zu dieser Liste hinzu")
-    @Localize(locale = "ru", value = "Добавить требование в этот список")
-    @Localize(locale = "es", value = "Añadiro un prerrequisito a esta lista")
-    private static String ADD_PREREQ_TOOLTIP;
-    @Localize("Add a prerequisite list to this list")
-    @Localize(locale = "de", value = "Füge eine Bedingungs-Liste zu dieser Liste hinzu")
-    @Localize(locale = "ru", value = "Добавить список требований в этот список")
-    @Localize(locale = "es", value = "Añadir una lista de prerrequisitos a esta lista")
-    private static String ADD_PREREQ_LIST_TOOLTIP;
-    @Localize(" ")
-    @Localize(locale = "de", value = " ")
-    private static String NO_TL_PREREQ;
-    @Localize("When the Character's TL is")
-    @Localize(locale = "de", value = "Wenn der TL des Charakters ist")
-    @Localize(locale = "ru", value = "Когда ТУ персонажа")
-    @Localize(locale = "es", value = "Cuando el NT del personaje es")
-    private static String TL_IS;
-    @Localize("When the Character's TL is at least")
-    @Localize(locale = "de", value = "Wenn der TL des Charakters ist mindestens")
-    @Localize(locale = "ru", value = "Когда ТУ персонажа по крайней мере")
-    @Localize(locale = "es", value = "Cuando el NT del personaje es al menos")
-    private static String TL_IS_AT_LEAST;
-    @Localize("When the Character's TL is at most")
-    @Localize(locale = "de", value = "Wenn der TL des Charakters ist höchstens")
-    @Localize(locale = "ru", value = "Когда ТУ персонажа не более")
-    @Localize(locale = "es", value = "Cuando el NT del personaje es como mucho")
-    private static String TL_IS_AT_MOST;
-
-    static {
-        Localization.initialize();
-    }
-
     private static Class<?>     LAST_ITEM_TYPE = AdvantagePrereq.class;
-    private static final String ANY_ALL        = "AnyAll"; //$NON-NLS-1$
-    private static final String WHEN_TL        = "WhenTL"; //$NON-NLS-1$
+    private static final String ANY_ALL        = "AnyAll";
+    private static final String WHEN_TL        = "WhenTL";
 
     /** @param type The last item type created or switched to. */
     public static void setLastItemType(Class<?> type) {
@@ -98,32 +54,46 @@ public class ListPrereqEditor extends PrereqEditor {
             switch (criteria.getType()) {
             case IS:
             default:
-                return TL_IS;
+                return tlIs();
             case AT_LEAST:
-                return TL_IS_AT_LEAST;
+                return tlIsAtLeast();
             case AT_MOST:
-                return TL_IS_AT_MOST;
+                return tlIsAtMost();
             }
         }
-        return NO_TL_PREREQ;
+        return " ";
+    }
+
+    private static final String tlIs() {
+        return I18n.Text("When the Character's TL is");
+    }
+
+    private static final String tlIsAtLeast() {
+        return I18n.Text("When the Character's TL is at least");
+    }
+
+    private static final String tlIsAtMost() {
+        return I18n.Text("When the Character's TL is at most");
     }
 
     @Override
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         PrereqList      prereqList     = (PrereqList) mPrereq;
         IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
-        left.add(addComboBox(WHEN_TL, new Object[] { NO_TL_PREREQ, TL_IS, TL_IS_AT_LEAST, TL_IS_AT_MOST }, mapWhenTLToString(whenTLCriteria)));
+        left.add(addComboBox(WHEN_TL, new Object[] { " ", tlIs(), tlIsAtLeast(), tlIsAtMost() }, mapWhenTLToString(whenTLCriteria)));
         if (PrereqList.isWhenTLEnabled(whenTLCriteria)) {
             left.add(addNumericCompareField(whenTLCriteria, 0, 99, false));
         }
-        left.add(addComboBox(ANY_ALL, new Object[] { REQUIRES_ALL, REQUIRES_ANY }, prereqList.requiresAll() ? REQUIRES_ALL : REQUIRES_ANY));
+        String requiresAll        = I18n.Text("Requires all of:");
+        String requiresAtLeastOne = I18n.Text("Requires at least one of:");
+        left.add(addComboBox(ANY_ALL, new Object[] { requiresAll, requiresAtLeastOne }, prereqList.requiresAll() ? requiresAll : requiresAtLeastOne));
 
         grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-        IconButton button = new IconButton(StdImage.MORE, ADD_PREREQ_LIST_TOOLTIP, () -> addPrereqList());
+        IconButton button = new IconButton(StdImage.MORE, I18n.Text("Add a prerequisite list to this list"), () -> addPrereqList());
         add(button);
         right.add(button);
-        button = new IconButton(StdImage.ADD, ADD_PREREQ_TOOLTIP, () -> addPrereq());
+        button = new IconButton(StdImage.ADD, I18n.Text("Add a prerequisite to this list"), () -> addPrereq());
         add(button);
         right.add(button);
     }
@@ -152,17 +122,17 @@ public class ListPrereqEditor extends PrereqEditor {
             IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
             Object          value          = ((JComboBox<?>) event.getSource()).getSelectedItem();
             if (!mapWhenTLToString(whenTLCriteria).equals(value)) {
-                if (TL_IS.equals(value)) {
+                if (tlIs().equals(value)) {
                     if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
                         PrereqList.setWhenTLEnabled(whenTLCriteria, true);
                     }
                     whenTLCriteria.setType(NumericCompareType.IS);
-                } else if (TL_IS_AT_LEAST.equals(value)) {
+                } else if (tlIsAtLeast().equals(value)) {
                     if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
                         PrereqList.setWhenTLEnabled(whenTLCriteria, true);
                     }
                     whenTLCriteria.setType(NumericCompareType.AT_LEAST);
-                } else if (TL_IS_AT_MOST.equals(value)) {
+                } else if (tlIsAtMost().equals(value)) {
                     if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
                         PrereqList.setWhenTLEnabled(whenTLCriteria, true);
                     }

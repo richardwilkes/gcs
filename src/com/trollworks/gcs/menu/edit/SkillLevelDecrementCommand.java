@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,9 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -22,20 +21,11 @@ import java.awt.event.KeyEvent;
 
 /** Provides "Decrease Skill Level" command */
 public class SkillLevelDecrementCommand extends Command {
-    @Localize("Decrease Skill Level")
-    @Localize(locale = "ru", value = "Уменьшить уровень умения")
-    private static String DECREASE_LEVEL;
-
-    static {
-        Localization.initialize();
-    }
-
-    public static final String                     CMD_DECREASE_LEVEL = "DecreaseLevel"; //$NON-NLS-1$
-
+    public static final String                     CMD_DECREASE_LEVEL = "DecreaseLevel";
     public static final SkillLevelDecrementCommand INSTANCE           = new SkillLevelDecrementCommand();
 
     private SkillLevelDecrementCommand() {
-        super(DECREASE_LEVEL, CMD_DECREASE_LEVEL, KeyEvent.VK_PERIOD);
+        super(I18n.Text("Decrease Skill Level"), CMD_DECREASE_LEVEL, KeyEvent.VK_PERIOD);
     }
 
     @Override
@@ -50,7 +40,7 @@ public class SkillLevelDecrementCommand extends Command {
             setTitle(inc.getDecrementSkillLevelTitle());
         } else {
             setEnabled(false);
-            setTitle(DECREASE_LEVEL);
+            setTitle(I18n.Text("Decrease Skill Level"));
         }
     }
 

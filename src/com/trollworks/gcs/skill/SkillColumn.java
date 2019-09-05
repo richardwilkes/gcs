@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,12 +19,11 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
 import com.trollworks.gcs.widgets.outline.MultiCell;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import javax.swing.SwingConstants;
@@ -35,12 +34,12 @@ public enum SkillColumn {
     DESCRIPTION {
         @Override
         public String toString() {
-            return DESCRIPTION_TITLE;
+            return I18n.Text("Skills");
         }
 
         @Override
         public String getToolTip() {
-            return DESCRIPTION_TOOLTIP;
+            return I18n.Text("The name, specialty, tech level and notes describing a skill");
         }
 
         @Override
@@ -65,7 +64,7 @@ public enum SkillColumn {
 
             builder.append(skill.toString());
             if (notes.length() > 0) {
-                builder.append(" - "); //$NON-NLS-1$
+                builder.append(" - ");
                 builder.append(notes);
             }
             return builder.toString();
@@ -75,12 +74,12 @@ public enum SkillColumn {
     DIFFICULTY {
         @Override
         public String toString() {
-            return DIFFICULTY_TITLE;
+            return I18n.Text("Diff");
         }
 
         @Override
         public String getToolTip() {
-            return DIFFICULTY_TOOLTIP;
+            return I18n.Text("The skill difficulty");
         }
 
         @Override
@@ -107,12 +106,12 @@ public enum SkillColumn {
     LEVEL {
         @Override
         public String toString() {
-            return LEVEL_TITLE;
+            return I18n.Text("SL");
         }
 
         @Override
         public String getToolTip() {
-            return LEVEL_TOOLTIP;
+            return I18n.Text("The skill level");
         }
 
         @Override
@@ -135,11 +134,11 @@ public enum SkillColumn {
             int level;
 
             if (skill.canHaveChildren()) {
-                return ""; //$NON-NLS-1$
+                return "";
             }
             level = skill.getLevel();
             if (level < 0) {
-                return "-"; //$NON-NLS-1$
+                return "-";
             }
             return Numbers.format(level);
         }
@@ -158,12 +157,12 @@ public enum SkillColumn {
     RELATIVE_LEVEL {
         @Override
         public String toString() {
-            return RELATIVE_LEVEL_TITLE;
+            return I18n.Text("RSL");
         }
 
         @Override
         public String getToolTip() {
-            return RELATIVE_LEVEL_TOOLTIP;
+            return I18n.Text("The relative skill level");
         }
 
         @Override
@@ -228,7 +227,7 @@ public enum SkillColumn {
                 StringBuilder builder;
 
                 if (level == Integer.MIN_VALUE) {
-                    return "-"; //$NON-NLS-1$
+                    return "-";
                 }
                 builder = new StringBuilder();
                 if (!(skill instanceof Technique)) {
@@ -237,7 +236,7 @@ public enum SkillColumn {
                 builder.append(Numbers.formatWithForcedSign(level));
                 return builder.toString();
             }
-            return ""; //$NON-NLS-1$
+            return "";
         }
 
         @Override
@@ -254,12 +253,12 @@ public enum SkillColumn {
     POINTS {
         @Override
         public String toString() {
-            return POINTS_TITLE;
+            return I18n.Text("Pts");
         }
 
         @Override
         public String getToolTip() {
-            return POINTS_TOOLTIP;
+            return I18n.Text("The points spent in the skill");
         }
 
         @Override
@@ -286,12 +285,12 @@ public enum SkillColumn {
     CATEGORY {
         @Override
         public String toString() {
-            return CATEGORY_TITLE;
+            return I18n.Text("Category");
         }
 
         @Override
         public String getToolTip() {
-            return CATEGORY_TOOLTIP;
+            return I18n.Text("The category or categories the skill belongs to");
         }
 
         @Override
@@ -318,12 +317,12 @@ public enum SkillColumn {
     REFERENCE {
         @Override
         public String toString() {
-            return REFERENCE_TITLE;
+            return I18n.Text("Ref");
         }
 
         @Override
         public String getToolTip() {
-            return REFERENCE_TOOLTIP;
+            return I18n.Text("A reference to the book and page this skill appears on (e.g. B22 would refer to \"Basic Set\", page 22)");
         }
 
         @Override
@@ -346,86 +345,6 @@ public enum SkillColumn {
             return skill.getReference();
         }
     };
-
-    @Localize("Skills")
-    @Localize(locale = "de", value = "Fertigkeiten")
-    @Localize(locale = "ru", value = "Умения")
-    @Localize(locale = "es", value = "Habilidades")
-    static String DESCRIPTION_TITLE;
-    @Localize("The name, specialty, tech level and notes describing a skill")
-    @Localize(locale = "de",
-              value = "Der Name, Spezialisierung, Techlevel und Anmerkungen, die die Fertigkeit beschreiben")
-    @Localize(locale = "ru", value = "Название, специализация, ТУ и заметки умения")
-    @Localize(locale = "es",
-              value = "Nombre, especialización, nivel tecnológico y notas que describen una habilidad")
-    static String DESCRIPTION_TOOLTIP;
-    @Localize("SL")
-    @Localize(locale = "de", value = "FW")
-    @Localize(locale = "ru", value = "УУ")
-    @Localize(locale = "es", value = "NH")
-    static String LEVEL_TITLE;
-    @Localize("The skill level")
-    @Localize(locale = "de", value = "Der Fertigkeitswert")
-    @Localize(locale = "ru", value = "Уровень умения")
-    @Localize(locale = "es", value = "Nivel de habilidad")
-    static String LEVEL_TOOLTIP;
-    @Localize("RSL")
-    @Localize(locale = "de", value = "RFW")
-    @Localize(locale = "ru", value = "ОУУ")
-    @Localize(locale = "es", value = "NHR")
-    static String RELATIVE_LEVEL_TITLE;
-    @Localize("The relative skill level")
-    @Localize(locale = "de", value = "Der relative Fertigkeitswert")
-    @Localize(locale = "ru", value = "Относительный уровень умения")
-    @Localize(locale = "es", value = "Nivel de habilidad relativo")
-    static String RELATIVE_LEVEL_TOOLTIP;
-    @Localize("Pts")
-    @Localize(locale = "de", value = "Pkt")
-    @Localize(locale = "ru", value = "Очк")
-    @Localize(locale = "es", value = "Ptos")
-    static String POINTS_TITLE;
-    @Localize("The points spent in the skill")
-    @Localize(locale = "de", value = "Die für die Fertigkeit aufgewendeten Punkte")
-    @Localize(locale = "ru", value = "Потраченые очки на умение")
-    @Localize(locale = "es", value = "Puntos gastados en la habilidad")
-    static String POINTS_TOOLTIP;
-    @Localize("Diff")
-    @Localize(locale = "de", value = "Schwierigkeit")
-    @Localize(locale = "ru", value = "Сложн.")
-    @Localize(locale = "es", value = "Dificultad")
-    static String DIFFICULTY_TITLE;
-    @Localize("The skill difficulty")
-    @Localize(locale = "de", value = "Die Schwierigkeitsstufe der Fertigkeit")
-    @Localize(locale = "ru", value = "Сложность умения")
-    @Localize(locale = "es", value = "Dificultad de la habilidad")
-    static String DIFFICULTY_TOOLTIP;
-    @Localize("Category")
-    @Localize(locale = "de", value = "Kategorie")
-    @Localize(locale = "ru", value = "Категория")
-    @Localize(locale = "es", value = "Categoría")
-    static String CATEGORY_TITLE;
-    @Localize("The category or categories the skill belongs to")
-    @Localize(locale = "de",
-              value = "Die Kategorie oder Kategorien, denen diese Fertigkeit angehört")
-    @Localize(locale = "ru", value = "Категория или категории, к которым относится умение")
-    @Localize(locale = "es", value = "Categoría o categorías a las que pertenece la habilidad")
-    static String CATEGORY_TOOLTIP;
-    @Localize("Ref")
-    @Localize(locale = "de", value = "Ref")
-    @Localize(locale = "ru", value = "Ссыл")
-    static String REFERENCE_TITLE;
-    @Localize("A reference to the book and page this skill appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de",
-              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Zauber beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru",
-              value = "Ссылка на страницу и книгу, описывающая умение (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es",
-              value = "Referencia al libro y página en donde se menciona la habilidad (p.e. B22 se refiere al \"Manual Básico\", página 22)")
-    static String REFERENCE_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
 
     /**
      * @param skill The {@link Skill} to get the data from.

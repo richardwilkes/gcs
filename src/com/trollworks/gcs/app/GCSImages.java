@@ -24,10 +24,9 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 
 /** Provides standardized image access. */
-@SuppressWarnings("nls")
 public class GCSImages {
     static {
-        StdImage.addLoader(new ModuleImageLoader(GCSImages.class.getModule(), "/com/trollworks/gcs/app/images")); //$NON-NLS-1$
+        StdImage.addLoader(new ModuleImageLoader(GCSImages.class.getModule(), "/com/trollworks/gcs/app/images"));
     }
 
     public static final RetinaIcon getGCalcLogo() {

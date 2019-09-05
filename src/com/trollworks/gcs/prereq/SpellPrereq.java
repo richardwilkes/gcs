@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -18,11 +18,10 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -31,53 +30,18 @@ import java.util.HashSet;
 
 /** A Spell prerequisite. */
 public class SpellPrereq extends HasPrereq {
-    @Localize("spell")
-    @Localize(locale = "de", value = "Zauber")
-    @Localize(locale = "ru", value = "заклинание")
-    @Localize(locale = "es", value = "sortilegio")
-    private static String ONE_SPELL;
-    @Localize("spells")
-    @Localize(locale = "de", value = "Zauber")
-    @Localize(locale = "ru", value = "заклинания")
-    @Localize(locale = "es", value = "sortilegios")
-    private static String MULTIPLE_SPELLS;
-    @Localize("{0}{1} {2} {3} whose name {4}\n")
-    @Localize(locale = "de", value = "{0}{1} {2} {3}, deren/dessen Namen {4}\n")
-    @Localize(locale = "ru", value = "{0}{1} {2} {3} с названием {4}\n")
-    @Localize(locale = "es", value = "{0}{1} {2} {3}, cuyo nombre es {4}\n")
-    private static String WHOSE_NAME;
-    @Localize("{0}{1} {2} {3} of any kind\n")
-    @Localize(locale = "de", value = "{0}{1} {2} {3} jeglicher Art\n")
-    @Localize(locale = "ru", value = "{0}{1} {2} {3} любого вида\n ")
-    @Localize(locale = "es", value = "{0}{1} {2} {3} de cualquier tipo\n")
-    private static String OF_ANY_KIND;
-    @Localize("{0}{1} {2} {3} whose college {4}\n")
-    @Localize(locale = "de", value = "{0}{1} {2} {3}, deren/dessen Schule {4}\n")
-    @Localize(locale = "ru", value = "{0}{1} {2} {3} со школой {4}\n")
-    @Localize(locale = "es", value = "{0}{1} {2} {3} cuya escuela se llama {4}\n")
-    private static String WHOSE_COLLEGE;
-    @Localize("{0}{1} college count which {2}\n")
-    @Localize(locale = "de", value = "{0}{1} Zauber von {4} unterschiedlichen Schulen\n")
-    @Localize(locale = "ru", value = "{0}{1} заклинаний школы {2}\n")
-    @Localize(locale = "es", value = "{0}{1} Escuela que cuenta como {2}\n")
-    private static String COLLEGE_COUNT;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT          = "spell_prereq"; //$NON-NLS-1$
+    public static final String  TAG_ROOT          = "spell_prereq";
     /** The tag/type for name comparison. */
-    public static final String  TAG_NAME          = "name"; //$NON-NLS-1$
+    public static final String  TAG_NAME          = "name";
     /** The tag/type for any. */
-    public static final String  TAG_ANY           = "any"; //$NON-NLS-1$
+    public static final String  TAG_ANY           = "any";
     /** The tag/type for college name comparison. */
-    public static final String  TAG_COLLEGE       = "college"; //$NON-NLS-1$
+    public static final String  TAG_COLLEGE       = "college";
     /** The tag/type for college count comparison. */
-    public static final String  TAG_COLLEGE_COUNT = "college_count"; //$NON-NLS-1$
-    private static final String TAG_QUANTITY      = "quantity"; //$NON-NLS-1$
-    private static final String EMPTY             = ""; //$NON-NLS-1$
+    public static final String  TAG_COLLEGE_COUNT = "college_count";
+    private static final String TAG_QUANTITY      = "quantity";
+    private static final String EMPTY             = "";
     private String              mType;
     private StringCriteria      mStringCriteria;
     private IntegerCriteria     mQuantityCriteria;
@@ -270,14 +234,16 @@ public class SpellPrereq extends HasPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
+            String oneSpell       = I18n.Text("spell");
+            String multipleSpells = I18n.Text("spells");
             if (mType == TAG_NAME) {
-                builder.append(MessageFormat.format(WHOSE_NAME, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? ONE_SPELL : MULTIPLE_SPELLS, mStringCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose name {4}\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
             } else if (mType == TAG_ANY) {
-                builder.append(MessageFormat.format(OF_ANY_KIND, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? ONE_SPELL : MULTIPLE_SPELLS));
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} of any kind\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells));
             } else if (mType == TAG_COLLEGE) {
-                builder.append(MessageFormat.format(WHOSE_COLLEGE, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? ONE_SPELL : MULTIPLE_SPELLS, mStringCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose college {4}\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
             } else if (mType == TAG_COLLEGE_COUNT) {
-                builder.append(MessageFormat.format(COLLEGE_COUNT, prefix, has() ? HAS : DOES_NOT_HAVE, mQuantityCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} college count which {2}\n"), prefix, hasText(), mQuantityCriteria.toString()));
             }
         }
         return satisfied;

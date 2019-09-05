@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,7 +17,6 @@ import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.menu.RetargetableFocus;
@@ -31,7 +30,7 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowFilter;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.PrintProxy;
 import com.trollworks.toolkit.utility.notification.BatchNotifierTarget;
@@ -54,40 +53,6 @@ import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
 public abstract class LibraryDockable extends CommonDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget, RetargetableFocus {
-    @Localize("Enter text here to narrow the list to only those rows containing matching items")
-    @Localize(locale = "de",
-              value = "Hier Text eingeben, um eine Liste der passenden Einträge anzuzeigen")
-    @Localize(locale = "ru",
-              value = "Введите текст здесь, чтобы сузить список до содержащих подходящие элементы")
-    @Localize(locale = "es",
-              value = "Escribe un texto aquí para acortar la lista y mostrar sólo las filas que contengan el texto")
-    private static String SEARCH_FIELD_TOOLTIP;
-    @Localize("Any Category")
-    @Localize(locale = "de", value = "Beliebige Kategorie")
-    @Localize(locale = "ru", value = "Любая категория")
-    @Localize(locale = "es", value = "Cualquier Categoría")
-    private static String CHOOSE_CATEGORY;
-    @Localize("Switches between allowing editing and not")
-    @Localize(locale = "de", value = "Bearbeitungserlaubnis umschalten")
-    @Localize(locale = "ru", value = "Переключение между разрешать редактировать или нет")
-    @Localize(locale = "es", value = "Cambia entre edición permitida y sólo lectura")
-    private static String TOGGLE_EDIT_MODE_TOOLTIP;
-    @Localize("Opens/closes all hierarchical rows")
-    @Localize(locale = "de", value = "Öffnet / Schließt alle Untereinträge")
-    @Localize(locale = "ru", value = "Развернуть/свернуть все вложенные строки")
-    @Localize(locale = "es", value = "Pliega/despliega todas las filas jerarquicamente")
-    private static String TOGGLE_ROWS_OPEN_TOOLTIP;
-    @Localize("Sets the width of each column to exactly fit its contents")
-    @Localize(locale = "de",
-              value = "Setzt die Breite jeder Spalte um den Inhalt komplett darzustellen")
-    @Localize(locale = "ru", value = "Подобрать ширину каждого столбца по его содержимому")
-    @Localize(locale = "es", value = "Ajusta el ancho de cada columna para encajar su contenido")
-    private static String SIZE_COLUMNS_TO_FIT_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private Toolbar           mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;
@@ -117,14 +82,14 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
         mToolbar.add(mScaleCombo);
         createFilterField();
         createCategoryCombo();
-        mLockButton = new IconButton(outlineModel.isLocked() ? StdImage.LOCKED : StdImage.UNLOCKED, TOGGLE_EDIT_MODE_TOOLTIP, () -> {
+        mLockButton = new IconButton(outlineModel.isLocked() ? StdImage.LOCKED : StdImage.UNLOCKED, I18n.Text("Switches between allowing editing and not"), () -> {
             OutlineModel model = mOutline.getModel();
             model.setLocked(!model.isLocked());
             mLockButton.setIcon(model.isLocked() ? StdImage.LOCKED : StdImage.UNLOCKED);
         });
         mToolbar.add(mLockButton);
-        mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, TOGGLE_ROWS_OPEN_TOOLTIP, () -> mOutline.getModel().toggleRowOpenState()));
-        mToolbar.add(new IconButton(StdImage.SIZE_TO_FIT, SIZE_COLUMNS_TO_FIT_TOOLTIP, () -> mOutline.sizeColumnsToFit()));
+        mToolbar.add(new IconButton(StdImage.TOGGLE_OPEN, I18n.Text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
+        mToolbar.add(new IconButton(StdImage.SIZE_TO_FIT, I18n.Text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
         add(mToolbar, BorderLayout.NORTH);
         mScroller = new JScrollPane(content);
         mScroller.setBorder(null);
@@ -197,9 +162,9 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
     private void createFilterField() {
         mFilterField = new JTextField(10);
         mFilterField.getDocument().addDocumentListener(this);
-        mFilterField.setToolTipText(Text.wrapPlainTextForToolTip(SEARCH_FIELD_TOOLTIP));
+        mFilterField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Enter text here to narrow the list to only those rows containing matching items")));
         // This client property is specific to Mac OS X
-        mFilterField.putClientProperty("JTextField.variant", "search"); //$NON-NLS-1$ //$NON-NLS-2$
+        mFilterField.putClientProperty("JTextField.variant", "search");
         mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));
         mToolbar.add(mFilterField, Toolbar.LAYOUT_FILL);
     }
@@ -207,8 +172,8 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
     private void createCategoryCombo() {
         mCategoryCombo = new JComboBox<>();
         // Next two client properties are specific to Mac OS X
-        mCategoryCombo.putClientProperty("JComponent.sizeVariant", "small"); //$NON-NLS-1$ //$NON-NLS-2$
-        mCategoryCombo.putClientProperty("JComboBox.isPopDown", Boolean.TRUE); //$NON-NLS-1$
+        mCategoryCombo.putClientProperty("JComponent.sizeVariant", "small");
+        mCategoryCombo.putClientProperty("JComboBox.isPopDown", Boolean.TRUE);
         mCategoryCombo.setMaximumRowCount(20);
         mCategoryCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -232,7 +197,7 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 
     private void adjustCategoryCombo() {
         mCategoryCombo.removeAllItems();
-        mCategoryCombo.addItem(CHOOSE_CATEGORY);
+        mCategoryCombo.addItem(I18n.Text("Any Category"));
         for (String category : getDataFile().getCategories()) {
             mCategoryCombo.addItem(category);
         }

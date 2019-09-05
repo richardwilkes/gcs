@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,12 +15,11 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.notification.Notifier;
 import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -31,43 +30,23 @@ import java.util.HashSet;
 
 /** Model for trait modifiers */
 public class Modifier extends ListRow implements Comparable<Modifier> {
-    @Localize("Modifier")
-    @Localize(locale = "de", value = "Modifikator")
-    @Localize(locale = "ru", value = "Модификатор")
-    @Localize(locale = "es", value = "Modificador")
-    private static String DEFAULT_NAME;
-    @Localize("Enhancement/Limitation")
-    @Localize(locale = "de", value = "Verbesserung / Einschränkung")
-    @Localize(locale = "ru", value = "Улучшение/ограничение")
-    @Localize(locale = "es", value = "Mejora/Limitación")
-    private static String MODIFIER_TYPE;
-    @Localize("** From container - not modifiable here **")
-    @Localize(locale = "de", value = "** Aus dem Container \u2013 hier nicht veränderbar **")
-    @Localize(locale = "ru", value = "** Из контейнера – не меняйте здесь **")
-    @Localize(locale = "es", value = "** Desde el contenedor - No modificable desde aquí **")
-    private static String READ_ONLY;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final int      CURRENT_VERSION     = 1;
     /** The root tag. */
-    public static final String    TAG_MODIFIER        = "modifier"; //$NON-NLS-1$
+    public static final String    TAG_MODIFIER        = "modifier";
     /** The tag for the name. */
-    protected static final String TAG_NAME            = "name"; //$NON-NLS-1$
+    protected static final String TAG_NAME            = "name";
     /** The tag for the base cost. */
-    public static final String    TAG_COST            = "cost"; //$NON-NLS-1$
+    public static final String    TAG_COST            = "cost";
     /** The attribute for the cost type. */
-    public static final String    ATTRIBUTE_COST_TYPE = "type"; //$NON-NLS-1$
+    public static final String    ATTRIBUTE_COST_TYPE = "type";
     /** The tag for the cost per level. */
-    public static final String    TAG_LEVELS          = "levels"; //$NON-NLS-1$
+    public static final String    TAG_LEVELS          = "levels";
     /** The tag for how the cost is affected. */
-    public static final String    TAG_AFFECTS         = "affects"; //$NON-NLS-1$
+    public static final String    TAG_AFFECTS         = "affects";
     /** The tag for the page reference. */
-    protected static final String TAG_REFERENCE       = "reference"; //$NON-NLS-1$
+    protected static final String TAG_REFERENCE       = "reference";
     /** The attribute for whether it is enabled. */
-    protected static final String ATTRIBUTE_ENABLED   = "enabled"; //$NON-NLS-1$
+    protected static final String ATTRIBUTE_ENABLED   = "enabled";
     /** The prefix for notifications. */
     public static final String    MODIFIER_PREFIX     = TAG_MODIFIER + Notifier.SEPARATOR;
     /** The ID for name change notification. */
@@ -81,7 +60,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     /** The ID for page reference change notification. */
     public static final String    ID_REFERENCE        = MODIFIER_PREFIX + TAG_REFERENCE;
     /** The ID for list changed change notification. */
-    public static final String    ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged"; //$NON-NLS-1$
+    public static final String    ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged";
     /** The name of the {@link Modifier}. */
     protected String              mName;
     /** The page reference for the {@link Modifier}. */
@@ -132,8 +111,8 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
      */
     public Modifier(DataFile file) {
         super(file, false);
-        mName           = DEFAULT_NAME;
-        mReference      = ""; //$NON-NLS-1$
+        mName           = I18n.Text("Modifier");
+        mReference      = "";
         mCostType       = CostType.PERCENTAGE;
         mCost           = 0;
         mCostMultiplier = 1.0;
@@ -202,7 +181,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     @Override
     public String getModifierNotes() {
-        return mReadOnly ? READ_ONLY : super.getModifierNotes();
+        return mReadOnly ? I18n.Text("** From container - not modifiable here **") : super.getModifierNotes();
     }
 
     /** @return An exact clone of this modifier. */
@@ -320,12 +299,12 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     @Override
     public String getLocalizedName() {
-        return DEFAULT_NAME;
+        return I18n.Text("Modifier");
     }
 
     @Override
     public String getRowType() {
-        return MODIFIER_TYPE;
+        return I18n.Text("Enhancement/Limitation");
     }
 
     @Override
@@ -348,9 +327,9 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
         String name = reader.getName();
         if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
+            mName = reader.readText().replace("\n", " ");
         } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " "); //$NON-NLS-1$ //$NON-NLS-2$
+            mReference = reader.readText().replace("\n", " ");
         } else if (TAG_COST.equals(name)) {
             mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), CostType.values(), CostType.PERCENTAGE);
             if (mCostType == CostType.MULTIPLIER) {
@@ -370,13 +349,13 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mName           = DEFAULT_NAME;
+        mName           = I18n.Text("Modifier");
         mCostType       = CostType.PERCENTAGE;
         mCost           = 0;
         mCostMultiplier = 1.0;
         mLevels         = 0;
         mAffects        = Affects.TOTAL;
-        mReference      = ""; //$NON-NLS-1$
+        mReference      = "";
         mEnabled        = true;
     }
 
@@ -432,11 +411,11 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
         builder.append(toString());
         if (modNote.length() > 0) {
-            builder.append(" ("); //$NON-NLS-1$
+            builder.append(" (");
             builder.append(modNote);
             builder.append(')');
         }
-        builder.append(", "); //$NON-NLS-1$
+        builder.append(", ");
         builder.append(getCostDescription());
         return builder.toString();
     }

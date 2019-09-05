@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -21,7 +21,6 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.Alignment;
@@ -33,7 +32,7 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import com.trollworks.toolkit.utility.text.Text;
 
@@ -64,195 +63,9 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** The detailed editor for {@link Advantage}s. */
 public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, PropertyChangeListener {
-    @Localize("Name")
-    @Localize(locale = "de", value = "Name")
-    @Localize(locale = "ru", value = "Название")
-    @Localize(locale = "es", value = "Nombre")
-    private static String NAME;
-    @Localize("The name of the advantage, without any notes")
-    @Localize(locale = "de", value = "Der Name des Vorteils ohne Anmerkungen")
-    @Localize(locale = "ru", value = "Название преимущества без заметок")
-    @Localize(locale = "es", value = "Nombre de la ventaja, sin anotaciones")
-    private static String NAME_TOOLTIP;
-    @Localize("Round Down")
-    private static String SHOULD_ROUND_COST_DOWN_TITLE;
-    @Localize("Round point costs down if selected, round them up if not (most things in GURPS round up)")
-    private static String SHOULD_ROUND_COST_DOWN_TOOLTIP;
-    @Localize("The name field may not be empty")
-    @Localize(locale = "de", value = "Der Name darf nicht leer sein")
-    @Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
-    @Localize(locale = "es", value = "El campo Nombre no puede estar vacio")
-    private static String NAME_CANNOT_BE_EMPTY;
-    @Localize("Self-Control Roll")
-    @Localize(locale = "de", value = "Selbstbeherrschungs-Probe")
-    @Localize(locale = "ru", value = "Бросок самоконтроля")
-    @Localize(locale = "es", value = "Tirada de autocontrol")
-    private static String CR;
-    @Localize("Adjustments that are applied due to Self-Control Roll limitations")
-    @Localize(locale = "de",
-              value = "Anpassungen, die auf den Wert der Selbstbeherrschungs-Probe basieren")
-    @Localize(locale = "ru",
-              value = "Настройки, которые применяются для ограничений бросков СамоКонтроля (СК)")
-    @Localize(locale = "es",
-              value = "Modificadores que se aplican debido a las limitaciones de la tirada de autocontrol")
-    private static String CR_ADJ_TOOLTIP;
-    @Localize("Total")
-    @Localize(locale = "de", value = "Gesamt")
-    @Localize(locale = "ru", value = "Всего")
-    @Localize(locale = "es", value = "Total")
-    private static String TOTAL_POINTS;
-    @Localize("The total point cost of this advantage")
-    @Localize(locale = "de", value = "Die Gesamtkosten dieses Vortiels")
-    @Localize(locale = "ru", value = "Сумарная стоимость преимущества")
-    @Localize(locale = "es", value = "Coste total de la ventaja")
-    private static String TOTAL_POINTS_TOOLTIP;
-    @Localize("Base Point Cost")
-    @Localize(locale = "de", value = "Grundkosten")
-    @Localize(locale = "ru", value = "Базовая стоимость")
-    @Localize(locale = "es", value = "Coste base")
-    private static String BASE_POINTS;
-    @Localize("The base point cost of this advantage")
-    @Localize(locale = "de", value = "Die Grundkosten dieses Vorteils")
-    @Localize(locale = "ru", value = "Базовая стоимость преимущества")
-    @Localize(locale = "es", value = "Coste base en puentos de la ventaja")
-    private static String BASE_POINTS_TOOLTIP;
-    @Localize("Point Cost Per Level")
-    @Localize(locale = "de", value = "Kosten pro Stufe")
-    @Localize(locale = "ru", value = "Количество очков за уровень")
-    @Localize(locale = "es", value = "Coste por nivel")
-    private static String LEVEL_POINTS;
-    @Localize("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used")
-    @Localize(locale = "de",
-              value = "Die Kosten pro Stufe dieses Vorteils.  Wenn dieses Feld leer ist und im Stufen-Feld etwas anderes als Null steht, dann wird der Wert im Grundkosten-Feld verwendet")
-    @Localize(locale = "ru",
-              value = "Стоимость одного уровня преимущества. Если этот параметр установлен в ноль и есть значение, отличное от нуля в поле Уровень, то будет использоваться значение из поля Базовая стоимость")
-    @Localize(locale = "es",
-              value = "Coste por nivel de la ventaja. Si está a cero pero el campo por nivel no, entonces se usa el coste base en su lugar")
-    private static String LEVEL_POINTS_TOOLTIP;
-    @Localize("Level")
-    @Localize(locale = "de", value = "Stufe")
-    @Localize(locale = "ru", value = "Уровень")
-    @Localize(locale = "es", value = "Nivel")
-    private static String LEVEL;
-    @Localize("The level of this advantage")
-    @Localize(locale = "de", value = "Die Stufe dieses Vorteils")
-    @Localize(locale = "ru", value = "Уровень преимущества")
-    @Localize(locale = "es", value = "Nivel de la ventaja")
-    private static String LEVEL_TOOLTIP;
-    @Localize("Add a half Level")
-    private static String HALF_LEVEL_TOOLTIP;
-    @Localize("Categories")
-    @Localize(locale = "de", value = "Kategorie")
-    @Localize(locale = "ru", value = "Категории")
-    @Localize(locale = "es", value = "Categoría")
-    private static String CATEGORIES;
-    @Localize("The category or categories the advantage belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de",
-              value = "Die Kategorie oder Kategorien, denen dieser Vorteil angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru",
-              value = "Категория или категории, к которым относится преимущество (перечислить через запятую)")
-    @Localize(locale = "es",
-              value = "Categoría o categorías a las que pertenece la ventaja (múltiples categorías se separan con una coma)")
-    private static String CATEGORIES_TOOLTIP;
-    @Localize("Notes")
-    @Localize(locale = "de", value = "Anmerkungen")
-    @Localize(locale = "ru", value = "Заметка")
-    @Localize(locale = "es", value = "Notas")
-    private static String NOTES;
-    @Localize("Any notes that you would like to show up in the list along with this advantage")
-    @Localize(locale = "de",
-              value = "Anmerkungen, die in der Liste neben dem Vorteil erscheinen sollen")
-    @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с преимуществом")
-    @Localize(locale = "es",
-              value = "Cualquier nota que desees mostrar en la lista de esta ventaja")
-    private static String NOTES_TOOLTIP;
-    @Localize("Type")
-    @Localize(locale = "de", value = "Typ")
-    @Localize(locale = "ru", value = "Тип")
-    @Localize(locale = "es", value = "Tipo")
-    private static String TYPE;
-    @Localize("The type of advantage this is")
-    @Localize(locale = "de", value = "Der Typ dieses Vorteils")
-    @Localize(locale = "ru", value = "Тип этого преимущества")
-    @Localize(locale = "es", value = "Tipo de ventaja que es")
-    private static String TYPE_TOOLTIP;
-    @Localize("Container Type")
-    @Localize(locale = "de", value = "Container-Typ")
-    @Localize(locale = "ru", value = "Тип контейнера")
-    @Localize(locale = "es", value = "Tipo de contenedor")
-    private static String CONTAINER_TYPE;
-    @Localize("The type of container this is")
-    @Localize(locale = "de", value = "Der Container-Typ dieses Vorteils")
-    @Localize(locale = "ru", value = "Тип этого контейнера")
-    @Localize(locale = "es", value = "Tipo de contenedor que es")
-    private static String CONTAINER_TYPE_TOOLTIP;
-    @Localize("Ref")
-    @Localize(locale = "de", value = "Seitenangabe")
-    @Localize(locale = "ru", value = "Ссыл")
-    @Localize(locale = "es", value = "Ref")
-    private static String REFERENCE;
-    @Localize("Page Reference")
-    @Localize(locale = "de",
-              value = "Eine Referenz auf das Buch und die Seite, auf der dieser Vorteil beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen)")
-    @Localize(locale = "ru", value = "Ссылка на страницу")
-    @Localize(locale = "es", value = "Página de referencia")
-    private static String REFERENCE_TOOLTIP;
-    @Localize("Has No Levels")
-    @Localize(locale = "de", value = "Hat keine Stufen")
-    @Localize(locale = "ru", value = "Не имеет уровни")
-    @Localize(locale = "es", value = "Sin niveles")
-    private static String NO_LEVELS;
-    @Localize("Has Levels")
-    @Localize(locale = "de", value = "Hat Stufen")
-    @Localize(locale = "ru", value = "Имеет уровни")
-    @Localize(locale = "es", value = "Tiene niveles")
-    private static String HAS_LEVELS;
-    @Localize("Has Half Levels")
-    private static String HAS_HALF_LEVELS;
-    @Localize("Mental")
-    @Localize(locale = "de", value = "Mental")
-    @Localize(locale = "ru", value = "Ментальный")
-    @Localize(locale = "es", value = "Mental")
-    private static String MENTAL;
-    @Localize("Physical")
-    @Localize(locale = "de", value = "Physisch")
-    @Localize(locale = "ru", value = "Физическая")
-    @Localize(locale = "es", value = "Física")
-    private static String PHYSICAL;
-    @Localize("Social")
-    @Localize(locale = "de", value = "Sozial")
-    @Localize(locale = "ru", value = "Социальная")
-    @Localize(locale = "es", value = "Social")
-    private static String SOCIAL;
-    @Localize("Exotic")
-    @Localize(locale = "de", value = "Exotisch")
-    @Localize(locale = "ru", value = "Экзотические")
-    @Localize(locale = "es", value = "Exótica")
-    private static String EXOTIC;
-    @Localize("Supernatural")
-    @Localize(locale = "de", value = "Übernatürlich")
-    @Localize(locale = "ru", value = "Сверхъестественное")
-    @Localize(locale = "es", value = "Sobrenatural")
-    private static String SUPERNATURAL;
-    @Localize("User Desc.")
-    private static String USER_DESC;
-    @Localize("User Description")
-    @Localize(locale = "de", value = "Benutzerbeschreibung")
-    @Localize(locale = "ru", value = "Описание пользователя")
-    @Localize(locale = "es", value = "Descripción de usuario")
-    private static String USER_DESC_TITLE;
-    @Localize("Enabled")
-    private static String ENABLED_TITLE;
-    @Localize("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")
-    private static String ENABLED_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private EditorField                           mNameField;
     private JCheckBox                             mShouldRoundCostDown;
-    private JComboBox<String>                     mLevelTypeCombo;
+    private JComboBox<Levels>                     mLevelTypeCombo;
     private EditorField                           mBasePointsField;
     private EditorField                           mLevelField;
     private JCheckBox                             mHalfLevel;
@@ -304,15 +117,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         FlexRow row = new FlexRow();
 
-        mNameField = createField(advantage.getName(), null, NAME_TOOLTIP);
+        mNameField = createField(advantage.getName(), null, I18n.Text("The name of the advantage, without any notes"));
         mNameField.getDocument().addDocumentListener(this);
-        innerGrid.add(new FlexComponent(createLabel(NAME, mNameField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Name"), mNameField), Alignment.RIGHT_BOTTOM, null), ri, 0);
         innerGrid.add(row, ri++, 1);
         row.add(mNameField);
 
-        mEnabledCheckBox = new JCheckBox(ENABLED_TITLE);
+        mEnabledCheckBox = new JCheckBox(I18n.Text("Enabled"));
         mEnabledCheckBox.setSelected(advantage.isSelfEnabled());
-        mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(ENABLED_TOOLTIP));
+        mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")));
         mEnabledCheckBox.setEnabled(mIsEditable);
         mEnabledCheckBox.addActionListener(this);
         UIUtilities.setOnlySize(mEnabledCheckBox, mEnabledCheckBox.getPreferredSize());
@@ -331,39 +144,39 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
             row              = new FlexRow();
 
-            mBasePointsField = createField(-9999, 9999, mRow.getPoints(), BASE_POINTS_TOOLTIP);
+            mBasePointsField = createField(-9999, 9999, mRow.getPoints(), I18n.Text("The base point cost of this advantage"));
             row.add(mBasePointsField);
-            innerGrid.add(new FlexComponent(createLabel(BASE_POINTS, mBasePointsField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+            innerGrid.add(new FlexComponent(createLabel(I18n.Text("Base Point Cost"), mBasePointsField), Alignment.RIGHT_BOTTOM, null), ri, 0);
             innerGrid.add(row, ri++, 1);
 
-            mLevelTypeCombo = new JComboBox<>(new String[] { NO_LEVELS, HAS_LEVELS, HAS_HALF_LEVELS });
-            mLevelTypeCombo.setSelectedIndex(mRow.isLeveled() ? mRow.allowHalfLevels() ? 2 : 1 : 0);
+            mLevelTypeCombo = new JComboBox<>(Levels.values());
+            mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS : Levels.NO_LEVELS);
             UIUtilities.setOnlySize(mLevelTypeCombo, mLevelTypeCombo.getPreferredSize());
             mLevelTypeCombo.setEnabled(mIsEditable);
             mLevelTypeCombo.addActionListener(this);
             add(mLevelTypeCombo);
             row.add(mLevelTypeCombo);
 
-            mLevelField = createField(0, 999, mLastLevel, LEVEL_TOOLTIP);
-            row.add(createLabel(LEVEL, mLevelField));
+            mLevelField = createField(0, 999, mLastLevel, I18n.Text("The level of this advantage"));
+            row.add(createLabel(I18n.Text("Level"), mLevelField));
             row.add(mLevelField);
 
-            mHalfLevel = new JCheckBox("+\u00bd"); //$NON-NLS-1$
+            mHalfLevel = new JCheckBox("+\u00bd");
             mHalfLevel.setSelected(mLastHalfLevel);
-            mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(HALF_LEVEL_TOOLTIP));
+            mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Add a half Level")));
             mHalfLevel.setEnabled(mIsEditable && advantage.allowHalfLevels());
             mHalfLevel.addActionListener(this);
             UIUtilities.setOnlySize(mHalfLevel, mHalfLevel.getPreferredSize());
             add(mHalfLevel);
             row.add(mHalfLevel);
 
-            mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, LEVEL_POINTS_TOOLTIP);
-            row.add(createLabel(LEVEL_POINTS, mLevelPointsField));
+            mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, I18n.Text("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used"));
+            row.add(createLabel(I18n.Text("Point Cost Per Level"), mLevelPointsField));
             row.add(mLevelPointsField);
 
-            mShouldRoundCostDown = new JCheckBox(SHOULD_ROUND_COST_DOWN_TITLE);
+            mShouldRoundCostDown = new JCheckBox(I18n.Text("Round Down"));
             mShouldRoundCostDown.setSelected(advantage.shouldRoundCostDown());
-            mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(SHOULD_ROUND_COST_DOWN_TOOLTIP));
+            mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Round point costs down if selected, round them up if not (most things in GURPS round up)")));
             mShouldRoundCostDown.setEnabled(mIsEditable);
             mShouldRoundCostDown.addActionListener(this);
             UIUtilities.setOnlySize(mShouldRoundCostDown, mShouldRoundCostDown.getPreferredSize());
@@ -372,26 +185,26 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
             row.add(new FlexSpacer(0, 0, true, false));
 
-            mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), TOTAL_POINTS_TOOLTIP);
+            mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), I18n.Text("The total point cost of this advantage"));
             mPointsField.setEnabled(false);
-            row.add(createLabel(TOTAL_POINTS, mPointsField));
+            row.add(createLabel(I18n.Text("Total"), mPointsField));
             row.add(mPointsField);
 
             if (!mRow.isLeveled()) {
-                mLevelField.setText(""); //$NON-NLS-1$
+                mLevelField.setText("");
                 mLevelField.setEnabled(false);
-                mLevelPointsField.setText(""); //$NON-NLS-1$
+                mLevelPointsField.setText("");
                 mLevelPointsField.setEnabled(false);
             }
         }
 
-        mNotesField = createField(advantage.getNotes(), null, NOTES_TOOLTIP);
+        mNotesField = createField(advantage.getNotes(), null, I18n.Text("Any notes that you would like to show up in the list along with this advantage"));
         add(mNotesField);
-        innerGrid.add(new FlexComponent(createLabel(NOTES, mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Notes"), mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
         innerGrid.add(mNotesField, ri++, 1);
 
-        mCategoriesField = createField(advantage.getCategoriesAsString(), null, CATEGORIES_TOOLTIP);
-        innerGrid.add(new FlexComponent(createLabel(CATEGORIES, mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
+        mCategoriesField = createField(advantage.getCategoriesAsString(), null, I18n.Text("The category or categories the advantage belongs to (separate multiple categories with a comma)"));
+        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Categories"), mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
         innerGrid.add(mCategoriesField, ri++, 1);
 
         mCRCombo = new JComboBox<>(SelfControlRoll.values());
@@ -401,12 +214,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mCRCombo.addActionListener(this);
         add(mCRCombo);
         mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
-        mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(CR_ADJ_TOOLTIP));
+        mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Adjustments that are applied due to Self-Control Roll limitations")));
         mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
         UIUtilities.setOnlySize(mCRAdjCombo, mCRAdjCombo.getPreferredSize());
         mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
         add(mCRAdjCombo);
-        innerGrid.add(new FlexComponent(createLabel(CR, mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
+        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Self-Control Roll"), mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
         row = new FlexRow();
         row.add(mCRCombo);
         row.add(mCRAdjCombo);
@@ -415,44 +228,44 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         row = new FlexRow();
         innerGrid.add(row, ri, 1);
         if (notContainer) {
-            JLabel label = new JLabel(TYPE, SwingConstants.RIGHT);
-            label.setToolTipText(Text.wrapPlainTextForToolTip(TYPE_TOOLTIP));
+            JLabel label = new JLabel(I18n.Text("Type"), SwingConstants.RIGHT);
+            label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of advantage this is")));
             add(label);
             innerGrid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, null), ri++, 0);
 
-            mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, MENTAL);
+            mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.Text("Mental"));
             row.add(mMentalType);
             row.add(createTypeLabel(GCSImages.getMentalTypeIcon(), mMentalType));
 
-            mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, PHYSICAL);
+            mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, I18n.Text("Physical"));
             row.add(mPhysicalType);
             row.add(createTypeLabel(GCSImages.getPhysicalTypeIcon(), mPhysicalType));
 
-            mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, SOCIAL);
+            mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, I18n.Text("Social"));
             row.add(mSocialType);
             row.add(createTypeLabel(GCSImages.getSocialTypeIcon(), mSocialType));
 
-            mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, EXOTIC);
+            mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, I18n.Text("Exotic"));
             row.add(mExoticType);
             row.add(createTypeLabel(GCSImages.getExoticTypeIcon(), mExoticType));
 
-            mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, SUPERNATURAL);
+            mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, I18n.Text("Supernatural"));
             row.add(mSupernaturalType);
             row.add(createTypeLabel(GCSImages.getSupernaturalTypeIcon(), mSupernaturalType));
         } else {
             mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
             mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
             UIUtilities.setOnlySize(mContainerTypeCombo, mContainerTypeCombo.getPreferredSize());
-            mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(CONTAINER_TYPE_TOOLTIP));
+            mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of container this is")));
             add(mContainerTypeCombo);
             row.add(mContainerTypeCombo);
-            innerGrid.add(new FlexComponent(new LinkedLabel(CONTAINER_TYPE, mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri++, 0);
+            innerGrid.add(new FlexComponent(new LinkedLabel(I18n.Text("Container Type"), mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri++, 0);
         }
 
         row.add(new FlexSpacer(0, 0, true, false));
 
-        mReferenceField = createField(mRow.getReference(), "MMMMMM", REFERENCE_TOOLTIP); //$NON-NLS-1$
-        row.add(createLabel(REFERENCE, mReferenceField));
+        mReferenceField = createField(mRow.getReference(), "MMMMMM", I18n.Text("Page Reference"));
+        row.add(createLabel(I18n.Text("Ref"), mReferenceField));
         row.add(mReferenceField);
 
         mTabPanel  = new JTabbedPane();
@@ -487,7 +300,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         if (mRow.getDataFile() instanceof GURPSCharacter) {
             mUserDesc       = mRow.getUserDesc();
             mUserDescEditor = createUserDescEditor();
-            mTabPanel.addTab(USER_DESC_TITLE, mUserDescEditor);
+            mTabPanel.addTab(I18n.Text("User Description"), mUserDescEditor);
         }
 
         if (!mIsEditable) {
@@ -691,11 +504,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private boolean isLeveled() {
-        return mLevelTypeCombo.getSelectedItem() != NO_LEVELS;
+        return mLevelTypeCombo.getSelectedItem() != Levels.NO_LEVELS;
     }
 
     private boolean allowHalfLevels() {
-        return mLevelTypeCombo.getSelectedItem() == HAS_HALF_LEVELS;
+        return mLevelTypeCombo.getSelectedItem() == Levels.HAS_HALF_LEVELS;
     }
 
     private void levelTypeChanged() {
@@ -710,9 +523,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mLastLevel          = getLevels();
             mLastHalfLevel      = getHalfLevel();
             mLastPointsPerLevel = getPointsPerLevel();
-            mLevelField.setText(""); //$NON-NLS-1$
+            mLevelField.setText("");
             mHalfLevel.setSelected(false);
-            mLevelPointsField.setText(""); //$NON-NLS-1$
+            mLevelPointsField.setText("");
         }
         mLevelField.setEnabled(isLeveled);
         mLevelPointsField.setEnabled(isLeveled);
@@ -781,12 +594,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void nameChanged() {
-        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
+        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if ("value".equals(event.getPropertyName())) { //$NON-NLS-1$
+        if ("value".equals(event.getPropertyName())) {
             Object src = event.getSource();
             if (src == mLevelField || src == mLevelPointsField || src == mBasePointsField) {
                 updatePoints();

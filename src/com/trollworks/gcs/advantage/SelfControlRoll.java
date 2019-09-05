@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,9 +11,8 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
 
@@ -23,7 +22,7 @@ public enum SelfControlRoll {
     NOT_APPLICABLE {
         @Override
         public String toString() {
-            return NOT_APPLICABLE_TITLE;
+            return I18n.Text("CR: N/A (Cannot Resist)");
         }
 
         @Override
@@ -40,7 +39,7 @@ public enum SelfControlRoll {
     CR6 {
         @Override
         public String toString() {
-            return CR6_TITLE;
+            return I18n.Text("CR: 6 (Resist Rarely)");
         }
 
         @Override
@@ -57,7 +56,7 @@ public enum SelfControlRoll {
     CR9 {
         @Override
         public String toString() {
-            return CR9_TITLE;
+            return I18n.Text("CR: 9 (Resist Fairly Often)");
         }
 
         @Override
@@ -74,7 +73,7 @@ public enum SelfControlRoll {
     CR12 {
         @Override
         public String toString() {
-            return CR12_TITLE;
+            return I18n.Text("CR: 12 (Resist Quite Often)");
         }
 
         @Override
@@ -91,7 +90,7 @@ public enum SelfControlRoll {
     CR15 {
         @Override
         public String toString() {
-            return CR15_TITLE;
+            return I18n.Text("CR: 15 (Resist Almost All The Time)");
         }
 
         @Override
@@ -108,7 +107,7 @@ public enum SelfControlRoll {
     NONE_REQUIRED {
         @Override
         public String toString() {
-            return NONE_REQUIRED_TITLE;
+            return I18n.Text("None Required");
         }
 
         @Override
@@ -123,7 +122,7 @@ public enum SelfControlRoll {
 
         @Override
         public String getDescriptionWithCost() {
-            return ""; //$NON-NLS-1$
+            return "";
         }
 
         @Override
@@ -132,43 +131,8 @@ public enum SelfControlRoll {
         }
     };
 
-    @Localize("CR: N/A (Cannot Resist)")
-    @Localize(locale = "de", value = "SBP: entf. (kann nicht widerstehen)")
-    @Localize(locale = "ru", value = "СК: - (не может сопротивляться)")
-    @Localize(locale = "es", value = "TC: n.a. (No puede resistir)")
-    static String NOT_APPLICABLE_TITLE;
-    @Localize("CR: 6 (Resist Rarely)")
-    @Localize(locale = "de", value = "SBP: 6 (selten)")
-    @Localize(locale = "ru", value = "СК: 6 (редко)")
-    @Localize(locale = "es", value = "TC: 6 (Raramente)")
-    static String CR6_TITLE;
-    @Localize("CR: 9 (Resist Fairly Often)")
-    @Localize(locale = "de", value = "SBP: 9 (öfters)")
-    @Localize(locale = "ru", value = "СК: 9 (часто)")
-    @Localize(locale = "es", value = "TC: 9 (a menudo)")
-    static String CR9_TITLE;
-    @Localize("CR: 12 (Resist Quite Often)")
-    @Localize(locale = "de", value = "SBP: 12 (häufig)")
-    @Localize(locale = "ru", value = "СК: 12 (достаточно часто)")
-    @Localize(locale = "es", value = "TC: 12 (Muy a menudo)")
-    static String CR12_TITLE;
-    @Localize("CR: 15 (Resist Almost All The Time)")
-    @Localize(locale = "de", value = "SBP: 15 (fast immer)")
-    @Localize(locale = "ru", value = "СК: 15 (почти всегда)")
-    @Localize(locale = "es", value = "TC: 15 (La mayor parte del tiempo)")
-    static String CR15_TITLE;
-    @Localize("None Required")
-    @Localize(locale = "de", value = "Keine benötigt")
-    @Localize(locale = "ru", value = "Не требуется")
-    @Localize(locale = "es", value = "No se requiere")
-    static String NONE_REQUIRED_TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The attribute tag use for {@link SelfControlRollAdjustments}. */
-    public static final String ATTR_ADJUSTMENT = "adj"; //$NON-NLS-1$
+    public static final String ATTR_ADJUSTMENT = "adj";
 
     /**
      * @param tagValue The value within a tag representing a {@link SelfControlRoll}.
@@ -186,7 +150,7 @@ public enum SelfControlRoll {
 
     /** @return The description, along with the cost. */
     public String getDescriptionWithCost() {
-        return toString() + ", x" + getMultiplier(); //$NON-NLS-1$
+        return toString() + ", x" + getMultiplier();
     }
 
     /** @return The cost multiplier. */

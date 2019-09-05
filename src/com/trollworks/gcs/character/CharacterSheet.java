@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2018 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -40,7 +40,6 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponDisplayRow;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.ui.Fonts;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
@@ -66,7 +65,7 @@ import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.outline.RowSelection;
 import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.FileType;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.PrintProxy;
@@ -118,92 +117,17 @@ import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, ScaleRoot {
-    @Localize("Page {0} of {1}")
-    @Localize(locale = "de", value = "Seite {0} von {1}")
-    @Localize(locale = "ru", value = "Стр. {0} из {1}")
-    @Localize(locale = "es", value = "Página {0} de {1}")
-    private static String PAGE_NUMBER;
-    @Localize("Visit us at %s")
-    @Localize(locale = "de", value = "Besucht uns auf %s")
-    @Localize(locale = "ru", value = "Посетите нас на %s")
-    @Localize(locale = "es", value = "Visitanos en %s")
-    private static String ADVERTISEMENT;
-    @Localize("Melee Weapons")
-    @Localize(locale = "de", value = "Nahkampfwaffen")
-    @Localize(locale = "ru", value = "Контактные орудия")
-    @Localize(locale = "es", value = "Armas de cuerpo a cuerpo")
-    private static String MELEE_WEAPONS;
-    @Localize("Ranged Weapons")
-    @Localize(locale = "de", value = "Fernkampfwaffen")
-    @Localize(locale = "ru", value = "Дистанционные орудия")
-    @Localize(locale = "es", value = "Armas de distancia")
-    private static String RANGED_WEAPONS;
-    @Localize("Advantages, Disadvantages & Quirks")
-    @Localize(locale = "de", value = "Vorteile, Nachteile und Marotten")
-    @Localize(locale = "ru", value = "Преимущества, недостатки и причуды")
-    @Localize(locale = "es", value = "Ventajas, Desventajas y Singularidades")
-    private static String ADVANTAGES;
-    @Localize("Skills")
-    @Localize(locale = "de", value = "Fähigkeiten")
-    @Localize(locale = "ru", value = "Умения")
-    @Localize(locale = "es", value = "Habilidades")
-    private static String SKILLS;
-    @Localize("Spells")
-    @Localize(locale = "de", value = "Zauber")
-    @Localize(locale = "ru", value = "Заклинания")
-    @Localize(locale = "es", value = "Sortilegios")
-    private static String SPELLS;
-    @Localize("Equipment")
-    @Localize(locale = "de", value = "Ausrüstung")
-    @Localize(locale = "ru", value = "Снаряжение")
-    @Localize(locale = "es", value = "Equuipo")
-    private static String EQUIPMENT;
-    @Localize("{0} (continued)")
-    @Localize(locale = "de", value = "{0} (fortgesetzt)")
-    @Localize(locale = "ru", value = "{0} (продолжается)")
-    @Localize(locale = "es", value = "{0} (continua)")
-    private static String CONTINUED;
-    @Localize("Natural")
-    @Localize(locale = "de", value = "Angeboren")
-    @Localize(locale = "ru", value = "Природное")
-    @Localize(locale = "es", value = "Natural")
-    private static String NATURAL;
-    @Localize("Punch")
-    @Localize(locale = "de", value = "Schlag")
-    @Localize(locale = "ru", value = "Удар")
-    @Localize(locale = "es", value = "Puñetazo")
-    private static String PUNCH;
-    @Localize("Kick")
-    @Localize(locale = "de", value = "Tritt")
-    @Localize(locale = "ru", value = "Пинок")
-    @Localize(locale = "es", value = "Patada")
-    private static String KICK;
-    @Localize("Kick w/Boots")
-    @Localize(locale = "de", value = "Tritt mit Schuh")
-    @Localize(locale = "ru", value = "Пинок (ботинком)")
-    @Localize(locale = "es", value = "Patada con botas")
-    private static String BOOTS;
-    @Localize("Notes")
-    @Localize(locale = "de", value = "Notizen")
-    @Localize(locale = "ru", value = "Заметка")
-    @Localize(locale = "es", value = "Notas")
-    private static String NOTES;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String   BOXING_SKILL_NAME   = "Boxing"; //$NON-NLS-1$
-    private static final String   KARATE_SKILL_NAME   = "Karate"; //$NON-NLS-1$
-    private static final String   BRAWLING_SKILL_NAME = "Brawling"; //$NON-NLS-1$
+    private static final String   BOXING_SKILL_NAME   = "Boxing";
+    private static final String   KARATE_SKILL_NAME   = "Karate";
+    private static final String   BRAWLING_SKILL_NAME = "Brawling";
     private static final int      GAP                 = 2;
-    private static final String   MELEE_KEY           = "melee"; //$NON-NLS-1$
-    private static final String   RANGED_KEY          = "ranged"; //$NON-NLS-1$
-    private static final String   ADVANTAGES_KEY      = "advantages"; //$NON-NLS-1$
-    private static final String   SKILLS_KEY          = "skills"; //$NON-NLS-1$
-    private static final String   SPELLS_KEY          = "spells"; //$NON-NLS-1$
-    private static final String   EQUIPMENT_KEY       = "equipment"; //$NON-NLS-1$
-    private static final String   NOTES_KEY           = "notes"; //$NON-NLS-1$
+    private static final String   MELEE_KEY           = "melee";
+    private static final String   RANGED_KEY          = "ranged";
+    private static final String   ADVANTAGES_KEY      = "advantages";
+    private static final String   SKILLS_KEY          = "skills";
+    private static final String   SPELLS_KEY          = "spells";
+    private static final String   EQUIPMENT_KEY       = "equipment";
+    private static final String   NOTES_KEY           = "notes";
     private static final String[] ALL_KEYS            = { MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, NOTES_KEY };
     private Scale                 mScale;
     private GURPSCharacter        mCharacter;
@@ -329,9 +253,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         // Add the various outline blocks, based on the layout preference.
         Set<String> remaining   = prepBlockLayoutRemaining();
-        String      blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        for (String line : blockLayout.split("\n")) { //$NON-NLS-1$
-            String[] parts = line.trim().split(" "); //$NON-NLS-1$
+        String      blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
+        for (String line : blockLayout.split("\n")) {
+            String[] parts = line.trim().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
                 String  t1 = getOutlineTitleForKey(parts[0]);
                 Outline o1 = getOutlineForKey(parts[0]);
@@ -394,10 +318,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     public static String getHTMLGridTemplate() {
         Set<String>   remaining   = prepBlockLayoutRemaining();
-        String        blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        String        blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
         StringBuilder buffer      = new StringBuilder();
-        for (String line : blockLayout.split("\n")) { //$NON-NLS-1$
-            String[] parts = line.trim().split(" "); //$NON-NLS-1$
+        for (String line : blockLayout.split("\n")) {
+            String[] parts = line.trim().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
                 remaining.remove(parts[0]);
                 if (parts.length > 1 && remaining.contains(parts[1])) {
@@ -428,21 +352,21 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private static String getOutlineTitleForKey(String key) {
         switch (key) {
         case MELEE_KEY:
-            return MELEE_WEAPONS;
+            return I18n.Text("Melee Weapons");
         case RANGED_KEY:
-            return RANGED_WEAPONS;
+            return I18n.Text("Ranged Weapons");
         case ADVANTAGES_KEY:
-            return ADVANTAGES;
+            return I18n.Text("Advantages, Disadvantages & Quirks");
         case SKILLS_KEY:
-            return SKILLS;
+            return I18n.Text("Skills");
         case SPELLS_KEY:
-            return SPELLS;
+            return I18n.Text("Spells");
         case EQUIPMENT_KEY:
-            return EQUIPMENT;
+            return I18n.Text("Equipment");
         case NOTES_KEY:
-            return NOTES;
+            return I18n.Text("Notes");
         default:
-            return ""; //$NON-NLS-1$
+            return "";
         }
     }
 
@@ -496,7 +420,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
             while (pageAssembler.addToContent(new SingleOutlinePanel(mScale, outline, title, useProxy), info, null)) {
                 if (!useProxy) {
-                    title    = MessageFormat.format(CONTINUED, title);
+                    title    = MessageFormat.format(I18n.Text("{0} (continued)"), title);
                     useProxy = true;
                 }
             }
@@ -511,8 +435,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         while (pageAssembler.addToContent(new DoubleOutlinePanel(mScale, leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
             if (!useProxy) {
-                leftTitle  = MessageFormat.format(CONTINUED, leftTitle);
-                rightTitle = MessageFormat.format(CONTINUED, rightTitle);
+                leftTitle  = MessageFormat.format(I18n.Text("{0} (continued)"), leftTitle);
+                rightTitle = MessageFormat.format(I18n.Text("{0} (continued)"), rightTitle);
                 useProxy   = true;
             }
         }
@@ -661,7 +585,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             mCharacter.setUndoManager(new StdUndoManager());
 
             phantom = new Advantage(mCharacter, false);
-            phantom.setName(NATURAL);
+            phantom.setName(I18n.Text("Natural"));
 
             if (mCharacter.includePunch()) {
                 defaults.add(new SkillDefault(SkillDefaultType.DX, null, null, 0));
@@ -669,11 +593,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 defaults.add(new SkillDefault(SkillDefaultType.Skill, BRAWLING_SKILL_NAME, null, 0));
                 defaults.add(new SkillDefault(SkillDefaultType.Skill, KARATE_SKILL_NAME, null, 0));
                 weapon = new MeleeWeaponStats(phantom);
-                weapon.setUsage(PUNCH);
+                weapon.setUsage(I18n.Text("Punch"));
                 weapon.setDefaults(defaults);
-                weapon.setDamage("thr-1 cr"); //$NON-NLS-1$
-                weapon.setReach("C"); //$NON-NLS-1$
-                weapon.setParry("0"); //$NON-NLS-1$
+                weapon.setDamage("thr-1 cr");
+                weapon.setReach("C");
+                weapon.setParry("0");
                 map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
                 defaults.clear();
             }
@@ -684,21 +608,21 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
             if (mCharacter.includeKick()) {
                 weapon = new MeleeWeaponStats(phantom);
-                weapon.setUsage(KICK);
+                weapon.setUsage(I18n.Text("Kick"));
                 weapon.setDefaults(defaults);
-                weapon.setDamage("thr cr"); //$NON-NLS-1$
-                weapon.setReach("C,1"); //$NON-NLS-1$
-                weapon.setParry("No"); //$NON-NLS-1$
+                weapon.setDamage("thr cr");
+                weapon.setReach("C,1");
+                weapon.setParry("No");
                 map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
             }
 
             if (mCharacter.includeKickBoots()) {
                 weapon = new MeleeWeaponStats(phantom);
-                weapon.setUsage(BOOTS);
+                weapon.setUsage(I18n.Text("Kick w/Boots"));
                 weapon.setDefaults(defaults);
-                weapon.setDamage("thr+1 cr"); //$NON-NLS-1$
-                weapon.setReach("C,1"); //$NON-NLS-1$
-                weapon.setParry("No"); //$NON-NLS-1$
+                weapon.setDamage("thr+1 cr");
+                weapon.setReach("C,1");
+                weapon.setParry("No");
                 map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
             }
 
@@ -895,7 +819,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         bounds.x       = insets.left;
         bounds.y       = insets.top;
         int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
-        String      pageString = MessageFormat.format(PAGE_NUMBER, Numbers.format(pageNumber), Numbers.format(getPageCount()));
+        String      pageString = MessageFormat.format(I18n.Text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
         BundleInfo  bundleInfo = BundleInfo.getDefault();
         String      copyright1 = bundleInfo.getCopyright();
         String      copyright2 = bundleInfo.getReservedRights();
@@ -938,7 +862,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         gc.drawString(left, bounds.x, y);
         gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
         // Trim off the leading URI scheme and authority path component. (http://, https://, ...)
-        String advertisement = String.format(ADVERTISEMENT, GCSApp.WEB_SITE.replaceAll(".*://", "")); //$NON-NLS-1$ //$NON-NLS-2$
+        String advertisement = String.format(I18n.Text("Visit us at %s"), GCSApp.WEB_SITE.replaceAll(".*://", ""));
         gc.drawString(advertisement, bounds.x + (bounds.width - (int) fm1.getStringBounds(advertisement, gc).getWidth()) / 2, y);
 
         gc.setFont(savedFont);
@@ -1239,7 +1163,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 gc.scale(dpi / 72.0, dpi / 72.0);
                 print(gc, format, pageNum++);
                 gc.dispose();
-                pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG_EXTENSION)); //$NON-NLS-1$ //$NON-NLS-2$
+                pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG_EXTENSION));
                 AnnotatedImage.writePNG(pngFile, buffer, dpi, null);
                 createdFiles.add(pngFile);
             }

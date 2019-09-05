@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,33 +13,22 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Copy To Template" command. */
 public class CopyToTemplateCommand extends Command {
-    @Localize("Copy To Template")
-    @Localize(locale = "de", value = "Kopiere zur Vorlage")
-    @Localize(locale = "ru", value = "Копировать в шаблон")
-    @Localize(locale = "es", value = "Copiar a la plantilla")
-    private static String COPY_TO_TEMPLATE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                CMD_COPY_TO_TEMPLATE = "CopyToTemplate"; //$NON-NLS-1$
+    public static final String                CMD_COPY_TO_TEMPLATE = "CopyToTemplate";
     /** The singleton {@link CopyToTemplateCommand}. */
     public static final CopyToTemplateCommand INSTANCE             = new CopyToTemplateCommand();
 
     private CopyToTemplateCommand() {
-        super(COPY_TO_TEMPLATE, CMD_COPY_TO_TEMPLATE, KeyEvent.VK_T, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.Text("Copy To Template"), CMD_COPY_TO_TEMPLATE, KeyEvent.VK_T, SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override

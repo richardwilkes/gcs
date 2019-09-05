@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.common;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.edit.Undoable;
 import com.trollworks.toolkit.ui.menu.file.CloseHandler;
@@ -21,7 +20,7 @@ import com.trollworks.toolkit.ui.widget.DataModifiedListener;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.undo.StdUndoManager;
 
@@ -33,17 +32,6 @@ import javax.swing.Icon;
 
 /** Provides a common base for library and sheet files. */
 public abstract class CommonDockable extends Dockable implements CloseHandler, Saveable, Undoable {
-    @Localize("An error occurred while trying to save the file.")
-    @Localize(locale = "de", value = "Ein Fehler ist beim Speichern der Datei aufgetreten.")
-    @Localize(locale = "ru", value = "Произошла ошибка при попытке сохранить файл.")
-    @Localize(locale = "es",
-              value = "Ha ocurrido un error mientras se intentaba guardar el archivo.")
-    private static String SAVE_ERROR;
-
-    static {
-        Localization.initialize();
-    }
-
     private DataFile mDataFile;
     private String   mUntitledName;
 
@@ -117,7 +105,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
             getDockContainer().updateTitle(this);
             return new File[] { file };
         }
-        WindowUtils.showError(this, SAVE_ERROR);
+        WindowUtils.showError(this, I18n.Text("An error occurred while trying to save the file."));
         return new File[0];
     }
 
@@ -160,16 +148,16 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
     @Override
     public String getTitleTooltip() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("<html><body><b>"); //$NON-NLS-1$
+        buffer.append("<html><body><b>");
         buffer.append(getTitle());
-        buffer.append("</b>"); //$NON-NLS-1$
+        buffer.append("</b>");
         File file = getBackingFile();
         if (file != null) {
-            buffer.append("<br><font size='-2'>"); //$NON-NLS-1$
+            buffer.append("<br><font size='-2'>");
             buffer.append(file.getAbsolutePath());
-            buffer.append("</font>"); //$NON-NLS-1$
+            buffer.append("</font>");
         }
-        buffer.append("</body></html>"); //$NON-NLS-1$
+        buffer.append("</body></html>");
         return buffer.toString();
     }
 }

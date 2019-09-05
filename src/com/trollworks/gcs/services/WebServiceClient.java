@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -27,7 +27,6 @@ import java.util.Scanner;
 
 /** A class used for interacting with web services */
 public class WebServiceClient {
-    private static final String SLASH            = "/"; //$NON-NLS-1$
     private String              mBaseUrl;
     private Map<String, String> mQueryParameters = new HashMap<>();
     private String              mBody;
@@ -103,7 +102,7 @@ public class WebServiceClient {
      */
     public String sendRequest() throws MalformedURLException, IOException, NotImplementedException {
         URLConnection connection = buildUrl().openConnection();
-        connection.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.toString()); //$NON-NLS-1$
+        connection.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.toString());
         if (mMethod == HttpMethodType.GET) {
             try (InputStream stream = connection.getInputStream()) {
                 return convertStreamToString(stream);
@@ -111,7 +110,7 @@ public class WebServiceClient {
         }
         if (mMethod == HttpMethodType.POST) {
             connection.setDoOutput(true); // Triggers POST.
-            connection.setRequestProperty("Content-Type", "application/json"); //$NON-NLS-1$ //$NON-NLS-2$
+            connection.setRequestProperty("Content-Type", "application/json");
             if (mBody != null && mBody.length() > 0) {
                 try (OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())) {
                     writer.write(mBody);
@@ -129,13 +128,13 @@ public class WebServiceClient {
                 }
             }
         }
-        throw new NotImplementedException("Method type not currently supported"); //$NON-NLS-1$
+        throw new NotImplementedException("Method type not currently supported");
     }
 
     static String convertStreamToString(java.io.InputStream is) {
         try (Scanner s = new Scanner(is)) {
-            s.useDelimiter("\\A"); //$NON-NLS-1$
-            String result = s.hasNext() ? s.next() : ""; //$NON-NLS-1$
+            s.useDelimiter("\\A");
+            String result = s.hasNext() ? s.next() : "";
             return result;
         }
     }
@@ -146,17 +145,17 @@ public class WebServiceClient {
         mPath    = ditchLeadingTrailingSlashes(mPath);
         // build the url
         StringBuilder url = new StringBuilder(mBaseUrl);
-        url.append(SLASH);
+        url.append("/");
         url.append(mPath);
-        url.append(SLASH);
+        url.append("/");
         // add query string variables
         if (mQueryParameters.isEmpty()) {
             return new URL(url.toString());
         }
-        url.append("?"); //$NON-NLS-1$
+        url.append("?");
         for (String key : mQueryParameters.keySet()) {
             url.append(key);
-            url.append("="); //$NON-NLS-1$
+            url.append("=");
             url.append(mQueryParameters.get(key));
         }
         return new URL(url.toString());
@@ -166,10 +165,10 @@ public class WebServiceClient {
         if (str.length() < 2) {
             return str;
         }
-        if (str.endsWith(SLASH)) {
+        if (str.endsWith("/")) {
             str = str.substring(0, str.length() - 1);
         }
-        if (str.startsWith(SLASH)) {
+        if (str.startsWith("/")) {
             str = str.substring(1, str.length());
         }
         return str;

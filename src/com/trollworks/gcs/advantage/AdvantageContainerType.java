@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,8 +11,7 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** The types of {@link Advantage} containers. */
 public enum AdvantageContainerType {
@@ -20,7 +19,7 @@ public enum AdvantageContainerType {
     GROUP {
         @Override
         public String toString() {
-            return GROUP_TITLE;
+            return I18n.Text("Group");
         }
     },
     /**
@@ -30,7 +29,7 @@ public enum AdvantageContainerType {
     META_TRAIT {
         @Override
         public String toString() {
-            return META_TRAIT_TITLE;
+            return I18n.Text("Meta-Trait");
         }
     },
     /**
@@ -40,7 +39,7 @@ public enum AdvantageContainerType {
     RACE {
         @Override
         public String toString() {
-            return RACE_TITLE;
+            return I18n.Text("Race");
         }
     },
     /**
@@ -51,31 +50,7 @@ public enum AdvantageContainerType {
     ALTERNATIVE_ABILITIES {
         @Override
         public String toString() {
-            return ALTERNATIVE_ABILITIES_TITLE;
+            return I18n.Text("Alternative Abilities");
         }
     };
-
-    @Localize("Group")
-    @Localize(locale = "de", value = "Gruppe")
-    @Localize(locale = "ru", value = "Группа")
-    @Localize(locale = "es", value = "Grupo")
-    static String GROUP_TITLE;
-    @Localize("Meta-Trait")
-    @Localize(locale = "de", value = "Meta-Eigenschaft")
-    @Localize(locale = "ru", value = "Мета-черта")
-    static String META_TRAIT_TITLE;
-    @Localize("Race")
-    @Localize(locale = "de", value = "Rasse")
-    @Localize(locale = "ru", value = "Раса")
-    @Localize(locale = "es", value = "Raza")
-    static String RACE_TITLE;
-    @Localize("Alternative Abilities")
-    @Localize(locale = "de", value = "Alternative Fähigkeiten")
-    @Localize(locale = "ru", value = "Альтернативные способности")
-    @Localize(locale = "es", value = "Habilidades Alternativas")
-    static String ALTERNATIVE_ABILITIES_TITLE;
-
-    static {
-        Localization.initialize();
-    }
 }

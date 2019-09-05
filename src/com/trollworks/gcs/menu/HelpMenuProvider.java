@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,14 +12,13 @@
 package com.trollworks.gcs.menu;
 
 import com.trollworks.gcs.app.GCSApp;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.menu.DynamicMenuEnabler;
 import com.trollworks.toolkit.ui.menu.MenuProvider;
 import com.trollworks.toolkit.ui.menu.help.AboutCommand;
 import com.trollworks.toolkit.ui.menu.help.OpenURICommand;
 import com.trollworks.toolkit.ui.menu.help.UpdateCommand;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Platform;
 
 import java.util.Collections;
@@ -30,37 +29,7 @@ import javax.swing.JMenuItem;
 
 /** Provides the standard "Help" menu. */
 public class HelpMenuProvider implements MenuProvider {
-    @Localize("Help")
-    @Localize(locale = "de", value = "Hilfe")
-    @Localize(locale = "ru", value = "Справка")
-    @Localize(locale = "es", value = "Ayuda")
-    private static String HELP;
-    @Localize("Release Notes")
-    @Localize(locale = "de", value = "Hinweise zur Veröffentlichung")
-    @Localize(locale = "ru", value = "Примечания к выпуску")
-    @Localize(locale = "es", value = "Notas de la versión")
-    private static String RELEASE_NOTES;
-    @Localize("License")
-    @Localize(locale = "de", value = "Lizenz")
-    @Localize(locale = "ru", value = "Лицензия")
-    @Localize(locale = "es", value = "Licencia")
-    private static String LICENSE;
-    @Localize("Web Site")
-    @Localize(locale = "de", value = "Webseite")
-    @Localize(locale = "ru", value = "Сайт")
-    @Localize(locale = "es", value = "Sitio Web")
-    private static String WEB_SITE;
-    @Localize("Mailing Lists")
-    @Localize(locale = "de", value = "Mailinglisten")
-    @Localize(locale = "ru", value = "Списки рассылки")
-    @Localize(locale = "es", value = "Listas de correo")
-    private static String MAILING_LISTS;
-
-    static {
-        Localization.initialize();
-    }
-
-    public static final String NAME = "Help"; //$NON-NLS-1$
+    public static final String NAME = "Help";
 
     @Override
     public Set<Command> getModifiableCommands() {
@@ -69,7 +38,7 @@ public class HelpMenuProvider implements MenuProvider {
 
     @Override
     public JMenu createMenu() {
-        JMenu menu = new JMenu(HELP);
+        JMenu menu = new JMenu(I18n.Text("Help"));
         menu.setName(NAME);
         if (!Platform.isMacintosh()) {
             menu.add(new JMenuItem(AboutCommand.INSTANCE));
@@ -77,11 +46,11 @@ public class HelpMenuProvider implements MenuProvider {
         }
         menu.add(new JMenuItem(UpdateCommand.INSTANCE));
         menu.addSeparator();
-        menu.add(new JMenuItem(new OpenURICommand(RELEASE_NOTES, "https://github.com/richardwilkes/gcs/releases"))); //$NON-NLS-1$
-        menu.add(new JMenuItem(new OpenURICommand(LICENSE, "https://github.com/richardwilkes/gcs/blob/master/LICENSE"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Release Notes"), "https://github.com/richardwilkes/gcs/releases")));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("License"), "https://github.com/richardwilkes/gcs/blob/master/LICENSE")));
         menu.addSeparator();
-        menu.add(new JMenuItem(new OpenURICommand(WEB_SITE, GCSApp.WEB_SITE)));
-        menu.add(new JMenuItem(new OpenURICommand(MAILING_LISTS, "https://groups.io/g/gcs"))); //$NON-NLS-1$
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Web Site"), GCSApp.WEB_SITE)));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Mailing Lists"), "https://groups.io/g/gcs")));
         DynamicMenuEnabler.add(menu);
         return menu;
     }

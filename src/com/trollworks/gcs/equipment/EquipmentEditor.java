@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,11 +17,10 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
@@ -48,146 +47,6 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
-    @Localize("A reference to the book and page this equipment appears on (e.g. B22 would refer to \"Basic Set\", page 22)")
-    @Localize(locale = "de",
-              value = "Eine Referenz auf das Buch und die Seite, auf der diese Ausrüstung beschrieben wird (z.B. B22 würde auf \"Basic Set\" Seite 22 verweisen).")
-    @Localize(locale = "ru",
-              value = "Ссылка на страницу и книгу, описывающая снаряжение (например B22 - книга \"Базовые правила\", страница 22)")
-    @Localize(locale = "es",
-              value = "Referencia al libro y página donde se menciona el equipo (p.e. B22 se refiere al \"Manual Básico\", página 22).")
-    private static String REFERENCE_TOOLTIP;
-    @Localize("The value of one of these pieces of equipment")
-    @Localize(locale = "de", value = "Der Wert eines einzelnen Ausrüstungsgegenstandes")
-    @Localize(locale = "ru", value = "Цена снаряжения")
-    @Localize(locale = "es", value = "Valor unitario de cada pieza de equipo.")
-    private static String VALUE_TOOLTIP;
-    @Localize("The value of all of these pieces of equipment, plus the value of any contained equipment")
-    @Localize(locale = "de",
-              value = "Der Wert aller dieser Ausrüstungsgegenstände und der Wert der darin enthaltenen Ausrüstung")
-    @Localize(locale = "ru",
-              value = "Цена всего снаряжения, плюс цена любого входящего в него снаряжения")
-    @Localize(locale = "es",
-              value = "Valor de todas las piezas de equipo, más el valor de lo que contengan.")
-    private static String EXT_VALUE_TOOLTIP;
-    @Localize("Name")
-    @Localize(locale = "de", value = "Name")
-    @Localize(locale = "ru", value = "Название")
-    @Localize(locale = "es", value = "Nombre")
-    private static String NAME;
-    @Localize("The name/description of the equipment, without any notes")
-    @Localize(locale = "de", value = "Der Name des Ausrüstungsgegenstands, ohne Anmerkungen")
-    @Localize(locale = "ru", value = "Название/описание снаряжения без заметок")
-    @Localize(locale = "es", value = "Nombre/descripción del equipo, sin notas.")
-    private static String NAME_TOOLTIP;
-    @Localize("The name field may not be empty")
-    @Localize(locale = "de", value = "Der Name darf nicht leer sein")
-    @Localize(locale = "ru", value = "Поле \"Название\" не может быть пустым")
-    @Localize(locale = "es", value = "El nombre no puede estar en blanco")
-    private static String NAME_CANNOT_BE_EMPTY;
-    @Localize("Tech Level")
-    @Localize(locale = "de", value = "Techlevel")
-    @Localize(locale = "ru", value = "Технологический уровень")
-    @Localize(locale = "es", value = "Nivel Tecnológico")
-    private static String EDITOR_TECH_LEVEL;
-    @Localize("The first Tech Level this equipment is available at")
-    @Localize(locale = "de", value = "Der Techlevel, ab dem diese Ausrüstung zur Verfügung steht")
-    @Localize(locale = "ru", value = "Первый тех. уровень этого снаряжения доступен с")
-    @Localize(locale = "es",
-              value = "Nivel Tecnológico a partir del cual el equipo está disponible.")
-    private static String EDITOR_TECH_LEVEL_TOOLTIP;
-    @Localize("Legality Class")
-    @Localize(locale = "de", value = "Legalitätsklasse")
-    @Localize(locale = "ru", value = "Клас легальности")
-    @Localize(locale = "es", value = "Nivel Legal")
-    private static String EDITOR_LEGALITY_CLASS;
-    @Localize("The legality class of this equipment")
-    @Localize(locale = "de", value = "Die Legalitätsklasse des Ausrüstungsgegenstandes")
-    @Localize(locale = "ru", value = "Класс легальности снаряжения")
-    @Localize(locale = "es", value = "Nivel legal del equipo")
-    private static String EDITOR_LEGALITY_CLASS_TOOLTIP;
-    @Localize("Quantity")
-    @Localize(locale = "de", value = "Anzahl")
-    @Localize(locale = "ru", value = "Количество")
-    @Localize(locale = "es", value = "Cantidad")
-    private static String EDITOR_QUANTITY;
-    @Localize("The number of this equipment present")
-    @Localize(locale = "ru", value = "Количество этого снаряжения")
-    @Localize(locale = "es", value = "Cantidad de equipo presente")
-    private static String EDITOR_QUANTITY_TOOLTIP;
-    @Localize("Value")
-    @Localize(locale = "de", value = "Wert")
-    @Localize(locale = "ru", value = "Цена")
-    @Localize(locale = "es", value = "Valor")
-    private static String EDITOR_VALUE;
-    @Localize("Extended Value")
-    @Localize(locale = "de", value = "Gesamtwert")
-    @Localize(locale = "ru", value = "Полная цена")
-    @Localize(locale = "es", value = "Valor ampliado")
-    private static String EDITOR_EXTENDED_VALUE;
-    @Localize("Weight")
-    @Localize(locale = "de", value = "Gewicht")
-    @Localize(locale = "ru", value = "Вес")
-    @Localize(locale = "es", value = "Peso")
-    private static String EDITOR_WEIGHT;
-    @Localize("The weight of one of these pieces of equipment")
-    @Localize(locale = "de", value = "Das Gewicht eines einzelnen Ausrüstungsgegenstandes")
-    @Localize(locale = "ru", value = "Вес снаряжения")
-    @Localize(locale = "es", value = "Peso unitario de una pieza de equipo")
-    private static String EDITOR_WEIGHT_TOOLTIP;
-    @Localize("Extended Weight")
-    @Localize(locale = "de", value = "Gesamtgewicht")
-    @Localize(locale = "ru", value = "Полный вес")
-    @Localize(locale = "es", value = "Peso ampliado")
-    private static String EDITOR_EXTENDED_WEIGHT;
-    @Localize("The total weight of this quantity of equipment, plus everything contained by it")
-    @Localize(locale = "de",
-              value = "Das Gewicht aller dieser Ausrüstungsgegenstände und das Gewicht der darin enthaltenen Ausrüstung")
-    @Localize(locale = "ru", value = "Общий вес имеющегося снаряжения и его содержимого")
-    @Localize(locale = "es",
-              value = "Peso total de todo el equipo, más el peso de lo que contengan")
-    private static String EDITOR_EXTENDED_WEIGHT_TOOLTIP;
-    @Localize("Categories")
-    @Localize(locale = "de", value = "Kategorien")
-    @Localize(locale = "ru", value = "Категории")
-    @Localize(locale = "es", value = "Categorías")
-    private static String CATEGORIES;
-    @Localize("The category or categories the equipment belongs to (separate multiple categories with a comma)")
-    @Localize(locale = "de",
-              value = "Die Kategorie oder Kategorien, denen diese Ausrüstung angehört (trenne mehrere Kategorien mit einem Komma)")
-    @Localize(locale = "ru",
-              value = "Категория или категории снаряжения, к которым оно принадлежит (несколько категорий разделяются точкой с запятой)")
-    @Localize(locale = "es",
-              value = "Categoría o categorías a las que pertenece el equipo (múltiples categorías separadas con comas)")
-    private static String CATEGORIES_TOOLTIP;
-    @Localize("Notes")
-    @Localize(locale = "de", value = "Anmerkungen")
-    @Localize(locale = "ru", value = "Заметка")
-    @Localize(locale = "es", value = "Notas")
-    private static String NOTES;
-    @Localize("Any notes that you would like to show up in the list along with this equipment")
-    @Localize(locale = "de",
-              value = "Anmerkungen, die in der Liste neben der Ausrüstung erscheinen sollen")
-    @Localize(locale = "ru", value = "Заметки, которые показываются в списке рядом с снаряжением")
-    @Localize(locale = "es", value = "Cualquier nota que te gustaría mostar en la lista de equipo")
-    private static String NOTES_TOOLTIP;
-    @Localize("Page Reference")
-    @Localize(locale = "de", value = "Seitenangabe")
-    @Localize(locale = "ru", value = "Ссылка на страницу")
-    @Localize(locale = "es", value = "Página de referencia")
-    private static String EDITOR_REFERENCE;
-    @Localize("Items that are not equipped do not apply any features they may normally contribute to the character.")
-    @Localize(locale = "de",
-              value = "Gegenstände, die nicht ausgerüstet sind, haben keine Auswirkungen auf den Charakter.")
-    @Localize(locale = "ru",
-              value = "Не экипированные предметы не добавляют свойств, которые обычно может использовать персонаж.")
-    @Localize(locale = "es",
-              value = "Los objetos no equipados no aplican sus características como harían normalmente al personaje.")
-    private static String STATE_TOOLTIP;
-
-    static {
-        Localization.initialize();
-    }
-
     private JComboBox<EquipmentState> mStateCombo;
     private JTextField                mDescriptionField;
     private JTextField                mTechLevelField;
@@ -221,12 +80,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         JLabel icon    = new JLabel(equipment.getIcon(true));
         JPanel wrapper = new JPanel(new ColumnLayout(2));
 
-        mDescriptionField = createCorrectableField(fields, NAME, equipment.getDescription(), NAME_TOOLTIP);
+        mDescriptionField = createCorrectableField(fields, I18n.Text("Name"), equipment.getDescription(), I18n.Text("The name/description of the equipment, without any notes"));
         createSecondLineFields(fields);
         createValueAndWeightFields(fields);
-        mNotesField      = createField(fields, fields, NOTES, equipment.getNotes(), NOTES_TOOLTIP, 0);
-        mCategoriesField = createField(fields, fields, CATEGORIES, equipment.getCategoriesAsString(), CATEGORIES_TOOLTIP, 0);
-        mReferenceField  = createField(fields, wrapper, EDITOR_REFERENCE, mRow.getReference(), REFERENCE_TOOLTIP, 6);
+        mNotesField      = createField(fields, fields, I18n.Text("Notes"), equipment.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), 0);
+        mCategoriesField = createField(fields, fields, I18n.Text("Categories"), equipment.getCategoriesAsString(), I18n.Text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
+        mReferenceField  = createField(fields, wrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this equipment appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         wrapper.add(new JPanel());
         fields.add(wrapper);
         icon.setVerticalAlignment(SwingConstants.TOP);
@@ -263,16 +122,16 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         JPanel  wrapper     = new JPanel(new ColumnLayout((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
 
         if (!isContainer) {
-            mQtyField = createIntegerNumberField(parent, wrapper, EDITOR_QUANTITY, mRow.getQuantity(), EDITOR_QUANTITY_TOOLTIP, 9);
+            mQtyField = createIntegerNumberField(parent, wrapper, I18n.Text("Quantity"), mRow.getQuantity(), I18n.Text("The number of this equipment present"), 9);
         }
-        mTechLevelField     = createField(isContainer ? parent : wrapper, wrapper, EDITOR_TECH_LEVEL, mRow.getTechLevel(), EDITOR_TECH_LEVEL_TOOLTIP, 3);
-        mLegalityClassField = createField(wrapper, wrapper, EDITOR_LEGALITY_CLASS, mRow.getLegalityClass(), EDITOR_LEGALITY_CLASS_TOOLTIP, 3);
+        mTechLevelField     = createField(isContainer ? parent : wrapper, wrapper, I18n.Text("Tech Level"), mRow.getTechLevel(), I18n.Text("The first Tech Level this equipment is available at"), 3);
+        mLegalityClassField = createField(wrapper, wrapper, I18n.Text("Legality Class"), mRow.getLegalityClass(), I18n.Text("The legality class of this equipment"), 3);
         if (showEquipmentState()) {
             mStateCombo = new JComboBox<>(EquipmentState.values());
             mStateCombo.setSelectedItem(mRow.getState());
             UIUtilities.setOnlySize(mStateCombo, mStateCombo.getPreferredSize());
             mStateCombo.setEnabled(mIsEditable);
-            mStateCombo.setToolTipText(Text.wrapPlainTextForToolTip(STATE_TOOLTIP));
+            mStateCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
             wrapper.add(mStateCombo);
         }
         wrapper.add(new JPanel());
@@ -284,8 +143,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         Component first;
 
         mContainedValue = mRow.getExtendedValue() - mRow.getValue() * mRow.getQuantity();
-        mValueField     = createNumberField(parent, wrapper, EDITOR_VALUE, mRow.getValue(), VALUE_TOOLTIP, 13);
-        mExtValueField  = createNumberField(wrapper, wrapper, EDITOR_EXTENDED_VALUE, mRow.getExtendedValue(), EXT_VALUE_TOOLTIP, 13);
+        mValueField     = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The value of one of these pieces of equipment"), 13);
+        mExtValueField  = createNumberField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         first           = wrapper.getComponent(1);
         mExtValueField.setEnabled(false);
         wrapper.add(new JPanel());
@@ -296,8 +155,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         WeightValue weight = new WeightValue(mRow.getWeight());
         weight.setValue(weight.getValue() * mRow.getQuantity());
         mContainedWeight.subtract(weight);
-        mWeightField    = createWeightField(parent, wrapper, EDITOR_WEIGHT, mRow.getWeight(), EDITOR_WEIGHT_TOOLTIP, 13);
-        mExtWeightField = createWeightField(wrapper, wrapper, EDITOR_EXTENDED_WEIGHT, mRow.getExtendedWeight(), EDITOR_EXTENDED_WEIGHT_TOOLTIP, 13);
+        mWeightField    = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
+        mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended Weight"), mRow.getExtendedWeight(), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
         mExtWeightField.setEnabled(false);
         UIUtilities.adjustToSameSize(new Component[] { first, wrapper.getComponent(1) });
         parent.add(wrapper);
@@ -359,7 +218,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     @SuppressWarnings("unused")
     private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
+        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
         UIUtilities.setOnlySize(field, field.getPreferredSize());
         field.setText(Numbers.format(value));
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -373,7 +232,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private JTextField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + "."); //$NON-NLS-1$
+        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
         UIUtilities.setOnlySize(field, field.getPreferredSize());
         field.setText(value.toString());
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -466,7 +325,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void descriptionChanged() {
-        LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().length() != 0 ? null : NAME_CANNOT_BE_EMPTY);
+        LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
     }
 
     @Override

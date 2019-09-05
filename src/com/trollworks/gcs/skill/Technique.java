@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,10 +17,9 @@ import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -31,30 +30,9 @@ import java.util.Set;
 
 /** A GURPS Technique. */
 public class Technique extends Skill {
-    @Localize("Technique")
-    @Localize(locale = "de", value = "Technik")
-    @Localize(locale = "ru", value = "Техника")
-    @Localize(locale = "es", value = "Técnica")
-    private static String TECHNIQUE_DEFAULT_NAME;
-    @Localize("{0}Requires a skill named {1}\n")
-    @Localize(locale = "de", value = "{0}Benötigt eine Fertigkeit namens {1}")
-    @Localize(locale = "ru", value = "{0}Требует умение {1}\n")
-    @Localize(locale = "es", value = "{0}Requiere la habilidad {1}\n")
-    private static String REQUIRES_SKILL;
-    @Localize("{0}Requires at least 1 point in the skill named {1}\n")
-    @Localize(locale = "de",
-              value = "{0}Benötigt mindestens einen Punkt in der Fertigkeit namens {1}")
-    @Localize(locale = "ru", value = "{0}Требуется хотя бы 1 очко в умении {1}\n")
-    @Localize(locale = "es", value = "{0}Requiere al menos 1 punto en la habilidad {1}\n")
-    private static String REQUIRES_POINTS;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The XML tag used for items. */
-    public static final String  TAG_TECHNIQUE   = "technique"; //$NON-NLS-1$
-    private static final String ATTRIBUTE_LIMIT = "limit"; //$NON-NLS-1$
+    public static final String  TAG_TECHNIQUE   = "technique";
+    private static final String ATTRIBUTE_LIMIT = "limit";
     private SkillDefault        mDefault;
     private boolean             mLimited;
     private int                 mLimitModifier;
@@ -88,7 +66,7 @@ public class Technique extends Skill {
                     relativeLevel = points;
                 }
                 if (level != Integer.MIN_VALUE) {
-                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip); //$NON-NLS-1$ //$NON-NLS-2$
+                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip);
                 }
                 if (limited) {
                     int max = baseLevel + limitModifier;
@@ -122,9 +100,9 @@ public class Technique extends Skill {
      */
     public static String getTechniqueDisplayLevel(int level, int relativeLevel, int modifier) {
         if (level < 0) {
-            return "-"; //$NON-NLS-1$
+            return "-";
         }
-        return Numbers.format(level) + "/" + Numbers.formatWithForcedSign(relativeLevel + modifier); //$NON-NLS-1$
+        return Numbers.format(level) + "/" + Numbers.formatWithForcedSign(relativeLevel + modifier);
     }
 
     /**
@@ -134,7 +112,7 @@ public class Technique extends Skill {
      */
     public Technique(DataFile dataFile) {
         super(dataFile, false);
-        mDefault = new SkillDefault(SkillDefaultType.Skill, DEFAULT_NAME, null, 0);
+        mDefault = new SkillDefault(SkillDefaultType.Skill, I18n.Text("Skill"), null, 0);
         updateLevel(false);
     }
 
@@ -185,7 +163,7 @@ public class Technique extends Skill {
 
     @Override
     public String getLocalizedName() {
-        return TECHNIQUE_DEFAULT_NAME;
+        return I18n.Text("Technique");
     }
 
     @Override
@@ -195,13 +173,13 @@ public class Technique extends Skill {
 
     @Override
     public String getRowType() {
-        return TECHNIQUE_DEFAULT_NAME;
+        return I18n.Text("Technique");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mDefault       = new SkillDefault(SkillDefaultType.Skill, DEFAULT_NAME, null, 0);
+        mDefault       = new SkillDefault(SkillDefaultType.Skill, I18n.Text("Skill"), null, 0);
         mLimited       = false;
         mLimitModifier = 0;
     }
@@ -255,9 +233,9 @@ public class Technique extends Skill {
             boolean satisfied = skill != null && skill.getPoints() > 0;
             if (!satisfied && builder != null) {
                 if (skill == null) {
-                    builder.append(MessageFormat.format(REQUIRES_SKILL, prefix, mDefault.getFullName()));
+                    builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1}\n"), prefix, mDefault.getFullName()));
                 } else {
-                    builder.append(MessageFormat.format(REQUIRES_POINTS, prefix, mDefault.getFullName()));
+                    builder.append(MessageFormat.format(I18n.Text("{0}Requires at least 1 point in the skill named {1}\n"), prefix, mDefault.getFullName()));
                 }
             }
             return satisfied;
@@ -399,7 +377,7 @@ public class Technique extends Skill {
         if (buffer.length() > 0) {
             buffer.append(' ');
         }
-        buffer.append(DEFAULTED_FROM);
+        buffer.append(I18n.Text("Default: "));
         buffer.append(mDefault);
         return buffer.toString();
     }

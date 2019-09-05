@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,22 +13,11 @@ package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.scale.Scale;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
-    @Localize("Untitled Advantages")
-    @Localize(locale = "de", value = "Unbenannte Vorteils-Liste")
-    @Localize(locale = "ru", value = "Безымянный список преимуществ")
-    @Localize(locale = "es", value = "Ventajas sin título")
-    private static String UNTITLED;
-
-    static {
-        Localization.initialize();
-    }
-
     /** Creates a new {@link AdvantagesDockable}. */
     public AdvantagesDockable(AdvantageList list) {
         super(list);
@@ -41,7 +30,7 @@ public class AdvantagesDockable extends LibraryDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return UNTITLED;
+        return I18n.Text("Untitled Advantages");
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,30 +11,14 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** An abstract prerequisite class for whether or not the specific item is present. */
 public abstract class HasPrereq extends Prereq {
-    @Localize("Has")
-    @Localize(locale = "de", value = "Hat")
-    @Localize(locale = "ru", value = "Имеет")
-    @Localize(locale = "es", value = "Tiene")
-    static String HAS;
-    @Localize("Does not have")
-    @Localize(locale = "de", value = "Hat nicht")
-    @Localize(locale = "ru", value = "Не имеет")
-    @Localize(locale = "es", value = "No tiene")
-    static String DOES_NOT_HAVE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The "has" attribute name. */
-    protected static final String ATTRIBUTE_HAS = "has"; //$NON-NLS-1$
+    protected static final String ATTRIBUTE_HAS = "has";
     private boolean               mHas;
 
     /**
@@ -106,5 +90,10 @@ public abstract class HasPrereq extends Prereq {
      */
     public void has(boolean has) {
         mHas = has;
+    }
+
+    /** @return The text associated with the current has() state. */
+    public String hasText() {
+        return mHas ? I18n.Text("Has") : I18n.Text("Does not have");
     }
 }

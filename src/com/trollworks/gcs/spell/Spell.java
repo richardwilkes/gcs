@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,13 +26,12 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,95 +43,59 @@ import java.util.Set;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
-    @Localize("Spell")
-    @Localize(locale = "de", value = "Zauber")
-    @Localize(locale = "ru", value = "Заклинание")
-    @Localize(locale = "es", value = "Sortilegio")
-    private static String DEFAULT_NAME;
-    @Localize("Arcane")
-    @Localize(locale = "de", value = "Arkan")
-    @Localize(locale = "ru", value = "Тайный")
-    @Localize(locale = "es", value = "Arcano")
-    private static String DEFAULT_POWER_SOURCE;
-    @Localize("Regular")
-    @Localize(locale = "de", value = "Regulär")
-    @Localize(locale = "ru", value = "Обычный")
-    @Localize(locale = "es", value = "Normal")
-    private static String DEFAULT_SPELL_CLASS;
-    @Localize("1")
-    @Localize(locale = "de", value = "1")
-    private static String DEFAULT_CASTING_COST;
-    @Localize("1 sec")
-    @Localize(locale = "de", value = "1 Sek.")
-    @Localize(locale = "ru", value = "1 сек")
-    @Localize(locale = "es", value = "1 seg.")
-    private static String DEFAULT_CASTING_TIME;
-    @Localize("Instant")
-    @Localize(locale = "de", value = "Sofort")
-    @Localize(locale = "ru", value = "Мгновенное")
-    @Localize(locale = "es", value = "Instantáneo")
-    private static String DEFAULT_DURATION;
-
-    static {
-        Localization.initialize();
-    }
-
     private static final int       CURRENT_VERSION          = 2;
     /** The extension for Spell lists. */
-    public static final String     OLD_SPELL_EXTENSION      = "spl"; //$NON-NLS-1$
+    public static final String     OLD_SPELL_EXTENSION      = "spl";
     /** The XML tag used for items. */
-    public static final String     TAG_SPELL                = "spell"; //$NON-NLS-1$
+    public static final String     TAG_SPELL                = "spell";
     /** The XML tag used for containers. */
-    public static final String     TAG_SPELL_CONTAINER      = "spell_container"; //$NON-NLS-1$
-    private static final String    TAG_NAME                 = "name"; //$NON-NLS-1$
-    private static final String    TAG_TECH_LEVEL           = "tech_level"; //$NON-NLS-1$
-    private static final String    TAG_COLLEGE              = "college"; //$NON-NLS-1$
-    private static final String    TAG_POWER_SOURCE         = "power_source"; //$NON-NLS-1$
-    private static final String    TAG_SPELL_CLASS          = "spell_class"; //$NON-NLS-1$
-    private static final String    TAG_CASTING_COST         = "casting_cost"; //$NON-NLS-1$
-    private static final String    TAG_MAINTENANCE_COST     = "maintenance_cost"; //$NON-NLS-1$
-    private static final String    TAG_CASTING_TIME         = "casting_time"; //$NON-NLS-1$
-    private static final String    TAG_DURATION             = "duration"; //$NON-NLS-1$
-    private static final String    TAG_POINTS               = "points"; //$NON-NLS-1$
-    private static final String    TAG_REFERENCE            = "reference"; //$NON-NLS-1$
-    private static final String    ATTRIBUTE_VERY_HARD      = "very_hard"; //$NON-NLS-1$
+    public static final String     TAG_SPELL_CONTAINER      = "spell_container";
+    private static final String    TAG_NAME                 = "name";
+    private static final String    TAG_TECH_LEVEL           = "tech_level";
+    private static final String    TAG_COLLEGE              = "college";
+    private static final String    TAG_POWER_SOURCE         = "power_source";
+    private static final String    TAG_SPELL_CLASS          = "spell_class";
+    private static final String    TAG_CASTING_COST         = "casting_cost";
+    private static final String    TAG_MAINTENANCE_COST     = "maintenance_cost";
+    private static final String    TAG_CASTING_TIME         = "casting_time";
+    private static final String    TAG_DURATION             = "duration";
+    private static final String    TAG_POINTS               = "points";
+    private static final String    TAG_REFERENCE            = "reference";
+    private static final String    ATTRIBUTE_VERY_HARD      = "very_hard";
     /** The prefix used in front of all IDs for the spells. */
-    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell."; //$NON-NLS-1$
+    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
     /** The field ID for name changes. */
-    public static final String     ID_NAME                  = PREFIX + "Name"; //$NON-NLS-1$
+    public static final String     ID_NAME                  = PREFIX + "Name";
     /** The field ID for tech level changes. */
-    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel"; //$NON-NLS-1$
+    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";
     /** The field ID for college changes. */
-    public static final String     ID_COLLEGE               = PREFIX + "College"; //$NON-NLS-1$
+    public static final String     ID_COLLEGE               = PREFIX + "College";
     /** The field ID for power source changes. */
-    public static final String     ID_POWER_SOURCE          = PREFIX + "PowerSource"; //$NON-NLS-1$
+    public static final String     ID_POWER_SOURCE          = PREFIX + "PowerSource";
     /** The field ID for spell class changes. */
-    public static final String     ID_SPELL_CLASS           = PREFIX + "Class"; //$NON-NLS-1$
+    public static final String     ID_SPELL_CLASS           = PREFIX + "Class";
     /** The field ID for casting cost changes */
-    public static final String     ID_CASTING_COST          = PREFIX + "CastingCost"; //$NON-NLS-1$
+    public static final String     ID_CASTING_COST          = PREFIX + "CastingCost";
     /** The field ID for maintainance cost changes */
-    public static final String     ID_MAINTENANCE_COST      = PREFIX + "MaintenanceCost"; //$NON-NLS-1$
+    public static final String     ID_MAINTENANCE_COST      = PREFIX + "MaintenanceCost";
     /** The field ID for casting time changes */
-    public static final String     ID_CASTING_TIME          = PREFIX + "CastingTime"; //$NON-NLS-1$
+    public static final String     ID_CASTING_TIME          = PREFIX + "CastingTime";
     /** The field ID for duration changes */
-    public static final String     ID_DURATION              = PREFIX + "Duration"; //$NON-NLS-1$
+    public static final String     ID_DURATION              = PREFIX + "Duration";
     /** The field ID for point changes. */
-    public static final String     ID_POINTS                = PREFIX + "Points"; //$NON-NLS-1$
+    public static final String     ID_POINTS                = PREFIX + "Points";
     /** The field ID for level changes. */
-    public static final String     ID_LEVEL                 = PREFIX + "Level"; //$NON-NLS-1$
+    public static final String     ID_LEVEL                 = PREFIX + "Level";
     /** The field ID for page reference changes. */
-    public static final String     ID_REFERENCE             = PREFIX + "Reference"; //$NON-NLS-1$
+    public static final String     ID_REFERENCE             = PREFIX + "Reference";
     /** The field ID for difficulty changes. */
-    public static final String     ID_DIFFICULTY            = PREFIX + "Difficulty"; //$NON-NLS-1$
+    public static final String     ID_DIFFICULTY            = PREFIX + "Difficulty";
     /** The field ID for when the categories change. */
-    public static final String     ID_CATEGORY              = PREFIX + "Category"; //$NON-NLS-1$
+    public static final String     ID_CATEGORY              = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged"; //$NON-NLS-1$
+    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";
     /** The field ID for when the spell becomes or stops being a weapon. */
-    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus"; //$NON-NLS-1$
-    private static final String    EMPTY                    = ""; //$NON-NLS-1$
-    private static final String    NEWLINE                  = "\n"; //$NON-NLS-1$
-    private static final String    SPACE                    = " "; //$NON-NLS-1$
+    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
     private String                 mName;
     private String                 mTechLevel;
     private String                 mCollege;
@@ -157,18 +120,18 @@ public class Spell extends ListRow implements HasSourceReference {
      */
     public Spell(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mName        = DEFAULT_NAME;
+        mName        = I18n.Text("Spell");
         mAttribute   = SkillAttribute.IQ;
         mTechLevel   = null;
-        mCollege     = EMPTY;
-        mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
-        mSpellClass  = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
-        mCastingCost = isContainer ? EMPTY : DEFAULT_CASTING_COST;
-        mMaintenance = EMPTY;
-        mCastingTime = isContainer ? EMPTY : DEFAULT_CASTING_TIME;
-        mDuration    = isContainer ? EMPTY : DEFAULT_DURATION;
+        mCollege     = "";
+        mPowerSource = isContainer ? "" : getDefaultPowerSource();
+        mSpellClass  = isContainer ? "" : getDefaultSpellClass();
+        mCastingCost = isContainer ? "" : getDefaultCastingCost();
+        mMaintenance = "";
+        mCastingTime = isContainer ? "" : getDefaultCastingTime();
+        mDuration    = isContainer ? "" : getDefaultDuration();
         mPoints      = 1;
-        mReference   = EMPTY;
+        mReference   = "";
         mIsVeryHard  = false;
         mWeapons     = new ArrayList<>();
         updateLevel(false);
@@ -203,7 +166,7 @@ public class Spell extends ListRow implements HasSourceReference {
             }
         } else {
             if (mTechLevel != null && mTechLevel.trim().length() > 0) {
-                mTechLevel = EMPTY;
+                mTechLevel = "";
             }
         }
         mWeapons = new ArrayList<>(spell.mWeapons.size());
@@ -258,7 +221,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     @Override
     public String getLocalizedName() {
-        return DEFAULT_NAME;
+        return I18n.Text("Spell");
     }
 
     @Override
@@ -278,25 +241,25 @@ public class Spell extends ListRow implements HasSourceReference {
 
     @Override
     public String getRowType() {
-        return DEFAULT_NAME;
+        return I18n.Text("Spell");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         boolean isContainer = canHaveChildren();
         super.prepareForLoad(state);
-        mName        = DEFAULT_NAME;
+        mName        = I18n.Text("Spell");
         mAttribute   = SkillAttribute.IQ;
         mTechLevel   = null;
-        mCollege     = EMPTY;
-        mPowerSource = isContainer ? EMPTY : DEFAULT_POWER_SOURCE;
-        mSpellClass  = isContainer ? EMPTY : DEFAULT_SPELL_CLASS;
-        mCastingCost = isContainer ? EMPTY : DEFAULT_CASTING_COST;
-        mMaintenance = EMPTY;
-        mCastingTime = isContainer ? EMPTY : DEFAULT_CASTING_TIME;
-        mDuration    = isContainer ? EMPTY : DEFAULT_DURATION;
+        mCollege     = "";
+        mPowerSource = isContainer ? "" : getDefaultPowerSource();
+        mSpellClass  = isContainer ? "" : getDefaultSpellClass();
+        mCastingCost = isContainer ? "" : getDefaultCastingCost();
+        mMaintenance = "";
+        mCastingTime = isContainer ? "" : getDefaultCastingTime();
+        mDuration    = isContainer ? "" : getDefaultDuration();
         mPoints      = 1;
-        mReference   = EMPTY;
+        mReference   = "";
         mIsVeryHard  = false;
         mWeapons     = new ArrayList<>();
     }
@@ -311,9 +274,9 @@ public class Spell extends ListRow implements HasSourceReference {
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
         String name = reader.getName();
         if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace(NEWLINE, SPACE);
+            mName = reader.readText().replace("\n", " ");
             // Fix for legacy format...
-            if (mName.toLowerCase().endsWith("(vh)")) { //$NON-NLS-1$
+            if (mName.toLowerCase().endsWith("(vh)")) {
                 mName       = mName.substring(0, mName.length() - 4).trim();
                 mIsVeryHard = true;
             }
@@ -322,28 +285,28 @@ public class Spell extends ListRow implements HasSourceReference {
             if (mTechLevel != null) {
                 DataFile dataFile = getDataFile();
                 if (dataFile instanceof ListFile || dataFile instanceof LibraryFile) {
-                    mTechLevel = EMPTY;
+                    mTechLevel = "";
                 }
             }
         } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace(NEWLINE, SPACE);
+            mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_SPELL.equals(name) || TAG_SPELL_CONTAINER.equals(name))) {
             addChild(new Spell(mDataFile, reader, state));
         } else if (!canHaveChildren()) {
             if (TAG_COLLEGE.equals(name)) {
-                mCollege = reader.readText().replace(NEWLINE, SPACE).replace("/ ", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+                mCollege = reader.readText().replace("\n", " ").replace("/ ", "/");
             } else if (TAG_POWER_SOURCE.equals(name)) {
-                mPowerSource = reader.readText().replace(NEWLINE, SPACE);
+                mPowerSource = reader.readText().replace("\n", " ");
             } else if (TAG_SPELL_CLASS.equals(name)) {
-                mSpellClass = reader.readText().replace(NEWLINE, SPACE);
+                mSpellClass = reader.readText().replace("\n", " ");
             } else if (TAG_CASTING_COST.equals(name)) {
-                mCastingCost = reader.readText().replace(NEWLINE, SPACE);
+                mCastingCost = reader.readText().replace("\n", " ");
             } else if (TAG_MAINTENANCE_COST.equals(name)) {
-                mMaintenance = reader.readText().replace(NEWLINE, SPACE);
+                mMaintenance = reader.readText().replace("\n", " ");
             } else if (TAG_CASTING_TIME.equals(name)) {
-                mCastingTime = reader.readText().replace(NEWLINE, SPACE);
+                mCastingTime = reader.readText().replace("\n", " ");
             } else if (TAG_DURATION.equals(name)) {
-                mDuration = reader.readText().replace(NEWLINE, SPACE);
+                mDuration = reader.readText().replace("\n", " ");
             } else if (TAG_POINTS.equals(name)) {
                 mPoints = reader.readInteger(1);
             } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
@@ -738,7 +701,7 @@ public class Spell extends ListRow implements HasSourceReference {
             String techLevel = getTechLevel();
 
             if (techLevel != null) {
-                builder.append("/TL"); //$NON-NLS-1$
+                builder.append("/TL");
                 if (techLevel.length() > 0) {
                     builder.append(techLevel);
                 }
@@ -822,22 +785,27 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return The default casting cost. */
     public static final String getDefaultCastingCost() {
-        return DEFAULT_CASTING_COST;
+        return "1";
     }
 
     /** @return The default casting time. */
     public static final String getDefaultCastingTime() {
-        return DEFAULT_CASTING_TIME;
+        return I18n.Text("1 sec");
     }
 
     /** @return The default duration. */
     public static final String getDefaultDuration() {
-        return DEFAULT_DURATION;
+        return I18n.Text("Instant");
+    }
+
+    /** @return The default power source. */
+    public static final String getDefaultPowerSource() {
+        return I18n.Text("Arcane");
     }
 
     /** @return The default spell class. */
     public static final String getDefaultSpellClass() {
-        return DEFAULT_SPELL_CLASS;
+        return I18n.Text("Regular");
     }
 
     @Override

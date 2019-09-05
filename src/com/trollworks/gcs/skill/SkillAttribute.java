@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,8 +12,7 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.toolkit.annotation.Localize;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** The possible skill attributes. */
 public enum SkillAttribute {
@@ -21,7 +20,7 @@ public enum SkillAttribute {
     ST {
         @Override
         public String toString() {
-            return ST_TITLE;
+            return I18n.Text("ST");
         }
 
         @Override
@@ -33,7 +32,7 @@ public enum SkillAttribute {
     DX {
         @Override
         public String toString() {
-            return DX_TITLE;
+            return I18n.Text("DX");
         }
 
         @Override
@@ -45,7 +44,7 @@ public enum SkillAttribute {
     HT {
         @Override
         public String toString() {
-            return HT_TITLE;
+            return I18n.Text("HT");
         }
 
         @Override
@@ -57,7 +56,7 @@ public enum SkillAttribute {
     IQ {
         @Override
         public String toString() {
-            return IQ_TITLE;
+            return I18n.Text("IQ");
         }
 
         @Override
@@ -69,7 +68,7 @@ public enum SkillAttribute {
     Will {
         @Override
         public String toString() {
-            return WILL_TITLE;
+            return I18n.Text("Will");
         }
 
         @Override
@@ -81,7 +80,7 @@ public enum SkillAttribute {
     Per {
         @Override
         public String toString() {
-            return PER_TITLE;
+            return I18n.Text("Per");
         }
 
         @Override
@@ -93,7 +92,7 @@ public enum SkillAttribute {
     Base10 {
         @Override
         public String toString() {
-            return BASE_10_TITLE;
+            return "10";
         }
 
         @Override
@@ -101,42 +100,6 @@ public enum SkillAttribute {
             return 10;
         }
     };
-
-    @Localize("ST")
-    @Localize(locale = "de", value = "ST")
-    @Localize(locale = "ru", value = "СЛ")
-    @Localize(locale = "es", value = "FZ")
-    static String ST_TITLE;
-    @Localize("DX")
-    @Localize(locale = "de", value = "GE")
-    @Localize(locale = "ru", value = "ЛВ")
-    @Localize(locale = "es", value = "DS")
-    static String DX_TITLE;
-    @Localize("IQ")
-    @Localize(locale = "de", value = "IQ")
-    @Localize(locale = "ru", value = "ИН")
-    @Localize(locale = "es", value = "CI")
-    static String IQ_TITLE;
-    @Localize("HT")
-    @Localize(locale = "de", value = "KO")
-    @Localize(locale = "ru", value = "ЗД")
-    @Localize(locale = "es", value = "SL")
-    static String HT_TITLE;
-    @Localize("Will")
-    @Localize(locale = "de", value = "Wille")
-    @Localize(locale = "ru", value = "Воля")
-    @Localize(locale = "es", value = "Vol")
-    static String WILL_TITLE;
-    @Localize("Per")
-    @Localize(locale = "de", value = "WN")
-    @Localize(locale = "ru", value = "Восп")
-    static String PER_TITLE;
-    @Localize("10")
-    static String BASE_10_TITLE;
-
-    static {
-        Localization.initialize();
-    }
 
     /**
      * @param character The character to work with.

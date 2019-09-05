@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,7 +13,6 @@ package com.trollworks.gcs.common;
 
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.GraphicsUtilities;
 import com.trollworks.toolkit.ui.menu.edit.JumpToSearchTarget;
 import com.trollworks.toolkit.ui.menu.file.SignificantFrame;
@@ -25,7 +24,7 @@ import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.DockLocation;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Geometry;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -36,13 +35,6 @@ import java.util.ArrayList;
 
 /** The workspace, where all files can be viewed and edited. */
 public class Workspace extends AppWindow implements SignificantFrame, JumpToSearchTarget {
-    @Localize("GURPS Workspace")
-    private static String TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     private Toolbar mToolbar;
     private Dock    mDock;
 
@@ -62,7 +54,7 @@ public class Workspace extends AppWindow implements SignificantFrame, JumpToSear
     }
 
     private Workspace() {
-        super(TITLE, GCSImages.getAppIcons());
+        super(I18n.Text("GURPS Character Sheet Workspace"), GCSImages.getAppIcons());
         Container content = getContentPane();
         mToolbar = new Toolbar();
         content.add(mToolbar, BorderLayout.NORTH);
@@ -83,7 +75,7 @@ public class Workspace extends AppWindow implements SignificantFrame, JumpToSear
 
     @Override
     public String getWindowPrefsPrefix() {
-        return "workspace."; //$NON-NLS-1$
+        return "workspace.";
     }
 
     /** @return The {@link Dock}. */

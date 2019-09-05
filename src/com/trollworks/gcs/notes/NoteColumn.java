@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,12 +16,11 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.outline.Cell;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import javax.swing.SwingConstants;
 
@@ -31,12 +30,12 @@ public enum NoteColumn {
     TEXT {
         @Override
         public String toString() {
-            return TEXT_TITLE;
+            return I18n.Text("Notes");
         }
 
         @Override
         public String getToolTip() {
-            return ""; //$NON-NLS-1$
+            return "";
         }
 
         @Override
@@ -60,19 +59,12 @@ public enum NoteColumn {
             String        notes   = note.getNotes();
             builder.append(note.toString());
             if (notes.length() > 0) {
-                builder.append(" - "); //$NON-NLS-1$
+                builder.append(" - ");
                 builder.append(notes);
             }
             return builder.toString();
         }
     };
-
-    @Localize("Notes")
-    static String TEXT_TITLE;
-
-    static {
-        Localization.initialize();
-    }
 
     /**
      * @param character The {@link GURPSCharacter} this note list is associated with, or

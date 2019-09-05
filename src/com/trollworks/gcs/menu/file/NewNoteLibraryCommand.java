@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,29 +14,20 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Equipment Library" command. */
+/** Provides the "New Note Library" command. */
 public class NewNoteLibraryCommand extends Command {
-    @Localize("New Note Library")
-    private static String TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                CMD_NEW_LIBRARY = "NewNoteLibrary"; //$NON-NLS-1$
-
+    public static final String                CMD_NEW_LIBRARY = "NewNoteLibrary";
     /** The singleton {@link NewNoteLibraryCommand}. */
     public static final NewNoteLibraryCommand INSTANCE        = new NewNoteLibraryCommand();
 
     private NewNoteLibraryCommand() {
-        super(TITLE, CMD_NEW_LIBRARY);
+        super(I18n.Text("New Note Library"), CMD_NEW_LIBRARY);
     }
 
     @Override

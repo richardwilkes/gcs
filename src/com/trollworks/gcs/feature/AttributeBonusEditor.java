@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,12 +12,11 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.widget.Commitable;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -26,17 +25,8 @@ import javax.swing.JComboBox;
 
 /** An attribute bonus editor. */
 public class AttributeBonusEditor extends FeatureEditor {
-    @Localize("to ")
-    @Localize(locale = "de", value = "auf ")
-    @Localize(locale = "es", value = "a ")
-    private static String TO;
-
-    static {
-        Localization.initialize();
-    }
-
-    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute"; //$NON-NLS-1$
-    private static final String CHANGE_LIMITATION = "ChangeLimitation"; //$NON-NLS-1$
+    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute";
+    private static final String CHANGE_LIMITATION = "ChangeLimitation";
 
     /**
      * Create a new attribute bonus editor.
@@ -65,7 +55,7 @@ public class AttributeBonusEditor extends FeatureEditor {
         row.setInsets(new Insets(0, 20, 0, 0));
         String[] names = new String[BonusAttributeType.values().length];
         for (int i = 0; i < BonusAttributeType.values().length; i++) {
-            names[i] = TO + BonusAttributeType.values()[i].toString();
+            names[i] = I18n.Text("to ") + BonusAttributeType.values()[i].toString();
         }
         row.add(addComboBox(CHANGE_ATTRIBUTE, names, names[attribute.ordinal()]));
         if (BonusAttributeType.ST == attribute) {

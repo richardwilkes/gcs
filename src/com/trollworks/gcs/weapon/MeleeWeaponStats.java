@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -27,10 +27,10 @@ import java.util.StringTokenizer;
 /** The stats for a melee weapon. */
 public class MeleeWeaponStats extends WeaponStats {
     /** The root XML tag. */
-    public static final String  TAG_ROOT  = "melee_weapon"; //$NON-NLS-1$
-    private static final String TAG_REACH = "reach"; //$NON-NLS-1$
-    private static final String TAG_PARRY = "parry"; //$NON-NLS-1$
-    private static final String TAG_BLOCK = "block"; //$NON-NLS-1$
+    public static final String  TAG_ROOT  = "melee_weapon";
+    private static final String TAG_REACH = "reach";
+    private static final String TAG_PARRY = "parry";
+    private static final String TAG_BLOCK = "block";
     /** The field ID for reach changes. */
     public static final String  ID_REACH  = PREFIX + TAG_REACH;
     /** The field ID for parry changes. */
@@ -43,7 +43,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /**
      * Creates a new {@link MeleeWeaponStats}.
-     * 
+     *
      * @param owner The owning piece of equipment or advantage.
      */
     public MeleeWeaponStats(ListRow owner) {
@@ -52,7 +52,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /**
      * Creates a clone of the specified {@link MeleeWeaponStats}.
-     * 
+     *
      * @param owner The owning piece of equipment or advantage.
      * @param other The {@link MeleeWeaponStats} to clone.
      */
@@ -65,7 +65,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /**
      * Creates a {@link MeleeWeaponStats}.
-     * 
+     *
      * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
@@ -80,9 +80,9 @@ public class MeleeWeaponStats extends WeaponStats {
 
     @Override
     protected void initialize() {
-        mReach = EMPTY;
-        mParry = EMPTY;
-        mBlock = EMPTY;
+        mReach = "";
+        mParry = "";
+        mBlock = "";
     }
 
     @Override
@@ -126,14 +126,14 @@ public class MeleeWeaponStats extends WeaponStats {
         DataFile df = getOwner().getDataFile();
         if (df instanceof GURPSCharacter) {
             GURPSCharacter  character  = (GURPSCharacter) df;
-            StringTokenizer tokenizer  = new StringTokenizer(input, "\n\r", true); //$NON-NLS-1$
+            StringTokenizer tokenizer  = new StringTokenizer(input, "\n\r", true);
             StringBuffer    buffer     = new StringBuffer();
             int             skillLevel = Integer.MAX_VALUE;
 
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();
 
-                if (!token.equals("\n") && !token.equals("\r")) { //$NON-NLS-1$ //$NON-NLS-2$
+                if (!token.equals("\n") && !token.equals("\r")) {
                     int max = token.length();
                     int i   = skipSpaces(token, 0);
 
@@ -175,7 +175,7 @@ public class MeleeWeaponStats extends WeaponStats {
                                 }
                                 skillLevel = best != Integer.MIN_VALUE ? best : 0;
                             }
-                            num = Numbers.format(skillLevel + (neg ? -modifier : modifier) + (token.contains("F") ? character.getEncumbranceLevel().getEncumbrancePenalty() : 0)); //$NON-NLS-1$
+                            num = Numbers.format(skillLevel + (neg ? -modifier : modifier) + (token.contains("F") ? character.getEncumbranceLevel().getEncumbrancePenalty() : 0));
                             if (i < max) {
                                 buffer.append(num);
                                 token = token.substring(i);
@@ -194,7 +194,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of parry.
-     * 
+     *
      * @param parry The value to set.
      */
     public void setParry(String parry) {
@@ -217,7 +217,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of block.
-     * 
+     *
      * @param block The value to set.
      */
     public void setBlock(String block) {
@@ -235,7 +235,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /**
      * Sets the value of reach.
-     * 
+     *
      * @param reach The value to set.
      */
     public void setReach(String reach) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,7 +19,7 @@ import java.io.IOException;
 
 /** Manages string comparison criteria. */
 public class StringCriteria {
-    private static final String ATTRIBUTE_COMPARE = "compare"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_COMPARE = "compare";
     private StringCompareType   mType;
     private String              mQualifier;
 
@@ -96,7 +96,7 @@ public class StringCriteria {
 
     /** @param qualifier The qualifier to match against. */
     public void setQualifier(String qualifier) {
-        mQualifier = qualifier != null ? qualifier : ""; //$NON-NLS-1$
+        mQualifier = qualifier != null ? qualifier : "";
     }
 
     /**

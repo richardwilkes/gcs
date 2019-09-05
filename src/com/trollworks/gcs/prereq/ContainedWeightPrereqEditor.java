@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,24 +12,13 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.layout.FlexSpacer;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 /** A contained weight prerequisite editor panel. */
 public class ContainedWeightPrereqEditor extends PrereqEditor {
-    @Localize("which ")
-    @Localize(locale = "de", value = "die ")
-    @Localize(locale = "ru", value = "который")
-    @Localize(locale = "es", value = "el cual ")
-    private static String WHICH;
-
-    static {
-        Localization.initialize();
-    }
-
     /**
      * Creates a new contained weight prerequisite editor panel.
      *
@@ -52,7 +41,7 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
         grid.add(row, 0, 1);
 
         row = new FlexRow();
-        row.add(addNumericCompareCombo(prereq.getWeightCompare(), WHICH));
+        row.add(addNumericCompareCombo(prereq.getWeightCompare(), I18n.Text("which ")));
         row.add(addWeightCompareField(prereq.getWeightCompare()));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 1);

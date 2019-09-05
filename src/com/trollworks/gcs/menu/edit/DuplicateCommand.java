@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,12 +14,11 @@ package com.trollworks.gcs.menu.edit;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.ui.widget.outline.Row;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -29,29 +28,13 @@ import java.util.ArrayList;
 /** Provides the "Duplicate" command. */
 // RAW: This should be reimplemented in terms of the Duplicatable interface
 public class DuplicateCommand extends Command {
-    @Localize("Duplicate")
-    @Localize(locale = "de", value = "Duplizieren")
-    @Localize(locale = "ru", value = "Дублировать")
-    @Localize(locale = "es", value = "Duplicar")
-    private static String DUPLICATE;
-    @Localize("Duplicate Rows")
-    @Localize(locale = "de", value = "Zeile Duplizieren")
-    @Localize(locale = "ru", value = "Дублировать строки")
-    @Localize(locale = "es", value = "Duplicar Filas")
-    private static String DUPLICATE_UNDO;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String           CMD_DUPLICATE = "Duplicate"; //$NON-NLS-1$
-
+    public static final String           CMD_DUPLICATE = "Duplicate";
     /** The singleton {@link DuplicateCommand}. */
     public static final DuplicateCommand INSTANCE      = new DuplicateCommand();
 
     private DuplicateCommand() {
-        super(DUPLICATE, CMD_DUPLICATE, KeyEvent.VK_U);
+        super(I18n.Text("Duplicate"), CMD_DUPLICATE, KeyEvent.VK_U);
     }
 
     @Override
@@ -89,7 +72,7 @@ public class DuplicateCommand extends Command {
                     topRows.add(row);
                 }
             }
-            outline.addRow(topRows.toArray(new ListRow[0]), DUPLICATE_UNDO, true);
+            outline.addRow(topRows.toArray(new ListRow[0]), I18n.Text("Duplicate Rows"), true);
             dataFile.endNotify();
             model.select(topRows, false);
             outline.scrollSelectionIntoView();

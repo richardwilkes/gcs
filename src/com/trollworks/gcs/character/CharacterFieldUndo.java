@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,7 +25,7 @@ public class CharacterFieldUndo extends AbstractUndoableEdit {
 
     /**
      * Create a new character field undo edit.
-     * 
+     *
      * @param character The character to provide an undo edit for.
      * @param name      The name of the undo edit.
      * @param id        The ID of the field being changed.

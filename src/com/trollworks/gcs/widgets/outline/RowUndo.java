@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,11 +13,10 @@ package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,16 +31,6 @@ import javax.swing.undo.CannotUndoException;
 
 /** An undo for the entire row, with the exception of its children. */
 public class RowUndo extends AbstractUndoableEdit {
-    @Localize("{0} Changes")
-    @Localize(locale = "de", value = "{0} Änderungen")
-    @Localize(locale = "ru", value = "{0} изменений")
-    @Localize(locale = "es", value = "{0} Cambios")
-    private static String UNDO_FORMAT;
-
-    static {
-        Localization.initialize();
-    }
-
     private DataFile mDataFile;
     private ListRow  mRow;
     private String   mName;
@@ -57,7 +46,7 @@ public class RowUndo extends AbstractUndoableEdit {
         super();
         mRow      = row;
         mDataFile = mRow.getDataFile();
-        mName     = MessageFormat.format(UNDO_FORMAT, mRow.getLocalizedName());
+        mName     = MessageFormat.format(I18n.Text("{0} Changes"), mRow.getLocalizedName());
         mBefore   = serialize(mRow);
     }
 

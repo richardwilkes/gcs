@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,32 +14,20 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Character Template" command. */
 public class NewCharacterTemplateCommand extends Command {
-    @Localize("New Character Template")
-    @Localize(locale = "de", value = "Neue Charaktervorlage")
-    @Localize(locale = "ru", value = "Новый шаблон персонажа")
-    @Localize(locale = "es", value = "Nueva plantilla de personaje")
-    private static String NEW_CHARACTER_TEMPLATE;
-
-    static {
-        Localization.initialize();
-    }
-
     /** The action command this command will issue. */
-    public static final String                      CMD_NEW_CHARACTER_TEMPLATE = "NewCharacterTemplate"; //$NON-NLS-1$
-
+    public static final String                      CMD_NEW_CHARACTER_TEMPLATE = "NewCharacterTemplate";
     /** The singletone {@link NewCharacterTemplateCommand}. */
     public static final NewCharacterTemplateCommand INSTANCE                   = new NewCharacterTemplateCommand();
 
     private NewCharacterTemplateCommand() {
-        super(NEW_CHARACTER_TEMPLATE, CMD_NEW_CHARACTER_TEMPLATE);
+        super(I18n.Text("New Character Template"), CMD_NEW_CHARACTER_TEMPLATE);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2017 by Richard A. Wilkes. All rights reserved.
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,9 +11,8 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.toolkit.annotation.Localize;
 import com.trollworks.toolkit.ui.widget.BandedPanel;
-import com.trollworks.toolkit.utility.Localization;
+import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -23,23 +22,13 @@ import java.util.List;
 
 /** Displays and edits {@link SkillDefault} objects. */
 public class Defaults extends BandedPanel implements ActionListener {
-    @Localize("Defaults")
-    @Localize(locale = "de", value = "Grundwerte")
-    @Localize(locale = "ru", value = "По умолчанию")
-    @Localize(locale = "es", value = "Valores por defecto")
-    private static String TITLE;
-
-    static {
-        Localization.initialize();
-    }
-
     /**
      * Creates a new skill defaults editor.
      *
      * @param defaults The initial defaults to display.
      */
     public Defaults(List<SkillDefault> defaults) {
-        super(TITLE);
+        super(I18n.Text("Defaults"));
         setDefaults(defaults);
     }
 
