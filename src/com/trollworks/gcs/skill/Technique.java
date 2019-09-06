@@ -66,7 +66,8 @@ public class Technique extends Skill {
                     relativeLevel = points;
                 }
                 if (level != Integer.MIN_VALUE) {
-                    level += relativeLevel + character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip);
+                    relativeLevel += character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip);
+                    level         += relativeLevel;
                 }
                 if (limited) {
                     int max = baseLevel + limitModifier;
