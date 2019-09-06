@@ -145,6 +145,13 @@
             <arg path="${app.root}/${app.name}.app"/>
         </exec>
 
+        <java modulepath="${modules.dir}" module="com.trollworks.toolkit/com.trollworks.toolkit.utility.I18nMain" fork="true">
+            <arg value="src"/>
+            <arg value="../toolkit/src"/>
+        </java>
+    	<mkdir dir="${app.root}/i18n"/>
+    	<move file="template.i18n" tofile="${app.root}/i18n/template.i18n"/>
+    	
         <copy todir="${app.root}/Library">
             <fileset dir="../gcs_library/Library"/>
         </copy>
