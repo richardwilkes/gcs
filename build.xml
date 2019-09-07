@@ -112,7 +112,9 @@
         <property if:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/MacOS/support"/>
         <property unless:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/support"/>
         <property if:true="${platform.mac}" name="launcher" value="${dist.content.root}/MacOS/${exe.name}"/>
-        <property unless:true="${platform.mac}" name="launcher" value="${dist.content.root}/${exe.name}"/>
+        <property if:true="${platform.linux}" name="launcher" value="${dist.content.root}/${exe.name}"/>
+        <property if:true="${platform.windows}" name="launcher" value="${dist.content.root}/${exe.name}.exe"/>
+        <property if:true="${platform.windows}" name="launcherw" value="${dist.content.root}/${exe.name}w.exe"/>
         <exec executable="jlink">
             <arg value="--module-path"/>
             <arg path="${modules.dir}"/>
@@ -128,9 +130,9 @@
         </exec>
     	<delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}"/>
         <delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}.bat"/>
-        <delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/java.exe"/>
         <move unless:true="${platform.windows}" file="${dist.jdk.root}/bin/java" tofile="${dist.jdk.root}/bin/${exe.name}"/>
-        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/javaw.exe" tofile="${dist.jdk.root}/bin/${exe.name}.exe"/>
+        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/java.exe" tofile="${dist.jdk.root}/bin/${exe.name}.exe"/>
+        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/javaw.exe" tofile="${dist.jdk.root}/bin/${exe.name}w.exe"/>
 
         <mkdir if:true="${platform.mac}" dir="${dist.content.root}/Resources"/>
         <exec if:true="${platform.mac}" executable="java">
@@ -152,6 +154,15 @@
     		<arg value="artifacts/main.go"/>
     	</exec>
     	
+    	<exec if:true="${platform.windows}" executable="go">
+    		<arg value="build"/>
+    		<arg value="-o"/>
+    		<arg value="${launcherw}"/>
+    		<arg value="-ldflags"/>
+    		<arg value="-H=windowsgui"/>
+    		<arg value="artifacts/main.go"/>
+    	</exec>
+
         <exec if:true="${platform.mac}" executable="touch">
             <arg path="${app.root}/${app.name}.app"/>
         </exec>
