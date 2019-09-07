@@ -24,7 +24,6 @@ import com.trollworks.toolkit.ui.widget.dock.DockContainer;
 import com.trollworks.toolkit.ui.widget.dock.DockLocation;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.utility.Geometry;
-import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -54,7 +53,7 @@ public class Workspace extends AppWindow implements SignificantFrame, JumpToSear
     }
 
     private Workspace() {
-        super(I18n.Text("GURPS Character Sheet Workspace"), GCSImages.getAppIcons());
+        super("GCS", GCSImages.getAppIcons());
         Container content = getContentPane();
         mToolbar = new Toolbar();
         content.add(mToolbar, BorderLayout.NORTH);
