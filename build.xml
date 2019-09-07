@@ -111,6 +111,8 @@
         <property unless:true="${platform.mac}" name="dist.content.root" value="${app.root}"/>
         <property if:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/MacOS/support"/>
         <property unless:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/support"/>
+        <property if:true="${platform.mac}" name="launcher" value="${dist.content.root}/MacOS/${exe.name}"/>
+        <property unless:true="${platform.mac}" name="launcher" value="${dist.content.root}/${exe.name}"/>
         <exec executable="jlink">
             <arg value="--module-path"/>
             <arg path="${modules.dir}"/>
@@ -125,30 +127,43 @@
             <arg value="${module.name}"/>
         </exec>
     	<delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}"/>
-    	<delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}.bat"/>
+        <delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}.bat"/>
+        <delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/java.exe"/>
         <move unless:true="${platform.windows}" file="${dist.jdk.root}/bin/java" tofile="${dist.jdk.root}/bin/${exe.name}"/>
         <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/javaw.exe" tofile="${dist.jdk.root}/bin/${exe.name}.exe"/>
+
         <mkdir if:true="${platform.mac}" dir="${dist.content.root}/Resources"/>
-        <java if:true="${platform.mac}" modulepath="${modules.dir}" module="com.trollworks.gcs/com.trollworks.gcs.app.GCSInfoPlistCreator" fork="true">
-            <arg value="${dist.content.root}"/>
-        </java>
+        <exec if:true="${platform.mac}" executable="java">
+             <arg value="--module-path"/>
+             <arg path="${modules.dir}"/>
+             <arg value="--module"/>
+             <arg value="com.trollworks.gcs/com.trollworks.gcs.app.GCSInfoPlistCreator"/>
+             <arg value="${dist.content.root}"/>
+         </exec>
         <copy if:true="${platform.mac}" todir="${dist.content.root}/Resources">
             <fileset dir="artifacts/icns"/>
         </copy>
         <copy if:true="${platform.mac}" file="resources/com/trollworks/gcs/app/images/app_1024.png" tofile="${dist.content.root}/Resources/app.png"/>
-        <copy if:true="${platform.mac}" file="artifacts/${exe.name}" todir="${dist.content.root}/MacOS"/>
-        <copy if:true="${platform.windows}" file="artifacts/${exe.name}.bat" todir="${dist.content.root}"/>
-        <copy if:true="${platform.linux}" file="artifacts/${exe.name}" todir="${dist.content.root}"/>
-        <chmod if:true="${platform.mac}" perm="0755" file="${dist.content.root}/MacOS/${exe.name}"/>
-        <chmod if:true="${platform.linux}" perm="0755" file="${dist.content.root}/${exe.name}"/>
+    	
+    	<exec executable="go">
+    		<arg value="build"/>
+    		<arg value="-o"/>
+    		<arg value="${launcher}"/>
+    		<arg value="artifacts/main.go"/>
+    	</exec>
+    	
         <exec if:true="${platform.mac}" executable="touch">
             <arg path="${app.root}/${app.name}.app"/>
         </exec>
 
-        <java modulepath="${modules.dir}" module="com.trollworks.toolkit/com.trollworks.toolkit.utility.I18nMain" fork="true">
-            <arg value="src"/>
-            <arg value="../toolkit/src"/>
-        </java>
+        <exec executable="java">
+             <arg value="--module-path"/>
+             <arg path="${modules.dir}"/>
+             <arg value="--module"/>
+             <arg value="com.trollworks.toolkit/com.trollworks.toolkit.utility.I18nMain"/>
+             <arg value="src"/>
+             <arg value="../toolkit/src"/>
+         </exec>
     	<mkdir dir="${app.root}/i18n"/>
     	<move file="template.i18n" tofile="${app.root}/i18n/template.i18n"/>
     	
