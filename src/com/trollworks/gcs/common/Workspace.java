@@ -64,6 +64,7 @@ public class Workspace extends AppWindow implements SignificantFrame, JumpToSear
         mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(200);
         restoreBounds();
         setVisible(true);
+        GraphicsUtilities.forceAppToFront();
     }
 
     @Override
