@@ -15,7 +15,7 @@ BEGIN
         	VALUE "FileDescription", "GURPS Character Sheet Command Line"
         	VALUE "FileVersion", "4.12"
         	VALUE "InternalName", "gcs_cl"
-			VALUE "LegalCopyright", "Â© Richard A. Wilkes. All rights reserved."
+			VALUE "LegalCopyright", "© Richard A. Wilkes. All rights reserved."
         	VALUE "OriginalFilename", "gcs_cl.exe"
         	VALUE "ProductName", "GURPS Character Sheet"
 			VALUE "ProductVersion", "4.12"
