@@ -113,8 +113,8 @@
         <property unless:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/support"/>
         <property if:true="${platform.mac}" name="launcher" value="${dist.content.root}/MacOS/${exe.name}"/>
         <property if:true="${platform.linux}" name="launcher" value="${dist.content.root}/${exe.name}"/>
-        <property if:true="${platform.windows}" name="launcher" value="${dist.content.root}/${exe.name}.exe"/>
-        <property if:true="${platform.windows}" name="launcherw" value="${dist.content.root}/${exe.name}w.exe"/>
+        <property if:true="${platform.windows}" name="launcher" value="${dist.content.root}/${exe.name}_cl.exe"/>
+        <property if:true="${platform.windows}" name="launcherw" value="${dist.content.root}/${exe.name}.exe"/>
         <exec executable="jlink">
             <arg value="--module-path"/>
             <arg path="${modules.dir}"/>
@@ -131,8 +131,8 @@
     	<delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}"/>
         <delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}.bat"/>
         <move unless:true="${platform.windows}" file="${dist.jdk.root}/bin/java" tofile="${dist.jdk.root}/bin/${exe.name}"/>
-        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/java.exe" tofile="${dist.jdk.root}/bin/${exe.name}.exe"/>
-        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/javaw.exe" tofile="${dist.jdk.root}/bin/${exe.name}w.exe"/>
+        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/java.exe" tofile="${dist.jdk.root}/bin/${exe.name}_cl.exe"/>
+        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/javaw.exe" tofile="${dist.jdk.root}/bin/${exe.name}.exe"/>
 
         <mkdir if:true="${platform.mac}" dir="${dist.content.root}/Resources"/>
         <exec if:true="${platform.mac}" executable="java">
@@ -147,21 +147,37 @@
         </copy>
         <copy if:true="${platform.mac}" file="resources/com/trollworks/gcs/app/images/app_1024.png" tofile="${dist.content.root}/Resources/app.png"/>
     	
-    	<exec executable="go">
-    		<arg value="build"/>
+    	<exec if:true="${platform.windows}" executable="windres" dir="artifacts">
+    		<arg value="-i"/>
+    		<arg value="main_cl.rc"/>
     		<arg value="-o"/>
-    		<arg value="${launcher}"/>
-    		<arg value="artifacts/main.go"/>
+    		<arg value="mainres.syso"/>
     	</exec>
     	
-    	<exec if:true="${platform.windows}" executable="go">
+    	<exec executable="go" dir="artifacts">
     		<arg value="build"/>
     		<arg value="-o"/>
-    		<arg value="${launcherw}"/>
+    		<arg value="../${launcher}"/>
+    		<arg value="."/>
+    	</exec>
+    	<delete if:true="${platform.windows}" file="artifacts/mainres.syso"/>
+
+    	<exec if:true="${platform.windows}" executable="windres" dir="artifacts">
+    		<arg value="-i"/>
+    		<arg value="main.rc"/>
+    		<arg value="-o"/>
+    		<arg value="mainres.syso"/>
+    	</exec>
+
+    	<exec if:true="${platform.windows}" executable="go" dir="artifacts">
+    		<arg value="build"/>
+    		<arg value="-o"/>
+    		<arg value="../${launcherw}"/>
     		<arg value="-ldflags"/>
     		<arg value="-H=windowsgui"/>
-    		<arg value="artifacts/main.go"/>
+    		<arg value="."/>
     	</exec>
+    	<delete if:true="${platform.windows}" file="artifacts/mainres.syso"/>
 
         <exec if:true="${platform.mac}" executable="touch">
             <arg path="${app.root}/${app.name}.app"/>
