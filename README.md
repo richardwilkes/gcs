@@ -16,8 +16,8 @@ choke on them.
 
 ### Building from the command line
 
-1. Make sure you have JDK 12 installed. You can download it for your platform
-   here: http://jdk.java.net/12/
+1. Make sure you have JDK 13 installed. You can download it for your platform
+   here: http://jdk.java.net/13/
 
 2. Make sure you have Apache ANT installed. You can download it for your
    platform here: https://ant.apache.org/bindownload.cgi
