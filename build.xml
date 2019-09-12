@@ -146,6 +146,7 @@
             <fileset dir="artifacts/icns"/>
         </copy>
         <copy if:true="${platform.mac}" file="resources/com/trollworks/gcs/app/images/app_1024.png" tofile="${dist.content.root}/Resources/app.png"/>
+        <copy if:true="${platform.linux}" file="artifacts/png/app.png" tofile="${dist.jdk.root}/app.png"/>
     	
     	<exec if:true="${platform.windows}" executable="windres" dir="artifacts">
     		<arg value="-i"/>
