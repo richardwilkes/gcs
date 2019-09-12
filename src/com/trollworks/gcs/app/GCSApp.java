@@ -29,15 +29,10 @@ import com.trollworks.toolkit.ui.preferences.MenuKeyPreferences;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.widget.AppWindow;
 import com.trollworks.toolkit.ui.widget.WindowUtils;
-import com.trollworks.toolkit.utility.BundleInfo;
 import com.trollworks.toolkit.utility.I18n;
-import com.trollworks.toolkit.utility.LinuxDesktop;
 import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
 import com.trollworks.toolkit.utility.text.Text;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 /** The main application user interface. */
 public class GCSApp extends App {
@@ -79,13 +74,6 @@ public class GCSApp extends App {
         setDefaultMenuBar(new StdMenuBar());
         if (Platform.isMacintosh() && App.getHomePath().toString().toLowerCase().contains("/apptranslocation/")) {
             WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.Text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + XATTR_CMD);
-        }
-        if (Platform.isLinux()) {
-            try {
-                LinuxDesktop.createDesktopFile(BundleInfo.getDefault(), Arrays.asList("%F"), Arrays.asList("Games", "Roleplaying"), Arrays.asList("GURPS", "GCS"));
-            } catch (IOException exception) {
-                exception.printStackTrace();
-            }
         }
     }
 }
