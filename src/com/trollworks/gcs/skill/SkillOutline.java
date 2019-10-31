@@ -328,9 +328,9 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
             if (!skill.canHaveChildren()) {
                 if (skill.canSwapDefaults(skill.getDefaultSkill())) {
-                    swapDeafaults(undos, skill);
+                    swapDefaults(undos, skill);
                 } else {
-                    swapDeafaults(undos, findBestSwappableSkill(skill));
+                    swapDefaults(undos, findBestSwappableSkill(skill));
                 }
             }
         }
@@ -346,7 +346,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
      * @param undos Undos that are created
      * @param skill Skill to have its default swapped.
      */
-    private static void swapDeafaults(ArrayList<RowUndo> undos, Skill skill) {
+    private static void swapDefaults(ArrayList<RowUndo> undos, Skill skill) {
         if (skill != null) {
             RowUndo undo1 = new RowUndo(skill);
             RowUndo undo2 = new RowUndo(skill.getDefaultSkill());
