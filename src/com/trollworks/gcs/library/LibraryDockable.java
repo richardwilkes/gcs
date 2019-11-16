@@ -14,7 +14,7 @@ package com.trollworks.gcs.library;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.ui.Fonts;
@@ -73,7 +73,7 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         mToolbar    = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
+        mScaleCombo.setSelectedItem(DisplayPreferences.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
             Scale scale = ((Scales) mScaleCombo.getSelectedItem()).getScale();
             header.setScale(scale);

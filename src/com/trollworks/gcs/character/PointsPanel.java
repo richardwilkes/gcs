@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.Wrapper;
@@ -49,7 +49,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
         createDivider();
         createLabelAndField(this, sheet, GURPSCharacter.ID_UNSPENT_POINTS, I18n.Text("Unspent:"), I18n.Text("Points that have been earned but have not yet been spent"), SwingConstants.RIGHT);
         sheet.getCharacter().addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
-        Preferences.getInstance().getNotifier().add(this, SheetPreferences.TOTAL_POINTS_DISPLAY_PREF_KEY);
+        Preferences.getInstance().getNotifier().add(this, DisplayPreferences.TOTAL_POINTS_DISPLAY_PREF_KEY);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     }
 
     private static String getTitle(GURPSCharacter character) {
-        return MessageFormat.format(I18n.Text("{0} Points"), Numbers.format(SheetPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? character.getTotalPoints() : character.getSpentPoints()));
+        return MessageFormat.format(I18n.Text("{0} Points"), Numbers.format(DisplayPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? character.getTotalPoints() : character.getSpentPoints()));
     }
 
     @Override

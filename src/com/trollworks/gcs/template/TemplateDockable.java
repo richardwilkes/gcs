@@ -14,6 +14,7 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
@@ -70,7 +71,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
         mTemplate   = new TemplateSheet(dataFile);
         mToolbar    = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(SheetPreferences.getInitialUIScale());
+        mScaleCombo.setSelectedItem(DisplayPreferences.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> mTemplate.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
         mToolbar.add(mScaleCombo);
         mSearch = new Search(this);

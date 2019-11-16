@@ -18,6 +18,7 @@ import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -117,7 +118,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mTechLevel      = "";
         mLegalityClass  = DEFAULT_LEGALITY_CLASS;
         mReference      = "";
-        mWeight         = new WeightValue(0, SheetPreferences.getWeightUnits());
+        mWeight         = new WeightValue(0, DisplayPreferences.getWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
         mWeapons        = new ArrayList<>();
     }

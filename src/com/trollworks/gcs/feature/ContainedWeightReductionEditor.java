@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
@@ -47,7 +47,7 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
                 feature.setValue(source.getValue());
                 notifyActionListeners();
             }
-        }, SwingConstants.LEFT, feature.getValue(), new WeightValue(999999999, SheetPreferences.getWeightUnits()), I18n.Text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
+        }, SwingConstants.LEFT, feature.getValue(), new WeightValue(999999999, DisplayPreferences.getWeightUnits()), I18n.Text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
         UIUtilities.setOnlySize(field, field.getPreferredSize());
         add(field);
         row.add(field);

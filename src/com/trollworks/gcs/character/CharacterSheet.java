@@ -27,6 +27,7 @@ import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
@@ -159,14 +160,14 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         super();
         setLayout(new CharacterSheetLayout(this));
         setOpaque(false);
-        mScale       = SheetPreferences.getInitialUIScale().getScale();
+        mScale       = DisplayPreferences.getInitialUIScale().getScale();
         mCharacter   = character;
         mLastPage    = -1;
         mRootsToSync = new HashSet<>();
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
         }
-        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, OutputPreferences.BLOCK_LAYOUT_PREF_KEY, SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY);
+        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, DisplayPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, DisplayPreferences.BLOCK_LAYOUT_PREF_KEY, SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY);
     }
 
     /** Call when the sheet is no longer in use. */
@@ -253,7 +254,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         // Add the various outline blocks, based on the layout preference.
         Set<String> remaining   = prepBlockLayoutRemaining();
-        String      blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
+        String      blockLayout = DisplayPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
         for (String line : blockLayout.split("\n")) {
             String[] parts = line.trim().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
@@ -318,7 +319,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     public static String getHTMLGridTemplate() {
         Set<String>   remaining   = prepBlockLayoutRemaining();
-        String        blockLayout = OutputPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
+        String        blockLayout = DisplayPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
         StringBuilder buffer      = new StringBuilder();
         for (String line : blockLayout.split("\n")) {
             String[] parts = line.trim().split(" ");
@@ -768,7 +769,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
-        if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || SheetPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type) || Profile.ID_BODY_TYPE.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY.equals(type) || OutputPreferences.BLOCK_LAYOUT_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY.equals(type)) {
+        if (SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY.equals(type) || Fonts.FONT_NOTIFICATION_KEY.equals(type) || DisplayPreferences.WEIGHT_UNITS_PREF_KEY.equals(type) || SheetPreferences.GURPS_METRIC_RULES_PREF_KEY.equals(type) || Profile.ID_BODY_TYPE.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY.equals(type) || DisplayPreferences.BLOCK_LAYOUT_PREF_KEY.equals(type) || SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY.equals(type)) {
             markForRebuild();
         } else {
             if (type.startsWith(Advantage.PREFIX)) {

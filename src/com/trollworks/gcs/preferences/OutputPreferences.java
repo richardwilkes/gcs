@@ -11,17 +11,17 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.app.GCSCmdLine;
+import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.toolkit.io.Log;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.UIUtilities;
-import com.trollworks.toolkit.ui.border.LineBorder;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
+import com.trollworks.toolkit.ui.layout.FlexSpacer;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
 import com.trollworks.toolkit.ui.preferences.PreferencesWindow;
 import com.trollworks.toolkit.ui.print.PageOrientation;
@@ -53,7 +53,6 @@ import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -62,7 +61,7 @@ import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
 public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    private static final String MODULE                    = "Output";
+    static final String         MODULE                    = "Output";
     private static final int    DEFAULT_PNG_RESOLUTION    = 200;
     private static final String PNG_RESOLUTION_KEY        = "PNGResolution";
     private static final int[]  DPI                       = { 72, 96, 144, 150, 200, 300 };
@@ -72,10 +71,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     public static final String  BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
     public static final String  GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
     private static final String DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings";
-    private static final String BLOCK_LAYOUT_KEY          = "BlockLayout";
-    /** The block layout preference key. */
-    public static final String  BLOCK_LAYOUT_PREF_KEY     = Preferences.getModuleKey(MODULE, BLOCK_LAYOUT_KEY);
-    private static final String DEFAULT_BLOCK_LAYOUT      = "melee\nranged\nadvantages skills\nspells\nequipment\nnotes";
     private JComboBox<String>   mPNGResolutionCombo;
     private JCheckBox           mUseTextTemplateOverride;
     private JTextField          mTextTemplatePath;
@@ -83,7 +78,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     private JButton             mGurpsCalculatorLink;
     private JTextField          mGurpsCalculatorKey;
     private JCheckBox           mUseNativePrinter;
-    private JTextArea           mBlockLayoutField;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
@@ -107,11 +101,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
                 prefs.removePreference(SheetPreferences.MODULE, DEFAULT_PAGE_SETTINGS_KEY);
             }
         }
-    }
-
-    /** @return The block layout settings. */
-    public static String getBlockLayout() {
-        return Preferences.getInstance().getStringValue(MODULE, BLOCK_LAYOUT_KEY, DEFAULT_BLOCK_LAYOUT);
     }
 
     /** @return The resolution to use when saving the sheet as a PNG. */
@@ -240,16 +229,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         row.add(createLabel(I18n.Text("when saving sheets to PNG"), pngDPIMsg(), SwingConstants.LEFT));
         column.add(row);
 
-        row = new FlexRow();
-        String blockLayoutTooltip = I18n.Text("Specifies the layout of the various blocks of data on the character sheet");
-        row.add(createLabel(I18n.Text("Block Layout"), blockLayoutTooltip));
-        column.add(row);
-
-        row               = new FlexRow();
-        mBlockLayoutField = createTextArea(blockLayoutTooltip, getBlockLayout());
-        row.add(mBlockLayoutField);
-        row.setFillVertical(true);
-        column.add(row);
+        column.add(new FlexSpacer(0, 0, false, true));
 
         column.apply(this);
     }
@@ -329,15 +309,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         return field;
     }
 
-    private JTextArea createTextArea(String tooltip, String value) {
-        JTextArea field = new JTextArea(value);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.getDocument().addDocumentListener(this);
-        field.setBorder(new LineBorder());
-        add(field);
-        return field;
-    }
-
     @Override
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
@@ -369,12 +340,11 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         }
         mUseTextTemplateOverride.setSelected(false);
         mUseNativePrinter.setSelected(false);
-        mBlockLayoutField.setText(DEFAULT_BLOCK_LAYOUT);
     }
 
     @Override
     public boolean isSetToDefaults() {
-        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals("") && mBlockLayoutField.getText().equals(DEFAULT_BLOCK_LAYOUT);
+        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals("");
     }
 
     @Override
@@ -384,8 +354,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
             Preferences.getInstance().setValue(MODULE, TEMPLATE_OVERRIDE_KEY, mTextTemplatePath.getText());
         } else if (mGurpsCalculatorKey.getDocument() == document) {
             Preferences.getInstance().setValue(MODULE, GURPS_CALCULATOR_KEY_KEY, mGurpsCalculatorKey.getText());
-        } else if (mBlockLayoutField.getDocument() == document) {
-            Preferences.getInstance().setValue(MODULE, BLOCK_LAYOUT_KEY, mBlockLayoutField.getText());
         }
         adjustResetButton();
     }

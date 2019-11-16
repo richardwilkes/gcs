@@ -19,7 +19,7 @@ import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.notes.NoteList;
-import com.trollworks.gcs.preferences.SystemPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.template.Template;
@@ -106,7 +106,7 @@ public class GCSCmdLine {
         registerFileTypes(new GCSFileProxyCreator());
 
         // Increase TooTip time so the user has time to read the skill modifiers
-        ToolTipManager.sharedInstance().setDismissDelay(SystemPreferences.getToolTipTimeout());
+        ToolTipManager.sharedInstance().setDismissDelay(DisplayPreferences.getToolTipTimeout() * 1000);
     }
 
     /** @return The path to the GCS library files. */

@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.ui.border.LineBorder;
 import com.trollworks.toolkit.ui.scale.Scale;
@@ -33,7 +33,7 @@ public class LibraryContent extends JPanel implements ScaleRoot, Scrollable {
         mOutline.setBorder(new LineBorder(mOutline.getDividerColor(), 0, 0, 0, 1));
         setLayout(new BorderLayout());
         add(mOutline);
-        mScale = SheetPreferences.getInitialUIScale().getScale();
+        mScale = DisplayPreferences.getInitialUIScale().getScale();
     }
 
     @Override

@@ -18,7 +18,7 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteOutline;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
@@ -83,7 +83,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         setBackground(Color.WHITE);
         setBorder(NORMAL_BORDER);
 
-        mScale            = SheetPreferences.getInitialUIScale().getScale();
+        mScale            = DisplayPreferences.getInitialUIScale().getScale();
         mTemplate         = template;
 
         // Make sure our primary outlines exist

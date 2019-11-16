@@ -15,7 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
@@ -40,7 +40,7 @@ public class ContainedWeightPrereq extends HasPrereq {
      */
     public ContainedWeightPrereq(PrereqList parent) {
         super(parent);
-        mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(5.0, SheetPreferences.getWeightUnits()));
+        mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(5.0, DisplayPreferences.getWeightUnits()));
     }
 
     /**

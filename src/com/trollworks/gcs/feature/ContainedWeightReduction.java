@@ -12,7 +12,7 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -128,7 +128,7 @@ public class ContainedWeightReduction implements Feature {
      */
     public WeightValue getAbsoluteReduction() {
         if (isPercentage()) {
-            return new WeightValue(0, SheetPreferences.getWeightUnits());
+            return new WeightValue(0, DisplayPreferences.getWeightUnits());
         }
         return (WeightValue) mValue;
     }

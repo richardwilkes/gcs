@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.toolkit.ui.border.LineBorder;
 import com.trollworks.toolkit.ui.scale.Scale;
 import com.trollworks.toolkit.ui.scale.ScaleRoot;
@@ -28,7 +28,7 @@ public class LibraryHeader extends JPanel implements ScaleRoot {
         header.setBorder(new LineBorder(header.getOwner().getDividerColor(), 0, 0, 0, 1));
         setLayout(new BorderLayout());
         add(header);
-        mScale = SheetPreferences.getInitialUIScale().getScale();
+        mScale = DisplayPreferences.getInitialUIScale().getScale();
     }
 
     @Override

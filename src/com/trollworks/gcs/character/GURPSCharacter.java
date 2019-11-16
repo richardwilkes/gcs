@@ -30,6 +30,7 @@ import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
@@ -325,7 +326,7 @@ public class GURPSCharacter extends DataFile {
         mIncludePunch         = true;
         mIncludeKick          = true;
         mIncludeKickBoots     = true;
-        mCachedWeightCarried  = new WeightValue(0, SheetPreferences.getWeightUnits());
+        mCachedWeightCarried  = new WeightValue(0, DisplayPreferences.getWeightUnits());
         mPageSettings         = OutputPreferences.getDefaultPageSettings();
         mLastModified         = System.currentTimeMillis();
         mCreatedOn            = mLastModified;
@@ -1142,7 +1143,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return Basic lift. */
     public WeightValue getBasicLift() {
-        return getBasicLift(SheetPreferences.getWeightUnits());
+        return getBasicLift(DisplayPreferences.getWeightUnits());
     }
 
     private WeightValue getBasicLift(WeightUnits desiredUnits) {
@@ -1150,7 +1151,7 @@ public class GURPSCharacter extends DataFile {
         double      divisor;
         double      multiplier;
         double      roundAt;
-        if (SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric()) {
+        if (SheetPreferences.areGurpsMetricRulesUsed() && DisplayPreferences.getWeightUnits().isMetric()) {
             units      = WeightUnits.KG;
             divisor    = 10;
             multiplier = 1;
@@ -1231,10 +1232,10 @@ public class GURPSCharacter extends DataFile {
      * @return The maximum amount the character can carry for the specified encumbrance level.
      */
     public WeightValue getMaximumCarry(Encumbrance encumbrance) {
-        WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() && SheetPreferences.getWeightUnits().isMetric() ? WeightUnits.KG : WeightUnits.LB;
+        WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() && DisplayPreferences.getWeightUnits().isMetric() ? WeightUnits.KG : WeightUnits.LB;
         WeightValue lift      = getBasicLift(calcUnits);
         lift.setValue(lift.getValue() * encumbrance.getWeightMultiplier());
-        WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
+        WeightUnits desiredUnits = DisplayPreferences.getWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, lift.getValue()), desiredUnits);
     }
 
@@ -1501,14 +1502,14 @@ public class GURPSCharacter extends DataFile {
     public void calculateWeightAndWealthCarried(boolean notify) {
         WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
         double      savedWealth = mCachedWealthCarried;
-        mCachedWeightCarried = new WeightValue(0, SheetPreferences.getWeightUnits());
+        mCachedWeightCarried = new WeightValue(0, DisplayPreferences.getWeightUnits());
         mCachedWealthCarried = 0.0;
         for (Row one : mEquipment.getTopLevelRows()) {
             Equipment equipment = (Equipment) one;
             if (equipment.isCarried()) {
                 WeightValue weight = new WeightValue(equipment.getExtendedWeight());
                 if (SheetPreferences.areGurpsMetricRulesUsed()) {
-                    if (SheetPreferences.getWeightUnits().isMetric()) {
+                    if (DisplayPreferences.getWeightUnits().isMetric()) {
                         weight = GURPSCharacter.convertToGurpsMetric(weight);
                     } else {
                         weight = GURPSCharacter.convertFromGurpsMetric(weight);

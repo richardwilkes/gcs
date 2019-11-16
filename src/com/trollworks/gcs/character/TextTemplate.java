@@ -19,8 +19,8 @@ import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.notes.Note;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
 import com.trollworks.gcs.skill.SkillDifficulty;
@@ -371,7 +371,7 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getLastModified());
             break;
         case KEY_TOTAL_POINTS:
-            writeEncodedText(out, Numbers.format(SheetPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
+            writeEncodedText(out, Numbers.format(DisplayPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
             break;
         case KEY_ATTRIBUTE_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));

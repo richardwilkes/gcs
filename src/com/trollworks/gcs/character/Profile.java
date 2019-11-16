@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.notes.Note;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -149,8 +150,8 @@ public class Profile {
         mHair             = full ? getRandomHair() : "";
         mSkinColor        = full ? getRandomSkinColor() : "";
         mHandedness       = full ? getRandomHandedness() : "";
-        mHeight           = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, SheetPreferences.getLengthUnits());
-        mWeight           = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, SheetPreferences.getWeightUnits());
+        mHeight           = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, DisplayPreferences.getLengthUnits());
+        mWeight           = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, DisplayPreferences.getWeightUnits());
         mGender           = full ? getRandomGender() : "";
         mName             = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(mGender == I18n.Text("Male")) : "";
         mRace             = full ? I18n.Text("Human") : "";
@@ -925,7 +926,7 @@ public class Profile {
         } else {
             base = 74;
         }
-        boolean useMetric = SheetPreferences.getWeightUnits().isMetric();
+        boolean useMetric = DisplayPreferences.getWeightUnits().isMetric();
         if (useMetric) {
             base  = (int) Math.round(LengthUnits.CM.convert(LengthUnits.FT_IN, base));
             base += RANDOM.nextInt(16);
@@ -936,7 +937,7 @@ public class Profile {
             base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
         }
         LengthUnits calcUnits    = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
-        LengthUnits desiredUnits = SheetPreferences.getLengthUnits();
+        LengthUnits desiredUnits = DisplayPreferences.getLengthUnits();
         return new LengthValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 
@@ -966,7 +967,7 @@ public class Profile {
             base  = 170;
             range = 101;
         }
-        boolean useMetric = SheetPreferences.getWeightUnits().isMetric();
+        boolean useMetric = DisplayPreferences.getWeightUnits().isMetric();
         if (useMetric) {
             base  = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, base));
             range = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, range - 1)) + 1;
@@ -977,7 +978,7 @@ public class Profile {
         }
         base = (int) Math.max(Math.round(base * multiplier), 1);
         WeightUnits calcUnits    = useMetric ? WeightUnits.KG : WeightUnits.LB;
-        WeightUnits desiredUnits = SheetPreferences.getWeightUnits();
+        WeightUnits desiredUnits = DisplayPreferences.getWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 

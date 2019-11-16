@@ -17,10 +17,10 @@ import com.trollworks.gcs.menu.HelpMenuProvider;
 import com.trollworks.gcs.menu.edit.EditMenuProvider;
 import com.trollworks.gcs.menu.file.FileMenuProvider;
 import com.trollworks.gcs.menu.item.ItemMenuProvider;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.ReferenceLookupPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
-import com.trollworks.gcs.preferences.SystemPreferences;
 import com.trollworks.toolkit.ui.App;
 import com.trollworks.toolkit.ui.UpdateChecker;
 import com.trollworks.toolkit.ui.menu.StdMenuBar;
@@ -56,11 +56,11 @@ public class GCSApp extends App {
         OutputPreferences.initialize(); // Must come before SheetPreferences.initialize()
         SheetPreferences.initialize();
         PreferencesWindow.addCategory(SheetPreferences::new);
+        PreferencesWindow.addCategory(DisplayPreferences::new);
         PreferencesWindow.addCategory(OutputPreferences::new);
         PreferencesWindow.addCategory(FontPreferences::new);
         PreferencesWindow.addCategory(MenuKeyPreferences::new);
         PreferencesWindow.addCategory(ReferenceLookupPreferences::new);
-        PreferencesWindow.addCategory(SystemPreferences::new);
     }
 
     @Override
