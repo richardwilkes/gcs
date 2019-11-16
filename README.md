@@ -21,8 +21,11 @@ choke on them.
 
 2. Make sure you have Apache ANT installed. You can download it for your
    platform here: https://ant.apache.org/bindownload.cgi
+   
+3. Make sure you have Go installed. You can download it for your platform
+   here: https://golang.org/dl/
 
-3. Clone the source repositories:
+4. Clone the source repositories:
 
   ```
   % git clone https://github.com/richardwilkes/gcs
@@ -30,7 +33,7 @@ choke on them.
   % ant clone-deps
   ```
 
-4. Build and bundle the code for your platform:
+5. Build and bundle the code for your platform:
 
   ```
   % cd gcs
