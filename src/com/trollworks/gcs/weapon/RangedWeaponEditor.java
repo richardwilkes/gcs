@@ -16,11 +16,15 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Container;
 import java.util.List;
+
+import javax.swing.JPanel;
 
 /** An editor for ranged weapon statistics. */
 public class RangedWeaponEditor extends WeaponEditor {
@@ -62,12 +66,35 @@ public class RangedWeaponEditor extends WeaponEditor {
 
     @Override
     protected void createFields(Container parent) {
-        mAccuracy   = createTextField(parent, I18n.Text("Accuracy"), "");
-        mRange      = createTextField(parent, I18n.Text("Range"), "");
-        mRateOfFire = createTextField(parent, I18n.Text("Rate of Fire"), "");
-        mShots      = createTextField(parent, I18n.Text("Shots"), "");
-        mRecoil     = createTextField(parent, I18n.Text("Recoil"), "");
-        mBulk       = createTextField(parent, I18n.Text("Bulk"), "");
+        JPanel panel   = new JPanel(new ColumnLayout(5));
+        String tooltip = I18n.Text("Accuracy");
+        mAccuracy = createTextField("99+99*", tooltip);
+        parent.add(new LinkedLabel(tooltip, mAccuracy));
+        panel.add(mAccuracy);
+        tooltip     = I18n.Text("Rate of Fire");
+        mRateOfFire = createTextField("999*", tooltip);
+        panel.add(new LinkedLabel(tooltip, mRateOfFire));
+        panel.add(mRateOfFire);
+        tooltip = I18n.Text("Range");
+        mRange  = createTextField(null, tooltip);
+        panel.add(new LinkedLabel(tooltip, mRange));
+        panel.add(mRange);
+        parent.add(panel);
+
+        panel   = new JPanel(new ColumnLayout(5));
+        tooltip = I18n.Text("Recoil");
+        mRecoil = createTextField("9999", tooltip);
+        parent.add(new LinkedLabel(tooltip, mRecoil));
+        panel.add(mRecoil);
+        tooltip = I18n.Text("Shots");
+        mShots  = createTextField(null, tooltip);
+        panel.add(new LinkedLabel(tooltip, mShots));
+        panel.add(mShots);
+        tooltip = I18n.Text("Bulk");
+        mBulk   = createTextField("9999", tooltip);
+        panel.add(new LinkedLabel(tooltip, mBulk));
+        panel.add(mBulk);
+        parent.add(panel);
     }
 
     @Override

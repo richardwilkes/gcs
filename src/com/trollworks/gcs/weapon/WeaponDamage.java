@@ -1,0 +1,501 @@
+/*
+ * Copyright (c) 1998-2019 by Richard A. Wilkes. All rights reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * version 2.0. If a copy of the MPL was not distributed with this file, You
+ * can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined
+ * by the Mozilla Public License, version 2.0.
+ */
+
+package com.trollworks.gcs.weapon;
+
+import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.feature.LeveledAmount;
+import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.skill.SkillDefault;
+import com.trollworks.toolkit.io.xml.XMLReader;
+import com.trollworks.toolkit.io.xml.XMLWriter;
+import com.trollworks.toolkit.utility.Dice;
+import com.trollworks.toolkit.utility.I18n;
+import com.trollworks.toolkit.utility.text.Enums;
+import com.trollworks.toolkit.utility.text.Numbers;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/** Holds damage a weapon does, broken down for easier manipulation. */
+public class WeaponDamage {
+    /** The XML tag used for weapon damage. */
+    public static final String   TAG_ROOT                         = "damage";
+    private static final String  ATTR_TYPE                        = "type";
+    private static final String  ATTR_ST                          = "st";
+    private static final String  ATTR_BASE                        = "base";
+    private static final String  ATTR_FRAGMENTATION               = "fragmentation";
+    private static final String  ATTR_ARMOR_DIVISOR               = "armor_divisor";
+    private static final String  ATTR_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
+    private static final String  ATTR_FRAGMENTATION_TYPE          = "fragmentation_type";
+    private static final String  ATTR_MODIFIER_PER_DIE            = "modifier_per_die";
+    private static final String  DICE_REGEXP_PIECE                = "\\d+[dD]\\d*(\\s*[+-]\\s*\\d+)?(\\s*[xX]\\s*\\d+)?";
+    private static final String  DIVISOR_REGEXP_PIECE             = "\\s*(\\(\\s*(?<divisor>\\d+(\\.\\d+)?|∞)\\s*\\))?";
+    private static final String  FRAG_REGEXP_PIECE                = "\\s*(\\[\\s*(?<frag>" + DICE_REGEXP_PIECE + ")\\s*(\\(\\s*(?<fragDivisor>\\d+(\\.\\d+)?|∞)\\s*\\))?\\s*(?<fragType>cr|cut)?\\])";
+    private static final String  REMAINDER_REGEXP_PIECE           = "(?<remainder>.*)";
+    private static final String  DAMAGE_REGEXP_STR                = "^\\s*\\+?\\s*(?<dice>" + DICE_REGEXP_PIECE + ")" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
+    private static final String  DAMAGE_ALT_REGEX_STR             = "^\\s*(?<dice>[+-]?\\s*\\d+)?(:(?<perDie>[-+]\\d+))?" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
+    private static final String  TRAILING_FRAG_REGEXP_STR         = "^" + REMAINDER_REGEXP_PIECE + FRAG_REGEXP_PIECE + "$";
+    private static final Pattern DAMAGE_REGEXP                    = Pattern.compile(DAMAGE_REGEXP_STR);
+    private static final Pattern DAMAGE_ALT_REGEXP                = Pattern.compile(DAMAGE_ALT_REGEX_STR);
+    private static final Pattern TRAILING_FRAG_REGEXP             = Pattern.compile(TRAILING_FRAG_REGEXP_STR);
+    private WeaponStats          mOwner;
+    private String               mType;
+    private WeaponSTDamage       mST;
+    private Dice                 mBase;
+    private double               mArmorDivisor;
+    private Dice                 mFragmentation;
+    private double               mFragmentationArmorDivisor;
+    private String               mFragmentationType;
+    private int                  mModifierPerDie;
+
+    public WeaponDamage(WeaponStats owner) {
+        mType         = "";
+        mOwner        = owner;
+        mST           = WeaponSTDamage.NONE;
+        mArmorDivisor = 1;
+    }
+
+    public WeaponDamage(XMLReader reader, WeaponStats owner) throws IOException {
+        mOwner = owner;
+        mType  = reader.getAttribute(ATTR_TYPE, "");
+        if (reader.hasAttribute(ATTR_ST)) {
+            mST = Enums.extract(reader.getAttribute(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
+        } else {
+            mST = WeaponSTDamage.NONE;
+        }
+        if (reader.hasAttribute(ATTR_BASE)) {
+            mBase = new Dice(reader.getAttribute(ATTR_BASE));
+        }
+        mArmorDivisor   = reader.getAttributeAsDouble(ATTR_ARMOR_DIVISOR, 1);
+        mModifierPerDie = reader.getAttributeAsInteger(ATTR_MODIFIER_PER_DIE, 0);
+        if (reader.hasAttribute(ATTR_FRAGMENTATION)) {
+            mFragmentation             = new Dice(reader.getAttribute(ATTR_FRAGMENTATION));
+            mFragmentationType         = reader.getAttribute(ATTR_FRAGMENTATION_TYPE, "cut");
+            mFragmentationArmorDivisor = reader.getAttributeAsDouble(ATTR_FRAGMENTATION_ARMOR_DIVISOR, 1);
+        }
+        String text = reader.readText().trim();
+        if (text.length() > 0) {
+            // If we find text here, then we have an old damage value that needs to be converted.
+            setValuesFromFreeformDamageString(text);
+        }
+    }
+
+    /**
+     * Saves the weapon damage.
+     *
+     * @param out The XML writer to use.
+     */
+    public void save(XMLWriter out) {
+        out.startTag(TAG_ROOT);
+        out.writeAttribute(ATTR_TYPE, mType);
+        if (mST != WeaponSTDamage.NONE) {
+            out.writeAttribute(ATTR_ST, mST.toString());
+        }
+        if (mBase != null) {
+            String base = mBase.toString();
+            if (!base.equals("0")) {
+                out.writeAttribute(ATTR_BASE, base);
+            }
+        }
+        if (mArmorDivisor != 1) {
+            out.writeAttribute(ATTR_ARMOR_DIVISOR, mArmorDivisor);
+        }
+        if (mFragmentation != null) {
+            String frag = mFragmentation.toString();
+            if (!frag.equals("0")) {
+                out.writeAttribute(ATTR_FRAGMENTATION, frag);
+                if (mFragmentationArmorDivisor != 1) {
+                    out.writeAttribute(ATTR_FRAGMENTATION_ARMOR_DIVISOR, mFragmentationArmorDivisor);
+                }
+                out.writeAttribute(ATTR_FRAGMENTATION_TYPE, mFragmentationType);
+            }
+        }
+        out.writeAttributeNotZero(ATTR_MODIFIER_PER_DIE, mModifierPerDie);
+        out.finishEmptyTagEOL();
+    }
+
+    public WeaponDamage clone(WeaponStats owner) {
+        WeaponDamage other = new WeaponDamage(owner);
+        other.mType = mType;
+        other.mST   = mST;
+        if (mBase != null) {
+            other.mBase = mBase.clone();
+        }
+        other.mArmorDivisor   = mArmorDivisor;
+        other.mModifierPerDie = mModifierPerDie;
+        if (mFragmentation != null) {
+            other.mFragmentation             = mFragmentation.clone();
+            other.mFragmentationType         = mFragmentationType;
+            other.mFragmentationArmorDivisor = mFragmentationArmorDivisor;
+        }
+        return other;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return equivalent(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    public boolean equivalent(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof WeaponDamage) {
+            WeaponDamage other = (WeaponDamage) obj;
+            if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mModifierPerDie == other.mModifierPerDie && (mBase == null ? other.mBase == null : mBase.equals(other.mBase))) {
+                if (mFragmentation == null) {
+                    return other.mFragmentation == null;
+                }
+                return mFragmentation.equals(other.mFragmentation) && mFragmentationType.equals(other.mFragmentationType) && mFragmentationArmorDivisor == other.mFragmentationArmorDivisor;
+            }
+        }
+        return false;
+    }
+
+    public void setValuesFromFreeformDamageString(String text) {
+        // Fix up some known bad data file input
+        text = text.trim();
+        if (text.equals("1d (+1d) burn")) {
+            text = "1d burn";
+        } else if (text.equals("Sw cut -1")) {
+            text = "sw-1 cut";
+        } else if (text.equals("Thr imp +1")) {
+            text = "thr+1 imp";
+        } else if (text.equals("Thr +1")) {
+            text = "thr+1";
+        } else if (text.equals("th-1 imp")) {
+            text = "thr-1 imp";
+        } else if (text.equals("40mm warhead")) {
+            text = "2d [2d] cr ex";
+        } else if (text.equals("3d cr (x5)")) {
+            text = "3dx5 cr";
+        }
+        String saved = text;
+
+        // Find and remove first occurrence of 'sw' or 'thr'
+        mST = WeaponSTDamage.NONE;
+        for (WeaponSTDamage one : WeaponSTDamage.values()) {
+            if (one != WeaponSTDamage.NONE) {
+                int i = text.indexOf(one.toString());
+                if (i != -1) {
+                    mST = one;
+                    if (i > 0 && text.charAt(i - 1) == '+') {
+                        text = text.substring(0, i - 1) + text.substring(i + one.toString().length());
+                    } else {
+                        text = text.substring(0, i) + text.substring(i + one.toString().length());
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Match against the input
+        boolean hasPerDie = false;
+        Matcher matcher   = DAMAGE_REGEXP.matcher(text);
+        boolean matches   = matcher.matches();
+        if (!matches) {
+            matcher   = DAMAGE_ALT_REGEXP.matcher(text);
+            matches   = matcher.matches();
+            hasPerDie = true;
+        }
+        if (matches) {
+            String value = matcher.group("dice");
+            if (value != null) {
+                mBase = new Dice(value.replaceAll(" ", "").toLowerCase());
+            } else {
+                mBase = null;
+            }
+            value = matcher.group("divisor");
+            if (value != null) {
+                mArmorDivisor = Numbers.extractDouble(value.replaceAll(" ", ""), 1, false);
+            } else {
+                mArmorDivisor = 1;
+            }
+            extractFragInfo(matcher);
+            if (hasPerDie) {
+                value = matcher.group("perDie");
+                if (value != null) {
+                    mModifierPerDie = Numbers.extractInteger(value.trim(), 0, false);
+                } else {
+                    mModifierPerDie = 0;
+                }
+            }
+            mType = matcher.group("remainder");
+            if (mType != null) {
+                matcher = TRAILING_FRAG_REGEXP.matcher(mType);
+                if (matcher.matches()) {
+                    extractFragInfo(matcher);
+                    mType = matcher.group("remainder");
+                }
+            }
+            if (mType == null) {
+                mType = "";
+            } else {
+                mType = mType.trim();
+            }
+        } else {
+            // No match, just copy the saved text into type and clear the other fields
+            mType                      = saved;
+            mST                        = WeaponSTDamage.NONE;
+            mBase                      = null;
+            mArmorDivisor              = 1;
+            mFragmentation             = null;
+            mFragmentationArmorDivisor = 0;
+            mFragmentationType         = null;
+            mModifierPerDie            = 0;
+        }
+    }
+
+    private void extractFragInfo(Matcher matcher) {
+        String value = matcher.group("frag");
+        if (value != null) {
+            mFragmentation = new Dice(value.replaceAll(" ", "").toLowerCase());
+            value          = matcher.group("fragDivisor");
+            if (value != null) {
+                mFragmentationArmorDivisor = Numbers.extractDouble(value.replaceAll(" ", ""), 1, false);
+            } else {
+                mFragmentationArmorDivisor = 1;
+            }
+            mFragmentationType = matcher.group("fragType");
+            if (mFragmentationType == null) {
+                mFragmentationType = "cut";
+            }
+        } else {
+            mFragmentation             = null;
+            mFragmentationArmorDivisor = 0;
+            mFragmentationType         = null;
+        }
+    }
+
+    public WeaponSTDamage getWeaponSTDamage() {
+        return mST;
+    }
+
+    public void setWeaponSTDamage(WeaponSTDamage stDamage) {
+        mST = stDamage;
+    }
+
+    public Dice getBase() {
+        return mBase;
+    }
+
+    public void setBase(Dice base) {
+        mBase = base;
+    }
+
+    public double getArmorDivisor() {
+        return mArmorDivisor;
+    }
+
+    public void setArmorDivisor(double armorDivisor) {
+        mArmorDivisor = armorDivisor;
+    }
+
+    public Dice getFragmentation() {
+        return mFragmentation;
+    }
+
+    public double getFragmentationArmorDivisor() {
+        return mFragmentationArmorDivisor;
+    }
+
+    public String getFragmentationType() {
+        return mFragmentationType;
+    }
+
+    public void setFragmentation(Dice fragmentation, double armorDivisor, String type) {
+        if (type == null) {
+            type = "cut";
+        }
+        mFragmentation             = fragmentation;
+        mFragmentationArmorDivisor = armorDivisor;
+        mFragmentationType         = type;
+    }
+
+    public int getModifierPerDie() {
+        return mModifierPerDie;
+    }
+
+    public void setModifierPerDie(int modifierPerDie) {
+        mModifierPerDie = modifierPerDie;
+    }
+
+    public String getType() {
+        return mType;
+    }
+
+    public void setType(String type) {
+        mType = type;
+    }
+
+    /** @return The damage, fully resolved for the user's sw or thr, if possible. */
+    public String getResolvedDamage() {
+        return getResolvedDamage(null);
+    }
+
+    public String getDamageToolTip() {
+        StringBuilder toolTip = new StringBuilder();
+        getResolvedDamage(toolTip);
+        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip.toString() : I18n.Text("No additional modifiers");
+    }
+
+    /** @return The damage, fully resolved for the user's sw or thr, if possible. */
+    public String getResolvedDamage(StringBuilder toolTip) {
+        if (mOwner.mOwner != null) {
+            DataFile df = mOwner.mOwner.getDataFile();
+            if (df instanceof GURPSCharacter) {
+                GURPSCharacter       character  = (GURPSCharacter) df;
+                HashSet<WeaponBonus> bonuses    = new HashSet<>();
+                Set<String>          categories = mOwner.getCategories();
+                int                  maxST      = mOwner.getMinStrengthValue() * 3;
+                int                  st         = character.getStrength() + character.getStrikingStrengthBonus();
+                Dice                 base       = new Dice(0, 0);
+                for (SkillDefault one : mOwner.getDefaults()) {
+                    if (one.getType().isSkillBased()) {
+                        bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), categories, toolTip));
+                        bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), categories, toolTip));
+                    }
+                }
+                if (maxST > 0 && maxST < st) {
+                    st = maxST;
+                }
+                if (mBase != null) {
+                    base = mBase.clone();
+                }
+                switch (mST) {
+                case SWING:
+                    base = addDice(base, GURPSCharacter.getSwing(st));
+                    break;
+                case THRUST:
+                    base = addDice(base, GURPSCharacter.getThrust(st));
+                    break;
+                default:
+                    break;
+                }
+                if (mOwner.mOwner instanceof Advantage) {
+                    Advantage advantage = (Advantage) mOwner.mOwner;
+                    if (advantage.isLeveled()) {
+                        base.multiply(advantage.getLevels());
+                    }
+                }
+                for (WeaponBonus bonus : bonuses) {
+                    LeveledAmount lvlAmt = bonus.getAmount();
+                    int           amt    = lvlAmt.getIntegerAmount();
+                    if (lvlAmt.isPerLevel()) {
+                        base.add(amt * base.getDieCount());
+                    } else {
+                        base.add(amt);
+                    }
+                }
+                if (mModifierPerDie != 0) {
+                    base.add(mModifierPerDie * base.getDieCount());
+                }
+                StringBuilder buffer = new StringBuilder();
+                buffer.append(base.toString());
+                if (mArmorDivisor != 1) {
+                    buffer.append("(");
+                    buffer.append(Numbers.format(mArmorDivisor));
+                    buffer.append(")");
+                }
+                if (!mType.isBlank()) {
+                    buffer.append(" ");
+                    buffer.append(mType);
+                }
+                if (mFragmentation != null) {
+                    String frag = mFragmentation.toString();
+                    if (!frag.equals("0")) {
+                        buffer.append(" [");
+                        buffer.append(frag);
+                        if (mFragmentationArmorDivisor != 1) {
+                            buffer.append("(");
+                            buffer.append(Numbers.format(mFragmentationArmorDivisor));
+                            buffer.append(")");
+                        }
+                        buffer.append(" ");
+                        buffer.append(mFragmentationType);
+                        buffer.append("]");
+                    }
+                }
+                return buffer.toString();
+            }
+        }
+        return toString();
+    }
+
+    private static Dice addDice(Dice left, Dice right) {
+        return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        if (mST != WeaponSTDamage.NONE) {
+            buffer.append(mST);
+        }
+        if (mBase != null) {
+            String base = mBase.toString();
+            if (!base.equals("0")) {
+                if (buffer.length() > 0) {
+                    char ch = base.charAt(0);
+                    if (ch != '+' && ch != '-') {
+                        buffer.append("+");
+                    }
+                }
+                buffer.append(base);
+            }
+        }
+        if (mArmorDivisor != 1) {
+            buffer.append("(");
+            buffer.append(Numbers.format(mArmorDivisor));
+            buffer.append(")");
+        }
+        if (mModifierPerDie != 0) {
+            if (buffer.length() > 0) {
+                buffer.append(" ");
+            }
+            buffer.append("(");
+            buffer.append(Numbers.formatWithForcedSign(mModifierPerDie));
+            buffer.append(" per die)");
+        }
+        if (!mType.isBlank()) {
+            buffer.append(" ");
+            buffer.append(mType);
+        }
+        if (mFragmentation != null) {
+            String frag = mFragmentation.toString();
+            if (!frag.equals("0")) {
+                buffer.append(" [");
+                buffer.append(frag);
+                if (mFragmentationArmorDivisor != 1) {
+                    buffer.append("(");
+                    buffer.append(Numbers.format(mFragmentationArmorDivisor));
+                    buffer.append(")");
+                }
+                buffer.append(" ");
+                buffer.append(mFragmentationType);
+                buffer.append("]");
+            }
+        }
+        return buffer.toString().trim();
+    }
+}

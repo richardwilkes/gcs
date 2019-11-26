@@ -1281,10 +1281,10 @@ public class TextTemplate {
                 writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
                 break;
             case KEY_DAMAGE:
-                writeEncodedText(out, weapon.getResolvedDamage());
+                writeEncodedText(out, weapon.getDamage().getResolvedDamage());
                 break;
             case KEY_UNMODIFIED_DAMAGE:
-                writeEncodedText(out, weapon.getDamage());
+                writeEncodedText(out, weapon.getDamage().toString());
                 break;
             case KEY_WEAPON_STRENGTH_NUM:
                 writeEncodedText(out, weapon.getStrength().replaceAll("[^0-9]", ""));
@@ -1814,6 +1814,7 @@ public class TextTemplate {
             }
 
         };
+
         public abstract boolean shouldInclude(Advantage advantage, HashSet<String> included, HashSet<String> excluded);
 
         private static boolean includeByCategories(Advantage advantage, HashSet<String> included, HashSet<String> excluded) {

@@ -16,11 +16,15 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.widgets.outline.ListRow;
+import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.EditorField;
+import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Container;
 import java.util.List;
+
+import javax.swing.JPanel;
 
 /** An editor for melee weapon statistics. */
 public class MeleeWeaponEditor extends WeaponEditor {
@@ -59,9 +63,20 @@ public class MeleeWeaponEditor extends WeaponEditor {
 
     @Override
     protected void createFields(Container parent) {
-        mParry = createTextField(parent, I18n.Text("Parry Modifier"), "");
-        mReach = createTextField(parent, I18n.Text("Reach"), "");
-        mBlock = createTextField(parent, I18n.Text("Block Modifier"), "");
+        JPanel panel   = new JPanel(new ColumnLayout(5));
+        String tooltip = I18n.Text("Reach");
+        mReach = createTextField("C-99**", tooltip);
+        parent.add(new LinkedLabel(tooltip, mReach));
+        panel.add(mReach);
+        tooltip = I18n.Text("Parry Modifier");
+        mParry  = createTextField("+99**", tooltip);
+        panel.add(new LinkedLabel(tooltip, mParry));
+        panel.add(mParry);
+        tooltip = I18n.Text("Block Modifier");
+        mBlock  = createTextField("+99**", tooltip);
+        panel.add(new LinkedLabel(tooltip, mBlock));
+        panel.add(mBlock);
+        parent.add(panel);
     }
 
     @Override

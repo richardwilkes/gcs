@@ -38,7 +38,9 @@ import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
+import com.trollworks.gcs.weapon.WeaponDamage;
 import com.trollworks.gcs.weapon.WeaponDisplayRow;
+import com.trollworks.gcs.weapon.WeaponSTDamage;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.io.Log;
@@ -65,6 +67,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.ui.widget.outline.RowSelection;
 import com.trollworks.toolkit.utility.BundleInfo;
+import com.trollworks.toolkit.utility.Dice;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.PathUtils;
@@ -596,7 +599,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 weapon = new MeleeWeaponStats(phantom);
                 weapon.setUsage(I18n.Text("Punch"));
                 weapon.setDefaults(defaults);
-                weapon.setDamage("thr-1 cr");
+                WeaponDamage damage = new WeaponDamage(weapon);
+                damage.setWeaponSTDamage(WeaponSTDamage.THRUST);
+                damage.setBase(new Dice(0, -1));
+                damage.setType("cr");
+                weapon.setDamage(damage); // thr-1 cr
                 weapon.setReach("C");
                 weapon.setParry("0");
                 map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
@@ -611,7 +618,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 weapon = new MeleeWeaponStats(phantom);
                 weapon.setUsage(I18n.Text("Kick"));
                 weapon.setDefaults(defaults);
-                weapon.setDamage("thr cr");
+                WeaponDamage damage = new WeaponDamage(weapon);
+                damage.setWeaponSTDamage(WeaponSTDamage.THRUST);
+                damage.setType("cr");
+                weapon.setDamage(damage); // thr cr
                 weapon.setReach("C,1");
                 weapon.setParry("No");
                 map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
@@ -621,7 +631,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 weapon = new MeleeWeaponStats(phantom);
                 weapon.setUsage(I18n.Text("Kick w/Boots"));
                 weapon.setDefaults(defaults);
-                weapon.setDamage("thr+1 cr");
+                WeaponDamage damage = new WeaponDamage(weapon);
+                damage.setWeaponSTDamage(WeaponSTDamage.THRUST);
+                damage.setBase(new Dice(0, 1));
+                damage.setType("cr");
+                weapon.setDamage(damage); // thr+1 cr
                 weapon.setReach("C,1");
                 weapon.setParry("No");
                 map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));

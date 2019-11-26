@@ -28,7 +28,9 @@ import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.utility.Dice;
 import com.trollworks.toolkit.utility.I18n;
+import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -42,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
@@ -56,8 +59,15 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     private IconButton                   mDeleteButton;
     private JPanel                       mEditorPanel;
     private EditorField                  mUsage;
-    private EditorField                  mDamage;
     private EditorField                  mStrength;
+    private JComboBox<WeaponSTDamage>    mDamageSTCombo;
+    private EditorField                  mDamageBase;
+    private EditorField                  mDamageArmorDivisor;
+    private EditorField                  mDamageType;
+    private EditorField                  mDamageModPerDie;
+    private EditorField                  mFragDamage;
+    private EditorField                  mFragArmorDivisor;
+    private EditorField                  mFragType;
     private Defaults                     mDefaults;
     private WeaponStats                  mWeapon;
     private Class<? extends WeaponStats> mWeaponClass;
@@ -134,14 +144,56 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     }
 
     private Container createEditorPanel() {
-        JPanel wrapper = new JPanel(new ColumnLayout(4));
+        JPanel wrapper = new JPanel(new ColumnLayout(2));
         wrapper.setBorder(new EmptyBorder(5));
         mEditorPanel = new JPanel(new ColumnLayout(1, RowDistribution.GIVE_EXCESS_TO_LAST));
         mEditorPanel.add(wrapper);
-        mUsage  = createTextField(wrapper, I18n.Text("Usage"), "");
-        mDamage = createTextField(wrapper, I18n.Text("Damage"), "");
+
+        JPanel firstPanel = new JPanel(new ColumnLayout(3));
+        String tooltip    = I18n.Text("Usage");
+        mUsage = createTextField(null, tooltip);
+        wrapper.add(new LinkedLabel(tooltip, mUsage));
+        firstPanel.add(mUsage);
+        tooltip   = I18n.Text("Minimum Strength");
+        mStrength = createTextField("99**", tooltip);
+        firstPanel.add(new LinkedLabel(tooltip, mStrength));
+        firstPanel.add(mStrength);
+        wrapper.add(firstPanel);
+
+        JPanel damagePanel = new JPanel(new ColumnLayout(8));
+        mDamageSTCombo = new JComboBox<>(WeaponSTDamage.values());
+        mDamageSTCombo.setSelectedItem(WeaponSTDamage.NONE);
+        mDamageSTCombo.addActionListener(this);
+        mDamageSTCombo.setToolTipText(I18n.Text("Strength Damage Type"));
+        UIUtilities.setOnlySize(mDamageSTCombo, mDamageSTCombo.getPreferredSize());
+        wrapper.add(new LinkedLabel(I18n.Text("Damage")));
+        damagePanel.add(mDamageSTCombo);
+        mDamageBase = createTextField("100d+20x200", I18n.Text("Base Damage"));
+        damagePanel.add(mDamageBase);
+        mDamageArmorDivisor = createTextField("100", I18n.Text("Armor Divisor"));
+        damagePanel.add(new LinkedLabel("(", mDamageArmorDivisor));
+        damagePanel.add(mDamageArmorDivisor);
+        damagePanel.add(new LinkedLabel(")", mDamageArmorDivisor));
+        mDamageType = createTextField(null, I18n.Text("Type"));
+        damagePanel.add(mDamageType);
+        mDamageModPerDie = createTextField("+9", I18n.Text("Bonus Per Die"));
+        damagePanel.add(mDamageModPerDie);
+        damagePanel.add(new LinkedLabel(I18n.Text("per die"), mDamageModPerDie));
+        wrapper.add(damagePanel);
+
+        JPanel fragPanel = new JPanel(new ColumnLayout(5));
+        wrapper.add(new LinkedLabel(I18n.Text("Fragmentation")));
+        mFragDamage = createTextField("100d+20x200", I18n.Text("Fragmentation Damage"));
+        fragPanel.add(mFragDamage);
+        mFragArmorDivisor = createTextField("100", I18n.Text("Armor Divisor"));
+        fragPanel.add(new LinkedLabel("(", mFragArmorDivisor));
+        fragPanel.add(mFragArmorDivisor);
+        fragPanel.add(new LinkedLabel(")", mFragArmorDivisor));
+        mFragType = createTextField(null, I18n.Text("Type"));
+        fragPanel.add(mFragType);
+        wrapper.add(fragPanel);
+
         createFields(wrapper);
-        mStrength = createTextField(wrapper, I18n.Text("Minimum Strength"), "");
         createDefaults(mEditorPanel);
         setWeaponState(false);
         return mEditorPanel;
@@ -171,17 +223,18 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     /**
      * Creates a new text field.
      *
-     * @param parent The parent.
-     * @param title  The title of the field.
-     * @param value  The initial value.
+     * @param protoValue A prototype value. If not <code>null</code>, will be used to set the only
+     *                   size the field can have.
+     * @param tooltip    The tooltip to set on the field.
      * @return The newly created field.
      */
-    protected EditorField createTextField(Container parent, String title, Object value) {
+    protected EditorField createTextField(String protoValue, String tooltip) {
         DefaultFormatter formatter = new DefaultFormatter();
         formatter.setOverwriteMode(false);
-        EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, null);
-        parent.add(new LinkedLabel(title, field));
-        parent.add(field);
+        EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, "", protoValue, tooltip);
+        if (protoValue != null) {
+            UIUtilities.setOnlySize(field, field.getPreferredSize());
+        }
         return field;
     }
 
@@ -192,7 +245,11 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
             handleOutline(event.getActionCommand());
         } else if (mRespond) {
             if (mDefaults == source) {
-                changeDefaults();
+                mWeapon.setDefaults(mDefaults.getDefaults());
+                adjustOutlineToContent();
+            } else if (mDamageSTCombo == source) {
+                mWeapon.getDamage().setWeaponSTDamage((WeaponSTDamage) mDamageSTCombo.getSelectedItem());
+                adjustOutlineToContent();
             }
         }
     }
@@ -202,15 +259,45 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         if (mRespond) {
             Object source = event.getSource();
             if (mUsage == source) {
-                changeUsage();
-            } else if (mDamage == source) {
-                changeDamage();
+                mWeapon.setUsage((String) mUsage.getValue());
+            } else if (mDamageBase == source) {
+                mWeapon.getDamage().setBase(new Dice((String) mDamageBase.getValue()));
+            } else if (mDamageArmorDivisor == source) {
+                mWeapon.getDamage().setArmorDivisor(extractArmorDivisor(mDamageArmorDivisor));
+            } else if (mDamageType == source) {
+                mWeapon.getDamage().setType(((String) mDamageType.getValue()).trim());
+            } else if (mDamageModPerDie == source) {
+                mWeapon.getDamage().setModifierPerDie(Numbers.extractInteger((String) mDamageModPerDie.getValue(), 0, true));
+            } else if (mFragDamage == source) {
+                WeaponDamage damage = mWeapon.getDamage();
+                damage.setFragmentation(new Dice((String) mFragDamage.getValue()), adjustArmorDivisor(damage.getFragmentationArmorDivisor()), damage.getFragmentationType());
+            } else if (mFragArmorDivisor == source) {
+                WeaponDamage damage = mWeapon.getDamage();
+                damage.setFragmentation(damage.getFragmentation(), extractArmorDivisor(mFragArmorDivisor), damage.getFragmentationType());
+            } else if (mFragType == source) {
+                WeaponDamage damage = mWeapon.getDamage();
+                damage.setFragmentation(damage.getFragmentation(), adjustArmorDivisor(damage.getFragmentationArmorDivisor()), ((String) mFragType.getValue()).trim());
             } else if (mStrength == source) {
-                changeStrength();
+                mWeapon.setStrength((String) mStrength.getValue());
             } else {
                 updateFromField(source);
+                return;
             }
+            adjustOutlineToContent();
         }
+    }
+
+    private static double extractArmorDivisor(EditorField field) {
+        double value = Numbers.extractDouble((String) field.getValue(), 1, true);
+        return value <= 0 ? 1 : value;
+    }
+
+    private static double adjustArmorDivisor(double divisor) {
+        return divisor <= 0 ? 1 : divisor;
+    }
+
+    private static String getArmorDivisorForDisplay(double divisor) {
+        return divisor == 1 || divisor <= 0 ? "" : Numbers.format(divisor);
     }
 
     /**
@@ -219,26 +306,6 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
      * @param field The field that was altered.
      */
     protected abstract void updateFromField(Object field);
-
-    private void changeDefaults() {
-        mWeapon.setDefaults(mDefaults.getDefaults());
-        adjustOutlineToContent();
-    }
-
-    private void changeUsage() {
-        mWeapon.setUsage((String) mUsage.getValue());
-        adjustOutlineToContent();
-    }
-
-    private void changeDamage() {
-        mWeapon.setDamage((String) mDamage.getValue());
-        adjustOutlineToContent();
-    }
-
-    private void changeStrength() {
-        mWeapon.setStrength((String) mStrength.getValue());
-        adjustOutlineToContent();
-    }
 
     /** Call to adjust the {@link Outline} to its new content. */
     protected void adjustOutlineToContent() {
@@ -303,7 +370,22 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     /** Called to update the contents of the fields. */
     protected void updateFields() {
         mUsage.setValue(mWeapon.getUsage());
-        mDamage.setValue(mWeapon.getDamage());
+        WeaponDamage damage = mWeapon.getDamage();
+        mDamageSTCombo.setSelectedItem(damage.getWeaponSTDamage());
+        mDamageBase.setValue(damage.getBase() != null ? damage.getBase().toString() : "");
+        mDamageArmorDivisor.setValue(getArmorDivisorForDisplay(damage.getArmorDivisor()));
+        mDamageType.setValue(damage.getType());
+        mDamageModPerDie.setValue(Numbers.formatWithForcedSign(damage.getModifierPerDie()));
+        Dice frag = damage.getFragmentation();
+        if (frag != null) {
+            mFragDamage.setValue(frag.toString());
+            mFragArmorDivisor.setValue(getArmorDivisorForDisplay(damage.getFragmentationArmorDivisor()));
+            mFragType.setValue(damage.getFragmentationType());
+        } else {
+            mFragDamage.setValue("");
+            mFragArmorDivisor.setValue("");
+            mFragType.setValue("");
+        }
         mStrength.setValue(mWeapon.getStrength());
         mDefaults.setDefaults(mWeapon.getDefaults());
     }
@@ -315,14 +397,28 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
      */
     protected void enableFields(boolean enabled) {
         mUsage.setEnabled(enabled);
-        mDamage.setEnabled(enabled);
+        mDamageSTCombo.setEnabled(enabled);
+        mDamageBase.setEnabled(enabled);
+        mDamageArmorDivisor.setEnabled(enabled);
+        mDamageType.setEnabled(enabled);
+        mDamageModPerDie.setEnabled(enabled);
+        mFragDamage.setEnabled(enabled);
+        mFragArmorDivisor.setEnabled(enabled);
+        mFragType.setEnabled(enabled);
         mStrength.setEnabled(enabled);
     }
 
     /** Called to blank all fields. */
     protected void blankFields() {
         mUsage.setValue("");
-        mDamage.setValue("");
+        mDamageSTCombo.setSelectedItem(WeaponSTDamage.NONE);
+        mDamageBase.setValue("");
+        mDamageArmorDivisor.setValue("");
+        mDamageType.setValue("");
+        mDamageModPerDie.setValue("");
+        mFragDamage.setValue("");
+        mFragArmorDivisor.setValue("");
+        mFragType.setValue("");
         mStrength.setValue("");
         mDefaults.removeAll();
         mDefaults.revalidate();

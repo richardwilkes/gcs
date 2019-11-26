@@ -198,7 +198,7 @@ public enum WeaponColumn {
 
         @Override
         public String getDataAsText(WeaponStats weapon) {
-            return weapon.getResolvedDamage();
+            return weapon.getDamage().getResolvedDamage();
         }
 
         @Override

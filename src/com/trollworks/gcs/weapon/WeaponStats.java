@@ -15,8 +15,6 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.feature.LeveledAmount;
-import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
@@ -25,8 +23,6 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
-import com.trollworks.toolkit.utility.Dice;
-import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
@@ -38,19 +34,18 @@ import java.util.Set;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
-    private static final String     TAG_DAMAGE   = "damage";
     private static final String     TAG_STRENGTH = "strength";
     private static final String     TAG_USAGE    = "usage";
     /** The prefix used in front of all IDs for weapons. */
     public static final String      PREFIX       = GURPSCharacter.CHARACTER_PREFIX + "weapon.";
     /** The field ID for damage changes. */
-    public static final String      ID_DAMAGE    = PREFIX + TAG_DAMAGE;
+    public static final String      ID_DAMAGE    = PREFIX + WeaponDamage.TAG_ROOT;
     /** The field ID for strength changes. */
     public static final String      ID_STRENGTH  = PREFIX + TAG_STRENGTH;
     /** The field ID for usage changes. */
     public static final String      ID_USAGE     = PREFIX + TAG_USAGE;
-    private ListRow                 mOwner;
-    private String                  mDamage;
+    protected ListRow               mOwner;
+    private WeaponDamage            mDamage;
     private String                  mStrength;
     private String                  mUsage;
     private ArrayList<SkillDefault> mDefaults;
@@ -62,7 +57,7 @@ public abstract class WeaponStats {
      */
     protected WeaponStats(ListRow owner) {
         mOwner    = owner;
-        mDamage   = "";
+        mDamage   = new WeaponDamage(this);
         mStrength = "";
         mUsage    = "";
         mDefaults = new ArrayList<>();
@@ -77,7 +72,7 @@ public abstract class WeaponStats {
      */
     protected WeaponStats(ListRow owner, WeaponStats other) {
         mOwner    = owner;
-        mDamage   = other.mDamage;
+        mDamage   = other.mDamage.clone(this);
         mStrength = other.mStrength;
         mUsage    = other.mUsage;
         mDefaults = new ArrayList<>();
@@ -119,8 +114,8 @@ public abstract class WeaponStats {
     protected void loadSelf(XMLReader reader) throws IOException {
         String name = reader.getName();
 
-        if (TAG_DAMAGE.equals(name)) {
-            mDamage = reader.readText();
+        if (WeaponDamage.TAG_ROOT.equals(name)) {
+            mDamage = new WeaponDamage(reader, this);
         } else if (TAG_STRENGTH.equals(name)) {
             mStrength = reader.readText();
         } else if (TAG_USAGE.equals(name)) {
@@ -142,7 +137,7 @@ public abstract class WeaponStats {
      */
     public void save(XMLWriter out) {
         out.startSimpleTagEOL(getRootTag());
-        out.simpleTagNotEmpty(TAG_DAMAGE, mDamage);
+        mDamage.save(out);
         out.simpleTagNotEmpty(TAG_STRENGTH, mStrength);
         out.simpleTagNotEmpty(TAG_USAGE, mUsage);
         saveSelf(out);
@@ -211,187 +206,8 @@ public abstract class WeaponStats {
     }
 
     /** @return The damage. */
-    public String getDamage() {
+    public WeaponDamage getDamage() {
         return mDamage;
-    }
-
-    /** @return The damage, fully resolved for the user's sw or thr, if possible. */
-    public String getResolvedDamage() {
-        return getResolvedDamage(null);
-    }
-
-    public String getDamageToolTip() {
-        StringBuilder toolTip = new StringBuilder();
-        getResolvedDamage(toolTip);
-        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip.toString() : I18n.Text("No additional modifiers");
-    }
-
-    /** @return The damage, fully resolved for the user's sw or thr, if possible. */
-    public String getResolvedDamage(StringBuilder toolTip) {
-        DataFile df     = mOwner.getDataFile();
-        String   damage = mDamage;
-        if (df instanceof GURPSCharacter) {
-            GURPSCharacter       character = (GURPSCharacter) df;
-            HashSet<WeaponBonus> bonuses   = new HashSet<>();
-            for (SkillDefault one : getDefaults()) {
-                if (one.getType().isSkillBased()) {
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), getCategories(), toolTip));
-                    bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), getCategories(), toolTip));
-                }
-            }
-            damage = resolveDamage(damage, bonuses);
-        }
-        return damage.trim();
-    }
-
-    private String resolveDamage(String damage, HashSet<WeaponBonus> bonuses) {
-        int            maxST     = getMinStrengthValue() * 3;
-        GURPSCharacter character = (GURPSCharacter) mOwner.getDataFile();
-        int            st        = character.getStrength() + character.getStrikingStrengthBonus();
-        Dice           dice;
-        String         savedDamage;
-
-        if (maxST > 0 && maxST < st) {
-            st = maxST;
-        }
-
-        dice = GURPSCharacter.getSwing(st);
-        do {
-            savedDamage = damage;
-            damage      = resolveDamage(damage, "sw", dice);
-        } while (!savedDamage.equals(damage));
-
-        dice = GURPSCharacter.getThrust(st);
-        do {
-            savedDamage = damage;
-            damage      = resolveDamage(damage, "thr", dice);
-        } while (!savedDamage.equals(damage));
-
-        return resolveDamageBonuses(damage, bonuses);
-    }
-
-    private String resolveDamage(String damage, String type, Dice dice) {
-        int where = damage.indexOf(type);
-
-        if (where != -1) {
-            int          last   = where + type.length();
-            int          max    = damage.length();
-            StringBuffer buffer = new StringBuffer();
-            int          tmp;
-
-            if (where > 0) {
-                buffer.append(damage.substring(0, where));
-            }
-
-            tmp = skipSpaces(damage, last);
-            if (tmp < max) {
-                char ch = damage.charAt(tmp);
-
-                if (ch == '+' || ch == '-') {
-                    int modifier = 0;
-
-                    tmp = skipSpaces(damage, tmp + 1);
-                    while (tmp < max) {
-                        char digit = damage.charAt(tmp);
-
-                        if (isDigit(digit)) {
-                            modifier *= 10;
-                            modifier += digit - '0';
-                            tmp++;
-                        } else {
-                            break;
-                        }
-                    }
-                    if (ch == '-') {
-                        modifier = -modifier;
-                    }
-                    last = tmp;
-                    dice = dice.clone();
-                    dice.add(modifier);
-                }
-                if (last < max - 1 && damage.charAt(last) == ':') {
-                    tmp = last + 1;
-                    ch  = damage.charAt(tmp++);
-                    if (ch == '+' || ch == '-') {
-                        int perDie = 0;
-
-                        while (tmp < max) {
-                            char digit = damage.charAt(tmp);
-
-                            if (isDigit(digit)) {
-                                perDie *= 10;
-                                perDie += digit - '0';
-                                tmp++;
-                            } else {
-                                break;
-                            }
-                        }
-                        last = tmp;
-                        if (perDie > 0) {
-                            if (ch == '-') {
-                                perDie = -perDie;
-                            }
-                            dice = dice.clone();
-                            dice.add(perDie * dice.getDieCount());
-                        }
-                    }
-                }
-            }
-            buffer.append(dice.toString());
-            if (last < max) {
-                buffer.append(damage.substring(last));
-            }
-            return buffer.toString();
-        }
-        return damage;
-    }
-
-    private static boolean isDigit(char ch) {
-        return ch >= '0' && ch <= '9';
-    }
-
-    private String resolveDamageBonuses(String damage, HashSet<WeaponBonus> bonuses) {
-        int max   = damage.length();
-        int start = 0;
-        while (true) {
-            int where = damage.indexOf('d', start);
-            if (where < 1) {
-                return damage;
-            }
-            char digit = damage.charAt(where - 1);
-            if (isDigit(digit)) {
-                while (where > 0 && isDigit(damage.charAt(where - 1))) {
-                    where--;
-                }
-                StringBuffer buffer = new StringBuffer();
-                if (where > 0) {
-                    buffer.append(damage.substring(0, where));
-                }
-                int[] dicePos = Dice.extractDicePosition(damage.substring(where));
-                Dice  dice    = new Dice(damage.substring(where + dicePos[0], where + dicePos[1] + 1));
-                if (mOwner instanceof Advantage) {
-                    Advantage advantage = (Advantage) mOwner;
-                    if (advantage.isLeveled()) {
-                        dice.multiply(advantage.getLevels());
-                    }
-                }
-                for (WeaponBonus bonus : bonuses) {
-                    LeveledAmount lvlAmt = bonus.getAmount();
-                    int           amt    = lvlAmt.getIntegerAmount();
-                    if (lvlAmt.isPerLevel()) {
-                        dice.add(amt * dice.getDieCount());
-                    } else {
-                        dice.add(amt);
-                    }
-                }
-                buffer.append(dice.toString());
-                if (where + dicePos[1] + 1 < max) {
-                    buffer.append(damage.substring(where + dicePos[1] + 1));
-                }
-                return buffer.toString();
-            }
-            start = where + 1;
-        }
     }
 
     /**
@@ -413,10 +229,12 @@ public abstract class WeaponStats {
      *
      * @param damage The value to set.
      */
-    public void setDamage(String damage) {
-        damage = sanitize(damage);
-        if (!mDamage.equals(damage)) {
-            mDamage = damage;
+    public void setDamage(WeaponDamage damage) {
+        if (damage == null) {
+            damage = new WeaponDamage(this);
+        }
+        if (!mDamage.equivalent(damage)) {
+            mDamage = damage.clone(this);
             notifySingle(ID_DAMAGE);
         }
     }
@@ -533,7 +351,7 @@ public abstract class WeaponStats {
         }
         if (obj instanceof WeaponStats) {
             WeaponStats ws = (WeaponStats) obj;
-            return mDamage.equals(ws.mDamage) && mStrength.equals(ws.mStrength) && mUsage.equals(ws.mUsage) && mDefaults.equals(ws.mDefaults);
+            return mDamage.equivalent(ws.mDamage) && mStrength.equals(ws.mStrength) && mUsage.equals(ws.mUsage) && mDefaults.equals(ws.mDefaults);
         }
         return false;
     }

@@ -74,6 +74,6 @@ public class WeaponDisplayRow extends Row {
     }
 
     public String getDamageToolTip() {
-        return mWeapon.getDamageToolTip();
+        return mWeapon.getDamage().getDamageToolTip();
     }
 }

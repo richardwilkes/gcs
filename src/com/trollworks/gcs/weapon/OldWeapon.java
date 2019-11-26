@@ -101,8 +101,7 @@ public class OldWeapon {
 
             if (reach.length() > 0) {
                 MeleeWeaponStats melee = new MeleeWeaponStats(owner);
-
-                melee.setDamage(get(mDamage, i));
+                melee.getDamage().setValuesFromFreeformDamageString(get(mDamage, i));
                 melee.setStrength(get(mStrength, i));
                 melee.setParry(get(mParry, i));
                 melee.setReach(reach);
@@ -111,8 +110,7 @@ public class OldWeapon {
             }
             if (range.length() > 0) {
                 RangedWeaponStats ranged = new RangedWeaponStats(owner);
-
-                ranged.setDamage(get(mDamage, i));
+                ranged.getDamage().setValuesFromFreeformDamageString(get(mDamage, i));
                 ranged.setStrength(get(mStrength, i));
                 ranged.setAccuracy(get(mAccuracy, i));
                 ranged.setBulk(get(mBulk, i));
