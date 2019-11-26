@@ -46,7 +46,7 @@ import java.util.List;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
-    private static final int       CURRENT_VERSION          = 4;
+    private static final int       CURRENT_VERSION          = 5;
     private static final String    DEFAULT_LEGALITY_CLASS   = "4";
     /** The extension for Equipment lists. */
     public static final String     OLD_EQUIPMENT_EXTENSION  = "eqp";

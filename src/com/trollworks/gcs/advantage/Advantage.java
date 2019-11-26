@@ -47,7 +47,7 @@ import java.util.List;
 
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
-    private static final int           CURRENT_VERSION            = 2;
+    private static final int           CURRENT_VERSION            = 3;
     /** The XML tag used for items. */
     public static final String         TAG_ADVANTAGE              = "advantage";
     /** The XML tag used for containers. */

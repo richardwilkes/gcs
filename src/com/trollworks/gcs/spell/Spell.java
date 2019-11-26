@@ -43,7 +43,7 @@ import java.util.Set;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
-    private static final int       CURRENT_VERSION          = 2;
+    private static final int       CURRENT_VERSION          = 3;
     /** The extension for Spell lists. */
     public static final String     OLD_SPELL_EXTENSION      = "spl";
     /** The XML tag used for items. */
