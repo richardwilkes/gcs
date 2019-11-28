@@ -382,21 +382,41 @@ public class WeaponDamage {
                 if (mBase != null) {
                     base = mBase.clone();
                 }
-                switch (mST) {
-                case SWING:
-                    base = addDice(base, GURPSCharacter.getSwing(st));
-                    break;
-                case THRUST:
-                    base = addDice(base, GURPSCharacter.getThrust(st));
-                    break;
-                default:
-                    break;
-                }
                 if (mOwner.mOwner instanceof Advantage) {
                     Advantage advantage = (Advantage) mOwner.mOwner;
                     if (advantage.isLeveled()) {
                         base.multiply(advantage.getLevels());
                     }
+                }
+                switch (mST) {
+                case SWING:
+                    base = addDice(base, GURPSCharacter.getSwing(st));
+                    break;
+                case SWING_LEVELED:
+                    Dice swing = GURPSCharacter.getSwing(st);
+                    if (mOwner.mOwner instanceof Advantage) {
+                        Advantage advantage = (Advantage) mOwner.mOwner;
+                        if (advantage.isLeveled()) {
+                            swing.multiply(advantage.getLevels());
+                        }
+                    }
+                    base = addDice(base, swing);
+                    break;
+                case THRUST:
+                    base = addDice(base, GURPSCharacter.getThrust(st));
+                    break;
+                case THRUST_LEVELED:
+                    Dice thrust = GURPSCharacter.getThrust(st);
+                    if (mOwner.mOwner instanceof Advantage) {
+                        Advantage advantage = (Advantage) mOwner.mOwner;
+                        if (advantage.isLeveled()) {
+                            thrust.multiply(advantage.getLevels());
+                        }
+                    }
+                    base = addDice(base, thrust);
+                    break;
+                default:
+                    break;
                 }
                 for (WeaponBonus bonus : bonuses) {
                     LeveledAmount lvlAmt = bonus.getAmount();
