@@ -196,7 +196,10 @@
     	<move file="template.i18n" tofile="${app.root}/i18n/template.i18n"/>
     	
         <copy todir="${app.root}/Library">
-            <fileset dir="../gcs_library/Library"/>
+            <fileset dir="../gcs_library">
+                <filename name="LICENSE" negate="true"/>
+                <filename name="README.md" negate="true"/>
+            </fileset>
         </copy>
         <symlink if:true="${platform.mac}" resource="/Applications" link="${dist.root}/Applications"/>
 
