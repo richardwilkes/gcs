@@ -197,20 +197,14 @@ public enum WeaponColumn {
         }
 
         @Override
-        public String getDataAsText(WeaponStats weapon) {
-            return weapon.getDamage().getResolvedDamage();
-        }
-
-        @Override
-        public boolean showToolTip() {
-            return true;
-        }
-
-        @Override
         public String getToolTip(WeaponDisplayRow weapon) {
             return weapon.getDamageToolTip();
         }
 
+        @Override
+        public String getDataAsText(WeaponStats weapon) {
+            return weapon.getDamage().getResolvedDamage();
+        }
     },
     /** The weapon reach. */
     REACH {
@@ -380,6 +374,15 @@ public enum WeaponColumn {
     public abstract String getToolTip();
 
     /**
+     * @param weapon The {@link WeaponDisplayRow} to get the data from.
+     * @return The tooltip for a specific row within the column.
+     */
+    @SuppressWarnings("static-method")
+    public String getToolTip(WeaponDisplayRow weapon) {
+        return null;
+    }
+
+    /**
      * @param forEditor Whether this is for an editor or not.
      * @return The {@link Cell} used to display the data.
      */
@@ -430,14 +433,5 @@ public enum WeaponColumn {
                 model.addColumn(column);
             }
         }
-    }
-
-    @SuppressWarnings("static-method")
-    public boolean showToolTip() {
-        return false;
-    }
-
-    public String getToolTip(@SuppressWarnings("unused") WeaponDisplayRow weapon) {
-        return getToolTip();
     }
 }

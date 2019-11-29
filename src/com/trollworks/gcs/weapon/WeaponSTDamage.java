@@ -19,25 +19,25 @@ public enum WeaponSTDamage {
             return "";
         }
     },
-    THRUST {
+    THR {
         @Override
         public String toString() {
             return "thr";
         }
     },
-    THRUST_LEVELED {
+    THR_LEVELED {
         @Override
         public String toString() {
             return "thr (leveled)";
         }
     },
-    SWING {
+    SW {
         @Override
         public String toString() {
             return "sw";
         }
     },
-    SWING_LEVELED {
+    SW_LEVELED {
         @Override
         public String toString() {
             return "sw (leveled)";

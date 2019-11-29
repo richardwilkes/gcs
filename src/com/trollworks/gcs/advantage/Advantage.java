@@ -17,7 +17,6 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.modifier.Modifier;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -1104,16 +1103,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     @Override
-    public boolean alwaysShowToolTip(Column column) {
-        return AdvantageColumn.values()[column.getID()].showToolTip();
-    }
-
-    @Override
     public String getToolTip(Column column) {
         return AdvantageColumn.values()[column.getID()].getToolTip(this);
-    }
-
-    public String getDescriptionToolTip() {
-        return DisplayPreferences.showUserDescAsTooltip() ? getUserDesc() : null;
     }
 }

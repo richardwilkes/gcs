@@ -144,11 +144,6 @@ public enum SkillColumn {
         }
 
         @Override
-        public boolean showToolTip() {
-            return true;
-        }
-
-        @Override
         public String getToolTip(Skill skill) {
             return skill.getLevelToolTip();
         }
@@ -237,11 +232,6 @@ public enum SkillColumn {
                 return builder.toString();
             }
             return "";
-        }
-
-        @Override
-        public boolean showToolTip() {
-            return true;
         }
 
         @Override
@@ -361,6 +351,15 @@ public enum SkillColumn {
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
 
+    /**
+     * @param skill The {@link Skill} to get the data from.
+     * @return The tooltip for a specific row within the column.
+     */
+    @SuppressWarnings("static-method")
+    public String getToolTip(Skill skill) {
+        return null;
+    }
+
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();
 
@@ -387,14 +386,5 @@ public enum SkillColumn {
                 model.addColumn(column);
             }
         }
-    }
-
-    @SuppressWarnings("static-method")
-    public boolean showToolTip() {
-        return false;
-    }
-
-    public String getToolTip(@SuppressWarnings("unused") Skill skill) {
-        return getToolTip();
     }
 }

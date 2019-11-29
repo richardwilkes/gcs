@@ -434,6 +434,15 @@ public enum EquipmentColumn {
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
 
+    /**
+     * @param equipment The {@link Equipment} to get the data from.
+     * @return The tooltip for a specific row within the column.
+     */
+    @SuppressWarnings("static-method")
+    public String getToolTip(Equipment equipment) {
+        return null;
+    }
+
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();
 
@@ -491,14 +500,5 @@ public enum EquipmentColumn {
             weight = new WeightValue(weight, defaultWeightUnits);
         }
         return weight;
-    }
-
-    @SuppressWarnings("static-method")
-    public boolean showToolTip() {
-        return false;
-    }
-
-    public String getToolTip(@SuppressWarnings("unused") Equipment equipment) {
-        return getToolTip();
     }
 }

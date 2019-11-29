@@ -204,6 +204,11 @@ public enum SpellColumn {
         }
 
         @Override
+        public String getToolTip(Spell spell) {
+            return spell.getLevelToolTip();
+        }
+
+        @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.RIGHT, false);
         }
@@ -231,16 +236,6 @@ public enum SpellColumn {
             }
             return Numbers.format(level);
         }
-
-        @Override
-        public boolean showToolTip() {
-            return true;
-        }
-
-        @Override
-        public String getToolTip(Spell spell) {
-            return spell.getLevelToolTip();
-        }
     },
     /** The relative spell level. */
     RELATIVE_LEVEL {
@@ -252,6 +247,11 @@ public enum SpellColumn {
         @Override
         public String getToolTip() {
             return I18n.Text("The relative spell level");
+        }
+
+        @Override
+        public String getToolTip(Spell spell) {
+            return spell.getLevelToolTip();
         }
 
         @Override
@@ -292,16 +292,6 @@ public enum SpellColumn {
                 return spell.getAttribute().toString() + Numbers.formatWithForcedSign(level);
             }
             return "";
-        }
-
-        @Override
-        public boolean showToolTip() {
-            return true;
-        }
-
-        @Override
-        public String getToolTip(Spell spell) {
-            return spell.getLevelToolTip();
         }
     },
     /** The points spent in the spell. */
@@ -416,6 +406,15 @@ public enum SpellColumn {
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
 
+    /**
+     * @param spell The {@link Spell} to get the data from.
+     * @return The tooltip for a specific row within the column.
+     */
+    @SuppressWarnings("static-method")
+    public String getToolTip(Spell spell) {
+        return null;
+    }
+
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();
 
@@ -443,14 +442,5 @@ public enum SpellColumn {
                 model.addColumn(column);
             }
         }
-    }
-
-    @SuppressWarnings("static-method")
-    public boolean showToolTip() {
-        return false;
-    }
-
-    public String getToolTip(@SuppressWarnings("unused") Spell spell) {
-        return getToolTip();
     }
 }

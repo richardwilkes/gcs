@@ -16,6 +16,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.library.LibraryFile;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
@@ -49,6 +50,11 @@ public enum AdvantageColumn {
         }
 
         @Override
+        public String getToolTip(Advantage advantage) {
+            return DisplayPreferences.showUserDescAsTooltip() ? advantage.getUserDesc() : null;
+        }
+
+        @Override
         public Cell getCell() {
             return new MultiCell();
         }
@@ -79,16 +85,6 @@ public enum AdvantageColumn {
                 builder.append(notes);
             }
             return builder.toString();
-        }
-
-        @Override
-        public boolean showToolTip() {
-            return true;
-        }
-
-        @Override
-        public String getToolTip(Advantage advantage) {
-            return advantage.getDescriptionToolTip();
         }
     },
     /** The points spent in the advantage. */
@@ -258,6 +254,15 @@ public enum AdvantageColumn {
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
 
+    /**
+     * @param advantage The {@link Advantage} to get the data from.
+     * @return The tooltip for a specific row within the column.
+     */
+    @SuppressWarnings("static-method")
+    public String getToolTip(Advantage advantage) {
+        return null;
+    }
+
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();
 
@@ -284,14 +289,4 @@ public enum AdvantageColumn {
             }
         }
     }
-
-    @SuppressWarnings("static-method")
-    public boolean showToolTip() {
-        return false;
-    }
-
-    public String getToolTip(@SuppressWarnings("unused") Advantage advantage) {
-        return getToolTip();
-    }
-
 }

@@ -104,7 +104,7 @@ public class WeaponDamage {
         out.startTag(TAG_ROOT);
         out.writeAttribute(ATTR_TYPE, mType);
         if (mST != WeaponSTDamage.NONE) {
-            out.writeAttribute(ATTR_ST, mST.toString());
+            out.writeAttribute(ATTR_ST, mST.name().toLowerCase());
         }
         if (mBase != null) {
             String base = mBase.toString();
@@ -287,12 +287,21 @@ public class WeaponDamage {
         }
     }
 
+    protected void notifySingle() {
+        if (mOwner != null) {
+            mOwner.notifySingle(WeaponStats.ID_DAMAGE);
+        }
+    }
+
     public WeaponSTDamage getWeaponSTDamage() {
         return mST;
     }
 
     public void setWeaponSTDamage(WeaponSTDamage stDamage) {
-        mST = stDamage;
+        if (mST != stDamage) {
+            mST = stDamage;
+            notifySingle();
+        }
     }
 
     public Dice getBase() {
@@ -300,7 +309,10 @@ public class WeaponDamage {
     }
 
     public void setBase(Dice base) {
-        mBase = base;
+        if (mBase == null ? base != null : !mBase.equals(base)) {
+            mBase = base;
+            notifySingle();
+        }
     }
 
     public double getArmorDivisor() {
@@ -308,7 +320,10 @@ public class WeaponDamage {
     }
 
     public void setArmorDivisor(double armorDivisor) {
-        mArmorDivisor = armorDivisor;
+        if (mArmorDivisor != armorDivisor) {
+            mArmorDivisor = armorDivisor;
+            notifySingle();
+        }
     }
 
     public Dice getFragmentation() {
@@ -330,6 +345,7 @@ public class WeaponDamage {
         mFragmentation             = fragmentation;
         mFragmentationArmorDivisor = armorDivisor;
         mFragmentationType         = type;
+        notifySingle();
     }
 
     public int getModifierPerDie() {
@@ -337,7 +353,10 @@ public class WeaponDamage {
     }
 
     public void setModifierPerDie(int modifierPerDie) {
-        mModifierPerDie = modifierPerDie;
+        if (mModifierPerDie != modifierPerDie) {
+            mModifierPerDie = modifierPerDie;
+            notifySingle();
+        }
     }
 
     public String getType() {
@@ -345,7 +364,10 @@ public class WeaponDamage {
     }
 
     public void setType(String type) {
-        mType = type;
+        if (!mType.equals(type)) {
+            mType = type;
+            notifySingle();
+        }
     }
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
@@ -389,10 +411,10 @@ public class WeaponDamage {
                     }
                 }
                 switch (mST) {
-                case SWING:
+                case SW:
                     base = addDice(base, GURPSCharacter.getSwing(st));
                     break;
-                case SWING_LEVELED:
+                case SW_LEVELED:
                     Dice swing = GURPSCharacter.getSwing(st);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;
@@ -402,10 +424,10 @@ public class WeaponDamage {
                     }
                     base = addDice(base, swing);
                     break;
-                case THRUST:
+                case THR:
                     base = addDice(base, GURPSCharacter.getThrust(st));
                     break;
-                case THRUST_LEVELED:
+                case THR_LEVELED:
                     Dice thrust = GURPSCharacter.getThrust(st);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;

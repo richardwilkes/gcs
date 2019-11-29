@@ -600,7 +600,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 weapon.setUsage(I18n.Text("Punch"));
                 weapon.setDefaults(defaults);
                 WeaponDamage damage = new WeaponDamage(weapon);
-                damage.setWeaponSTDamage(WeaponSTDamage.THRUST);
+                damage.setWeaponSTDamage(WeaponSTDamage.THR);
                 damage.setBase(new Dice(0, -1));
                 damage.setType("cr");
                 weapon.setDamage(damage); // thr-1 cr
@@ -619,7 +619,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 weapon.setUsage(I18n.Text("Kick"));
                 weapon.setDefaults(defaults);
                 WeaponDamage damage = new WeaponDamage(weapon);
-                damage.setWeaponSTDamage(WeaponSTDamage.THRUST);
+                damage.setWeaponSTDamage(WeaponSTDamage.THR);
                 damage.setType("cr");
                 weapon.setDamage(damage); // thr cr
                 weapon.setReach("C,1");
@@ -632,7 +632,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 weapon.setUsage(I18n.Text("Kick w/Boots"));
                 weapon.setDefaults(defaults);
                 WeaponDamage damage = new WeaponDamage(weapon);
-                damage.setWeaponSTDamage(WeaponSTDamage.THRUST);
+                damage.setWeaponSTDamage(WeaponSTDamage.THR);
                 damage.setBase(new Dice(0, 1));
                 damage.setType("cr");
                 weapon.setDamage(damage); // thr+1 cr
