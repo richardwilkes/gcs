@@ -216,7 +216,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseOptionalThrustDamage = createCheckBox(I18n.Text("Use Thrust = Swing - 2"), null, areOptionalThrustDamageUsed());
         column.add(mUseOptionalThrustDamage);
 
-        mUseGurpsMetricRules = createCheckBox(I18n.Text("Use GURPS Metric rules for height, weight, encumbrance and lifting things"), "From Basic Set, page 9", areGurpsMetricRulesUsed());
+        mUseGurpsMetricRules = createCheckBox(I18n.Text("Use GURPS Metric rules for metric height, weight, encumbrance and lifting things"), "From Basic Set, page 9", areGurpsMetricRulesUsed());
         column.add(mUseGurpsMetricRules);
 
         column.add(new FlexSpacer(0, 0, false, true));
