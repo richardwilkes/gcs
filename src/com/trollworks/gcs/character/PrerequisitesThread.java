@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
@@ -191,7 +192,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
         }
     }
 
-    private static void processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
+    private void processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
         String             key  = feature.getKey().toLowerCase();
         ArrayList<Feature> list = map.get(key);
         if (list == null) {
@@ -199,7 +200,11 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
             map.put(key, list);
         }
         if (feature instanceof Bonus) {
-            ((Bonus) feature).getAmount().setLevel(levels);
+            LeveledAmount amount = ((Bonus) feature).getAmount();
+            if (amount.getLevel() != levels) {
+                amount.setLevel(levels);
+                mNeedRepaint = true;
+            }
         }
         list.add(feature);
     }
