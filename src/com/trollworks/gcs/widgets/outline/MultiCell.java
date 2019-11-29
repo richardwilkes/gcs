@@ -209,15 +209,14 @@ public class MultiCell implements Cell {
     @Override
     public String getToolTipText(Outline outline, MouseEvent event, Rectangle bounds, Row row, Column column) {
         ListRow theRow = (ListRow) row;
-        return theRow.isSatisfied() ? getToolTip(row, column) : theRow.getReasonForUnsatisfied();
-    }
-
-    @SuppressWarnings("static-method")
-    protected String getToolTip(Row row, Column column) {
-        if (row != null) {
-            return row.getToolTip(column);
+        if (!theRow.isSatisfied()) {
+            return theRow.getReasonForUnsatisfied();
         }
-        return null;
+        String text = row.getToolTip(column);
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        return text;
     }
 
     @Override
