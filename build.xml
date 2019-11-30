@@ -41,6 +41,8 @@
     <property if:true="${platform.mac}" name="app.root" value="${dist.root}/${app.name}"/>
     <property if:true="${platform.linux}" name="app.root" value="${dist.root}"/>
     <property if:true="${platform.windows}" name="app.root" value="${dist.root}"/>
+	<property if:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-14.jdk/bin/jpackage"/>
+	<property unless:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-14/bin/jpackage"/>
 
 	<target name="build">
         <delete>
@@ -108,6 +110,7 @@
 	<target name="bundle" depends="deps,build">
 		<delete dir="${build.dir}"/>
 		<delete file="${app.name}-${module.version}.dmg"/>
+		<delete file="${app.name}-${module.version}.exe"/>
         <mkdir dir="${build.dir}/extra/i18n"/>
         <exec executable="java">
             <arg value="--module-path"/>
@@ -134,7 +137,7 @@
             <arg value="--add-modules"/>
             <arg value="${module.name}"/>
         </exec>
-		<exec executable="jpackage" failonerror="true">
+		<exec executable="${jpackage}" failonerror="true">
             <arg value="--name"/>
             <arg value="${app.name}"/>
 			<arg value="--module"/>
@@ -190,8 +193,6 @@
             <arg if:true="${platform.windows}" value="--win-menu-group"/>
             <arg if:true="${platform.windows}" value="RolePlaying"/>
             <arg if:true="${platform.windows}" value="--win-shortcut"/>
-            <arg if:true="${platform.windows}" value="--win-upgrade-uuid"/>
-            <arg if:true="${platform.windows}" value="e0793e4e-6d66-4ece-a3bc-c5749badb929"/>
         </exec>
         <delete dir="${build.dir}"/>
 	</target>

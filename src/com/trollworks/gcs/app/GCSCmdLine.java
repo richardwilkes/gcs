@@ -126,6 +126,8 @@ public class GCSCmdLine {
             } else {
                 path = javaHome.resolve("../../../app");
             }
+        } else {
+            path = path.resolve("app");
         }
         return path.resolve("Library");
     }
