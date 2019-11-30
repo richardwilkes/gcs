@@ -2,8 +2,11 @@
 <project name="com.trollworks.gcs" default="build" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<property name="module.name" value="com.trollworks.gcs"/>
 	<property name="module.version" value="4.12.0"/>
-	<property name="app.name" value="GURPS Character Sheet"/>
+    <property name="app.name" value="GURPS Character Sheet"/>
+    <property name="app.name.short" value="GCS"/>
     <property name="exe.name" value="gcs"/>
+	<property name="copyright.owner" value="Richard A. Wilkes"/>
+	<property name="maintainer.email" value="wilkes@me.com"/>
 	<property name="target.version" value="13"/>
 	<property name="build.dir" value="antbuild"/>
     <property name="dist.dir" value="dist"/>
@@ -12,7 +15,7 @@
 		<format property="module.version.long" pattern="${module.version}.yyyyMMddHHmmss"/>
 	</tstamp>
 	<tstamp>
-		<format property="module.version.year" pattern="yyyy"/>
+		<format property="module.version.year" pattern="1998-yyyy"/>
 	</tstamp>
 	<condition property="platform.mac" else="false">
 		<os family="mac"/>
@@ -33,8 +36,8 @@
 	<property if:true="${platform.linux}" name="platform" value="linux"/>
 	<property if:true="${platform.mac}" name="disk.image.name" value="${app.name} ${module.version}"/>
 	<property if:true="${platform.mac}" name="dist.root" value="${build.dir}/${disk.image.name}"/>
-	<property if:true="${platform.linux}" name="dist.root" value="${build.dir}/gcs-${module.version}"/>
-	<property if:true="${platform.windows}" name="dist.root" value="${build.dir}/gcs-${module.version}"/>
+	<property if:true="${platform.linux}" name="dist.root" value="${build.dir}/${exe.name}-${module.version}"/>
+	<property if:true="${platform.windows}" name="dist.root" value="${build.dir}/${exe.name}-${module.version}"/>
     <property if:true="${platform.mac}" name="app.root" value="${dist.root}/${app.name}"/>
     <property if:true="${platform.linux}" name="app.root" value="${dist.root}"/>
     <property if:true="${platform.windows}" name="app.root" value="${dist.root}"/>
@@ -57,11 +60,11 @@
         </javac>
 
         <manifest file="manifest">
-        	<attribute name="bundle-name" value="GCS"/>
+        	<attribute name="bundle-name" value="${app.name.short}"/>
         	<attribute name="bundle-version" value="${module.version.long}"/>
         	<attribute name="bundle-license" value="Mozilla Public License 2.0"/>
-           	<attribute name="bundle-copyright-owner" value="Richard A. Wilkes"/>
-           	<attribute name="bundle-copyright-years" value="1998-${module.version.year}"/>
+           	<attribute name="bundle-copyright-owner" value="${copyright.owner}"/>
+           	<attribute name="bundle-copyright-years" value="${module.version.year}"/>
         	<attribute name="bundle-executable" value="${exe.name}"/>
            	<attribute name="bundle-id" value="${module.name}"/>
            	<attribute name="bundle-signature" value="RWGS"/>
@@ -139,36 +142,56 @@
 			<arg value="--app-version"/>
 			<arg value="${module.version}"/>
 			<arg value="--copyright"/>
-			<arg value="©1998-${module.version.year} by Richard A. Wilkes"/>
+			<arg value="©${module.version.year} by ${copyright.owner}"/>
+			<arg value="--vendor"/>
+			<arg value="${copyright.owner}"/>
+			<arg value="--description"/>
+			<arg value="${app.name} (${app.name.short}) is a stand-alone, interactive, character sheet editor that allows you to build characters for the GURPS 4th Edition roleplaying game system."/>
+            <arg value="--license-file"/>
+            <arg path="LICENSE"/>
 			<arg value="--icon"/>
             <arg if:true="${platform.mac}" path="artifacts/icns/app.icns"/>
             <arg if:true="${platform.linux}" path="artifacts/png/app.png"/>
-			<arg if:true="${platform.mac}" value="--mac-package-name"/>
-			<arg if:true="${platform.mac}" value="GCS"/>
-			<arg if:true="${platform.linux}" value="--linux-package-name"/>
-            <arg if:true="${platform.linux}" value="gcs"/>
-			<arg if:true="${platform.linux}" value="--linux-package-deps"/>
-			<arg if:true="${platform.linux}" value=""/>
-            <arg if:true="${platform.mac}" value="--file-associations"/>
-            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_adq_ext.properties"/>
-            <arg if:true="${platform.mac}" value="--file-associations"/>
-            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_eqp_ext.properties"/>
-            <arg if:true="${platform.mac}" value="--file-associations"/>
-            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_gcs_ext.properties"/>
-            <arg if:true="${platform.mac}" value="--file-associations"/>
-            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_gct_ext.properties"/>
-            <arg if:true="${platform.mac}" value="--file-associations"/>
-            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_not_ext.properties"/>
-            <arg if:true="${platform.mac}" value="--file-associations"/>
-            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_skl_ext.properties"/>
-            <arg if:true="${platform.mac}" value="--file-associations"/>
-            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_spl_ext.properties"/>
+            <arg if:true="${platform.windows}" path="artifacts/ico/app.ico"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/${platform}/adq_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/${platform}/eqp_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/${platform}/gcs_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/${platform}/gct_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/${platform}/not_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/${platform}/skl_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/${platform}/spl_ext.properties"/>
             <arg value="--input"/>
             <arg path="${build.dir}/extra"/>
-            <arg value="--license-file"/>
-            <arg path="LICENSE"/>
-			<arg value="--runtime-image"/>
-			<arg path="${build.dir}/jre"/>
+            <arg value="--runtime-image"/>
+            <arg path="${build.dir}/jre"/>
+			<arg if:true="${platform.mac}" value="--mac-package-name"/>
+			<arg if:true="${platform.mac}" value="${app.name.short}"/>
+			<arg if:true="${platform.linux}" value="--linux-package-name"/>
+            <arg if:true="${platform.linux}" value="${exe.name}"/>
+            <arg if:true="${platform.linux}" value="--linux-package-deps"/>
+            <arg if:true="${platform.linux}" value=""/>
+            <arg if:true="${platform.linux}" value="--linux-deb-maintainer"/>
+            <arg if:true="${platform.linux}" value="${maintainer.email}"/>
+            <arg if:true="${platform.linux}" value="--linux-menu-group"/>
+            <arg if:true="${platform.linux}" value="RolePlaying"/>
+            <arg if:true="${platform.linux}" value="--linux-app-category"/>
+            <arg if:true="${platform.linux}" value="RolePlaying"/>
+			<arg if:true="${platform.linux}" value="--linux-rpm-license-type"/>
+			<arg if:true="${platform.linux}" value="MPLv2.0"/>
+            <arg if:true="${platform.linux}" value="--linux-shortcut"/>
+            <arg if:true="${platform.windows}" value="--win-menu"/>
+            <arg if:true="${platform.windows}" value="--win-menu-group"/>
+            <arg if:true="${platform.windows}" value="RolePlaying"/>
+            <arg if:true="${platform.windows}" value="--win-shortcut"/>
+            <arg if:true="${platform.windows}" value="--win-upgrade-uuid"/>
+            <arg if:true="${platform.windows}" value="e0793e4e-6d66-4ece-a3bc-c5749badb929"/>
         </exec>
         <delete dir="${build.dir}"/>
 	</target>
