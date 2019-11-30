@@ -2,6 +2,7 @@
 /.apt_generated/
 /bin/
 /pkg/
-*.dmg
-*.tgz
-*.zip
+/*.dmg
+/*.tgz
+/*.zip
+/*.exe
