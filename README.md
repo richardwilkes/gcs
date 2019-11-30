@@ -30,15 +30,32 @@ choke on them.
 
 4. Clone the source repositories:
 
-  ```
-  % git clone https://github.com/richardwilkes/gcs
-  % cd gcs
-  % ant clone-deps
-  ```
+   ```
+   % git clone https://github.com/richardwilkes/gcs
+   % cd gcs
+   % ant clone-deps
+   ```
 
-5. Build and bundle the code for your platform:
+5. Build and bundle the code for your platform (**NOTE**: the master
+   branch is being updated to use the jpackage utility from JDK 14.
+   Currently, I've only gotten that to bundle reliably on macOS):
 
-  ```
-  % cd gcs
-  % ant bundle
-  ```
+   ```
+   % cd gcs
+   % ant bundle
+   ```
+   
+   If you can't bundle due to the changes being made right now, you can
+   either roll your repos back to a known working version or forego the
+   bundling and do this instead:
+   
+   ```
+   % cd gcs
+   % ant deps build
+   ```
+   
+   ... and then this to run it:
+   
+   ```
+   % java --module-path ../java_modules --module com.trollworks.gcs/com.trollworks.gcs.app.GCS
+   ```
