@@ -118,7 +118,7 @@
         <copy todir="${build.dir}/extra/Library">
             <fileset dir="../gcs_library/Library"/>
         </copy>
-		<exec executable="jlink">
+		<exec executable="jlink" failonerror="true">
             <arg value="--module-path"/>
             <arg path="${modules.dir}"/>
             <arg value="--output"/>
@@ -131,7 +131,7 @@
             <arg value="--add-modules"/>
             <arg value="${module.name}"/>
         </exec>
-		<exec executable="jpackage">
+		<exec executable="jpackage" failonerror="true">
             <arg value="--name"/>
             <arg value="${app.name}"/>
 			<arg value="--module"/>
@@ -141,23 +141,28 @@
 			<arg value="--copyright"/>
 			<arg value="©1998-${module.version.year} by Richard A. Wilkes"/>
 			<arg value="--icon"/>
-			<arg path="artifacts/icns/app.icns"/>
-			<arg value="--mac-package-name"/>
-			<arg value="GCS"/>
-            <arg value="--file-associations"/>
-            <arg path="artifacts/file_associations/mac_adq_ext.properties"/>
-            <arg value="--file-associations"/>
-            <arg path="artifacts/file_associations/mac_eqp_ext.properties"/>
-            <arg value="--file-associations"/>
-            <arg path="artifacts/file_associations/mac_gcs_ext.properties"/>
-            <arg value="--file-associations"/>
-            <arg path="artifacts/file_associations/mac_gct_ext.properties"/>
-            <arg value="--file-associations"/>
-            <arg path="artifacts/file_associations/mac_not_ext.properties"/>
-            <arg value="--file-associations"/>
-            <arg path="artifacts/file_associations/mac_skl_ext.properties"/>
-            <arg value="--file-associations"/>
-            <arg path="artifacts/file_associations/mac_spl_ext.properties"/>
+            <arg if:true="${platform.mac}" path="artifacts/icns/app.icns"/>
+            <arg if:true="${platform.linux}" path="artifacts/png/app.png"/>
+			<arg if:true="${platform.mac}" value="--mac-package-name"/>
+			<arg if:true="${platform.mac}" value="GCS"/>
+			<arg if:true="${platform.linux}" value="--linux-package-name"/>
+            <arg if:true="${platform.linux}" value="gcs"/>
+			<arg if:true="${platform.linux}" value="--linux-package-deps"/>
+			<arg if:true="${platform.linux}" value=""/>
+            <arg if:true="${platform.mac}" value="--file-associations"/>
+            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_adq_ext.properties"/>
+            <arg if:true="${platform.mac}" value="--file-associations"/>
+            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_eqp_ext.properties"/>
+            <arg if:true="${platform.mac}" value="--file-associations"/>
+            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_gcs_ext.properties"/>
+            <arg if:true="${platform.mac}" value="--file-associations"/>
+            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_gct_ext.properties"/>
+            <arg if:true="${platform.mac}" value="--file-associations"/>
+            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_not_ext.properties"/>
+            <arg if:true="${platform.mac}" value="--file-associations"/>
+            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_skl_ext.properties"/>
+            <arg if:true="${platform.mac}" value="--file-associations"/>
+            <arg if:true="${platform.mac}" path="artifacts/file_associations/mac_spl_ext.properties"/>
             <arg value="--input"/>
             <arg path="${build.dir}/extra"/>
             <arg value="--license-file"/>
