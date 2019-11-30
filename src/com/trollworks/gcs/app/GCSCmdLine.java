@@ -120,7 +120,12 @@ public class GCSCmdLine {
         if (BundleInfo.getDefault().getVersion() == 0) {
             path = path.resolve("../gcs_library");
         } else if (Platform.isMacintosh()) {
-            path = Paths.get(System.getProperty("java.home")).resolve("../../../app");
+            Path javaHome = Paths.get(System.getProperty("java.home"));
+            if (javaHome.startsWith("/Library/Java/")) {
+                path = path.resolve("../gcs_library");
+            } else {
+                path = javaHome.resolve("../../../app");
+            }
         }
         return path.resolve("Library");
     }
