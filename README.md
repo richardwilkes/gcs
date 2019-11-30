@@ -23,7 +23,9 @@ choke on them.
 2. Until the packager is part of the released JDK again, we also need to
    download a pre-release that contains it. You can download it for your
    platform here: https://jdk.java.net/jpackage/
-   You should install this such that it is in your path **AFTER** JDK 13.
+   Do **NOT** place this in your path. The build expects to find it in your
+   home directory. If you placed it somewhere else, you'll need to adjust
+   the variable for `jpackage` in the build.xml file.
 
 3. Make sure you have Apache ANT installed. You can download it for your
    platform here: https://ant.apache.org/bindownload.cgi
@@ -36,24 +38,22 @@ choke on them.
    % ant clone-deps
    ```
 
-5. Build and bundle the code for your platform (**NOTE**: the master
-   branch is being updated to use the jpackage utility from JDK 14.
-   Currently, I've only gotten that to bundle reliably on macOS):
+5. Build and bundle the code for your platform:
 
    ```
    % cd gcs
    % ant bundle
    ```
-   
-   If you can't bundle due to the changes being made right now, you can
-   either roll your repos back to a known working version or forego the
-   bundling and do this instead:
-   
+
+   Linux is not currently bundling correctly. If you're on that platform,
+   you can either roll your repos back to a known working version or forego
+   the bundling and do this instead:
+
    ```
    % cd gcs
    % ant deps build
    ```
-   
+
    ... and then this to run it:
    
    ```
