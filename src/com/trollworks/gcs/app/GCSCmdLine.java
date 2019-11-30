@@ -34,6 +34,7 @@ import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.LaunchProxy;
 import com.trollworks.toolkit.utility.PathUtils;
+import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.Preferences;
 import com.trollworks.toolkit.utility.Timing;
 import com.trollworks.toolkit.utility.cmdline.CmdLine;
@@ -118,6 +119,8 @@ public class GCSCmdLine {
         Path path = App.getHomePath();
         if (BundleInfo.getDefault().getVersion() == 0) {
             path = path.resolve("../gcs_library");
+        } else if (Platform.isMacintosh()) {
+            path = Paths.get(System.getProperty("java.home")).resolve("../../../app");
         }
         return path.resolve("Library");
     }

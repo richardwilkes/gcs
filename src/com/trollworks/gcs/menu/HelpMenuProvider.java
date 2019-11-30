@@ -46,6 +46,8 @@ public class HelpMenuProvider implements MenuProvider {
         }
         menu.add(new JMenuItem(UpdateCommand.INSTANCE));
         menu.addSeparator();
+        menu.add(new JMenuItem(new ShowLibraryFolderCommand()));
+        menu.addSeparator();
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Release Notes"), "https://github.com/richardwilkes/gcs/releases")));
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("License"), "https://github.com/richardwilkes/gcs/blob/master/LICENSE")));
         menu.addSeparator();

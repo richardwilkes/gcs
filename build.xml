@@ -101,147 +101,72 @@
 		<ant dir="../com.lowagie.text" target="build" inheritall="false"/>
 		<ant dir="../toolkit" target="build" inheritall="false"/>
 	</target>
-    
-    <target name="bundle" depends="deps,build">
-        <symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
-        <delete dir="${build.dir}"/>
-
-    	<delete dir="${dist.root}"/>
-        <property if:true="${platform.mac}" name="dist.content.root" value="${app.root}/${app.name}.app/Contents"/>
-        <property unless:true="${platform.mac}" name="dist.content.root" value="${app.root}"/>
-        <property if:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/MacOS/support"/>
-        <property unless:true="${platform.mac}" name="dist.jdk.root" value="${dist.content.root}/support"/>
-        <property if:true="${platform.mac}" name="launcher" value="${dist.content.root}/MacOS/${exe.name}"/>
-        <property if:true="${platform.linux}" name="launcher" value="${dist.content.root}/${exe.name}"/>
-        <property if:true="${platform.windows}" name="launcher" value="${dist.content.root}/${exe.name}_cl.exe"/>
-        <property if:true="${platform.windows}" name="launcherw" value="${dist.content.root}/${exe.name}.exe"/>
-        <exec executable="jlink">
+	
+	<target name="bundle" depends="deps,build">
+		<delete dir="${build.dir}"/>
+		<delete file="${app.name}-${module.version}.dmg"/>
+        <mkdir dir="${build.dir}/extra/i18n"/>
+        <exec executable="java">
+            <arg value="--module-path"/>
+            <arg path="${modules.dir}"/>
+            <arg value="--module"/>
+            <arg value="com.trollworks.toolkit/com.trollworks.toolkit.utility.I18nMain"/>
+            <arg value="src"/>
+            <arg value="../toolkit/src"/>
+        </exec>
+		<move file="template.i18n" tofile="${build.dir}/extra/i18n/template.i18n"/>
+        <copy todir="${build.dir}/extra/Library">
+            <fileset dir="../gcs_library/Library"/>
+        </copy>
+		<exec executable="jlink">
             <arg value="--module-path"/>
             <arg path="${modules.dir}"/>
             <arg value="--output"/>
-            <arg path="${dist.jdk.root}"/>
+            <arg path="${build.dir}/jre"/>
             <arg value="--compress=2"/>
             <arg value="--no-header-files"/>
             <arg value="--no-man-pages"/>
-            <arg value="--launcher"/>
-            <arg value="${exe.name}=${module.name}/${module.name}.app.GCS"/>
+			<arg value="--strip-debug"/>
+			<arg value="--strip-native-commands"/>
             <arg value="--add-modules"/>
             <arg value="${module.name}"/>
         </exec>
-    	<delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}"/>
-        <delete if:true="${platform.windows}" file="${dist.jdk.root}/bin/${exe.name}.bat"/>
-        <move unless:true="${platform.windows}" file="${dist.jdk.root}/bin/java" tofile="${dist.jdk.root}/bin/${exe.name}"/>
-        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/java.exe" tofile="${dist.jdk.root}/bin/${exe.name}_cl.exe"/>
-        <move if:true="${platform.windows}" file="${dist.jdk.root}/bin/javaw.exe" tofile="${dist.jdk.root}/bin/${exe.name}.exe"/>
-
-        <mkdir if:true="${platform.mac}" dir="${dist.content.root}/Resources"/>
-        <exec if:true="${platform.mac}" executable="java">
-             <arg value="--module-path"/>
-             <arg path="${modules.dir}"/>
-             <arg value="--module"/>
-             <arg value="com.trollworks.gcs/com.trollworks.gcs.app.GCSInfoPlistCreator"/>
-             <arg value="${dist.content.root}"/>
-         </exec>
-        <copy if:true="${platform.mac}" todir="${dist.content.root}/Resources">
-            <fileset dir="artifacts/icns"/>
-        </copy>
-        <copy if:true="${platform.mac}" file="resources/com/trollworks/gcs/app/images/app_1024.png" tofile="${dist.content.root}/Resources/app.png"/>
-        <copy if:true="${platform.linux}" file="artifacts/png/app.png" tofile="${dist.jdk.root}/app.png"/>
-    	
-    	<exec if:true="${platform.windows}" executable="windres" dir="artifacts">
-    		<arg value="-i"/>
-    		<arg value="main_cl.rc"/>
-    		<arg value="-o"/>
-    		<arg value="mainres.syso"/>
-    	</exec>
-    	
-    	<exec executable="go" dir="artifacts">
-    		<arg value="build"/>
-    		<arg value="-o"/>
-    		<arg value="../${launcher}"/>
-    		<arg value="."/>
-    	</exec>
-    	<delete if:true="${platform.windows}" file="artifacts/mainres.syso"/>
-
-    	<exec if:true="${platform.windows}" executable="windres" dir="artifacts">
-    		<arg value="-i"/>
-    		<arg value="main.rc"/>
-    		<arg value="-o"/>
-    		<arg value="mainres.syso"/>
-    	</exec>
-
-    	<exec if:true="${platform.windows}" executable="go" dir="artifacts">
-    		<arg value="build"/>
-    		<arg value="-o"/>
-    		<arg value="../${launcherw}"/>
-    		<arg value="-ldflags"/>
-    		<arg value="-H=windowsgui"/>
-    		<arg value="."/>
-    	</exec>
-    	<delete if:true="${platform.windows}" file="artifacts/mainres.syso"/>
-
-        <exec if:true="${platform.mac}" executable="touch">
-            <arg path="${app.root}/${app.name}.app"/>
+		<exec executable="jpackage">
+            <arg value="--name"/>
+            <arg value="${app.name}"/>
+			<arg value="--module"/>
+			<arg value="${module.name}/${module.name}.app.GCS"/>
+			<arg value="--app-version"/>
+			<arg value="${module.version}"/>
+			<arg value="--copyright"/>
+			<arg value="©1998-${module.version.year} by Richard A. Wilkes"/>
+			<arg value="--icon"/>
+			<arg path="artifacts/icns/app.icns"/>
+			<arg value="--mac-package-name"/>
+			<arg value="GCS"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/mac_adq_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/mac_eqp_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/mac_gcs_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/mac_gct_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/mac_not_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/mac_skl_ext.properties"/>
+            <arg value="--file-associations"/>
+            <arg path="artifacts/file_associations/mac_spl_ext.properties"/>
+            <arg value="--input"/>
+            <arg path="${build.dir}/extra"/>
+            <arg value="--license-file"/>
+            <arg path="LICENSE"/>
+			<arg value="--runtime-image"/>
+			<arg path="${build.dir}/jre"/>
         </exec>
-
-        <exec executable="java">
-             <arg value="--module-path"/>
-             <arg path="${modules.dir}"/>
-             <arg value="--module"/>
-             <arg value="com.trollworks.toolkit/com.trollworks.toolkit.utility.I18nMain"/>
-             <arg value="src"/>
-             <arg value="../toolkit/src"/>
-         </exec>
-    	<mkdir dir="${app.root}/i18n"/>
-    	<move file="template.i18n" tofile="${app.root}/i18n/template.i18n"/>
-    	
-        <copy todir="${app.root}/Library">
-            <fileset dir="../gcs_library/Library"/>
-        </copy>
-        <symlink if:true="${platform.mac}" resource="/Applications" link="${dist.root}/Applications"/>
-
-        <delete if:true="${platform.mac}" file="${disk.image.name}.dmg"/>
-        <delete if:true="${platform.linux}" file="gcs-${module.version}.tgz"/>
-        <delete if:true="${platform.windows}" file="gcs-${module.version}.zip"/>
-        
-        <exec if:true="${platform.mac}" executable="du" output="${build.dir}/du.output">
-            <arg value="-sm"/>
-            <arg value="${dist.root}"/>
-        </exec>
-        <replaceregexp if:true="${platform.mac}" file="${build.dir}/du.output" match="\t.*" replace=""/>
-        <loadfile if:true="${platform.mac}" property="du.size" srcFile="${build.dir}/du.output"/>
-        <exec if:true="${platform.mac}" executable="dc" outputproperty="disk.image.size">
-            <arg value="-e"/>
-            <arg value="${du.size} 20 + p"/>
-        </exec>
-        <exec if:true="${platform.mac}" executable="hdiutil">
-            <arg value="create"/>
-            <arg value="-srcfolder"/>
-            <arg value="${dist.root}"/>
-            <arg value="-fs"/>
-            <arg value="HFS+"/>
-            <arg value="-fsargs"/>
-            <arg value="-c c=64,a=16,e=16"/>
-            <arg value="-megabytes"/>
-            <arg value="${disk.image.size}"/>
-            <arg value="-imagekey"/>
-            <arg value="zlib-level=9"/>
-            <arg value="${disk.image.name}.dmg"/>
-        </exec>
-
-    	<exec if:true="${platform.linux}" executable="tar">
-            <arg value="czf"/>
-            <arg value="gcs-${module.version}.tgz"/>
-            <arg value="-C"/>
-            <arg value="${build.dir}"/>
-            <arg value="gcs-${module.version}"/>
-        </exec>
-
-        <zip if:true="${platform.windows}" destfile="gcs-${module.version}.zip" basedir="${dist.root}"/>
-
-        <symlink if:true="${platform.mac}" action="delete" link="${dist.root}/Applications"/>
         <delete dir="${build.dir}"/>
-    </target>
+	</target>
 
 	<target name="clone-deps">
 		<exec executable="git" dir="..">

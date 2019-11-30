@@ -16,14 +16,17 @@ choke on them.
 
 ### Building from the command line
 
-1. Make sure you have JDK 13 installed. You can download it for your platform
-   here: http://jdk.java.net/13/
+1. Make sure you have JDK 13 installed and set to be used as your default
+   Java compiler. You can download it for your platform here:
+   http://jdk.java.net/13/
 
-2. Make sure you have Apache ANT installed. You can download it for your
+2. Until the packager is part of the released JDK again, we also need to
+   download a pre-release that contains it. You can download it for your
+   platform here: https://jdk.java.net/jpackage/
+   You should install this such that it is in your path **AFTER** JDK 13.
+
+3. Make sure you have Apache ANT installed. You can download it for your
    platform here: https://ant.apache.org/bindownload.cgi
-   
-3. Make sure you have Go installed. You can download it for your platform
-   here: https://golang.org/dl/
 
 4. Clone the source repositories:
 
