@@ -33,6 +33,7 @@ import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.I18n;
+import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import com.trollworks.toolkit.utility.text.Text;
 
@@ -128,7 +129,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")));
         mEnabledCheckBox.setEnabled(mIsEditable);
         mEnabledCheckBox.addActionListener(this);
-        UIUtilities.setOnlySize(mEnabledCheckBox, mEnabledCheckBox.getPreferredSize());
+        Dimension size = mEnabledCheckBox.getPreferredSize();
+        if (Platform.isWindows()) {
+            size.width++; // Text measurement is off on Windows for some reason
+        }
+        UIUtilities.setOnlySize(mEnabledCheckBox, size);
         add(mEnabledCheckBox);
         row.add(mEnabledCheckBox);
 
