@@ -17,6 +17,7 @@ import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Desktop;
+import java.awt.Desktop.Action;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Arrays;
@@ -36,14 +37,18 @@ public class ShowLibraryFolderCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            File   dir      = GCSCmdLine.getLibraryRootPath().toFile();
-            File[] contents = dir.listFiles();
-            if (contents.length > 0) {
-                Arrays.sort(contents);
-                dir = contents[0];
+            File    dir     = GCSCmdLine.getLibraryRootPath().toFile();
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Action.BROWSE_FILE_DIR)) {
+                File[] contents = dir.listFiles();
+                if (contents.length > 0) {
+                    Arrays.sort(contents);
+                    dir = contents[0];
+                }
+                desktop.browseFileDirectory(dir.getCanonicalFile());
+            } else {
+                desktop.open(dir);
             }
-
-            Desktop.getDesktop().browseFileDirectory(dir.getCanonicalFile());
         } catch (Exception exception) {
             WindowUtils.showError(null, exception.getMessage());
         }
