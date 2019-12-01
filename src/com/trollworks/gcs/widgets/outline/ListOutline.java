@@ -317,7 +317,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
             menu.add(new OpenPageReferenceCommand(this, true));
             menu.add(new OpenPageReferenceCommand(this, false));
             Command.adjustMenuTree(menu);
-            menu.show(this, event.getX(), event.getY());
+            menu.show(event.getComponent(), event.getX(), event.getY());
         }
     }
 }

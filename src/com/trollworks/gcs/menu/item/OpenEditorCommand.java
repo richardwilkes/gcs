@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
+import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Component;
@@ -63,6 +64,9 @@ public class OpenEditorCommand extends Command {
         ListOutline outline = mOutline;
         if (outline == null) {
             Component comp = getFocusOwner();
+            if (comp instanceof OutlineProxy) {
+                comp = ((OutlineProxy) comp).getRealOutline();
+            }
             if (comp instanceof Outline) {
                 outline = (ListOutline) comp;
             }

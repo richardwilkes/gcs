@@ -22,6 +22,7 @@ import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
+import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.I18n;
@@ -137,6 +138,9 @@ public class OpenPageReferenceCommand extends Command {
         ListOutline        outline = mOutline;
         if (outline == null) {
             Component comp = getFocusOwner();
+            if (comp instanceof OutlineProxy) {
+                comp = ((OutlineProxy) comp).getRealOutline();
+            }
             if (comp instanceof Outline) {
                 outline = (ListOutline) comp;
             }
