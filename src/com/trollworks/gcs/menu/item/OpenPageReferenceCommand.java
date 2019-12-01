@@ -15,6 +15,7 @@ import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.pdfview.PdfRef;
+import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.collections.ReverseListIterator;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.menu.Command;
@@ -38,12 +39,32 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 /** Provides the "Open Page Reference" command. */
 public class OpenPageReferenceCommand extends Command {
     /** The singleton {@link OpenPageReferenceCommand} for opening a single page reference. */
-    public static final OpenPageReferenceCommand OPEN_ONE_INSTANCE  = new OpenPageReferenceCommand(I18n.Text("Open Page Reference"), "OpenPageReference", KeyEvent.VK_G, COMMAND_MODIFIER);
+    public static final OpenPageReferenceCommand OPEN_ONE_INSTANCE  = new OpenPageReferenceCommand(true, KeyEvent.VK_G, COMMAND_MODIFIER);
     /** The singleton {@link OpenPageReferenceCommand} for opening all page references. */
-    public static final OpenPageReferenceCommand OPEN_EACH_INSTANCE = new OpenPageReferenceCommand(I18n.Text("Open Each Page Reference"), "OpenEachPageReferences", KeyEvent.VK_G, SHIFTED_COMMAND_MODIFIER);
+    public static final OpenPageReferenceCommand OPEN_EACH_INSTANCE = new OpenPageReferenceCommand(false, KeyEvent.VK_G, SHIFTED_COMMAND_MODIFIER);
+    private ListOutline                          mOutline;
 
-    private OpenPageReferenceCommand(String title, String cmd, int key, int modifiers) {
-        super(title, cmd, key, modifiers);
+    private OpenPageReferenceCommand(boolean one, int key, int modifiers) {
+        super(getTitle(one), getCmd(one), key, modifiers);
+    }
+
+    /**
+     * Creates a new {@link OpenPageReferenceCommand}.
+     *
+     * @param outline The outline to work against.
+     * @param one     Whether to open just the first page reference, or all of them.
+     */
+    public OpenPageReferenceCommand(ListOutline outline, boolean one) {
+        super(getTitle(one), getCmd(one));
+        mOutline = outline;
+    }
+
+    private static String getTitle(boolean one) {
+        return one ? I18n.Text("Open Page Reference") : I18n.Text("Open Each Page Reference");
+    }
+
+    private static String getCmd(boolean one) {
+        return one ? "OpenPageReference" : "OpenEachPageReferences";
     }
 
     @Override
@@ -111,11 +132,17 @@ public class OpenPageReferenceCommand extends Command {
         }
     }
 
-    private static HasSourceReference getTarget() {
-        HasSourceReference ref  = null;
-        Component          comp = getFocusOwner();
-        if (comp instanceof Outline) {
-            OutlineModel model = ((Outline) comp).getModel();
+    private HasSourceReference getTarget() {
+        HasSourceReference ref     = null;
+        ListOutline        outline = mOutline;
+        if (outline == null) {
+            Component comp = getFocusOwner();
+            if (comp instanceof Outline) {
+                outline = (ListOutline) comp;
+            }
+        }
+        if (outline != null) {
+            OutlineModel model = outline.getModel();
             if (model.hasSelection()) {
                 Selection selection = model.getSelection();
                 if (selection.getCount() == 1) {

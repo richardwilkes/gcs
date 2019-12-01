@@ -26,16 +26,26 @@ public class OpenEditorCommand extends Command {
     public static final String            CMD_OPEN_EDITOR = "OpenEditor";
     /** The singleton {@link OpenEditorCommand}. */
     public static final OpenEditorCommand INSTANCE        = new OpenEditorCommand();
+    private ListOutline                   mOutline;
 
     private OpenEditorCommand() {
         super(I18n.Text("Open Detail Editor"), CMD_OPEN_EDITOR, KeyEvent.VK_I);
     }
 
+    /**
+     * Creates a new {@link OpenEditorCommand}.
+     *
+     * @param outline The outline to work against.
+     */
+    public OpenEditorCommand(ListOutline outline) {
+        super(I18n.Text("Open Detail Editor"), CMD_OPEN_EDITOR);
+    }
+
     @Override
     public void adjust() {
-        Component comp = getFocusOwner();
-        if (comp instanceof Outline) {
-            setEnabled(((Outline) comp).getModel().hasSelection());
+        ListOutline outline = getOutline();
+        if (outline != null) {
+            setEnabled(outline.getModel().hasSelection());
         } else {
             setEnabled(false);
         }
@@ -43,7 +53,20 @@ public class OpenEditorCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        Outline outline = (Outline) getFocusOwner();
-        ((ListOutline) outline.getRealOutline()).openDetailEditor(false);
+        ListOutline outline = getOutline();
+        if (outline != null) {
+            ((ListOutline) outline.getRealOutline()).openDetailEditor(false);
+        }
+    }
+
+    private ListOutline getOutline() {
+        ListOutline outline = mOutline;
+        if (outline == null) {
+            Component comp = getFocusOwner();
+            if (comp instanceof Outline) {
+                outline = (ListOutline) comp;
+            }
+        }
+        return outline;
     }
 }

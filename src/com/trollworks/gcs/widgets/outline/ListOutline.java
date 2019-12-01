@@ -12,11 +12,20 @@
 package com.trollworks.gcs.widgets.outline;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.item.CopyToSheetCommand;
+import com.trollworks.gcs.menu.item.CopyToTemplateCommand;
+import com.trollworks.gcs.menu.item.OpenEditorCommand;
+import com.trollworks.gcs.menu.item.OpenPageReferenceCommand;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.Selection;
+import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
@@ -27,9 +36,13 @@ import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
 import javax.swing.undo.StateEdit;
 
 /** Base outline class. */
@@ -269,5 +282,42 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     public void drop(DropTargetDropEvent dtde) {
         super.drop(dtde);
         revalidateView();
+    }
+
+    @Override
+    protected void showContextMenu(MouseEvent event) {
+        if (getModel().hasSelection()) {
+            JPopupMenu menu = new JPopupMenu();
+            menu.add(new OpenEditorCommand(this));
+            LibraryExplorerDockable library = LibraryExplorerDockable.get();
+            if (library != null) {
+                JMenu          subMenu   = new JMenu(CopyToSheetCommand.INSTANCE.getTitle());
+                List<Dockable> dockables = library.getDockContainer().getDock().getDockables();
+                for (Dockable dockable : dockables) {
+                    if (dockable instanceof SheetDockable) {
+                        subMenu.add(new CopyToSheetCommand(this, (SheetDockable) dockable));
+                    }
+                }
+                if (subMenu.getItemCount() == 0) {
+                    subMenu.setEnabled(false);
+                }
+                menu.add(subMenu);
+                subMenu = new JMenu(CopyToTemplateCommand.INSTANCE.getTitle());
+                for (Dockable dockable : dockables) {
+                    if (dockable instanceof TemplateDockable) {
+                        subMenu.add(new CopyToTemplateCommand(this, (TemplateDockable) dockable));
+                    }
+                }
+                if (subMenu.getItemCount() == 0) {
+                    subMenu.setEnabled(false);
+                }
+                menu.add(subMenu);
+            }
+            menu.addSeparator();
+            menu.add(new OpenPageReferenceCommand(this, true));
+            menu.add(new OpenPageReferenceCommand(this, false));
+            Command.adjustMenuTree(menu);
+            menu.show(this, event.getX(), event.getY());
+        }
     }
 }
