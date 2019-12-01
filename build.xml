@@ -139,7 +139,8 @@
         </exec>
 		<exec executable="${jpackage}" failonerror="true">
             <arg value="--name"/>
-            <arg value="${app.name}"/>
+            <arg unless:true="${platform.linux}" value="${app.name}"/>
+            <arg if:true="${platform.linux}" value="${app.name.short}"/>
 			<arg value="--module"/>
 			<arg value="${module.name}/${module.name}.app.GCS"/>
 			<arg value="--app-version"/>
