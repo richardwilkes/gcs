@@ -30,7 +30,10 @@ choke on them.
 3. Make sure you have Apache ANT installed. You can download it for your
    platform here: https://ant.apache.org/bindownload.cgi
 
-4. Clone the source repositories:
+4. If you are building on Windows, you'll need to install WiX Toolset from
+   here: https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm
+
+5. Clone the source repositories:
 
    ```
    % git clone https://github.com/richardwilkes/gcs
@@ -38,24 +41,9 @@ choke on them.
    % ant clone-deps
    ```
 
-5. Build and bundle the code for your platform:
+6. Build and bundle the code for your platform:
 
    ```
    % cd gcs
    % ant bundle
-   ```
-
-   Linux is not currently bundling correctly. If you're on that platform,
-   you can either roll your repos back to a known working version or forego
-   the bundling and do this instead:
-
-   ```
-   % cd gcs
-   % ant deps build
-   ```
-
-   ... and then this to run it:
-   
-   ```
-   % java --module-path ../java_modules --module com.trollworks.gcs/com.trollworks.gcs.app.GCS
    ```
