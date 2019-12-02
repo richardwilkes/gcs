@@ -365,6 +365,12 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mWeightUnitsCombo.setSelectedIndex(DEFAULT_WEIGHT_UNITS.ordinal());
         mToolTipTimeout.setText(Integer.toString(DEFAULT_TOOLTIP_TIMEOUT));
         mBlockLayoutField.setText(DEFAULT_BLOCK_LAYOUT);
+        mShowUserDescAsToolTips.setSelected(DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP);
+        mShowUserDescInDisplay.setSelected(DEFAULT_SHOW_USER_DESC_IN_DISPLAY);
+        mShowModifiersAsToolTips.setSelected(DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP);
+        mShowModifiersInDisplay.setSelected(DEFAULT_SHOW_MODIFIERS_IN_DISPLAY);
+        mShowNotesAsToolTips.setSelected(DEFAULT_SHOW_NOTES_AS_TOOL_TIP);
+        mShowNotesInDisplay.setSelected(DEFAULT_SHOW_NOTES_IN_DISPLAY);
     }
 
     @Override
