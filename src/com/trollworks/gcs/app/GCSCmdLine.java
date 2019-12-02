@@ -17,7 +17,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.PrerequisitesThread;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.equipment.EquipmentList;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.skill.SkillList;
@@ -145,8 +144,6 @@ public class GCSCmdLine {
         FileType.register(SpellList.EXTENSION, GCSImages.getSpellsDocumentIcons(), I18n.Text("GCS Spells Library"), GCSApp.WEB_SITE, fileProxyCreator, true, true);
         FileType.register(NoteList.EXTENSION, GCSImages.getNoteDocumentIcons(), I18n.Text("GCS Notes Library"), GCSApp.WEB_SITE, fileProxyCreator, true, true);
         FileType.register(Template.EXTENSION, GCSImages.getTemplateDocumentIcons(), I18n.Text("GCS Character Template"), GCSApp.WEB_SITE, fileProxyCreator, true, true);
-        // For legacy
-        FileType.register(LibraryFile.EXTENSION, GCSImages.getAdvantagesDocumentIcons(), I18n.Text("GCS Library"), GCSApp.WEB_SITE, fileProxyCreator, true, true);
 
         FileType.registerPdf(null, fileProxyCreator, true, false);
         FileType.registerHtml(null, null, false, false);

@@ -14,7 +14,6 @@ package com.trollworks.gcs.modifier;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.collections.FilteredIterator;
@@ -149,7 +148,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
         Modifier     modifier = new Modifier(mOwner);
         OutlineModel model    = mOutline.getModel();
 
-        if (mOwner instanceof ListFile || mOwner instanceof LibraryFile) {
+        if (mOwner instanceof ListFile) {
             modifier.setEnabled(false);
         }
         model.addRow(modifier);

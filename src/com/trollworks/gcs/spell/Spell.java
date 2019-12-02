@@ -17,7 +17,6 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.skill.SkillAttribute;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillLevel;
@@ -284,7 +283,7 @@ public class Spell extends ListRow implements HasSourceReference {
             mTechLevel = reader.readText();
             if (mTechLevel != null) {
                 DataFile dataFile = getDataFile();
-                if (dataFile instanceof ListFile || dataFile instanceof LibraryFile) {
+                if (dataFile instanceof ListFile) {
                     mTechLevel = "";
                 }
             }

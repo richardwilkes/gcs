@@ -14,7 +14,6 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
@@ -43,9 +42,6 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         }
         if (dataFile instanceof Template) {
             return ((Template) dataFile).getSkillsModel();
-        }
-        if (dataFile instanceof LibraryFile) {
-            return ((LibraryFile) dataFile).getSkillList().getModel();
         }
         return ((ListFile) dataFile).getModel();
     }

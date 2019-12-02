@@ -14,7 +14,6 @@ package com.trollworks.gcs.equipment;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.template.Template;
@@ -87,7 +86,7 @@ public enum EquipmentColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-            return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
+            return !(dataFile instanceof ListFile);
         }
 
         @Override
@@ -173,7 +172,7 @@ public enum EquipmentColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-            return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+            return dataFile instanceof ListFile;
         }
 
         @Override
@@ -205,7 +204,7 @@ public enum EquipmentColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-            return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+            return dataFile instanceof ListFile;
         }
 
         @Override
@@ -291,7 +290,7 @@ public enum EquipmentColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-            return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
+            return !(dataFile instanceof ListFile);
         }
 
         @Override
@@ -323,7 +322,7 @@ public enum EquipmentColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-            return !(dataFile instanceof ListFile) && !(dataFile instanceof LibraryFile);
+            return !(dataFile instanceof ListFile);
         }
 
         @Override
@@ -355,7 +354,7 @@ public enum EquipmentColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile, boolean carried) {
-            return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+            return dataFile instanceof ListFile;
         }
 
         @Override

@@ -14,7 +14,6 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
@@ -89,7 +88,7 @@ public enum SkillColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
-            return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+            return dataFile instanceof ListFile;
         }
 
         @Override
@@ -290,7 +289,7 @@ public enum SkillColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
-            return dataFile instanceof ListFile || dataFile instanceof LibraryFile;
+            return dataFile instanceof ListFile;
         }
 
         @Override

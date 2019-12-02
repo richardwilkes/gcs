@@ -17,7 +17,6 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -274,7 +273,7 @@ public class Skill extends ListRow implements HasSourceReference {
             mTechLevel = reader.readText().replace("\n", " ");
             if (mTechLevel != null) {
                 DataFile dataFile = getDataFile();
-                if (dataFile instanceof ListFile || dataFile instanceof LibraryFile) {
+                if (dataFile instanceof ListFile) {
                     mTechLevel = "";
                 }
             }

@@ -300,9 +300,6 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
                 case NoteList.EXTENSION:
                     proxy = openNoteList(path);
                     break;
-                case LibraryFile.EXTENSION:
-                    proxy = openLibrary(path);
-                    break;
                 case GURPSCharacter.EXTENSION:
                     proxy = dockSheet(new SheetDockable(new GURPSCharacter(path.toFile())));
                     break;
@@ -365,37 +362,6 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         list.load(path.toFile());
         list.getModel().setLocked(true);
         return dockLibrary(new NotesDockable(list));
-    }
-
-    private FileProxy openLibrary(Path path) throws IOException {
-        FileProxy   proxy   = null;
-        LibraryFile library = new LibraryFile(path.toFile());
-        SpellList   spells  = library.getSpellList();
-        if (!spells.isEmpty()) {
-            spells.setModified(true);
-            proxy = dockLibrary(new SpellsDockable(spells));
-        }
-        SkillList skills = library.getSkillList();
-        if (!skills.isEmpty()) {
-            skills.setModified(true);
-            proxy = dockLibrary(new SkillsDockable(skills));
-        }
-        EquipmentList equipment = library.getEquipmentList();
-        if (!equipment.isEmpty()) {
-            equipment.setModified(true);
-            proxy = dockLibrary(new EquipmentDockable(equipment));
-        }
-        AdvantageList adq = library.getAdvantageList();
-        if (!adq.isEmpty()) {
-            adq.setModified(true);
-            proxy = dockLibrary(new AdvantagesDockable(adq));
-        }
-        NoteList notes = library.getNoteList();
-        if (!notes.isEmpty()) {
-            notes.setModified(true);
-            proxy = dockLibrary(new NotesDockable(notes));
-        }
-        return proxy;
     }
 
     /**

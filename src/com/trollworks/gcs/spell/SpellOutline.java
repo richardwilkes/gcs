@@ -14,7 +14,6 @@ package com.trollworks.gcs.spell;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
@@ -43,9 +42,6 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         }
         if (dataFile instanceof Template) {
             return ((Template) dataFile).getSpellsModel();
-        }
-        if (dataFile instanceof LibraryFile) {
-            return ((LibraryFile) dataFile).getSpellList().getModel();
         }
         return ((ListFile) dataFile).getModel();
     }
@@ -102,7 +98,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
     @SuppressWarnings("unused")
     @Override
     public void decrement() {
-        List<RowUndo> undos = new ArrayList<RowUndo>();
+        List<RowUndo> undos = new ArrayList<>();
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
                 int points = spell.getPoints();
@@ -124,8 +120,8 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
     @SuppressWarnings("unused")
     @Override
     public void increment() {
-        List<RowUndo> undos = new ArrayList<RowUndo>();
-        for (Spell spell : new FilteredIterator<Spell>(getModel().getSelectionAsList(), Spell.class)) {
+        List<RowUndo> undos = new ArrayList<>();
+        for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
                 RowUndo undo = new RowUndo(spell);
                 spell.setPoints(spell.getPoints() + 1);
