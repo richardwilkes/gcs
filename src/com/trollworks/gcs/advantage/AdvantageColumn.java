@@ -51,7 +51,7 @@ public enum AdvantageColumn {
 
         @Override
         public String getToolTip(Advantage advantage) {
-            return DisplayPreferences.showUserDescAsTooltip() ? advantage.getUserDesc() : null;
+            return getDataAsText(advantage);
         }
 
         @Override
@@ -72,19 +72,31 @@ public enum AdvantageColumn {
         @Override
         public String getDataAsText(Advantage advantage) {
             StringBuilder builder = new StringBuilder();
-            String        notes   = advantage.getModifierNotes();
-
-            builder.append(advantage.toString());
-            if (notes.length() > 0) {
-                builder.append(" - ");
-                builder.append(notes);
+            if (DisplayPreferences.showUserDescAsTooltip()) {
+                String desc = advantage.getUserDesc();
+                builder.append(desc);
+                if (desc.length() > 0) {
+                    builder.append('\n');
+                }
             }
-            notes = advantage.getNotes();
-            if (notes.length() > 0) {
-                builder.append(" - ");
-                builder.append(notes);
+            if (DisplayPreferences.showNotesAsTooltip()) {
+                String desc = advantage.getNotes();
+                builder.append(desc);
+                if (desc.length() > 0) {
+                    builder.append('\n');
+                }
             }
-            return builder.toString();
+            if (DisplayPreferences.showModifiersAsTooltip()) {
+                String desc = advantage.getModifierNotes();
+                builder.append(desc);
+                if (desc.length() > 0) {
+                    builder.append('\n');
+                }
+            }
+            if (builder.length() > 0) {
+                builder.setLength(builder.length() - 1);   // Remove the last '\n'
+            }
+            return builder.length() > 0 ? builder.toString() : null;
         }
     },
     /** The points spent in the advantage. */
