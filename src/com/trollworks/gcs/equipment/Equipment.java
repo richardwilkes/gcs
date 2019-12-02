@@ -22,7 +22,6 @@ import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
-import com.trollworks.gcs.weapon.OldWeapon;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -262,8 +261,6 @@ public class Equipment extends ListRow implements HasSourceReference {
             mWeapons.add(new MeleeWeaponStats(this, reader));
         } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
             mWeapons.add(new RangedWeaponStats(this, reader));
-        } else if (OldWeapon.TAG_ROOT.equals(name)) {
-            state.mOldWeapons.put(this, new OldWeapon(reader));
         } else if (!canHaveChildren()) {
             if (TAG_QUANTITY.equals(name)) {
                 mQuantity = reader.readInteger(1);
@@ -277,12 +274,6 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     protected void finishedLoading(LoadState state) {
-        OldWeapon oldWeapon = state.mOldWeapons.remove(this);
-        if (oldWeapon != null) {
-            mWeapons.addAll(oldWeapon.getWeapons(this));
-        }
-        // We no longer have defaults... that was solely for the weapons
-        setDefaults(new ArrayList<SkillDefault>());
         updateExtendedValue(false);
         updateExtendedWeight(false);
         super.finishedLoading(state);

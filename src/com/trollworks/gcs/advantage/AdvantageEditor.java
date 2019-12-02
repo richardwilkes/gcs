@@ -16,7 +16,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.ModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.skill.Defaults;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -78,7 +77,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private JTabbedPane                           mTabPanel;
     private PrereqsPanel                          mPrereqs;
     private FeaturesPanel                         mFeatures;
-    private Defaults                              mDefaults;
     private MeleeWeaponEditor                     mMeleeWeapons;
     private RangedWeaponEditor                    mRangedWeapons;
     private ModifierListEditor                    mModifiers;
@@ -279,13 +277,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         if (notContainer) {
             mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
             mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
-            mDefaults      = new Defaults(mRow.getDefaults());
             mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-            mDefaults.addActionListener(this);
-            Component panel = embedEditor(mDefaults);
-            mTabPanel.addTab(panel.getName(), panel);
-            panel = embedEditor(mPrereqs);
+            Component panel = embedEditor(mPrereqs);
             mTabPanel.addTab(panel.getName(), panel);
             panel = embedEditor(mFeatures);
             mTabPanel.addTab(panel.getName(), panel);
@@ -451,9 +445,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 modified |= mRow.setHalfLevel(getHalfLevel());
             } else {
                 modified |= mRow.setHalfLevel(false);
-            }
-            if (mDefaults != null) {
-                modified |= mRow.setDefaults(mDefaults.getDefaults());
             }
             if (mPrereqs != null) {
                 modified |= mRow.setPrereqs(mPrereqs.getPrereqList());

@@ -20,7 +20,6 @@ import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
-import com.trollworks.gcs.weapon.OldWeapon;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -52,7 +51,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     /** The XML tag used for containers. */
     public static final String         TAG_ADVANTAGE_CONTAINER    = "advantage_container";
     private static final String        TAG_REFERENCE              = "reference";
-    private static final String        TAG_OLD_POINTS             = "points";
     private static final String        TAG_BASE_POINTS            = "base_points";
     private static final String        TAG_POINTS_PER_LEVEL       = "points_per_level";
     private static final String        TAG_LEVELS                 = "levels";
@@ -123,7 +121,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private int                        mPoints;
     private int                        mPointsPerLevel;
     private String                     mReference;
-    private String                     mOldPointsString;
     private AdvantageContainerType     mContainerType;
     private ArrayList<WeaponStats>     mWeapons;
     private ArrayList<Modifier>        mModifiers;
@@ -249,7 +246,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mPointsPerLevel  = 0;
         mRoundCostDown   = false;
         mDisabled        = false;
-        mOldPointsString = null;
         mWeapons         = new ArrayList<>();
         mModifiers       = new ArrayList<>();
         mUserDesc        = "";
@@ -292,8 +288,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 // Read the attribute first as next operation clears attribute map
                 mHalfLevel = mAllowHalfLevels && reader.isAttributeSet(ATTR_HALF_LEVEL);
                 mLevels    = reader.readInteger(-1);
-            } else if (TAG_OLD_POINTS.equals(name)) {
-                mOldPointsString = reader.readText();
             } else if (TAG_BASE_POINTS.equals(name)) {
                 mPoints = reader.readInteger(0);
             } else if (TAG_POINTS_PER_LEVEL.equals(name)) {
@@ -302,50 +296,12 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 mWeapons.add(new MeleeWeaponStats(this, reader));
             } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
                 mWeapons.add(new RangedWeaponStats(this, reader));
-            } else if (OldWeapon.TAG_ROOT.equals(name)) {
-                state.mOldWeapons.put(this, new OldWeapon(reader));
             } else {
                 super.loadSubElement(reader, state);
             }
         } else {
             super.loadSubElement(reader, state);
         }
-    }
-
-    @Override
-    protected void finishedLoading(LoadState state) {
-        if (mOldPointsString != null) {
-            // All this is here solely to support loading old data files
-            mOldPointsString = mOldPointsString.trim();
-            int slash = mOldPointsString.indexOf('/');
-            if (slash == -1) {
-                mPoints         = getSimpleNumber(mOldPointsString);
-                mPointsPerLevel = 0;
-            } else {
-                mPoints = getSimpleNumber(mOldPointsString.substring(0, slash));
-                if (mOldPointsString.length() > slash) {
-                    mPointsPerLevel = getSimpleNumber(mOldPointsString.substring(slash + 1));
-                } else {
-                    mPointsPerLevel = 0;
-                }
-                if (mPoints == 0) {
-                    mPoints         = mPointsPerLevel;
-                    mPointsPerLevel = 0;
-                }
-            }
-            if (hasLevel() && mPointsPerLevel == 0) {
-                mPointsPerLevel = mPoints;
-                mPoints         = 0;
-            }
-            mOldPointsString = null;
-        }
-        OldWeapon oldWeapon = state.mOldWeapons.remove(this);
-        if (oldWeapon != null) {
-            mWeapons.addAll(oldWeapon.getWeapons(this));
-        }
-        // We no longer have defaults... that was solely for the weapons
-        setDefaults(new ArrayList<SkillDefault>());
-        super.finishedLoading(state);
     }
 
     @Override
@@ -874,14 +830,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     public String getDataAsText(Column column) {
         return AdvantageColumn.values()[column.getID()].getDataAsText(this);
-    }
-
-    private static int getSimpleNumber(String buffer) {
-        try {
-            return Integer.parseInt(buffer);
-        } catch (Exception exception) {
-            return 0;
-        }
     }
 
     @Override
