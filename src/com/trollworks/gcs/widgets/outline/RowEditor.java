@@ -52,7 +52,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      */
     @SuppressWarnings("unused")
     static public boolean edit(Component owner, List<? extends ListRow> list) {
-        ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
+        ArrayList<RowUndo> undos = new ArrayList<>();
         ListRow[]          rows  = list.toArray(new ListRow[0]);
 
         for (int i = 0; i < rows.length; i++) {

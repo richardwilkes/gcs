@@ -66,6 +66,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
     private SkillOutline             mSkillOutline;
     private SpellOutline             mSpellOutline;
     private EquipmentOutline         mEquipmentOutline;
+    private EquipmentOutline         mOtherEquipmentOutline;
     private NoteOutline              mNoteOutline;
     /** Used to determine whether an edit cell is pending. */
     protected boolean                mStartEditingPending;
@@ -83,24 +84,27 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         setBackground(Color.WHITE);
         setBorder(NORMAL_BORDER);
 
-        mScale            = DisplayPreferences.getInitialUIScale().getScale();
-        mTemplate         = template;
+        mScale                 = DisplayPreferences.getInitialUIScale().getScale();
+        mTemplate              = template;
 
         // Make sure our primary outlines exist
-        mAdvantageOutline = new AdvantageOutline(mTemplate);
-        mSkillOutline     = new SkillOutline(mTemplate);
-        mSpellOutline     = new SpellOutline(mTemplate);
-        mEquipmentOutline = new EquipmentOutline(mTemplate);
-        mNoteOutline      = new NoteOutline(mTemplate);
+        mAdvantageOutline      = new AdvantageOutline(mTemplate);
+        mSkillOutline          = new SkillOutline(mTemplate);
+        mSpellOutline          = new SpellOutline(mTemplate);
+        mEquipmentOutline      = new EquipmentOutline(mTemplate, mTemplate.getEquipmentModel());
+        mOtherEquipmentOutline = new EquipmentOutline(mTemplate, mTemplate.getOtherEquipmentModel());
+        mNoteOutline           = new NoteOutline(mTemplate);
         add(new TemplateOutlinePanel(mAdvantageOutline, I18n.Text("Advantages, Disadvantages & Quirks")));
         add(new TemplateOutlinePanel(mSkillOutline, I18n.Text("Skills")));
         add(new TemplateOutlinePanel(mSpellOutline, I18n.Text("Spells")));
         add(new TemplateOutlinePanel(mEquipmentOutline, I18n.Text("Equipment")));
+        add(new TemplateOutlinePanel(mOtherEquipmentOutline, I18n.Text("Other Equipment")));
         add(new TemplateOutlinePanel(mNoteOutline, I18n.Text("Notes")));
         mAdvantageOutline.addActionListener(this);
         mSkillOutline.addActionListener(this);
         mSpellOutline.addActionListener(this);
         mEquipmentOutline.addActionListener(this);
+        mOtherEquipmentOutline.addActionListener(this);
         mNoteOutline.addActionListener(this);
 
         // Ensure everything is laid out and register for notification
@@ -195,6 +199,11 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         return mEquipmentOutline;
     }
 
+    /** @return The outline containing the other equipment. */
+    public EquipmentOutline getOtherEquipmentOutline() {
+        return mOtherEquipmentOutline;
+    }
+
     /** @return The outline containing the notes equipment. */
     public NoteOutline getNoteOutline() {
         return mNoteOutline;
@@ -221,6 +230,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
             OutlineSyncer.add(mSpellOutline);
         } else if (type.startsWith(Equipment.PREFIX)) {
             OutlineSyncer.add(mEquipmentOutline);
+            OutlineSyncer.add(mOtherEquipmentOutline);
         } else if (type.startsWith(Note.PREFIX)) {
             OutlineSyncer.add(mNoteOutline);
         }

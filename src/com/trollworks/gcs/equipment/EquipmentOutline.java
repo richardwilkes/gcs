@@ -13,8 +13,6 @@ package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.library.LibraryFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.template.Template;
@@ -36,28 +34,6 @@ import java.util.List;
 
 /** An outline specifically for equipment. */
 public class EquipmentOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
-    private static OutlineModel extractModel(DataFile dataFile) {
-        if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getEquipmentRoot();
-        }
-        if (dataFile instanceof Template) {
-            return ((Template) dataFile).getEquipmentModel();
-        }
-        if (dataFile instanceof LibraryFile) {
-            return ((LibraryFile) dataFile).getEquipmentList().getModel();
-        }
-        return ((ListFile) dataFile).getModel();
-    }
-
-    /**
-     * Create a new equipment outline.
-     *
-     * @param dataFile The owning data file.
-     */
-    public EquipmentOutline(DataFile dataFile) {
-        this(dataFile, extractModel(dataFile));
-    }
-
     /**
      * Create a new equipment outline.
      *
@@ -66,7 +42,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
      */
     public EquipmentOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Equipment.ID_LIST_CHANGED);
-        EquipmentColumn.addColumns(this, dataFile);
+        EquipmentColumn.addColumns(this, dataFile, model.getProperty(EquipmentList.TAG_OTHER_ROOT) == null);
     }
 
     @Override
@@ -228,15 +204,34 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
         boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
         ArrayList<ListRow> process            = new ArrayList<>();
 
-        for (Row element : rows) {
-            Equipment equipment = new Equipment(mDataFile, (Equipment) element, true);
+        if (forSheetOrTemplate) {
+            OutlineModel carriedModel   = null;
+            OutlineModel uncarriedModel = null;
+            if (mDataFile instanceof GURPSCharacter) {
+                GURPSCharacter character = (GURPSCharacter) mDataFile;
+                carriedModel   = character.getEquipmentRoot();
+                uncarriedModel = character.getOtherEquipmentRoot();
+            } else if (mDataFile instanceof Template) {
+                Template tmpl = (Template) mDataFile;
+                carriedModel   = tmpl.getEquipmentModel();
+                uncarriedModel = tmpl.getOtherEquipmentModel();
+            }
+            if (carriedModel != null && uncarriedModel != null) {
+                OutlineModel otherModel = rows[0].getOwner();
+                OutlineModel selfModel  = getModel();
+                if (selfModel != otherModel && (selfModel == carriedModel || selfModel == uncarriedModel) && (otherModel == carriedModel || otherModel == uncarriedModel)) {
+                    otherModel.removeRows(rows);
+                }
+            }
+        }
 
+        for (Row row : rows) {
+            Equipment equipment = new Equipment(mDataFile, (Equipment) row, true);
             model.collectRowsAndSetOwner(list, equipment, false);
             if (forSheetOrTemplate) {
                 addRowsToBeProcessed(process, equipment);
             }
         }
-
         if (forSheetOrTemplate && !process.isEmpty()) {
             EventQueue.invokeLater(new RowPostProcessor(this, process));
         }

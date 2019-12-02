@@ -131,8 +131,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private static final String   SKILLS_KEY          = "skills";
     private static final String   SPELLS_KEY          = "spells";
     private static final String   EQUIPMENT_KEY       = "equipment";
+    private static final String   OTHER_EQUIPMENT_KEY = "other_equipment";
     private static final String   NOTES_KEY           = "notes";
-    private static final String[] ALL_KEYS            = { MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, NOTES_KEY };
+    private static final String[] ALL_KEYS            = { MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY };
     private Scale                 mScale;
     private GURPSCharacter        mCharacter;
     private int                   mLastPage;
@@ -141,6 +142,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private SkillOutline          mSkillOutline;
     private SpellOutline          mSpellOutline;
     private EquipmentOutline      mEquipmentOutline;
+    private EquipmentOutline      mOtherEquipmentOutline;
     private NoteOutline           mNoteOutline;
     private Outline               mMeleeWeaponOutline;
     private Outline               mRangedWeaponOutline;
@@ -238,6 +240,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         createMeleeWeaponOutline();
         createRangedWeaponOutline();
         createEquipmentOutline();
+        createOtherEquipmentOutline();
         createNoteOutline();
 
         // Clear out the old pages
@@ -294,9 +297,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         OutlineSyncer.remove(mSkillOutline);
         OutlineSyncer.remove(mSpellOutline);
         OutlineSyncer.remove(mEquipmentOutline);
+        OutlineSyncer.remove(mOtherEquipmentOutline);
         OutlineSyncer.remove(mNoteOutline);
         mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
         mCharacter.calculateWeightAndWealthCarried(true);
+        mCharacter.calculateWealthNotCarried(true);
         if (focusKey != null) {
             restoreFocusToKey(focusKey, this);
         } else if (focus instanceof Outline) {
@@ -316,6 +321,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         remaining.add(SKILLS_KEY);
         remaining.add(SPELLS_KEY);
         remaining.add(EQUIPMENT_KEY);
+        remaining.add(OTHER_EQUIPMENT_KEY);
         remaining.add(NOTES_KEY);
         return remaining;
     }
@@ -367,6 +373,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             return I18n.Text("Spells");
         case EQUIPMENT_KEY:
             return I18n.Text("Equipment");
+        case OTHER_EQUIPMENT_KEY:
+            return I18n.Text("Other Equipment");
         case NOTES_KEY:
             return I18n.Text("Notes");
         default:
@@ -388,6 +396,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             return mSpellOutline;
         case EQUIPMENT_KEY:
             return mEquipmentOutline;
+        case OTHER_EQUIPMENT_KEY:
+            return mOtherEquipmentOutline;
         case NOTES_KEY:
             return mNoteOutline;
         default:
@@ -525,10 +535,24 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private void createEquipmentOutline() {
         if (mEquipmentOutline == null) {
-            mEquipmentOutline = new EquipmentOutline(mCharacter);
+            mEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getEquipmentRoot());
             initOutline(mEquipmentOutline);
         } else {
             resetOutline(mEquipmentOutline);
+        }
+    }
+
+    /** @return The outline containing the other equipment. */
+    public EquipmentOutline getOtherEquipmentOutline() {
+        return mOtherEquipmentOutline;
+    }
+
+    private void createOtherEquipmentOutline() {
+        if (mOtherEquipmentOutline == null) {
+            mOtherEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getOtherEquipmentRoot());
+            initOutline(mOtherEquipmentOutline);
+        } else {
+            resetOutline(mOtherEquipmentOutline);
         }
     }
 
@@ -794,6 +818,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 OutlineSyncer.add(mSpellOutline);
             } else if (type.startsWith(Equipment.PREFIX)) {
                 OutlineSyncer.add(mEquipmentOutline);
+                OutlineSyncer.add(mOtherEquipmentOutline);
             } else if (type.startsWith(Note.PREFIX)) {
                 OutlineSyncer.add(mNoteOutline);
             }
@@ -810,7 +835,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                     bounds.height = insets.bottom;
                     repaint(bounds);
                 }
-            } else if (Advantage.ID_DISABLED.equals(type) || Equipment.ID_STATE.equals(type) || Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEAPON_STATUS_CHANGED.equals(type) || Advantage.ID_WEAPON_STATUS_CHANGED.equals(type) || Spell.ID_WEAPON_STATUS_CHANGED.equals(type) || Skill.ID_WEAPON_STATUS_CHANGED.equals(type) || GURPSCharacter.ID_INCLUDE_PUNCH.equals(type) || GURPSCharacter.ID_INCLUDE_KICK.equals(type) || GURPSCharacter.ID_INCLUDE_BOOTS.equals(type)) {
+            } else if (Advantage.ID_DISABLED.equals(type) || Equipment.ID_EQUIPPED.equals(type) || Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEAPON_STATUS_CHANGED.equals(type) || Advantage.ID_WEAPON_STATUS_CHANGED.equals(type) || Spell.ID_WEAPON_STATUS_CHANGED.equals(type) || Skill.ID_WEAPON_STATUS_CHANGED.equals(type) || GURPSCharacter.ID_INCLUDE_PUNCH.equals(type) || GURPSCharacter.ID_INCLUDE_KICK.equals(type) || GURPSCharacter.ID_INCLUDE_BOOTS.equals(type)) {
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (GURPSCharacter.ID_PARRY_BONUS.equals(type) || Skill.ID_LEVEL.equals(type)) {
@@ -818,7 +843,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 OutlineSyncer.add(mRangedWeaponOutline);
             } else if (GURPSCharacter.ID_CARRIED_WEIGHT.equals(type) || GURPSCharacter.ID_CARRIED_WEALTH.equals(type)) {
                 Column column = mEquipmentOutline.getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
-                column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter));
+                column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
+            } else if (GURPSCharacter.ID_NOT_CARRIED_WEALTH.equals(type)) {
+                Column column = mOtherEquipmentOutline.getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
+                column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
             } else if (!mBatchMode) {
                 validate();
             }
@@ -1064,6 +1092,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         expandAllContainers(mCharacter.getSkillsIterator(), changed);
         expandAllContainers(mCharacter.getSpellsIterator(), changed);
         expandAllContainers(mCharacter.getEquipmentIterator(), changed);
+        expandAllContainers(mCharacter.getOtherEquipmentIterator(), changed);
         if (mRebuildPending) {
             syncRoots();
             rebuild();

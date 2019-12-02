@@ -79,7 +79,7 @@ public class LibraryFile extends DataFile {
 
     @Override
     public boolean matchesRootTag(String name) {
-        return TAG_ROOT.equals(name) || AdvantageList.TAG_ROOT.equals(name) || SkillList.TAG_ROOT.equals(name) || SpellList.TAG_ROOT.equals(name) || EquipmentList.TAG_ROOT.equals(name) || NoteList.TAG_ROOT.equals(name);
+        return TAG_ROOT.equals(name) || AdvantageList.TAG_ROOT.equals(name) || SkillList.TAG_ROOT.equals(name) || SpellList.TAG_ROOT.equals(name) || EquipmentList.TAG_CARRIED_ROOT.equals(name) || NoteList.TAG_ROOT.equals(name);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class LibraryFile extends DataFile {
                         mSkills.load(reader, state);
                     } else if (SpellList.TAG_ROOT.equals(name)) {
                         mSpells.load(reader, state);
-                    } else if (EquipmentList.TAG_ROOT.equals(name)) {
+                    } else if (EquipmentList.TAG_CARRIED_ROOT.equals(name)) {
                         mEquipment.load(reader, state);
                     } else if (NoteList.TAG_ROOT.equals(name)) {
                         mNotes.load(reader, state);

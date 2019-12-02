@@ -13,12 +13,11 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.widgets.outline.ColumnUtils;
 import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.border.TitledBorder;
-import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
-import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -26,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 
 import javax.swing.UIManager;
 
@@ -84,41 +82,15 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 
     @Override
     public void layoutContainer(Container parent) {
-        Insets            insets       = getInsets();
-        Rectangle         bounds       = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-        int               width        = bounds.width;
-        int               height       = mHeader.getPreferredSize().height;
-        OutlineModel      outlineModel = mOutline.getModel();
-        int               count        = outlineModel.getColumnCount();
-        ArrayList<Column> changed      = new ArrayList<>();
-        Column            column;
-
+        Insets    insets = getInsets();
+        Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
+        int       width  = bounds.width;
+        int       height = mHeader.getPreferredSize().height;
         mHeader.setBounds(bounds.x, bounds.y, width, height);
         bounds.y      += height;
         bounds.height -= height;
         mOutline.setBounds(bounds.x, bounds.y, width, bounds.height);
-
-        for (int i = 0; i < count; i++) {
-            column = outlineModel.getColumnAtIndex(i);
-            if (column.getID() != 0) {
-                int prefWidth = column.getPreferredWidth(mOutline);
-                if (prefWidth != column.getWidth()) {
-                    column.setWidth(mOutline, prefWidth);
-                    changed.add(column);
-                }
-                width -= prefWidth;
-            }
-        }
-
-        if (mOutline.shouldDrawColumnDividers()) {
-            width -= count;
-        }
-        column = outlineModel.getColumnWithID(0);
-        if (column.getWidth() != width) {
-            column.setWidth(mOutline, width);
-            changed.add(column);
-        }
-        mOutline.updateRowHeightsIfNeeded(changed);
+        ColumnUtils.pack(mOutline, width);
         mOutline.revalidateView();
     }
 

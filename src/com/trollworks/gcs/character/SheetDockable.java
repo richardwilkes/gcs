@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.CommonDockable;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.skill.Skill;
@@ -346,7 +347,11 @@ public class SheetDockable extends CommonDockable implements SearchTarget, Retar
                 row = new Spell(getDataFile(), (Spell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Equipment) {
-                outline = mSheet.getEquipmentOutline();
+                if (row.getOwner().getProperty(EquipmentList.TAG_OTHER_ROOT) != null) {
+                    outline = mSheet.getOtherEquipmentOutline();
+                } else {
+                    outline = mSheet.getEquipmentOutline();
+                }
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }

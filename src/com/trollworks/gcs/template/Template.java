@@ -32,14 +32,12 @@ import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImageSet;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
-import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.text.Text;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 
 /** A template. */
 public class Template extends DataFile {
@@ -70,6 +68,7 @@ public class Template extends DataFile {
     private OutlineModel        mSkills;
     private OutlineModel        mSpells;
     private OutlineModel        mEquipment;
+    private OutlineModel        mOtherEquipment;
     private OutlineModel        mNotes;
     private boolean             mNeedAdvantagesPointCalculation;
     private boolean             mNeedSkillPointCalculation;
@@ -83,11 +82,13 @@ public class Template extends DataFile {
     /** Creates a new character with only default values set. */
     public Template() {
         super();
-        mAdvantages = new OutlineModel();
-        mSkills     = new OutlineModel();
-        mSpells     = new OutlineModel();
-        mEquipment  = new OutlineModel();
-        mNotes      = new OutlineModel();
+        mAdvantages     = new OutlineModel();
+        mSkills         = new OutlineModel();
+        mSpells         = new OutlineModel();
+        mEquipment      = new OutlineModel();
+        mOtherEquipment = new OutlineModel();
+        mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
+        mNotes = new OutlineModel();
     }
 
     /**
@@ -124,8 +125,10 @@ public class Template extends DataFile {
                     loadSkillList(reader, state);
                 } else if (SpellList.TAG_ROOT.equals(name)) {
                     loadSpellList(reader, state);
-                } else if (EquipmentList.TAG_ROOT.equals(name)) {
-                    loadEquipmentList(reader, state);
+                } else if (EquipmentList.TAG_CARRIED_ROOT.equals(name)) {
+                    loadEquipmentList(reader, state, mEquipment);
+                } else if (EquipmentList.TAG_OTHER_ROOT.equals(name)) {
+                    loadEquipmentList(reader, state, mOtherEquipment);
                 } else if (NoteList.TAG_ROOT.equals(name)) {
                     loadNotesList(reader, state);
                 } else if (TAG_OLD_NOTES.equals(name)) {
@@ -186,13 +189,13 @@ public class Template extends DataFile {
         } while (reader.withinMarker(marker));
     }
 
-    private void loadEquipmentList(XMLReader reader, LoadState state) throws IOException {
+    private void loadEquipmentList(XMLReader reader, LoadState state, OutlineModel outline) throws IOException {
         String marker = reader.getMarker();
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
                 if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-                    mEquipment.addRow(new Equipment(this, reader, state), true);
+                    outline.addRow(new Equipment(this, reader, state), true);
                 } else {
                     reader.skipTag(name);
                 }
@@ -226,46 +229,21 @@ public class Template extends DataFile {
 
     @Override
     protected void saveSelf(XMLWriter out) {
-        Iterator<Row> iterator;
+        saveList(AdvantageList.TAG_ROOT, mAdvantages, out);
+        saveList(SkillList.TAG_ROOT, mSkills, out);
+        saveList(SpellList.TAG_ROOT, mSpells, out);
+        saveList(EquipmentList.TAG_CARRIED_ROOT, mEquipment, out);
+        saveList(EquipmentList.TAG_OTHER_ROOT, mOtherEquipment, out);
+        saveList(NoteList.TAG_ROOT, mNotes, out);
+    }
 
-        if (mAdvantages.getRowCount() > 0) {
-            out.startSimpleTagEOL(AdvantageList.TAG_ROOT);
-            for (iterator = mAdvantages.getTopLevelRows().iterator(); iterator.hasNext();) {
-                ((Advantage) iterator.next()).save(out, false);
+    private static void saveList(String tag, OutlineModel model, XMLWriter out) {
+        if (model.getRowCount() > 0) {
+            out.startSimpleTagEOL(tag);
+            for (ListRow row : new FilteredIterator<>(model.getTopLevelRows(), ListRow.class)) {
+                row.save(out, false);
             }
-            out.endTagEOL(AdvantageList.TAG_ROOT, true);
-        }
-
-        if (mSkills.getRowCount() > 0) {
-            out.startSimpleTagEOL(SkillList.TAG_ROOT);
-            for (iterator = mSkills.getTopLevelRows().iterator(); iterator.hasNext();) {
-                ((ListRow) iterator.next()).save(out, false);
-            }
-            out.endTagEOL(SkillList.TAG_ROOT, true);
-        }
-
-        if (mSpells.getRowCount() > 0) {
-            out.startSimpleTagEOL(SpellList.TAG_ROOT);
-            for (iterator = mSpells.getTopLevelRows().iterator(); iterator.hasNext();) {
-                ((Spell) iterator.next()).save(out, false);
-            }
-            out.endTagEOL(SpellList.TAG_ROOT, true);
-        }
-
-        if (mEquipment.getRowCount() > 0) {
-            out.startSimpleTagEOL(EquipmentList.TAG_ROOT);
-            for (iterator = mEquipment.getTopLevelRows().iterator(); iterator.hasNext();) {
-                ((Equipment) iterator.next()).save(out, false);
-            }
-            out.endTagEOL(EquipmentList.TAG_ROOT, true);
-        }
-
-        if (mNotes.getRowCount() > 0) {
-            out.startSimpleTagEOL(NoteList.TAG_ROOT);
-            for (iterator = mNotes.getTopLevelRows().iterator(); iterator.hasNext();) {
-                ((Note) iterator.next()).save(out, false);
-            }
-            out.endTagEOL(NoteList.TAG_ROOT, true);
+            out.endTagEOL(tag, true);
         }
     }
 
@@ -435,6 +413,16 @@ public class Template extends DataFile {
     /** @return A recursive iterator over the equipment. */
     public RowIterator<Equipment> getEquipmentIterator() {
         return new RowIterator<>(mEquipment);
+    }
+
+    /** @return The outline model for the other equipment. */
+    public OutlineModel getOtherEquipmentModel() {
+        return mOtherEquipment;
+    }
+
+    /** @return A recursive iterator over the other equipment. */
+    public RowIterator<Equipment> getOtherEquipmentIterator() {
+        return new RowIterator<>(mOtherEquipment);
     }
 
     /** @return The outline model for the notes. */

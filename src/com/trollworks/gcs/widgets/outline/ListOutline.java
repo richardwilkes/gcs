@@ -16,6 +16,7 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.item.ApplyTemplateCommand;
 import com.trollworks.gcs.menu.item.CopyToSheetCommand;
 import com.trollworks.gcs.menu.item.CopyToTemplateCommand;
 import com.trollworks.gcs.menu.item.OpenEditorCommand;
@@ -23,7 +24,7 @@ import com.trollworks.gcs.menu.item.OpenPageReferenceCommand;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.toolkit.collections.FilteredList;
-import com.trollworks.toolkit.ui.Selection;
+import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.dock.Dockable;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -39,6 +40,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JMenu;
@@ -139,21 +141,22 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
      * @return The index of the first row that was added.
      */
     public int addRow(ListRow[] rows, String name, boolean sibling) {
-        OutlineModel model     = getModel();
-        StateEdit    edit      = new StateEdit(model, name);
-        Selection    selection = model.getSelection();
-        int          count     = selection.getCount();
+        OutlineModel model = getModel();
+        StateEdit    edit  = new StateEdit(model, name);
+        List<Row>    sel   = model.getSelectionAsList(true);
+        int          count = sel.size();
         int          insertAt;
         int          i;
         Row          parentRow;
-
         if (count > 0) {
-            insertAt  = count == 1 ? selection.firstSelectedIndex() : selection.lastSelectedIndex();
+            insertAt  = model.getIndexOfRow(sel.get(count == 1 ? 0 : count - 1));
             parentRow = model.getRowAtIndex(insertAt++);
             if (!parentRow.canHaveChildren() || !parentRow.isOpen()) {
                 parentRow = parentRow.getParent();
             } else if (sibling) {
-                insertAt  += parentRow.getChildCount();
+                HashSet<Row> set = new HashSet<>();
+                model.collectRowAndDescendantsAtIndex(set, insertAt - 1);
+                insertAt  += set.size() - 1;
                 parentRow  = parentRow.getParent();
             }
             if (parentRow != null && parentRow.canHaveChildren()) {
@@ -164,7 +167,6 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
         } else {
             insertAt = model.getRowCount();
         }
-
         i = insertAt;
         for (ListRow row : rows) {
             model.addRow(i++, row, true);
@@ -302,6 +304,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
                     subMenu.setEnabled(false);
                 }
                 menu.add(subMenu);
+
                 subMenu = new JMenu(CopyToTemplateCommand.INSTANCE.getTitle());
                 for (Dockable dockable : dockables) {
                     if (dockable instanceof TemplateDockable) {
@@ -312,6 +315,20 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
                     subMenu.setEnabled(false);
                 }
                 menu.add(subMenu);
+
+                TemplateDockable template = UIUtilities.getAncestorOfType(this, TemplateDockable.class);
+                if (template != null) {
+                    subMenu = new JMenu(ApplyTemplateCommand.INSTANCE.getTitle());
+                    for (Dockable dockable : dockables) {
+                        if (dockable instanceof SheetDockable) {
+                            subMenu.add(new ApplyTemplateCommand(template, (SheetDockable) dockable));
+                        }
+                    }
+                    if (subMenu.getItemCount() == 0) {
+                        subMenu.setEnabled(false);
+                    }
+                    menu.add(subMenu);
+                }
             }
             menu.addSeparator();
             menu.add(new OpenPageReferenceCommand(this, true));

@@ -210,7 +210,6 @@ public abstract class ListRow extends Row {
     @Override
     public boolean addChild(Row row) {
         boolean result = super.addChild(row);
-
         if (result) {
             notifySingle(getListChangedID());
         }

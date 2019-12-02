@@ -29,16 +29,29 @@ public class ApplyTemplateCommand extends Command {
     public static final String               CMD_APPLY_TEMPLATE = "ApplyTemplate";
     /** The singleton {@link ApplyTemplateCommand}. */
     public static final ApplyTemplateCommand INSTANCE           = new ApplyTemplateCommand();
+    private TemplateDockable                 mTemplate;
+    private SheetDockable                    mSheet;
 
     private ApplyTemplateCommand() {
         super(I18n.Text("Apply Template To Character Sheet"), CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
     }
 
+    /**
+     * Creates a new {@link ApplyTemplateCommand}.
+     *
+     * @param sheet The sheet to target.
+     */
+    public ApplyTemplateCommand(TemplateDockable template, SheetDockable sheet) {
+        super(sheet.getTitle(), CMD_APPLY_TEMPLATE);
+        mTemplate = template;
+        mSheet    = sheet;
+    }
+
     @Override
     public void adjust() {
-        TemplateDockable template = getTarget(TemplateDockable.class);
+        TemplateDockable template = mTemplate != null ? mTemplate : getTarget(TemplateDockable.class);
         if (template != null) {
-            setEnabled(SheetDockable.getLastActivated() != null);
+            setEnabled((mSheet != null ? mSheet : SheetDockable.getLastActivated()) != null);
         } else {
             setEnabled(false);
         }
@@ -46,9 +59,9 @@ public class ApplyTemplateCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        TemplateDockable templateDockable = getTarget(TemplateDockable.class);
+        TemplateDockable templateDockable = mTemplate != null ? mTemplate : getTarget(TemplateDockable.class);
         if (templateDockable != null) {
-            SheetDockable sheetDockable = SheetDockable.getLastActivated();
+            SheetDockable sheetDockable = mSheet != null ? mSheet : SheetDockable.getLastActivated();
             if (sheetDockable != null) {
                 Template       template = templateDockable.getDataFile();
                 MultipleUndo   edit     = new MultipleUndo(I18n.Text("Apply Template"));
@@ -58,6 +71,7 @@ public class ApplyTemplateCommand extends Command {
                 rows.addAll(template.getSkillsModel().getTopLevelRows());
                 rows.addAll(template.getSpellsModel().getTopLevelRows());
                 rows.addAll(template.getEquipmentModel().getTopLevelRows());
+                rows.addAll(template.getOtherEquipmentModel().getTopLevelRows());
                 rows.addAll(template.getNotesModel().getTopLevelRows());
                 sheetDockable.addRows(rows);
                 edit.end();

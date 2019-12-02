@@ -33,7 +33,6 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.I18n;
-import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.units.WeightUnits;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
@@ -46,7 +45,8 @@ import java.util.List;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
-    private static final int       CURRENT_VERSION          = 5;
+    private static final int       CURRENT_VERSION          = 6;
+    private static final int       EQUIPMENT_SPLIT_VERSION  = 6;
     private static final String    DEFAULT_LEGALITY_CLASS   = "4";
     /** The extension for Equipment lists. */
     public static final String     OLD_EQUIPMENT_EXTENSION  = "eqp";
@@ -54,7 +54,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final String     TAG_EQUIPMENT            = "equipment";
     /** The XML tag used for containers. */
     public static final String     TAG_EQUIPMENT_CONTAINER  = "equipment_container";
-    private static final String    ATTRIBUTE_STATE          = "state";
     private static final String    ATTRIBUTE_EQUIPPED       = "equipped";
     private static final String    TAG_QUANTITY             = "quantity";
     private static final String    TAG_DESCRIPTION          = "description";
@@ -66,7 +65,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     /** The prefix used in front of all IDs for the equipment. */
     public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment.";
     /** The field ID for equipped/carried/not carried changes. */
-    public static final String     ID_STATE                 = PREFIX + "State";
+    public static final String     ID_EQUIPPED              = PREFIX + "Equipped";
     /** The field ID for quantity changes. */
     public static final String     ID_QUANTITY              = PREFIX + "Quantity";
     /** The field ID for description changes. */
@@ -91,8 +90,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";
     /** The field ID for when the equipment becomes or stops being a weapon. */
     public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
-
-    private EquipmentState         mState;
+    private boolean                mEquipped;
     private int                    mQuantity;
     private String                 mDescription;
     private String                 mTechLevel;
@@ -112,7 +110,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      */
     public Equipment(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mState          = EquipmentState.EQUIPPED;
+        mEquipped       = true;
         mQuantity       = 1;
         mDescription    = I18n.Text("Equipment");
         mTechLevel      = "";
@@ -133,7 +131,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public Equipment(DataFile dataFile, Equipment equipment, boolean deep) {
         super(dataFile, equipment);
         boolean forSheet = dataFile instanceof GURPSCharacter;
-        mState          = forSheet ? equipment.mState : EquipmentState.EQUIPPED;
+        mEquipped       = forSheet ? equipment.mEquipped : true;
         mQuantity       = forSheet ? equipment.mQuantity : 1;
         mDescription    = equipment.mDescription;
         mTechLevel      = equipment.mTechLevel;
@@ -180,7 +178,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (obj instanceof Equipment && super.isEquivalentTo(obj)) {
             Equipment row = (Equipment) obj;
-            if (mQuantity == row.mQuantity && mValue == row.mValue && mWeight.equals(row.mWeight) && mState == row.mState && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
+            if (mQuantity == row.mQuantity && mValue == row.mValue && mEquipped == row.mEquipped && mWeight.equals(row.mWeight) && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
                 return mWeapons.equals(row.mWeapons);
             }
         }
@@ -215,7 +213,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mState         = EquipmentState.EQUIPPED;
+        mEquipped      = true;
         mQuantity      = 1;
         mDescription   = I18n.Text("Equipment");
         mTechLevel     = "";
@@ -230,14 +228,15 @@ public class Equipment extends ListRow implements HasSourceReference {
     protected void loadAttributes(XMLReader reader, LoadState state) {
         super.loadAttributes(reader, state);
         if (mDataFile instanceof GURPSCharacter) {
-            if (state.mDataItemVersion == 0) {
-                if (state.mDefaultCarried) {
-                    setState(reader.isAttributeSet(ATTRIBUTE_EQUIPPED) ? EquipmentState.EQUIPPED : EquipmentState.NOT_CARRIED);
-                } else {
-                    setState(EquipmentState.NOT_CARRIED);
-                }
+            if (state.mDataItemVersion == 0 || state.mDataItemVersion >= EQUIPMENT_SPLIT_VERSION) {
+                mEquipped = reader.isAttributeSet(ATTRIBUTE_EQUIPPED);
             } else {
-                setState(Enums.extract(reader.getAttribute(ATTRIBUTE_STATE), EquipmentState.values(), EquipmentState.NOT_CARRIED));
+                mEquipped = "equipped".equals(reader.getAttribute("state"));
+            }
+            if (state.mDataFileVersion < GURPSCharacter.SEPARATED_EQUIPMENT_VERSION) {
+                if (!mEquipped && !"carried".equals(reader.getAttribute("state"))) {
+                    state.mUncarriedEquipment.add(this);
+                }
             }
         }
     }
@@ -292,7 +291,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     protected void saveAttributes(XMLWriter out, boolean forUndo) {
         if (mDataFile instanceof GURPSCharacter) {
-            out.writeAttribute(ATTRIBUTE_STATE, Enums.toId(mState));
+            out.writeAttribute(ATTRIBUTE_EQUIPPED, mEquipped);
         }
     }
 
@@ -318,6 +317,11 @@ public class Equipment extends ListRow implements HasSourceReference {
     public void update() {
         updateExtendedValue(true);
         updateExtendedWeight(true);
+    }
+
+    public void updateNoNotify() {
+        updateExtendedValue(false);
+        updateExtendedWeight(false);
     }
 
     /** @return The quantity. */
@@ -468,18 +472,16 @@ public class Equipment extends ListRow implements HasSourceReference {
         mExtendedWeight = new WeightValue(mWeight.getValue() * mQuantity, units);
         WeightValue contained = new WeightValue(0, units);
         for (int i = 0; i < count; i++) {
-            Equipment one = (Equipment) getChild(i);
-            if (one.isCarried()) {
-                WeightValue weight = one.mExtendedWeight;
-                if (SheetPreferences.areGurpsMetricRulesUsed()) {
-                    if (units.isMetric()) {
-                        weight = GURPSCharacter.convertToGurpsMetric(weight);
-                    } else {
-                        weight = GURPSCharacter.convertFromGurpsMetric(weight);
-                    }
+            Equipment   one    = (Equipment) getChild(i);
+            WeightValue weight = one.mExtendedWeight;
+            if (SheetPreferences.areGurpsMetricRulesUsed()) {
+                if (units.isMetric()) {
+                    weight = GURPSCharacter.convertToGurpsMetric(weight);
+                } else {
+                    weight = GURPSCharacter.convertFromGurpsMetric(weight);
                 }
-                contained.add(weight);
             }
+            contained.add(weight);
         }
         int         percentage = 0;
         WeightValue reduction  = new WeightValue(0, units);
@@ -559,40 +561,19 @@ public class Equipment extends ListRow implements HasSourceReference {
         return mExtendedWeight;
     }
 
-    /** @return Whether this item is carried. */
-    public boolean isCarried() {
-        return mState == EquipmentState.CARRIED || mState == EquipmentState.EQUIPPED;
-    }
-
     /** @return Whether this item is equipped. */
     public boolean isEquipped() {
-        return mState == EquipmentState.EQUIPPED;
-    }
-
-    /** @return The current {@link EquipmentState}. */
-    public EquipmentState getState() {
-        return mState;
+        return mEquipped;
     }
 
     /**
-     * @param state The new {@link EquipmentState}.
+     * @param equipped The new equipped state.
      * @return Whether it was changed.
      */
-    public boolean setState(EquipmentState state) {
-        if (mState != state) {
-            mState = state;
-            startNotify();
-            notify(ID_STATE, this);
-            if (canHaveChildren()) {
-                for (Row child : getChildren()) {
-                    ((Equipment) child).setState(state);
-                }
-            }
-            Row parent = getParent();
-            if (parent != null) {
-                ((Equipment) parent).updateContainingWeights(true);
-            }
-            endNotify();
+    public boolean setEquipped(boolean equipped) {
+        if (mEquipped != equipped) {
+            mEquipped = equipped;
+            notifySingle(ID_EQUIPPED);
             return true;
         }
         return false;
@@ -629,17 +610,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     public Object getData(Column column) {
         return EquipmentColumn.values()[column.getID()].getData(this);
-    }
-
-    public int getCarriedStatus() {
-        int carried = 0;
-        if (isCarried()) {
-            carried = 1;
-        }
-        if (isEquipped()) {
-            carried = 2;
-        }
-        return carried;
     }
 
     @Override
@@ -680,7 +650,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public RowEditor<? extends ListRow> createEditor() {
-        return new EquipmentEditor(this);
+        return new EquipmentEditor(this, getOwner().getProperty(EquipmentList.TAG_OTHER_ROOT) == null);
     }
 
     @Override

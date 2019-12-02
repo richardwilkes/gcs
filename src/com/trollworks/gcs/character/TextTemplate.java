@@ -35,6 +35,7 @@ import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.AnnotatedImage;
 import com.trollworks.toolkit.ui.widget.outline.Row;
+import com.trollworks.toolkit.ui.widget.outline.RowIterator;
 import com.trollworks.toolkit.utility.FileType;
 import com.trollworks.toolkit.utility.PathUtils;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -143,6 +144,8 @@ public class TextTemplate {
     private static final String KEY_EQUIPMENT_FORMATTED               = "EQUIPMENT_FORMATTED";
     private static final String KEY_EQUIPMENT_LOOP_END                = "EQUIPMENT_LOOP_END";
     private static final String KEY_EQUIPMENT_LOOP_START              = "EQUIPMENT_LOOP_START";
+    private static final String KEY_EQUIPPED                          = "EQUIPPED";
+    private static final String KEY_EQUIPPED_NUM                      = "EQUIPPED_NUM";
     private static final String KEY_EXCLUDE_CATEGORIES                = "EXCLUDE_CATEGORIES_";
     private static final String KEY_EYES                              = "EYES";
     private static final String KEY_FP                                = "FP";
@@ -192,6 +195,8 @@ public class TextTemplate {
     private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
     private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
     private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
+    private static final String KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
+    private static final String KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
     private static final String KEY_PARRY                             = "PARRY";
     private static final String KEY_PENALTY                           = "PENALTY";
     private static final String KEY_PERCEPTION                        = "PERCEPTION";
@@ -647,7 +652,9 @@ public class TextTemplate {
             } else if (key.startsWith(KEY_HIERARCHICAL_RANGED_LOOP_START)) {
                 processHierarchicalRangedLoop(out, extractUpToMarker(in, KEY_HIERARCHICAL_RANGED_LOOP_END));
             } else if (key.startsWith(KEY_EQUIPMENT_LOOP_START)) {
-                processEquipmentLoop(out, extractUpToMarker(in, KEY_EQUIPMENT_LOOP_END));
+                processEquipmentLoop(out, extractUpToMarker(in, KEY_EQUIPMENT_LOOP_END), true);
+            } else if (key.startsWith(KEY_OTHER_EQUIPMENT_LOOP_START)) {
+                processEquipmentLoop(out, extractUpToMarker(in, KEY_OTHER_EQUIPMENT_LOOP_END), false);
             } else if (key.startsWith(KEY_NOTES_LOOP_START)) {
                 processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
             } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
@@ -1570,17 +1577,23 @@ public class TextTemplate {
         }
     }
 
-    private void processEquipmentLoop(BufferedWriter out, String contents) throws IOException {
-        int                  length           = contents.length();
-        StringBuilder        keyBuffer        = new StringBuilder();
-        boolean              lookForKeyMarker = true;
-        int                  counter          = 0;
+    private void processEquipmentLoop(BufferedWriter out, String contents, boolean carried) throws IOException {
+        int                    length           = contents.length();
+        StringBuilder          keyBuffer        = new StringBuilder();
+        boolean                lookForKeyMarker = true;
+        int                    counter          = 0;
         // Create child-to-parent maps to determine where items are being stored.
         // Used by KEY_LOCATION
-        ArrayList<List<Row>> children         = new ArrayList<>();
-        ArrayList<Equipment> parents          = new ArrayList<>();
-        ArrayList<Equipment> equipmentList    = new ArrayList<>();
-        for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
+        ArrayList<List<Row>>   children         = new ArrayList<>();
+        ArrayList<Equipment>   parents          = new ArrayList<>();
+        ArrayList<Equipment>   equipmentList    = new ArrayList<>();
+        RowIterator<Equipment> iter;
+        if (carried) {
+            iter = mSheet.getCharacter().getEquipmentIterator();
+        } else {
+            iter = mSheet.getCharacter().getOtherEquipmentIterator();
+        }
+        for (Equipment equipment : iter) {
             if (shouldInclude(equipment)) {   // Allows category filtering
                 equipmentList.add(equipment);
                 if (equipment.hasChildren()) {
@@ -1614,7 +1627,26 @@ public class TextTemplate {
                             if (!processDescription(key, out, equipment)) {
                                 switch (key) {
                                 case KEY_STATE:
-                                    out.write(equipment.getState().toShortName());
+                                    if (carried) {
+                                        out.write(equipment.isEquipped() ? "E" : "C"); 
+                                    } else {
+                                        out.write("-");
+                                    }
+                                    break;
+                                case KEY_EQUIPPED:
+                                    if (carried && equipment.isEquipped()) {
+                                        out.write("\u2713");
+                                    }
+                                    break;
+                                case KEY_EQUIPPED_NUM:
+                                    out.write((carried && equipment.isEquipped()) ? 1 : 0);
+                                    break;
+                                case KEY_CARRIED_STATUS:
+                                    if (carried) {
+                                        out.write(equipment.isEquipped() ? 2 : 1); 
+                                    } else {
+                                        out.write(0);
+                                    }
                                     break;
                                 case KEY_QTY:
                                     writeEncodedText(out, Numbers.format(equipment.getQuantity()));
@@ -1645,9 +1677,6 @@ public class TextTemplate {
                                     break;
                                 case KEY_LEGAILITY_CLASS:
                                     writeEncodedText(out, equipment.getDisplayLegalityClass());
-                                    break;
-                                case KEY_CARRIED_STATUS:
-                                    writeEncodedText(out, Numbers.format(equipment.getCarriedStatus()));
                                     break;
                                 case KEY_CATEGORIES:
                                     writeEncodedText(out, equipment.getCategoriesAsString());

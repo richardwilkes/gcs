@@ -66,13 +66,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
     /** The extension for character sheets. */
     public static final String                  EXTENSION                            = "gcs";
-    private static final int                    CURRENT_VERSION                      = 3;
+    private static final int                    CURRENT_VERSION                      = 4;
+    /**
+     * The version where equipment was separated out into different lists based on carried/not
+     * carried status.
+     */
+    public static final int                     SEPARATED_EQUIPMENT_VERSION          = 4;
     private static final String                 TAG_ROOT                             = "character";
     private static final String                 TAG_CREATED_DATE                     = "created_date";
     private static final String                 TAG_MODIFIED_DATE                    = "modified_date";
@@ -83,7 +89,6 @@ public class GURPSCharacter extends DataFile {
     private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch";
     private static final String                 TAG_INCLUDE_KICK                     = "include_kick";
     private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";
-    private static final String                 ATTRIBUTE_CARRIED                    = "carried";
     /** The prefix for all character IDs. */
     public static final String                  CHARACTER_PREFIX                     = "gcs.";
     /** The field ID for last modified date changes. */
@@ -146,6 +151,8 @@ public class GURPSCharacter extends DataFile {
     public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";
     /** The field ID for carried wealth changes. */
     public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";
+    /** The field ID for other wealth changes. */
+    public static final String                  ID_NOT_CARRIED_WEALTH                = CHARACTER_PREFIX + "NotCarriedWealth";
     /** The prefix used in front of all IDs for encumbrance changes. */
     public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";
     private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";
@@ -265,6 +272,7 @@ public class GURPSCharacter extends DataFile {
     private OutlineModel                        mSkills;
     private OutlineModel                        mSpells;
     private OutlineModel                        mEquipment;
+    private OutlineModel                        mOtherEquipment;
     private OutlineModel                        mNotes;
     private boolean                             mDidModify;
     private boolean                             mNeedAttributePointCalculation;
@@ -274,6 +282,7 @@ public class GURPSCharacter extends DataFile {
     private boolean                             mNeedEquipmentCalculation;
     private WeightValue                         mCachedWeightCarried;
     private double                              mCachedWealthCarried;
+    private double                              mCachedWealthNotCarried;
     private int                                 mCachedAttributePoints;
     private int                                 mCachedAdvantagePoints;
     private int                                 mCachedDisadvantagePoints;
@@ -308,11 +317,13 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void characterInitialize(boolean full) {
-        mFeatureMap           = new HashMap<>();
-        mAdvantages           = new OutlineModel();
-        mSkills               = new OutlineModel();
-        mSpells               = new OutlineModel();
-        mEquipment            = new OutlineModel();
+        mFeatureMap     = new HashMap<>();
+        mAdvantages     = new OutlineModel();
+        mSkills         = new OutlineModel();
+        mSpells         = new OutlineModel();
+        mEquipment      = new OutlineModel();
+        mOtherEquipment = new OutlineModel();
+        mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
         mNotes                = new OutlineModel();
         mTotalPoints          = SheetPreferences.getInitialPoints();
         mStrength             = 10;
@@ -411,8 +422,10 @@ public class GURPSCharacter extends DataFile {
                     loadSkillList(reader, state);
                 } else if (SpellList.TAG_ROOT.equals(name)) {
                     loadSpellList(reader, state);
-                } else if (EquipmentList.TAG_ROOT.equals(name)) {
-                    loadEquipmentList(reader, state);
+                } else if (EquipmentList.TAG_CARRIED_ROOT.equals(name)) {
+                    loadEquipmentList(reader, state, mEquipment);
+                } else if (EquipmentList.TAG_OTHER_ROOT.equals(name)) {
+                    loadEquipmentList(reader, state, mOtherEquipment);
                 } else if (NoteList.TAG_ROOT.equals(name)) {
                     loadNoteList(reader, state);
                 } else if (PrintManager.TAG_ROOT.equals(name)) {
@@ -475,19 +488,42 @@ public class GURPSCharacter extends DataFile {
         } while (reader.withinMarker(marker));
     }
 
-    private void loadEquipmentList(XMLReader reader, LoadState state) throws IOException {
+    private void loadEquipmentList(XMLReader reader, LoadState state, OutlineModel equipmentList) throws IOException {
         String marker = reader.getMarker();
-        state.mDefaultCarried = state.mDataFileVersion != 0 ? true : reader.isAttributeSet(ATTRIBUTE_CARRIED);
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
                 if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-                    mEquipment.addRow(new Equipment(this, reader, state), true);
+                    state.mUncarriedEquipment = new HashSet<>();
+                    Equipment equipment = new Equipment(this, reader, state);
+                    if (state.mDataFileVersion < SEPARATED_EQUIPMENT_VERSION && equipmentList == mEquipment && !state.mUncarriedEquipment.isEmpty()) {
+                        if (addToEquipment(state.mUncarriedEquipment, equipment)) {
+                            equipmentList.addRow(equipment, true);
+                        }
+                    } else {
+                        equipmentList.addRow(equipment, true);
+                    }
                 } else {
                     reader.skipTag(name);
                 }
             }
         } while (reader.withinMarker(marker));
+    }
+
+    private boolean addToEquipment(HashSet<Equipment> uncarried, Equipment equipment) {
+        if (uncarried.contains(equipment)) {
+            mOtherEquipment.addRow(equipment, true);
+            return false;
+        }
+        List<Row> children = equipment.getChildren();
+        if (children != null) {
+            for (Row child : new ArrayList<>(children)) {
+                if (!addToEquipment(uncarried, (Equipment) child)) {
+                    equipment.removeChild(child);
+                }
+            }
+        }
+        return true;
     }
 
     private void loadNoteList(XMLReader reader, LoadState state) throws IOException {
@@ -510,6 +546,7 @@ public class GURPSCharacter extends DataFile {
         calculateSkillPoints();
         calculateSpellPoints();
         calculateWeightAndWealthCarried(false);
+        calculateWealthNotCarried(false);
     }
 
     @Override
@@ -547,7 +584,8 @@ public class GURPSCharacter extends DataFile {
         saveList(AdvantageList.TAG_ROOT, mAdvantages, out);
         saveList(SkillList.TAG_ROOT, mSkills, out);
         saveList(SpellList.TAG_ROOT, mSpells, out);
-        saveList(EquipmentList.TAG_ROOT, mEquipment, out);
+        saveList(EquipmentList.TAG_CARRIED_ROOT, mEquipment, out);
+        saveList(EquipmentList.TAG_OTHER_ROOT, mOtherEquipment, out);
         saveList(NoteList.TAG_ROOT, mNotes, out);
 
         if (mPageSettings != null) {
@@ -833,6 +871,7 @@ public class GURPSCharacter extends DataFile {
         }
         if (mNeedEquipmentCalculation) {
             calculateWeightAndWealthCarried(true);
+            calculateWealthNotCarried(true);
         }
         if (mDidModify) {
             long now = System.currentTimeMillis();
@@ -1451,6 +1490,11 @@ public class GURPSCharacter extends DataFile {
         return mCachedWealthCarried;
     }
 
+    /** @return The current wealth not being carried. */
+    public double getWealthNotCarried() {
+        return mCachedWealthNotCarried;
+    }
+
     /**
      * Convert a metric {@link WeightValue} by GURPS Metric rules into an imperial one. If an
      * imperial {@link WeightValue} is passed as an argument, it will be returned unchanged.
@@ -1505,18 +1549,16 @@ public class GURPSCharacter extends DataFile {
         mCachedWeightCarried = new WeightValue(0, DisplayPreferences.getWeightUnits());
         mCachedWealthCarried = 0.0;
         for (Row one : mEquipment.getTopLevelRows()) {
-            Equipment equipment = (Equipment) one;
-            if (equipment.isCarried()) {
-                WeightValue weight = new WeightValue(equipment.getExtendedWeight());
-                if (SheetPreferences.areGurpsMetricRulesUsed()) {
-                    if (DisplayPreferences.getWeightUnits().isMetric()) {
-                        weight = GURPSCharacter.convertToGurpsMetric(weight);
-                    } else {
-                        weight = GURPSCharacter.convertFromGurpsMetric(weight);
-                    }
+            Equipment   equipment = (Equipment) one;
+            WeightValue weight    = new WeightValue(equipment.getExtendedWeight());
+            if (SheetPreferences.areGurpsMetricRulesUsed()) {
+                if (DisplayPreferences.getWeightUnits().isMetric()) {
+                    weight = GURPSCharacter.convertToGurpsMetric(weight);
+                } else {
+                    weight = GURPSCharacter.convertFromGurpsMetric(weight);
                 }
-                mCachedWeightCarried.add(weight);
             }
+            mCachedWeightCarried.add(weight);
             mCachedWealthCarried += equipment.getExtendedValue();
         }
         if (notify) {
@@ -1525,6 +1567,25 @@ public class GURPSCharacter extends DataFile {
             }
             if (savedWealth != mCachedWealthCarried) {
                 notify(ID_CARRIED_WEALTH, Double.valueOf(mCachedWealthCarried));
+            }
+        }
+    }
+
+    /**
+     * Calculate the total wealth not carried.
+     *
+     * @param notify Whether to send out notifications if the resulting values are different from
+     *               the previous values.
+     */
+    public void calculateWealthNotCarried(boolean notify) {
+        double savedWealth = mCachedWealthNotCarried;
+        mCachedWealthNotCarried = 0.0;
+        for (Row one : mOtherEquipment.getTopLevelRows()) {
+            mCachedWealthNotCarried += ((Equipment) one).getExtendedValue();
+        }
+        if (notify) {
+            if (savedWealth != mCachedWealthNotCarried) {
+                notify(ID_NOT_CARRIED_WEALTH, Double.valueOf(mCachedWealthNotCarried));
             }
         }
     }
@@ -2488,6 +2549,16 @@ public class GURPSCharacter extends DataFile {
     /** @return A recursive iterator over the character's equipment. */
     public RowIterator<Equipment> getEquipmentIterator() {
         return new RowIterator<>(mEquipment);
+    }
+
+    /** @return The outline model for the character's other equipment. */
+    public OutlineModel getOtherEquipmentRoot() {
+        return mOtherEquipment;
+    }
+
+    /** @return A recursive iterator over the character's other equipment. */
+    public RowIterator<Equipment> getOtherEquipmentIterator() {
+        return new RowIterator<>(mOtherEquipment);
     }
 
     /** @return The outline model for the character's notes. */

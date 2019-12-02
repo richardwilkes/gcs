@@ -35,7 +35,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
 
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -47,33 +47,37 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
-    private JComboBox<EquipmentState> mStateCombo;
-    private JTextField                mDescriptionField;
-    private JTextField                mTechLevelField;
-    private JTextField                mLegalityClassField;
-    private JTextField                mQtyField;
-    private JTextField                mValueField;
-    private JTextField                mExtValueField;
-    private JTextField                mWeightField;
-    private JTextField                mExtWeightField;
-    private JTextField                mNotesField;
-    private JTextField                mCategoriesField;
-    private JTextField                mReferenceField;
-    private JTabbedPane               mTabPanel;
-    private PrereqsPanel              mPrereqs;
-    private FeaturesPanel             mFeatures;
-    private MeleeWeaponEditor         mMeleeWeapons;
-    private RangedWeaponEditor        mRangedWeapons;
-    private double                    mContainedValue;
-    private WeightValue               mContainedWeight;
+    private JCheckBox          mEquippedCheckBox;
+    private JTextField         mDescriptionField;
+    private JTextField         mTechLevelField;
+    private JTextField         mLegalityClassField;
+    private JTextField         mQtyField;
+    private JTextField         mValueField;
+    private JTextField         mExtValueField;
+    private JTextField         mWeightField;
+    private JTextField         mExtWeightField;
+    private JTextField         mNotesField;
+    private JTextField         mCategoriesField;
+    private JTextField         mReferenceField;
+    private JTabbedPane        mTabPanel;
+    private PrereqsPanel       mPrereqs;
+    private FeaturesPanel      mFeatures;
+    private MeleeWeaponEditor  mMeleeWeapons;
+    private RangedWeaponEditor mRangedWeapons;
+    private double             mContainedValue;
+    private WeightValue        mContainedWeight;
+    private boolean            mCarried;
 
     /**
      * Creates a new {@link Equipment} editor.
      *
      * @param equipment The {@link Equipment} to edit.
+     * @param carried   <code>true</code> for the carried equipment, <code>false</code> for the
+     *                  other equipment.
      */
-    public EquipmentEditor(Equipment equipment) {
+    public EquipmentEditor(Equipment equipment, boolean carried) {
         super(equipment);
+        mCarried = carried;
 
         JPanel content = new JPanel(new ColumnLayout(2));
         JPanel fields  = new JPanel(new ColumnLayout(2));
@@ -114,7 +118,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private boolean showEquipmentState() {
-        return mRow.getCharacter() != null;
+        return mCarried && mRow.getCharacter() != null;
     }
 
     private void createSecondLineFields(Container parent) {
@@ -127,12 +131,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mTechLevelField     = createField(isContainer ? parent : wrapper, wrapper, I18n.Text("Tech Level"), mRow.getTechLevel(), I18n.Text("The first Tech Level this equipment is available at"), 3);
         mLegalityClassField = createField(wrapper, wrapper, I18n.Text("Legality Class"), mRow.getLegalityClass(), I18n.Text("The legality class of this equipment"), 3);
         if (showEquipmentState()) {
-            mStateCombo = new JComboBox<>(EquipmentState.values());
-            mStateCombo.setSelectedItem(mRow.getState());
-            UIUtilities.setOnlySize(mStateCombo, mStateCombo.getPreferredSize());
-            mStateCombo.setEnabled(mIsEditable);
-            mStateCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
-            wrapper.add(mStateCombo);
+            mEquippedCheckBox = new JCheckBox(I18n.Text("Equipped"));
+            mEquippedCheckBox.setSelected(mRow.isEquipped());
+            UIUtilities.setOnlySize(mEquippedCheckBox, mEquippedCheckBox.getPreferredSize());
+            mEquippedCheckBox.setEnabled(mIsEditable);
+            mEquippedCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
+            wrapper.add(mEquippedCheckBox);
         }
         wrapper.add(new JPanel());
         parent.add(wrapper);
@@ -254,7 +258,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         modified |= mRow.setValue(Numbers.extractDouble(mValueField.getText(), 0.0, true));
         modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
         if (showEquipmentState()) {
-            modified |= mRow.setState((EquipmentState) mStateCombo.getSelectedItem());
+            modified |= mRow.setEquipped(mEquippedCheckBox.isSelected());
         }
         modified |= mRow.setNotes(mNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());

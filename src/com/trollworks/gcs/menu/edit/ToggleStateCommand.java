@@ -16,7 +16,6 @@ import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
-import com.trollworks.gcs.equipment.EquipmentState;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowUndo;
@@ -30,15 +29,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-/** Provides the "Rotate State" command. */
-public class RotateStateCommand extends Command {
+/** Provides the "Toggle State" command. */
+public class ToggleStateCommand extends Command {
     /** The action command this command will issue. */
-    public static final String             CMD_ROTATE_STATE = "RotateState";
-    /** The singleton {@link RotateStateCommand}. */
-    public static final RotateStateCommand INSTANCE         = new RotateStateCommand();
+    public static final String             CMD_TOGGLE_STATE = "ToggleState";
+    /** The singleton {@link ToggleStateCommand}. */
+    public static final ToggleStateCommand INSTANCE         = new ToggleStateCommand();
 
-    private RotateStateCommand() {
-        super(I18n.Text("Rotate State"), CMD_ROTATE_STATE, KeyEvent.VK_QUOTE);
+    private ToggleStateCommand() {
+        super(I18n.Text("Toggle State"), CMD_TOGGLE_STATE, KeyEvent.VK_QUOTE);
     }
 
     @Override
@@ -62,24 +61,19 @@ public class RotateStateCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
+        ArrayList<RowUndo> undos = new ArrayList<>();
         if (focus instanceof EquipmentOutline) {
             EquipmentOutline outline = (EquipmentOutline) focus;
-            for (Equipment equipment : new FilteredIterator<Equipment>(outline.getModel().getSelectionAsList(), Equipment.class)) {
-                RowUndo          undo   = new RowUndo(equipment);
-                EquipmentState[] values = EquipmentState.values();
-                int              index  = equipment.getState().ordinal() - 1;
-                if (index < 0) {
-                    index = values.length - 1;
-                }
-                equipment.setState(values[index]);
+            for (Equipment equipment : new FilteredIterator<>(outline.getModel().getSelectionAsList(), Equipment.class)) {
+                RowUndo undo = new RowUndo(equipment);
+                equipment.setEquipped(!equipment.isEquipped());
                 if (undo.finish()) {
                     undos.add(undo);
                 }
             }
         } else if (focus instanceof AdvantageOutline) {
             AdvantageOutline outline = (AdvantageOutline) focus;
-            for (Advantage adq : new FilteredIterator<Advantage>(outline.getModel().getSelectionAsList(), Advantage.class)) {
+            for (Advantage adq : new FilteredIterator<>(outline.getModel().getSelectionAsList(), Advantage.class)) {
                 RowUndo undo = new RowUndo(adq);
                 adq.setEnabled(!adq.isSelfEnabled());
                 if (undo.finish()) {

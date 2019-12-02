@@ -11,9 +11,11 @@
 
 package com.trollworks.gcs.common;
 
+import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.weapon.OldWeapon;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 /** Temporary storage for data needed at load time. */
 public class LoadState {
@@ -27,6 +29,6 @@ public class LoadState {
     public boolean                    mForUndo;
     /** Used to convert old weapon data in equipment lists. */
     public HashMap<Object, OldWeapon> mOldWeapons       = new HashMap<>();
-    /** Used to convert old equipment data. */
-    public boolean                    mDefaultCarried;
+    /** Used to move uncarried equipment out of the carried equipment list for old sheets. */
+    public HashSet<Equipment>         mUncarriedEquipment;
 }
