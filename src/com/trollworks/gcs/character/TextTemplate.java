@@ -197,6 +197,7 @@ public class TextTemplate {
     private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
+    private static final String KEY_OTHER_VALUE                       = "OTHER_EQUIPMENT_VALUE";
     private static final String KEY_PARRY                             = "PARRY";
     private static final String KEY_PENALTY                           = "PENALTY";
     private static final String KEY_PERCEPTION                        = "PERCEPTION";
@@ -605,6 +606,9 @@ public class TextTemplate {
             break;
         case KEY_CARRIED_VALUE:
             writeEncodedText(out, "$" + Numbers.format(gurpsCharacter.getWealthCarried()));
+            break;
+        case KEY_OTHER_VALUE:
+            writeEncodedText(out, "$" + Numbers.format(gurpsCharacter.getWealthNotCarried()));
             break;
         case KEY_NOTES:
             StringBuilder buffer = new StringBuilder();
@@ -1628,7 +1632,7 @@ public class TextTemplate {
                                 switch (key) {
                                 case KEY_STATE:
                                     if (carried) {
-                                        out.write(equipment.isEquipped() ? "E" : "C"); 
+                                        out.write(equipment.isEquipped() ? "E" : "C");
                                     } else {
                                         out.write("-");
                                     }
@@ -1639,11 +1643,11 @@ public class TextTemplate {
                                     }
                                     break;
                                 case KEY_EQUIPPED_NUM:
-                                    out.write((carried && equipment.isEquipped()) ? 1 : 0);
+                                    out.write(carried && equipment.isEquipped() ? 1 : 0);
                                     break;
                                 case KEY_CARRIED_STATUS:
                                     if (carried) {
-                                        out.write(equipment.isEquipped() ? 2 : 1); 
+                                        out.write(equipment.isEquipped() ? 2 : 1);
                                     } else {
                                         out.write(0);
                                     }
