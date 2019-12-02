@@ -194,6 +194,8 @@
             <arg if:true="${platform.windows}" value="--win-menu-group"/>
             <arg if:true="${platform.windows}" value="RolePlaying"/>
             <arg if:true="${platform.windows}" value="--win-shortcut"/>
+            <arg if:true="${platform.windows}" value="--type"/>
+            <arg if:true="${platform.windows}" value="msi"/>
         </exec>
         <delete dir="${build.dir}"/>
 	</target>
