@@ -109,9 +109,7 @@ public class MultiCell implements Cell {
      */
     @SuppressWarnings("static-method")
     protected String getSecondaryText(ListRow row) {
-        String modifierNotes = row.getModifierNotes();
-        String notes         = row.getNotes();
-        return modifierNotes.length() == 0 ? notes : modifierNotes + '\n' + notes;
+        return row.getSecondaryText();
     }
 
     @Override

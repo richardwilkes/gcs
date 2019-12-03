@@ -22,6 +22,7 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
@@ -473,6 +474,29 @@ public abstract class ListRow extends Row {
     /** @return The owning template. */
     public Template getTemplate() {
         return mDataFile instanceof Template ? (Template) mDataFile : null;
+    }
+
+    /** @return The "secondary" text, the text display below an Advantage. */
+    protected String getSecondaryText() {
+        StringBuilder builder = new StringBuilder();
+        if (DisplayPreferences.showModifiersInDisplay()) {
+            String desc = getModifierNotes();
+            builder.append(desc);
+            if (desc.length() > 0) {
+                builder.append('\n');
+            }
+        }
+        if (DisplayPreferences.showNotesInDisplay()) {
+            String desc = getNotes();
+            builder.append(desc);
+            if (desc.length() > 0) {
+                builder.append('\n');
+            }
+        }
+        if (builder.length() > 0) {
+            builder.setLength(builder.length() - 1);   // Remove the last '\n'
+        }
+        return builder.toString();
     }
 
     /** @return The owning character. */

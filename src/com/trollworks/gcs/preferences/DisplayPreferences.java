@@ -14,7 +14,9 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.border.LineBorder;
+import com.trollworks.toolkit.ui.layout.Alignment;
 import com.trollworks.toolkit.ui.layout.FlexColumn;
+import com.trollworks.toolkit.ui.layout.FlexComponent;
 import com.trollworks.toolkit.ui.layout.FlexGrid;
 import com.trollworks.toolkit.ui.layout.FlexRow;
 import com.trollworks.toolkit.ui.preferences.PreferencePanel;
@@ -73,6 +75,19 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private static final int         DEFAULT_TOOLTIP_TIMEOUT            = 60;
     public static final String       SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip";
     private static final boolean     DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP = true;
+    public static final String       SHOW_USER_DESC_IN_DISPLAY_KEY      = "ShowUserDescInDisplay";
+    public static final String       SHOW_USER_DESC_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_USER_DESC_IN_DISPLAY_KEY);
+    private static final boolean     DEFAULT_SHOW_USER_DESC_IN_DISPLAY  = false;
+    public static final String       SHOW_MODIFIERS_AS_TOOL_TIP_KEY     = "ShowModifiersAsToolTip";
+    private static final boolean     DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP = false;
+    public static final String       SHOW_MODIFIERS_IN_DISPLAY_KEY      = "ShowModifiersInDisplay";
+    public static final String       SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_MODIFIERS_IN_DISPLAY_KEY);
+    private static final boolean     DEFAULT_SHOW_MODIFIERS_IN_DISPLAY  = true;
+    public static final String       SHOW_NOTES_AS_TOOL_TIP_KEY         = "ShowNotesAsToolTip";
+    private static final boolean     DEFAULT_SHOW_NOTES_AS_TOOL_TIP     = false;
+    public static final String       SHOW_NOTES_IN_DISPLAY_KEY          = "ShowNotesInDisplay";
+    public static final String       SHOW_NOTES_IN_DISPLAY_PREF_KEY     = Preferences.getModuleKey(MODULE, SHOW_NOTES_IN_DISPLAY_KEY);
+    private static final boolean     DEFAULT_SHOW_NOTES_IN_DISPLAY      = true;
     private JCheckBox                mIncludeUnspentPointsInTotal;
     private JComboBox<Scales>        mUIScaleCombo;
     private JComboBox<String>        mLengthUnitsCombo;
@@ -80,6 +95,11 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JTextField               mToolTipTimeout;
     private JTextArea                mBlockLayoutField;
     private JCheckBox                mShowUserDescAsToolTips;
+    private JCheckBox                mShowUserDescInDisplay;
+    private JCheckBox                mShowModifiersAsToolTips;
+    private JCheckBox                mShowModifiersInDisplay;
+    private JCheckBox                mShowNotesAsToolTips;
+    private JCheckBox                mShowNotesInDisplay;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
@@ -136,6 +156,31 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         return Preferences.getInstance().getBooleanValue(MODULE, SHOW_USER_DESC_AS_TOOL_TIP_KEY, DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP);
     }
 
+    /** @return Whether to show the user description in the main display. */
+    public static boolean showUserDescInDisplay() {
+        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_USER_DESC_IN_DISPLAY_KEY, DEFAULT_SHOW_USER_DESC_IN_DISPLAY);
+    }
+
+    /** @return Whether to show the modifiers list as a tooltip. */
+    public static boolean showModifiersAsTooltip() {
+        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_MODIFIERS_AS_TOOL_TIP_KEY, DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP);
+    }
+
+    /** @return Whether to show the modifiers list in the main display. */
+    public static boolean showModifiersInDisplay() {
+        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_MODIFIERS_IN_DISPLAY_KEY, DEFAULT_SHOW_MODIFIERS_IN_DISPLAY);
+    }
+
+    /** @return Whether to show the notes as a tooltip. */
+    public static boolean showNotesAsTooltip() {
+        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_NOTES_AS_TOOL_TIP_KEY, DEFAULT_SHOW_NOTES_AS_TOOL_TIP);
+    }
+
+    /** @return Whether to show the notes in the main display. */
+    public static boolean showNotesInDisplay() {
+        return Preferences.getInstance().getBooleanValue(MODULE, SHOW_NOTES_IN_DISPLAY_KEY, DEFAULT_SHOW_NOTES_IN_DISPLAY);
+    }
+
     /**
      * @return Whether the character's total points are displayed with or without including earned
      *         (but unspent) points.
@@ -179,14 +224,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         super(I18n.Text("Display"), owner);
         FlexColumn column = new FlexColumn();
 
-        FlexGrid   grid   = new FlexGrid();
-        column.add(grid);
-
         mIncludeUnspentPointsInTotal = createCheckBox(I18n.Text("Character point total display includes unspent points"), null, shouldIncludeUnspentPointsInTotalPointDisplay());
         column.add(mIncludeUnspentPointsInTotal);
-
-        mShowUserDescAsToolTips = createCheckBox(I18n.Text("Show advantage user description as a tooltip"), null, showUserDescAsTooltip());
-        column.add(mShowUserDescAsToolTips);
 
         FlexRow row = new FlexRow();
         row.add(createLabel(I18n.Text("Use"), null));
@@ -215,6 +254,28 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         row.add(mToolTipTimeout);
         row.add(createLabel(I18n.Text("seconds"), null));
         column.add(row);
+
+        FlexGrid grid = new FlexGrid();
+        column.add(grid);
+        int i = 0;
+        mShowUserDescAsToolTips  = createCheckBox(I18n.Text("as a tooltip"), null, showUserDescAsTooltip());
+        mShowUserDescInDisplay   = createCheckBox(I18n.Text("in the main display"), null, showUserDescInDisplay());
+        mShowModifiersAsToolTips = createCheckBox(I18n.Text("as a tooltip"), null, showModifiersAsTooltip());
+        mShowModifiersInDisplay  = createCheckBox(I18n.Text("in the main display"), null, showModifiersInDisplay());
+        mShowNotesAsToolTips     = createCheckBox(I18n.Text("as a tooltip"), null, showNotesAsTooltip());
+        mShowNotesInDisplay      = createCheckBox(I18n.Text("in the main display"), null, showNotesInDisplay());
+        i++;
+        grid.add(new FlexComponent(createLabel(I18n.Text("Show Advantage User Descriptions:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
+        grid.add(mShowUserDescInDisplay, i, 2);
+        grid.add(mShowUserDescAsToolTips, i, 3);
+        i++;
+        grid.add(new FlexComponent(createLabel(I18n.Text("Notes:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
+        grid.add(mShowNotesInDisplay, i, 2);
+        grid.add(mShowNotesAsToolTips, i, 3);
+        i++;
+        grid.add(new FlexComponent(createLabel(I18n.Text("Modifiers:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
+        grid.add(mShowModifiersInDisplay, i, 2);
+        grid.add(mShowModifiersAsToolTips, i, 3);
 
         row = new FlexRow();
         String blockLayoutTooltip = I18n.Text("Specifies the layout of the various blocks of data on the character sheet");
@@ -307,11 +368,17 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mWeightUnitsCombo.setSelectedIndex(DEFAULT_WEIGHT_UNITS.ordinal());
         mToolTipTimeout.setText(Integer.toString(DEFAULT_TOOLTIP_TIMEOUT));
         mBlockLayoutField.setText(DEFAULT_BLOCK_LAYOUT);
+        mShowUserDescAsToolTips.setSelected(DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP);
+        mShowUserDescInDisplay.setSelected(DEFAULT_SHOW_USER_DESC_IN_DISPLAY);
+        mShowModifiersAsToolTips.setSelected(DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP);
+        mShowModifiersInDisplay.setSelected(DEFAULT_SHOW_MODIFIERS_IN_DISPLAY);
+        mShowNotesAsToolTips.setSelected(DEFAULT_SHOW_NOTES_AS_TOOL_TIP);
+        mShowNotesInDisplay.setSelected(DEFAULT_SHOW_NOTES_IN_DISPLAY);
     }
 
     @Override
     public boolean isSetToDefaults() {
-        return shouldIncludeUnspentPointsInTotalPointDisplay() == DEFAULT_TOTAL_POINTS_DISPLAY && showUserDescAsTooltip() == DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP && getInitialUIScale() == DEFAULT_SCALE && mLengthUnitsCombo.getSelectedIndex() == DEFAULT_LENGTH_UNITS.ordinal() && mWeightUnitsCombo.getSelectedIndex() == DEFAULT_WEIGHT_UNITS.ordinal() && getToolTipTimeout() == DEFAULT_TOOLTIP_TIMEOUT && mBlockLayoutField.getText().equals(DEFAULT_BLOCK_LAYOUT);
+        return shouldIncludeUnspentPointsInTotalPointDisplay() == DEFAULT_TOTAL_POINTS_DISPLAY && showUserDescAsTooltip() == DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP && getInitialUIScale() == DEFAULT_SCALE && mLengthUnitsCombo.getSelectedIndex() == DEFAULT_LENGTH_UNITS.ordinal() && mWeightUnitsCombo.getSelectedIndex() == DEFAULT_WEIGHT_UNITS.ordinal() && getToolTipTimeout() == DEFAULT_TOOLTIP_TIMEOUT && mBlockLayoutField.getText().equals(DEFAULT_BLOCK_LAYOUT) && showUserDescInDisplay() == DEFAULT_SHOW_USER_DESC_IN_DISPLAY && showModifiersAsTooltip() == DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP && showModifiersInDisplay() == DEFAULT_SHOW_MODIFIERS_IN_DISPLAY && showNotesAsTooltip() == DEFAULT_SHOW_NOTES_AS_TOOL_TIP && showNotesInDisplay() == DEFAULT_SHOW_NOTES_IN_DISPLAY;
     }
 
     @Override
@@ -344,6 +411,16 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
             Preferences.getInstance().setValue(MODULE, TOTAL_POINTS_DISPLAY_KEY, mIncludeUnspentPointsInTotal.isSelected());
         } else if (source == mShowUserDescAsToolTips) {
             Preferences.getInstance().setValue(MODULE, SHOW_USER_DESC_AS_TOOL_TIP_KEY, mShowUserDescAsToolTips.isSelected());
+        } else if (source == mShowUserDescInDisplay) {
+            Preferences.getInstance().setValue(MODULE, SHOW_USER_DESC_IN_DISPLAY_KEY, mShowUserDescInDisplay.isSelected());
+        } else if (source == mShowModifiersAsToolTips) {
+            Preferences.getInstance().setValue(MODULE, SHOW_MODIFIERS_AS_TOOL_TIP_KEY, mShowModifiersAsToolTips.isSelected());
+        } else if (source == mShowModifiersInDisplay) {
+            Preferences.getInstance().setValue(MODULE, SHOW_MODIFIERS_IN_DISPLAY_KEY, mShowModifiersInDisplay.isSelected());
+        } else if (source == mShowNotesAsToolTips) {
+            Preferences.getInstance().setValue(MODULE, SHOW_NOTES_AS_TOOL_TIP_KEY, mShowNotesAsToolTips.isSelected());
+        } else if (source == mShowNotesInDisplay) {
+            Preferences.getInstance().setValue(MODULE, SHOW_NOTES_IN_DISPLAY_KEY, mShowNotesInDisplay.isSelected());
         }
         adjustResetButton();
     }
