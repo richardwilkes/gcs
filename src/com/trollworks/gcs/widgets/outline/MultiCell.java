@@ -11,9 +11,7 @@
 
 package com.trollworks.gcs.widgets.outline;
 
-import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.app.GCSFonts;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.toolkit.ui.Colors;
 import com.trollworks.toolkit.ui.TextDrawing;
 import com.trollworks.toolkit.ui.scale.Scale;
@@ -111,35 +109,7 @@ public class MultiCell implements Cell {
      */
     @SuppressWarnings("static-method")
     protected String getSecondaryText(ListRow row) {
-        StringBuilder builder = new StringBuilder();
-        if (DisplayPreferences.showUserDescInDisplay()) {
-            if (row instanceof Advantage) {
-                Advantage ad   = (Advantage) row;
-                String    desc = ad.getUserDesc();
-                builder.append(desc);
-                if (desc.length() > 0) {
-                    builder.append('\n');
-                }
-            }
-        }
-        if (DisplayPreferences.showNotesInDisplay()) {
-            String desc = row.getNotes();
-            builder.append(desc);
-            if (desc.length() > 0) {
-                builder.append('\n');
-            }
-        }
-        if (DisplayPreferences.showModifiersInDisplay()) {
-            String desc = row.getModifierNotes();
-            builder.append(desc);
-            if (desc.length() > 0) {
-                builder.append('\n');
-            }
-        }
-        if (builder.length() > 0) {
-            builder.setLength(builder.length() - 1);   // Remove the last '\n'
-        }
-        return builder.toString();
+        return row.getSecondaryText();
     }
 
     @Override

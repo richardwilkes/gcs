@@ -224,28 +224,6 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mIncludeUnspentPointsInTotal = createCheckBox(I18n.Text("Character point total display includes unspent points"), null, shouldIncludeUnspentPointsInTotalPointDisplay());
         column.add(mIncludeUnspentPointsInTotal);
 
-        FlexGrid grid = new FlexGrid();
-        column.add(grid);
-        int i = 0;
-        mShowUserDescAsToolTips  = createCheckBox(I18n.Text("as a tooltip"), null, showUserDescAsTooltip());
-        mShowUserDescInDisplay   = createCheckBox(I18n.Text("in the main display"), null, showUserDescInDisplay());
-        mShowModifiersAsToolTips = createCheckBox(I18n.Text("as a tooltip"), null, showModifiersAsTooltip());
-        mShowModifiersInDisplay  = createCheckBox(I18n.Text("in the main display"), null, showModifiersInDisplay());
-        mShowNotesAsToolTips     = createCheckBox(I18n.Text("as a tooltip"), null, showNotesAsTooltip());
-        mShowNotesInDisplay      = createCheckBox(I18n.Text("in the main display"), null, showNotesInDisplay());
-        i++;
-        grid.add(new FlexComponent(createLabel(I18n.Text("Show Advantage User Descriptions:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
-        grid.add(mShowUserDescInDisplay, i, 2);
-        grid.add(mShowUserDescAsToolTips, i, 3);
-        i++;
-        grid.add(new FlexComponent(createLabel(I18n.Text("Notes:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
-        grid.add(mShowNotesInDisplay, i, 2);
-        grid.add(mShowNotesAsToolTips, i, 3);
-        i++;
-        grid.add(new FlexComponent(createLabel(I18n.Text("Modifiers:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
-        grid.add(mShowModifiersInDisplay, i, 2);
-        grid.add(mShowModifiersAsToolTips, i, 3);
-
         FlexRow row = new FlexRow();
         row.add(createLabel(I18n.Text("Use"), null));
         mUIScaleCombo = createUIScalePopup();
@@ -273,6 +251,28 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         row.add(mToolTipTimeout);
         row.add(createLabel(I18n.Text("seconds"), null));
         column.add(row);
+
+        FlexGrid grid = new FlexGrid();
+        column.add(grid);
+        int i = 0;
+        mShowUserDescAsToolTips  = createCheckBox(I18n.Text("as a tooltip"), null, showUserDescAsTooltip());
+        mShowUserDescInDisplay   = createCheckBox(I18n.Text("in the main display"), null, showUserDescInDisplay());
+        mShowModifiersAsToolTips = createCheckBox(I18n.Text("as a tooltip"), null, showModifiersAsTooltip());
+        mShowModifiersInDisplay  = createCheckBox(I18n.Text("in the main display"), null, showModifiersInDisplay());
+        mShowNotesAsToolTips     = createCheckBox(I18n.Text("as a tooltip"), null, showNotesAsTooltip());
+        mShowNotesInDisplay      = createCheckBox(I18n.Text("in the main display"), null, showNotesInDisplay());
+        i++;
+        grid.add(new FlexComponent(createLabel(I18n.Text("Show Advantage User Descriptions:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
+        grid.add(mShowUserDescInDisplay, i, 2);
+        grid.add(mShowUserDescAsToolTips, i, 3);
+        i++;
+        grid.add(new FlexComponent(createLabel(I18n.Text("Notes:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
+        grid.add(mShowNotesInDisplay, i, 2);
+        grid.add(mShowNotesAsToolTips, i, 3);
+        i++;
+        grid.add(new FlexComponent(createLabel(I18n.Text("Modifiers:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
+        grid.add(mShowModifiersInDisplay, i, 2);
+        grid.add(mShowModifiersAsToolTips, i, 3);
 
         row = new FlexRow();
         String blockLayoutTooltip = I18n.Text("Specifies the layout of the various blocks of data on the character sheet");

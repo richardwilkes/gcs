@@ -17,6 +17,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -1100,6 +1101,24 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     protected String getCategoryID() {
         return ID_CATEGORY;
+    }
+
+    /** @return The "secondary" text, the text display below an Advantage. */
+    @Override
+    protected String getSecondaryText() {
+        StringBuilder builder = new StringBuilder();
+        if (DisplayPreferences.showUserDescInDisplay()) {
+            String desc = getUserDesc();
+            builder.append(desc);
+            if (desc.length() > 0) {
+                builder.append('\n');
+            }
+        }
+        builder.append(super.getSecondaryText());
+        if (builder.length() > 0) {
+            builder.setLength(builder.length() - 1);   // Remove the last '\n'
+        }
+        return builder.toString();
     }
 
     @Override

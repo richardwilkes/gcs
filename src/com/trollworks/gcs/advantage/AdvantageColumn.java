@@ -51,7 +51,32 @@ public enum AdvantageColumn {
 
         @Override
         public String getToolTip(Advantage advantage) {
-            return getDataAsText(advantage);
+            StringBuilder builder = new StringBuilder();
+            if (DisplayPreferences.showUserDescAsTooltip()) {
+                String desc = advantage.getUserDesc();
+                builder.append(desc);
+                if (desc.length() > 0) {
+                    builder.append('\n');
+                }
+            }
+            if (DisplayPreferences.showModifiersAsTooltip()) {
+                String desc = advantage.getModifierNotes();
+                builder.append(desc);
+                if (desc.length() > 0) {
+                    builder.append('\n');
+                }
+            }
+            if (DisplayPreferences.showNotesAsTooltip()) {
+                String desc = advantage.getNotes();
+                builder.append(desc);
+                if (desc.length() > 0) {
+                    builder.append('\n');
+                }
+            }
+            if (builder.length() > 0) {
+                builder.setLength(builder.length() - 1);   // Remove the last '\n'
+            }
+            return builder.length() == 0 ? null : builder.toString();
         }
 
         @Override
@@ -72,31 +97,29 @@ public enum AdvantageColumn {
         @Override
         public String getDataAsText(Advantage advantage) {
             StringBuilder builder = new StringBuilder();
-            if (DisplayPreferences.showUserDescAsTooltip()) {
+            builder.append(advantage);
+            if (DisplayPreferences.showUserDescInDisplay()) {
                 String desc = advantage.getUserDesc();
-                builder.append(desc);
                 if (desc.length() > 0) {
-                    builder.append('\n');
+                    builder.append(" - ");
                 }
-            }
-            if (DisplayPreferences.showNotesAsTooltip()) {
-                String desc = advantage.getNotes();
                 builder.append(desc);
-                if (desc.length() > 0) {
-                    builder.append('\n');
-                }
             }
-            if (DisplayPreferences.showModifiersAsTooltip()) {
+            if (DisplayPreferences.showModifiersInDisplay()) {
                 String desc = advantage.getModifierNotes();
-                builder.append(desc);
                 if (desc.length() > 0) {
-                    builder.append('\n');
+                    builder.append(" - ");
                 }
+                builder.append(desc);
             }
-            if (builder.length() > 0) {
-                builder.setLength(builder.length() - 1);   // Remove the last '\n'
+            if (DisplayPreferences.showNotesInDisplay()) {
+                String desc = advantage.getNotes();
+                if (desc.length() > 0) {
+                    builder.append(" - ");
+                }
+                builder.append(desc);
             }
-            return builder.length() > 0 ? builder.toString() : null;
+            return builder.toString();
         }
     },
     /** The points spent in the advantage. */
