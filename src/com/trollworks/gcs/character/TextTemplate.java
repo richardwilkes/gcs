@@ -101,6 +101,7 @@ public class TextTemplate {
     private static final String KEY_CATEGORIES                        = "CATEGORIES";
     private static final String KEY_CLASS                             = "CLASS";
     private static final String KEY_COLLEGE                           = "COLLEGE";
+    private static final String KEY_CONTINUE_ID                       = "CONTINUE_ID";
     private static final String KEY_COST                              = "COST";
     private static final String KEY_COST_SUMMARY                      = "COST_SUMMARY";
     private static final String KEY_CREATED_ON                        = "CREATED_ON";
@@ -272,6 +273,8 @@ public class TextTemplate {
     private CharacterSheet      mSheet;
     private boolean             mEncodeText                           = true;
     private boolean             mEnhancedKeyParsing                   = false;
+    private int                 mCurrentId                            = 0;
+    private int                 mStartId                              = 0;
     private HashSet<String>     mOnlyCategories                       = new HashSet<>();
     private HashSet<String>     mExcludedCategories                   = new HashSet<>();
 
@@ -620,6 +623,9 @@ public class TextTemplate {
             }
             writeEncodedText(out, buffer.toString());
             break;
+        case KEY_CONTINUE_ID:
+            mStartId = mCurrentId;
+            break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
                 processEncumbranceLoop(out, extractUpToMarker(in, KEY_ENCUMBRANCE_LOOP_END));
@@ -806,14 +812,14 @@ public class TextTemplate {
     }
 
     private void processHitLocationLoop(BufferedWriter out, String contents) throws IOException {
-        GURPSCharacter   gurpsCharacter   = mSheet.getCharacter();
-        int              length           = contents.length();
-        StringBuilder    keyBuffer        = new StringBuilder();
-        boolean          lookForKeyMarker = true;
-        int              counter          = 0;
-        HitLocationTable table            = gurpsCharacter.getDescription().getHitLocationTable();
+        GURPSCharacter gurpsCharacter   = mSheet.getCharacter();
+        int            length           = contents.length();
+        StringBuilder  keyBuffer        = new StringBuilder();
+        boolean        lookForKeyMarker = true;
+        mCurrentId = mStartId;
+        HitLocationTable table = gurpsCharacter.getDescription().getHitLocationTable();
         for (HitLocationTableEntry entry : table.getEntries()) {
-            counter++;
+            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -847,7 +853,7 @@ public class TextTemplate {
                             writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
                             break;
                         case KEY_ID:
-                            writeEncodedText(out, Integer.toString(counter));
+                            writeEncodedText(out, Integer.toString(mCurrentId));
                             break;
                         case KEY_EQUIPMENT:     // Show the equipment that is providing the DR bonus
                             writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
@@ -866,6 +872,7 @@ public class TextTemplate {
                 }
             }
         }
+        mStartId = 0;
     }
 
     /* A kludgy method to relate a hitlocation to the armor that is providing the DR for that hit location. */
@@ -902,10 +909,10 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        int           counter          = 0;
+        mCurrentId = mStartId;
         for (Advantage advantage : mSheet.getCharacter().getAdvantagesIterator(false)) {
             if (loopType.shouldInclude(advantage, mOnlyCategories, mExcludedCategories)) {
-                counter++;
+                mCurrentId++;
                 for (int i = 0; i < length; i++) {
                     char ch = contents.charAt(i);
                     if (lookForKeyMarker) {
@@ -935,7 +942,7 @@ public class TextTemplate {
                                         writeEncodedText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
                                         break;
                                     case KEY_ID:
-                                        writeEncodedText(out, Integer.toString(counter));
+                                        writeEncodedText(out, Integer.toString(mCurrentId));
                                         break;
                                     case KEY_TYPE:
                                         writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
@@ -971,6 +978,7 @@ public class TextTemplate {
         }
         mOnlyCategories.clear();
         mExcludedCategories.clear();
+        mStartId = 0;
     }
 
     private boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
@@ -1022,9 +1030,9 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        int           counter          = 0;
+        mCurrentId = mStartId;
         for (Skill skill : mSheet.getCharacter().getSkillsIterator()) {
-            counter++;
+            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1063,7 +1071,7 @@ public class TextTemplate {
                                     writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
                                     break;
                                 case KEY_ID:
-                                    writeEncodedText(out, Integer.toString(counter));
+                                    writeEncodedText(out, Integer.toString(mCurrentId));
                                     break;
                                 default:
                                     writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
@@ -1075,6 +1083,7 @@ public class TextTemplate {
                 }
             }
         }
+        mStartId = 0;
     }
 
     private static boolean processStyleIndentWarning(String key, BufferedWriter out, ListRow row) throws IOException {
@@ -1111,9 +1120,9 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        int           counter          = 0;
+        mCurrentId = mStartId;
         for (Spell spell : mSheet.getCharacter().getSpellsIterator()) {
-            counter++;
+            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1170,7 +1179,7 @@ public class TextTemplate {
                                     writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
                                     break;
                                 case KEY_ID:
-                                    writeEncodedText(out, Integer.toString(counter));
+                                    writeEncodedText(out, Integer.toString(mCurrentId));
                                     break;
                                 default:
                                     writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
@@ -1182,15 +1191,16 @@ public class TextTemplate {
                 }
             }
         }
+        mStartId = 0;
     }
 
     private void processMeleeLoop(BufferedWriter out, String contents) throws IOException {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        int           counter          = 0;
+        mCurrentId = mStartId;
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-            counter++;
+            mCurrentId++;
             MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -1211,11 +1221,12 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i                = processMeleeWeaponKeys(out, key, counter, weapon, i, contents, null);
+                        i                = processMeleeWeaponKeys(out, key, mCurrentId, weapon, i, contents, null);
                     }
                 }
             }
         }
+        mStartId = 0;
     }
 
     /* Handle keys specific to MeleeWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
@@ -1341,12 +1352,12 @@ public class TextTemplate {
      * e.g. Weapon Name: Spear, attack modes "1 Handed" and "2 Handed"
      */
     private void processHierarchicalMeleeLoop(BufferedWriter out, String contents) throws IOException {
-        int                                          length           = contents.length();
-        StringBuilder                                keyBuffer        = new StringBuilder();
-        boolean                                      lookForKeyMarker = true;
-        int                                          counter          = 0;
-        HashMap<String, ArrayList<MeleeWeaponStats>> weaponsMap       = new HashMap<>();
-        HashMap<String, MeleeWeaponStats>            weapons          = new HashMap<>();
+        int           length           = contents.length();
+        StringBuilder keyBuffer        = new StringBuilder();
+        boolean       lookForKeyMarker = true;
+        mCurrentId = mStartId;
+        HashMap<String, ArrayList<MeleeWeaponStats>> weaponsMap = new HashMap<>();
+        HashMap<String, MeleeWeaponStats>            weapons    = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
             weapons.put(weapon.getDescription(), weapon);
@@ -1358,7 +1369,7 @@ public class TextTemplate {
             attackModes.add(weapon);
         }
         for (MeleeWeaponStats weapon : weapons.values()) {
-            counter++;
+            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1378,11 +1389,12 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i                = processMeleeWeaponKeys(out, key, counter, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
+                        i                = processMeleeWeaponKeys(out, key, mCurrentId, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
                     }
                 }
             }
         }
+        mStartId = 0;
     }
 
     /* Process the weapons in a hierarchical format.   One time for each weapon with a unique name,
@@ -1390,12 +1402,12 @@ public class TextTemplate {
      * e.g. Weapon Name: Atlatl, attack modes "Shoot Dart" and "Shoot Javelin"
      */
     private void processHierarchicalRangedLoop(BufferedWriter out, String contents) throws IOException {
-        int                                           length           = contents.length();
-        StringBuilder                                 keyBuffer        = new StringBuilder();
-        boolean                                       lookForKeyMarker = true;
-        int                                           counter          = 0;
-        HashMap<String, ArrayList<RangedWeaponStats>> weaponsMap       = new HashMap<>();
-        HashMap<String, RangedWeaponStats>            weapons          = new HashMap<>();
+        int           length           = contents.length();
+        StringBuilder keyBuffer        = new StringBuilder();
+        boolean       lookForKeyMarker = true;
+        mCurrentId = mStartId;
+        HashMap<String, ArrayList<RangedWeaponStats>> weaponsMap = new HashMap<>();
+        HashMap<String, RangedWeaponStats>            weapons    = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
             weapons.put(weapon.getDescription(), weapon);
@@ -1407,7 +1419,7 @@ public class TextTemplate {
             attackModes.add(weapon);
         }
         for (RangedWeaponStats weapon : weapons.values()) {
-            counter++;
+            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1427,11 +1439,12 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i                = processRangedWeaponKeys(out, key, counter, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
+                        i                = processRangedWeaponKeys(out, key, mCurrentId, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
                     }
                 }
             }
         }
+        mStartId = 0;
     }
 
     /* Loop through all of the attackModes for a particular weapon.   We need to make melee/ranged specific
@@ -1551,9 +1564,9 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        int           counter          = 0;
+        mCurrentId = mStartId;
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-            counter++;
+            mCurrentId++;
             RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -1574,23 +1587,24 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i                = processRangedWeaponKeys(out, key, counter, weapon, i, contents, null);
+                        i                = processRangedWeaponKeys(out, key, mCurrentId, weapon, i, contents, null);
                     }
                 }
             }
         }
+        mStartId = 0;
     }
 
     private void processEquipmentLoop(BufferedWriter out, String contents, boolean carried) throws IOException {
-        int                    length           = contents.length();
-        StringBuilder          keyBuffer        = new StringBuilder();
-        boolean                lookForKeyMarker = true;
-        int                    counter          = 0;
+        int           length           = contents.length();
+        StringBuilder keyBuffer        = new StringBuilder();
+        boolean       lookForKeyMarker = true;
+        mCurrentId = mStartId;
         // Create child-to-parent maps to determine where items are being stored.
         // Used by KEY_LOCATION
-        ArrayList<List<Row>>   children         = new ArrayList<>();
-        ArrayList<Equipment>   parents          = new ArrayList<>();
-        ArrayList<Equipment>   equipmentList    = new ArrayList<>();
+        ArrayList<List<Row>>   children      = new ArrayList<>();
+        ArrayList<Equipment>   parents       = new ArrayList<>();
+        ArrayList<Equipment>   equipmentList = new ArrayList<>();
         RowIterator<Equipment> iter;
         if (carried) {
             iter = mSheet.getCharacter().getEquipmentIterator();
@@ -1607,7 +1621,7 @@ public class TextTemplate {
             }
         }
         for (Equipment equipment : equipmentList) {
-            counter++;
+            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1643,13 +1657,13 @@ public class TextTemplate {
                                     }
                                     break;
                                 case KEY_EQUIPPED_NUM:
-                                    out.write(carried && equipment.isEquipped() ? 1 : 0);
+                                    out.write(carried && equipment.isEquipped() ? '1' : '0');
                                     break;
                                 case KEY_CARRIED_STATUS:
                                     if (carried) {
-                                        out.write(equipment.isEquipped() ? 2 : 1);
+                                        out.write(equipment.isEquipped() ? '2' : '1');
                                     } else {
-                                        out.write(0);
+                                        out.write('0');
                                     }
                                     break;
                                 case KEY_QTY:
@@ -1674,7 +1688,7 @@ public class TextTemplate {
                                     writeEncodedText(out, equipment.getReference());
                                     break;
                                 case KEY_ID:
-                                    writeEncodedText(out, Integer.toString(counter));
+                                    writeEncodedText(out, Integer.toString(mCurrentId));
                                     break;
                                 case KEY_TL:
                                     writeEncodedText(out, equipment.getTechLevel());
@@ -1704,6 +1718,7 @@ public class TextTemplate {
         }
         mOnlyCategories.clear();
         mExcludedCategories.clear();
+        mStartId = 0;
     }
 
     private boolean shouldInclude(Equipment equipment) {
@@ -1728,9 +1743,9 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        int           counter          = 0;
+        mCurrentId = mStartId;
         for (Note note : mSheet.getCharacter().getNoteIterator()) {
-            counter++;
+            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1761,7 +1776,7 @@ public class TextTemplate {
                                 }
                                 break;
                             case KEY_ID:
-                                writeEncodedText(out, Integer.toString(counter));
+                                writeEncodedText(out, Integer.toString(mCurrentId));
                                 break;
                             default:
                                 writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
@@ -1772,6 +1787,7 @@ public class TextTemplate {
                 }
             }
         }
+        mStartId = 0;
     }
 
     private enum AdvantagesLoopType {
