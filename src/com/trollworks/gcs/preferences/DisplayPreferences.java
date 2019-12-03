@@ -257,15 +257,17 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
 
         FlexGrid grid = new FlexGrid();
         column.add(grid);
-        int i = 0;
-        mShowUserDescAsToolTips  = createCheckBox(I18n.Text("as a tooltip"), null, showUserDescAsTooltip());
-        mShowUserDescInDisplay   = createCheckBox(I18n.Text("in the main display"), null, showUserDescInDisplay());
-        mShowModifiersAsToolTips = createCheckBox(I18n.Text("as a tooltip"), null, showModifiersAsTooltip());
-        mShowModifiersInDisplay  = createCheckBox(I18n.Text("in the main display"), null, showModifiersInDisplay());
-        mShowNotesAsToolTips     = createCheckBox(I18n.Text("as a tooltip"), null, showNotesAsTooltip());
-        mShowNotesInDisplay      = createCheckBox(I18n.Text("in the main display"), null, showNotesInDisplay());
+        int    i             = 0;
+        String asToolTip     = I18n.Text("as a tooltip");
+        String inMainDisplay = I18n.Text("in the main display");
+        mShowUserDescAsToolTips  = createCheckBox(asToolTip, null, showUserDescAsTooltip());
+        mShowUserDescInDisplay   = createCheckBox(inMainDisplay, null, showUserDescInDisplay());
+        mShowModifiersAsToolTips = createCheckBox(asToolTip, null, showModifiersAsTooltip());
+        mShowModifiersInDisplay  = createCheckBox(inMainDisplay, null, showModifiersInDisplay());
+        mShowNotesAsToolTips     = createCheckBox(asToolTip, null, showNotesAsTooltip());
+        mShowNotesInDisplay      = createCheckBox(inMainDisplay, null, showNotesInDisplay());
         i++;
-        grid.add(new FlexComponent(createLabel(I18n.Text("Show Advantage User Descriptions:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
+        grid.add(new FlexComponent(createLabel(I18n.Text("Show User Descriptions:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
         grid.add(mShowUserDescInDisplay, i, 2);
         grid.add(mShowUserDescAsToolTips, i, 3);
         i++;

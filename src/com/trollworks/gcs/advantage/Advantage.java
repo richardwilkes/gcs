@@ -1056,15 +1056,17 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     protected String getSecondaryText() {
         StringBuilder builder = new StringBuilder();
         if (DisplayPreferences.showUserDescInDisplay()) {
-            String desc = getUserDesc();
-            builder.append(desc);
-            if (desc.length() > 0) {
-                builder.append('\n');
+            String txt = getUserDesc();
+            if (!txt.isBlank()) {
+                builder.append(txt);
             }
         }
-        builder.append(super.getSecondaryText());
-        if (builder.length() > 0) {
-            builder.setLength(builder.length() - 1);   // Remove the last '\n'
+        String txt = super.getSecondaryText();
+        if (!txt.isBlank()) {
+            if (builder.length() > 0) {
+                builder.append("\n");
+            }
+            builder.append(super.getSecondaryText());
         }
         return builder.toString();
     }

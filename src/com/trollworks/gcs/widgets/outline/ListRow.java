@@ -480,21 +480,19 @@ public abstract class ListRow extends Row {
     protected String getSecondaryText() {
         StringBuilder builder = new StringBuilder();
         if (DisplayPreferences.showModifiersInDisplay()) {
-            String desc = getModifierNotes();
-            builder.append(desc);
-            if (desc.length() > 0) {
-                builder.append('\n');
+            String txt = getModifierNotes();
+            if (!txt.isBlank()) {
+                builder.append(txt);
             }
         }
         if (DisplayPreferences.showNotesInDisplay()) {
-            String desc = getNotes();
-            builder.append(desc);
-            if (desc.length() > 0) {
-                builder.append('\n');
+            String txt = getNotes();
+            if (!txt.isBlank()) {
+                if (builder.length() > 0) {
+                    builder.append('\n');
+                }
+                builder.append(txt);
             }
-        }
-        if (builder.length() > 0) {
-            builder.setLength(builder.length() - 1);   // Remove the last '\n'
         }
         return builder.toString();
     }
