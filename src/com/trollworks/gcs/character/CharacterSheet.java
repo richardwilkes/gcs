@@ -170,7 +170,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
         }
-        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, DisplayPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, DisplayPreferences.BLOCK_LAYOUT_PREF_KEY, SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY);
+        Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, DisplayPreferences.WEIGHT_UNITS_PREF_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, DisplayPreferences.BLOCK_LAYOUT_PREF_KEY, SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY, DisplayPreferences.SHOW_USER_DESC_IN_DISPLAY_PREF_KEY, DisplayPreferences.SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY, DisplayPreferences.SHOW_NOTES_IN_DISPLAY_PREF_KEY);
     }
 
     /** Call when the sheet is no longer in use. */
@@ -787,6 +787,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             markForRebuild();
         } else {
             if (type.startsWith(Advantage.PREFIX)) {
+                OutlineSyncer.add(mAdvantageOutline);
+            } else if (DisplayPreferences.SHOW_USER_DESC_IN_DISPLAY_PREF_KEY.equals(type) || DisplayPreferences.SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY.equals(type) || DisplayPreferences.SHOW_NOTES_IN_DISPLAY_PREF_KEY.equals(type)) {
                 OutlineSyncer.add(mAdvantageOutline);
             } else if (type.startsWith(Skill.PREFIX)) {
                 OutlineSyncer.add(mSkillOutline);

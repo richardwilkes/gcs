@@ -76,14 +76,17 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     public static final String       SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip";
     private static final boolean     DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP = true;
     public static final String       SHOW_USER_DESC_IN_DISPLAY_KEY      = "ShowUserDescInDisplay";
+    public static final String       SHOW_USER_DESC_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_USER_DESC_IN_DISPLAY_KEY);
     private static final boolean     DEFAULT_SHOW_USER_DESC_IN_DISPLAY  = false;
     public static final String       SHOW_MODIFIERS_AS_TOOL_TIP_KEY     = "ShowModifiersAsToolTip";
     private static final boolean     DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP = false;
     public static final String       SHOW_MODIFIERS_IN_DISPLAY_KEY      = "ShowModifiersInDisplay";
+    public static final String       SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_MODIFIERS_IN_DISPLAY_KEY);
     private static final boolean     DEFAULT_SHOW_MODIFIERS_IN_DISPLAY  = true;
     public static final String       SHOW_NOTES_AS_TOOL_TIP_KEY         = "ShowNotesAsToolTip";
     private static final boolean     DEFAULT_SHOW_NOTES_AS_TOOL_TIP     = false;
     public static final String       SHOW_NOTES_IN_DISPLAY_KEY          = "ShowNotesInDisplay";
+    public static final String       SHOW_NOTES_IN_DISPLAY_PREF_KEY     = Preferences.getModuleKey(MODULE, SHOW_NOTES_IN_DISPLAY_KEY);
     private static final boolean     DEFAULT_SHOW_NOTES_IN_DISPLAY      = true;
     private JCheckBox                mIncludeUnspentPointsInTotal;
     private JComboBox<Scales>        mUIScaleCombo;

@@ -73,7 +73,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     public static final String      AUTO_NAME_PREF_KEY               = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
     private static final boolean    DEFAULT_AUTO_NAME                = true;
     /** The optional Thrust Damage rules preference key. */
-    private static final String     OPTIONAL_THRUST_DAMAGE_KEY       = "UseOptionalThurstDamage";
+    private static final String     OPTIONAL_THRUST_DAMAGE_KEY       = "UseOptionalThrustDamage";
     public static final String      OPTIONAL_THRUST_DAMAGE_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
     private static final boolean    DEFAULT_OPTIONAL_THRUST_DAMAGE   = false;
     private static final String     GURPS_METRIC_RULES_KEY           = "UseGurpsMetricRules";
