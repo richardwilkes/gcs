@@ -128,7 +128,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         parent.add(combo);
         return combo;
     }
@@ -223,7 +223,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
 
         if (maxChars > 0) {
-            UIUtilities.setOnlySize(field, field.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));

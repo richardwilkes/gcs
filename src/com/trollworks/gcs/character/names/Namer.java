@@ -133,7 +133,7 @@ public class Namer extends JPanel {
             field.setMaximumSize(size);
             mFields.add(field);
             label = new JLabel(name, SwingConstants.RIGHT);
-            UIUtilities.setOnlySize(label, label.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(label);
             add(label);
             add(field);
             grid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, Alignment.CENTER), rowIndex, 0);

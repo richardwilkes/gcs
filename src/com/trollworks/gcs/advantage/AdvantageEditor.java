@@ -32,7 +32,6 @@ import com.trollworks.toolkit.ui.layout.RowDistribution;
 import com.trollworks.toolkit.ui.widget.EditorField;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.I18n;
-import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import com.trollworks.toolkit.utility.text.Text;
 
@@ -127,11 +126,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")));
         mEnabledCheckBox.setEnabled(mIsEditable);
         mEnabledCheckBox.addActionListener(this);
-        Dimension size = mEnabledCheckBox.getPreferredSize();
-        if (Platform.isWindows()) {
-            size.width++; // Text measurement is off on Windows for some reason
-        }
-        UIUtilities.setOnlySize(mEnabledCheckBox, size);
+        UIUtilities.setToPreferredSizeOnly(mEnabledCheckBox);
         add(mEnabledCheckBox);
         row.add(mEnabledCheckBox);
 
@@ -154,7 +149,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
             mLevelTypeCombo = new JComboBox<>(Levels.values());
             mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS : Levels.NO_LEVELS);
-            UIUtilities.setOnlySize(mLevelTypeCombo, mLevelTypeCombo.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mLevelTypeCombo);
             mLevelTypeCombo.setEnabled(mIsEditable);
             mLevelTypeCombo.addActionListener(this);
             add(mLevelTypeCombo);
@@ -169,7 +164,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Add a half Level")));
             mHalfLevel.setEnabled(mIsEditable && advantage.allowHalfLevels());
             mHalfLevel.addActionListener(this);
-            UIUtilities.setOnlySize(mHalfLevel, mHalfLevel.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mHalfLevel);
             add(mHalfLevel);
             row.add(mHalfLevel);
 
@@ -182,7 +177,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Round point costs down if selected, round them up if not (most things in GURPS round up)")));
             mShouldRoundCostDown.setEnabled(mIsEditable);
             mShouldRoundCostDown.addActionListener(this);
-            UIUtilities.setOnlySize(mShouldRoundCostDown, mShouldRoundCostDown.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mShouldRoundCostDown);
             add(mShouldRoundCostDown);
             row.add(mShouldRoundCostDown);
 
@@ -212,14 +207,14 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         mCRCombo = new JComboBox<>(SelfControlRoll.values());
         mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
-        UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(mCRCombo);
         mCRCombo.setEnabled(mIsEditable);
         mCRCombo.addActionListener(this);
         add(mCRCombo);
         mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
         mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Adjustments that are applied due to Self-Control Roll limitations")));
         mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
-        UIUtilities.setOnlySize(mCRAdjCombo, mCRAdjCombo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(mCRAdjCombo);
         mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
         add(mCRAdjCombo);
         innerGrid.add(new FlexComponent(createLabel(I18n.Text("Self-Control Roll"), mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
@@ -258,7 +253,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         } else {
             mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
             mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
-            UIUtilities.setOnlySize(mContainerTypeCombo, mContainerTypeCombo.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mContainerTypeCombo);
             mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of container this is")));
             add(mContainerTypeCombo);
             row.add(mContainerTypeCombo);
@@ -353,7 +348,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         button.setSelected(selected);
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         button.setEnabled(mIsEditable);
-        UIUtilities.setOnlySize(button, button.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(button);
         add(button);
         return button;
     }

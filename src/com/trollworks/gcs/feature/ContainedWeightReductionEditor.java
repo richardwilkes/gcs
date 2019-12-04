@@ -48,7 +48,7 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
                 notifyActionListeners();
             }
         }, SwingConstants.LEFT, feature.getValue(), new WeightValue(999999999, DisplayPreferences.getWeightUnits()), I18n.Text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         row.add(field);
         row.add(new FlexSpacer(0, 0, true, false));

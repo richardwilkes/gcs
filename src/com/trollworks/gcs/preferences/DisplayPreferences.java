@@ -38,6 +38,7 @@ import java.awt.event.ItemListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -231,7 +232,9 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         row.add(createLabel(I18n.Text("Use"), null));
         mUIScaleCombo = createUIScalePopup();
         row.add(mUIScaleCombo);
-        row.add(createLabel(I18n.Text("for the initial scale when opening character sheets, templates and lists"), null, SwingConstants.LEFT));
+        JLabel label = createLabel(I18n.Text("for the initial scale when opening character sheets, templates and lists"), null, SwingConstants.LEFT);
+        UIUtilities.setOnlySize(label, null);
+        row.add(label);
         column.add(row);
 
         row = new FlexRow();
@@ -298,7 +301,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         combo.setSelectedItem(getInitialUIScale());
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         return combo;
     }
 
@@ -311,7 +314,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         combo.setSelectedIndex(getLengthUnits().ordinal());
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         return combo;
     }
 
@@ -324,7 +327,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         combo.setSelectedIndex(getWeightUnits().ordinal());
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         return combo;
     }
 

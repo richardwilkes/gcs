@@ -131,7 +131,7 @@ public class ModifierEnabler extends JPanel {
             }
             mCRCombo = new JComboBox<>(possible.toArray(new String[possible.size()]));
             mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
-            UIUtilities.setOnlySize(mCRCombo, mCRCombo.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mCRCombo);
             wrapper.add(mCRCombo);
         }
 

@@ -42,18 +42,18 @@ import javax.swing.event.DocumentListener;
 
 /** Editor for {@link Modifier}s. */
 public class ModifierEditor extends RowEditor<Modifier> implements ActionListener, DocumentListener {
-    private JTextField          mNameField;
-    private JCheckBox           mEnabledField;
-    private JTextField          mNotesField;
-    private JTextField          mReferenceField;
-    private JTextField          mCostField;
-    private JTextField          mLevelField;
-    private JTextField          mCostModifierField;
-    private FeaturesPanel       mFeatures;
-    private JTabbedPane         mTabPanel;
-    private JComboBox<Object>   mCostType;
-    private JComboBox<Object>   mAffects;
-    private int                 mLastLevel;
+    private JTextField        mNameField;
+    private JCheckBox         mEnabledField;
+    private JTextField        mNotesField;
+    private JTextField        mReferenceField;
+    private JTextField        mCostField;
+    private JTextField        mLevelField;
+    private JTextField        mCostModifierField;
+    private FeaturesPanel     mFeatures;
+    private JTabbedPane       mTabPanel;
+    private JComboBox<Object> mCostType;
+    private JComboBox<Object> mAffects;
+    private int               mLastLevel;
 
     /**
      * Creates a new {@link ModifierEditor}.
@@ -165,7 +165,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
         if (maxChars > 0) {
-            UIUtilities.setOnlySize(field, field.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -188,7 +188,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     @SuppressWarnings("unused")
     private JTextField createNumberField(Container labelParent, Container fieldParent, String title, boolean allowSign, int value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : ""));
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         field.setText(Numbers.format(value));
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
@@ -202,7 +202,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     @SuppressWarnings("unused")
     private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + '.');
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         field.setText(Numbers.format(value));
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
@@ -243,7 +243,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         parent.add(combo);
         return combo;
     }

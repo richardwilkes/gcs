@@ -32,7 +32,7 @@ public class AndOrLabel extends JLabel {
     public AndOrLabel(Prereq owner) {
         super(I18n.Text("and"), SwingConstants.RIGHT);
         mOwner = owner;
-        UIUtilities.setOnlySize(this, getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(this);
     }
 
     @Override

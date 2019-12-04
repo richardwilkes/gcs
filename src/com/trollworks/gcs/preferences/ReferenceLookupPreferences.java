@@ -54,7 +54,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
         mPanel.setBackground(Color.WHITE);
         for (PdfRef ref : PdfRef.getKnown(false)) {
             JButton button = new JButton(I18n.Text("Remove"));
-            UIUtilities.setOnlySize(button, button.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(button);
             button.addActionListener(event -> {
                 ref.remove();
                 Component[] children = mPanel.getComponents();

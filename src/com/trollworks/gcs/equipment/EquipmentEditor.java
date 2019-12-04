@@ -133,7 +133,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         if (showEquipmentState()) {
             mEquippedCheckBox = new JCheckBox(I18n.Text("Equipped"));
             mEquippedCheckBox.setSelected(mRow.isEquipped());
-            UIUtilities.setOnlySize(mEquippedCheckBox, mEquippedCheckBox.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mEquippedCheckBox);
             mEquippedCheckBox.setEnabled(mIsEditable);
             mEquippedCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
             wrapper.add(mEquippedCheckBox);
@@ -194,7 +194,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
         if (maxChars > 0) {
-            UIUtilities.setOnlySize(field, field.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -208,7 +208,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @SuppressWarnings("unused")
     private JTextField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ','));
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         field.setText(Numbers.format(value));
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
@@ -223,7 +223,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @SuppressWarnings("unused")
     private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         field.setText(Numbers.format(value));
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
@@ -237,7 +237,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     private JTextField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         field.setText(value.toString());
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);

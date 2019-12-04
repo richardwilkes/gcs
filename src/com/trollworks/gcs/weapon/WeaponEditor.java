@@ -165,7 +165,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         mDamageSTCombo.setSelectedItem(WeaponSTDamage.NONE);
         mDamageSTCombo.addActionListener(this);
         mDamageSTCombo.setToolTipText(I18n.Text("Strength Damage Type"));
-        UIUtilities.setOnlySize(mDamageSTCombo, mDamageSTCombo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(mDamageSTCombo);
         wrapper.add(new LinkedLabel(I18n.Text("Damage")));
         damagePanel.add(mDamageSTCombo);
         mDamageBase = createTextField("100d+20x200", I18n.Text("Base Damage"));
@@ -233,7 +233,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         formatter.setOverwriteMode(false);
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, "", protoValue, tooltip);
         if (protoValue != null) {
-            UIUtilities.setOnlySize(field, field.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(field);
         }
         return field;
     }

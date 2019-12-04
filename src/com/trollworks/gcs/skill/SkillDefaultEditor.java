@@ -82,13 +82,13 @@ public class SkillDefaultEditor extends EditorPanel {
             mTypeCombo.setSelectedItem(current);
             mTypeCombo.setActionCommand(SkillDefault.TAG_TYPE);
             mTypeCombo.addActionListener(this);
-            UIUtilities.setOnlySize(mTypeCombo, mTypeCombo.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mTypeCombo);
             add(mTypeCombo);
             row.add(mTypeCombo);
             grid.add(row, 0, 1);
 
             mModifierField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-99, 99, true)), this, SwingConstants.LEFT, Integer.valueOf(mDefault.getModifier()), Integer.valueOf(99), null);
-            UIUtilities.setOnlySize(mModifierField, mModifierField.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mModifierField);
             add(mModifierField);
 
             if (current.isSkillBased()) {

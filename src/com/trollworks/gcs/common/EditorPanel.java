@@ -74,7 +74,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         combo.setActionCommand(command);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         add(combo);
         return combo;
     }
@@ -150,7 +150,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     protected EditorField addNumericCompareField(IntegerCriteria compare, int min, int max, boolean forceSign) {
         EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, forceSign)), this, SwingConstants.LEFT, Integer.valueOf(compare.getQualifier()), Integer.valueOf(max), null);
         field.putClientProperty(IntegerCriteria.class, compare);
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         return field;
     }
@@ -165,7 +165,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     protected EditorField addNumericCompareField(DoubleCriteria compare, double min, double max, boolean forceSign) {
         EditorField field = new EditorField(new DefaultFormatterFactory(new DoubleFormatter(min, max, forceSign)), this, SwingConstants.LEFT, Double.valueOf(compare.getQualifier()), Double.valueOf(max), null);
         field.putClientProperty(DoubleCriteria.class, compare);
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         return field;
     }

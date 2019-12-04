@@ -33,7 +33,7 @@ public class OrLabel extends JLabel {
     public OrLabel(Component owner) {
         super(I18n.Text("or"), SwingConstants.RIGHT);
         mOwner = owner;
-        UIUtilities.setOnlySize(this, getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(this);
     }
 
     @Override

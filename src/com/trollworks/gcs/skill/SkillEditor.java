@@ -159,7 +159,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
 
         if (maxChars > 0) {
-            UIUtilities.setOnlySize(field, field.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -208,7 +208,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             wrapper.add(mHasTechLevel);
 
             mTechLevel = new JTextField("9999");
-            UIUtilities.setOnlySize(mTechLevel, mTechLevel.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mTechLevel);
             mTechLevel.setText(mSavedTechLevel);
             mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
             mTechLevel.setEnabled(enabled && hasTL);
@@ -270,7 +270,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         combo.setEnabled(mIsEditable);
         parent.add(combo);
         return combo;

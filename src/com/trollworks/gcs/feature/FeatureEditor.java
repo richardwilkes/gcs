@@ -165,7 +165,7 @@ public abstract class FeatureEditor extends EditorPanel {
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, prototype, null);
         field.putClientProperty(LeveledAmount.class, amt);
-        UIUtilities.setOnlySize(field, field.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         return field;
     }

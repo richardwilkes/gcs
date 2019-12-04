@@ -26,7 +26,6 @@ import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.I18n;
-import com.trollworks.toolkit.utility.Platform;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
@@ -206,11 +205,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             JPanel wrapper = new JPanel(new ColumnLayout(2));
 
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level"), hasTL);
-            Dimension size = mHasTechLevel.getPreferredSize();
-            if (Platform.isWindows()) {
-                size.width++; // Text measurement is off on Windows for some reason
-            }
-            UIUtilities.setOnlySize(mHasTechLevel, size);
+            UIUtilities.setToPreferredSizeOnly(mHasTechLevel);
             String tlTooltip = I18n.Text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
             mHasTechLevel.setEnabled(enabled);
@@ -218,12 +213,12 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             wrapper.add(mHasTechLevel);
 
             mTechLevel = new JTextField("9999");
-            UIUtilities.setOnlySize(mTechLevel, mTechLevel.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(mTechLevel);
             mTechLevel.setText(mSavedTechLevel);
             mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
             mTechLevel.setEnabled(enabled && hasTL);
             wrapper.add(mTechLevel);
-            UIUtilities.setOnlySize(wrapper, wrapper.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(wrapper);
             parent.add(wrapper);
 
             if (!hasTL) {
@@ -276,7 +271,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         combo.setEnabled(mIsEditable);
         parent.add(combo);
         return combo;
@@ -307,7 +302,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
 
         if (maxChars > 0) {
-            UIUtilities.setOnlySize(field, field.getPreferredSize());
+            UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));

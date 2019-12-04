@@ -247,6 +247,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         button.setOpaque(false);
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         button.addActionListener(this);
+        UIUtilities.setToPreferredSizeOnly(button);
         add(button);
         return button;
     }
@@ -274,7 +275,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         button.setBackground(Color.white);
         button.addActionListener(this);
-        UIUtilities.setOnlySize(button, button.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(button);
         add(button);
         return button;
     }
@@ -293,7 +294,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         combo.setSelectedIndex(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
-        UIUtilities.setOnlySize(combo, combo.getPreferredSize());
+        UIUtilities.setToPreferredSizeOnly(combo);
         return combo;
     }
 
