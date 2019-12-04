@@ -196,6 +196,9 @@
             <arg if:true="${platform.windows}" value="--win-shortcut"/>
             <arg if:true="${platform.windows}" value="--type"/>
             <arg if:true="${platform.windows}" value="msi"/>
+            <arg if:true="${platform.windows}" value="--win-dir-chooser"/>
+			<arg if:true="${platform.windows}" value="--win-upgrade-uuid"/>
+			<arg if:true="${platform.windows}" value="E71F99DA-AD84-4E6E-9bE7-4E65421752E1"/>
         </exec>
         <delete dir="${build.dir}"/>
 	</target>
