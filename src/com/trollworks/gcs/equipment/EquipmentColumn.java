@@ -153,6 +153,33 @@ public enum EquipmentColumn {
             return builder.toString();
         }
     },
+    /** The uses remaining. */
+    USES {
+        @Override
+        public String toString() {
+            return I18n.Text("Uses");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The number of uses remaining");
+        }
+
+        @Override
+        public Cell getCell() {
+            return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public Object getData(Equipment equipment) {
+            return Integer.valueOf(equipment.getUses());
+        }
+
+        @Override
+        public String getDataAsText(Equipment equipment) {
+            return equipment.getMaxUses() > 0 ? Numbers.format(equipment.getUses()) : "";
+        }
+    },
     /** The tech level. */
     TECH_LEVEL {
         @Override

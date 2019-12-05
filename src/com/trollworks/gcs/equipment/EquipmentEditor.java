@@ -52,6 +52,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private JTextField         mTechLevelField;
     private JTextField         mLegalityClassField;
     private JTextField         mQtyField;
+    private JTextField         mUsesField;
+    private JTextField         mMaxUsesField;
     private JTextField         mValueField;
     private JTextField         mExtValueField;
     private JTextField         mWeightField;
@@ -82,16 +84,24 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         JPanel content = new JPanel(new ColumnLayout(2));
         JPanel fields  = new JPanel(new ColumnLayout(2));
         JLabel icon    = new JLabel(equipment.getIcon(true));
-        JPanel wrapper = new JPanel(new ColumnLayout(2));
 
         mDescriptionField = createCorrectableField(fields, I18n.Text("Name"), equipment.getDescription(), I18n.Text("The name/description of the equipment, without any notes"));
         createSecondLineFields(fields);
         createValueAndWeightFields(fields);
         mNotesField      = createField(fields, fields, I18n.Text("Notes"), equipment.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), 0);
         mCategoriesField = createField(fields, fields, I18n.Text("Categories"), equipment.getCategoriesAsString(), I18n.Text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
-        mReferenceField  = createField(fields, wrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this equipment appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
-        wrapper.add(new JPanel());
+
+        boolean forCharacterOrTemplate = equipment.getCharacter() != null || equipment.getTemplate() != null;
+        JPanel  wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? 5 : 3));
+        if (forCharacterOrTemplate) {
+            mUsesField    = createIntegerNumberField(fields, wrapper, I18n.Text("Uses"), mRow.getUses(), I18n.Text("The number of uses remaining for this equipment"), 5);
+            mMaxUsesField = createIntegerNumberField(wrapper, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
+        } else {
+            mMaxUsesField = createIntegerNumberField(fields, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
+        }
+        mReferenceField = createField(wrapper, wrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this equipment appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         fields.add(wrapper);
+
         icon.setVerticalAlignment(SwingConstants.TOP);
         icon.setAlignmentY(-1f);
         content.add(icon);
@@ -257,6 +267,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         modified |= mRow.setQuantity(getQty());
         modified |= mRow.setValue(Numbers.extractDouble(mValueField.getText(), 0.0, true));
         modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
+        modified |= mRow.setMaxUses(Numbers.extractInteger(mMaxUsesField.getText(), 0, true));
+        if (mUsesField != null) {
+            modified |= mRow.setUses(Numbers.extractInteger(mUsesField.getText(), 0, true));
+        } else {
+            modified |= mRow.setUses(mRow.getMaxUses());
+        }
         if (showEquipmentState()) {
             modified |= mRow.setEquipped(mEquippedCheckBox.isSelected());
         }
