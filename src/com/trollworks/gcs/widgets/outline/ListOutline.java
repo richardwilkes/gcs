@@ -15,7 +15,10 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.edit.MoveEquipmentCommand;
 import com.trollworks.gcs.menu.item.ApplyTemplateCommand;
 import com.trollworks.gcs.menu.item.CopyToSheetCommand;
 import com.trollworks.gcs.menu.item.CopyToTemplateCommand;
@@ -290,6 +293,10 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     protected void showContextMenu(MouseEvent event) {
         if (getModel().hasSelection()) {
             JPopupMenu menu = new JPopupMenu();
+            if (mRowSetChangedID == Equipment.ID_LIST_CHANGED && (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template)) {
+                menu.add(new MoveEquipmentCommand(getModel().getProperty(EquipmentList.TAG_OTHER_ROOT) != null));
+                menu.addSeparator();
+            }
             menu.add(new OpenEditorCommand(this));
             LibraryExplorerDockable library = LibraryExplorerDockable.get();
             if (library != null) {
