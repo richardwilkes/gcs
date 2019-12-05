@@ -26,11 +26,15 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.undo.MultipleUndo;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.undo.StateEdit;
 
 /** An outline specifically for equipment. */
 public class EquipmentOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
@@ -220,7 +224,10 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
                 OutlineModel otherModel = rows[0].getOwner();
                 OutlineModel selfModel  = getModel();
                 if (selfModel != otherModel && (selfModel == carriedModel || selfModel == uncarriedModel) && (otherModel == carriedModel || otherModel == uncarriedModel)) {
+                    StateEdit edit = new StateEdit(otherModel, I18n.Text("Remove Rows"));
                     otherModel.removeRows(rows);
+                    edit.end();
+                    postUndo(edit);
                 }
             }
         }
@@ -235,5 +242,13 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
         if (forSheetOrTemplate && !process.isEmpty()) {
             EventQueue.invokeLater(new RowPostProcessor(this, process));
         }
+    }
+
+    @Override
+    protected void dropRow(DropTargetDropEvent dtde) {
+        MultipleUndo undo = new MultipleUndo(I18n.Text("Row Drag & Drop"));
+        postUndo(undo);
+        super.dropRow(dtde);
+        undo.end();
     }
 }
