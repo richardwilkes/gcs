@@ -49,7 +49,7 @@ public enum EquipmentColumn {
 
         @Override
         public Cell getCell() {
-            return new ListTextCell(SwingConstants.CENTER, false);
+            return new CheckCell(SwingConstants.CENTER, false);
         }
 
         @Override
