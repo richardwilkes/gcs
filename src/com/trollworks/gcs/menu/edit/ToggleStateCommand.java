@@ -15,12 +15,14 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowUndo;
 import com.trollworks.toolkit.collections.FilteredIterator;
 import com.trollworks.toolkit.ui.menu.Command;
+import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.utility.I18n;
 
@@ -46,12 +48,20 @@ public class ToggleStateCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        if (focus instanceof EquipmentOutline || focus instanceof AdvantageOutline) {
+        if (focus instanceof AdvantageOutline) {
             ListOutline outline = (ListOutline) focus;
             setEnabled(outline.getDataFile() instanceof GURPSCharacter && outline.getModel().hasSelection());
-        } else {
-            setEnabled(false);
+            return;
         }
+        if (focus instanceof EquipmentOutline) {
+            ListOutline  outline = (ListOutline) focus;
+            OutlineModel model   = outline.getModel();
+            if (model.hasSelection() && model.getProperty(EquipmentList.TAG_OTHER_ROOT) == null && outline.getDataFile() instanceof GURPSCharacter) {
+                setEnabled(true);
+                return;
+            }
+        }
+        setEnabled(false);
     }
 
     @SuppressWarnings("unused")
