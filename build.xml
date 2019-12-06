@@ -124,6 +124,9 @@
         <copy todir="${build.dir}/extra/Library">
             <fileset dir="../gcs_library/Library"/>
         </copy>
+		<chmod perm="ugo+w" type="both" maxparallel="10">
+			<fileset dir="${build.dir}/extra/Library"/>
+		</chmod>
 		<exec executable="jlink" failonerror="true">
             <arg value="--module-path"/>
             <arg path="${modules.dir}"/>
