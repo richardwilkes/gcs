@@ -814,6 +814,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 OutlineSyncer.add(mAdvantageOutline);
             } else if (DisplayPreferences.SHOW_USER_DESC_IN_DISPLAY_PREF_KEY.equals(type) || DisplayPreferences.SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY.equals(type) || DisplayPreferences.SHOW_NOTES_IN_DISPLAY_PREF_KEY.equals(type)) {
                 OutlineSyncer.add(mAdvantageOutline);
+                mSyncWeapons = true;
+                markForRebuild();
             } else if (type.startsWith(Skill.PREFIX)) {
                 OutlineSyncer.add(mSkillOutline);
             } else if (type.startsWith(Spell.PREFIX)) {
@@ -821,6 +823,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             } else if (type.startsWith(Equipment.PREFIX)) {
                 OutlineSyncer.add(mEquipmentOutline);
                 OutlineSyncer.add(mOtherEquipmentOutline);
+                mSyncWeapons = true;
+                markForRebuild();
             } else if (type.startsWith(Note.PREFIX)) {
                 OutlineSyncer.add(mNoteOutline);
             }
