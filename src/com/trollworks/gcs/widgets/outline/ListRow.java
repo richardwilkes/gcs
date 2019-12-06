@@ -264,6 +264,9 @@ public abstract class ListRow extends Row {
         if (state.mDataItemVersion > getXMLTagVersion()) {
             throw VersionException.createTooNew();
         }
+        boolean isContainer = reader.getName().endsWith("_container");
+        setCanHaveChildren(isContainer);
+        setOpen(isContainer);
         prepareForLoad(state);
         loadAttributes(reader, state);
         do {
