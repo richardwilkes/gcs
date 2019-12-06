@@ -32,7 +32,7 @@ public class ConvertToContainer extends Command {
     /** The singleton {@link ConvertToContainer}. */
     public static final ConvertToContainer INSTANCE                 = new ConvertToContainer();
 
-    private ConvertToContainer() {
+    public ConvertToContainer() {
         super(I18n.Text("Convert to Container"), CMD_CONVERT_TO_CONTAINER);
     }
 

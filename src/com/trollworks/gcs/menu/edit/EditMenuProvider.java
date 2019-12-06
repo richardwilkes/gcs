@@ -65,6 +65,7 @@ public class EditMenuProvider implements MenuProvider {
         cmds.add(AddNaturalKickCommand.INSTANCE);
         cmds.add(AddNaturalKickWithBootsCommand.INSTANCE);
         cmds.add(SwapDefaultsCommand.INSTANCE);
+        cmds.add(ConvertToContainer.INSTANCE);
         if (!Platform.isMacintosh()) {
             cmds.add(PreferencesCommand.INSTANCE);
         }
@@ -84,6 +85,8 @@ public class EditMenuProvider implements MenuProvider {
         menu.add(new DynamicMenuItem(DuplicateCommand.INSTANCE));
         menu.add(new DynamicMenuItem(DeleteCommand.INSTANCE));
         menu.add(new DynamicMenuItem(SelectAllCommand.INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(ConvertToContainer.INSTANCE));
         menu.addSeparator();
         menu.add(new DynamicMenuItem(IncrementCommand.INSTANCE));
         menu.add(new DynamicMenuItem(DecrementCommand.INSTANCE));
