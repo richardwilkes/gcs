@@ -86,7 +86,8 @@ public class RowUndo extends AbstractUndoableEdit {
         try (XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer))))) {
             XMLNodeType type  = reader.next();
             LoadState   state = new LoadState();
-            state.mForUndo = true;
+            state.mDataFileVersion = mDataFile.getXMLTagVersion();
+            state.mForUndo         = true;
             while (type != XMLNodeType.END_DOCUMENT) {
                 if (type == XMLNodeType.START_TAG) {
                     mRow.load(reader, state);
