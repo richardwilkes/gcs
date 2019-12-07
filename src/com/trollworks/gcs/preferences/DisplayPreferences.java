@@ -60,8 +60,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     /** The block layout preference key. */
     public static final String       BLOCK_LAYOUT_PREF_KEY              = Preferences.getModuleKey(MODULE, BLOCK_LAYOUT_KEY);
     private static final String      DEFAULT_BLOCK_LAYOUT               = "melee\nranged\nadvantages skills\nspells\nequipment\nother_equipment\nnotes";
-    private static final Scales      DEFAULT_SCALE                      = Scales.ACTUAL_SIZE;
-    private static final String      SCALE_KEY                          = "UIScale";
+    private static final Scales      DEFAULT_SCALE                      = Scales.QUARTER_AGAIN_SIZE;
+    private static final String      SCALE_KEY                          = "UIScale.v2";
     private static final String      LENGTH_UNITS_KEY                   = "LengthUnits";
     /** The default length units preference key. */
     public static final String       LENGTH_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
