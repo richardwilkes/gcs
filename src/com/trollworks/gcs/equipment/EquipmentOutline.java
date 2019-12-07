@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
+import com.trollworks.gcs.menu.edit.UsesIncrementable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.gcs.widgets.outline.ListRow;
@@ -26,14 +27,18 @@ import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.undo.MultipleUndo;
 
 import java.awt.EventQueue;
 import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.undo.StateEdit;
+
 /** An outline specifically for equipment. */
-public class EquipmentOutline extends ListOutline implements Incrementable, TechLevelIncrementable {
+public class EquipmentOutline extends ListOutline implements Incrementable, UsesIncrementable, TechLevelIncrementable {
     /**
      * Create a new equipment outline.
      *
@@ -57,15 +62,15 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
 
     @Override
     public boolean canDecrement() {
-        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeafRows(true);
+        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasIncrementableLeafRows(true);
     }
 
     @Override
     public boolean canIncrement() {
-        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeafRows(false);
+        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasIncrementableLeafRows(false);
     }
 
-    private boolean selectionHasLeafRows(boolean requireQtyAboveZero) {
+    private boolean selectionHasIncrementableLeafRows(boolean requireQtyAboveZero) {
         for (Equipment equipment : new FilteredIterator<>(getModel().getSelectionAsList(), Equipment.class)) {
             if (!equipment.canHaveChildren() && (!requireQtyAboveZero || equipment.getQuantity() > 0)) {
                 return true;
@@ -104,6 +109,69 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
             if (!equipment.canHaveChildren()) {
                 RowUndo undo = new RowUndo(equipment);
                 equipment.setQuantity(equipment.getQuantity() + 1);
+                if (undo.finish()) {
+                    undos.add(undo);
+                }
+            }
+        }
+        if (!undos.isEmpty()) {
+            repaintSelection();
+            new MultipleRowUndo(undos);
+        }
+    }
+
+    @Override
+    public boolean canIncrementUses() {
+        if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {
+            for (Equipment equipment : new FilteredIterator<>(getModel().getSelectionAsList(), Equipment.class)) {
+                int max = equipment.getMaxUses();
+                return max > 0 && equipment.getUses() < max;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean canDecrementUses() {
+        if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {
+            for (Equipment equipment : new FilteredIterator<>(getModel().getSelectionAsList(), Equipment.class)) {
+                return equipment.getMaxUses() > 0 && equipment.getUses() > 0;
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unused")
+    @Override
+    public void incrementUses() {
+        List<RowUndo> undos = new ArrayList<>();
+        for (Equipment equipment : new FilteredIterator<>(getModel().getSelectionAsList(), Equipment.class)) {
+            int max  = equipment.getMaxUses();
+            int uses = equipment.getUses();
+            if (max > 0 && uses < max) {
+                RowUndo undo = new RowUndo(equipment);
+                equipment.setUses(uses + 1);
+                if (undo.finish()) {
+                    undos.add(undo);
+                }
+            }
+        }
+        if (!undos.isEmpty()) {
+            repaintSelection();
+            new MultipleRowUndo(undos);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Override
+    public void decrementUses() {
+        List<RowUndo> undos = new ArrayList<>();
+        for (Equipment equipment : new FilteredIterator<>(getModel().getSelectionAsList(), Equipment.class)) {
+            int max  = equipment.getMaxUses();
+            int uses = equipment.getUses();
+            if (max > 0 && uses > 0) {
+                RowUndo undo = new RowUndo(equipment);
+                equipment.setUses(uses - 1);
                 if (undo.finish()) {
                     undos.add(undo);
                 }
@@ -220,7 +288,10 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
                 OutlineModel otherModel = rows[0].getOwner();
                 OutlineModel selfModel  = getModel();
                 if (selfModel != otherModel && (selfModel == carriedModel || selfModel == uncarriedModel) && (otherModel == carriedModel || otherModel == uncarriedModel)) {
+                    StateEdit edit = new StateEdit(otherModel, I18n.Text("Remove Rows"));
                     otherModel.removeRows(rows);
+                    edit.end();
+                    postUndo(edit);
                 }
             }
         }
@@ -235,5 +306,13 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Tech
         if (forSheetOrTemplate && !process.isEmpty()) {
             EventQueue.invokeLater(new RowPostProcessor(this, process));
         }
+    }
+
+    @Override
+    protected void dropRow(DropTargetDropEvent dtde) {
+        MultipleUndo undo = new MultipleUndo(I18n.Text("Row Drag & Drop"));
+        postUndo(undo);
+        super.dropRow(dtde);
+        undo.end();
     }
 }

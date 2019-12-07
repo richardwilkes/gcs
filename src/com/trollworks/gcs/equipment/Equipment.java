@@ -55,6 +55,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final String     TAG_EQUIPMENT_CONTAINER  = "equipment_container";
     private static final String    ATTRIBUTE_EQUIPPED       = "equipped";
     private static final String    TAG_QUANTITY             = "quantity";
+    private static final String    TAG_USES                 = "uses";
+    private static final String    TAG_MAX_USES             = "max_uses";
     private static final String    TAG_DESCRIPTION          = "description";
     private static final String    TAG_TECH_LEVEL           = "tech_level";
     private static final String    TAG_LEGALITY_CLASS       = "legality_class";
@@ -67,6 +69,10 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final String     ID_EQUIPPED              = PREFIX + "Equipped";
     /** The field ID for quantity changes. */
     public static final String     ID_QUANTITY              = PREFIX + "Quantity";
+    /** The field ID for uses changes. */
+    public static final String     ID_USES                  = PREFIX + "Uses";
+    /** The field ID for max uses changes. */
+    public static final String     ID_MAX_USES              = PREFIX + "MaxUses";
     /** The field ID for description changes. */
     public static final String     ID_DESCRIPTION           = PREFIX + "Description";
     /** The field ID for tech level changes. */
@@ -91,6 +97,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
     private boolean                mEquipped;
     private int                    mQuantity;
+    private int                    mUses;
+    private int                    mMaxUses;
     private String                 mDescription;
     private String                 mTechLevel;
     private String                 mLegalityClass;
@@ -132,6 +140,8 @@ public class Equipment extends ListRow implements HasSourceReference {
         boolean forSheet = dataFile instanceof GURPSCharacter;
         mEquipped       = forSheet ? equipment.mEquipped : true;
         mQuantity       = forSheet ? equipment.mQuantity : 1;
+        mUses           = forSheet ? equipment.mUses : equipment.mMaxUses;
+        mMaxUses        = equipment.mMaxUses;
         mDescription    = equipment.mDescription;
         mTechLevel      = equipment.mTechLevel;
         mLegalityClass  = equipment.mLegalityClass;
@@ -151,7 +161,6 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (deep) {
             int count = equipment.getChildCount();
-
             for (int i = 0; i < count; i++) {
                 addChild(new Equipment(dataFile, (Equipment) equipment.getChild(i), true));
             }
@@ -177,7 +186,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (obj instanceof Equipment && super.isEquivalentTo(obj)) {
             Equipment row = (Equipment) obj;
-            if (mQuantity == row.mQuantity && mValue == row.mValue && mEquipped == row.mEquipped && mWeight.equals(row.mWeight) && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
+            if (mQuantity == row.mQuantity && mUses == row.mUses && mMaxUses == row.mMaxUses && mValue == row.mValue && mEquipped == row.mEquipped && mWeight.equals(row.mWeight) && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
                 return mWeapons.equals(row.mWeapons);
             }
         }
@@ -214,6 +223,8 @@ public class Equipment extends ListRow implements HasSourceReference {
         super.prepareForLoad(state);
         mEquipped      = true;
         mQuantity      = 1;
+        mUses          = 0;
+        mMaxUses       = 0;
         mDescription   = I18n.Text("Equipment");
         mTechLevel     = "";
         mLegalityClass = DEFAULT_LEGALITY_CLASS;
@@ -255,6 +266,10 @@ public class Equipment extends ListRow implements HasSourceReference {
             mWeight = WeightValue.extract(reader.readText(), false);
         } else if (TAG_REFERENCE.equals(name)) {
             mReference = reader.readText().replace("\n", " ");
+        } else if (TAG_USES.equals(name)) {
+            mUses = reader.readInteger(0);
+        } else if (TAG_MAX_USES.equals(name)) {
+            mMaxUses = reader.readInteger(0);
         } else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
             addChild(new Equipment(mDataFile, reader, state));
         } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
@@ -274,6 +289,14 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     protected void finishedLoading(LoadState state) {
+        if (mMaxUses < 0) {
+            mMaxUses = 0;
+        }
+        if (mUses > mMaxUses) {
+            mUses = mMaxUses;
+        } else if (mUses < 0) {
+            mUses = 0;
+        }
         updateExtendedValue(false);
         updateExtendedWeight(false);
         super.finishedLoading(state);
@@ -299,6 +322,8 @@ public class Equipment extends ListRow implements HasSourceReference {
             out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
         }
         out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
+        out.simpleTagNotZero(TAG_USES, mUses);
+        out.simpleTagNotZero(TAG_MAX_USES, mMaxUses);
         for (WeaponStats weapon : mWeapons) {
             weapon.save(out);
         }
@@ -331,6 +356,54 @@ public class Equipment extends ListRow implements HasSourceReference {
             notify(ID_QUANTITY, this);
             updateContainingWeights(true);
             updateContainingValues(true);
+            endNotify();
+            return true;
+        }
+        return false;
+    }
+
+    /** @return The number of times this item can be used. */
+    public int getUses() {
+        return mUses;
+    }
+
+    /** @param uses The number of times this item can be used. */
+    public boolean setUses(int uses) {
+        if (uses > mMaxUses) {
+            uses = mMaxUses;
+        } else if (uses < 0) {
+            uses = 0;
+        }
+        if (uses != mUses) {
+            mUses = uses;
+            notifySingle(ID_USES);
+            return true;
+        }
+        return false;
+    }
+
+    /** @return The maximum number of times this item can be used. */
+    public int getMaxUses() {
+        return mMaxUses;
+    }
+
+    /** @param maxUses The maximum number of times this item can be used. */
+    public boolean setMaxUses(int maxUses) {
+        if (maxUses < 0) {
+            maxUses = 0;
+        }
+        if (maxUses != mMaxUses) {
+            boolean notifyUsesToo = false;
+            mMaxUses = maxUses;
+            if (mMaxUses > mUses) {
+                mUses         = mMaxUses;
+                notifyUsesToo = true;
+            }
+            startNotify();
+            notify(ID_MAX_USES, this);
+            if (notifyUsesToo) {
+                notify(ID_USES, this);
+            }
             endNotify();
             return true;
         }

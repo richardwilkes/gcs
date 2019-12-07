@@ -49,7 +49,7 @@ public enum EquipmentColumn {
 
         @Override
         public Cell getCell() {
-            return new ListTextCell(SwingConstants.CENTER, false);
+            return new CheckCell(SwingConstants.CENTER, false);
         }
 
         @Override
@@ -112,17 +112,18 @@ public enum EquipmentColumn {
         }
 
         @Override
-        public String toString(GURPSCharacter character, boolean carried) {
-            if (character != null) {
+        public String toString(DataFile dataFile, boolean carried) {
+            if (dataFile instanceof GURPSCharacter) {
+                GURPSCharacter character = (GURPSCharacter) dataFile;
                 if (carried) {
-                    return MessageFormat.format(I18n.Text("Equipment ({0}; ${1})"), character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
+                    return MessageFormat.format(I18n.Text("Carried Equipment ({0}; ${1})"), character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
                 }
                 return MessageFormat.format(I18n.Text("Other Equipment (${0})"), Numbers.format(character.getWealthNotCarried()));
             }
-            if (carried) {
-                return super.toString(character, carried);
+            if (dataFile instanceof Template) {
+                return carried ? I18n.Text("Carried Equipment") : I18n.Text("Other Equipment");
             }
-            return I18n.Text("Other Equipment");
+            return I18n.Text("Equipment");
         }
 
         @Override
@@ -151,6 +152,33 @@ public enum EquipmentColumn {
                 builder.append(notes);
             }
             return builder.toString();
+        }
+    },
+    /** The uses remaining. */
+    USES {
+        @Override
+        public String toString() {
+            return I18n.Text("Uses");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The number of uses remaining");
+        }
+
+        @Override
+        public Cell getCell() {
+            return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public Object getData(Equipment equipment) {
+            return Integer.valueOf(equipment.getUses());
+        }
+
+        @Override
+        public String getDataAsText(Equipment equipment) {
+            return equipment.getMaxUses() > 0 ? Numbers.format(equipment.getUses()) : "";
         }
     },
     /** The tech level. */
@@ -396,13 +424,13 @@ public enum EquipmentColumn {
     };
 
     /**
-     * @param character The {@link GURPSCharacter} this equipment list is associated with, or
-     *                  <code>null</code>.
-     * @param carried   <code>true</code> for the carried equipment, <code>false</code> for the
-     *                  other equipment.
+     * @param dataFile The {@link DataFile} this equipment list is associated with, or
+     *                 <code>null</code>.
+     * @param carried  <code>true</code> for the carried equipment, <code>false</code> for the other
+     *                 equipment.
      * @return The header title.
      */
-    public String toString(GURPSCharacter character, boolean carried) {
+    public String toString(DataFile dataFile, boolean carried) {
         return toString();
     }
 
@@ -459,12 +487,11 @@ public enum EquipmentColumn {
      *                 equipment.
      */
     public static void addColumns(Outline outline, DataFile dataFile, boolean carried) {
-        GURPSCharacter character       = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
-        boolean        sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
-        OutlineModel   model           = outline.getModel();
+        boolean      sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        OutlineModel model           = outline.getModel();
         for (EquipmentColumn one : values()) {
             if (one.shouldDisplay(dataFile, carried)) {
-                Column column = new Column(one.ordinal(), one.toString(character, carried), one.getToolTip(), one.getCell());
+                Column column = new Column(one.ordinal(), one.toString(dataFile, carried), one.getToolTip(), one.getCell());
                 column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
                 model.addColumn(column);
                 if (one.isHierarchyColumn()) {

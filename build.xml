@@ -109,6 +109,7 @@
 	
 	<target name="bundle" depends="deps,build">
 		<delete dir="${build.dir}"/>
+		<delete if:true="${platform.linux}" dir="fix_linux"/>
 		<delete file="${app.name}-${module.version}.dmg"/>
 		<delete file="${app.name}-${module.version}.exe"/>
         <mkdir dir="${build.dir}/extra/i18n"/>
@@ -201,6 +202,24 @@
 			<arg if:true="${platform.windows}" value="E71F99DA-AD84-4E6E-9bE7-4E65421752E1"/>
         </exec>
         <delete dir="${build.dir}"/>
+		<!-- Fix up linux packaging to make the library writable -->
+		<exec if:true="${platform.linux}" executable="dpkg-deb">
+			<arg value="--raw-extract"/>
+			<arg value="gcs_${module.version}-1_amd64.deb"/>
+			<arg value="fix_linux"/>
+		</exec>
+		<exec if:true="${platform.linux}" executable="chmod">
+			<arg value="-R"/>
+			<arg value="go+w"/>
+			<arg value="fix_linux/opt/gcs/lib/app/Library"/>
+		</exec>
+		<delete file="gcs_${module.version}-1_amd64.deb"/>
+		<exec if:true="${platform.linux}" executable="dpkg-deb">
+			<arg value="--build"/>
+			<arg value="fix_linux"/>
+			<arg value="gcs_${module.version}-1_amd64.deb"/>
+		</exec>
+		<delete if:true="${platform.linux}" dir="fix_linux"/>
 	</target>
 
 	<target name="clone-deps">

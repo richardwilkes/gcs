@@ -19,19 +19,19 @@ import java.awt.Font;
 /** GCS-specific fonts. */
 public class GCSFonts {
     /** The label font. */
-    public static final String KEY_LABEL            = "trollworks.label";
+    public static final String KEY_LABEL            = "trollworks.v2.label";
     /** The field font. */
-    public static final String KEY_FIELD            = "trollworks.field";
+    public static final String KEY_FIELD            = "trollworks.v2.field";
     /** The field notes font. */
-    public static final String KEY_FIELD_NOTES      = "trollworks.field.notes";
+    public static final String KEY_FIELD_NOTES      = "trollworks.v2.field.notes";
     /** The technique field font. */
-    public static final String KEY_TECHNIQUE_FIELD  = "trollworks.field.technique";
+    public static final String KEY_TECHNIQUE_FIELD  = "trollworks.v2.field.technique";
     /** The primary footer font. */
-    public static final String KEY_PRIMARY_FOOTER   = "trollworks.footer.primary";
+    public static final String KEY_PRIMARY_FOOTER   = "trollworks.v2.footer.primary";
     /** The secondary footer font. */
-    public static final String KEY_SECONDARY_FOOTER = "trollworks.footer.secondary";
+    public static final String KEY_SECONDARY_FOOTER = "trollworks.v2.footer.secondary";
     /** The notes font. */
-    public static final String KEY_NOTES            = "trollworks.notes";
+    public static final String KEY_NOTES            = "trollworks.v2.notes";
 
     /** Register our fonts. */
     public static final void register() {
