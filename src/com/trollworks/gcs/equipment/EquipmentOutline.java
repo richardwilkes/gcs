@@ -290,6 +290,12 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
                 if (selfModel != otherModel && (selfModel == carriedModel || selfModel == uncarriedModel) && (otherModel == carriedModel || otherModel == uncarriedModel)) {
                     StateEdit edit = new StateEdit(otherModel, I18n.Text("Remove Rows"));
                     otherModel.removeRows(rows);
+                    for (Row row : rows) {
+                        Row parent = row.getParent();
+                        if (parent != null && !list.contains(parent)) {
+                            row.removeFromParent();
+                        }
+                    }
                     edit.end();
                     postUndo(edit);
                 }
