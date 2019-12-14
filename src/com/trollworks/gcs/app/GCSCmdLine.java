@@ -117,7 +117,12 @@ public class GCSCmdLine {
         }
         Path path = App.getHomePath();
         if (BundleInfo.getDefault().getVersion() == 0) {
-            path = path.resolve("../gcs_library");
+            Path relPath = path.resolve("../gcs_library");
+            if (relPath.toFile().exists()) {
+                path = relPath;
+            } else {
+                path = path.resolve("../../../gcs_library");
+            }
         } else if (Platform.isMacintosh()) {
             Path javaHome = Paths.get(System.getProperty("java.home"));
             if (javaHome.startsWith("/Library/Java/")) {
@@ -128,7 +133,7 @@ public class GCSCmdLine {
         } else {
             path = path.resolve("app");
         }
-        return path.resolve("Library");
+        return path.resolve("Library").normalize();
     }
 
     /**
@@ -224,16 +229,17 @@ public class GCSCmdLine {
                         }
                         if (png) {
                             ArrayList<File> result = new ArrayList<>();
-
                             System.out.print(I18n.Text("  Creating PNG... "));
                             System.out.flush();
                             output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PNG_EXTENSION));
                             timing.reset();
                             success = sheet.saveAsPNG(output, result);
                             System.out.println(timing);
-                            for (File one : result) {
-                                System.out.println(MessageFormat.format(I18n.Text("    Created \"{0}\"."), one));
-                                count++;
+                            if (success) {
+                                for (File one : result) {
+                                    System.out.println(MessageFormat.format(I18n.Text("    Created \"{0}\"."), one));
+                                    count++;
+                                }
                             }
                         }
                         sheet.dispose();
