@@ -252,6 +252,10 @@
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/gcs_library"/>
 		</exec>
+		<exec executable="git" dir="..">
+			<arg value="clone"/>
+			<arg value="https://github.com/richardwilkes/gcs_intellij"/>
+		</exec>
 	</target>
 
 	<target name="pull">
@@ -274,6 +278,9 @@
 			<arg value="pull"/>
 		</exec>
 		<exec executable="git" dir="../gcs_library">
+			<arg value="pull"/>
+		</exec>
+		<exec executable="git" dir="../gcs_intellij">
 			<arg value="pull"/>
 		</exec>
 		<exec executable="git">
