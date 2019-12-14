@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project name="com.trollworks.gcs" default="build" xmlns:if="ant:if" xmlns:unless="ant:unless">
+<project name="com.trollworks.gcs" default="bundle" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<property name="module.name" value="com.trollworks.gcs"/>
 	<property name="module.version" value="4.13.0"/>
     <property name="app.name" value="GURPS Character Sheet"/>
@@ -111,7 +111,8 @@
 		<delete dir="${build.dir}"/>
 		<delete if:true="${platform.linux}" dir="fix_linux"/>
 		<delete file="${app.name}-${module.version}.dmg"/>
-		<delete file="${app.name}-${module.version}.exe"/>
+		<delete file="${app.name}-${module.version}.msi"/>
+		<delete file="${exe.name}_${module.version}-1_amd64.deb"/>
         <mkdir dir="${build.dir}/extra/i18n"/>
         <exec executable="java">
             <arg value="--module-path"/>
@@ -205,19 +206,19 @@
 		<!-- Fix up linux packaging to make the library writable -->
 		<exec if:true="${platform.linux}" executable="dpkg-deb">
 			<arg value="--raw-extract"/>
-			<arg value="gcs_${module.version}-1_amd64.deb"/>
+			<arg value="${exe.name}_${module.version}-1_amd64.deb"/>
 			<arg value="fix_linux"/>
 		</exec>
 		<exec if:true="${platform.linux}" executable="chmod">
 			<arg value="-R"/>
 			<arg value="go+w"/>
-			<arg value="fix_linux/opt/gcs/lib/app/Library"/>
+			<arg value="fix_linux/opt/${exe.name}/lib/app/Library"/>
 		</exec>
-		<delete file="gcs_${module.version}-1_amd64.deb"/>
+		<delete file="${exe.name}_${module.version}-1_amd64.deb"/>
 		<exec if:true="${platform.linux}" executable="dpkg-deb">
 			<arg value="--build"/>
 			<arg value="fix_linux"/>
-			<arg value="gcs_${module.version}-1_amd64.deb"/>
+			<arg value="${exe.name}_${module.version}-1_amd64.deb"/>
 		</exec>
 		<delete if:true="${platform.linux}" dir="fix_linux"/>
 	</target>
