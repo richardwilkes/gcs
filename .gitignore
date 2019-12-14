@@ -1,11 +1,1 @@
-/antbuild/
-/.apt_generated/
-/bin/
-/pkg/
-/*.dmg
-/*.tgz
-/*.zip
-/*.exe
-/*.deb
-/*.rpm
-/*.msi
+/antbuild
