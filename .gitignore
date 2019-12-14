@@ -1,1 +1,5 @@
 /antbuild
+/fix_linux
+/*.dmg
+/*.msi
+/*.deb
