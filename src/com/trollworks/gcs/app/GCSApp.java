@@ -38,7 +38,7 @@ import com.trollworks.toolkit.utility.text.Text;
 public class GCSApp extends App {
     /** The one and only instance of this class. */
     public static final  GCSApp INSTANCE  = new GCSApp();
-    public static final  String WEB_SITE  = "http://gurpscharactersheet.com";
+    public static final  String WEB_SITE  = "https://gurpscharactersheet.com";
     private static final String XATTR_CMD = "xattr -d com.apple.quarantine \"GURPS Character Sheet.app\"";
 
     private GCSApp() {
