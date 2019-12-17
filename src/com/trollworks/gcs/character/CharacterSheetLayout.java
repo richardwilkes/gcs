@@ -19,10 +19,10 @@ import java.awt.LayoutManager2;
 
 /** A layout for the character sheet that dynamically does n-up presentation. */
 class CharacterSheetLayout implements LayoutManager2 {
-    private static final int MARGIN = 1;
-    private CharacterSheet   mSheet;
+    private static final int            MARGIN = 1;
+    private              CharacterSheet mSheet;
 
-    public CharacterSheetLayout(CharacterSheet sheet) {
+    CharacterSheetLayout(CharacterSheet sheet) {
         mSheet = sheet;
     }
 
@@ -46,7 +46,7 @@ class CharacterSheetLayout implements LayoutManager2 {
                 Insets parentInsets = parent.getInsets();
                 int    avail        = parent.getWidth() - (parentInsets.left + parentInsets.right);
                 int    pageWidth    = size.width;
-                avail     -= insets.left + insets.right + pageWidth;
+                avail -= insets.left + insets.right + pageWidth;
                 pageWidth += margin;
                 while (true) {
                     avail -= pageWidth;
@@ -86,7 +86,7 @@ class CharacterSheetLayout implements LayoutManager2 {
                 child.setBounds(x, y, size.width, size.height);
                 x += size.width + margin;
                 if (x + size.width + insets.right > avail.width) {
-                    x  = insets.left;
+                    x = insets.left;
                     y += size.height + margin;
                 }
             }

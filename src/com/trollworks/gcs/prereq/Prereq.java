@@ -15,8 +15,8 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** The abstract base class prerequisite criteria and prerequisite lists. */
 public abstract class Prereq {
@@ -58,7 +58,7 @@ public abstract class Prereq {
      * @param character The character to check.
      * @param exclude   The data to exclude from the check.
      * @param builder   The {@link StringBuilder} to append this prerequisite's
-     *                  satisfied/unsatisfied description to. May be <code>null</code>.
+     *                  satisfied/unsatisfied description to. May be {@code null}.
      * @param prefix    The prefix to add to each line appended to the builder.
      * @return Whether or not this prerequisite is satisfied by the specified character.
      */
@@ -73,12 +73,12 @@ public abstract class Prereq {
     public abstract Prereq clone(PrereqList parent);
 
     /** @param set The nameable keys. */
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         // Do nothing by default
     }
 
     /** @param map The map of nameable keys to names to apply. */
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         // Do nothing by default
     }
 }

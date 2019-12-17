@@ -245,7 +245,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         if (tl != null) {
             tl = tl.trim();
             if (!tl.isEmpty()) {
-                for (int i = tl.length(); --i >= 0;) {
+                for (int i = tl.length(); --i >= 0; ) {
                     if (!Character.isDigit(tl.charAt(i))) {
                         return -1;
                     }
@@ -342,7 +342,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
      * @param undos Undos that are created
      * @param skill Skill to have its default swapped.
      */
-    private static void swapDefaults(ArrayList<RowUndo> undos, Skill skill) {
+    private static void swapDefaults(List<RowUndo> undos, Skill skill) {
         if (skill != null) {
             RowUndo undo1 = new RowUndo(skill);
             RowUndo undo2 = new RowUndo(skill.getDefaultSkill());
@@ -357,8 +357,8 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
     }
 
     /**
-     * Finds the best skill to swap its default with. The resulting skill must default to
-     * {@code skill} and must be swappable with {@code skill}.
+     * Finds the best skill to swap its default with. The resulting skill must default to {@code
+     * skill} and must be swappable with {@code skill}.
      *
      * @param skillToSwapWith Skill to find a partner for.
      * @return best skill to swap its default with.
@@ -390,11 +390,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         for (Row element : rows) {
             ListRow row;
 
-            if (element instanceof Technique) {
-                row = new Technique(mDataFile, (Technique) element, forSheetOrTemplate);
-            } else {
-                row = new Skill(mDataFile, (Skill) element, true, forSheetOrTemplate);
-            }
+            row = element instanceof Technique ? new Technique(mDataFile, (Technique) element, forSheetOrTemplate) : new Skill(mDataFile, (Skill) element, true, forSheetOrTemplate);
 
             model.collectRowsAndSetOwner(list, row, false);
             if (forSheetOrTemplate) {

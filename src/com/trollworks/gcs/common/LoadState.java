@@ -18,13 +18,13 @@ import java.util.HashSet;
 /** Temporary storage for data needed at load time. */
 public class LoadState {
     /** The attribute used for versioning. */
-    public static final String ATTRIBUTE_VERSION = "version";
+    public static final String             ATTRIBUTE_VERSION = "version";
     /** The data file version. */
-    public int                 mDataFileVersion;
+    public              int                mDataFileVersion;
     /** The data item version. Used for individual items within a file. */
-    public int                 mDataItemVersion;
+    public              int                mDataItemVersion;
     /** Whether the load is happening to restore undo state. */
-    public boolean             mForUndo;
+    public              boolean            mForUndo;
     /** Used to move uncarried equipment out of the carried equipment list for old sheets. */
-    public HashSet<Equipment>  mUncarriedEquipment;
+    public              HashSet<Equipment> mUncarriedEquipment;
 }

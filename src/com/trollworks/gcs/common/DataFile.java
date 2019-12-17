@@ -32,27 +32,28 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
 public abstract class DataFile implements Undoable {
     /** The 'id' attribute. */
-    public static final String              ATTRIBUTE_ID           = "id";
-    private File                            mFile;
-    private UUID                            mId                    = UUID.randomUUID();
-    private Notifier                        mNotifier              = new Notifier();
-    private boolean                         mModified;
-    private StdUndoManager                  mUndoManager           = new StdUndoManager();
-    private ArrayList<DataModifiedListener> mDataModifiedListeners = new ArrayList<>();
-    private boolean                         mSortingMarksDirty     = true;
+    public static final String                     ATTRIBUTE_ID           = "id";
+    private             File                       mFile;
+    private             UUID                       mId                    = UUID.randomUUID();
+    private             Notifier                   mNotifier              = new Notifier();
+    private             boolean                    mModified;
+    private             StdUndoManager             mUndoManager           = new StdUndoManager();
+    private             List<DataModifiedListener> mDataModifiedListeners = new ArrayList<>();
+    private             boolean                    mSortingMarksDirty     = true;
 
     /** @param file The file to load. */
     public void load(File file) throws IOException {
         setFile(file);
-        try (FileReader fileReader = new FileReader(file)) {
+        try (FileReader fileReader = new FileReader(file, StandardCharsets.UTF_8)) {
             try (XMLReader reader = new XMLReader(fileReader)) {
                 XMLNodeType type  = reader.next();
                 boolean     found = false;
@@ -60,12 +61,11 @@ public abstract class DataFile implements Undoable {
                     if (type == XMLNodeType.START_TAG) {
                         String name = reader.getName();
                         if (matchesRootTag(name)) {
-                            if (!found) {
-                                found = true;
-                                load(reader, new LoadState());
-                            } else {
+                            if (found) {
                                 throw new IOException();
                             }
+                            found = true;
+                            load(reader, new LoadState());
                         } else {
                             reader.skipTag(name);
                         }
@@ -108,7 +108,7 @@ public abstract class DataFile implements Undoable {
      * Saves the data out to the specified file. Does not affect the result of {@link #getFile()}.
      *
      * @param file The file to write to.
-     * @return <code>true</code> on success.
+     * @return {@code true} on success.
      */
     public boolean save(File file) {
         SafeFileUpdater transaction = new SafeFileUpdater();
@@ -140,7 +140,8 @@ public abstract class DataFile implements Undoable {
      * Saves the root tag.
      *
      * @param out             The XML writer to use.
-     * @param includeUniqueID Whether the {@link UniqueID} should be included in the attribute list.
+     * @param includeUniqueID Whether the {@link UniqueID} should be included in the attribute
+     *                        list.
      * @param onlyIfNotEmpty  Whether to write something even if the file contents are empty.
      */
     public void save(XMLWriter out, boolean includeUniqueID, boolean onlyIfNotEmpty) {
@@ -163,7 +164,7 @@ public abstract class DataFile implements Undoable {
      */
     protected abstract void saveSelf(XMLWriter out);
 
-    /** @return Whether the file is empty. By default, returns <code>false</code>. */
+    /** @return Whether the file is empty. By default, returns {@code false}. */
     @SuppressWarnings("static-method")
     public boolean isEmpty() {
         return false;
@@ -214,7 +215,7 @@ public abstract class DataFile implements Undoable {
         mId = UUID.randomUUID();
     }
 
-    /** @return <code>true</code> if the data has been modified. */
+    /** @return {@code true} if the data has been modified. */
     public final boolean isModified() {
         return mModified;
     }
@@ -223,7 +224,7 @@ public abstract class DataFile implements Undoable {
     public final void setModified(boolean modified) {
         if (mModified != modified) {
             mModified = modified;
-            for (DataModifiedListener listener : mDataModifiedListeners.toArray(new DataModifiedListener[mDataModifiedListeners.size()])) {
+            for (DataModifiedListener listener : mDataModifiedListeners.toArray(new DataModifiedListener[0])) {
                 listener.dataModificationStateChanged(this, mModified);
             }
         }
@@ -238,11 +239,6 @@ public abstract class DataFile implements Undoable {
     /** @param listener The listener to remove. */
     public void removeDataModifiedListener(DataModifiedListener listener) {
         mDataModifiedListeners.remove(listener);
-    }
-
-    /** Resets the underlying {@link Notifier} by removing all targets. */
-    public void resetNotifier() {
-        mNotifier.reset();
     }
 
     /**
@@ -274,8 +270,8 @@ public abstract class DataFile implements Undoable {
     }
 
     /**
-     * Starts the notification process. Should be called before calling
-     * {@link #notify(String,Object)}.
+     * Starts the notification process. Should be called before calling {@link #notify(String,
+     * Object)}.
      */
     public void startNotify() {
         if (mNotifier.getBatchLevel() == 0) {
@@ -303,13 +299,13 @@ public abstract class DataFile implements Undoable {
         notifyOccured();
     }
 
-    /** Called when {@link #notify(String,Object)} is called. */
+    /** Called when {@link #notify(String, Object)} is called. */
     protected void notifyOccured() {
         // Does nothing by default.
     }
 
     /**
-     * Ends the notification process. Must be called after calling {@link #notify(String,Object)}.
+     * Ends the notification process. Must be called after calling {@link #notify(String, Object)}.
      */
     public void endNotify() {
         if (mNotifier.getBatchLevel() == 1) {
@@ -354,7 +350,7 @@ public abstract class DataFile implements Undoable {
     }
 
     /**
-     * @return <code>true</code> if sorting a list should be considered a change that marks the file
+     * @return {@code true} if sorting a list should be considered a change that marks the file
      *         dirty.
      */
     public final boolean sortingMarksDirty() {
@@ -362,8 +358,8 @@ public abstract class DataFile implements Undoable {
     }
 
     /**
-     * @param markDirty <code>true</code> if sorting a list should be considered a change that marks
-     *                  the file dirty.
+     * @param markDirty {@code true} if sorting a list should be considered a change that marks the
+     *                  file dirty.
      */
     public final void setSortingMarksDirty(boolean markDirty) {
         mSortingMarksDirty = markDirty;

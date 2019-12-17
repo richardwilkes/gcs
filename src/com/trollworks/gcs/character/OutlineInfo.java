@@ -47,7 +47,7 @@ public class OutlineInfo {
         outline.updateRowHeights();
 
         mRowIndex = -1;
-        mHeights  = new int[count];
+        mHeights = new int[count];
 
         for (int i = 0; i < count; i++) {
             Row row = outlineModel.getRowAtIndex(i);
@@ -61,7 +61,7 @@ public class OutlineInfo {
         }
 
         mOverheadHeight = insets.top + insets.bottom + outline.getHeaderPanel().getPreferredSize().height;
-        mMinimumHeight  = mOverheadHeight + (count > 0 ? mHeights[0] : 0);
+        mMinimumHeight = mOverheadHeight + (count > 0 ? mHeights[0] : 0);
     }
 
     /**
@@ -69,9 +69,13 @@ public class OutlineInfo {
      * @return The space the outline will consume before being complete or requiring another page.
      */
     public int determineHeightForOutline(int remaining) {
-        int total = mOverheadHeight;
-        int start = mRowIndex++;
-        while (mRowIndex < mHeights.length) {
+        int total  = mOverheadHeight;
+        int start  = mRowIndex++;
+        int length = mHeights.length;
+        while (true) {
+            if (!(mRowIndex < length)) {
+                break;
+            }
             int tmp = total + mHeights[mRowIndex];
             if (tmp > remaining) {
                 if (--mRowIndex == start) {

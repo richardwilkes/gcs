@@ -36,7 +36,7 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
-
+import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -86,33 +86,29 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
         mNameField = createCorrectableField(fields, I18n.Text("Name"), skill.getName(), I18n.Text("The base name of the skill, without any notes or specialty information"));
         if (notContainer) {
-            wrapper              = new JPanel(new ColumnLayout(2));
+            wrapper = new JPanel(new ColumnLayout(2));
             mSpecializationField = createField(fields, wrapper, I18n.Text("Specialization"), skill.getSpecialization(), I18n.Text("The specialization, if any, taken for this skill"), 0);
             createTechLevelFields(wrapper);
             fields.add(wrapper);
             mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(fields);
         }
-        mNotesField      = createField(fields, fields, I18n.Text("Notes"), skill.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this skill"), 0);
+        mNotesField = createField(fields, fields, I18n.Text("Notes"), skill.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this skill"), 0);
         mCategoriesField = createField(fields, fields, I18n.Text("Categories"), skill.getCategoriesAsString(), I18n.Text("The category or categories the skill belongs to (separate multiple categories with a comma)"), 0);
-        if (notContainer) {
-            wrapper = createDifficultyPopups(fields);
-        } else {
-            wrapper = fields;
-        }
+        wrapper = notContainer ? createDifficultyPopups(fields) : fields;
         mReferenceField = createField(wrapper, wrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this skill appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
+        icon.setAlignmentY(-1.0f);
         content.add(icon);
         content.add(fields);
         add(content);
 
         if (notContainer) {
-            mTabPanel      = new JTabbedPane();
-            mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
+            mTabPanel = new JTabbedPane();
+            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
+            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-            mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
-            mDefaults      = new Defaults(mRow.getDefaults());
+            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+            mDefaults = new Defaults(mRow.getDefaults());
             mDefaults.addActionListener(this);
             Component panel = embedEditor(mDefaults);
             mTabPanel.addTab(panel.getName(), panel);
@@ -169,7 +165,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         return field;
     }
 
-    private static final String editorLevelTooltip() {
+    private static String editorLevelTooltip() {
         return I18n.Text("The skill level and relative skill level to roll against.\n");
     }
 
@@ -192,13 +188,13 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         boolean        hasTL;
 
         mSavedTechLevel = mRow.getTechLevel();
-        hasTL           = mSavedTechLevel != null;
+        hasTL = mSavedTechLevel != null;
         if (!hasTL) {
             mSavedTechLevel = "";
         }
 
         if (character != null) {
-            JPanel wrapper   = new JPanel(new ColumnLayout(2));
+            JPanel wrapper = new JPanel(new ColumnLayout(2));
 
             String tlTooltip = I18n.Text("Whether this skill requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level"), hasTL);
@@ -219,7 +215,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                 mSavedTechLevel = character.getDescription().getTechLevel();
             }
         } else {
-            mTechLevel    = new JTextField(mSavedTechLevel);
+            mTechLevel = new JTextField(mSavedTechLevel);
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level Required"), hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this skill requires tech level specialization")));
             mHasTechLevel.setEnabled(enabled);
@@ -246,7 +242,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         GURPSCharacter character              = mRow.getCharacter();
         boolean        forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
         JLabel         label                  = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
-        JPanel         wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? character != null ? 10 : 8 : 6));
+        int            columns                = character != null ? 10 : 8;
+        JPanel         wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? columns : 6));
 
         label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of learning this skill")));
 
@@ -279,7 +276,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private void recalculateLevel() {
         if (mLevelField != null) {
             SkillAttribute attribute = getSkillAttribute();
-            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
+            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<>(), getEncumbrancePenaltyMultiplier());
             mLevelField.setText(Skill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
             mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
         }
@@ -332,8 +329,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             modified |= mRow.setFeatures(mFeatures.getFeatures());
         }
         if (mMeleeWeapons != null) {
-            ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
-
+            List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
             list.addAll(mRangedWeapons.getWeapons());
             modified |= mRow.setWeapons(list);
         }
@@ -383,6 +379,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private void nameChanged() {
-        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
+        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
     }
 }

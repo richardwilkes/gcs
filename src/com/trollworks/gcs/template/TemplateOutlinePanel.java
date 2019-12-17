@@ -25,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
-
 import javax.swing.UIManager;
 
 /** The template outline panel. */
@@ -42,7 +41,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
     public TemplateOutlinePanel(Outline outline, String title) {
         super(null, title, false);
         mOutline = outline;
-        mHeader  = mOutline.getHeaderPanel();
+        mHeader = mOutline.getHeaderPanel();
         TemplateSheet.prepOutline(mOutline);
         add(mHeader);
         add(mOutline);
@@ -87,7 +86,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
         int       width  = bounds.width;
         int       height = mHeader.getPreferredSize().height;
         mHeader.setBounds(bounds.x, bounds.y, width, height);
-        bounds.y      += height;
+        bounds.y += height;
         bounds.height -= height;
         mOutline.setBounds(bounds.x, bounds.y, width, bounds.height);
         ColumnUtils.pack(mOutline, width);

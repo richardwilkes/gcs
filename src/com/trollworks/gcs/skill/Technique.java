@@ -24,18 +24,18 @@ import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /** A GURPS Technique. */
 public class Technique extends Skill {
     /** The XML tag used for items. */
-    public static final String  TAG_TECHNIQUE   = "technique";
-    private static final String ATTRIBUTE_LIMIT = "limit";
-    private SkillDefault        mDefault;
-    private boolean             mLimited;
-    private int                 mLimitModifier;
+    public static final  String       TAG_TECHNIQUE   = "technique";
+    private static final String       ATTRIBUTE_LIMIT = "limit";
+    private              SkillDefault mDefault;
+    private              boolean      mLimited;
+    private              int          mLimitModifier;
 
     /**
      * Calculates the technique level.
@@ -67,13 +67,13 @@ public class Technique extends Skill {
                 }
                 if (level != Integer.MIN_VALUE) {
                     relativeLevel += character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip) + character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip);
-                    level         += relativeLevel;
+                    level += relativeLevel;
                 }
                 if (limited) {
                     int max = baseLevel + limitModifier;
                     if (level > max) {
                         relativeLevel -= level - max;
-                        level          = max;
+                        level = max;
                     }
                 }
             }
@@ -126,9 +126,13 @@ public class Technique extends Skill {
      */
     public Technique(DataFile dataFile, Technique technique, boolean forSheet) {
         super(dataFile, technique, false, forSheet);
-        mPoints        = forSheet ? technique.mPoints : getDifficulty() == SkillDifficulty.A ? 1 : 2;
-        mDefault       = new SkillDefault(technique.mDefault);
-        mLimited       = technique.mLimited;
+        if (forSheet) {
+            mPoints = technique.mPoints;
+        } else {
+            mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
+        }
+        mDefault = new SkillDefault(technique.mDefault);
+        mLimited = technique.mLimited;
         mLimitModifier = technique.mLimitModifier;
         updateLevel(false);
     }
@@ -180,20 +184,20 @@ public class Technique extends Skill {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mDefault       = new SkillDefault(SkillDefaultType.Skill, I18n.Text("Skill"), null, 0);
-        mLimited       = false;
+        mDefault = new SkillDefault(SkillDefaultType.Skill, I18n.Text("Skill"), null, 0);
+        mLimited = false;
         mLimitModifier = 0;
     }
 
     @Override
     protected void loadAttributes(XMLReader reader, LoadState state) {
         String value = reader.getAttribute(ATTRIBUTE_LIMIT);
-        if (value != null && value.length() > 0) {
+        if (value != null && !value.isEmpty()) {
             mLimited = true;
             try {
                 mLimitModifier = Integer.parseInt(value);
             } catch (Exception exception) {
-                mLimited       = false;
+                mLimited = false;
                 mLimitModifier = 0;
             }
         }
@@ -224,13 +228,13 @@ public class Technique extends Skill {
 
     /**
      * @param builder The {@link StringBuilder} to append this technique's satisfied/unsatisfied
-     *                description to. May be <code>null</code>.
+     *                description to. May be {@code null}.
      * @param prefix  The prefix to add to each line appended to the builder.
-     * @return <code>true</code> if this technique has its default satisfied.
+     * @return {@code true} if this technique has its default satisfied.
      */
     public boolean satisfied(StringBuilder builder, String prefix) {
         if (mDefault.getType().isSkillBased()) {
-            Skill   skill     = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<String>());
+            Skill   skill     = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<>());
             boolean satisfied = skill != null && skill.getPoints() > 0;
             if (!satisfied && builder != null) {
                 if (skill == null) {
@@ -361,13 +365,13 @@ public class Technique extends Skill {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         super.fillWithNameableKeys(set);
         mDefault.fillWithNameableKeys(set);
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         super.applyNameableKeys(map);
         mDefault.applyNameableKeys(map);
     }

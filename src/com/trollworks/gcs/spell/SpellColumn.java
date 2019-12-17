@@ -63,7 +63,7 @@ public enum SpellColumn {
             String        notes   = spell.getNotes();
 
             builder.append(spell.toString());
-            if (notes.length() > 0) {
+            if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);
             }
@@ -100,52 +100,7 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             if (!spell.canHaveChildren()) {
-                StringBuilder builder = new StringBuilder();
-
-                builder.append(spell.getSpellClass());
-                builder.append("; ");
-                builder.append(spell.getCollege());
-                return builder.toString();
-            }
-            return "";
-        }
-    },
-    /** The casting &amp; maintenance cost. */
-    MANA_COST {
-        @Override
-        public String toString() {
-            return I18n.Text("Mana Cost");
-        }
-
-        @Override
-        public String getToolTip() {
-            return I18n.Text("The mana cost to cast and maintain the spell");
-        }
-
-        @Override
-        public Cell getCell() {
-            return new SpellManaCostCell();
-        }
-
-        @Override
-        public boolean shouldDisplay(DataFile dataFile) {
-            return true;
-        }
-
-        @Override
-        public Object getData(Spell spell) {
-            return getDataAsText(spell);
-        }
-
-        @Override
-        public String getDataAsText(Spell spell) {
-            if (!spell.canHaveChildren()) {
-                StringBuilder builder = new StringBuilder();
-
-                builder.append(spell.getCastingCost());
-                builder.append("; ");
-                builder.append(spell.getMaintenance());
-                return builder.toString();
+                return spell.getSpellClass() + "; " + spell.getCollege();
             }
             return "";
         }
@@ -180,12 +135,42 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             if (!spell.canHaveChildren()) {
-                StringBuilder builder = new StringBuilder();
+                return spell.getCastingTime() + "; " + spell.getDuration();
+            }
+            return "";
+        }
+    },
+    /** The casting &amp; maintenance cost. */
+    MANA_COST {
+        @Override
+        public String toString() {
+            return I18n.Text("Mana Cost");
+        }
 
-                builder.append(spell.getCastingTime());
-                builder.append("; ");
-                builder.append(spell.getDuration());
-                return builder.toString();
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The mana cost to cast and maintain the spell");
+        }
+
+        @Override
+        public Cell getCell() {
+            return new SpellManaCostCell();
+        }
+
+        @Override
+        public boolean shouldDisplay(DataFile dataFile) {
+            return true;
+        }
+
+        @Override
+        public Object getData(Spell spell) {
+            return getDataAsText(spell);
+        }
+
+        @Override
+        public String getDataAsText(Spell spell) {
+            if (!spell.canHaveChildren()) {
+                return spell.getCastingCost() + "; " + spell.getMaintenance();
             }
             return "";
         }

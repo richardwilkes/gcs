@@ -14,7 +14,6 @@ package com.trollworks.gcs.library;
 import com.trollworks.toolkit.ui.RetinaIcon;
 
 import java.awt.Component;
-
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 
@@ -27,10 +26,10 @@ public class LibraryExplorerRowRenderer extends DefaultListCellRenderer {
         if (value instanceof LibraryExplorerRow) {
             LibraryExplorerRow row = (LibraryExplorerRow) value;
             title = row.getName();
-            icon  = row.getIcon();
+            icon = row.getIcon();
         } else {
             title = value.toString();
-            icon  = null;
+            icon = null;
         }
         Component comp = super.getListCellRendererComponent(list, title, index, isSelected, cellHasFocus);
         if (icon != null) {

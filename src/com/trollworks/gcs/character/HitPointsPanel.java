@@ -20,7 +20,6 @@ import com.trollworks.toolkit.utility.I18n;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-
 import javax.swing.SwingConstants;
 
 /** The character hit points panel. */

@@ -20,7 +20,6 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-
 import javax.swing.JComboBox;
 
 /** An attribute bonus editor. */
@@ -42,7 +41,7 @@ public class AttributeBonusEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         AttributeBonus bonus = (AttributeBonus) getFeature();
 
-        FlexRow        row   = new FlexRow();
+        FlexRow row = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         LeveledAmount      amount    = bonus.getAmount();
         BonusAttributeType attribute = bonus.getAttribute();
@@ -53,8 +52,9 @@ public class AttributeBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        String[] names = new String[BonusAttributeType.values().length];
-        for (int i = 0; i < BonusAttributeType.values().length; i++) {
+        int      length = BonusAttributeType.values().length;
+        String[] names  = new String[length];
+        for (int i = 0; i < length; i++) {
             names[i] = I18n.Text("to ") + BonusAttributeType.values()[i].toString();
         }
         row.add(addComboBox(CHANGE_ATTRIBUTE, names, names[attribute.ordinal()]));

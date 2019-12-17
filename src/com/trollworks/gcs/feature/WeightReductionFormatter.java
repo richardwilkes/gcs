@@ -15,7 +15,6 @@ import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.text.ParseException;
-
 import javax.swing.JFormattedTextField;
 
 /** Provides weight reduction field conversion. */

@@ -19,7 +19,6 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-
 import javax.swing.JComboBox;
 
 /** An cost reduction editor. */
@@ -42,8 +41,9 @@ public class CostReductionEditor extends FeatureEditor {
         CostReduction feature = (CostReduction) getFeature();
         FlexRow       row     = new FlexRow();
         row.add(addChangeBaseTypeCombo());
-        String[] names = new String[CostReduction.TYPES.length];
-        for (int i = 0; i < CostReduction.TYPES.length; i++) {
+        int      length = CostReduction.TYPES.length;
+        String[] names  = new String[length];
+        for (int i = 0; i < length; i++) {
             names[i] = CostReduction.TYPES[i].toString();
         }
         row.add(addComboBox(CHANGE_ATTRIBUTE, names, feature.getAttribute().name()));

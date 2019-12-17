@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.undo.StateEdit;
@@ -55,7 +55,7 @@ import javax.swing.undo.StateEdit;
 public class ListOutline extends Outline implements Runnable, ActionListener {
     /** The owning data file. */
     protected DataFile mDataFile;
-    private String     mRowSetChangedID;
+    private   String   mRowSetChangedID;
 
     /**
      * Create a new outline.
@@ -66,7 +66,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
      */
     public ListOutline(DataFile dataFile, OutlineModel model, String rowSetChangedID) {
         super(model);
-        mDataFile        = dataFile;
+        mDataFile = dataFile;
         mRowSetChangedID = rowSetChangedID;
         addActionListener(this);
     }
@@ -132,7 +132,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
      * @return The index of the row that was added.
      */
     public int addRow(ListRow row, String name, boolean sibling) {
-        return addRow(new ListRow[] { row }, name, sibling);
+        return addRow(new ListRow[]{row}, name, sibling);
     }
 
     /**
@@ -153,15 +153,15 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
         int          i;
         Row          parentRow;
         if (count > 0) {
-            insertAt  = model.getIndexOfRow(sel.get(count == 1 ? 0 : count - 1));
+            insertAt = model.getIndexOfRow(sel.get(count == 1 ? 0 : count - 1));
             parentRow = model.getRowAtIndex(insertAt++);
             if (!parentRow.canHaveChildren() || !parentRow.isOpen()) {
                 parentRow = parentRow.getParent();
             } else if (sibling) {
-                HashSet<Row> set = new HashSet<>();
+                Set<Row> set = new HashSet<>();
                 model.collectRowAndDescendantsAtIndex(set, insertAt - 1);
-                insertAt  += set.size() - 1;
-                parentRow  = parentRow.getParent();
+                insertAt += set.size() - 1;
+                parentRow = parentRow.getParent();
             }
             if (parentRow != null && parentRow.canHaveChildren()) {
                 for (ListRow row : rows) {
@@ -210,7 +210,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
         }
     }
 
-    private ArrayList<ListRow> mRowsToEdit;
+    private List<ListRow> mRowsToEdit;
 
     @Override
     public void run() {

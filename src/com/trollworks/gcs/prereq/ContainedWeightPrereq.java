@@ -29,9 +29,9 @@ import java.text.MessageFormat;
 /** An equipment contained weight prerequisite. */
 public class ContainedWeightPrereq extends HasPrereq {
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT          = "contained_weight_prereq";
-    private static final String ATTRIBUTE_COMPARE = "compare";
-    private WeightCriteria      mWeightCompare;
+    public static final  String         TAG_ROOT          = "contained_weight_prereq";
+    private static final String         ATTRIBUTE_COMPARE = "compare";
+    private              WeightCriteria mWeightCompare;
 
     /**
      * Creates a new prerequisite.

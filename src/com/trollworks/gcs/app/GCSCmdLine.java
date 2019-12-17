@@ -46,8 +46,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
-
 import javax.swing.ToolTipManager;
 
 /**
@@ -118,18 +118,10 @@ public class GCSCmdLine {
         Path path = App.getHomePath();
         if (BundleInfo.getDefault().getVersion() == 0) {
             Path relPath = path.resolve("../gcs_library");
-            if (relPath.toFile().exists()) {
-                path = relPath;
-            } else {
-                path = path.resolve("../../../gcs_library");
-            }
+            path = relPath.toFile().exists() ? relPath : path.resolve("../../../gcs_library");
         } else if (Platform.isMacintosh()) {
             Path javaHome = Paths.get(System.getProperty("java.home"));
-            if (javaHome.startsWith("/Library/Java/")) {
-                path = path.resolve("../gcs_library");
-            } else {
-                path = javaHome.resolve("../../../app");
-            }
+            path = javaHome.startsWith("/Library/Java/") ? path.resolve("../gcs_library") : javaHome.resolve("../../../app");
         } else {
             path = path.resolve("app");
         }
@@ -205,7 +197,7 @@ public class GCSCmdLine {
                             System.out.print(I18n.Text("  Creating from text template... "));
                             System.out.flush();
                             textTemplate = TextTemplate.resolveTextTemplate(textTemplate);
-                            output       = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(textTemplate.getName())));
+                            output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(textTemplate.getName())));
                             timing.reset();
                             success = new TextTemplate(sheet).export(output, textTemplate);
                             System.out.println(timing);
@@ -228,7 +220,7 @@ public class GCSCmdLine {
                             }
                         }
                         if (png) {
-                            ArrayList<File> result = new ArrayList<>();
+                            List<File> result = new ArrayList<>();
                             System.out.print(I18n.Text("  Creating PNG... "));
                             System.out.flush();
                             output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PNG_EXTENSION));
@@ -260,11 +252,11 @@ public class GCSCmdLine {
             int    index;
 
             if ("LETTER".equalsIgnoreCase(argument)) {
-                return new double[] { 8.5, 11 };
+                return new double[]{8.5, 11};
             }
 
             if ("A4".equalsIgnoreCase(argument)) {
-                return new double[] { LengthUnits.IN.convert(LengthUnits.CM, 21), LengthUnits.IN.convert(LengthUnits.CM, 29.7) };
+                return new double[]{LengthUnits.IN.convert(LengthUnits.CM, 21), LengthUnits.IN.convert(LengthUnits.CM, 29.7)};
             }
 
             index = argument.indexOf('x');
@@ -276,7 +268,7 @@ public class GCSCmdLine {
                 double height = Numbers.extractDouble(argument.substring(index + 1), -1.0, true);
 
                 if (width > 0.0 && height > 0.0) {
-                    return new double[] { width, height };
+                    return new double[]{width, height};
                 }
             }
             System.out.println(I18n.Text("WARNING: Invalid paper size specification."));

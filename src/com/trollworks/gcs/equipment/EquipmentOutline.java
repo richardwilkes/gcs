@@ -34,7 +34,6 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.undo.StateEdit;
 
 /** An outline specifically for equipment. */
@@ -207,7 +206,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
         if (tl != null) {
             tl = tl.trim();
             if (!tl.isEmpty()) {
-                for (int i = tl.length(); --i >= 0;) {
+                for (int i = tl.length(); --i >= 0; ) {
                     if (!Character.isDigit(tl.charAt(i))) {
                         return -1;
                     }
@@ -273,15 +272,15 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
         ArrayList<ListRow> process            = new ArrayList<>();
 
         if (forSheetOrTemplate) {
-            OutlineModel carriedModel   = null;
-            OutlineModel uncarriedModel = null;
+            OutlineModel carriedModel;
+            OutlineModel uncarriedModel;
             if (mDataFile instanceof GURPSCharacter) {
                 GURPSCharacter character = (GURPSCharacter) mDataFile;
-                carriedModel   = character.getEquipmentRoot();
+                carriedModel = character.getEquipmentRoot();
                 uncarriedModel = character.getOtherEquipmentRoot();
-            } else if (mDataFile instanceof Template) {
+            } else {
                 Template tmpl = (Template) mDataFile;
-                carriedModel   = tmpl.getEquipmentModel();
+                carriedModel = tmpl.getEquipmentModel();
                 uncarriedModel = tmpl.getOtherEquipmentModel();
             }
             if (carriedModel != null && uncarriedModel != null) {

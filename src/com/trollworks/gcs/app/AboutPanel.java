@@ -24,7 +24,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -49,7 +48,7 @@ public class AboutPanel extends JPanel {
         gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         gc.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         Font baseFont = UIManager.getFont("TextField.font");
-        gc.setFont(baseFont.deriveFont(10f));
+        gc.setFont(baseFont.deriveFont(10.0f));
         gc.setColor(Color.WHITE);
         int        right      = getWidth() - HMARGIN;
         int        y          = draw(gc, I18n.Text("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games.\nThe iText Library is licensed under LGPL 2.1 by Bruno Lowagie and Paulo Soares.\nThe Trove Library is licensed under LGPL 2.1 by Eric D. Friedman and Rob Eden.\nThe PDFBox and FontBox libraries are licensed under the Apache License v2 by the Apache Software Foundation."), getHeight() - HMARGIN, right, true, true);
@@ -58,7 +57,7 @@ public class AboutPanel extends JPanel {
         int        y2         = draw(gc, bundleInfo.getCopyrightBanner(), y, right, false, true);
         draw(gc, String.format(I18n.Text("%s %s\n%s Architecture\nJava %s"), System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false);  //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         y2 = draw(gc, version != 0 ? Version.toBuildTimestamp(version) : I18n.Text("Unknown build date"), y2, right, false, true);
-        gc.setFont(baseFont.deriveFont(Font.BOLD, 12f));
+        gc.setFont(baseFont.deriveFont(Font.BOLD, 12.0f));
         draw(gc, version != 0 ? String.format(I18n.Text("Version %s"), Version.toString(version, false)) : I18n.Text("Development Version"), y2, right, false, true);
         gc.setRenderingHints(saved);
     }

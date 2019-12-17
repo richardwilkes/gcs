@@ -25,7 +25,6 @@ public class WeaponDisplayRow extends Row {
      * @param weapon The weapon to display.
      */
     public WeaponDisplayRow(WeaponStats weapon) {
-        super();
         mWeapon = weapon;
     }
 

@@ -33,12 +33,11 @@ public class CharacterFieldUndo extends AbstractUndoableEdit {
      * @param after     The new value.
      */
     public CharacterFieldUndo(GURPSCharacter character, String name, String id, Object before, Object after) {
-        super();
         mCharacter = character;
-        mName      = name;
-        mID        = id;
-        mBefore    = before;
-        mAfter     = after;
+        mName = name;
+        mID = id;
+        mBefore = before;
+        mAfter = after;
     }
 
     @Override

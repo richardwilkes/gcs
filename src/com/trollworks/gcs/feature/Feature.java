@@ -13,8 +13,8 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.toolkit.io.xml.XMLWriter;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Describes a feature of an advantage, skill, spell, or piece of equipment. */
 public interface Feature {
@@ -35,8 +35,8 @@ public interface Feature {
     void save(XMLWriter out);
 
     /** @param set The nameable keys. */
-    void fillWithNameableKeys(HashSet<String> set);
+    void fillWithNameableKeys(Set<String> set);
 
     /** @param map The map of nameable keys to names to apply. */
-    void applyNameableKeys(HashMap<String, String> map);
+    void applyNameableKeys(Map<String, String> map);
 }

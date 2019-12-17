@@ -24,7 +24,7 @@ public class PdfRef implements Comparable<PdfRef> {
     private static final String MODULE  = "PageReferences";
     private static final int    VERSION = 2;
 
-    /** @return <code>true</code> if the {@link PdfRef} preferences are equal to their defaults. */
+    /** @return {@code true} if the {@link PdfRef} preferences are equal to their defaults. */
     public static synchronized boolean isSetToDefaults() {
         Preferences prefs = Preferences.getInstance();
         prefs.resetIfVersionMisMatch(MODULE, VERSION);
@@ -40,8 +40,8 @@ public class PdfRef implements Comparable<PdfRef> {
     /**
      * Get a list of all known {@link PdfRef}s.
      *
-     * @param requireExistence <code>true</code> if only references that refer to an existing file
-     *                         should be returned.
+     * @param requireExistence {@code true} if only references that refer to an existing file should
+     *                         be returned.
      * @return The list of {@link PdfRef}s.
      */
     public static synchronized List<PdfRef> getKnown(boolean requireExistence) {
@@ -62,9 +62,9 @@ public class PdfRef implements Comparable<PdfRef> {
      * Attempts to locate an existing {@link PdfRef}.
      *
      * @param id               The id to lookup.
-     * @param requireExistence <code>true</code> if only a reference that refers to an existing file
+     * @param requireExistence {@code true} if only a reference that refers to an existing file
      *                         should be returned.
-     * @return The {@link PdfRef}, or <code>null</code>.
+     * @return The {@link PdfRef}, or {@code null}.
      */
     public static synchronized PdfRef lookup(String id, boolean requireExistence) {
         Preferences prefs = Preferences.getInstance();
@@ -93,14 +93,14 @@ public class PdfRef implements Comparable<PdfRef> {
     /**
      * Creates a new {@link PdfRef}.
      *
-     * @param id     The id to use. Pass in <code>null</code> or an empty string to create a
-     *               {@link PdfRef} that won't update preferences.
-     * @param file   The file that the <code>id</code> refers to.
+     * @param id     The id to use. Pass in {@code null} or an empty string to create a {@link
+     *               PdfRef} that won't update preferences.
+     * @param file   The file that the {@code id} refers to.
      * @param offset The amount to add to a symbolic page number to find the actual index.
      */
     public PdfRef(String id, File file, int offset) {
-        mId                = id == null ? "" : id;
-        mFile              = file;
+        mId = id == null ? "" : id;
+        mFile = file;
         mPageToIndexOffset = offset;
     }
 
@@ -135,10 +135,11 @@ public class PdfRef implements Comparable<PdfRef> {
     /** Removes the {@link PdfRef} from preferences. */
     public void remove() {
         if (!mId.isEmpty()) {
+            String id = mId;
             synchronized (PdfRef.class) {
                 Preferences prefs = Preferences.getInstance();
                 prefs.resetIfVersionMisMatch(MODULE, VERSION);
-                prefs.removePreference(MODULE, mId);
+                prefs.removePreference(MODULE, id);
             }
             mId = "";
         }
@@ -147,10 +148,12 @@ public class PdfRef implements Comparable<PdfRef> {
     /** Saves the {@link PdfRef} to preferences if it has a valid id. */
     public void save() {
         if (!mId.isEmpty()) {
+            String id    = mId;
+            String value = mPageToIndexOffset + ":" + mFile.getAbsolutePath();
             synchronized (PdfRef.class) {
                 Preferences prefs = Preferences.getInstance();
                 prefs.resetIfVersionMisMatch(MODULE, VERSION);
-                prefs.setValue(MODULE, mId, mPageToIndexOffset + ":" + mFile.getAbsolutePath());
+                prefs.setValue(MODULE, id, value);
             }
         }
     }

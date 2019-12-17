@@ -27,7 +27,6 @@ import com.trollworks.toolkit.utility.text.IntegerFormatter;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
@@ -37,11 +36,10 @@ import javax.swing.text.DefaultFormatterFactory;
 /** A skill default editor panel. */
 public class SkillDefaultEditor extends EditorPanel {
     private static SkillDefaultType LAST_ITEM_TYPE = SkillDefaultType.DX;
-    private SkillDefault            mDefault;
-    private JComboBox<?>            mTypeCombo;
-    private EditorField             mSkillNameField;
-    private EditorField             mSpecializationField;
-    private EditorField             mModifierField;
+    private        SkillDefault     mDefault;
+    private        EditorField      mSkillNameField;
+    private        EditorField      mSpecializationField;
+    private        EditorField      mModifierField;
 
     /** @param type The last item type created or switched to. */
     public static void setLastItemType(SkillDefaultType type) {
@@ -59,7 +57,6 @@ public class SkillDefaultEditor extends EditorPanel {
      * @param skillDefault The skill default to edit.
      */
     public SkillDefaultEditor(SkillDefault skillDefault) {
-        super();
         mDefault = skillDefault;
         rebuild();
     }
@@ -71,20 +68,20 @@ public class SkillDefaultEditor extends EditorPanel {
         if (mDefault != null) {
             FlexGrid grid = new FlexGrid();
 
-            OrLabel  or   = new OrLabel(this);
+            OrLabel or = new OrLabel(this);
             add(or);
             grid.add(or, 0, 0);
 
-            FlexRow          row     = new FlexRow();
-            SkillDefaultType current = mDefault.getType();
-            mTypeCombo = new JComboBox<Object>(SkillDefaultType.values());
-            mTypeCombo.setOpaque(false);
-            mTypeCombo.setSelectedItem(current);
-            mTypeCombo.setActionCommand(SkillDefault.TAG_TYPE);
-            mTypeCombo.addActionListener(this);
-            UIUtilities.setToPreferredSizeOnly(mTypeCombo);
-            add(mTypeCombo);
-            row.add(mTypeCombo);
+            FlexRow          row       = new FlexRow();
+            SkillDefaultType current   = mDefault.getType();
+            JComboBox<?>     typeCombo = new JComboBox<Object>(SkillDefaultType.values());
+            typeCombo.setOpaque(false);
+            typeCombo.setSelectedItem(current);
+            typeCombo.setActionCommand(SkillDefault.TAG_TYPE);
+            typeCombo.addActionListener(this);
+            UIUtilities.setToPreferredSizeOnly(typeCombo);
+            add(typeCombo);
+            row.add(typeCombo);
             grid.add(row, 0, 1);
 
             mModifierField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-99, 99, true)), this, SwingConstants.LEFT, Integer.valueOf(mDefault.getModifier()), Integer.valueOf(99), null);
@@ -188,7 +185,7 @@ public class SkillDefaultEditor extends EditorPanel {
         if (SkillDefault.TAG_TYPE.equals(command)) {
             SkillDefaultType current = mDefault.getType();
             SkillDefaultType value   = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
-            if (!current.equals(value)) {
+            if (current != value) {
                 Commitable.sendCommitToFocusOwner();
                 mDefault.setType(value);
                 rebuild();

@@ -41,7 +41,7 @@ public class ShowLibraryFolderCommand extends Command {
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Action.BROWSE_FILE_DIR)) {
                 File[] contents = dir.listFiles();
-                if (contents.length > 0) {
+                if (contents != null && contents.length > 0) {
                     Arrays.sort(contents);
                     dir = contents[0];
                 }

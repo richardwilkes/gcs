@@ -37,7 +37,6 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -47,54 +46,54 @@ import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
 public class SheetPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    static final String             MODULE                           = "Sheet";
-    private static final String     OPTIONAL_DICE_RULES_KEY          = "UseOptionDiceRules";
+    static final         String                  MODULE                           = "Sheet";
+    private static final String                  OPTIONAL_DICE_RULES_KEY          = "UseOptionDiceRules";
     /** The optional dice rules preference key. */
-    public static final String      OPTIONAL_DICE_RULES_PREF_KEY     = Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES_KEY);
-    private static final boolean    DEFAULT_OPTIONAL_DICE_RULES      = false;
-    private static final String     OPTIONAL_IQ_RULES_KEY            = "UseOptionIQRules";
+    public static final  String                  OPTIONAL_DICE_RULES_PREF_KEY     = Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES_KEY);
+    private static final boolean                 DEFAULT_OPTIONAL_DICE_RULES      = false;
+    private static final String                  OPTIONAL_IQ_RULES_KEY            = "UseOptionIQRules";
     /** The optional IQ rules preference key. */
-    public static final String      OPTIONAL_IQ_RULES_PREF_KEY       = Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES_KEY);
-    private static final boolean    DEFAULT_OPTIONAL_IQ_RULES        = false;
-    private static final String     OPTIONAL_MODIFIER_RULES_KEY      = "UseOptionModifierRules";
+    public static final  String                  OPTIONAL_IQ_RULES_PREF_KEY       = Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES_KEY);
+    private static final boolean                 DEFAULT_OPTIONAL_IQ_RULES        = false;
+    private static final String                  OPTIONAL_MODIFIER_RULES_KEY      = "UseOptionModifierRules";
     /** The optional modifier rules preference key. */
-    public static final String      OPTIONAL_MODIFIER_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES_KEY);
-    private static final boolean    DEFAULT_OPTIONAL_MODIFIER_RULES  = false;
-    private static final String     OPTIONAL_STRENGTH_RULES_KEY      = "UseOptionalStrengthRules";
+    public static final  String                  OPTIONAL_MODIFIER_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES_KEY);
+    private static final boolean                 DEFAULT_OPTIONAL_MODIFIER_RULES  = false;
+    private static final String                  OPTIONAL_STRENGTH_RULES_KEY      = "UseOptionalStrengthRules";
     /** The optional Strength rules preference key. */
-    public static final String      OPTIONAL_STRENGTH_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_STRENGTH_RULES_KEY);
-    private static final boolean    DEFAULT_OPTIONAL_STRENGTH_RULES  = false;
-    private static final String     OPTIONAL_REDUCED_SWING_KEY       = "UseOptionalReducedSwing";
+    public static final  String                  OPTIONAL_STRENGTH_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_STRENGTH_RULES_KEY);
+    private static final boolean                 DEFAULT_OPTIONAL_STRENGTH_RULES  = false;
+    private static final String                  OPTIONAL_REDUCED_SWING_KEY       = "UseOptionalReducedSwing";
     /** The optional Reduced Swing rules preference key. */
-    public static final String      OPTIONAL_REDUCED_SWING_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_REDUCED_SWING_KEY);
-    private static final boolean    DEFAULT_OPTIONAL_REDUCED_SWING   = false;
-    private static final String     AUTO_NAME_KEY                    = "AutoNameNewCharacters";
+    public static final  String                  OPTIONAL_REDUCED_SWING_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_REDUCED_SWING_KEY);
+    private static final boolean                 DEFAULT_OPTIONAL_REDUCED_SWING   = false;
+    private static final String                  AUTO_NAME_KEY                    = "AutoNameNewCharacters";
     /** The auto-naming preference key. */
-    public static final String      AUTO_NAME_PREF_KEY               = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
-    private static final boolean    DEFAULT_AUTO_NAME                = true;
+    public static final  String                  AUTO_NAME_PREF_KEY               = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
+    private static final boolean                 DEFAULT_AUTO_NAME                = true;
     /** The optional Thrust Damage rules preference key. */
-    private static final String     OPTIONAL_THRUST_DAMAGE_KEY       = "UseOptionalThrustDamage";
-    public static final String      OPTIONAL_THRUST_DAMAGE_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
-    private static final boolean    DEFAULT_OPTIONAL_THRUST_DAMAGE   = false;
-    private static final String     GURPS_METRIC_RULES_KEY           = "UseGurpsMetricRules";
+    private static final String                  OPTIONAL_THRUST_DAMAGE_KEY       = "UseOptionalThrustDamage";
+    public static final  String                  OPTIONAL_THRUST_DAMAGE_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
+    private static final boolean                 DEFAULT_OPTIONAL_THRUST_DAMAGE   = false;
+    private static final String                  GURPS_METRIC_RULES_KEY           = "UseGurpsMetricRules";
     /** The GURPS Metric preference key. */
-    public static final String      GURPS_METRIC_RULES_PREF_KEY      = Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
-    private static final boolean    DEFAULT_GURPS_METRIC_RULES       = true;
-    private static final String     INITIAL_POINTS_KEY               = "InitialPoints";
-    private static final int        DEFAULT_INITIAL_POINTS           = 100;
-    private JTextField              mPlayerName;
-    private JTextField              mCampaign;
-    private JTextField              mTechLevel;
-    private JTextField              mInitialPoints;
-    private PortraitPreferencePanel mPortrait;
-    private JCheckBox               mUseOptionalDiceRules;
-    private JCheckBox               mUseOptionalIQRules;
-    private JCheckBox               mUseOptionalModifierRules;
-    private JCheckBox               mUseOptionalStrengthRules;
-    private JCheckBox               mUseOptionalReducedSwing;
-    private JCheckBox               mUseGurpsMetricRules;
-    private JCheckBox               mAutoName;
-    private JCheckBox               mUseOptionalThrustDamage;
+    public static final  String                  GURPS_METRIC_RULES_PREF_KEY      = Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
+    private static final boolean                 DEFAULT_GURPS_METRIC_RULES       = true;
+    private static final String                  INITIAL_POINTS_KEY               = "InitialPoints";
+    private static final int                     DEFAULT_INITIAL_POINTS           = 100;
+    private              JTextField              mPlayerName;
+    private              JTextField              mCampaign;
+    private              JTextField              mTechLevel;
+    private              JTextField              mInitialPoints;
+    private              PortraitPreferencePanel mPortrait;
+    private              JCheckBox               mUseOptionalDiceRules;
+    private              JCheckBox               mUseOptionalIQRules;
+    private              JCheckBox               mUseOptionalModifierRules;
+    private              JCheckBox               mUseOptionalStrengthRules;
+    private              JCheckBox               mUseOptionalReducedSwing;
+    private              JCheckBox               mUseGurpsMetricRules;
+    private              JCheckBox               mAutoName;
+    private              JCheckBox               mUseOptionalThrustDamage;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
@@ -111,7 +110,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     }
 
     /**
-     * @return Whether the optional IQ rules (Will &amp; Perception are not based on IQ) are in use.
+     * @return Whether the optional IQ rules (Will &amp; Perception are not based on IQ) are in
+     *         use.
      */
     public static boolean areOptionalIQRulesUsed() {
         return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_IQ_RULES_KEY, DEFAULT_OPTIONAL_IQ_RULES);
@@ -164,7 +164,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         super(I18n.Text("Sheet"), owner);
         FlexColumn column = new FlexColumn();
 
-        FlexGrid   grid   = new FlexGrid();
+        FlexGrid grid = new FlexGrid();
         column.add(grid);
 
         int rowIndex = 0;
@@ -287,7 +287,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
     @Override
     public boolean isSetToDefaults() {
-        return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign().equals("") && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && areOptionalStrengthRulesUsed() == DEFAULT_OPTIONAL_STRENGTH_RULES && areOptionalReducedSwingUsed() == DEFAULT_OPTIONAL_REDUCED_SWING && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME;
+        return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign() != null && Profile.getDefaultCampaign().isEmpty() && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && areOptionalStrengthRulesUsed() == DEFAULT_OPTIONAL_STRENGTH_RULES && areOptionalReducedSwingUsed() == DEFAULT_OPTIONAL_REDUCED_SWING && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME;
     }
 
     private void setPortrait(String path) {

@@ -33,7 +33,7 @@ public class NewAdvantageCommand extends Command {
     public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, I18n.Text("New Advantage"), CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
     /** The "New Advantage Container" command. */
     public static final NewAdvantageCommand CONTAINER_INSTANCE          = new NewAdvantageCommand(true, I18n.Text("New Advantage Container"), CMD_NEW_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
-    private boolean                         mContainer;
+    private             boolean             mContainer;
 
     private NewAdvantageCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
@@ -62,7 +62,7 @@ public class NewAdvantageCommand extends Command {
         AdvantagesDockable adq = getTarget(AdvantagesDockable.class);
         if (adq != null) {
             dataFile = adq.getDataFile();
-            outline  = adq.getOutline();
+            outline = adq.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -70,12 +70,12 @@ public class NewAdvantageCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline  = sheet.getSheet().getAdvantageOutline();
+                outline = sheet.getSheet().getAdvantageOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline  = template.getTemplate().getAdvantageOutline();
+                    outline = template.getTemplate().getAdvantageOutline();
                 } else {
                     return;
                 }

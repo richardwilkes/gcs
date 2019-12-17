@@ -21,21 +21,20 @@ import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 /** A generic prerequisite editor panel. */
 public abstract class PrereqEditor extends EditorPanel {
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";
-    private static final String     CHANGE_HAS       = "ChangeHas";
-    private static final Class<?>[] BASE_TYPES       = new Class<?>[] { AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class };
+    private static final String            CHANGE_BASE_TYPE = "ChangeBaseType";
+    private static final String            CHANGE_HAS       = "ChangeHas";
+    private static final Class<?>[]        BASE_TYPES       = new Class<?>[]{AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class};
     /** The prerequisite this panel represents. */
-    protected Prereq                mPrereq;
+    protected            Prereq            mPrereq;
     /** The row this prerequisite will be attached to. */
-    protected ListRow               mRow;
-    private int                     mDepth;
-    private JComboBox<Object>       mBaseTypeCombo;
+    protected            ListRow           mRow;
+    private              int               mDepth;
+    private              JComboBox<Object> mBaseTypeCombo;
 
     /**
      * Creates a new prerequisite editor panel.
@@ -76,9 +75,9 @@ public abstract class PrereqEditor extends EditorPanel {
      */
     protected PrereqEditor(ListRow row, Prereq prereq, int depth) {
         super(20 * depth);
-        mRow    = row;
+        mRow = row;
         mPrereq = prereq;
-        mDepth  = depth;
+        mDepth = depth;
         rebuild();
     }
 
@@ -122,15 +121,16 @@ public abstract class PrereqEditor extends EditorPanel {
     protected JComboBox<Object> addHasCombo(boolean has) {
         String hasText         = I18n.Text("has");
         String doesNotHaveText = I18n.Text("doesn't have");
-        return addComboBox(CHANGE_HAS, new Object[] { hasText, doesNotHaveText }, has ? hasText : doesNotHaveText);
+        return addComboBox(CHANGE_HAS, new Object[]{hasText, doesNotHaveText}, has ? hasText : doesNotHaveText);
     }
 
     /** @return The {@link JComboBox} that allows the base prereq type to be changed. */
     protected JComboBox<Object> addChangeBaseTypeCombo() {
-        Object[] choices = new Object[] { I18n.Text("attribute"), I18n.Text("advantage"), I18n.Text("skill"), I18n.Text("spell(s)"), I18n.Text("contained weight") };
+        Object[] choices = {I18n.Text("attribute"), I18n.Text("advantage"), I18n.Text("skill"), I18n.Text("spell(s)"), I18n.Text("contained weight")};
         Class<?> type    = mPrereq.getClass();
         Object   current = choices[0];
-        for (int i = 0; i < BASE_TYPES.length; i++) {
+        int      length  = BASE_TYPES.length;
+        for (int i = 0; i < length; i++) {
             if (type.equals(BASE_TYPES[i])) {
                 current = choices[i];
                 break;

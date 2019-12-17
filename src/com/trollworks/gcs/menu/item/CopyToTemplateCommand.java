@@ -28,8 +28,8 @@ public class CopyToTemplateCommand extends Command {
     public static final String                CMD_COPY_TO_TEMPLATE = "CopyToTemplate";
     /** The singleton {@link CopyToTemplateCommand} for the menu bar. */
     public static final CopyToTemplateCommand INSTANCE             = new CopyToTemplateCommand();
-    private ListOutline                       mOutline;
-    private TemplateDockable                  mTemplate;
+    private             ListOutline           mOutline;
+    private             TemplateDockable      mTemplate;
 
     private CopyToTemplateCommand() {
         super(I18n.Text("Copy to Template"), CMD_COPY_TO_TEMPLATE, KeyEvent.VK_T, SHIFTED_COMMAND_MODIFIER);
@@ -43,7 +43,7 @@ public class CopyToTemplateCommand extends Command {
      */
     public CopyToTemplateCommand(ListOutline outline, TemplateDockable template) {
         super(template.getTitle(), CMD_COPY_TO_TEMPLATE);
-        mOutline  = outline;
+        mOutline = outline;
         mTemplate = template;
     }
 

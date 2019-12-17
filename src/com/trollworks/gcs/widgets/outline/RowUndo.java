@@ -21,10 +21,10 @@ import com.trollworks.toolkit.utility.I18n;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -43,24 +43,24 @@ public class RowUndo extends AbstractUndoableEdit {
      * @param row The row being undone.
      */
     public RowUndo(ListRow row) {
-        super();
-        mRow      = row;
+        mRow = row;
         mDataFile = mRow.getDataFile();
-        mName     = MessageFormat.format(I18n.Text("{0} Changes"), mRow.getLocalizedName());
-        mBefore   = serialize(mRow);
+        mName = MessageFormat.format(I18n.Text("{0} Changes"), mRow.getLocalizedName());
+        mBefore = serialize(mRow);
     }
 
     /**
      * Call to finish capturing the undo state.
      *
-     * @return <code>true</code> if there is a difference between the before and after state.
+     * @return {@code true} if there is a difference between the before and after state.
      */
     public boolean finish() {
         mAfter = serialize(mRow);
-        if (mBefore.length != mAfter.length) {
+        int length = mBefore.length;
+        if (length != mAfter.length) {
             return true;
         }
-        for (int i = 0; i < mBefore.length; i++) {
+        for (int i = 0; i < length; i++) {
             if (mBefore[i] != mAfter[i]) {
                 return true;
             }
@@ -83,11 +83,11 @@ public class RowUndo extends AbstractUndoableEdit {
     }
 
     private void deserialize(byte[] buffer) {
-        try (XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer))))) {
+        try (XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer)), StandardCharsets.UTF_8))) {
             XMLNodeType type  = reader.next();
             LoadState   state = new LoadState();
             state.mDataFileVersion = mDataFile.getXMLTagVersion();
-            state.mForUndo         = true;
+            state.mForUndo = true;
             while (type != XMLNodeType.END_DOCUMENT) {
                 if (type == XMLNodeType.START_TAG) {
                     mRow.load(reader, state);

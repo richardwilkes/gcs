@@ -35,5 +35,5 @@ public enum AttributeBonusLimitation {
         public String toString() {
             return I18n.Text("for lifting only");
         }
-    };
+    }
 }

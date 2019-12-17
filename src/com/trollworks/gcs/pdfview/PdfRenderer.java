@@ -44,7 +44,7 @@ public class PdfRenderer extends PDFTextStripper {
     public static BufferedImage create(PDDocument pdf, int pageIndex, float scale, String textToHighlight) {
         try {
             PDFRenderer renderer = new PDFRenderer(pdf);
-            scale = scale * Toolkit.getDefaultToolkit().getScreenResolution() / 72f;
+            scale = scale * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0f;
             BufferedImage img = renderer.renderImage(pageIndex, scale);
             if (textToHighlight != null) {
                 Graphics2D gc = img.createGraphics();
@@ -67,7 +67,6 @@ public class PdfRenderer extends PDFTextStripper {
     }
 
     private PdfRenderer(Graphics2D gc, String textToHighlight) throws IOException {
-        super();
         mGC = gc;
         mGC.setColor(Color.YELLOW);
         mGC.setComposite(BlendComposite.getInstance(BlendMode.MULTIPLY, 0.3f));
@@ -99,7 +98,7 @@ public class PdfRenderer extends PDFTextStripper {
                     if (font instanceof PDType3Font) {
                         at.concatenate(font.getFontMatrix().createAffineTransform());
                     } else {
-                        at.scale(1 / 1000f, 1 / 1000f);
+                        at.scale(1 / 1000.0f, 1 / 1000.0f);
                     }
                     Shape           shape     = flip.createTransformedShape(at.createTransformedShape(rect));
                     AffineTransform transform = mGC.getTransform();

@@ -21,11 +21,11 @@ import java.io.IOException;
 /** Manages a leveled amount. */
 public class LeveledAmount {
     /** The "per level" attribute. */
-    public static final String ATTRIBUTE_PER_LEVEL = "per_level";
-    private boolean            mPerLevel;
-    private int                mLevel;
-    private double             mAmount;
-    private boolean            mInteger;
+    public static final String  ATTRIBUTE_PER_LEVEL = "per_level";
+    private             boolean mPerLevel;
+    private             int     mLevel;
+    private             double  mAmount;
+    private             boolean mInteger;
 
     /**
      * Creates a new leveled amount.
@@ -34,9 +34,9 @@ public class LeveledAmount {
      */
     public LeveledAmount(double amount) {
         mPerLevel = false;
-        mLevel    = 0;
-        mAmount   = amount;
-        mInteger  = false;
+        mLevel = 0;
+        mAmount = amount;
+        mInteger = false;
     }
 
     /**
@@ -56,9 +56,9 @@ public class LeveledAmount {
      */
     public LeveledAmount(LeveledAmount other) {
         mPerLevel = other.mPerLevel;
-        mLevel    = other.mLevel;
-        mAmount   = other.mAmount;
-        mInteger  = other.mInteger;
+        mLevel = other.mLevel;
+        mAmount = other.mAmount;
+        mInteger = other.mInteger;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class LeveledAmount {
     /** @param reader The reader to load data from. */
     public void load(XMLReader reader) throws IOException {
         mPerLevel = reader.isAttributeSet(ATTRIBUTE_PER_LEVEL);
-        mAmount   = reader.readDouble(0.0);
+        mAmount = reader.readDouble(0.0);
     }
 
     /**
@@ -164,10 +164,10 @@ public class LeveledAmount {
             String full;
             String perLevel;
             if (mInteger) {
-                full     = Numbers.formatWithForcedSign(getIntegerAdjustedAmount());
+                full = Numbers.formatWithForcedSign(getIntegerAdjustedAmount());
                 perLevel = Numbers.formatWithForcedSign(getIntegerAmount());
             } else {
-                full     = Numbers.formatWithForcedSign(getAdjustedAmount());
+                full = Numbers.formatWithForcedSign(getAdjustedAmount());
                 perLevel = Numbers.formatWithForcedSign(getAmount());
             }
             return String.format(I18n.Text("%s (%s per %s)"), full, perLevel, what);
@@ -180,11 +180,7 @@ public class LeveledAmount {
 
     /** @param amount The amount. */
     public void setAmount(double amount) {
-        if (mInteger) {
-            mAmount = Math.round(amount);
-        } else {
-            mAmount = amount;
-        }
+        mAmount = mInteger ? Math.round(amount) : amount;
     }
 
     /** @param amount The amount. */

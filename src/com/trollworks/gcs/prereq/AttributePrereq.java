@@ -27,15 +27,15 @@ import java.text.MessageFormat;
 /** A Attribute prerequisite. */
 public class AttributePrereq extends HasPrereq {
     /** The possible {@link BonusAttributeType}s that can be affected. */
-    public static final BonusAttributeType[] TYPES                   = { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL, BonusAttributeType.PERCEPTION };
+    public static final  BonusAttributeType[] TYPES                   = {BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL, BonusAttributeType.PERCEPTION};
     /** The XML tag for this class. */
-    public static final String               TAG_ROOT                = "attribute_prereq";
-    private static final String              ATTRIBUTE_WHICH         = "which";
-    private static final String              ATTRIBUTE_COMBINED_WITH = "combined_with";
-    private static final String              ATTRIBUTE_COMPARE       = "compare";
-    private BonusAttributeType               mWhich;
-    private BonusAttributeType               mCombinedWith;
-    private IntegerCriteria                  mValueCompare;
+    public static final  String               TAG_ROOT                = "attribute_prereq";
+    private static final String               ATTRIBUTE_WHICH         = "which";
+    private static final String               ATTRIBUTE_COMBINED_WITH = "combined_with";
+    private static final String               ATTRIBUTE_COMPARE       = "compare";
+    private              BonusAttributeType   mWhich;
+    private              BonusAttributeType   mCombinedWith;
+    private              IntegerCriteria      mValueCompare;
 
     /**
      * Creates a new prerequisite.
@@ -72,7 +72,7 @@ public class AttributePrereq extends HasPrereq {
      */
     protected AttributePrereq(PrereqList parent, AttributePrereq prereq) {
         super(parent, prereq);
-        mWhich        = prereq.mWhich;
+        mWhich = prereq.mWhich;
         mCombinedWith = prereq.mCombinedWith;
         mValueCompare = new IntegerCriteria(prereq.mValueCompare);
     }

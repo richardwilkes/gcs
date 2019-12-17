@@ -18,38 +18,38 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Describes a skill default. */
 public class SkillDefault {
     /** The XML tag. */
-    public static final String  TAG_ROOT           = "default";
+    public static final  String           TAG_ROOT           = "default";
     /** The tag used for the type. */
-    public static final String  TAG_TYPE           = "type";
+    public static final  String           TAG_TYPE           = "type";
     /** The tag used for the skill name. */
-    public static final String  TAG_NAME           = "name";
+    public static final  String           TAG_NAME           = "name";
     /** The tag used for the skill specialization. */
-    public static final String  TAG_SPECIALIZATION = "specialization";
+    public static final  String           TAG_SPECIALIZATION = "specialization";
     /** The tag used for the modifier. */
-    public static final String  TAG_MODIFIER       = "modifier";
-    private static final String EMPTY              = "";
-    private SkillDefaultType    mType;
-    private String              mName;
-    private String              mSpecialization;
-    private int                 mModifier;
-    private int                 mLevel;
-    private int                 mAdjLevel;
-    private int                 mPoints;
+    public static final  String           TAG_MODIFIER       = "modifier";
+    private static final String           EMPTY              = "";
+    private              SkillDefaultType mType;
+    private              String           mName;
+    private              String           mSpecialization;
+    private              int              mModifier;
+    private              int              mLevel;
+    private              int              mAdjLevel;
+    private              int              mPoints;
 
     /**
      * Creates a new skill default.
      *
      * @param type           The type of default.
-     * @param name           The name of the skill to default from. Pass in <code>null</code> if
-     *                       type is not skill-based.
-     * @param specialization The specialization of the skill. Pass in <code>null</code> if this does
-     *                       not default from a skill or the skill doesn't require a specialization.
+     * @param name           The name of the skill to default from. Pass in {@code null} if type is
+     *                       not skill-based.
+     * @param specialization The specialization of the skill. Pass in {@code null} if this does not
+     *                       default from a skill or the skill doesn't require a specialization.
      * @param modifier       The modifier to use.
      */
     public SkillDefault(SkillDefaultType type, String name, String specialization, int modifier) {
@@ -65,10 +65,10 @@ public class SkillDefault {
      * @param other The skill default to clone.
      */
     public SkillDefault(SkillDefault other) {
-        mType           = other.mType;
-        mName           = other.mName;
+        mType = other.mType;
+        mName = other.mName;
         mSpecialization = other.mSpecialization;
-        mModifier       = other.mModifier;
+        mModifier = other.mModifier;
     }
 
     /**
@@ -79,10 +79,10 @@ public class SkillDefault {
     public SkillDefault(XMLReader reader) throws IOException {
         String marker = reader.getMarker();
 
-        mType           = SkillDefaultType.Skill;
-        mName           = EMPTY;
+        mType = SkillDefaultType.Skill;
+        mName = EMPTY;
         mSpecialization = EMPTY;
-        mModifier       = 0;
+        mModifier = 0;
 
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
@@ -172,7 +172,7 @@ public class SkillDefault {
         if (mType.isSkillBased()) {
             StringBuilder builder = new StringBuilder();
             builder.append(mName);
-            if (mSpecialization.length() > 0) {
+            if (!mSpecialization.isEmpty()) {
                 builder.append(" (");
                 builder.append(mSpecialization);
                 builder.append(')');
@@ -190,7 +190,7 @@ public class SkillDefault {
     /**
      * @return The name of the skill to default from. Only valid when {@link #getType()} returns a
      *         {@link SkillDefaultType} whose {@link SkillDefaultType#isSkillBased()} method returns
-     *         <code>true</code>.
+     *         {@code true}.
      */
     public String getName() {
         return mName;
@@ -204,7 +204,7 @@ public class SkillDefault {
     /**
      * @return The specialization of the skill to default from. Only valid when {@link #getType()}
      *         returns a {@link SkillDefaultType} whose {@link SkillDefaultType#isSkillBased()}
-     *         method returns <code>true</code>.
+     *         method returns {@code true}.
      */
     public String getSpecialization() {
         return mSpecialization;
@@ -243,13 +243,13 @@ public class SkillDefault {
     }
 
     /** @param set The nameable keys. */
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         ListRow.extractNameables(set, getName());
         ListRow.extractNameables(set, getSpecialization());
     }
 
     /** @param map The map of nameable keys to names to apply. */
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         setName(ListRow.nameNameables(map, getName()));
         setSpecialization(ListRow.nameNameables(map, getSpecialization()));
     }

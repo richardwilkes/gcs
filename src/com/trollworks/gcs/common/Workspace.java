@@ -30,18 +30,17 @@ import java.awt.Container;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.util.ArrayList;
+import java.util.List;
 
 /** The workspace, where all files can be viewed and edited. */
 public class Workspace extends AppWindow implements SignificantFrame, JumpToSearchTarget {
-    private Toolbar mToolbar;
-    private Dock    mDock;
+    private Dock mDock;
 
     /** @return The {@link Workspace}. */
     public static Workspace get() {
         Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-        if (window == null || !(window instanceof Workspace)) {
-            ArrayList<Workspace> windows = BaseWindow.getWindows(Workspace.class);
+        if (!(window instanceof Workspace)) {
+            List<Workspace> windows = BaseWindow.getWindows(Workspace.class);
             if (!windows.isEmpty()) {
                 window = windows.get(0);
             }
@@ -49,14 +48,15 @@ public class Workspace extends AppWindow implements SignificantFrame, JumpToSear
         if (window == null) {
             window = new Workspace();
         }
+        //noinspection ConstantConditions
         return (Workspace) window;
     }
 
     private Workspace() {
         super("GCS", GCSImages.getAppIcons());
         Container content = getContentPane();
-        mToolbar = new Toolbar();
-        content.add(mToolbar, BorderLayout.NORTH);
+        Toolbar   toolbar = new Toolbar();
+        content.add(toolbar, BorderLayout.NORTH);
         mDock = new Dock();
         content.add(mDock, BorderLayout.CENTER);
         LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();

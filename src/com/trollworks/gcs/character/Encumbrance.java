@@ -20,26 +20,22 @@ public enum Encumbrance {
         public String toString() {
             return I18n.Text("None");
         }
-    },
-    LIGHT(2) {
+    }, LIGHT(2) {
         @Override
         public String toString() {
             return I18n.Text("Light");
         }
-    },
-    MEDIUM(3) {
+    }, MEDIUM(3) {
         @Override
         public String toString() {
             return I18n.Text("Medium");
         }
-    },
-    HEAVY(6) {
+    }, HEAVY(6) {
         @Override
         public String toString() {
             return I18n.Text("Heavy");
         }
-    },
-    EXTRA_HEAVY(10) {
+    }, EXTRA_HEAVY(10) {
         @Override
         public String toString() {
             return I18n.Text("X-Heavy");
@@ -48,7 +44,7 @@ public enum Encumbrance {
 
     private int mMultiplier;
 
-    private Encumbrance(int multiplier) {
+    Encumbrance(int multiplier) {
         mMultiplier = multiplier;
     }
 

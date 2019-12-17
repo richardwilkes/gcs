@@ -17,7 +17,6 @@ import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Color;
-
 import javax.swing.SwingConstants;
 
 /** The character description panel. */

@@ -35,18 +35,18 @@ public class HitLocation {
     public static final HitLocation              FIN    = new HitLocation(Armor.ID_FIN_DR, I18n.Text("Fin"), I18n.Text("Reduce the wounding multiplier of large piercing, huge piercing, and impaling damage to x1. Any major wound (loss of over ⅓ HP from one blow) cripples the limb. Damage beyond that threshold is lost. A crippled fin affects balance: -3 DX."), -4, 0);
     public static final HitLocation              BRAIN  = new HitLocation(Armor.ID_BRAIN_DR, I18n.Text("Brain"), I18n.Text("An attack that misses by 1 hits the torso instead. Wounding modifier is x4. Knockdown rolls are at -10. Critical hits use the Critical Head Blow Table (B556). Exception: These special effects do not apply to toxic damage."), -7, 1);
 
-    private String                               mKey;
-    private String                               mTitle;
-    private String                               mDescription;
-    private int                                  mHitPenalty;
-    private int                                  mDRBonus;
+    private String mKey;
+    private String mTitle;
+    private String mDescription;
+    private int    mHitPenalty;
+    private int    mDRBonus;
 
     private HitLocation(String key, String title, String description, int hitPenalty, int drBonus) {
-        mKey         = key;
-        mTitle       = title;
+        mKey = key;
+        mTitle = title;
         mDescription = description;
-        mHitPenalty  = hitPenalty;
-        mDRBonus     = drBonus;
+        mHitPenalty = hitPenalty;
+        mDRBonus = drBonus;
         MAP.put(key, this);
     }
 

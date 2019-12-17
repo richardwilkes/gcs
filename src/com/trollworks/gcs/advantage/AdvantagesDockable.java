@@ -18,7 +18,6 @@ import com.trollworks.toolkit.utility.I18n;
 
 /** A list of advantages and disadvantages from a library. */
 public class AdvantagesDockable extends LibraryDockable {
-    /** Creates a new {@link AdvantagesDockable}. */
     public AdvantagesDockable(AdvantageList list) {
         super(list);
     }

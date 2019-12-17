@@ -50,7 +50,7 @@ import java.awt.KeyboardFocusManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
@@ -58,25 +58,30 @@ import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
 public class TemplateDockable extends CommonDockable implements NotifierTarget, SearchTarget, RetargetableFocus {
-    private static TemplateDockable LAST_ACTIVATED;
-    private TemplateSheet           mTemplate;
-    private Toolbar                 mToolbar;
-    private JComboBox<Scales>       mScaleCombo;
-    private Search                  mSearch;
+    private static TemplateDockable  LAST_ACTIVATED;
+    private        TemplateSheet     mTemplate;
+    private        JComboBox<Scales> mScaleCombo;
+    private        Search            mSearch;
 
     /** Creates a new {@link TemplateDockable}. */
     public TemplateDockable(Template template) {
         super(template);
         Template dataFile = getDataFile();
-        mTemplate   = new TemplateSheet(dataFile);
-        mToolbar    = new Toolbar();
+        mTemplate = new TemplateSheet(dataFile);
+        Toolbar toolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(DisplayPreferences.getInitialUIScale());
-        mScaleCombo.addActionListener((event) -> mTemplate.setScale(((Scales) mScaleCombo.getSelectedItem()).getScale()));
-        mToolbar.add(mScaleCombo);
+        mScaleCombo.addActionListener((event) -> {
+            Scales scale = (Scales) mScaleCombo.getSelectedItem();
+            if (scale == null) {
+                scale = Scales.ACTUAL_SIZE;
+            }
+            mTemplate.setScale(scale.getScale());
+        });
+        toolbar.add(mScaleCombo);
         mSearch = new Search(this);
-        mToolbar.add(mSearch, Toolbar.LAYOUT_FILL);
-        add(mToolbar, BorderLayout.NORTH);
+        toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
+        add(toolbar, BorderLayout.NORTH);
         JScrollPane scroller = new JScrollPane(mTemplate);
         scroller.setBorder(null);
         scroller.getViewport().setBackground(Color.LIGHT_GRAY);
@@ -147,7 +152,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 
     @Override
     public FileType[] getAllowedFileTypes() {
-        return new FileType[] { FileType.getByExtension(Template.EXTENSION) };
+        return new FileType[]{FileType.getByExtension(Template.EXTENSION)};
     }
 
     @Override
@@ -185,7 +190,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 
     @Override
     public List<Object> search(String filter) {
-        ArrayList<Object> list = new ArrayList<>();
+        List<Object> list = new ArrayList<>();
         filter = filter.toLowerCase();
         searchOne(mTemplate.getAdvantageOutline(), filter, list);
         searchOne(mTemplate.getSkillOutline(), filter, list);
@@ -194,7 +199,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
         return list;
     }
 
-    private static void searchOne(ListOutline outline, String text, ArrayList<Object> list) {
+    private static void searchOne(ListOutline outline, String text, List<Object> list) {
         for (ListRow row : new RowIterator<ListRow>(outline.getModel())) {
             if (row.contains(text, true)) {
                 list.add(row);
@@ -204,9 +209,9 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 
     @Override
     public void searchSelect(List<Object> selection) {
-        HashMap<OutlineModel, ArrayList<Row>> map     = new HashMap<>();
-        Outline                               primary = null;
-        ArrayList<Row>                        list;
+        Map<OutlineModel, List<Row>> map     = new HashMap<>();
+        Outline                      primary = null;
+        List<Row>                    list;
 
         mTemplate.getAdvantageOutline().getModel().deselect();
         mTemplate.getSkillOutline().getModel().deselect();
@@ -220,7 +225,7 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
 
             while (parent != null) {
                 parent.setOpen(true);
-                model  = parent.getOwner();
+                model = parent.getOwner();
                 parent = parent.getParent();
             }
             list = map.get(model);
@@ -245,12 +250,12 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
             }
         }
 
-        for (OutlineModel model : map.keySet()) {
-            model.select(map.get(model), false);
+        for (Map.Entry<OutlineModel, List<Row>> entry : map.entrySet()) {
+            entry.getKey().select(entry.getValue(), false);
         }
 
         if (primary != null) {
-            final Outline outline = primary;
+            Outline outline = primary;
             EventQueue.invokeLater(() -> outline.scrollSelectionIntoView());
             primary.requestFocus();
         }
@@ -262,11 +267,11 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
      * @param rows The rows to add.
      */
     public void addRows(List<Row> rows) {
-        HashMap<ListOutline, StateEdit>      map         = new HashMap<>();
-        HashMap<Outline, ArrayList<Row>>     selMap      = new HashMap<>();
-        HashMap<Outline, ArrayList<ListRow>> nameMap     = new HashMap<>();
-        ListOutline                          outline     = null;
-        String                               addRowsText = I18n.Text("Add Rows");
+        Map<ListOutline, StateEdit> map         = new HashMap<>();
+        Map<Outline, List<Row>>     selMap      = new HashMap<>();
+        Map<Outline, List<ListRow>> nameMap     = new HashMap<>();
+        ListOutline                 outline     = null;
+        String                      addRowsText = I18n.Text("Add Rows");
         for (Row row : rows) {
             if (row instanceof Advantage) {
                 outline = mTemplate.getAdvantageOutline();
@@ -306,9 +311,9 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
             } else {
                 row = null;
             }
+            //noinspection ConstantConditions
             if (row instanceof ListRow) {
-                ArrayList<ListRow> process = nameMap.get(outline);
-
+                List<ListRow> process = nameMap.get(outline);
                 if (process == null) {
                     process = new ArrayList<>();
                     nameMap.put(outline, process);
@@ -316,11 +321,12 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
                 addRowsToBeProcessed(process, (ListRow) row);
             }
         }
-        for (ListOutline anOutline : map.keySet()) {
-            OutlineModel model = anOutline.getModel();
+        for (Map.Entry<ListOutline, StateEdit> entry : map.entrySet()) {
+            ListOutline  anOutline = entry.getKey();
+            OutlineModel model     = anOutline.getModel();
 
             model.select(selMap.get(anOutline), false);
-            StateEdit edit = map.get(anOutline);
+            StateEdit edit = entry.getValue();
             edit.end();
             anOutline.postUndo(edit);
             anOutline.scrollSelectionIntoView();
@@ -331,19 +337,16 @@ public class TemplateDockable extends CommonDockable implements NotifierTarget, 
         }
     }
 
-    private void addRowsToBeProcessed(ArrayList<ListRow> list, ListRow row) {
+    private void addRowsToBeProcessed(List<ListRow> list, ListRow row) {
         int count = row.getChildCount();
-
         list.add(row);
-
         for (int i = 0; i < count; i++) {
             addRowsToBeProcessed(list, (ListRow) row.getChild(i));
         }
     }
 
-    private void addCompleteRow(Outline outline, Row row, HashMap<Outline, ArrayList<Row>> selMap) {
-        ArrayList<Row> selection = selMap.get(outline);
-
+    private void addCompleteRow(Outline outline, Row row, Map<Outline, List<Row>> selMap) {
+        List<Row> selection = selMap.get(outline);
         addCompleteRow(outline.getModel(), row);
         outline.contentSizeMayHaveChanged();
         if (selection == null) {

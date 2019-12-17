@@ -31,7 +31,6 @@ import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.SwingConstants;
 
 /** Definitions for advantage columns. */
@@ -54,21 +53,21 @@ public enum AdvantageColumn {
             if (DisplayPreferences.showUserDescAsTooltip()) {
                 String desc = advantage.getUserDesc();
                 builder.append(desc);
-                if (desc.length() > 0) {
+                if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
             if (DisplayPreferences.showModifiersAsTooltip()) {
                 String desc = advantage.getModifierNotes();
                 builder.append(desc);
-                if (desc.length() > 0) {
+                if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
             if (DisplayPreferences.showNotesAsTooltip()) {
                 String desc = advantage.getNotes();
                 builder.append(desc);
-                if (desc.length() > 0) {
+                if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
@@ -99,21 +98,21 @@ public enum AdvantageColumn {
             builder.append(advantage);
             if (DisplayPreferences.showUserDescInDisplay()) {
                 String desc = advantage.getUserDesc();
-                if (desc.length() > 0) {
+                if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
             if (DisplayPreferences.showModifiersInDisplay()) {
                 String desc = advantage.getModifierNotes();
-                if (desc.length() > 0) {
+                if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
             if (DisplayPreferences.showNotesInDisplay()) {
                 String desc = advantage.getNotes();
-                if (desc.length() > 0) {
+                if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);

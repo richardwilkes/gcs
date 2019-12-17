@@ -33,7 +33,6 @@ import java.awt.DefaultFocusTraversalPolicy;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.io.File;
-
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -64,12 +63,12 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
         mFile = pdfRef.getFile();
         int pageCount = 9999;
         try {
-            mPdf      = PDDocument.load(pdfRef.getFile(), MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
+            mPdf = PDDocument.load(pdfRef.getFile(), MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
             pageCount = mPdf.getNumberOfPages();
         } catch (Exception exception) {
             Log.error(exception);
         }
-        mToolbar      = new Toolbar();
+        mToolbar = new Toolbar();
 
         mZoomInButton = new IconButton(StdImage.get("ZoomIn"), formatWithKey(I18n.Text("Scale Document Up"), KeyStroke.getKeyStroke('=')), () -> mPanel.zoomIn());
         mToolbar.add(mZoomInButton);
@@ -84,10 +83,10 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
             if (mPanel != null) {
                 int pageIndex    = ((Integer) mPageField.getValue()).intValue() - 1;
                 int newPageIndex = mPanel.goToPageIndex(pageIndex, null);
-                if (pageIndex != newPageIndex) {
-                    mPageField.setValue(Integer.valueOf(newPageIndex + 1));
-                } else {
+                if (pageIndex == newPageIndex) {
                     mPanel.requestFocusInWindow();
+                } else {
+                    mPageField.setValue(Integer.valueOf(newPageIndex + 1));
                 }
             }
         }, SwingConstants.RIGHT, Integer.valueOf(page), Integer.valueOf(9999), null);
@@ -114,7 +113,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
     public void updateStatus(int page, int pageCount, float scale) {
         mZoomInButton.setEnabled(PdfPanel.SCALES[PdfPanel.SCALES.length - 1] != scale);
         mZoomOutButton.setEnabled(PdfPanel.SCALES[0] != scale);
-        mActualSizeButton.setEnabled(scale != 1f);
+        mActualSizeButton.setEnabled(scale != 1.0f);
         boolean revalidate = updateZoomInfo(scale);
         revalidate |= updatePageInfo(page, pageCount);
         if (revalidate) {

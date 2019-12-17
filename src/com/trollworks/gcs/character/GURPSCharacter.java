@@ -72,234 +72,233 @@ import java.util.Set;
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
     /** The extension for character sheets. */
-    public static final String                  EXTENSION                            = "gcs";
-    private static final int                    CURRENT_VERSION                      = 4;
+    public static final  String                              EXTENSION                            = "gcs";
+    private static final int                                 CURRENT_VERSION                      = 4;
     /**
      * The version where equipment was separated out into different lists based on carried/not
      * carried status.
      */
-    public static final int                     SEPARATED_EQUIPMENT_VERSION          = 4;
-    private static final String                 TAG_ROOT                             = "character";
-    private static final String                 TAG_CREATED_DATE                     = "created_date";
-    private static final String                 TAG_MODIFIED_DATE                    = "modified_date";
-    private static final String                 TAG_CURRENT_HP                       = "current_hp";
-    private static final String                 TAG_CURRENT_FP                       = "current_fp";
-    private static final String                 TAG_UNSPENT_POINTS                   = "unspent_points";
-    private static final String                 TAG_TOTAL_POINTS                     = "total_points";
-    private static final String                 TAG_INCLUDE_PUNCH                    = "include_punch";
-    private static final String                 TAG_INCLUDE_KICK                     = "include_kick";
-    private static final String                 TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";
+    public static final  int                                 SEPARATED_EQUIPMENT_VERSION          = 4;
+    private static final String                              TAG_ROOT                             = "character";
+    private static final String                              TAG_CREATED_DATE                     = "created_date";
+    private static final String                              TAG_MODIFIED_DATE                    = "modified_date";
+    private static final String                              TAG_CURRENT_HP                       = "current_hp";
+    private static final String                              TAG_CURRENT_FP                       = "current_fp";
+    private static final String                              TAG_UNSPENT_POINTS                   = "unspent_points";
+    private static final String                              TAG_TOTAL_POINTS                     = "total_points";
+    private static final String                              TAG_INCLUDE_PUNCH                    = "include_punch";
+    private static final String                              TAG_INCLUDE_KICK                     = "include_kick";
+    private static final String                              TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";
     /** The prefix for all character IDs. */
-    public static final String                  CHARACTER_PREFIX                     = "gcs.";
+    public static final  String                              CHARACTER_PREFIX                     = "gcs.";
     /** The field ID for last modified date changes. */
-    public static final String                  ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate";
+    public static final  String                              ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate";
     /** The field ID for created on date changes. */
-    public static final String                  ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn";
+    public static final  String                              ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn";
     /** The field ID for include punch changes. */
-    public static final String                  ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";
+    public static final  String                              ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";
     /** The field ID for include kick changes. */
-    public static final String                  ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet";
+    public static final  String                              ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet";
     /** The field ID for include kick with boots changes. */
-    public static final String                  ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots";
+    public static final  String                              ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots";
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
-    public static final String                  POINTS_PREFIX                        = CHARACTER_PREFIX + "points.";
+    public static final  String                              POINTS_PREFIX                        = CHARACTER_PREFIX + "points.";
     /** The prefix used in front of all IDs for basic attributes. */
-    public static final String                  ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";
+    public static final  String                              ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";
     /** The field ID for strength (ST) changes. */
-    public static final String                  ID_STRENGTH                          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
+    public static final  String                              ID_STRENGTH                          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
     /** The field ID for lifting strength bonuses -- used by features. */
-    public static final String                  ID_LIFTING_STRENGTH                  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
+    public static final  String                              ID_LIFTING_STRENGTH                  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
     /** The field ID for striking strength bonuses -- used by features. */
-    public static final String                  ID_STRIKING_STRENGTH                 = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
+    public static final  String                              ID_STRIKING_STRENGTH                 = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
     /** The field ID for dexterity (DX) changes. */
-    public static final String                  ID_DEXTERITY                         = ATTRIBUTES_PREFIX + BonusAttributeType.DX.name();
+    public static final  String                              ID_DEXTERITY                         = ATTRIBUTES_PREFIX + BonusAttributeType.DX.name();
     /** The field ID for intelligence (IQ) changes. */
-    public static final String                  ID_INTELLIGENCE                      = ATTRIBUTES_PREFIX + BonusAttributeType.IQ.name();
+    public static final  String                              ID_INTELLIGENCE                      = ATTRIBUTES_PREFIX + BonusAttributeType.IQ.name();
     /** The field ID for health (HT) changes. */
-    public static final String                  ID_HEALTH                            = ATTRIBUTES_PREFIX + BonusAttributeType.HT.name();
+    public static final  String                              ID_HEALTH                            = ATTRIBUTES_PREFIX + BonusAttributeType.HT.name();
     /** The field ID for perception changes. */
-    public static final String                  ID_PERCEPTION                        = ATTRIBUTES_PREFIX + BonusAttributeType.PERCEPTION.name();
+    public static final  String                              ID_PERCEPTION                        = ATTRIBUTES_PREFIX + BonusAttributeType.PERCEPTION.name();
     /** The field ID for vision changes. */
-    public static final String                  ID_VISION                            = ATTRIBUTES_PREFIX + BonusAttributeType.VISION.name();
+    public static final  String                              ID_VISION                            = ATTRIBUTES_PREFIX + BonusAttributeType.VISION.name();
     /** The field ID for hearing changes. */
-    public static final String                  ID_HEARING                           = ATTRIBUTES_PREFIX + BonusAttributeType.HEARING.name();
+    public static final  String                              ID_HEARING                           = ATTRIBUTES_PREFIX + BonusAttributeType.HEARING.name();
     /** The field ID for taste changes. */
-    public static final String                  ID_TASTE_AND_SMELL                   = ATTRIBUTES_PREFIX + BonusAttributeType.TASTE_SMELL.name();
+    public static final  String                              ID_TASTE_AND_SMELL                   = ATTRIBUTES_PREFIX + BonusAttributeType.TASTE_SMELL.name();
     /** The field ID for smell changes. */
-    public static final String                  ID_TOUCH                             = ATTRIBUTES_PREFIX + BonusAttributeType.TOUCH.name();
+    public static final  String                              ID_TOUCH                             = ATTRIBUTES_PREFIX + BonusAttributeType.TOUCH.name();
     /** The field ID for will changes. */
-    public static final String                  ID_WILL                              = ATTRIBUTES_PREFIX + BonusAttributeType.WILL.name();
+    public static final  String                              ID_WILL                              = ATTRIBUTES_PREFIX + BonusAttributeType.WILL.name();
     /** The field ID for fright check changes. */
-    public static final String                  ID_FRIGHT_CHECK                      = ATTRIBUTES_PREFIX + BonusAttributeType.FRIGHT_CHECK.name();
+    public static final  String                              ID_FRIGHT_CHECK                      = ATTRIBUTES_PREFIX + BonusAttributeType.FRIGHT_CHECK.name();
     /** The field ID for basic speed changes. */
-    public static final String                  ID_BASIC_SPEED                       = ATTRIBUTES_PREFIX + BonusAttributeType.SPEED.name();
+    public static final  String                              ID_BASIC_SPEED                       = ATTRIBUTES_PREFIX + BonusAttributeType.SPEED.name();
     /** The field ID for basic move changes. */
-    public static final String                  ID_BASIC_MOVE                        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
+    public static final  String                              ID_BASIC_MOVE                        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
     /** The prefix used in front of all IDs for dodge changes. */
-    public static final String                  DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#.";
+    public static final  String                              DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#.";
     /** The field ID for dodge bonus changes. */
-    public static final String                  ID_DODGE_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
+    public static final  String                              ID_DODGE_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
     /** The field ID for parry bonus changes. */
-    public static final String                  ID_PARRY_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.PARRY.name();
+    public static final  String                              ID_PARRY_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.PARRY.name();
     /** The field ID for block bonus changes. */
-    public static final String                  ID_BLOCK_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
+    public static final  String                              ID_BLOCK_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
     /** The prefix used in front of all IDs for move changes. */
-    public static final String                  MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#.";
+    public static final  String                              MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#.";
     /** The field ID for carried weight changes. */
-    public static final String                  ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";
+    public static final  String                              ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";
     /** The field ID for carried wealth changes. */
-    public static final String                  ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";
+    public static final  String                              ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";
     /** The field ID for other wealth changes. */
-    public static final String                  ID_NOT_CARRIED_WEALTH                = CHARACTER_PREFIX + "NotCarriedWealth";
+    public static final  String                              ID_NOT_CARRIED_WEALTH                = CHARACTER_PREFIX + "NotCarriedWealth";
     /** The prefix used in front of all IDs for encumbrance changes. */
-    public static final String                  MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";
-    private static final String                 LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";
+    public static final  String                              MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";
+    private static final String                              LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";
     /** The field ID for basic lift changes. */
-    public static final String                  ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift";
+    public static final  String                              ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift";
     /** The field ID for one-handed lift changes. */
-    public static final String                  ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift";
+    public static final  String                              ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift";
     /** The field ID for two-handed lift changes. */
-    public static final String                  ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift";
+    public static final  String                              ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift";
     /** The field ID for shove and knock over changes. */
-    public static final String                  ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver";
+    public static final  String                              ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver";
     /** The field ID for running shove and knock over changes. */
-    public static final String                  ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver";
+    public static final  String                              ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver";
     /** The field ID for carry on back changes. */
-    public static final String                  ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack";
+    public static final  String                              ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack";
     /** The field ID for carry on back changes. */
-    public static final String                  ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly";
+    public static final  String                              ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly";
     /** The prefix used in front of all IDs for point summaries. */
-    public static final String                  POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";
+    public static final  String                              POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";
     /** The field ID for point total changes. */
-    public static final String                  ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints";
+    public static final  String                              ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints";
     /** The field ID for attribute point summary changes. */
-    public static final String                  ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints";
+    public static final  String                              ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints";
     /** The field ID for advantage point summary changes. */
-    public static final String                  ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints";
+    public static final  String                              ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints";
     /** The field ID for disadvantage point summary changes. */
-    public static final String                  ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints";
+    public static final  String                              ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints";
     /** The field ID for quirk point summary changes. */
-    public static final String                  ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints";
+    public static final  String                              ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints";
     /** The field ID for skill point summary changes. */
-    public static final String                  ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints";
+    public static final  String                              ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints";
     /** The field ID for spell point summary changes. */
-    public static final String                  ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints";
+    public static final  String                              ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints";
     /** The field ID for racial point summary changes. */
-    public static final String                  ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints";
+    public static final  String                              ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints";
     /** The field ID for unspent point changes. */
-    public static final String                  ID_UNSPENT_POINTS                    = POINT_SUMMARY_PREFIX + "UnspentPoints";
+    public static final  String                              ID_UNSPENT_POINTS                    = POINT_SUMMARY_PREFIX + "UnspentPoints";
     /** The prefix used in front of all IDs for basic damage. */
-    public static final String                  BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";
+    public static final  String                              BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";
     /** The field ID for basic thrust damage changes. */
-    public static final String                  ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust";
+    public static final  String                              ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust";
     /** The field ID for basic swing damage changes. */
-    public static final String                  ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing";
-    private static final String                 HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";
+    public static final  String                              ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing";
+    private static final String                              HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";
     /** The field ID for hit point changes. */
-    public static final String                  ID_HIT_POINTS                        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
+    public static final  String                              ID_HIT_POINTS                        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
     /** The field ID for current hit point changes. */
-    public static final String                  ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current";
+    public static final  String                              ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current";
     /** The field ID for reeling hit point changes. */
-    public static final String                  ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";
+    public static final  String                              ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";
     /** The field ID for unconscious check hit point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks";
+    public static final  String                              ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks";
     /** The field ID for death check #1 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1";
+    public static final  String                              ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1";
     /** The field ID for death check #2 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2";
+    public static final  String                              ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2";
     /** The field ID for death check #3 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3";
+    public static final  String                              ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3";
     /** The field ID for death check #4 hit point changes. */
-    public static final String                  ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4";
+    public static final  String                              ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4";
     /** The field ID for dead hit point changes. */
-    public static final String                  ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead";
-    private static final String                 FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";
+    public static final  String                              ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead";
+    private static final String                              FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";
     /** The field ID for fatigue point changes. */
-    public static final String                  ID_FATIGUE_POINTS                    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
+    public static final  String                              ID_FATIGUE_POINTS                    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
     /** The field ID for current fatigue point changes. */
-    public static final String                  ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current";
+    public static final  String                              ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current";
     /** The field ID for tired fatigue point changes. */
-    public static final String                  ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";
+    public static final  String                              ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";
     /** The field ID for unconscious check fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";
+    public static final  String                              ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";
     /** The field ID for unconscious fatigue point changes. */
-    public static final String                  ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";
-    private long                                mLastModified;
-    private long                                mCreatedOn;
-    private HashMap<String, ArrayList<Feature>> mFeatureMap;
-    private int                                 mStrength;
-    private int                                 mStrengthBonus;
-    private int                                 mLiftingStrengthBonus;
-    private int                                 mStrikingStrengthBonus;
-    private int                                 mStrengthCostReduction;
-    private int                                 mDexterity;
-    private int                                 mDexterityBonus;
-    private int                                 mDexterityCostReduction;
-    private int                                 mIntelligence;
-    private int                                 mIntelligenceBonus;
-    private int                                 mIntelligenceCostReduction;
-    private int                                 mHealth;
-    private int                                 mHealthBonus;
-    private int                                 mHealthCostReduction;
-    private int                                 mWill;
-    private int                                 mWillBonus;
-    private int                                 mFrightCheckBonus;
-    private int                                 mPerception;
-    private int                                 mPerceptionBonus;
-    private int                                 mVisionBonus;
-    private int                                 mHearingBonus;
-    private int                                 mTasteAndSmellBonus;
-    private int                                 mTouchBonus;
-    private String                              mCurrentHitPoints;
-    private int                                 mHitPoints;
-    private int                                 mHitPointBonus;
-    private int                                 mFatiguePoints;
-    private String                              mCurrentFatiguePoints;
-    private int                                 mFatiguePointBonus;
-    private double                              mSpeed;
-    private double                              mSpeedBonus;
-    private int                                 mMove;
-    private int                                 mMoveBonus;
-    private int                                 mDodgeBonus;
-    private int                                 mParryBonus;
-    private int                                 mBlockBonus;
-    private int                                 mTotalPoints;
-    private Profile                             mDescription;
-    private Armor                               mArmor;
-    private OutlineModel                        mAdvantages;
-    private OutlineModel                        mSkills;
-    private OutlineModel                        mSpells;
-    private OutlineModel                        mEquipment;
-    private OutlineModel                        mOtherEquipment;
-    private OutlineModel                        mNotes;
-    private boolean                             mDidModify;
-    private boolean                             mNeedAttributePointCalculation;
-    private boolean                             mNeedAdvantagesPointCalculation;
-    private boolean                             mNeedSkillPointCalculation;
-    private boolean                             mNeedSpellPointCalculation;
-    private boolean                             mNeedEquipmentCalculation;
-    private WeightValue                         mCachedWeightCarried;
-    private double                              mCachedWealthCarried;
-    private double                              mCachedWealthNotCarried;
-    private int                                 mCachedAttributePoints;
-    private int                                 mCachedAdvantagePoints;
-    private int                                 mCachedDisadvantagePoints;
-    private int                                 mCachedQuirkPoints;
-    private int                                 mCachedSkillPoints;
-    private int                                 mCachedSpellPoints;
-    private int                                 mCachedRacePoints;
-    private boolean                             mSkillsUpdated;
-    private boolean                             mSpellsUpdated;
-    private PrintManager                        mPageSettings;
-    private boolean                             mIncludePunch;
-    private boolean                             mIncludeKick;
-    private boolean                             mIncludeKickBoots;
+    public static final  String                              ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";
+    private              long                                mLastModified;
+    private              long                                mCreatedOn;
+    private              HashMap<String, ArrayList<Feature>> mFeatureMap;
+    private              int                                 mStrength;
+    private              int                                 mStrengthBonus;
+    private              int                                 mLiftingStrengthBonus;
+    private              int                                 mStrikingStrengthBonus;
+    private              int                                 mStrengthCostReduction;
+    private              int                                 mDexterity;
+    private              int                                 mDexterityBonus;
+    private              int                                 mDexterityCostReduction;
+    private              int                                 mIntelligence;
+    private              int                                 mIntelligenceBonus;
+    private              int                                 mIntelligenceCostReduction;
+    private              int                                 mHealth;
+    private              int                                 mHealthBonus;
+    private              int                                 mHealthCostReduction;
+    private              int                                 mWill;
+    private              int                                 mWillBonus;
+    private              int                                 mFrightCheckBonus;
+    private              int                                 mPerception;
+    private              int                                 mPerceptionBonus;
+    private              int                                 mVisionBonus;
+    private              int                                 mHearingBonus;
+    private              int                                 mTasteAndSmellBonus;
+    private              int                                 mTouchBonus;
+    private              String                              mCurrentHitPoints;
+    private              int                                 mHitPoints;
+    private              int                                 mHitPointBonus;
+    private              int                                 mFatiguePoints;
+    private              String                              mCurrentFatiguePoints;
+    private              int                                 mFatiguePointBonus;
+    private              double                              mSpeed;
+    private              double                              mSpeedBonus;
+    private              int                                 mMove;
+    private              int                                 mMoveBonus;
+    private              int                                 mDodgeBonus;
+    private              int                                 mParryBonus;
+    private              int                                 mBlockBonus;
+    private              int                                 mTotalPoints;
+    private              Profile                             mDescription;
+    private              Armor                               mArmor;
+    private              OutlineModel                        mAdvantages;
+    private              OutlineModel                        mSkills;
+    private              OutlineModel                        mSpells;
+    private              OutlineModel                        mEquipment;
+    private              OutlineModel                        mOtherEquipment;
+    private              OutlineModel                        mNotes;
+    private              boolean                             mDidModify;
+    private              boolean                             mNeedAttributePointCalculation;
+    private              boolean                             mNeedAdvantagesPointCalculation;
+    private              boolean                             mNeedSkillPointCalculation;
+    private              boolean                             mNeedSpellPointCalculation;
+    private              boolean                             mNeedEquipmentCalculation;
+    private              WeightValue                         mCachedWeightCarried;
+    private              double                              mCachedWealthCarried;
+    private              double                              mCachedWealthNotCarried;
+    private              int                                 mCachedAttributePoints;
+    private              int                                 mCachedAdvantagePoints;
+    private              int                                 mCachedDisadvantagePoints;
+    private              int                                 mCachedQuirkPoints;
+    private              int                                 mCachedSkillPoints;
+    private              int                                 mCachedSpellPoints;
+    private              int                                 mCachedRacePoints;
+    private              boolean                             mSkillsUpdated;
+    private              boolean                             mSpellsUpdated;
+    private              PrintManager                        mPageSettings;
+    private              boolean                             mIncludePunch;
+    private              boolean                             mIncludeKick;
+    private              boolean                             mIncludeKickBoots;
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
-        super();
         characterInitialize(true);
         calculateAll();
     }
@@ -312,40 +311,39 @@ public class GURPSCharacter extends DataFile {
      *                     sheet.
      */
     public GURPSCharacter(File file) throws IOException {
-        super();
         load(file);
     }
 
     private void characterInitialize(boolean full) {
-        mFeatureMap     = new HashMap<>();
-        mAdvantages     = new OutlineModel();
-        mSkills         = new OutlineModel();
-        mSpells         = new OutlineModel();
-        mEquipment      = new OutlineModel();
+        mFeatureMap = new HashMap<>();
+        mAdvantages = new OutlineModel();
+        mSkills = new OutlineModel();
+        mSpells = new OutlineModel();
+        mEquipment = new OutlineModel();
         mOtherEquipment = new OutlineModel();
         mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
-        mNotes                = new OutlineModel();
-        mTotalPoints          = SheetPreferences.getInitialPoints();
-        mStrength             = 10;
-        mDexterity            = 10;
-        mIntelligence         = 10;
-        mHealth               = 10;
-        mCurrentHitPoints     = "";
+        mNotes = new OutlineModel();
+        mTotalPoints = SheetPreferences.getInitialPoints();
+        mStrength = 10;
+        mDexterity = 10;
+        mIntelligence = 10;
+        mHealth = 10;
+        mCurrentHitPoints = "";
         mCurrentFatiguePoints = "";
-        mDescription          = new Profile(this, full);
-        mArmor                = new Armor(this);
-        mIncludePunch         = true;
-        mIncludeKick          = true;
-        mIncludeKickBoots     = true;
-        mCachedWeightCarried  = new WeightValue(0, DisplayPreferences.getWeightUnits());
-        mPageSettings         = OutputPreferences.getDefaultPageSettings();
-        mLastModified         = System.currentTimeMillis();
-        mCreatedOn            = mLastModified;
+        mDescription = new Profile(this, full);
+        mArmor = new Armor(this);
+        mIncludePunch = true;
+        mIncludeKick = true;
+        mIncludeKickBoots = true;
+        mCachedWeightCarried = new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mPageSettings = OutputPreferences.getDefaultPageSettings();
+        mLastModified = System.currentTimeMillis();
+        mCreatedOn = mLastModified;
         // This will force the long value to match the string value.
         setCreatedOn(getCreatedOn());
     }
 
-    /** @return The page settings. May return <code>null</code> if no printer has been defined. */
+    /** @return The page settings. May return {@code null} if no printer has been defined. */
     public PrintManager getPageSettings() {
         return mPageSettings;
     }
@@ -605,7 +603,7 @@ public class GURPSCharacter extends DataFile {
 
     /**
      * @param id The field ID to retrieve the data for.
-     * @return The value of the specified field ID, or <code>null</code> if the field ID is invalid.
+     * @return The value of the specified field ID, or {@code null} if the field ID is invalid.
      */
     public Object getValueForID(String id) {
         if (id == null) {
@@ -812,12 +810,12 @@ public class GURPSCharacter extends DataFile {
 
     @Override
     protected void startNotifyAtBatchLevelZero() {
-        mDidModify                      = false;
-        mNeedAttributePointCalculation  = false;
+        mDidModify = false;
+        mNeedAttributePointCalculation = false;
         mNeedAdvantagesPointCalculation = false;
-        mNeedSkillPointCalculation      = false;
-        mNeedSpellPointCalculation      = false;
-        mNeedEquipmentCalculation       = false;
+        mNeedSkillPointCalculation = false;
+        mNeedSpellPointCalculation = false;
+        mNeedEquipmentCalculation = false;
     }
 
     @Override
@@ -965,7 +963,7 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for strength. */
     public void setStrengthCostReduction(int reduction) {
         if (mStrengthCostReduction != reduction) {
-            mStrengthCostReduction         = reduction;
+            mStrengthCostReduction = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
@@ -1001,9 +999,9 @@ public class GURPSCharacter extends DataFile {
         boolean     notifyST = mStrength != strength || mStrengthBonus != bonus;
         Dice        dice;
 
-        mStrength              = strength;
-        mStrengthBonus         = bonus;
-        mLiftingStrengthBonus  = liftingBonus;
+        mStrength = strength;
+        mStrengthBonus = bonus;
+        mLiftingStrengthBonus = liftingBonus;
         mStrikingStrengthBonus = strikingBonus;
 
         startNotify();
@@ -1050,16 +1048,12 @@ public class GURPSCharacter extends DataFile {
 
     private static int getPointsForAttribute(int delta, int ptsPerLevel, int reduction) {
         int amt = delta * ptsPerLevel;
-
         if (reduction > 0 && delta > 0) {
-            int rounder = delta < 0 ? -99 : 99;
-
             if (reduction > 80) {
                 reduction = 80;
             }
-            amt = (rounder + amt * (100 - reduction)) / 100;
+            amt = (99 + amt * (100 - reduction)) / 100;
         }
-
         return amt;
     }
 
@@ -1088,9 +1082,9 @@ public class GURPSCharacter extends DataFile {
                 adds++;
             }
             dice += 2 * (adds / 7);
-            adds  = adds % 7;
+            adds %= 7;
             dice += adds / 4;
-            adds  = adds % 4;
+            adds %= 4;
             if (adds == 3) {
                 dice++;
                 adds = -1;
@@ -1140,9 +1134,9 @@ public class GURPSCharacter extends DataFile {
             int dice = 1;
             int adds = (strength - 10) / 2;
             dice += 2 * (adds / 7);
-            adds  = adds % 7;
+            adds %= 7;
             dice += adds / 4;
-            adds  = adds % 4;
+            adds %= 4;
             if (adds == 3) {
                 dice++;
                 adds = -1;
@@ -1191,15 +1185,15 @@ public class GURPSCharacter extends DataFile {
         double      multiplier;
         double      roundAt;
         if (SheetPreferences.areGurpsMetricRulesUsed() && DisplayPreferences.getWeightUnits().isMetric()) {
-            units      = WeightUnits.KG;
-            divisor    = 10;
+            units = WeightUnits.KG;
+            divisor = 10;
             multiplier = 1;
-            roundAt    = 5;
+            roundAt = 5;
         } else {
-            units      = WeightUnits.LB;
-            divisor    = 5;
+            units = WeightUnits.LB;
+            divisor = 5;
             multiplier = 2;
-            roundAt    = 10;
+            roundAt = 10;
         }
         int    strength = getStrength() + mLiftingStrengthBonus;
         double value;
@@ -1209,15 +1203,11 @@ public class GURPSCharacter extends DataFile {
             if (SheetPreferences.areOptionalStrengthRulesUsed()) {
                 int diff = 0;
                 if (strength > 19) {
-                    diff      = strength / 10 - 1;
+                    diff = strength / 10 - 1;
                     strength -= diff * 10;
                 }
                 value = Math.pow(10.0, strength / 10.0) * multiplier;
-                if (strength <= 6) {
-                    value = Math.round(value * 10.0) / 10.0;
-                } else {
-                    value = Math.round(value);
-                }
+                value = strength <= 6 ? Math.round(value * 10.0) / 10.0 : Math.round(value);
                 value *= Math.pow(10, diff);
             } else {
                 value = strength * strength / divisor;
@@ -1320,7 +1310,7 @@ public class GURPSCharacter extends DataFile {
         int[] data = preserveMoveAndDodge();
         int   tmp;
 
-        mSpeed      = speed;
+        mSpeed = speed;
         mSpeedBonus = bonus;
 
         startNotify();
@@ -1343,9 +1333,7 @@ public class GURPSCharacter extends DataFile {
      * @return The character's basic move.
      */
     public int getBasicMove() {
-        int move = mMove + mMoveBonus + getRawBasicMove();
-
-        return move < 0 ? 0 : move;
+        return Math.max(mMove + mMoveBonus + getRawBasicMove(), 0);
     }
 
     private int getRawBasicMove() {
@@ -1382,7 +1370,7 @@ public class GURPSCharacter extends DataFile {
         int[] data = preserveMoveAndDodge();
 
         startNotify();
-        mMove      = move;
+        mMove = move;
         mMoveBonus = bonus;
         notify(ID_BASIC_MOVE, Integer.valueOf(getBasicMove()));
         notifyIfMoveOrDodgeAltered(data);
@@ -1413,8 +1401,7 @@ public class GURPSCharacter extends DataFile {
      * @return The character's dodge for the specified encumbrance level.
      */
     public int getDodge(Encumbrance encumbrance) {
-        int dodge = (int) Math.floor(getBasicSpeed()) + 3 + encumbrance.getEncumbrancePenalty() + mDodgeBonus;
-        return dodge < 1 ? 1 : dodge;
+        return Math.max((int) Math.floor(getBasicSpeed()) + 3 + encumbrance.getEncumbrancePenalty() + mDodgeBonus, 1);
     }
 
     /** @return The dodge bonus. */
@@ -1473,7 +1460,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @return <code>true</code> if the carried weight is greater than the maximum allowed for an
+     * @return {@code true} if the carried weight is greater than the maximum allowed for an
      *         extra-heavy load.
      */
     public boolean isCarryingGreaterThanMaxLoad() {
@@ -1527,11 +1514,10 @@ public class GURPSCharacter extends DataFile {
         case LB:
             return new WeightValue(value.getValue() / 2, WeightUnits.KG);
         case LT:
+        case TN:
             return new WeightValue(value.getValue(), WeightUnits.T);
         case OZ:
             return new WeightValue(value.getValue() * 30, WeightUnits.G);
-        case TN:
-            return new WeightValue(value.getValue(), WeightUnits.T);
         default:
             return value;
         }
@@ -1552,11 +1538,7 @@ public class GURPSCharacter extends DataFile {
             Equipment   equipment = (Equipment) one;
             WeightValue weight    = new WeightValue(equipment.getExtendedWeight());
             if (SheetPreferences.areGurpsMetricRulesUsed()) {
-                if (DisplayPreferences.getWeightUnits().isMetric()) {
-                    weight = GURPSCharacter.convertToGurpsMetric(weight);
-                } else {
-                    weight = GURPSCharacter.convertFromGurpsMetric(weight);
-                }
+                weight = DisplayPreferences.getWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
             }
             mCachedWeightCarried.add(weight);
             mCachedWealthCarried += equipment.getExtendedValue();
@@ -1595,7 +1577,7 @@ public class GURPSCharacter extends DataFile {
         int[]         data   = new int[values.length * 2];
         for (Encumbrance encumbrance : values) {
             int index = encumbrance.ordinal();
-            data[index]                 = getMove(encumbrance);
+            data[index] = getMove(encumbrance);
             data[values.length + index] = getDodge(encumbrance);
         }
         return data;
@@ -1650,7 +1632,7 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for dexterity. */
     public void setDexterityCostReduction(int reduction) {
         if (mDexterityCostReduction != reduction) {
-            mDexterityCostReduction        = reduction;
+            mDexterityCostReduction = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
@@ -1662,7 +1644,7 @@ public class GURPSCharacter extends DataFile {
         double newSpeed;
         int    newMove;
 
-        mDexterity      = dexterity;
+        mDexterity = dexterity;
         mDexterityBonus = bonus;
 
         startNotify();
@@ -1719,7 +1701,7 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for intelligence. */
     public void setIntelligenceCostReduction(int reduction) {
         if (mIntelligenceCostReduction != reduction) {
-            mIntelligenceCostReduction     = reduction;
+            mIntelligenceCostReduction = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
@@ -1730,7 +1712,7 @@ public class GURPSCharacter extends DataFile {
         int newPerception;
         int newWill;
 
-        mIntelligence      = intelligence;
+        mIntelligence = intelligence;
         mIntelligenceBonus = bonus;
 
         startNotify();
@@ -1793,7 +1775,7 @@ public class GURPSCharacter extends DataFile {
     /** @param reduction The cost reduction for health. */
     public void setHealthCostReduction(int reduction) {
         if (mHealthCostReduction != reduction) {
-            mHealthCostReduction           = reduction;
+            mHealthCostReduction = reduction;
             mNeedAttributePointCalculation = true;
         }
     }
@@ -1805,7 +1787,7 @@ public class GURPSCharacter extends DataFile {
         double newSpeed;
         int    tmp;
 
-        mHealth      = health;
+        mHealth = health;
         mHealthBonus = bonus;
 
         startNotify();
@@ -1897,10 +1879,10 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void calculateAdvantagePoints() {
-        mCachedAdvantagePoints    = 0;
+        mCachedAdvantagePoints = 0;
         mCachedDisadvantagePoints = 0;
-        mCachedRacePoints         = 0;
-        mCachedQuirkPoints        = 0;
+        mCachedRacePoints = 0;
+        mCachedQuirkPoints = 0;
 
         for (Advantage advantage : new FilteredIterator<>(mAdvantages.getTopLevelRows(), Advantage.class)) {
             calculateSingleAdvantagePoints(advantage);
@@ -2017,7 +1999,7 @@ public class GURPSCharacter extends DataFile {
         if (oldHP != hp) {
             postUndoEdit(I18n.Text("Hit Points Change"), ID_HIT_POINTS, Integer.valueOf(oldHP), Integer.valueOf(hp));
             startNotify();
-            mHitPoints                     = hp - (getStrength() + mHitPointBonus);
+            mHitPoints = hp - (getStrength() + mHitPointBonus);
             mNeedAttributePointCalculation = true;
             notifyOfBaseHitPointChange();
             endNotify();
@@ -2035,7 +2017,7 @@ public class GURPSCharacter extends DataFile {
                     sizeModifier = 8;
                 }
                 pts *= 10 - sizeModifier;
-                rem  = pts % 10;
+                rem = pts % 10;
                 pts /= 10;
                 if (rem > 4) {
                     pts++;
@@ -2092,9 +2074,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of hit points where "reeling" effects start. */
     public int getReelingHitPoints() {
-        int reeling = (getHitPoints() - 1) / 3;
-
-        return reeling < 0 ? 0 : reeling;
+        return Math.max((getHitPoints() - 1) / 3, 0);
     }
 
     /** @return The number of hit points where unconsciousness checks must start being made. */
@@ -2155,7 +2135,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void updateWillInfo(int will, int bonus) {
-        mWill      = will;
+        mWill = will;
         mWillBonus = bonus;
 
         startNotify();
@@ -2308,7 +2288,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void updatePerceptionInfo(int perception, int bonus) {
-        mPerception      = perception;
+        mPerception = perception;
         mPerceptionBonus = bonus;
 
         startNotify();
@@ -2343,7 +2323,7 @@ public class GURPSCharacter extends DataFile {
         if (oldFP != fp) {
             postUndoEdit(I18n.Text("Fatigue Points Change"), ID_FATIGUE_POINTS, Integer.valueOf(oldFP), Integer.valueOf(fp));
             startNotify();
-            mFatiguePoints                 = fp - (getHealth() + mFatiguePointBonus);
+            mFatiguePoints = fp - (getHealth() + mFatiguePointBonus);
             mNeedAttributePointCalculation = true;
             notifyOfBaseFatiguePointChange();
             endNotify();
@@ -2397,9 +2377,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of fatigue points where "tired" effects start. */
     public int getTiredFatiguePoints() {
-        int tired = (getFatiguePoints() - 1) / 3;
-
-        return tired < 0 ? 0 : tired;
+        return Math.max((getFatiguePoints() - 1) / 3, 0);
     }
 
     /** @return The number of fatigue points where unconsciousness checks must start being made. */
@@ -2429,23 +2407,21 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param includeDisabled <code>true</code> if disabled entries should be included.
+     * @param includeDisabled {@code true} if disabled entries should be included.
      * @return A recursive iterator over the character's advantages.
      */
     public RowIterator<Advantage> getAdvantagesIterator(boolean includeDisabled) {
         if (includeDisabled) {
             return new RowIterator<>(mAdvantages);
         }
-        return new RowIterator<>(mAdvantages, (row) -> {
-            return row.isEnabled();
-        });
+        return new RowIterator<>(mAdvantages, (row) -> row.isEnabled());
     }
 
     /**
      * Searches the character's current advantages list for the specified name.
      *
      * @param name The name to look for.
-     * @return The advantage, if present, or <code>null</code>.
+     * @return The advantage, if present, or {@code null}.
      */
     public Advantage getAdvantageNamed(String name) {
         for (Advantage advantage : getAdvantagesIterator(false)) {
@@ -2480,15 +2456,15 @@ public class GURPSCharacter extends DataFile {
      * Searches the character's current skill list for the specified name.
      *
      * @param name           The name to look for.
-     * @param specialization The specialization to look for. Pass in <code>null</code> or an empty
-     *                       string to ignore.
+     * @param specialization The specialization to look for. Pass in {@code null} or an empty string
+     *                       to ignore.
      * @param requirePoints  Only look at {@link Skill}s that have points.
      * @param excludes       The set of {@link Skill}s to exclude from consideration.
-     * @return The skill if it is present, or <code>null</code> if its not.
+     * @return The skill if it is present, or {@code null} if its not.
      */
-    public ArrayList<Skill> getSkillNamed(String name, String specialization, boolean requirePoints, HashSet<String> excludes) {
-        ArrayList<Skill> skills              = new ArrayList<>();
-        boolean          checkSpecialization = specialization != null && specialization.length() > 0;
+    public List<Skill> getSkillNamed(String name, String specialization, boolean requirePoints, Set<String> excludes) {
+        List<Skill> skills              = new ArrayList<>();
+        boolean     checkSpecialization = specialization != null && !specialization.isEmpty();
         for (Skill skill : getSkillsIterator()) {
             if (!skill.canHaveChildren()) {
                 if (excludes == null || !excludes.contains(skill.toString())) {
@@ -2510,13 +2486,13 @@ public class GURPSCharacter extends DataFile {
      * that matches the name.
      *
      * @param name           The {@link Skill} name to look for.
-     * @param specialization An optional specialization to look for. Pass <code>null</code> if it is
-     *                       not needed.
+     * @param specialization An optional specialization to look for. Pass {@code null} if it is not
+     *                       needed.
      * @param requirePoints  Only look at {@link Skill}s that have points.
      * @param excludes       The set of {@link Skill}s to exclude from consideration.
      * @return The {@link Skill} that matches with the highest level.
      */
-    public Skill getBestSkillNamed(String name, String specialization, boolean requirePoints, HashSet<String> excludes) {
+    public Skill getBestSkillNamed(String name, String specialization, boolean requirePoints, Set<String> excludes) {
         Skill best  = null;
         int   level = Integer.MIN_VALUE;
 
@@ -2524,7 +2500,7 @@ public class GURPSCharacter extends DataFile {
             int skillLevel = skill.getLevel(excludes);
 
             if (best == null || skillLevel > level) {
-                best  = skill;
+                best = skill;
                 level = skillLevel;
             }
         }
@@ -2573,7 +2549,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @param map The new feature map. */
     public void setFeatureMap(HashMap<String, ArrayList<Feature>> map) {
-        mFeatureMap    = map;
+        mFeatureMap = map;
         mSkillsUpdated = false;
         mSpellsUpdated = false;
 
@@ -2618,8 +2594,8 @@ public class GURPSCharacter extends DataFile {
      * @return The cost reduction, as a percentage.
      */
     public int getCostReductionFor(String id) {
-        int                total = 0;
-        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
+        int           total = 0;
+        List<Feature> list  = mFeatureMap.get(id.toLowerCase());
 
         if (list != null) {
             for (Feature feature : list) {
@@ -2648,8 +2624,8 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getIntegerBonusFor(String id, StringBuilder toolTip) {
-        int                total = 0;
-        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
+        int           total = 0;
+        List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
@@ -2669,9 +2645,9 @@ public class GURPSCharacter extends DataFile {
      * @param categoriesQualifier     The categories qualifier.
      * @return The bonuses.
      */
-    public ArrayList<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
-        ArrayList<WeaponBonus> bonuses = new ArrayList<>();
-        int                    rsl     = Integer.MIN_VALUE;
+    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
+        List<WeaponBonus> bonuses = new ArrayList<>();
+        int               rsl     = Integer.MIN_VALUE;
 
         for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
             int srsl = skill.getRelativeLevel();
@@ -2682,7 +2658,7 @@ public class GURPSCharacter extends DataFile {
         }
 
         if (rsl != Integer.MIN_VALUE) {
-            ArrayList<Feature> list = mFeatureMap.get(id.toLowerCase());
+            List<Feature> list = mFeatureMap.get(id.toLowerCase());
             if (list != null) {
                 for (Feature feature : list) {
                     if (feature instanceof WeaponBonus) {
@@ -2718,8 +2694,8 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getSkillComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoryQualifier, StringBuilder toolTip) {
-        int                total = 0;
-        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
+        int           total = 0;
+        List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SkillBonus) {
@@ -2741,8 +2717,8 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public int getSpellComparedIntegerBonusFor(String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
-        int                total = 0;
-        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
+        int           total = 0;
+        List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SpellBonus) {
@@ -2762,8 +2738,8 @@ public class GURPSCharacter extends DataFile {
      * @return The bonus.
      */
     public double getDoubleBonusFor(String id) {
-        double             total = 0;
-        ArrayList<Feature> list  = mFeatureMap.get(id.toLowerCase());
+        double        total = 0;
+        List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
@@ -2785,13 +2761,7 @@ public class GURPSCharacter extends DataFile {
     void postUndoEdit(String name, String id, Object before, Object after) {
         StdUndoManager mgr = getUndoManager();
         if (!mgr.isInTransaction()) {
-            boolean add;
-            if (before instanceof ListRow) {
-                add = !((ListRow) before).isEquivalentTo(after);
-            } else {
-                add = !before.equals(after);
-            }
-            if (add) {
+            if (before instanceof ListRow ? !((ListRow) before).isEquivalentTo(after) : !before.equals(after)) {
                 addEdit(new CharacterFieldUndo(this, name, id, before, after));
             }
         }

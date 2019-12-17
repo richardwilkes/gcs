@@ -18,23 +18,23 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Describes a cost reduction. */
 public class CostReduction implements Feature {
     /** The possible {@link BonusAttributeType}s that can be affected. */
-    public static final BonusAttributeType[] TYPES          = { BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT };
+    public static final  BonusAttributeType[] TYPES          = {BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT};
     /** The XML tag. */
-    public static final String               TAG_ROOT       = "cost_reduction";
-    private static final String              TAG_ATTRIBUTE  = "attribute";
-    private static final String              TAG_PERCENTAGE = "percentage";
-    private BonusAttributeType               mAttribute;
-    private int                              mPercentage;
+    public static final  String               TAG_ROOT       = "cost_reduction";
+    private static final String               TAG_ATTRIBUTE  = "attribute";
+    private static final String               TAG_PERCENTAGE = "percentage";
+    private              BonusAttributeType   mAttribute;
+    private              int                  mPercentage;
 
     /** Creates a new cost reduction. */
     public CostReduction() {
-        mAttribute  = BonusAttributeType.ST;
+        mAttribute = BonusAttributeType.ST;
         mPercentage = 40;
     }
 
@@ -44,7 +44,7 @@ public class CostReduction implements Feature {
      * @param other The bonus to clone.
      */
     public CostReduction(CostReduction other) {
-        mAttribute  = other.mAttribute;
+        mAttribute = other.mAttribute;
         mPercentage = other.mPercentage;
     }
 
@@ -142,12 +142,12 @@ public class CostReduction implements Feature {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         // Nothing to do.
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         // Nothing to do.
     }
 }

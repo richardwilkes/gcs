@@ -34,13 +34,13 @@ import java.util.Iterator;
  * A thread for doing background updates of the prerequisite status of a character sheet.
  */
 public class PrerequisitesThread extends Thread implements NotifierTarget {
-    private static HashMap<GURPSCharacter, PrerequisitesThread> MAP     = new HashMap<>();
-    private static int                                          COUNTER = 0;
-    private CharacterSheet                                      mSheet;
-    private GURPSCharacter                                      mCharacter;
-    private boolean                                             mNeedUpdate;
-    private boolean                                             mNeedRepaint;
-    private boolean                                             mIsProcessing;
+    private static HashMap<GURPSCharacter, PrerequisitesThread> MAP = new HashMap<>();
+    private static int                                          COUNTER;
+    private        CharacterSheet                               mSheet;
+    private        GURPSCharacter                               mCharacter;
+    private        boolean                                      mNeedUpdate;
+    private        boolean                                      mNeedRepaint;
+    private        boolean                                      mIsProcessing;
 
     /**
      * @param character The character being processed.
@@ -85,13 +85,14 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
         super("Prerequisites #" + ++COUNTER);
         setPriority(NORM_PRIORITY);
         setDaemon(true);
-        mSheet      = sheet;
-        mCharacter  = sheet.getCharacter();
+        mSheet = sheet;
+        mCharacter = sheet.getCharacter();
         mNeedUpdate = true;
         mCharacter.addTarget(this, Profile.ID_TECH_LEVEL, GURPSCharacter.ID_STRENGTH, GURPSCharacter.ID_DEXTERITY, GURPSCharacter.ID_INTELLIGENCE, GURPSCharacter.ID_HEALTH, GURPSCharacter.ID_WILL, GURPSCharacter.ID_PERCEPTION, Spell.ID_NAME, Spell.ID_COLLEGE, Spell.ID_POINTS, Spell.ID_LIST_CHANGED, Skill.ID_NAME, Skill.ID_SPECIALIZATION, Skill.ID_LEVEL, Skill.ID_RELATIVE_LEVEL, Skill.ID_ENCUMBRANCE_PENALTY, Skill.ID_POINTS, Skill.ID_TECH_LEVEL, Skill.ID_LIST_CHANGED, Advantage.ID_NAME, Advantage.ID_LEVELS, Advantage.ID_LIST_CHANGED, Equipment.ID_EXTENDED_WEIGHT, Equipment.ID_EQUIPPED, Equipment.ID_QUANTITY, Equipment.ID_LIST_CHANGED);
         Preferences.getInstance().getNotifier().add(this, SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY);
+        GURPSCharacter character = mCharacter;
         synchronized (MAP) {
-            MAP.put(mCharacter, this);
+            MAP.put(character, this);
         }
     }
 
@@ -102,13 +103,11 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
                 try {
                     boolean needUpdate;
                     synchronized (this) {
-                        needUpdate    = mNeedUpdate;
-                        mNeedUpdate   = false;
+                        needUpdate = mNeedUpdate;
+                        mNeedUpdate = false;
                         mIsProcessing = needUpdate;
                     }
-                    if (!needUpdate) {
-                        sleep(500);
-                    } else {
+                    if (needUpdate) {
                         processFeatures();
                         processRows(mCharacter.getAdvantagesIterator(false));
                         processRows(mCharacter.getSkillsIterator());
@@ -120,6 +119,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
                         synchronized (this) {
                             mIsProcessing = false;
                         }
+                    } else {
+                        sleep(500);
                     }
                 } catch (InterruptedException iEx) {
                     throw iEx;
@@ -139,10 +140,13 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
         } catch (InterruptedException outerIEx) {
             // Someone is trying to terminate us... let them.
         }
-        mNeedUpdate = mIsProcessing = false;
+        synchronized (this) {
+            mNeedUpdate = mIsProcessing = false;
+        }
         Preferences.getInstance().getNotifier().remove(this);
+        GURPSCharacter character = mCharacter;
         synchronized (MAP) {
-            MAP.remove(mCharacter);
+            MAP.remove(character);
         }
     }
 
@@ -242,10 +246,8 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
     }
 
     /** Marks an update request. */
-    public void markForUpdate() {
-        synchronized (this) {
-            mNeedUpdate = true;
-        }
+    public synchronized void markForUpdate() {
+        mNeedUpdate = true;
     }
 
     @Override

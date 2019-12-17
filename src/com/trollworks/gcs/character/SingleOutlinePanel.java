@@ -38,12 +38,12 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
      * @param scale    The scale to use.
      * @param outline  The outline to display.
      * @param title    The localized title for the panel.
-     * @param useProxy <code>true</code> if a proxy of the outline should be used.
+     * @param useProxy {@code true} if a proxy of the outline should be used.
      */
     public SingleOutlinePanel(Scale scale, Outline outline, String title, boolean useProxy) {
         super(null);
         mOutline = useProxy ? new OutlineProxy(outline) : outline;
-        mHeader  = mOutline.getHeaderPanel();
+        mHeader = mOutline.getHeaderPanel();
         CharacterSheet.prepOutline(mOutline);
         add(mHeader);
         add(mOutline);
@@ -84,7 +84,7 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
         Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         int       height = mHeader.getPreferredSize().height;
         mHeader.setLocation(bounds.x, bounds.y);
-        bounds.y      += height;
+        bounds.y += height;
         bounds.height -= height;
         mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
         ColumnUtils.pack(mOutline, bounds.width);

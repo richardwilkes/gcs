@@ -27,18 +27,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
 /** A thread that periodically updates the set of available list files. */
 public class ListCollectionThread extends Thread implements FileVisitor<Path>, Comparator<Object> {
-    private static final ListCollectionThread INSTANCE;
-    private List<Object>                      mLists;
-    private List<Object>                      mCurrent;
-    private Stack<List<Object>>               mStack;
-    private List<ListCollectionListener>      mListeners;
+    private static final ListCollectionThread         INSTANCE;
+    private              List<Object>                 mLists;
+    private              List<Object>                 mCurrent;
+    private              Stack<List<Object>>          mStack;
+    private              List<ListCollectionListener> mListeners;
 
     static {
         INSTANCE = new ListCollectionThread();
@@ -70,7 +69,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
     protected void notifyListeners() {
         ListCollectionListener[] listeners;
         synchronized (this) {
-            listeners = mListeners.toArray(new ListCollectionListener[mListeners.size()]);
+            listeners = mListeners.toArray(new ListCollectionListener[0]);
         }
         List<Object> lists = getLists();
         for (ListCollectionListener listener : listeners) {
@@ -113,7 +112,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
     @SuppressWarnings("unchecked")
     private List<Object> collectLists() {
         mCurrent = new ArrayList<>();
-        mStack   = new Stack<>();
+        mStack = new Stack<>();
         try {
             Files.walkFileTree(GCSCmdLine.getLibraryRootPath(), EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, this);
         } catch (Exception exception) {
@@ -121,7 +120,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
         }
         List<Object> result = mCurrent;
         mCurrent = null;
-        mStack   = null;
+        mStack = null;
         return result.isEmpty() ? new ArrayList<>() : (List<Object>) result.get(0);
     }
 
@@ -165,7 +164,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
         if (exception != null) {
             Log.error(exception);
         }
-        Collections.sort(mCurrent, this);
+        mCurrent.sort(this);
         List<Object> restoring = mStack.pop();
         if (mCurrent.size() > 1) {
             restoring.add(mCurrent);
@@ -179,7 +178,7 @@ public class ListCollectionThread extends Thread implements FileVisitor<Path>, C
         return NumericComparator.compareStrings(getName(o1), getName(o2));
     }
 
-    private static final String getName(Object obj) {
+    private static String getName(Object obj) {
         if (obj instanceof Path) {
             return ((Path) obj).getFileName().toString();
         }

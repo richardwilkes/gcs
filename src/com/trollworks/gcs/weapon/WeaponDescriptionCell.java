@@ -26,7 +26,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -66,9 +65,9 @@ public class WeaponDescriptionCell implements Cell {
         gc.setColor(Colors.getListForeground(selected, active));
         gc.setFont(font);
         int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
-        if (notes.trim().length() > 0) {
+        if (!notes.trim().isEmpty()) {
             insetBounds.height -= pos - insetBounds.y;
-            insetBounds.y       = pos;
+            insetBounds.y = pos;
             gc.setFont(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)));
             TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
         }
@@ -80,7 +79,7 @@ public class WeaponDescriptionCell implements Cell {
         WeaponDisplayRow theRow = (WeaponDisplayRow) row;
         int              width  = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD)), getPrimaryText(theRow));
         String           notes  = getSecondaryText(theRow);
-        if (notes.trim().length() > 0) {
+        if (!notes.trim().isEmpty()) {
             int notesWidth = TextDrawing.getWidth(scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES)), notes);
             if (notesWidth > width) {
                 width = notesWidth;
@@ -96,8 +95,8 @@ public class WeaponDescriptionCell implements Cell {
         Font             font   = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD));
         int              height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font, scale)).height;
         String           notes  = getSecondaryText(theRow);
-        if (notes.trim().length() > 0) {
-            font    = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
+        if (!notes.trim().isEmpty()) {
+            font = scale.scale(UIManager.getFont(GCSFonts.KEY_FIELD_NOTES));
             height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font, scale)).height;
         }
         return height;

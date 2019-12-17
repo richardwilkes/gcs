@@ -21,7 +21,6 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-
 import javax.swing.JComboBox;
 
 /** A spell bonus editor. */
@@ -42,7 +41,7 @@ public class SpellBonusEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         SpellBonus bonus = (SpellBonus) getFeature();
 
-        FlexRow    row   = new FlexRow();
+        FlexRow row = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999, 999));
@@ -53,13 +52,13 @@ public class SpellBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
 
-        row.add(addComboBox(COLLEGE_TYPE, new Object[] { getMatchText(true, ""), getMatchText(false, SpellBonus.TAG_COLLEGE_NAME), getMatchText(false, ""), getMatchText(false, SpellBonus.TAG_POWER_SOURCE_NAME) }, getMatchText(bonus.allColleges(), bonus.getMatchType())));
-        if (!bonus.allColleges()) {
+        row.add(addComboBox(COLLEGE_TYPE, new Object[]{getMatchText(true, ""), getMatchText(false, SpellBonus.TAG_COLLEGE_NAME), getMatchText(false, ""), getMatchText(false, SpellBonus.TAG_POWER_SOURCE_NAME)}, getMatchText(bonus.allColleges(), bonus.getMatchType())));
+        if (bonus.allColleges()) {
+            row.add(new FlexSpacer(0, 0, true, false));
+        } else {
             StringCriteria criteria = bonus.getNameCriteria();
             row.add(addStringCompareCombo(criteria, ""));
             row.add(addStringCompareField(criteria));
-        } else {
-            row.add(new FlexSpacer(0, 0, true, false));
         }
         grid.add(row, 1, 0);
 

@@ -27,6 +27,7 @@ import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,62 +35,58 @@ import java.util.regex.Pattern;
 /** Holds damage a weapon does, broken down for easier manipulation. */
 public class WeaponDamage {
     /** The XML tag used for weapon damage. */
-    public static final String   TAG_ROOT                         = "damage";
-    private static final String  ATTR_TYPE                        = "type";
-    private static final String  ATTR_ST                          = "st";
-    private static final String  ATTR_BASE                        = "base";
-    private static final String  ATTR_FRAGMENTATION               = "fragmentation";
-    private static final String  ATTR_ARMOR_DIVISOR               = "armor_divisor";
-    private static final String  ATTR_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
-    private static final String  ATTR_FRAGMENTATION_TYPE          = "fragmentation_type";
-    private static final String  ATTR_MODIFIER_PER_DIE            = "modifier_per_die";
-    private static final String  DICE_REGEXP_PIECE                = "\\d+[dD]\\d*(\\s*[+-]\\s*\\d+)?(\\s*[xX]\\s*\\d+)?";
-    private static final String  DIVISOR_REGEXP_PIECE             = "\\s*(\\(\\s*(?<divisor>\\d+(\\.\\d+)?|∞)\\s*\\))?";
-    private static final String  FRAG_REGEXP_PIECE                = "\\s*(\\[\\s*(?<frag>" + DICE_REGEXP_PIECE + ")\\s*(\\(\\s*(?<fragDivisor>\\d+(\\.\\d+)?|∞)\\s*\\))?\\s*(?<fragType>cr|cut)?\\])";
-    private static final String  REMAINDER_REGEXP_PIECE           = "(?<remainder>.*)";
-    private static final String  DAMAGE_REGEXP_STR                = "^\\s*\\+?\\s*(?<dice>" + DICE_REGEXP_PIECE + ")" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
-    private static final String  DAMAGE_ALT_REGEX_STR             = "^\\s*(?<dice>[+-]?\\s*\\d+)?(:(?<perDie>[-+]\\d+))?" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
-    private static final String  TRAILING_FRAG_REGEXP_STR         = "^" + REMAINDER_REGEXP_PIECE + FRAG_REGEXP_PIECE + "$";
-    private static final Pattern DAMAGE_REGEXP                    = Pattern.compile(DAMAGE_REGEXP_STR);
-    private static final Pattern DAMAGE_ALT_REGEXP                = Pattern.compile(DAMAGE_ALT_REGEX_STR);
-    private static final Pattern TRAILING_FRAG_REGEXP             = Pattern.compile(TRAILING_FRAG_REGEXP_STR);
-    private WeaponStats          mOwner;
-    private String               mType;
-    private WeaponSTDamage       mST;
-    private Dice                 mBase;
-    private double               mArmorDivisor;
-    private Dice                 mFragmentation;
-    private double               mFragmentationArmorDivisor;
-    private String               mFragmentationType;
-    private int                  mModifierPerDie;
+    public static final  String         TAG_ROOT                         = "damage";
+    private static final String         ATTR_TYPE                        = "type";
+    private static final String         ATTR_ST                          = "st";
+    private static final String         ATTR_BASE                        = "base";
+    private static final String         ATTR_FRAGMENTATION               = "fragmentation";
+    private static final String         ATTR_ARMOR_DIVISOR               = "armor_divisor";
+    private static final String         ATTR_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
+    private static final String         ATTR_FRAGMENTATION_TYPE          = "fragmentation_type";
+    private static final String         ATTR_MODIFIER_PER_DIE            = "modifier_per_die";
+    private static final String         DICE_REGEXP_PIECE                = "\\d+[dD]\\d*(\\s*[+-]\\s*\\d+)?(\\s*[xX]\\s*\\d+)?";
+    private static final String         DIVISOR_REGEXP_PIECE             = "\\s*(\\(\\s*(?<divisor>\\d+(\\.\\d+)?|∞)\\s*\\))?";
+    private static final String         FRAG_REGEXP_PIECE                = "\\s*(\\[\\s*(?<frag>" + DICE_REGEXP_PIECE + ")\\s*(\\(\\s*(?<fragDivisor>\\d+(\\.\\d+)?|∞)\\s*\\))?\\s*(?<fragType>cr|cut)?\\])";
+    private static final String         REMAINDER_REGEXP_PIECE           = "(?<remainder>.*)";
+    private static final String         DAMAGE_REGEXP_STR                = "^\\s*\\+?\\s*(?<dice>" + DICE_REGEXP_PIECE + ")" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
+    private static final String         DAMAGE_ALT_REGEX_STR             = "^\\s*(?<dice>[+-]?\\s*\\d+)?(:(?<perDie>[-+]\\d+))?" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
+    private static final String         TRAILING_FRAG_REGEXP_STR         = "^" + REMAINDER_REGEXP_PIECE + FRAG_REGEXP_PIECE + "$";
+    private static final Pattern        DAMAGE_REGEXP                    = Pattern.compile(DAMAGE_REGEXP_STR);
+    private static final Pattern        DAMAGE_ALT_REGEXP                = Pattern.compile(DAMAGE_ALT_REGEX_STR);
+    private static final Pattern        TRAILING_FRAG_REGEXP             = Pattern.compile(TRAILING_FRAG_REGEXP_STR);
+    private              WeaponStats    mOwner;
+    private              String         mType;
+    private              WeaponSTDamage mST;
+    private              Dice           mBase;
+    private              double         mArmorDivisor;
+    private              Dice           mFragmentation;
+    private              double         mFragmentationArmorDivisor;
+    private              String         mFragmentationType;
+    private              int            mModifierPerDie;
 
     public WeaponDamage(WeaponStats owner) {
-        mType         = "";
-        mOwner        = owner;
-        mST           = WeaponSTDamage.NONE;
+        mType = "";
+        mOwner = owner;
+        mST = WeaponSTDamage.NONE;
         mArmorDivisor = 1;
     }
 
     public WeaponDamage(XMLReader reader, WeaponStats owner) throws IOException {
         mOwner = owner;
-        mType  = reader.getAttribute(ATTR_TYPE, "");
-        if (reader.hasAttribute(ATTR_ST)) {
-            mST = Enums.extract(reader.getAttribute(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
-        } else {
-            mST = WeaponSTDamage.NONE;
-        }
+        mType = reader.getAttribute(ATTR_TYPE, "");
+        mST = reader.hasAttribute(ATTR_ST) ? Enums.extract(reader.getAttribute(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE) : WeaponSTDamage.NONE;
         if (reader.hasAttribute(ATTR_BASE)) {
             mBase = new Dice(reader.getAttribute(ATTR_BASE));
         }
-        mArmorDivisor   = reader.getAttributeAsDouble(ATTR_ARMOR_DIVISOR, 1);
+        mArmorDivisor = reader.getAttributeAsDouble(ATTR_ARMOR_DIVISOR, 1);
         mModifierPerDie = reader.getAttributeAsInteger(ATTR_MODIFIER_PER_DIE, 0);
         if (reader.hasAttribute(ATTR_FRAGMENTATION)) {
-            mFragmentation             = new Dice(reader.getAttribute(ATTR_FRAGMENTATION));
-            mFragmentationType         = reader.getAttribute(ATTR_FRAGMENTATION_TYPE, "cut");
+            mFragmentation = new Dice(reader.getAttribute(ATTR_FRAGMENTATION));
+            mFragmentationType = reader.getAttribute(ATTR_FRAGMENTATION_TYPE, "cut");
             mFragmentationArmorDivisor = reader.getAttributeAsDouble(ATTR_FRAGMENTATION_ARMOR_DIVISOR, 1);
         }
         String text = reader.readText().trim();
-        if (text.length() > 0) {
+        if (!text.isEmpty()) {
             // If we find text here, then we have an old damage value that needs to be converted.
             setValuesFromFreeformDamageString(text);
         }
@@ -108,7 +105,7 @@ public class WeaponDamage {
         }
         if (mBase != null) {
             String base = mBase.toString();
-            if (!base.equals("0")) {
+            if (!"0".equals(base)) {
                 out.writeAttribute(ATTR_BASE, base);
             }
         }
@@ -117,7 +114,7 @@ public class WeaponDamage {
         }
         if (mFragmentation != null) {
             String frag = mFragmentation.toString();
-            if (!frag.equals("0")) {
+            if (!"0".equals(frag)) {
                 out.writeAttribute(ATTR_FRAGMENTATION, frag);
                 if (mFragmentationArmorDivisor != 1) {
                     out.writeAttribute(ATTR_FRAGMENTATION_ARMOR_DIVISOR, mFragmentationArmorDivisor);
@@ -132,15 +129,15 @@ public class WeaponDamage {
     public WeaponDamage clone(WeaponStats owner) {
         WeaponDamage other = new WeaponDamage(owner);
         other.mType = mType;
-        other.mST   = mST;
+        other.mST = mST;
         if (mBase != null) {
             other.mBase = mBase.clone();
         }
-        other.mArmorDivisor   = mArmorDivisor;
+        other.mArmorDivisor = mArmorDivisor;
         other.mModifierPerDie = mModifierPerDie;
         if (mFragmentation != null) {
-            other.mFragmentation             = mFragmentation.clone();
-            other.mFragmentationType         = mFragmentationType;
+            other.mFragmentation = mFragmentation.clone();
+            other.mFragmentationType = mFragmentationType;
             other.mFragmentationArmorDivisor = mFragmentationArmorDivisor;
         }
         return other;
@@ -162,7 +159,7 @@ public class WeaponDamage {
         }
         if (obj instanceof WeaponDamage) {
             WeaponDamage other = (WeaponDamage) obj;
-            if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mModifierPerDie == other.mModifierPerDie && (mBase == null ? other.mBase == null : mBase.equals(other.mBase))) {
+            if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mModifierPerDie == other.mModifierPerDie && Objects.equals(mBase, other.mBase)) {
                 if (mFragmentation == null) {
                     return other.mFragmentation == null;
                 }
@@ -175,20 +172,28 @@ public class WeaponDamage {
     public void setValuesFromFreeformDamageString(String text) {
         // Fix up some known bad data file input
         text = text.trim();
-        if (text.equals("1d (+1d) burn")) {
+        switch (text) {
+        case "1d (+1d) burn":
             text = "1d burn";
-        } else if (text.equals("Sw cut -1")) {
+            break;
+        case "Sw cut -1":
             text = "sw-1 cut";
-        } else if (text.equals("Thr imp +1")) {
+            break;
+        case "Thr imp +1":
             text = "thr+1 imp";
-        } else if (text.equals("Thr +1")) {
+            break;
+        case "Thr +1":
             text = "thr+1";
-        } else if (text.equals("th-1 imp")) {
+            break;
+        case "th-1 imp":
             text = "thr-1 imp";
-        } else if (text.equals("40mm warhead")) {
+            break;
+        case "40mm warhead":
             text = "2d [2d] cr ex";
-        } else if (text.equals("3d cr (x5)")) {
+            break;
+        case "3d cr (x5)":
             text = "3dx5 cr";
+            break;
         }
         String saved = text;
 
@@ -199,11 +204,8 @@ public class WeaponDamage {
                 int i = text.indexOf(one.toString());
                 if (i != -1) {
                     mST = one;
-                    if (i > 0 && text.charAt(i - 1) == '+') {
-                        text = text.substring(0, i - 1) + text.substring(i + one.toString().length());
-                    } else {
-                        text = text.substring(0, i) + text.substring(i + one.toString().length());
-                    }
+                    String s = text.substring(i + one.toString().length());
+                    text = i > 0 && text.charAt(i - 1) == '+' ? text.substring(0, i - 1) + s : text.substring(0, i) + s;
                     break;
                 }
             }
@@ -214,31 +216,19 @@ public class WeaponDamage {
         Matcher matcher   = DAMAGE_REGEXP.matcher(text);
         boolean matches   = matcher.matches();
         if (!matches) {
-            matcher   = DAMAGE_ALT_REGEXP.matcher(text);
-            matches   = matcher.matches();
+            matcher = DAMAGE_ALT_REGEXP.matcher(text);
+            matches = matcher.matches();
             hasPerDie = true;
         }
         if (matches) {
             String value = matcher.group("dice");
-            if (value != null) {
-                mBase = new Dice(value.replaceAll(" ", "").toLowerCase());
-            } else {
-                mBase = null;
-            }
+            mBase = value != null ? new Dice(value.replaceAll(" ", "").toLowerCase()) : null;
             value = matcher.group("divisor");
-            if (value != null) {
-                mArmorDivisor = Numbers.extractDouble(value.replaceAll(" ", ""), 1, false);
-            } else {
-                mArmorDivisor = 1;
-            }
+            mArmorDivisor = value != null ? Numbers.extractDouble(value.replaceAll(" ", ""), 1, false) : 1;
             extractFragInfo(matcher);
             if (hasPerDie) {
                 value = matcher.group("perDie");
-                if (value != null) {
-                    mModifierPerDie = Numbers.extractInteger(value.trim(), 0, false);
-                } else {
-                    mModifierPerDie = 0;
-                }
+                mModifierPerDie = value != null ? Numbers.extractInteger(value.trim(), 0, false) : 0;
             }
             mType = matcher.group("remainder");
             if (mType != null) {
@@ -248,21 +238,17 @@ public class WeaponDamage {
                     mType = matcher.group("remainder");
                 }
             }
-            if (mType == null) {
-                mType = "";
-            } else {
-                mType = mType.trim();
-            }
+            mType = mType == null ? "" : mType.trim();
         } else {
             // No match, just copy the saved text into type and clear the other fields
-            mType                      = saved;
-            mST                        = WeaponSTDamage.NONE;
-            mBase                      = null;
-            mArmorDivisor              = 1;
-            mFragmentation             = null;
+            mType = saved;
+            mST = WeaponSTDamage.NONE;
+            mBase = null;
+            mArmorDivisor = 1;
+            mFragmentation = null;
             mFragmentationArmorDivisor = 0;
-            mFragmentationType         = null;
-            mModifierPerDie            = 0;
+            mFragmentationType = null;
+            mModifierPerDie = 0;
         }
     }
 
@@ -270,20 +256,16 @@ public class WeaponDamage {
         String value = matcher.group("frag");
         if (value != null) {
             mFragmentation = new Dice(value.replaceAll(" ", "").toLowerCase());
-            value          = matcher.group("fragDivisor");
-            if (value != null) {
-                mFragmentationArmorDivisor = Numbers.extractDouble(value.replaceAll(" ", ""), 1, false);
-            } else {
-                mFragmentationArmorDivisor = 1;
-            }
+            value = matcher.group("fragDivisor");
+            mFragmentationArmorDivisor = value != null ? Numbers.extractDouble(value.replaceAll(" ", ""), 1, false) : 1;
             mFragmentationType = matcher.group("fragType");
             if (mFragmentationType == null) {
                 mFragmentationType = "cut";
             }
         } else {
-            mFragmentation             = null;
+            mFragmentation = null;
             mFragmentationArmorDivisor = 0;
-            mFragmentationType         = null;
+            mFragmentationType = null;
         }
     }
 
@@ -309,7 +291,7 @@ public class WeaponDamage {
     }
 
     public void setBase(Dice base) {
-        if (mBase == null ? base != null : !mBase.equals(base)) {
+        if (!Objects.equals(mBase, base)) {
             mBase = base;
             notifySingle();
         }
@@ -342,9 +324,9 @@ public class WeaponDamage {
         if (type == null) {
             type = "cut";
         }
-        mFragmentation             = fragmentation;
+        mFragmentation = fragmentation;
         mFragmentationArmorDivisor = armorDivisor;
-        mFragmentationType         = type;
+        mFragmentationType = type;
         notifySingle();
     }
 
@@ -378,7 +360,7 @@ public class WeaponDamage {
     public String getDamageToolTip() {
         StringBuilder toolTip = new StringBuilder();
         getResolvedDamage(toolTip);
-        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip.toString() : I18n.Text("No additional modifiers");
+        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip : I18n.Text("No additional modifiers");
     }
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
@@ -386,12 +368,12 @@ public class WeaponDamage {
         if (mOwner.mOwner != null) {
             DataFile df = mOwner.mOwner.getDataFile();
             if (df instanceof GURPSCharacter) {
-                GURPSCharacter       character  = (GURPSCharacter) df;
-                HashSet<WeaponBonus> bonuses    = new HashSet<>();
-                Set<String>          categories = mOwner.getCategories();
-                int                  maxST      = mOwner.getMinStrengthValue() * 3;
-                int                  st         = character.getStrength() + character.getStrikingStrengthBonus();
-                Dice                 base       = new Dice(0, 0);
+                GURPSCharacter   character  = (GURPSCharacter) df;
+                Set<WeaponBonus> bonuses    = new HashSet<>();
+                Set<String>      categories = mOwner.getCategories();
+                int              maxST      = mOwner.getMinStrengthValue() * 3;
+                int              st         = character.getStrength() + character.getStrikingStrengthBonus();
+                Dice             base       = new Dice(0, 0);
                 for (SkillDefault one : mOwner.getDefaults()) {
                     if (one.getType().isSkillBased()) {
                         bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), categories, toolTip));
@@ -465,7 +447,7 @@ public class WeaponDamage {
                 }
                 if (mFragmentation != null) {
                     String frag = mFragmentation.toString();
-                    if (!frag.equals("0")) {
+                    if (!"0".equals(frag)) {
                         buffer.append(" [");
                         buffer.append(frag);
                         if (mFragmentationArmorDivisor != 1) {
@@ -496,7 +478,7 @@ public class WeaponDamage {
         }
         if (mBase != null) {
             String base = mBase.toString();
-            if (!base.equals("0")) {
+            if (!"0".equals(base)) {
                 if (buffer.length() > 0) {
                     char ch = base.charAt(0);
                     if (ch != '+' && ch != '-') {
@@ -525,7 +507,7 @@ public class WeaponDamage {
         }
         if (mFragmentation != null) {
             String frag = mFragmentation.toString();
-            if (!frag.equals("0")) {
+            if (!"0".equals(frag)) {
                 buffer.append(" [");
                 buffer.append(frag);
                 if (mFragmentationArmorDivisor != 1) {

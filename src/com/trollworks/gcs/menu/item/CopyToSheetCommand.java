@@ -28,8 +28,8 @@ public class CopyToSheetCommand extends Command {
     public static final String             CMD_COPY_TO_SHEET = "CopyToSheet";
     /** The singleton {@link CopyToSheetCommand} for the menu bar. */
     public static final CopyToSheetCommand INSTANCE          = new CopyToSheetCommand();
-    private ListOutline                    mOutline;
-    private SheetDockable                  mSheet;
+    private             ListOutline        mOutline;
+    private             SheetDockable      mSheet;
 
     private CopyToSheetCommand() {
         super(I18n.Text("Copy to Character Sheet"), CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
@@ -44,7 +44,7 @@ public class CopyToSheetCommand extends Command {
     public CopyToSheetCommand(ListOutline outline, SheetDockable sheet) {
         super(sheet.getTitle(), CMD_COPY_TO_SHEET);
         mOutline = outline;
-        mSheet   = sheet;
+        mSheet = sheet;
     }
 
     @Override

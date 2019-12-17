@@ -23,7 +23,7 @@ import java.io.IOException;
 /** The stats for a ranged weapon. */
 public class RangedWeaponStats extends WeaponStats {
     /** The root XML tag. */
-    public static final String  TAG_ROOT         = "ranged_weapon";
+    public static final  String TAG_ROOT         = "ranged_weapon";
     private static final String TAG_ACCURACY     = "accuracy";
     private static final String TAG_RANGE        = "range";
     private static final String TAG_RATE_OF_FIRE = "rate_of_fire";
@@ -31,23 +31,23 @@ public class RangedWeaponStats extends WeaponStats {
     private static final String TAG_BULK         = "bulk";
     private static final String TAG_RECOIL       = "recoil";
     /** The field ID for accuracy changes. */
-    public static final String  ID_ACCURACY      = PREFIX + TAG_ACCURACY;
+    public static final  String ID_ACCURACY      = PREFIX + TAG_ACCURACY;
     /** The field ID for range changes. */
-    public static final String  ID_RANGE         = PREFIX + TAG_RANGE;
+    public static final  String ID_RANGE         = PREFIX + TAG_RANGE;
     /** The field ID for rate of fire changes. */
-    public static final String  ID_RATE_OF_FIRE  = PREFIX + TAG_RATE_OF_FIRE;
+    public static final  String ID_RATE_OF_FIRE  = PREFIX + TAG_RATE_OF_FIRE;
     /** The field ID for shots changes. */
-    public static final String  ID_SHOTS         = PREFIX + TAG_SHOTS;
+    public static final  String ID_SHOTS         = PREFIX + TAG_SHOTS;
     /** The field ID for bulk changes. */
-    public static final String  ID_BULK          = PREFIX + TAG_BULK;
+    public static final  String ID_BULK          = PREFIX + TAG_BULK;
     /** The field ID for recoil changes. */
-    public static final String  ID_RECOIL        = PREFIX + TAG_RECOIL;
-    private String              mAccuracy;
-    private String              mRange;
-    private String              mRateOfFire;
-    private String              mShots;
-    private String              mBulk;
-    private String              mRecoil;
+    public static final  String ID_RECOIL        = PREFIX + TAG_RECOIL;
+    private              String mAccuracy;
+    private              String mRange;
+    private              String mRateOfFire;
+    private              String mShots;
+    private              String mBulk;
+    private              String mRecoil;
 
     /**
      * Creates a new {@link RangedWeaponStats}.
@@ -66,12 +66,12 @@ public class RangedWeaponStats extends WeaponStats {
      */
     public RangedWeaponStats(ListRow owner, RangedWeaponStats other) {
         super(owner, other);
-        mAccuracy   = other.mAccuracy;
-        mRange      = other.mRange;
+        mAccuracy = other.mAccuracy;
+        mRange = other.mRange;
         mRateOfFire = other.mRateOfFire;
-        mShots      = other.mShots;
-        mBulk       = other.mBulk;
-        mRecoil     = other.mRecoil;
+        mShots = other.mShots;
+        mBulk = other.mBulk;
+        mRecoil = other.mRecoil;
     }
 
     /**
@@ -91,12 +91,12 @@ public class RangedWeaponStats extends WeaponStats {
 
     @Override
     protected void initialize() {
-        mAccuracy   = "";
-        mRange      = "";
+        mAccuracy = "";
+        mRange = "";
         mRateOfFire = "";
-        mShots      = "";
-        mBulk       = "";
-        mRecoil     = "";
+        mShots = "";
+        mBulk = "";
+        mRecoil = "";
     }
 
     @Override
@@ -187,14 +187,14 @@ public class RangedWeaponStats extends WeaponStats {
 
             do {
                 savedRange = range;
-                range      = resolveRange(range, strength);
+                range = resolveRange(range, strength);
             } while (!savedRange.equals(range));
         }
         return range;
     }
 
     private String resolveRange(String range, int strength) {
-        int where = range.indexOf("x");
+        int where = range.indexOf('x');
 
         if (where != -1) {
             int last = where + 1;
@@ -215,7 +215,7 @@ public class RangedWeaponStats extends WeaponStats {
                         value *= 10.0;
                         value += ch - '0';
                     } else {
-                        value      += (ch - '0') * multiplier;
+                        value += (ch - '0') * multiplier;
                         multiplier *= 0.1;
                     }
                     if (++last >= max) {
@@ -224,10 +224,9 @@ public class RangedWeaponStats extends WeaponStats {
                     ch = range.charAt(last);
                 }
                 if (found) {
-                    StringBuffer buffer = new StringBuffer();
-
+                    StringBuilder buffer = new StringBuilder();
                     if (where > 0) {
-                        buffer.append(range.substring(0, where));
+                        buffer.append(range, 0, where);
                     }
                     strength *= value;
                     buffer.append(Numbers.format(strength));

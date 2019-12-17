@@ -12,7 +12,6 @@
 package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.skill.Defaults;
-import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.UIUtilities;
@@ -43,7 +42,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -57,7 +55,6 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     private WeaponOutline                mOutline;
     private IconButton                   mAddButton;
     private IconButton                   mDeleteButton;
-    private JPanel                       mEditorPanel;
     private EditorField                  mUsage;
     private EditorField                  mStrength;
     private JComboBox<WeaponSTDamage>    mDamageSTCombo;
@@ -82,9 +79,9 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
      */
     public WeaponEditor(ListRow owner, List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
         super(new BorderLayout());
-        mOwner        = owner;
-        mWeaponClass  = weaponClass;
-        mAddButton    = new IconButton(StdImage.ADD, I18n.Text("Add an attack"), () -> addWeapon());
+        mOwner = owner;
+        mWeaponClass = weaponClass;
+        mAddButton = new IconButton(StdImage.ADD, I18n.Text("Add an attack"), () -> addWeapon());
         mDeleteButton = new IconButton(StdImage.REMOVE, I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
         Panel top  = new Panel(new BorderLayout());
@@ -110,7 +107,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
 
     /** @return The weapons in this editor. */
     public List<WeaponStats> getWeapons() {
-        ArrayList<WeaponStats> weapons = new ArrayList<>();
+        List<WeaponStats> weapons = new ArrayList<>();
         for (Row row : mOutline.getModel().getRows()) {
             weapons.add(((WeaponDisplayRow) row).getWeapon().clone(mOwner));
         }
@@ -146,15 +143,15 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     private Container createEditorPanel() {
         JPanel wrapper = new JPanel(new ColumnLayout(2));
         wrapper.setBorder(new EmptyBorder(5));
-        mEditorPanel = new JPanel(new ColumnLayout(1, RowDistribution.GIVE_EXCESS_TO_LAST));
-        mEditorPanel.add(wrapper);
+        JPanel editorPanel = new JPanel(new ColumnLayout(1, RowDistribution.GIVE_EXCESS_TO_LAST));
+        editorPanel.add(wrapper);
 
         JPanel firstPanel = new JPanel(new ColumnLayout(3));
         String tooltip    = I18n.Text("Usage");
         mUsage = createTextField(null, tooltip);
         wrapper.add(new LinkedLabel(tooltip, mUsage));
         firstPanel.add(mUsage);
-        tooltip   = I18n.Text("Minimum Strength");
+        tooltip = I18n.Text("Minimum Strength");
         mStrength = createTextField("99**", tooltip);
         firstPanel.add(new LinkedLabel(tooltip, mStrength));
         firstPanel.add(mStrength);
@@ -194,9 +191,9 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         wrapper.add(fragPanel);
 
         createFields(wrapper);
-        createDefaults(mEditorPanel);
+        createDefaults(editorPanel);
         setWeaponState(false);
-        return mEditorPanel;
+        return editorPanel;
     }
 
     /**
@@ -207,7 +204,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     protected abstract void createFields(Container parent);
 
     private void createDefaults(Container parent) {
-        mDefaults = new Defaults(new ArrayList<SkillDefault>());
+        mDefaults = new Defaults(new ArrayList<>());
         mDefaults.removeAll();
         mDefaults.addActionListener(this);
         JScrollPane scrollPanel = new JScrollPane(mDefaults);
@@ -223,8 +220,8 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     /**
      * Creates a new text field.
      *
-     * @param protoValue A prototype value. If not <code>null</code>, will be used to set the only
-     *                   size the field can have.
+     * @param protoValue A prototype value. If not {@code null}, will be used to set the only size
+     *                   the field can have.
      * @param tooltip    The tooltip to set on the field.
      * @return The newly created field.
      */

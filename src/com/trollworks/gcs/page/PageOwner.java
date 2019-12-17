@@ -20,10 +20,10 @@ import java.awt.Insets;
 /** Objects which control printable pages must implement this interface. */
 public interface PageOwner {
     /** @return The scale to use. */
-    public Scale getScale();
+    Scale getScale();
 
     /** @return The page settings. */
-    public PrintManager getPageSettings();
+    PrintManager getPageSettings();
 
     /**
      * Called so the page owner can draw headers, footers, etc.
@@ -31,11 +31,11 @@ public interface PageOwner {
      * @param page The page to work on.
      * @param gc   The graphics object to work with.
      */
-    public void drawPageAdornments(Page page, Graphics gc);
+    void drawPageAdornments(Page page, Graphics gc);
 
     /**
      * @param page The page to work on.
      * @return The unscaled insets required for the page adornments.
      */
-    public Insets getPageAdornmentsInsets(Page page);
+    Insets getPageAdornmentsInsets(Page page);
 }

@@ -16,7 +16,6 @@ import com.trollworks.toolkit.ui.widget.Label;
 import com.trollworks.toolkit.utility.text.Text;
 
 import java.awt.Color;
-
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 

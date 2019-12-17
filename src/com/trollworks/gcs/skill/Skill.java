@@ -34,65 +34,66 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
-    private static final int       CURRENT_VERSION          = 3;
+    private static final int               CURRENT_VERSION          = 3;
     /** The extension for Skill lists. */
-    public static final String     OLD_SKILL_EXTENSION      = "skl";
+    public static final  String            OLD_SKILL_EXTENSION      = "skl";
     /** The XML tag used for items. */
-    public static final String     TAG_SKILL                = "skill";
+    public static final  String            TAG_SKILL                = "skill";
     /** The XML tag used for containers. */
-    public static final String     TAG_SKILL_CONTAINER      = "skill_container";
-    private static final String    TAG_NAME                 = "name";
-    private static final String    TAG_SPECIALIZATION       = "specialization";
-    private static final String    TAG_TECH_LEVEL           = "tech_level";
-    private static final String    TAG_DIFFICULTY           = "difficulty";
-    private static final String    TAG_POINTS               = "points";
-    private static final String    TAG_REFERENCE            = "reference";
-    private static final String    TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";
+    public static final  String            TAG_SKILL_CONTAINER      = "skill_container";
+    private static final String            TAG_NAME                 = "name";
+    private static final String            TAG_SPECIALIZATION       = "specialization";
+    private static final String            TAG_TECH_LEVEL           = "tech_level";
+    private static final String            TAG_DIFFICULTY           = "difficulty";
+    private static final String            TAG_POINTS               = "points";
+    private static final String            TAG_REFERENCE            = "reference";
+    private static final String            TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";
     /** The prefix used in front of all IDs for the skills. */
-    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill.";
+    public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill.";
     /** The field ID for name changes. */
-    public static final String     ID_NAME                  = PREFIX + "Name";
+    public static final  String            ID_NAME                  = PREFIX + "Name";
     /** The field ID for specialization changes. */
-    public static final String     ID_SPECIALIZATION        = PREFIX + "Specialization";
+    public static final  String            ID_SPECIALIZATION        = PREFIX + "Specialization";
     /** The field ID for tech level changes. */
-    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";
+    public static final  String            ID_TECH_LEVEL            = PREFIX + "TechLevel";
     /** The field ID for level changes. */
-    public static final String     ID_LEVEL                 = PREFIX + "Level";
+    public static final  String            ID_LEVEL                 = PREFIX + "Level";
     /** The field ID for relative level changes. */
-    public static final String     ID_RELATIVE_LEVEL        = PREFIX + "RelativeLevel";
+    public static final  String            ID_RELATIVE_LEVEL        = PREFIX + "RelativeLevel";
     /** The field ID for difficulty changes. */
-    public static final String     ID_DIFFICULTY            = PREFIX + "Difficulty";
+    public static final  String            ID_DIFFICULTY            = PREFIX + "Difficulty";
     /** The field ID for point changes. */
-    public static final String     ID_POINTS                = PREFIX + "Points";
+    public static final  String            ID_POINTS                = PREFIX + "Points";
     /** The field ID for page reference changes. */
-    public static final String     ID_REFERENCE             = PREFIX + "Reference";
+    public static final  String            ID_REFERENCE             = PREFIX + "Reference";
     /** The field ID for enumbrance penalty multiplier changes. */
-    public static final String     ID_ENCUMBRANCE_PENALTY   = PREFIX + "EncMultplier";
+    public static final  String            ID_ENCUMBRANCE_PENALTY   = PREFIX + "EncMultplier";
     /** The field ID for when the categories change. */
-    public static final String     ID_CATEGORY              = PREFIX + "Category";
+    public static final  String            ID_CATEGORY              = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";
+    public static final  String            ID_LIST_CHANGED          = PREFIX + "ListChanged";
     /** The field ID for when the skill becomes or stops being a weapon. */
-    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
-    private String                 mName;
-    private String                 mSpecialization;
-    private String                 mTechLevel;
-    private SkillLevel             mLevel;
-    private SkillAttribute         mAttribute;
-    private SkillDifficulty        mDifficulty;
+    public static final  String            ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
+    private              String            mName;
+    private              String            mSpecialization;
+    private              String            mTechLevel;
+    private              SkillLevel        mLevel;
+    private              SkillAttribute    mAttribute;
+    private              SkillDifficulty   mDifficulty;
     /** The points spent. */
-    protected int                  mPoints;
-    private String                 mReference;
-    private int                    mEncumbrancePenaltyMultiplier;
-    private ArrayList<WeaponStats> mWeapons;
-    private SkillDefault           mDefaultedFrom;
+    protected            int               mPoints;
+    private              String            mReference;
+    private              int               mEncumbrancePenaltyMultiplier;
+    private              List<WeaponStats> mWeapons;
+    private              SkillDefault      mDefaultedFrom;
 
     /**
      * Creates a string suitable for displaying the level.
@@ -121,14 +122,14 @@ public class Skill extends ListRow implements HasSourceReference {
      */
     public Skill(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mName           = getLocalizedName();
+        mName = getLocalizedName();
         mSpecialization = "";
-        mTechLevel      = null;
-        mAttribute      = SkillAttribute.DX;
-        mDifficulty     = SkillDifficulty.A;
-        mPoints         = 1;
-        mReference      = "";
-        mWeapons        = new ArrayList<>();
+        mTechLevel = null;
+        mAttribute = SkillAttribute.DX;
+        mDifficulty = SkillDifficulty.A;
+        mPoints = 1;
+        mReference = "";
+        mWeapons = new ArrayList<>();
         updateLevel(false);
     }
 
@@ -142,20 +143,20 @@ public class Skill extends ListRow implements HasSourceReference {
      */
     public Skill(DataFile dataFile, Skill skill, boolean deep, boolean forSheet) {
         super(dataFile, skill);
-        mName                         = skill.mName;
-        mSpecialization               = skill.mSpecialization;
-        mTechLevel                    = skill.mTechLevel;
-        mAttribute                    = skill.mAttribute;
-        mDifficulty                   = skill.mDifficulty;
-        mPoints                       = forSheet ? skill.mPoints : 1;
-        mReference                    = skill.mReference;
+        mName = skill.mName;
+        mSpecialization = skill.mSpecialization;
+        mTechLevel = skill.mTechLevel;
+        mAttribute = skill.mAttribute;
+        mDifficulty = skill.mDifficulty;
+        mPoints = forSheet ? skill.mPoints : 1;
+        mReference = skill.mReference;
         mEncumbrancePenaltyMultiplier = skill.mEncumbrancePenaltyMultiplier;
         if (forSheet && dataFile instanceof GURPSCharacter) {
             if (mTechLevel != null) {
                 mTechLevel = ((GURPSCharacter) dataFile).getDescription().getTechLevel();
             }
         } else {
-            if (mTechLevel != null && mTechLevel.trim().length() > 0) {
+            if (mTechLevel != null && !mTechLevel.trim().isEmpty()) {
                 mTechLevel = "";
             }
         }
@@ -206,7 +207,7 @@ public class Skill extends ListRow implements HasSourceReference {
                         if (mAttribute == row.mAttribute) {
                             if (mDifficulty == row.mDifficulty) {
                                 if (mName.equals(row.mName)) {
-                                    if (mTechLevel == null ? row.mTechLevel == null : mTechLevel.equals(row.mTechLevel)) {
+                                    if (Objects.equals(mTechLevel, row.mTechLevel)) {
                                         if (mSpecialization.equals(row.mSpecialization)) {
                                             if (mReference.equals(row.mReference)) {
                                                 return mWeapons.equals(row.mWeapons);
@@ -251,15 +252,15 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mName                         = getLocalizedName();
-        mSpecialization               = "";
-        mTechLevel                    = null;
-        mAttribute                    = SkillAttribute.DX;
-        mDifficulty                   = SkillDifficulty.A;
-        mPoints                       = 1;
-        mReference                    = "";
+        mName = getLocalizedName();
+        mSpecialization = "";
+        mTechLevel = null;
+        mAttribute = SkillAttribute.DX;
+        mDifficulty = SkillDifficulty.A;
+        mPoints = 1;
+        mReference = "";
         mEncumbrancePenaltyMultiplier = 0;
-        mWeapons                      = new ArrayList<>();
+        mWeapons = new ArrayList<>();
     }
 
     @Override
@@ -271,7 +272,7 @@ public class Skill extends ListRow implements HasSourceReference {
             mSpecialization = reader.readText().replace("\n", " ");
         } else if (TAG_TECH_LEVEL.equals(name)) {
             mTechLevel = reader.readText().replace("\n", " ");
-            if (mTechLevel != null) {
+            if (!mTechLevel.isEmpty()) {
                 DataFile dataFile = getDataFile();
                 if (dataFile instanceof ListFile) {
                     mTechLevel = "";
@@ -415,7 +416,7 @@ public class Skill extends ListRow implements HasSourceReference {
      * @return Whether it was changed.
      */
     public boolean setTechLevel(String techLevel) {
-        if (mTechLevel == null ? techLevel != null : !mTechLevel.equals(techLevel)) {
+        if (!Objects.equals(mTechLevel, techLevel)) {
             mTechLevel = techLevel;
             notifySingle(ID_TECH_LEVEL);
             return true;
@@ -477,14 +478,14 @@ public class Skill extends ListRow implements HasSourceReference {
     /** @return The calculated skill level. */
     protected SkillLevel calculateLevelSelf() {
         mDefaultedFrom = getBestDefaultWithPoints();
-        return calculateLevel(getCharacter(), getName(), getSpecialization(), getCategories(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<String>(), getEncumbrancePenaltyMultiplier());
+        return calculateLevel(getCharacter(), getName(), getSpecialization(), getCategories(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), new HashSet<>(), getEncumbrancePenaltyMultiplier());
     }
 
     /**
      * @param excludes Skills to exclude, other than this one.
      * @return The calculated level.
      */
-    public int getLevel(HashSet<String> excludes) {
+    public int getLevel(Set<String> excludes) {
         return calculateLevel(getCharacter(), getName(), getSpecialization(), getCategories(), getDefaults(), getAttribute(), getDifficulty(), getPoints(), excludes, getEncumbrancePenaltyMultiplier()).mLevel;
     }
 
@@ -505,7 +506,7 @@ public class Skill extends ListRow implements HasSourceReference {
      */
     public boolean setDifficulty(SkillAttribute attribute, SkillDifficulty difficulty) {
         if (mAttribute != attribute || mDifficulty != difficulty) {
-            mAttribute  = attribute;
+            mAttribute = attribute;
             mDifficulty = difficulty;
             startNotify();
             notify(ID_DIFFICULTY, this);
@@ -557,10 +558,10 @@ public class Skill extends ListRow implements HasSourceReference {
 
     @Override
     public boolean contains(String text, boolean lowerCaseOnly) {
-        if (getName().toLowerCase().indexOf(text) != -1) {
+        if (getName().toLowerCase().contains(text)) {
             return true;
         }
-        if (getSpecialization().toLowerCase().indexOf(text) != -1) {
+        if (getSpecialization().toLowerCase().contains(text)) {
             return true;
         }
         return super.contains(text, lowerCaseOnly);
@@ -607,11 +608,7 @@ public class Skill extends ListRow implements HasSourceReference {
         if (canHaveChildren()) {
             return "";
         }
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(localized ? mAttribute.toString() : mAttribute.name());
-        buffer.append("/");
-        buffer.append(localized ? mDifficulty.toString() : mDifficulty.name());
-        return buffer.toString();
+        return (localized ? mAttribute.toString() : mAttribute.name()) + "/" + (localized ? mDifficulty.toString() : mDifficulty.name());
     }
 
     @Override
@@ -625,12 +622,12 @@ public class Skill extends ListRow implements HasSourceReference {
 
             if (techLevel != null) {
                 builder.append("/TL");
-                if (techLevel.length() > 0) {
+                if (!techLevel.isEmpty()) {
                     builder.append(techLevel);
                 }
             }
 
-            if (specialization.length() > 0) {
+            if (!specialization.isEmpty()) {
                 builder.append(" (");
                 builder.append(specialization);
                 builder.append(')');
@@ -679,17 +676,17 @@ public class Skill extends ListRow implements HasSourceReference {
      * @param encPenaltyMult The encumbrance penalty multiplier.
      * @return The calculated skill level.
      */
-    public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, Set<String> categories, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, HashSet<String> excludes, int encPenaltyMult) {
+    public SkillLevel calculateLevel(GURPSCharacter character, String name, String specialization, Set<String> categories, List<SkillDefault> defaults, SkillAttribute attribute, SkillDifficulty difficulty, int points, Set<String> excludes, int encPenaltyMult) {
         StringBuilder toolTip       = new StringBuilder();
         int           relativeLevel = difficulty.getBaseRelativeLevel();
         int           level         = attribute.getBaseSkillLevel(character);
         if (level != Integer.MIN_VALUE) {
-            if (difficulty != SkillDifficulty.W) {
+            if (difficulty == SkillDifficulty.W) {
+                points /= 3;
+            } else {
                 if (mDefaultedFrom != null && mDefaultedFrom.getPoints() > 0) {
                     points += mDefaultedFrom.getPoints();
                 }
-            } else {
-                points /= 3;
             }
 
             if (points > 0) {
@@ -697,7 +694,7 @@ public class Skill extends ListRow implements HasSourceReference {
             } else if (mDefaultedFrom != null && mDefaultedFrom.getPoints() < 0) {
                 relativeLevel = mDefaultedFrom.getAdjLevel() - level;
             } else {
-                level         = Integer.MIN_VALUE;
+                level = Integer.MIN_VALUE;
                 relativeLevel = 0;
             }
 
@@ -710,13 +707,13 @@ public class Skill extends ListRow implements HasSourceReference {
                 }
                 if (character != null) {
                     int bonus = character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, specialization, categories, toolTip);
-                    level         += bonus;
+                    level += bonus;
                     relativeLevel += bonus;
-                    bonus          = character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip);
-                    level         += bonus;
+                    bonus = character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip);
+                    level += bonus;
                     relativeLevel += bonus;
-                    bonus          = character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
-                    level         += bonus;
+                    bonus = character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                    level += bonus;
                     if (bonus != 0) {
                         toolTip.append(String.format(I18n.Text("\nEncumbrance [%d]"), Integer.valueOf(bonus)));
                     }
@@ -824,10 +821,10 @@ public class Skill extends ListRow implements HasSourceReference {
         if (character != null) {
             Collection<SkillDefault> defaults = getDefaults();
             if (!defaults.isEmpty()) {
-                int             best      = Integer.MIN_VALUE;
-                SkillDefault    bestSkill = null;
-                String          exclude   = toString();
-                HashSet<String> excludes  = new HashSet<>();
+                int          best      = Integer.MIN_VALUE;
+                SkillDefault bestSkill = null;
+                String       exclude   = toString();
+                Set<String>  excludes  = new HashSet<>();
                 excludes.add(exclude);
                 for (SkillDefault skillDefault : defaults) {
                     // For skill-based defaults, prune out any that already use a default that we
@@ -841,7 +838,7 @@ public class Skill extends ListRow implements HasSourceReference {
                             level -= character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase());
                         }
                         if (level > best) {
-                            best      = level;
+                            best = level;
                             bestSkill = new SkillDefault(skillDefault);
                             bestSkill.setLevel(level);
                         }
@@ -875,7 +872,7 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         super.fillWithNameableKeys(set);
         extractNameables(set, mName);
         extractNameables(set, mSpecialization);
@@ -887,9 +884,9 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         super.applyNameableKeys(map);
-        mName           = nameNameables(map, mName);
+        mName = nameNameables(map, mName);
         mSpecialization = nameNameables(map, mSpecialization);
         for (WeaponStats weapon : mWeapons) {
             for (SkillDefault one : weapon.getDefaults()) {
@@ -912,7 +909,7 @@ public class Skill extends ListRow implements HasSourceReference {
      */
     protected static Skill getBaseSkill(GURPSCharacter character, SkillDefault skillDefault) {
         if (character != null && skillDefault != null && skillDefault.getType().isSkillBased()) {
-            return character.getBestSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, new HashSet<String>());
+            return character.getBestSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, new HashSet<>());
         }
         return null;
     }

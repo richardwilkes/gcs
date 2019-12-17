@@ -21,8 +21,8 @@ import java.io.IOException;
 /** Manages numeric comparison criteria. */
 public abstract class NumericCriteria {
     /** The comparison attribute. */
-    public static final String ATTRIBUTE_COMPARE = "compare";
-    private NumericCompareType mType;
+    public static final String             ATTRIBUTE_COMPARE = "compare";
+    private             NumericCompareType mType;
 
     /**
      * Creates a new numeric comparison.

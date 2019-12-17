@@ -30,7 +30,6 @@ import com.trollworks.toolkit.utility.Platform;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.swing.JMenu;
 
 /** Provides the standard "Edit" menu. */

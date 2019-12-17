@@ -44,7 +44,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -79,7 +79,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private MeleeWeaponEditor                     mMeleeWeapons;
     private RangedWeaponEditor                    mRangedWeapons;
     private ModifierListEditor                    mModifiers;
-    private JPanel                                mUserDescEditor;
     private int                                   mLastLevel;
     private int                                   mLastPointsPerLevel;
     private boolean                               mLastHalfLevel;
@@ -104,7 +103,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         FlexGrid outerGrid = new FlexGrid();
 
-        JLabel   icon      = new JLabel(advantage.getIcon(true));
+        JLabel icon = new JLabel(advantage.getIcon(true));
         UIUtilities.setOnlySize(icon, icon.getPreferredSize());
         add(icon);
         outerGrid.add(new FlexComponent(icon, Alignment.LEFT_TOP, Alignment.LEFT_TOP), 0, 0);
@@ -132,15 +131,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         boolean notContainer = !advantage.canHaveChildren();
         if (notContainer) {
-            mLastLevel          = mRow.getLevels();
-            mLastHalfLevel      = mRow.hasHalfLevel();
+            mLastLevel = mRow.getLevels();
+            mLastHalfLevel = mRow.hasHalfLevel();
             mLastPointsPerLevel = mRow.getPointsPerLevel();
             if (mLastLevel < 0) {
-                mLastLevel     = 1;
+                mLastLevel = 1;
                 mLastHalfLevel = false;
             }
 
-            row              = new FlexRow();
+            row = new FlexRow();
 
             mBasePointsField = createField(-9999, 9999, mRow.getPoints(), I18n.Text("The base point cost of this advantage"));
             row.add(mBasePointsField);
@@ -148,7 +147,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             innerGrid.add(row, ri++, 1);
 
             mLevelTypeCombo = new JComboBox<>(Levels.values());
-            mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS : Levels.NO_LEVELS);
+            Levels levels = mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS;
+            mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? levels : Levels.NO_LEVELS);
             UIUtilities.setToPreferredSizeOnly(mLevelTypeCombo);
             mLevelTypeCombo.setEnabled(mIsEditable);
             mLevelTypeCombo.addActionListener(this);
@@ -229,7 +229,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             JLabel label = new JLabel(I18n.Text("Type"), SwingConstants.RIGHT);
             label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of advantage this is")));
             add(label);
-            innerGrid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, null), ri++, 0);
+            innerGrid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, null), ri, 0);
 
             mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.Text("Mental"));
             row.add(mMentalType);
@@ -257,7 +257,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of container this is")));
             add(mContainerTypeCombo);
             row.add(mContainerTypeCombo);
-            innerGrid.add(new FlexComponent(new LinkedLabel(I18n.Text("Container Type"), mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri++, 0);
+            innerGrid.add(new FlexComponent(new LinkedLabel(I18n.Text("Container Type"), mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
         }
 
         row.add(new FlexSpacer(0, 0, true, false));
@@ -266,13 +266,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         row.add(createLabel(I18n.Text("Ref"), mReferenceField));
         row.add(mReferenceField);
 
-        mTabPanel  = new JTabbedPane();
+        mTabPanel = new JTabbedPane();
         mModifiers = ModifierListEditor.createEditor(mRow);
         mModifiers.addActionListener(this);
         if (notContainer) {
-            mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
-            mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
+            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
+            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
             Component panel = embedEditor(mPrereqs);
             mTabPanel.addTab(panel.getName(), panel);
@@ -292,9 +292,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
 
         if (mRow.getDataFile() instanceof GURPSCharacter) {
-            mUserDesc       = mRow.getUserDesc();
-            mUserDescEditor = createUserDescEditor();
-            mTabPanel.addTab(I18n.Text("User Description"), mUserDescEditor);
+            mUserDesc = mRow.getUserDesc();
+            mTabPanel.addTab(I18n.Text("User Description"), createUserDescEditor());
         }
 
         if (!mIsEditable) {
@@ -318,7 +317,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         JScrollPane scroller = new JScrollPane(editor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         scroller.setMinimumSize(new Dimension(500, 300));
         icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
+        icon.setAlignmentY(-1);
         content.add(icon);
         content.add(scroller);
 
@@ -336,7 +335,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             }
 
             @Override
-            public void changedUpdate(DocumentEvent arg0) {
+            public void changedUpdate(DocumentEvent e) {
                 mUserDesc = editor.getText();
             }
         });
@@ -353,7 +352,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         return button;
     }
 
-    private LinkedLabel createTypeLabel(RetinaIcon icon, final JCheckBox linkTo) {
+    private LinkedLabel createTypeLabel(RetinaIcon icon, JCheckBox linkTo) {
         LinkedLabel label = new LinkedLabel(icon, linkTo);
         label.addMouseListener(new MouseAdapter() {
             @Override
@@ -436,11 +435,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 modified |= mRow.setPointsPerLevel(0);
                 modified |= mRow.setLevels(-1);
             }
-            if (isLeveled() && allowHalfLevels()) {
-                modified |= mRow.setHalfLevel(getHalfLevel());
-            } else {
-                modified |= mRow.setHalfLevel(false);
-            }
+            modified |= isLeveled() && allowHalfLevels() ? mRow.setHalfLevel(getHalfLevel()) : mRow.setHalfLevel(false);
             if (mPrereqs != null) {
                 modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
             }
@@ -448,7 +443,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 modified |= mRow.setFeatures(mFeatures.getFeatures());
             }
             if (mMeleeWeapons != null) {
-                ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
+                List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
                 list.addAll(mRangedWeapons.getWeapons());
                 modified |= mRow.setWeapons(list);
             }
@@ -511,8 +506,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mLevelPointsField.setValue(Integer.valueOf(mLastPointsPerLevel));
             mHalfLevel.setSelected(mLastHalfLevel && allowHalfLevels);
         } else {
-            mLastLevel          = getLevels();
-            mLastHalfLevel      = getHalfLevel();
+            mLastLevel = getLevels();
+            mLastHalfLevel = getHalfLevel();
             mLastPointsPerLevel = getPointsPerLevel();
             mLevelField.setText("");
             mHalfLevel.setSelected(false);
@@ -585,7 +580,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void nameChanged() {
-        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
+        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
     }
 
     @Override

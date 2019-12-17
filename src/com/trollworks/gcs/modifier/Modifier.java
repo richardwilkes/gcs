@@ -25,54 +25,54 @@ import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Model for trait modifiers */
 public class Modifier extends ListRow implements Comparable<Modifier> {
-    private static final int      CURRENT_VERSION     = 1;
+    private static final   int      CURRENT_VERSION     = 1;
     /** The root tag. */
-    public static final String    TAG_MODIFIER        = "modifier";
+    public static final    String   TAG_MODIFIER        = "modifier";
     /** The tag for the name. */
-    protected static final String TAG_NAME            = "name";
+    protected static final String   TAG_NAME            = "name";
     /** The tag for the base cost. */
-    public static final String    TAG_COST            = "cost";
+    public static final    String   TAG_COST            = "cost";
     /** The attribute for the cost type. */
-    public static final String    ATTRIBUTE_COST_TYPE = "type";
+    public static final    String   ATTRIBUTE_COST_TYPE = "type";
     /** The tag for the cost per level. */
-    public static final String    TAG_LEVELS          = "levels";
+    public static final    String   TAG_LEVELS          = "levels";
     /** The tag for how the cost is affected. */
-    public static final String    TAG_AFFECTS         = "affects";
+    public static final    String   TAG_AFFECTS         = "affects";
     /** The tag for the page reference. */
-    protected static final String TAG_REFERENCE       = "reference";
+    protected static final String   TAG_REFERENCE       = "reference";
     /** The attribute for whether it is enabled. */
-    protected static final String ATTRIBUTE_ENABLED   = "enabled";
+    protected static final String   ATTRIBUTE_ENABLED   = "enabled";
     /** The prefix for notifications. */
-    public static final String    MODIFIER_PREFIX     = TAG_MODIFIER + Notifier.SEPARATOR;
+    public static final    String   MODIFIER_PREFIX     = TAG_MODIFIER + Notifier.SEPARATOR;
     /** The ID for name change notification. */
-    public static final String    ID_NAME             = MODIFIER_PREFIX + TAG_NAME;
+    public static final    String   ID_NAME             = MODIFIER_PREFIX + TAG_NAME;
     /** The ID for enabled change notification. */
-    public static final String    ID_ENABLED          = MODIFIER_PREFIX + ATTRIBUTE_ENABLED;
+    public static final    String   ID_ENABLED          = MODIFIER_PREFIX + ATTRIBUTE_ENABLED;
     /** The ID for cost change notification. */
-    public static final String    ID_COST_MODIFIER    = MODIFIER_PREFIX + TAG_COST;
+    public static final    String   ID_COST_MODIFIER    = MODIFIER_PREFIX + TAG_COST;
     /** The ID for cost affect change notification. */
-    public static final String    ID_AFFECTS          = MODIFIER_PREFIX + TAG_AFFECTS;
+    public static final    String   ID_AFFECTS          = MODIFIER_PREFIX + TAG_AFFECTS;
     /** The ID for page reference change notification. */
-    public static final String    ID_REFERENCE        = MODIFIER_PREFIX + TAG_REFERENCE;
+    public static final    String   ID_REFERENCE        = MODIFIER_PREFIX + TAG_REFERENCE;
     /** The ID for list changed change notification. */
-    public static final String    ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged";
+    public static final    String   ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged";
     /** The name of the {@link Modifier}. */
-    protected String              mName;
+    protected              String   mName;
     /** The page reference for the {@link Modifier}. */
-    protected String              mReference;
+    protected              String   mReference;
     /** The cost type of the {@link Modifier}. */
-    protected CostType            mCostType;
-    private int                   mCost;
-    private double                mCostMultiplier;
-    private int                   mLevels;
-    private Affects               mAffects;
-    private boolean               mEnabled;
-    private boolean               mReadOnly;
+    protected              CostType mCostType;
+    private                int      mCost;
+    private                double   mCostMultiplier;
+    private                int      mLevels;
+    private                Affects  mAffects;
+    private                boolean  mEnabled;
+    private                boolean  mReadOnly;
 
     /**
      * Creates a new {@link Modifier}.
@@ -82,14 +82,14 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
      */
     public Modifier(DataFile file, Modifier other) {
         super(file, other);
-        mName           = other.mName;
-        mReference      = other.mReference;
-        mCostType       = other.mCostType;
-        mCost           = other.mCost;
+        mName = other.mName;
+        mReference = other.mReference;
+        mCostType = other.mCostType;
+        mCost = other.mCost;
         mCostMultiplier = other.mCostMultiplier;
-        mLevels         = other.mLevels;
-        mAffects        = other.mAffects;
-        mEnabled        = other.mEnabled;
+        mLevels = other.mLevels;
+        mAffects = other.mAffects;
+        mEnabled = other.mEnabled;
     }
 
     /**
@@ -111,14 +111,14 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
      */
     public Modifier(DataFile file) {
         super(file, false);
-        mName           = I18n.Text("Modifier");
-        mReference      = "";
-        mCostType       = CostType.PERCENTAGE;
-        mCost           = 0;
+        mName = I18n.Text("Modifier");
+        mReference = "";
+        mCostType = CostType.PERCENTAGE;
+        mCost = 0;
         mCostMultiplier = 1.0;
-        mLevels         = 0;
-        mAffects        = Affects.TOTAL;
-        mEnabled        = true;
+        mLevels = 0;
+        mAffects = Affects.TOTAL;
+        mEnabled = true;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     /**
      * @param enabled The value to set for enabled.
-     * @return <code>true</code> if enabled has changed.
+     * @return {@code true} if enabled has changed.
      */
     public boolean setEnabled(boolean enabled) {
         if (mEnabled != enabled) {
@@ -158,7 +158,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     /**
      * @param reference The new page reference.
-     * @return <code>true</code> if page reference has changed.
+     * @return {@code true} if page reference has changed.
      */
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
@@ -269,14 +269,14 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
         return false;
     }
 
-    /** @return <code>true</code> if this {@link Modifier} has levels. */
+    /** @return {@code true} if this {@link Modifier} has levels. */
     public boolean hasLevels() {
         return mCostType == CostType.PERCENTAGE && mLevels > 0;
     }
 
     @Override
     public boolean contains(String text, boolean lowerCaseOnly) {
-        if (getName().toLowerCase().indexOf(text) != -1) {
+        if (getName().toLowerCase().contains(text)) {
             return true;
         }
         return super.contains(text, lowerCaseOnly);
@@ -349,21 +349,21 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mName           = I18n.Text("Modifier");
-        mCostType       = CostType.PERCENTAGE;
-        mCost           = 0;
+        mName = I18n.Text("Modifier");
+        mCostType = CostType.PERCENTAGE;
+        mCost = 0;
         mCostMultiplier = 1.0;
-        mLevels         = 0;
-        mAffects        = Affects.TOTAL;
-        mReference      = "";
-        mEnabled        = true;
+        mLevels = 0;
+        mAffects = Affects.TOTAL;
+        mReference = "";
+        mEnabled = true;
     }
 
     @Override
     protected void saveAttributes(XMLWriter out, boolean forUndo) {
         super.saveAttributes(out, forUndo);
         if (!mEnabled) {
-            out.writeAttribute(ATTRIBUTE_ENABLED, mEnabled);
+            out.writeAttribute(ATTRIBUTE_ENABLED, false);
         }
     }
 
@@ -410,7 +410,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
         String        modNote = getNotes();
 
         builder.append(toString());
-        if (modNote.length() > 0) {
+        if (!modNote.isEmpty()) {
             builder.append(" (");
             builder.append(modNote);
             builder.append(')');
@@ -434,7 +434,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
                 builder.append('%');
             }
             String desc = mAffects.getShortTitle();
-            if (desc.length() > 0) {
+            if (!desc.isEmpty()) {
                 builder.append(' ');
                 builder.append(desc);
             }
@@ -454,7 +454,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     /**
      * @param affects The new {@link Affects} setting.
-     * @return <code>true</code> if the setting changed.
+     * @return {@code true} if the setting changed.
      */
     public boolean setAffects(Affects affects) {
         if (affects != mAffects) {
@@ -472,7 +472,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     /**
      * @param name The value to set for name.
-     * @return <code>true</code> if name has changed
+     * @return {@code true} if name has changed
      */
     public boolean setName(String name) {
         if (!mName.equals(name)) {
@@ -484,7 +484,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         if (isEnabled()) {
             super.fillWithNameableKeys(set);
             extractNameables(set, mName);
@@ -492,7 +492,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         if (isEnabled()) {
             super.applyNameableKeys(map);
             mName = nameNameables(map, mName);

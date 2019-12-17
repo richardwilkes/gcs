@@ -18,8 +18,8 @@ import com.trollworks.toolkit.utility.I18n;
 /** An abstract prerequisite class for whether or not the specific item is present. */
 public abstract class HasPrereq extends Prereq {
     /** The "has" attribute name. */
-    protected static final String ATTRIBUTE_HAS = "has";
-    private boolean               mHas;
+    protected static final String  ATTRIBUTE_HAS = "has";
+    private                boolean mHas;
 
     /**
      * Creates a new prerequisite.
@@ -77,16 +77,15 @@ public abstract class HasPrereq extends Prereq {
     }
 
     /**
-     * @return <code>true</code> if the specified criteria should exist, <code>false</code> if it
-     *         should not.
+     * @return {@code true} if the specified criteria should exist, {@code false} if it should not.
      */
     public boolean has() {
         return mHas;
     }
 
     /**
-     * @param has <code>true</code> if the specified criteria should exist, <code>false</code> if it
-     *            should not.
+     * @param has {@code true} if the specified criteria should exist, {@code false} if it should
+     *            not.
      */
     public void has(boolean has) {
         mHas = has;

@@ -14,10 +14,10 @@ package com.trollworks.gcs.character.names;
 /** Generates random names from the 1990 U.S. census data. */
 public class USCensusNames extends Names {
     /** The one and only global instance of this class. */
-    public static final USCensusNames INSTANCE = new USCensusNames();
-    private static final String[]     FEMALE   = loadNames(USCensusNames.class.getResource("USCensus1990FemaleFirstNames.txt"), "Mary");
-    private static final String[]     MALE     = loadNames(USCensusNames.class.getResource("USCensus1990MaleFirstNames.txt"), "Richard");
-    private static final String[]     LAST     = loadNames(USCensusNames.class.getResource("USCensus1990LastNames.txt"), "Wilkes");
+    public static final  USCensusNames INSTANCE = new USCensusNames();
+    private static final String[]      FEMALE   = loadNames(USCensusNames.class.getResource("USCensus1990FemaleFirstNames.txt"), "Mary");
+    private static final String[]      MALE     = loadNames(USCensusNames.class.getResource("USCensus1990MaleFirstNames.txt"), "Richard");
+    private static final String[]      LAST     = loadNames(USCensusNames.class.getResource("USCensus1990LastNames.txt"), "Wilkes");
 
     private USCensusNames() {
         // Just here to prevent external instantiation

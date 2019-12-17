@@ -109,8 +109,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
 import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.Scrollable;
@@ -121,39 +121,39 @@ import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, ScaleRoot {
-    private static final String   BOXING_SKILL_NAME   = "Boxing";
-    private static final String   KARATE_SKILL_NAME   = "Karate";
-    private static final String   BRAWLING_SKILL_NAME = "Brawling";
-    private static final int      GAP                 = 2;
-    private static final String   MELEE_KEY           = "melee";
-    private static final String   RANGED_KEY          = "ranged";
-    private static final String   ADVANTAGES_KEY      = "advantages";
-    private static final String   SKILLS_KEY          = "skills";
-    private static final String   SPELLS_KEY          = "spells";
-    private static final String   EQUIPMENT_KEY       = "equipment";
-    private static final String   OTHER_EQUIPMENT_KEY = "other_equipment";
-    private static final String   NOTES_KEY           = "notes";
-    private static final String[] ALL_KEYS            = { MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY };
-    private Scale                 mScale;
-    private GURPSCharacter        mCharacter;
-    private int                   mLastPage;
-    private boolean               mBatchMode;
-    private AdvantageOutline      mAdvantageOutline;
-    private SkillOutline          mSkillOutline;
-    private SpellOutline          mSpellOutline;
-    private EquipmentOutline      mEquipmentOutline;
-    private EquipmentOutline      mOtherEquipmentOutline;
-    private NoteOutline           mNoteOutline;
-    private Outline               mMeleeWeaponOutline;
-    private Outline               mRangedWeaponOutline;
-    private boolean               mRebuildPending;
-    private Set<Outline>          mRootsToSync;
-    private PrintManager          mPrintManager;
-    private Scale                 mSavedScale;
-    private boolean               mOkToPaint          = true;
-    private boolean               mIsPrinting;
-    private boolean               mSyncWeapons;
-    private boolean               mDisposed;
+    private static final String           BOXING_SKILL_NAME   = "Boxing";
+    private static final String           KARATE_SKILL_NAME   = "Karate";
+    private static final String           BRAWLING_SKILL_NAME = "Brawling";
+    private static final int              GAP                 = 2;
+    private static final String           MELEE_KEY           = "melee";
+    private static final String           RANGED_KEY          = "ranged";
+    private static final String           ADVANTAGES_KEY      = "advantages";
+    private static final String           SKILLS_KEY          = "skills";
+    private static final String           SPELLS_KEY          = "spells";
+    private static final String           EQUIPMENT_KEY       = "equipment";
+    private static final String           OTHER_EQUIPMENT_KEY = "other_equipment";
+    private static final String           NOTES_KEY           = "notes";
+    private static final String[]         ALL_KEYS            = {MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY};
+    private              Scale            mScale;
+    private              GURPSCharacter   mCharacter;
+    private              int              mLastPage;
+    private              boolean          mBatchMode;
+    private              AdvantageOutline mAdvantageOutline;
+    private              SkillOutline     mSkillOutline;
+    private              SpellOutline     mSpellOutline;
+    private              EquipmentOutline mEquipmentOutline;
+    private              EquipmentOutline mOtherEquipmentOutline;
+    private              NoteOutline      mNoteOutline;
+    private              Outline          mMeleeWeaponOutline;
+    private              Outline          mRangedWeaponOutline;
+    private              boolean          mRebuildPending;
+    private              Set<Outline>     mRootsToSync;
+    private              PrintManager     mPrintManager;
+    private              Scale            mSavedScale;
+    private              boolean          mOkToPaint          = true;
+    private              boolean          mIsPrinting;
+    private              boolean          mSyncWeapons;
+    private              boolean          mDisposed;
 
     /**
      * Creates a new character sheet display. {@link #rebuild()} must be called prior to the first
@@ -162,12 +162,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
      * @param character The character to display the data for.
      */
     public CharacterSheet(GURPSCharacter character) {
-        super();
         setLayout(new CharacterSheetLayout(this));
         setOpaque(false);
-        mScale       = DisplayPreferences.getInitialUIScale().getScale();
-        mCharacter   = character;
-        mLastPage    = -1;
+        mScale = DisplayPreferences.getInitialUIScale().getScale();
+        mCharacter = character;
+        mLastPage = -1;
         mRootsToSync = new HashSet<>();
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
@@ -216,7 +215,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (UIUtilities.getSelfOrAncestorOfType(focus, CharacterSheet.class) == this) {
             if (focus instanceof PageField) {
                 focusKey = ((PageField) focus).getConsumedType();
-                focus    = null;
+                focus = null;
             } else if (focus instanceof Outline) {
                 Outline   outline   = (Outline) focus;
                 Selection selection = outline.getModel().getSelection();
@@ -251,7 +250,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (sheetDockable != null) {
             targets.add(sheetDockable);
         }
-        mCharacter.resetNotifier(targets.toArray(new NotifierTarget[targets.size()]));
+        mCharacter.resetNotifier(targets.toArray(new NotifierTarget[0]));
 
         // Create the first page, which holds stuff that has a fixed vertical size.
         pageAssembler = new PageAssembler(this);
@@ -264,27 +263,34 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         for (String line : blockLayout.split("\n")) {
             String[] parts = line.trim().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
-                String  t1 = getOutlineTitleForKey(parts[0]);
                 Outline o1 = getOutlineForKey(parts[0]);
-                remaining.remove(parts[0]);
-                if (parts.length > 1 && remaining.contains(parts[1])) {
-                    String  t2 = getOutlineTitleForKey(parts[1]);
-                    Outline o2 = getOutlineForKey(parts[1]);
-                    remaining.remove(parts[1]);
-                    if (o1.getModel().getRowCount() > 0 && o2.getModel().getRowCount() > 0) {
-                        addOutline(pageAssembler, o1, t1, o2, t2);
-                    } else {
-                        addOutline(pageAssembler, o1, t1);
-                        addOutline(pageAssembler, o2, t2);
+                if (o1 != null) {
+                    String t1 = getOutlineTitleForKey(parts[0]);
+                    remaining.remove(parts[0]);
+                    if (parts.length > 1 && remaining.contains(parts[1])) {
+                        Outline o2 = getOutlineForKey(parts[1]);
+                        if (o2 != null) {
+                            String t2 = getOutlineTitleForKey(parts[1]);
+                            remaining.remove(parts[1]);
+                            if (o1.getModel().getRowCount() > 0 && o2.getModel().getRowCount() > 0) {
+                                addOutline(pageAssembler, o1, t1, o2, t2);
+                            } else {
+                                addOutline(pageAssembler, o1, t1);
+                                addOutline(pageAssembler, o2, t2);
+                            }
+                            continue;
+                        }
                     }
-                    continue;
+                    addOutline(pageAssembler, o1, t1);
                 }
-                addOutline(pageAssembler, o1, t1);
             }
         }
         for (String one : ALL_KEYS) {
             if (remaining.contains(one)) {
-                addOutline(pageAssembler, getOutlineForKey(one), getOutlineTitleForKey(one));
+                Outline outline = getOutlineForKey(one);
+                if (outline != null) {
+                    addOutline(pageAssembler, outline, getOutlineTitleForKey(one));
+                }
             }
         }
         pageAssembler.finish();
@@ -434,7 +440,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
             while (pageAssembler.addToContent(new SingleOutlinePanel(mScale, outline, title, useProxy), info, null)) {
                 if (!useProxy) {
-                    title    = MessageFormat.format(I18n.Text("{0} (continued)"), title);
+                    title = MessageFormat.format(I18n.Text("{0} (continued)"), title);
                     useProxy = true;
                 }
             }
@@ -449,9 +455,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         while (pageAssembler.addToContent(new DoubleOutlinePanel(mScale, leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
             if (!useProxy) {
-                leftTitle  = MessageFormat.format(I18n.Text("{0} (continued)"), leftTitle);
+                leftTitle = MessageFormat.format(I18n.Text("{0} (continued)"), leftTitle);
                 rightTitle = MessageFormat.format(I18n.Text("{0} (continued)"), rightTitle);
-                useProxy   = true;
+                useProxy = true;
             }
         }
     }
@@ -567,8 +573,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             String       sortConfig;
 
             mMeleeWeaponOutline = new WeaponOutline(MeleeWeaponStats.class);
-            outlineModel        = mMeleeWeaponOutline.getModel();
-            sortConfig          = outlineModel.getSortConfig();
+            outlineModel = mMeleeWeaponOutline.getModel();
+            sortConfig = outlineModel.getSortConfig();
             for (WeaponDisplayRow row : collectWeapons(MeleeWeaponStats.class)) {
                 outlineModel.addRow(row);
             }
@@ -590,8 +596,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             String       sortConfig;
 
             mRangedWeaponOutline = new WeaponOutline(RangedWeaponStats.class);
-            outlineModel         = mRangedWeaponOutline.getModel();
-            sortConfig           = outlineModel.getSortConfig();
+            outlineModel = mRangedWeaponOutline.getModel();
+            sortConfig = outlineModel.getSortConfig();
             for (WeaponDisplayRow row : collectWeapons(RangedWeaponStats.class)) {
                 outlineModel.addRow(row);
             }
@@ -602,14 +608,14 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
     }
 
-    private void addBuiltInWeapons(Class<? extends WeaponStats> weaponClass, HashMap<HashedWeapon, WeaponDisplayRow> map) {
+    private void addBuiltInWeapons(Class<? extends WeaponStats> weaponClass, Map<HashedWeapon, WeaponDisplayRow> map) {
         if (weaponClass == MeleeWeaponStats.class) {
-            boolean                 savedModified = mCharacter.isModified();
-            ArrayList<SkillDefault> defaults      = new ArrayList<>();
-            Advantage               phantom;
-            MeleeWeaponStats        weapon;
+            boolean            savedModified = mCharacter.isModified();
+            List<SkillDefault> defaults      = new ArrayList<>();
+            Advantage          phantom;
+            MeleeWeaponStats   weapon;
 
-            StdUndoManager          mgr           = mCharacter.getUndoManager();
+            StdUndoManager mgr = mCharacter.getUndoManager();
             mCharacter.setUndoManager(new StdUndoManager());
 
             phantom = new Advantage(mCharacter, false);
@@ -670,9 +676,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
     }
 
-    private ArrayList<WeaponDisplayRow> collectWeapons(Class<? extends WeaponStats> weaponClass) {
-        HashMap<HashedWeapon, WeaponDisplayRow> weaponMap = new HashMap<>();
-        ArrayList<WeaponDisplayRow>             weaponList;
+    private List<WeaponDisplayRow> collectWeapons(Class<? extends WeaponStats> weaponClass) {
+        Map<HashedWeapon, WeaponDisplayRow> weaponMap = new HashMap<>();
+        List<WeaponDisplayRow>              weaponList;
 
         addBuiltInWeapons(weaponClass, weaponMap);
 
@@ -726,7 +732,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         Wrapper wrapper = new Wrapper(new ColumnLayout(2, GAP, GAP));
         wrapper.add(left);
         wrapper.add(right);
-        wrapper.setAlignmentY(-1f);
+        wrapper.setAlignmentY(-1.0f);
         return wrapper;
     }
 
@@ -735,7 +741,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         wrapper.add(left);
         wrapper.add(center);
         wrapper.add(right);
-        wrapper.setAlignmentY(-1f);
+        wrapper.setAlignmentY(-1.0f);
         return wrapper;
     }
 
@@ -745,7 +751,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         wrapper.add(center);
         wrapper.add(center2);
         wrapper.add(right);
-        wrapper.setAlignmentY(-1f);
+        wrapper.setAlignmentY(-1.0f);
         return wrapper;
     }
 
@@ -753,7 +759,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         Wrapper wrapper = new Wrapper(new ColumnLayout(1, GAP, GAP, RowDistribution.GIVE_EXCESS_TO_LAST));
         wrapper.add(top);
         wrapper.add(bottom);
-        wrapper.setAlignmentY(-1f);
+        wrapper.setAlignmentY(-1.0f);
         return wrapper;
     }
 
@@ -779,9 +785,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         // We do the following trick to avoid going through the work twice,
         // as we are called twice for each page, the first of which doesn't
         // seem to be used.
-        if (mLastPage != pageIndex) {
-            mLastPage = pageIndex;
-        } else {
+        if (mLastPage == pageIndex) {
             Component      comp  = getComponent(pageIndex);
             RepaintManager mgr   = RepaintManager.currentManager(comp);
             boolean        saved = mgr.isDoubleBufferingEnabled();
@@ -790,6 +794,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             comp.print(graphics);
             mOkToPaint = false;
             mgr.setDoubleBufferingEnabled(saved);
+        } else {
+            mLastPage = pageIndex;
         }
         return PAGE_EXISTS;
     }
@@ -837,7 +843,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                     Rectangle bounds = page.getBounds();
                     Insets    insets = page.getInsets();
 
-                    bounds.y      = bounds.y + bounds.height - insets.bottom;
+                    bounds.y = bounds.y + bounds.height - insets.bottom;
                     bounds.height = insets.bottom;
                     repaint(bounds);
                 }
@@ -863,10 +869,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     public void drawPageAdornments(Page page, Graphics gc) {
         Rectangle bounds = page.getBounds();
         Insets    insets = page.getInsets();
-        bounds.width  -= insets.left + insets.right;
+        bounds.width -= insets.left + insets.right;
         bounds.height -= insets.top + insets.bottom;
-        bounds.x       = insets.left;
-        bounds.y       = insets.top;
+        bounds.x = insets.left;
+        bounds.y = insets.top;
         int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
         String      pageString = MessageFormat.format(I18n.Text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
         BundleInfo  bundleInfo = BundleInfo.getDefault();
@@ -880,11 +886,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         String      left;
         String      right;
 
-        if (pageNumber % 2 == 1) {
-            left  = copyright1;
+        if ((pageNumber & 1) == 1) {
+            left = copyright1;
             right = mCharacter.getLastModified();
         } else {
-            left  = mCharacter.getLastModified();
+            left = mCharacter.getLastModified();
             right = copyright1;
         }
 
@@ -897,11 +903,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         String center = mCharacter.getDescription().getName();
         gc.drawString(center, bounds.x + (bounds.width - (int) fm2.getStringBounds(center, gc).getWidth()) / 2, y);
 
-        if (pageNumber % 2 == 1) {
-            left  = copyright2;
+        if ((pageNumber & 1) == 1) {
+            left = copyright2;
             right = pageString;
         } else {
-            left  = pageString;
+            left = pageString;
             right = copyright2;
         }
 
@@ -970,7 +976,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             outlineModel.applySortConfig(sortConfig);
 
             outlineModel = mRangedWeaponOutline.getModel();
-            sortConfig   = outlineModel.getSortConfig();
+            sortConfig = outlineModel.getSortConfig();
 
             outlineModel.removeAllRows();
             for (WeaponDisplayRow row : collectWeapons(RangedWeaponStats.class)) {
@@ -1017,18 +1023,16 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         return false;
     }
 
-    private boolean        mDragWasAcceptable;
-    private ArrayList<Row> mDragRows;
+    private boolean   mDragWasAcceptable;
+    private List<Row> mDragRows;
 
     @Override
     public void dragEnter(DropTargetDragEvent dtde) {
         mDragWasAcceptable = false;
-
         try {
             if (dtde.isDataFlavorSupported(RowSelection.DATA_FLAVOR)) {
                 Row[] rows = (Row[]) dtde.getTransferable().getTransferData(RowSelection.DATA_FLAVOR);
-
-                if (rows != null && rows.length > 0) {
+                if (rows.length > 0) {
                     mDragRows = new ArrayList<>(rows.length);
 
                     for (Row element : rows) {
@@ -1045,7 +1049,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         } catch (Exception exception) {
             Log.error(exception);
         }
-
         if (!mDragWasAcceptable) {
             dtde.rejectDrag();
         }
@@ -1092,8 +1095,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         return format;
     }
 
-    private HashSet<Row> expandAllContainers() {
-        HashSet<Row> changed = new HashSet<>();
+    private Set<Row> expandAllContainers() {
+        Set<Row> changed = new HashSet<>();
         expandAllContainers(mCharacter.getAdvantagesIterator(true), changed);
         expandAllContainers(mCharacter.getSkillsIterator(), changed);
         expandAllContainers(mCharacter.getSpellsIterator(), changed);
@@ -1106,7 +1109,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         return changed;
     }
 
-    private static void expandAllContainers(RowIterator<? extends Row> iterator, HashSet<Row> changed) {
+    private static void expandAllContainers(RowIterator<? extends Row> iterator, Set<Row> changed) {
         for (Row row : iterator) {
             if (!row.isOpen()) {
                 row.setOpen(true);
@@ -1115,7 +1118,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
     }
 
-    private void closeContainers(HashSet<Row> rows) {
+    private void closeContainers(Set<Row> rows) {
         for (Row row : rows) {
             row.setOpen(false);
         }
@@ -1127,10 +1130,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     /**
      * @param file The file to save to.
-     * @return <code>true</code> on success.
+     * @return {@code true} on success.
      */
     public boolean saveAsPDF(File file) {
-        HashSet<Row> changed = expandAllContainers();
+        Set<Row> changed = expandAllContainers();
         try {
             PrintManager settings = mCharacter.getPageSettings();
             PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
@@ -1179,10 +1182,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     /**
      * @param file         The file to save to.
      * @param createdFiles The files that were created.
-     * @return <code>true</code> on success.
+     * @return {@code true} on success.
      */
-    public boolean saveAsPNG(File file, ArrayList<File> createdFiles) {
-        HashSet<Row> changed = expandAllContainers();
+    public boolean saveAsPNG(File file, List<File> createdFiles) {
+        Set<Row> changed = expandAllContainers();
         try {
             int          dpi      = OutputPreferences.getPNGResolution();
             PrintManager settings = mCharacter.getPageSettings();
@@ -1200,7 +1203,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             setPrinting(true);
 
             while (true) {
-                File       pngFile;
+                File pngFile;
 
                 Graphics2D gc = buffer.getGraphics();
                 if (print(gc, format, pageNum) == NO_SUCH_PAGE) {
@@ -1261,8 +1264,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         OutputPreferences.setDefaultPageSettings(getPrintManager());
         if (willPrint) {
             mSavedScale = mScale;
-            mScale      = Scales.ACTUAL_SIZE.getScale();
-            mOkToPaint  = false;
+            mScale = Scales.ACTUAL_SIZE.getScale();
+            mOkToPaint = false;
         }
         rebuild();
     }

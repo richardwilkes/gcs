@@ -19,19 +19,20 @@ import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Helper for causing the row post-processing to occur. */
 public class RowPostProcessor implements Runnable {
-    private HashMap<Outline, ArrayList<ListRow>> mMap;
+    private Map<Outline, List<ListRow>> mMap;
 
     /**
      * Creates a new post processor for name substitution.
      *
      * @param map The map to process.
      */
-    public RowPostProcessor(HashMap<Outline, ArrayList<ListRow>> map) {
+    public RowPostProcessor(Map<Outline, List<ListRow>> map) {
         mMap = map;
     }
 
@@ -41,16 +42,17 @@ public class RowPostProcessor implements Runnable {
      * @param outline The outline containing the rows.
      * @param list    The list to process.
      */
-    public RowPostProcessor(Outline outline, ArrayList<ListRow> list) {
+    public RowPostProcessor(Outline outline, List<ListRow> list) {
         mMap = new HashMap<>();
         mMap.put(outline, list);
     }
 
     @Override
     public void run() {
-        for (Outline outline : mMap.keySet()) {
-            ArrayList<ListRow> rows     = mMap.get(outline);
-            boolean            modified = ModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
+        for (Map.Entry<Outline, List<ListRow>> entry : mMap.entrySet()) {
+            Outline       outline  = entry.getKey();
+            List<ListRow> rows     = entry.getValue();
+            boolean       modified = ModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
             modified |= Namer.name(outline, rows);
             if (modified) {
                 outline.updateRowHeights(rows);

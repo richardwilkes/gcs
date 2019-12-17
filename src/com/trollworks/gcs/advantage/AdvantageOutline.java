@@ -121,8 +121,8 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
     @SuppressWarnings("unused")
     @Override
     public void increment() {
-        ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-        for (Advantage advantage : new FilteredIterator<Advantage>(getModel().getSelectionAsList(), Advantage.class)) {
+        ArrayList<RowUndo> undos = new ArrayList<>();
+        for (Advantage advantage : new FilteredIterator<>(getModel().getSelectionAsList(), Advantage.class)) {
             if (!advantage.canHaveChildren() && advantage.isLeveled()) {
                 RowUndo undo = new RowUndo(advantage);
 
@@ -141,16 +141,13 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
     @SuppressWarnings("unused")
     @Override
     public void decrement() {
-        ArrayList<RowUndo> undos = new ArrayList<RowUndo>();
-        for (Advantage advantage : new FilteredIterator<Advantage>(getModel().getSelectionAsList(), Advantage.class)) {
+        ArrayList<RowUndo> undos = new ArrayList<>();
+        for (Advantage advantage : new FilteredIterator<>(getModel().getSelectionAsList(), Advantage.class)) {
             if (!advantage.canHaveChildren() && advantage.isLeveled()) {
-                if (advantage.isLeveled()) {
-                    RowUndo undo = new RowUndo(advantage);
-
-                    advantage.adjustLevel(-1);
-                    if (undo.finish()) {
-                        undos.add(undo);
-                    }
+                RowUndo undo = new RowUndo(advantage);
+                advantage.adjustLevel(-1);
+                if (undo.finish()) {
+                    undos.add(undo);
                 }
             }
         }

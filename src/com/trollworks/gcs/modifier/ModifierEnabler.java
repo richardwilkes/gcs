@@ -29,7 +29,7 @@ import java.awt.Dimension;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -54,10 +54,10 @@ public class ModifierEnabler extends JPanel {
      * @param advantages The {@link Advantage}s to process.
      * @return Whether anything was modified.
      */
-    static public boolean process(Component comp, ArrayList<Advantage> advantages) {
-        ArrayList<Advantage> list     = new ArrayList<>();
-        boolean              modified = false;
-        int                  count;
+    public static boolean process(Component comp, List<Advantage> advantages) {
+        List<Advantage> list     = new ArrayList<>();
+        boolean         modified = false;
+        int             count;
 
         for (Advantage advantage : advantages) {
             if (advantage.getCR() != SelfControlRoll.NONE_REQUIRED || !advantage.getModifiers().isEmpty()) {
@@ -72,7 +72,7 @@ public class ModifierEnabler extends JPanel {
             ModifierEnabler panel       = new ModifierEnabler(advantage, count - i - 1);
             String          applyTitle  = I18n.Text("Apply");
             String          cancelTitle = I18n.Text("Cancel");
-            switch (WindowUtils.showOptionDialog(comp, panel, I18n.Text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[] { applyTitle, cancelTitle, I18n.Text("Cancel Remaining") } : new String[] { applyTitle, cancelTitle }, applyTitle)) {
+            switch (WindowUtils.showOptionDialog(comp, panel, I18n.Text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[]{applyTitle, cancelTitle, I18n.Text("Cancel Remaining")} : new String[]{applyTitle, cancelTitle}, applyTitle)) {
             case JOptionPane.YES_OPTION:
                 panel.applyChanges();
                 modified = true;
@@ -104,11 +104,7 @@ public class ModifierEnabler extends JPanel {
         top.setBorder(new EmptyBorder(0, 0, 15, 0));
         if (remaining > 0) {
             String msg;
-            if (remaining == 1) {
-                msg = I18n.Text("1 advantage remaining to be processed.");
-            } else {
-                msg = MessageFormat.format(I18n.Text("{0} advantages remaining to be processed."), Integer.valueOf(remaining));
-            }
+            msg = remaining == 1 ? I18n.Text("1 advantage remaining to be processed.") : MessageFormat.format(I18n.Text("{0} advantages remaining to be processed."), Integer.valueOf(remaining));
             top.add(new JLabel(msg, SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
@@ -129,7 +125,7 @@ public class ModifierEnabler extends JPanel {
                     possible.add(one.getDescriptionWithCost());
                 }
             }
-            mCRCombo = new JComboBox<>(possible.toArray(new String[possible.size()]));
+            mCRCombo = new JComboBox<>(possible.toArray(new String[0]));
             mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
             UIUtilities.setToPreferredSizeOnly(mCRCombo);
             wrapper.add(mCRCombo);
@@ -138,8 +134,9 @@ public class ModifierEnabler extends JPanel {
         mModifiers = mAdvantage.getModifiers().toArray(new Modifier[0]);
         Arrays.sort(mModifiers);
 
-        mEnabled = new JCheckBox[mModifiers.length];
-        for (int i = 0; i < mModifiers.length; i++) {
+        int length = mModifiers.length;
+        mEnabled = new JCheckBox[length];
+        for (int i = 0; i < length; i++) {
             mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription(), mModifiers[i].isEnabled());
             wrapper.add(mEnabled[i]);
         }
@@ -149,16 +146,19 @@ public class ModifierEnabler extends JPanel {
     private void applyChanges() {
         if (mAdvantage.getCR() != SelfControlRoll.NONE_REQUIRED) {
             Object selectedItem = mCRCombo.getSelectedItem();
-            for (SelfControlRoll one : SelfControlRoll.values()) {
-                if (one != SelfControlRoll.NONE_REQUIRED) {
-                    if (selectedItem.equals(one.getDescriptionWithCost())) {
-                        mAdvantage.setCR(one);
-                        break;
+            if (selectedItem != null) {
+                for (SelfControlRoll one : SelfControlRoll.values()) {
+                    if (one != SelfControlRoll.NONE_REQUIRED) {
+                        if (selectedItem.equals(one.getDescriptionWithCost())) {
+                            mAdvantage.setCR(one);
+                            break;
+                        }
                     }
                 }
             }
         }
-        for (int i = 0; i < mModifiers.length; i++) {
+        int length = mModifiers.length;
+        for (int i = 0; i < length; i++) {
             mModifiers[i].setEnabled(mEnabled[i].isSelected());
         }
     }

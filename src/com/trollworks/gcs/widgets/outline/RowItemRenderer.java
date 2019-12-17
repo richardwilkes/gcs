@@ -12,7 +12,6 @@
 package com.trollworks.gcs.widgets.outline;
 
 import java.awt.Component;
-
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 

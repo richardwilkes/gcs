@@ -23,16 +23,16 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** An Advantage prerequisite. */
 public class AdvantagePrereq extends NameLevelPrereq {
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT  = "advantage_prereq";
-    private static final String TAG_NOTES = "notes";
-    private static final String EMPTY     = "";
-    private StringCriteria      mNotesCriteria;
+    public static final  String         TAG_ROOT  = "advantage_prereq";
+    private static final String         TAG_NOTES = "notes";
+    private static final String         EMPTY     = "";
+    private              StringCriteria mNotesCriteria;
 
     /**
      * Creates a new prerequisite.
@@ -115,7 +115,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
                 String notes         = advantage.getNotes();
                 String modifierNotes = advantage.getModifierNotes();
 
-                if (modifierNotes.length() > 0) {
+                if (!modifierNotes.isEmpty()) {
                     notes = modifierNotes + '\n' + notes;
                 }
                 if (mNotesCriteria.matches(notes)) {
@@ -142,13 +142,13 @@ public class AdvantagePrereq extends NameLevelPrereq {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         super.fillWithNameableKeys(set);
         ListRow.extractNameables(set, mNotesCriteria.getQualifier());
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         super.applyNameableKeys(map);
         mNotesCriteria.setQualifier(ListRow.nameNameables(map, mNotesCriteria.getQualifier()));
     }

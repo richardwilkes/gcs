@@ -16,7 +16,6 @@ import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Graphics;
-
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 

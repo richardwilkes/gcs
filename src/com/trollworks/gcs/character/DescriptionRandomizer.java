@@ -24,7 +24,6 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -32,20 +31,19 @@ import javax.swing.JTextField;
 
 /** A character description randomizer. */
 public class DescriptionRandomizer extends JPanel implements ActionListener {
-    private static final int GENDER_INDEX   = 0;
-    private static final int AGE_INDEX      = 1;
-    private static final int BIRTHDAY_INDEX = 2;
-    private static final int HEIGHT_INDEX   = 3;
-    private static final int WEIGHT_INDEX   = 4;
-    private static final int HAIR_INDEX     = 5;
-    private static final int EYES_INDEX     = 6;
-    private static final int SKIN_INDEX     = 7;
-    private static final int HAND_INDEX     = 8;
-    private static final int COUNT          = 9;
-    private GURPSCharacter   mCharacter;
-    private JCheckBox[]      mCheckBoxes;
-    private JTextField[]     mFields;
-    private JButton          mRandomize;
+    private static final int            GENDER_INDEX   = 0;
+    private static final int            AGE_INDEX      = 1;
+    private static final int            BIRTHDAY_INDEX = 2;
+    private static final int            HEIGHT_INDEX   = 3;
+    private static final int            WEIGHT_INDEX   = 4;
+    private static final int            HAIR_INDEX     = 5;
+    private static final int            EYES_INDEX     = 6;
+    private static final int            SKIN_INDEX     = 7;
+    private static final int            HAND_INDEX     = 8;
+    private static final int            COUNT          = 9;
+    private              GURPSCharacter mCharacter;
+    private              JCheckBox[]    mCheckBoxes;
+    private              JTextField[]   mFields;
 
     /**
      * Creates a new {@link DescriptionRandomizer}.
@@ -54,9 +52,9 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
      */
     public DescriptionRandomizer(GURPSCharacter character) {
         super(new BorderLayout());
-        mCharacter  = character;
+        mCharacter = character;
         mCheckBoxes = new JCheckBox[COUNT];
-        mFields     = new JTextField[COUNT];
+        mFields = new JTextField[COUNT];
         JPanel wrapper = new JPanel(new ColumnLayout(2));
         wrapper.setBorder(new EmptyBorder(10));
         Profile description = mCharacter.getDescription();
@@ -70,9 +68,9 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
         addField(wrapper, I18n.Text("Skin:"), I18n.Text("The character's skin color"), SKIN_INDEX, description.getSkinColor());
         addField(wrapper, I18n.Text("Hand:"), I18n.Text("The character's preferred hand"), HAND_INDEX, description.getHandedness());
         add(wrapper, BorderLayout.CENTER);
-        mRandomize = new JButton(I18n.Text("Randomize"));
-        mRandomize.addActionListener(this);
-        add(mRandomize, BorderLayout.SOUTH);
+        JButton randomize = new JButton(I18n.Text("Randomize"));
+        randomize.addActionListener(this);
+        add(randomize, BorderLayout.SOUTH);
     }
 
     private void addField(Container wrapper, String title, String tooltip, int which, String value) {

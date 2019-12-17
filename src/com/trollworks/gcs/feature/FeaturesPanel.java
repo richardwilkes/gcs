@@ -38,8 +38,8 @@ public class FeaturesPanel extends BandedPanel {
 
     /** @return The current set of features. */
     public List<Feature> getFeatures() {
-        int                count = getComponentCount();
-        ArrayList<Feature> list  = new ArrayList<>(count);
+        int           count = getComponentCount();
+        List<Feature> list  = new ArrayList<>(count);
 
         for (int i = 0; i < count; i++) {
             Feature feature = ((FeatureEditor) getComponent(i)).getFeature();

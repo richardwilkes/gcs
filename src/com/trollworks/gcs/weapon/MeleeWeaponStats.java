@@ -27,19 +27,19 @@ import java.util.StringTokenizer;
 /** The stats for a melee weapon. */
 public class MeleeWeaponStats extends WeaponStats {
     /** The root XML tag. */
-    public static final String  TAG_ROOT  = "melee_weapon";
+    public static final  String TAG_ROOT  = "melee_weapon";
     private static final String TAG_REACH = "reach";
     private static final String TAG_PARRY = "parry";
     private static final String TAG_BLOCK = "block";
     /** The field ID for reach changes. */
-    public static final String  ID_REACH  = PREFIX + TAG_REACH;
+    public static final  String ID_REACH  = PREFIX + TAG_REACH;
     /** The field ID for parry changes. */
-    public static final String  ID_PARRY  = PREFIX + TAG_PARRY;
+    public static final  String ID_PARRY  = PREFIX + TAG_PARRY;
     /** The field ID for block changes. */
-    public static final String  ID_BLOCK  = PREFIX + TAG_BLOCK;
-    private String              mReach;
-    private String              mParry;
-    private String              mBlock;
+    public static final  String ID_BLOCK  = PREFIX + TAG_BLOCK;
+    private              String mReach;
+    private              String mParry;
+    private              String mBlock;
 
     /**
      * Creates a new {@link MeleeWeaponStats}.
@@ -127,13 +127,13 @@ public class MeleeWeaponStats extends WeaponStats {
         if (df instanceof GURPSCharacter) {
             GURPSCharacter  character  = (GURPSCharacter) df;
             StringTokenizer tokenizer  = new StringTokenizer(input, "\n\r", true);
-            StringBuffer    buffer     = new StringBuffer();
+            StringBuilder   buffer     = new StringBuilder();
             int             skillLevel = Integer.MAX_VALUE;
 
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();
 
-                if (!token.equals("\n") && !token.equals("\r")) {
+                if (!"\n".equals(token) && !"\r".equals(token)) {
                     int max = token.length();
                     int i   = skipSpaces(token, 0);
 
@@ -150,7 +150,7 @@ public class MeleeWeaponStats extends WeaponStats {
                             }
                         }
                         while (i < max && ch >= '0' && ch <= '9') {
-                            found     = true;
+                            found = true;
                             modifier *= 10;
                             modifier += ch - '0';
                             if (++i < max) {
@@ -165,7 +165,7 @@ public class MeleeWeaponStats extends WeaponStats {
                                 int best = Integer.MIN_VALUE;
                                 for (SkillDefault skillDefault : getDefaults()) {
                                     SkillDefaultType type  = skillDefault.getType();
-                                    int              level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
+                                    int              level = type.getSkillLevelFast(character, skillDefault, new HashSet<>());
                                     if (level != Integer.MIN_VALUE && type != baseDefaultType) {
                                         level = level / 2 + 3 + (baseDefaultType == SkillDefaultType.Parry ? character.getParryBonus() : character.getBlockBonus());
                                     }
@@ -173,7 +173,7 @@ public class MeleeWeaponStats extends WeaponStats {
                                         best = level;
                                     }
                                 }
-                                skillLevel = best != Integer.MIN_VALUE ? best : 0;
+                                skillLevel = best == Integer.MIN_VALUE ? 0 : best;
                             }
                             num = Numbers.format(skillLevel + (neg ? -modifier : modifier) + (token.contains("F") ? character.getEncumbranceLevel().getEncumbrancePenalty() : 0));
                             if (i < max) {

@@ -19,6 +19,7 @@ import com.trollworks.toolkit.ui.widget.outline.Row;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 /** A list of rows. */
@@ -65,15 +66,15 @@ public abstract class ListFile extends DataFile {
     }
 
     /** @return The set of categories that exist in this {@link ListFile}. */
-    public TreeSet<String> getCategories() {
-        TreeSet<String> set = new TreeSet<>();
+    public Set<String> getCategories() {
+        Set<String> set = new TreeSet<>();
         for (Row row : getTopLevelRows()) {
             processRowForCategories(row, set);
         }
         return set;
     }
 
-    private void processRowForCategories(Row row, TreeSet<String> set) {
+    private void processRowForCategories(Row row, Set<String> set) {
         if (row instanceof ListRow) {
             set.addAll(((ListRow) row).getCategories());
         }

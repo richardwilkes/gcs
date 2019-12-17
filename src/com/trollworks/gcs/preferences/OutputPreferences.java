@@ -44,12 +44,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -61,23 +59,23 @@ import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
 public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    static final String         MODULE                    = "Output";
-    private static final int    DEFAULT_PNG_RESOLUTION    = 200;
-    private static final String PNG_RESOLUTION_KEY        = "PNGResolution";
-    private static final int[]  DPI                       = { 72, 96, 144, 150, 200, 300 };
-    private static final String USE_TEMPLATE_OVERRIDE_KEY = "UseTextTemplateOverride";
-    private static final String TEMPLATE_OVERRIDE_KEY     = "TextTemplateOverride";
-    private static final String GURPS_CALCULATOR_KEY_KEY  = "GurpsCalculatorKey";
-    public static final String  BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
-    public static final String  GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
-    private static final String DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings";
-    private JComboBox<String>   mPNGResolutionCombo;
-    private JCheckBox           mUseTextTemplateOverride;
-    private JTextField          mTextTemplatePath;
-    private JButton             mTextTemplatePicker;
-    private JButton             mGurpsCalculatorLink;
-    private JTextField          mGurpsCalculatorKey;
-    private JCheckBox           mUseNativePrinter;
+    static final         String            MODULE                    = "Output";
+    private static final int               DEFAULT_PNG_RESOLUTION    = 200;
+    private static final String            PNG_RESOLUTION_KEY        = "PNGResolution";
+    private static final int[]             DPI                       = {72, 96, 144, 150, 200, 300};
+    private static final String            USE_TEMPLATE_OVERRIDE_KEY = "UseTextTemplateOverride";
+    private static final String            TEMPLATE_OVERRIDE_KEY     = "TextTemplateOverride";
+    private static final String            GURPS_CALCULATOR_KEY_KEY  = "GurpsCalculatorKey";
+    public static final  String            BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
+    public static final  String            GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
+    private static final String            DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings";
+    private              JComboBox<String> mPNGResolutionCombo;
+    private              JCheckBox         mUseTextTemplateOverride;
+    private              JTextField        mTextTemplatePath;
+    private              JButton           mTextTemplatePicker;
+    private              JButton           mGurpsCalculatorLink;
+    private              JTextField        mGurpsCalculatorKey;
+    private              JCheckBox         mUseNativePrinter;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
@@ -132,24 +130,19 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     }
 
     /**
-     * @return The default page settings to use. May return <code>null</code> if no printer has been
+     * @return The default page settings to use. May return {@code null} if no printer has been
      *         defined.
      */
     public static PrintManager getDefaultPageSettings() {
         String settings = Preferences.getInstance().getStringValue(MODULE, DEFAULT_PAGE_SETTINGS_KEY);
         if (settings != null && !settings.isEmpty()) {
             try (XMLReader in = new XMLReader(new StringReader(settings))) {
-                XMLNodeType type  = in.next();
-                boolean     found = false;
+                XMLNodeType type = in.next();
                 while (type != XMLNodeType.END_DOCUMENT) {
                     if (type == XMLNodeType.START_TAG) {
                         String name = in.getName();
                         if (PrintManager.TAG_ROOT.equals(name)) {
-                            if (!found) {
-                                found = true;
-                                return new PrintManager(in);
-                            }
-                            throw new IOException();
+                            return new PrintManager(in);
                         }
                         in.skipTag(name);
                         type = in.getType();
@@ -168,7 +161,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         }
     }
 
-    /** @param mgr The {@Link PrintManager} to record the settings for. */
+    /** @param mgr The {@link PrintManager} to record the settings for. */
     public static void setDefaultPageSettings(PrintManager mgr) {
         String value = null;
         if (mgr != null) {
@@ -195,7 +188,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         super(I18n.Text("Output"), owner);
         FlexColumn column = new FlexColumn();
 
-        FlexGrid   grid   = new FlexGrid();
+        FlexGrid grid = new FlexGrid();
         column.add(grid);
 
         FlexRow row        = new FlexRow();
@@ -212,7 +205,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         mUseNativePrinter = createCheckBox(I18n.Text("Use platform native print dialogs (settings cannot be saved)"), I18n.Text("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>"), PrintManager.useNativeDialogs());
         column.add(mUseNativePrinter);
 
-        row                      = new FlexRow();
+        row = new FlexRow();
         mUseTextTemplateOverride = createCheckBox(I18n.Text("Text Export Template"), textTemplateOverrideTooltip(), isTextTemplateOverridden());
         row.add(mUseTextTemplateOverride);
         mTextTemplatePath = createTextTemplatePathField();
@@ -234,11 +227,11 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         column.apply(this);
     }
 
-    private static final String textTemplateOverrideTooltip() {
+    private static String textTemplateOverrideTooltip() {
         return I18n.Text("Specify a file to use as the template when exporting to a text format, such as HTML");
     }
 
-    private static final String pngDPIMsg() {
+    private static String pngDPIMsg() {
         return I18n.Text("The resolution, in dots-per-inch, to use when saving sheets as PNG files");
     }
 
@@ -285,7 +278,8 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         int               resolution = getPNGResolution();
         JComboBox<String> combo      = new JComboBox<>();
         setupCombo(combo, pngDPIMsg());
-        for (int i = 0; i < DPI.length; i++) {
+        int length = DPI.length;
+        for (int i = 0; i < length; i++) {
             combo.addItem(MessageFormat.format(I18n.Text("{0} dpi"), Integer.valueOf(DPI[i])));
             if (DPI[i] == resolution) {
                 selection = i;
@@ -333,7 +327,8 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     @Override
     public void reset() {
         mGurpsCalculatorKey.setText("");
-        for (int i = 0; i < DPI.length; i++) {
+        int length = DPI.length;
+        for (int i = 0; i < length; i++) {
             if (DPI[i] == DEFAULT_PNG_RESOLUTION) {
                 mPNGResolutionCombo.setSelectedIndex(i);
                 break;
@@ -345,7 +340,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 
     @Override
     public boolean isSetToDefaults() {
-        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && isTextTemplateOverridden() == false && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText().equals("");
+        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && !isTextTemplateOverridden() && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText() != null && mGurpsCalculatorKey.getText().isEmpty();
     }
 
     @Override

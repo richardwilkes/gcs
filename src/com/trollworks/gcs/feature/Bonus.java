@@ -18,16 +18,16 @@ import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Describes a bonus. */
 public abstract class Bonus implements Feature {
     /** The "amount" tag. */
-    public static final String TAG_AMOUNT = "amount";
-    private LeveledAmount      mAmount;
+    public static final String        TAG_AMOUNT = "amount";
+    private             LeveledAmount mAmount;
     // The "parent" item that is providing this particular bonus (for information only).
-    private ListRow            mParent;
+    private             ListRow       mParent;
 
     /**
      * Creates a new bonus.
@@ -109,12 +109,12 @@ public abstract class Bonus implements Feature {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         // Nothing to do.
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         // Nothing to do.
     }
 

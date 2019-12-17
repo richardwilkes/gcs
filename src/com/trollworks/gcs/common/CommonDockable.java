@@ -27,7 +27,6 @@ import com.trollworks.toolkit.utility.undo.StdUndoManager;
 import java.awt.BorderLayout;
 import java.awt.Window;
 import java.io.File;
-
 import javax.swing.Icon;
 
 /** Provides a common base for library and sheet files. */
@@ -103,7 +102,7 @@ public abstract class CommonDockable extends Dockable implements CloseHandler, S
         if (mDataFile.save(file)) {
             mDataFile.setFile(file);
             getDockContainer().updateTitle(this);
-            return new File[] { file };
+            return new File[]{file};
         }
         WindowUtils.showError(this, I18n.Text("An error occurred while trying to save the file."));
         return new File[0];

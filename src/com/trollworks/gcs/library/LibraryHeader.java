@@ -18,7 +18,6 @@ import com.trollworks.toolkit.ui.scale.ScaleRoot;
 import com.trollworks.toolkit.ui.widget.outline.OutlineHeader;
 
 import java.awt.BorderLayout;
-
 import javax.swing.JPanel;
 
 public class LibraryHeader extends JPanel implements ScaleRoot {

@@ -23,7 +23,6 @@ import com.trollworks.toolkit.ui.widget.Wrapper;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Color;
-
 import javax.swing.SwingConstants;
 
 /** The character attributes panel. */
@@ -62,7 +61,7 @@ public class AttributesPanel extends DropPanel {
         createLabelAndField(grid, row++, GURPSCharacter.ID_TOUCH, I18n.Text("Touch:"), null, SwingConstants.RIGHT, false);
         createDivider(grid, row++, false);
         createDivider(grid, row++, true);
-        createDamageFields(grid, row++);
+        createDamageFields(grid, row);
         grid.apply(this);
     }
 

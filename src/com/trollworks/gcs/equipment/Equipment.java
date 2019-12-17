@@ -38,76 +38,76 @@ import com.trollworks.toolkit.utility.units.WeightValue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
-    private static final int       CURRENT_VERSION          = 6;
-    private static final int       EQUIPMENT_SPLIT_VERSION  = 6;
-    private static final String    DEFAULT_LEGALITY_CLASS   = "4";
+    private static final int               CURRENT_VERSION          = 6;
+    private static final int               EQUIPMENT_SPLIT_VERSION  = 6;
+    private static final String            DEFAULT_LEGALITY_CLASS   = "4";
     /** The extension for Equipment lists. */
-    public static final String     OLD_EQUIPMENT_EXTENSION  = "eqp";
+    public static final  String            OLD_EQUIPMENT_EXTENSION  = "eqp";
     /** The XML tag used for items. */
-    public static final String     TAG_EQUIPMENT            = "equipment";
+    public static final  String            TAG_EQUIPMENT            = "equipment";
     /** The XML tag used for containers. */
-    public static final String     TAG_EQUIPMENT_CONTAINER  = "equipment_container";
-    private static final String    ATTRIBUTE_EQUIPPED       = "equipped";
-    private static final String    TAG_QUANTITY             = "quantity";
-    private static final String    TAG_USES                 = "uses";
-    private static final String    TAG_MAX_USES             = "max_uses";
-    private static final String    TAG_DESCRIPTION          = "description";
-    private static final String    TAG_TECH_LEVEL           = "tech_level";
-    private static final String    TAG_LEGALITY_CLASS       = "legality_class";
-    private static final String    TAG_VALUE                = "value";
-    private static final String    TAG_WEIGHT               = "weight";
-    private static final String    TAG_REFERENCE            = "reference";
+    public static final  String            TAG_EQUIPMENT_CONTAINER  = "equipment_container";
+    private static final String            ATTRIBUTE_EQUIPPED       = "equipped";
+    private static final String            TAG_QUANTITY             = "quantity";
+    private static final String            TAG_USES                 = "uses";
+    private static final String            TAG_MAX_USES             = "max_uses";
+    private static final String            TAG_DESCRIPTION          = "description";
+    private static final String            TAG_TECH_LEVEL           = "tech_level";
+    private static final String            TAG_LEGALITY_CLASS       = "legality_class";
+    private static final String            TAG_VALUE                = "value";
+    private static final String            TAG_WEIGHT               = "weight";
+    private static final String            TAG_REFERENCE            = "reference";
     /** The prefix used in front of all IDs for the equipment. */
-    public static final String     PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment.";
+    public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment.";
     /** The field ID for equipped/carried/not carried changes. */
-    public static final String     ID_EQUIPPED              = PREFIX + "Equipped";
+    public static final  String            ID_EQUIPPED              = PREFIX + "Equipped";
     /** The field ID for quantity changes. */
-    public static final String     ID_QUANTITY              = PREFIX + "Quantity";
+    public static final  String            ID_QUANTITY              = PREFIX + "Quantity";
     /** The field ID for uses changes. */
-    public static final String     ID_USES                  = PREFIX + "Uses";
+    public static final  String            ID_USES                  = PREFIX + "Uses";
     /** The field ID for max uses changes. */
-    public static final String     ID_MAX_USES              = PREFIX + "MaxUses";
+    public static final  String            ID_MAX_USES              = PREFIX + "MaxUses";
     /** The field ID for description changes. */
-    public static final String     ID_DESCRIPTION           = PREFIX + "Description";
+    public static final  String            ID_DESCRIPTION           = PREFIX + "Description";
     /** The field ID for tech level changes. */
-    public static final String     ID_TECH_LEVEL            = PREFIX + "TechLevel";
+    public static final  String            ID_TECH_LEVEL            = PREFIX + "TechLevel";
     /** The field ID for legality changes. */
-    public static final String     ID_LEGALITY_CLASS        = PREFIX + "LegalityClass";
+    public static final  String            ID_LEGALITY_CLASS        = PREFIX + "LegalityClass";
     /** The field ID for value changes. */
-    public static final String     ID_VALUE                 = PREFIX + "Value";
+    public static final  String            ID_VALUE                 = PREFIX + "Value";
     /** The field ID for weight changes. */
-    public static final String     ID_WEIGHT                = PREFIX + "Weight";
+    public static final  String            ID_WEIGHT                = PREFIX + "Weight";
     /** The field ID for extended value changes */
-    public static final String     ID_EXTENDED_VALUE        = PREFIX + "ExtendedValue";
+    public static final  String            ID_EXTENDED_VALUE        = PREFIX + "ExtendedValue";
     /** The field ID for extended weight changes */
-    public static final String     ID_EXTENDED_WEIGHT       = PREFIX + "ExtendedWeight";
+    public static final  String            ID_EXTENDED_WEIGHT       = PREFIX + "ExtendedWeight";
     /** The field ID for page reference changes. */
-    public static final String     ID_REFERENCE             = PREFIX + "Reference";
+    public static final  String            ID_REFERENCE             = PREFIX + "Reference";
     /** The field ID for when the categories change. */
-    public static final String     ID_CATEGORY              = PREFIX + "Category";
+    public static final  String            ID_CATEGORY              = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final String     ID_LIST_CHANGED          = PREFIX + "ListChanged";
+    public static final  String            ID_LIST_CHANGED          = PREFIX + "ListChanged";
     /** The field ID for when the equipment becomes or stops being a weapon. */
-    public static final String     ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
-    private boolean                mEquipped;
-    private int                    mQuantity;
-    private int                    mUses;
-    private int                    mMaxUses;
-    private String                 mDescription;
-    private String                 mTechLevel;
-    private String                 mLegalityClass;
-    private double                 mValue;
-    private WeightValue            mWeight;
-    private double                 mExtendedValue;
-    private WeightValue            mExtendedWeight;
-    private String                 mReference;
-    private ArrayList<WeaponStats> mWeapons;
+    public static final  String            ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
+    private              boolean           mEquipped;
+    private              int               mQuantity;
+    private              int               mUses;
+    private              int               mMaxUses;
+    private              String            mDescription;
+    private              String            mTechLevel;
+    private              String            mLegalityClass;
+    private              double            mValue;
+    private              WeightValue       mWeight;
+    private              double            mExtendedValue;
+    private              WeightValue       mExtendedWeight;
+    private              String            mReference;
+    private              List<WeaponStats> mWeapons;
 
     /**
      * Creates a new equipment.
@@ -117,15 +117,15 @@ public class Equipment extends ListRow implements HasSourceReference {
      */
     public Equipment(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mEquipped       = true;
-        mQuantity       = 1;
-        mDescription    = I18n.Text("Equipment");
-        mTechLevel      = "";
-        mLegalityClass  = DEFAULT_LEGALITY_CLASS;
-        mReference      = "";
-        mWeight         = new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mEquipped = true;
+        mQuantity = 1;
+        mDescription = I18n.Text("Equipment");
+        mTechLevel = "";
+        mLegalityClass = DEFAULT_LEGALITY_CLASS;
+        mReference = "";
+        mWeight = new WeightValue(0, DisplayPreferences.getWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
-        mWeapons        = new ArrayList<>();
+        mWeapons = new ArrayList<>();
     }
 
     /**
@@ -138,20 +138,20 @@ public class Equipment extends ListRow implements HasSourceReference {
     public Equipment(DataFile dataFile, Equipment equipment, boolean deep) {
         super(dataFile, equipment);
         boolean forSheet = dataFile instanceof GURPSCharacter;
-        mEquipped       = forSheet ? equipment.mEquipped : true;
-        mQuantity       = forSheet ? equipment.mQuantity : 1;
-        mUses           = forSheet ? equipment.mUses : equipment.mMaxUses;
-        mMaxUses        = equipment.mMaxUses;
-        mDescription    = equipment.mDescription;
-        mTechLevel      = equipment.mTechLevel;
-        mLegalityClass  = equipment.mLegalityClass;
-        mValue          = equipment.mValue;
-        mWeight         = new WeightValue(equipment.mWeight);
-        mExtendedValue  = mQuantity * mValue;
+        mEquipped = !forSheet || equipment.mEquipped;
+        mQuantity = forSheet ? equipment.mQuantity : 1;
+        mUses = forSheet ? equipment.mUses : equipment.mMaxUses;
+        mMaxUses = equipment.mMaxUses;
+        mDescription = equipment.mDescription;
+        mTechLevel = equipment.mTechLevel;
+        mLegalityClass = equipment.mLegalityClass;
+        mValue = equipment.mValue;
+        mWeight = new WeightValue(equipment.mWeight);
+        mExtendedValue = mQuantity * mValue;
         mExtendedWeight = new WeightValue(mWeight);
         mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
         mReference = equipment.mReference;
-        mWeapons   = new ArrayList<>(equipment.mWeapons.size());
+        mWeapons = new ArrayList<>(equipment.mWeapons.size());
         for (WeaponStats weapon : equipment.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
                 mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
@@ -221,15 +221,15 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mEquipped      = true;
-        mQuantity      = 1;
-        mUses          = 0;
-        mMaxUses       = 0;
-        mDescription   = I18n.Text("Equipment");
-        mTechLevel     = "";
+        mEquipped = true;
+        mQuantity = 1;
+        mUses = 0;
+        mMaxUses = 0;
+        mDescription = I18n.Text("Equipment");
+        mTechLevel = "";
         mLegalityClass = DEFAULT_LEGALITY_CLASS;
-        mReference     = "";
-        mValue         = 0.0;
+        mReference = "";
+        mValue = 0.0;
         mWeight.setValue(0.0);
         mWeapons = new ArrayList<>();
     }
@@ -238,11 +238,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     protected void loadAttributes(XMLReader reader, LoadState state) {
         super.loadAttributes(reader, state);
         if (mDataFile instanceof GURPSCharacter) {
-            if (state.mDataItemVersion == 0 || state.mDataItemVersion >= EQUIPMENT_SPLIT_VERSION) {
-                mEquipped = reader.isAttributeSet(ATTRIBUTE_EQUIPPED);
-            } else {
-                mEquipped = "equipped".equals(reader.getAttribute("state"));
-            }
+            mEquipped = state.mDataItemVersion == 0 || state.mDataItemVersion >= EQUIPMENT_SPLIT_VERSION ? reader.isAttributeSet(ATTRIBUTE_EQUIPPED) : "equipped".equals(reader.getAttribute("state"));
             if (state.mDataFileVersion < GURPSCharacter.SEPARATED_EQUIPMENT_VERSION) {
                 if (!mEquipped && !"carried".equals(reader.getAttribute("state"))) {
                     state.mUncarriedEquipment.add(this);
@@ -396,7 +392,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             boolean notifyUsesToo = false;
             mMaxUses = maxUses;
             if (mMaxUses > mUses) {
-                mUses         = mMaxUses;
+                mUses = mMaxUses;
                 notifyUsesToo = true;
             }
             startNotify();
@@ -539,11 +535,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             Equipment   one    = (Equipment) getChild(i);
             WeightValue weight = one.mExtendedWeight;
             if (SheetPreferences.areGurpsMetricRulesUsed()) {
-                if (units.isMetric()) {
-                    weight = GURPSCharacter.convertToGurpsMetric(weight);
-                } else {
-                    weight = GURPSCharacter.convertFromGurpsMetric(weight);
-                }
+                weight = units.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
             }
             contained.add(weight);
         }
@@ -581,7 +573,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     private void updateContainingWeights(boolean okToNotify) {
         Row parent = this;
-        while (parent != null && parent instanceof Equipment) {
+        while (parent instanceof Equipment) {
             Equipment parentRow = (Equipment) parent;
             if (parentRow.updateExtendedWeight(okToNotify)) {
                 parent = parentRow.getParent();
@@ -610,7 +602,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     private void updateContainingValues(boolean okToNotify) {
         Row parent = this;
-        while (parent != null && parent instanceof Equipment) {
+        while (parent instanceof Equipment) {
             Equipment parentRow = (Equipment) parent;
             if (parentRow.updateExtendedValue(okToNotify)) {
                 parent = parentRow.getParent();
@@ -665,7 +657,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public boolean contains(String text, boolean lowerCaseOnly) {
-        if (getDescription().toLowerCase().indexOf(text) != -1) {
+        if (getDescription().toLowerCase().contains(text)) {
             return true;
         }
         return super.contains(text, lowerCaseOnly);
@@ -718,7 +710,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         super.fillWithNameableKeys(set);
         extractNameables(set, mDescription);
         for (WeaponStats weapon : mWeapons) {
@@ -729,7 +721,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         super.applyNameableKeys(map);
         mDescription = nameNameables(map, mDescription);
         for (WeaponStats weapon : mWeapons) {

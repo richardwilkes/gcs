@@ -51,27 +51,26 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
 /** The template sheet. */
 public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener, ScaleRoot {
-    private static final EmptyBorder NORMAL_BORDER = new EmptyBorder(5);
-    private Scale                    mScale;
-    private Template                 mTemplate;
-    private boolean                  mBatchMode;
-    private AdvantageOutline         mAdvantageOutline;
-    private SkillOutline             mSkillOutline;
-    private SpellOutline             mSpellOutline;
-    private EquipmentOutline         mEquipmentOutline;
-    private EquipmentOutline         mOtherEquipmentOutline;
-    private NoteOutline              mNoteOutline;
+    private static final EmptyBorder      NORMAL_BORDER = new EmptyBorder(5);
+    private              Scale            mScale;
+    private              boolean          mBatchMode;
+    private              AdvantageOutline mAdvantageOutline;
+    private              SkillOutline     mSkillOutline;
+    private              SpellOutline     mSpellOutline;
+    private              EquipmentOutline mEquipmentOutline;
+    private              EquipmentOutline mOtherEquipmentOutline;
+    private              NoteOutline      mNoteOutline;
     /** Used to determine whether an edit cell is pending. */
-    protected boolean                mStartEditingPending;
+    protected            boolean          mStartEditingPending;
     /** Used to determine whether a resize action is pending. */
-    protected boolean                mSizePending;
+    protected            boolean          mSizePending;
 
     /**
      * Creates a new {@link TemplateSheet}.
@@ -84,16 +83,15 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         setBackground(Color.WHITE);
         setBorder(NORMAL_BORDER);
 
-        mScale                 = DisplayPreferences.getInitialUIScale().getScale();
-        mTemplate              = template;
+        mScale = DisplayPreferences.getInitialUIScale().getScale();
 
         // Make sure our primary outlines exist
-        mAdvantageOutline      = new AdvantageOutline(mTemplate);
-        mSkillOutline          = new SkillOutline(mTemplate);
-        mSpellOutline          = new SpellOutline(mTemplate);
-        mEquipmentOutline      = new EquipmentOutline(mTemplate, mTemplate.getEquipmentModel());
-        mOtherEquipmentOutline = new EquipmentOutline(mTemplate, mTemplate.getOtherEquipmentModel());
-        mNoteOutline           = new NoteOutline(mTemplate);
+        mAdvantageOutline = new AdvantageOutline(template);
+        mSkillOutline = new SkillOutline(template);
+        mSpellOutline = new SpellOutline(template);
+        mEquipmentOutline = new EquipmentOutline(template, template.getEquipmentModel());
+        mOtherEquipmentOutline = new EquipmentOutline(template, template.getOtherEquipmentModel());
+        mNoteOutline = new NoteOutline(template);
         add(new TemplateOutlinePanel(mAdvantageOutline, I18n.Text("Advantages, Disadvantages & Quirks")));
         add(new TemplateOutlinePanel(mSkillOutline, I18n.Text("Skills")));
         add(new TemplateOutlinePanel(mSpellOutline, I18n.Text("Spells")));
@@ -109,7 +107,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
 
         // Ensure everything is laid out and register for notification
         revalidate();
-        mTemplate.addTarget(this, Template.TEMPLATE_PREFIX, GURPSCharacter.CHARACTER_PREFIX);
+        template.addTarget(this, Template.TEMPLATE_PREFIX, GURPSCharacter.CHARACTER_PREFIX);
 
         setDropTarget(new DropTarget(this, this));
 
@@ -141,25 +139,20 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
     private void adjustSize() {
         if (!mSizePending) {
             mSizePending = true;
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    runAdjustSize();
-                }
-            });
+            EventQueue.invokeLater(() -> runAdjustSize());
         }
     }
 
     void runAdjustSize() {
         Scale scale = Scale.get(this);
         mSizePending = false;
-        Dimension size = getLayout().preferredLayoutSize(TemplateSheet.this);
+        Dimension size = getLayout().preferredLayoutSize(this);
         size.width = scale.scale(8 * 72);
         int min = scale.scale(4 * 72);
         if (size.height < min) {
             size.height = min;
         }
-        UIUtilities.setOnlySize(TemplateSheet.this, size);
+        UIUtilities.setOnlySize(this, size);
         setSize(size);
     }
 
@@ -264,20 +257,17 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         return false;
     }
 
-    private boolean        mDragWasAcceptable;
-    private ArrayList<Row> mDragRows;
+    private boolean   mDragWasAcceptable;
+    private List<Row> mDragRows;
 
     @Override
     public void dragEnter(DropTargetDragEvent dtde) {
         mDragWasAcceptable = false;
-
         try {
             if (dtde.isDataFlavorSupported(RowSelection.DATA_FLAVOR)) {
                 Row[] rows = (Row[]) dtde.getTransferable().getTransferData(RowSelection.DATA_FLAVOR);
-
-                if (rows != null && rows.length > 0) {
+                if (rows.length > 0) {
                     mDragRows = new ArrayList<>(rows.length);
-
                     for (Row element : rows) {
                         if (element instanceof ListRow) {
                             mDragRows.add(element);
@@ -292,7 +282,6 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         } catch (Exception exception) {
             Log.error(exception);
         }
-
         if (!mDragWasAcceptable) {
             dtde.rejectDrag();
         }

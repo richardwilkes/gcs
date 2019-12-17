@@ -21,30 +21,29 @@ import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /** A weapon bonus. */
 public class WeaponBonus extends Bonus {
     /** The XML tag. */
-    public static final String  TAG_ROOT           = "weapon_bonus";
-    private static final String TAG_NAME           = "name";
-    private static final String TAG_SPECIALIZATION = "specialization";
-    private static final String TAG_LEVEL          = "level";
-    private static final String TAG_CATEGORY       = "category";
-    private StringCriteria      mNameCriteria;
-    private StringCriteria      mSpecializationCriteria;
-    private IntegerCriteria     mLevelCriteria;
-    private StringCriteria      mCategoryCriteria;
+    public static final  String          TAG_ROOT           = "weapon_bonus";
+    private static final String          TAG_NAME           = "name";
+    private static final String          TAG_SPECIALIZATION = "specialization";
+    private static final String          TAG_LEVEL          = "level";
+    private static final String          TAG_CATEGORY       = "category";
+    private              StringCriteria  mNameCriteria;
+    private              StringCriteria  mSpecializationCriteria;
+    private              IntegerCriteria mLevelCriteria;
+    private              StringCriteria  mCategoryCriteria;
 
     /** Creates a new skill bonus. */
     public WeaponBonus() {
         super(1);
-        mNameCriteria           = new StringCriteria(StringCompareType.IS, "");
+        mNameCriteria = new StringCriteria(StringCompareType.IS, "");
         mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
-        mLevelCriteria          = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
-        mCategoryCriteria       = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
+        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     /**
@@ -64,10 +63,10 @@ public class WeaponBonus extends Bonus {
      */
     public WeaponBonus(WeaponBonus other) {
         super(other);
-        mNameCriteria           = new StringCriteria(other.mNameCriteria);
+        mNameCriteria = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
-        mLevelCriteria          = new IntegerCriteria(other.mLevelCriteria);
-        mCategoryCriteria       = new StringCriteria(other.mCategoryCriteria);
+        mLevelCriteria = new IntegerCriteria(other.mLevelCriteria);
+        mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
     }
 
     @Override
@@ -94,8 +93,7 @@ public class WeaponBonus extends Bonus {
 
     @Override
     public String getKey() {
-        StringBuffer buffer = new StringBuffer();
-
+        StringBuilder buffer = new StringBuilder();
         buffer.append(Skill.ID_NAME);
         if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
             buffer.append('/');
@@ -170,14 +168,14 @@ public class WeaponBonus extends Bonus {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         ListRow.extractNameables(set, mNameCriteria.getQualifier());
         ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
         ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
         mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
         mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));

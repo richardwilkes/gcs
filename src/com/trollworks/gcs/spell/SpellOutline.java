@@ -244,7 +244,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         if (tl != null) {
             tl = tl.trim();
             if (!tl.isEmpty()) {
-                for (int i = tl.length(); --i >= 0;) {
+                for (int i = tl.length(); --i >= 0; ) {
                     if (!Character.isDigit(tl.charAt(i))) {
                         return -1;
                     }

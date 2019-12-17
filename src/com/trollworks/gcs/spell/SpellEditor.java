@@ -36,7 +36,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -98,22 +98,22 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         fields.add(wrapper1);
         if (notContainer) {
             createTechLevelFields(wrapper1);
-            mCollegeField     = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
+            mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
             mPowerSourceField = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
-            mClassField       = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
+            mClassField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
             mCastingCostField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
             mMaintenanceField = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), spell.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
             mCastingTimeField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), spell.getCastingTime(), I18n.Text("The casting time of the spell"));
-            mDurationField    = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spell.getDuration(), I18n.Text("The duration of the spell once its cast"));
+            mDurationField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spell.getDuration(), I18n.Text("The duration of the spell once its cast"));
             fields.add(wrapper2);
 
             ptsPanel = createPointsFields();
             fields.add(ptsPanel);
             refParent = ptsPanel;
         }
-        mNotesField      = createField(wrapper3, wrapper3, I18n.Text("Notes"), spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
+        mNotesField = createField(wrapper3, wrapper3, I18n.Text("Notes"), spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
         mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), spell.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
-        mReferenceField  = createField(refParent, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
+        mReferenceField = createField(refParent, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         noGapWrapper.add(new JPanel());
         refParent.add(noGapWrapper);
         fields.add(wrapper3);
@@ -132,15 +132,15 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         applySize(wrapper3, 2, size);
 
         icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
+        icon.setAlignmentY(-1.0f);
         content.add(icon);
         content.add(fields);
         add(content);
 
         if (notContainer) {
-            mTabPanel      = new JTabbedPane();
-            mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
+            mTabPanel = new JTabbedPane();
+            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
+            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
             Component panel = embedEditor(mPrereqs);
             mTabPanel.addTab(panel.getName(), panel);
@@ -196,7 +196,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         boolean        hasTL;
 
         mSavedTechLevel = mRow.getTechLevel();
-        hasTL           = mSavedTechLevel != null;
+        hasTL = mSavedTechLevel != null;
         if (!hasTL) {
             mSavedTechLevel = "";
         }
@@ -225,7 +225,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
                 mSavedTechLevel = character.getDescription().getTechLevel();
             }
         } else {
-            mTechLevel    = new JTextField(mSavedTechLevel);
+            mTechLevel = new JTextField(mSavedTechLevel);
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level Required"), hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this spell requires tech level specialization")));
             mHasTechLevel.setEnabled(enabled);
@@ -238,15 +238,16 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     private Container createPointsFields() {
         boolean forCharacter = mRow.getCharacter() != null;
         boolean forTemplate  = mRow.getTemplate() != null;
-        JPanel  panel        = new JPanel(new ColumnLayout(forCharacter ? 10 : forTemplate ? 8 : 6));
+        int     columns      = forTemplate ? 8 : 6;
+        JPanel  panel        = new JPanel(new ColumnLayout(forCharacter ? 10 : columns));
 
-        JLabel  label        = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
+        JLabel label = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
         label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of the spell")));
         panel.add(label);
 
         mAttributePopup = createComboBox(panel, SkillAttribute.values(), mRow.getAttribute(), I18n.Text("The attribute this spell is based on"));
         panel.add(new JLabel(" /"));
-        mDifficultyCombo = createComboBox(panel, new Object[] { SkillDifficulty.H, SkillDifficulty.VH }, mRow.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H, I18n.Text("The difficulty of the spell"));
+        mDifficultyCombo = createComboBox(panel, new Object[]{SkillDifficulty.H, SkillDifficulty.VH}, mRow.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H, I18n.Text("The difficulty of the spell"));
 
         if (forCharacter || forTemplate) {
             mPointsField = createField(panel, panel, I18n.Text("Points"), Integer.toString(mRow.getPoints()), I18n.Text("The number of points spent on this spell"), 4);
@@ -261,7 +262,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         return panel;
     }
 
-    private static final String editorLevelTooltip() {
+    private static String editorLevelTooltip() {
         return I18n.Text("The spell level and relative spell level to roll against.\n");
     }
 
@@ -340,8 +341,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
         }
         if (mMeleeWeapons != null) {
-            ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
-
+            List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
             list.addAll(mRangedWeapons.getWeapons());
             modified |= mRow.setWeapons(list);
         }
@@ -399,15 +399,15 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
+            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().length() != 0 ? null : I18n.Text("The class field may not be empty"));
+            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.Text("The class field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().length() != 0 ? null : I18n.Text("The casting cost field may not be empty"));
+            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.Text("The casting cost field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().length() != 0 ? null : I18n.Text("The casting time field may not be empty"));
+            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.Text("The casting time field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().length() != 0 ? null : I18n.Text("The duration field may not be empty"));
+            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.Text("The duration field may not be empty") : null);
         }
     }
 

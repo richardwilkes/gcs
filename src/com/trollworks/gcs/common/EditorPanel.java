@@ -32,7 +32,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatter;
@@ -54,7 +54,6 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
      * @param indent The amount of indent to apply to the left side, if any.
      */
     protected EditorPanel(int indent) {
-        super();
         setOpaque(false);
         setBorder(new EmptyBorder(GAP, GAP + indent, GAP, GAP));
     }
@@ -88,10 +87,10 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         Object[] values;
         Object   selection;
         if (extra == null) {
-            values    = StringCompareType.values();
+            values = StringCompareType.values();
             selection = compare.getType();
         } else {
-            ArrayList<String> list = new ArrayList<>();
+            List<String> list = new ArrayList<>();
             selection = null;
             for (StringCompareType type : StringCompareType.values()) {
                 String title = extra + type;
@@ -126,8 +125,8 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
      * @return The {@link JComboBox} that allows a comparison to be changed.
      */
     protected JComboBox<Object> addNumericCompareCombo(NumericCriteria compare, String extra) {
-        Object            selection = null;
-        ArrayList<String> list      = new ArrayList<>();
+        Object       selection = null;
+        List<String> list      = new ArrayList<>();
         for (NumericCompareType type : NumericCompareType.values()) {
             String title = extra == null ? type.toString() : extra + type.getDescription();
             list.add(title);

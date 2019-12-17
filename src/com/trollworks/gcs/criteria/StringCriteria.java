@@ -19,9 +19,9 @@ import java.io.IOException;
 
 /** Manages string comparison criteria. */
 public class StringCriteria {
-    private static final String ATTRIBUTE_COMPARE = "compare";
-    private StringCompareType   mType;
-    private String              mQualifier;
+    private static final String            ATTRIBUTE_COMPARE = "compare";
+    private              StringCompareType mType;
+    private              String            mQualifier;
 
     /**
      * Creates a new string comparison.
@@ -40,7 +40,7 @@ public class StringCriteria {
      * @param other A {@link StringCriteria} to clone.
      */
     public StringCriteria(StringCriteria other) {
-        mType      = other.mType;
+        mType = other.mType;
         mQualifier = other.mQualifier;
     }
 

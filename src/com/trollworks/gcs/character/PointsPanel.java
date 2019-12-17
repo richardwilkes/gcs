@@ -24,7 +24,6 @@ import com.trollworks.toolkit.utility.text.Numbers;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.text.MessageFormat;
-
 import javax.swing.SwingConstants;
 
 /** The character points panel. */

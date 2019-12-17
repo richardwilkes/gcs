@@ -42,7 +42,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.dnd.DropTarget;
-
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
@@ -56,7 +55,7 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
     private Toolbar           mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;
-    private JComboBox<Object> mCategoryCombo;
+    private JComboBox<String> mCategoryCombo;
     private IconButton        mLockButton;
     private JScrollPane       mScroller;
     private ListOutline       mOutline;
@@ -71,11 +70,15 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
         outlineModel.setRowFilter(this);
         LibraryContent content = new LibraryContent(mOutline);
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
-        mToolbar    = new Toolbar();
+        mToolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(DisplayPreferences.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
-            Scale scale = ((Scales) mScaleCombo.getSelectedItem()).getScale();
+            Scales scales = (Scales) mScaleCombo.getSelectedItem();
+            if (scales == null) {
+                scales = Scales.ACTUAL_SIZE;
+            }
+            Scale scale = scales.getScale();
             header.setScale(scale);
             content.setScale(scale);
         });
@@ -123,7 +126,7 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
 
     @Override
     public FileType[] getAllowedFileTypes() {
-        return new FileType[] { getDataFile().getFileType() };
+        return new FileType[]{getDataFile().getFileType()};
     }
 
     @Override
@@ -214,14 +217,14 @@ public abstract class LibraryDockable extends CommonDockable implements RowFilte
         if (row instanceof ListRow) {
             ListRow listRow = (ListRow) row;
             if (mCategoryCombo.getSelectedIndex() != 0) {
-                Object selectedItem = mCategoryCombo.getSelectedItem();
+                String selectedItem = (String) mCategoryCombo.getSelectedItem();
                 if (selectedItem != null) {
                     filtered = !listRow.getCategories().contains(selectedItem);
                 }
             }
             if (!filtered) {
                 String filter = mFilterField.getText();
-                if (filter.length() > 0) {
+                if (!filter.isEmpty()) {
                     filtered = !listRow.contains(filter.toLowerCase(), true);
                 }
             }

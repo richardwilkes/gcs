@@ -19,7 +19,6 @@ import com.trollworks.toolkit.ui.widget.WindowUtils;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.JOptionPane;
 
 /** Provides the "Randomize Description" command. */
@@ -43,7 +42,7 @@ public class RandomizeDescriptionCommand extends Command {
         CharacterSheet target = getTarget(CharacterSheet.class);
         if (target != null) {
             DescriptionRandomizer panel = new DescriptionRandomizer(target.getCharacter());
-            if (WindowUtils.showOptionDialog(null, panel, I18n.Text("Description Randomizer"), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getImage(32), new String[] { I18n.Text("Apply"), I18n.Text("Cancel") }, I18n.Text("Apply")) == JOptionPane.OK_OPTION) {
+            if (WindowUtils.showOptionDialog(null, panel, I18n.Text("Description Randomizer"), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, GCSImages.getCharacterSheetDocumentIcons().getImage(32), new String[]{I18n.Text("Apply"), I18n.Text("Cancel")}, I18n.Text("Apply")) == JOptionPane.OK_OPTION) {
                 panel.applyChanges();
             }
         }

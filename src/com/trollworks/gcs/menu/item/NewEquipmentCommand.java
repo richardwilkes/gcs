@@ -42,12 +42,12 @@ public class NewEquipmentCommand extends Command {
     public static final NewEquipmentCommand NOT_CARRIED_INSTANCE              = new NewEquipmentCommand(false, false, I18n.Text("New Other Equipment"), CMD_NEW_OTHER_EQUIPMENT, KeyEvent.VK_E, COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
     /** The "New Other Equipment Container" command. */
     public static final NewEquipmentCommand NOT_CARRIED_CONTAINER_INSTANCE    = new NewEquipmentCommand(false, true, I18n.Text("New Other Equipment Container"), CMD_NEW_OTHER_EQUIPMENT_CONTAINER, KeyEvent.VK_E, SHIFTED_COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
-    private boolean                         mCarried;
-    private boolean                         mContainer;
+    private             boolean             mCarried;
+    private             boolean             mContainer;
 
     private NewEquipmentCommand(boolean carried, boolean container, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
-        mCarried   = carried;
+        mCarried = carried;
         mContainer = container;
     }
 
@@ -83,22 +83,14 @@ public class NewEquipmentCommand extends Command {
         SheetDockable sheet = getTarget(SheetDockable.class);
         if (sheet != null) {
             ListOutline outline;
-            if (mCarried) {
-                outline = sheet.getSheet().getEquipmentOutline();
-            } else {
-                outline = sheet.getSheet().getOtherEquipmentOutline();
-            }
+            outline = mCarried ? sheet.getSheet().getEquipmentOutline() : sheet.getSheet().getOtherEquipmentOutline();
             perform(sheet.getDataFile(), outline);
             return;
         }
         TemplateDockable template = getTarget(TemplateDockable.class);
         if (template != null) {
             ListOutline outline;
-            if (mCarried) {
-                outline = template.getTemplate().getEquipmentOutline();
-            } else {
-                outline = template.getTemplate().getOtherEquipmentOutline();
-            }
+            outline = mCarried ? template.getTemplate().getEquipmentOutline() : template.getTemplate().getOtherEquipmentOutline();
             perform(template.getDataFile(), outline);
         }
     }

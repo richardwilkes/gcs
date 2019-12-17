@@ -24,7 +24,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
-
+import java.util.Objects;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -36,21 +36,21 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 /** A panel that will display a single page of a PDF. */
 public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scrollable {
-    public static final float[] SCALES      = { 0.33f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f };
-    private PdfDockable         mOwner;
-    private PDDocument          mPdf;
-    private int                 mPageIndex;
-    private int                 mScaleIndex = Arrays.binarySearch(SCALES, 1f);
-    private String              mHighlight;
-    private BufferedImage       mImg;
-    private int                 mWidth;
-    private int                 mHeight;
-    private boolean             mNeedLoad;
-    private boolean             mIgnorePageChange;
+    public static final float[]       SCALES      = {0.33f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f};
+    private             PdfDockable   mOwner;
+    private             PDDocument    mPdf;
+    private             int           mPageIndex;
+    private             int           mScaleIndex = Arrays.binarySearch(SCALES, 1.0f);
+    private             String        mHighlight;
+    private             BufferedImage mImg;
+    private             int           mWidth;
+    private             int           mHeight;
+    private             boolean       mNeedLoad;
+    private             boolean       mIgnorePageChange;
 
     public PdfPanel(PdfDockable owner, PDDocument pdf, PdfRef pdfRef, int page, String highlight) {
         mOwner = owner;
-        mPdf   = pdf;
+        mPdf = pdf;
         setFocusable(true);
         addMouseListener(this);
         addKeyListener(this);
@@ -81,7 +81,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
     }
 
     private boolean isHighlightNew(String highlight) {
-        return mHighlight == null ? highlight != null : !mHighlight.equals(highlight);
+        return !Objects.equals(mHighlight, highlight);
     }
 
     public int goToPageIndex(int pageIndex, String highlight) {
@@ -125,7 +125,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 
     public void actualSize() {
         if (mPdf != null) {
-            int actualSizeIndex = Arrays.binarySearch(SCALES, 1f);
+            int actualSizeIndex = Arrays.binarySearch(SCALES, 1.0f);
             if (actualSizeIndex != mScaleIndex) {
                 mScaleIndex = actualSizeIndex;
                 markPageForLoading();
@@ -142,9 +142,9 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
             PDPage      page    = mPdf.getPage(mPageIndex);
             PDRectangle cropBox = page.getCropBox();
             float       scale   = SCALES[mScaleIndex] * Toolkit.getDefaultToolkit().getScreenResolution();
-            mWidth    = (int) Math.ceil(cropBox.getWidth() / 72 * scale);
-            mHeight   = (int) Math.ceil(cropBox.getHeight() / 72 * scale);
-            mImg      = null;
+            mWidth = (int) Math.ceil(cropBox.getWidth() / 72 * scale);
+            mHeight = (int) Math.ceil(cropBox.getHeight() / 72 * scale);
+            mImg = null;
             mNeedLoad = true;
             Dimension size = new Dimension(mWidth, mHeight);
             UIUtilities.setOnlySize(this, size);
@@ -160,7 +160,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (mNeedLoad && mPdf != null) {
-            mImg      = PdfRenderer.create(mPdf, mPageIndex, SCALES[mScaleIndex] * (GraphicsUtilities.isRetinaDisplay(g) ? 2 : 1), mHighlight);
+            mImg = PdfRenderer.create(mPdf, mPageIndex, SCALES[mScaleIndex] * (GraphicsUtilities.isRetinaDisplay(g) ? 2 : 1), mHighlight);
             mNeedLoad = false;
         }
         if (mImg != null) {

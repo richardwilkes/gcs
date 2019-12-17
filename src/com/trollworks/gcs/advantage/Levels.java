@@ -19,14 +19,12 @@ public enum Levels {
         public String toString() {
             return I18n.Text("Has No Levels");
         }
-    },
-    HAS_LEVELS {
+    }, HAS_LEVELS {
         @Override
         public String toString() {
             return I18n.Text("Has Levels");
         }
-    },
-    HAS_HALF_LEVELS {
+    }, HAS_HALF_LEVELS {
         @Override
         public String toString() {
             return I18n.Text("Has Half Levels");

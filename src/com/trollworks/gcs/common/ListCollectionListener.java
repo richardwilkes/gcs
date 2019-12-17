@@ -22,9 +22,9 @@ public interface ListCollectionListener {
     /**
      * Called whenever the {@link ListCollectionThread} has new data.
      *
-     * @param lists The data. The first object in the list (and any sub-lists) is always a
-     *              {@link String} representing the name of a directory. Each subsequent item in the
-     *              list is either another {@link List} or a {@link Path}.
+     * @param lists The data. The first object in the list (and any sub-lists) is always a {@link
+     *              String} representing the name of a directory. Each subsequent item in the list
+     *              is either another {@link List} or a {@link Path}.
      */
     void dataFileListUpdated(List<Object> lists);
 }

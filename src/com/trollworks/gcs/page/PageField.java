@@ -43,7 +43,6 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.HashMap;
-
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -106,7 +105,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
             // around text fields.
             setUI(new BasicTextFieldUI());
         }
-        mSheet        = sheet;
+        mSheet = sheet;
         mConsumedType = consumedType;
         setFont(sheet.getScale().scale(UIManager.getFont(GCSFonts.KEY_FIELD)));
         setBorder(null);
@@ -120,7 +119,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         setForeground(editable ? Color.BLACK : Color.GRAY);
         if (tooltip != null) {
             setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-            if (tooltip.indexOf("{") != -1) {
+            if (tooltip.indexOf('{') != -1) {
                 mCustomToolTip = tooltip;
             }
         }

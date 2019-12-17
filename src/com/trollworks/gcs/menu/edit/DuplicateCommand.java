@@ -24,6 +24,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 /** Provides the "Duplicate" command. */
 // RAW: This should be reimplemented in terms of the Duplicatable interface
@@ -60,16 +61,16 @@ public class DuplicateCommand extends Command {
         ListOutline  outline = (ListOutline) focus;
         OutlineModel model   = outline.getModel();
         if (!model.isLocked() && model.hasSelection()) {
-            ArrayList<Row> rows     = new ArrayList<>();
-            ArrayList<Row> topRows  = new ArrayList<>();
-            DataFile       dataFile = outline.getDataFile();
+            List<Row>     rows     = new ArrayList<>();
+            List<ListRow> topRows  = new ArrayList<>();
+            DataFile      dataFile = outline.getDataFile();
             dataFile.startNotify();
             model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));
             outline.convertDragRowsToSelf(rows);
             model.setDragRows(null);
             for (Row row : rows) {
-                if (row.getDepth() == 0) {
-                    topRows.add(row);
+                if (row.getDepth() == 0 && row instanceof ListRow) {
+                    topRows.add((ListRow) row);
                 }
             }
             outline.addRow(topRows.toArray(new ListRow[0]), I18n.Text("Duplicate Rows"), true);

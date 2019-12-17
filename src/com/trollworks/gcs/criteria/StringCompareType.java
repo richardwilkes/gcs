@@ -70,7 +70,7 @@ public enum StringCompareType {
 
         @Override
         public boolean matches(String qualifier, String data) {
-            return data.toLowerCase().indexOf(qualifier.toLowerCase()) != -1;
+            return data.toLowerCase().contains(qualifier.toLowerCase());
         }
     },
     /** The comparison for "does not contain". */
@@ -82,7 +82,7 @@ public enum StringCompareType {
 
         @Override
         public boolean matches(String qualifier, String data) {
-            return data.toLowerCase().indexOf(qualifier.toLowerCase()) == -1;
+            return !data.toLowerCase().contains(qualifier.toLowerCase());
         }
     },
     /** The comparison for "starts with". */
@@ -139,12 +139,7 @@ public enum StringCompareType {
      * @return The description of this comparison type.
      */
     public String describe(String qualifier) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(toString());
-        builder.append(" \"");
-        builder.append(qualifier);
-        builder.append('"');
-        return builder.toString();
+        return toString() + " \"" + qualifier + '"';
     }
 
     /**

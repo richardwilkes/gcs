@@ -25,24 +25,24 @@ import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Text;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** A note. */
 public class Note extends ListRow {
     private static final int    CURRENT_VERSION    = 1;
     /** The XML tag used for items. */
-    public static final String  TAG_NOTE           = "note";
+    public static final  String TAG_NOTE           = "note";
     /** The XML tag used for containers. */
-    public static final String  TAG_NOTE_CONTAINER = "note_container";
+    public static final  String TAG_NOTE_CONTAINER = "note_container";
     private static final String TAG_TEXT           = "text";
     /** The prefix used in front of all IDs for the notes. */
-    public static final String  PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note.";
+    public static final  String PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note.";
     /** The field ID for text changes. */
-    public static final String  ID_TEXT            = PREFIX + "Text";
+    public static final  String ID_TEXT            = PREFIX + "Text";
     /** The field ID for when the row hierarchy changes. */
-    public static final String  ID_LIST_CHANGED    = PREFIX + "ListChanged";
-    private String              mText;
+    public static final  String ID_LIST_CHANGED    = PREFIX + "ListChanged";
+    private              String mText;
 
     /**
      * Creates a new note.
@@ -164,7 +164,7 @@ public class Note extends ListRow {
 
     @Override
     public boolean contains(String text, boolean lowerCaseOnly) {
-        if (getDescription().toLowerCase().indexOf(text) != -1) {
+        if (getDescription().toLowerCase().contains(text)) {
             return true;
         }
         return super.contains(text, lowerCaseOnly);
@@ -196,12 +196,12 @@ public class Note extends ListRow {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         // No nameables
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         // No nameables
     }
 }

@@ -22,6 +22,7 @@ import com.trollworks.toolkit.utility.undo.MultipleUndo;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 /** Provides the "Apply Template To Sheet" command. */
 public class ApplyTemplateCommand extends Command {
@@ -29,8 +30,8 @@ public class ApplyTemplateCommand extends Command {
     public static final String               CMD_APPLY_TEMPLATE = "ApplyTemplate";
     /** The singleton {@link ApplyTemplateCommand}. */
     public static final ApplyTemplateCommand INSTANCE           = new ApplyTemplateCommand();
-    private TemplateDockable                 mTemplate;
-    private SheetDockable                    mSheet;
+    private             TemplateDockable     mTemplate;
+    private             SheetDockable        mSheet;
 
     private ApplyTemplateCommand() {
         super(I18n.Text("Apply Template To Character Sheet"), CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
@@ -44,7 +45,7 @@ public class ApplyTemplateCommand extends Command {
     public ApplyTemplateCommand(TemplateDockable template, SheetDockable sheet) {
         super(sheet.getTitle(), CMD_APPLY_TEMPLATE);
         mTemplate = template;
-        mSheet    = sheet;
+        mSheet = sheet;
     }
 
     @Override
@@ -63,9 +64,9 @@ public class ApplyTemplateCommand extends Command {
         if (templateDockable != null) {
             SheetDockable sheetDockable = mSheet != null ? mSheet : SheetDockable.getLastActivated();
             if (sheetDockable != null) {
-                Template       template = templateDockable.getDataFile();
-                MultipleUndo   edit     = new MultipleUndo(I18n.Text("Apply Template"));
-                ArrayList<Row> rows     = new ArrayList<>();
+                Template     template = templateDockable.getDataFile();
+                MultipleUndo edit     = new MultipleUndo(I18n.Text("Apply Template"));
+                List<Row>    rows     = new ArrayList<>();
                 template.addEdit(edit);
                 rows.addAll(template.getAdvantagesModel().getTopLevelRows());
                 rows.addAll(template.getSkillsModel().getTopLevelRows());

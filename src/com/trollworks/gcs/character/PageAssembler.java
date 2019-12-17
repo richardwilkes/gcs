@@ -23,13 +23,12 @@ import java.awt.Insets;
 
 /** Assembles pages in a sheet. */
 public class PageAssembler {
-    private static final int GAP = 2;
-    private CharacterSheet   mSheet;
-    private Page             mPage;
-    private Wrapper          mContent;
-    private int              mRemaining;
-    private int              mContentHeight;
-    private int              mContentWidth;
+    private static final int            GAP = 2;
+    private              CharacterSheet mSheet;
+    private              Wrapper        mContent;
+    private              int            mRemaining;
+    private              int            mContentHeight;
+    private              int            mContentWidth;
 
     /**
      * Create a new page assembler.
@@ -48,18 +47,18 @@ public class PageAssembler {
     }
 
     private void addPageInternal() {
-        mPage = new Page(mSheet);
-        mSheet.add(mPage);
+        Page page = new Page(mSheet);
+        mSheet.add(page);
         if (mContentHeight < 1) {
-            Insets    insets = mPage.getInsets();
-            Dimension size   = mPage.getSize();
-            mContentWidth  = size.width - (insets.left + insets.right);
+            Insets    insets = page.getInsets();
+            Dimension size   = page.getSize();
+            mContentWidth = size.width - (insets.left + insets.right);
             mContentHeight = size.height - (insets.top + insets.bottom);
         }
         mContent = new Wrapper(new ColumnLayout(1, GAP, GAP, RowDistribution.GIVE_EXCESS_TO_LAST));
-        mContent.setAlignmentY(-1f);
+        mContent.setAlignmentY(-1.0f);
         mRemaining = mContentHeight;
-        mPage.add(mContent);
+        page.add(mContent);
     }
 
     /**
@@ -68,7 +67,7 @@ public class PageAssembler {
      * @param panel     The panel to add.
      * @param leftInfo  Outline info for the left outline.
      * @param rightInfo Outline info for the right outline.
-     * @return <code>true</code> if the panel was too big to fit on a single page.
+     * @return {@code true} if the panel was too big to fit on a single page.
      */
     public boolean addToContent(Container panel, OutlineInfo leftInfo, OutlineInfo rightInfo) {
         boolean isOutline = panel instanceof SingleOutlinePanel || panel instanceof DoubleOutlinePanel;
@@ -85,8 +84,8 @@ public class PageAssembler {
             if (panel instanceof SingleOutlinePanel) {
                 height += minLeft;
             } else {
-                minRight  = rightInfo.getMinimumHeight();
-                height   += minLeft < minRight ? minRight : minLeft;
+                minRight = rightInfo.getMinimumHeight();
+                height += Math.max(minLeft, minRight);
             }
         } else {
             height += panel.getPreferredSize().height;
@@ -108,7 +107,7 @@ public class PageAssembler {
                     amt = minLeft;
                 }
                 mRemaining = savedRemaining - amt;
-                hasMore    = leftInfo.hasMore();
+                hasMore = leftInfo.hasMore();
             } else {
                 DoubleOutlinePanel panel2      = (DoubleOutlinePanel) panel;
                 int                leftStart   = leftInfo.getRowIndex() + 1;
@@ -124,11 +123,7 @@ public class PageAssembler {
                 if (rightHeight < minRight) {
                     rightHeight = minRight;
                 }
-                if (leftHeight < rightHeight) {
-                    mRemaining = savedRemaining - rightHeight;
-                } else {
-                    mRemaining = savedRemaining - leftHeight;
-                }
+                mRemaining = leftHeight < rightHeight ? savedRemaining - rightHeight : savedRemaining - leftHeight;
                 hasMore = leftInfo.hasMore() || rightInfo.hasMore();
             }
             if (hasMore) {

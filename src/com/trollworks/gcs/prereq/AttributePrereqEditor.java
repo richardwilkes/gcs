@@ -20,7 +20,6 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-
 import javax.swing.JComboBox;
 
 /** An attribute prerequisite editor panel. */
@@ -44,7 +43,7 @@ public class AttributePrereqEditor extends PrereqEditor {
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         AttributePrereq prereq = (AttributePrereq) mPrereq;
 
-        FlexRow         row    = new FlexRow();
+        FlexRow row = new FlexRow();
         row.add(addHasCombo(prereq.has()));
         row.add(addChangeBaseTypeCombo());
         row.add(new FlexSpacer(0, 0, true, false));
@@ -61,8 +60,9 @@ public class AttributePrereqEditor extends PrereqEditor {
 
     private JComboBox<Object> addChangeTypePopup() {
         BonusAttributeType[] types  = AttributePrereq.TYPES;
-        String[]             titles = new String[types.length];
-        for (int i = 0; i < types.length; i++) {
+        int                  length = types.length;
+        String[]             titles = new String[length];
+        for (int i = 0; i < length; i++) {
             titles[i] = types[i].getPresentationName();
         }
         return addComboBox(CHANGE_TYPE, titles, ((AttributePrereq) mPrereq).getWhich().getPresentationName());
@@ -71,10 +71,11 @@ public class AttributePrereqEditor extends PrereqEditor {
     private JComboBox<Object> addChangeSecondTypePopup() {
         BonusAttributeType   current   = ((AttributePrereq) mPrereq).getCombinedWith();
         BonusAttributeType[] types     = AttributePrereq.TYPES;
-        String[]             titles    = new String[types.length + 1];
+        int                  length    = types.length;
+        String[]             titles    = new String[length + 1];
         String               selection = BLANK;
         titles[0] = BLANK;
-        for (int i = 0; i < types.length; i++) {
+        for (int i = 0; i < length; i++) {
             titles[i + 1] = MessageFormat.format(I18n.Text("combined with {0}"), types[i].getPresentationName());
             if (current == types[i]) {
                 selection = titles[i + 1];

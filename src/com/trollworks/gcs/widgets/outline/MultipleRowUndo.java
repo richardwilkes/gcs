@@ -12,7 +12,6 @@
 package com.trollworks.gcs.widgets.outline;
 
 import java.util.Collection;
-
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -27,7 +26,6 @@ public class MultipleRowUndo extends AbstractUndoableEdit {
      * @param undos The {@link RowUndo}s to manage.
      */
     public MultipleRowUndo(Collection<RowUndo> undos) {
-        super();
         mUndos = undos.toArray(new RowUndo[0]);
         if (mUndos.length > 0) {
             mUndos[0].getDataFile().addEdit(this);
@@ -55,8 +53,9 @@ public class MultipleRowUndo extends AbstractUndoableEdit {
     @Override
     public void redo() throws CannotRedoException {
         super.redo();
-        if (mUndos.length > 0) {
-            for (int i = 0; i != mUndos.length; i++) {
+        int length = mUndos.length;
+        if (length > 0) {
+            for (int i = 0; i != length; i++) {
                 mUndos[i].redo();
             }
             notifyDataFile();

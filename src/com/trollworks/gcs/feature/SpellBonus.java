@@ -19,35 +19,35 @@ import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /** A spell bonus. */
 public class SpellBonus extends Bonus {
     /** The XML tag. */
-    public static final String  TAG_ROOT               = "spell_bonus";
+    public static final  String         TAG_ROOT               = "spell_bonus";
     /** Matches against the college name. */
-    public static final String  TAG_COLLEGE_NAME       = "college_name";
+    public static final  String         TAG_COLLEGE_NAME       = "college_name";
     /** Matches against the power source name. */
-    public static final String  TAG_POWER_SOURCE_NAME  = "power_source_name";
+    public static final  String         TAG_POWER_SOURCE_NAME  = "power_source_name";
     /** Matches against the spell name. */
-    public static final String  TAG_SPELL_NAME         = "spell_name";
+    public static final  String         TAG_SPELL_NAME         = "spell_name";
     /** The XML attribute name for the "all colleges" flag. */
-    public static final String  ATTRIBUTE_ALL_COLLEGES = "all_colleges";
-    private static final String TAG_CATEGORY           = "category";
-    private static final String EMPTY                  = "";
-    private boolean             mAllColleges;
-    private String              mMatchType;
-    private StringCriteria      mNameCriteria;
-    private StringCriteria      mCategoryCriteria;
+    public static final  String         ATTRIBUTE_ALL_COLLEGES = "all_colleges";
+    private static final String         TAG_CATEGORY           = "category";
+    private static final String         EMPTY                  = "";
+    private              boolean        mAllColleges;
+    private              String         mMatchType;
+    private              StringCriteria mNameCriteria;
+    private              StringCriteria mCategoryCriteria;
 
     /** Creates a new spell bonus. */
     public SpellBonus() {
         super(1);
-        mAllColleges      = true;
-        mMatchType        = TAG_COLLEGE_NAME;
-        mNameCriteria     = new StringCriteria(StringCompareType.IS, EMPTY);
+        mAllColleges = true;
+        mMatchType = TAG_COLLEGE_NAME;
+        mNameCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
         mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
     }
 
@@ -59,7 +59,7 @@ public class SpellBonus extends Bonus {
     public SpellBonus(XMLReader reader) throws IOException {
         this();
         mAllColleges = reader.isAttributeSet(ATTRIBUTE_ALL_COLLEGES);
-        mMatchType   = TAG_COLLEGE_NAME;
+        mMatchType = TAG_COLLEGE_NAME;
         load(reader);
     }
 
@@ -70,9 +70,9 @@ public class SpellBonus extends Bonus {
      */
     public SpellBonus(SpellBonus other) {
         super(other);
-        mAllColleges      = other.mAllColleges;
-        mMatchType        = other.mMatchType;
-        mNameCriteria     = new StringCriteria(other.mNameCriteria);
+        mAllColleges = other.mAllColleges;
+        mMatchType = other.mMatchType;
+        mNameCriteria = new StringCriteria(other.mNameCriteria);
         mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
     }
 
@@ -83,7 +83,7 @@ public class SpellBonus extends Bonus {
         }
         if (obj instanceof SpellBonus && super.equals(obj)) {
             SpellBonus sb = (SpellBonus) obj;
-            return mAllColleges == sb.mAllColleges && mMatchType == sb.mMatchType && mNameCriteria.equals(sb.mNameCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
+            return mAllColleges == sb.mAllColleges && Objects.equals(mMatchType, sb.mMatchType) && mNameCriteria.equals(sb.mNameCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
         }
         return false;
     }
@@ -109,16 +109,14 @@ public class SpellBonus extends Bonus {
 
     @Override
     public String getKey() {
-        StringBuffer buffer = new StringBuffer();
-        if (!mCategoryCriteria.isTypeAnything()) {
-            buffer.append(Spell.ID_NAME).append("*");
-        } else {
+        StringBuilder buffer = new StringBuilder();
+        if (mCategoryCriteria.isTypeAnything()) {
             if (mAllColleges) {
                 buffer.append(Spell.ID_COLLEGE);
             } else {
-                if (mMatchType == TAG_COLLEGE_NAME) {
+                if (TAG_COLLEGE_NAME.equals(mMatchType)) {
                     buffer.append(Spell.ID_COLLEGE);
-                } else if (mMatchType == TAG_POWER_SOURCE_NAME) {
+                } else if (TAG_POWER_SOURCE_NAME.equals(mMatchType)) {
                     buffer.append(Spell.ID_POWER_SOURCE);
                 } else {
                     buffer.append(Spell.ID_NAME);
@@ -130,6 +128,8 @@ public class SpellBonus extends Bonus {
                     buffer.append("*");
                 }
             }
+        } else {
+            buffer.append(Spell.ID_NAME).append("*");
         }
         return buffer.toString();
     }
@@ -162,7 +162,7 @@ public class SpellBonus extends Bonus {
     public void save(XMLWriter out) {
         out.startTag(TAG_ROOT);
         if (mAllColleges) {
-            out.writeAttribute(ATTRIBUTE_ALL_COLLEGES, mAllColleges);
+            out.writeAttribute(ATTRIBUTE_ALL_COLLEGES, true);
         }
         out.finishTagEOL();
         if (!mAllColleges) {
@@ -212,7 +212,7 @@ public class SpellBonus extends Bonus {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         if (!mAllColleges) {
             ListRow.extractNameables(set, mNameCriteria.getQualifier());
         }
@@ -220,7 +220,7 @@ public class SpellBonus extends Bonus {
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         if (!mAllColleges) {
             mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
         }

@@ -35,7 +35,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -51,56 +50,56 @@ import javax.swing.text.Document;
 
 /** The display preferences panel. */
 public class DisplayPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    private static final String      MODULE                             = "Display";
-    private static final String      TOTAL_POINTS_DISPLAY_KEY           = "TotalPointsIncludesUnspentPoints";
+    private static final String            MODULE                             = "Display";
+    private static final String            TOTAL_POINTS_DISPLAY_KEY           = "TotalPointsIncludesUnspentPoints";
     /** The total points includes unspent points preference key. */
-    public static final String       TOTAL_POINTS_DISPLAY_PREF_KEY      = Preferences.getModuleKey(MODULE, TOTAL_POINTS_DISPLAY_KEY);
-    private static final boolean     DEFAULT_TOTAL_POINTS_DISPLAY       = true;
-    private static final String      BLOCK_LAYOUT_KEY                   = "BlockLayout";
+    public static final  String            TOTAL_POINTS_DISPLAY_PREF_KEY      = Preferences.getModuleKey(MODULE, TOTAL_POINTS_DISPLAY_KEY);
+    private static final boolean           DEFAULT_TOTAL_POINTS_DISPLAY       = true;
+    private static final String            BLOCK_LAYOUT_KEY                   = "BlockLayout";
     /** The block layout preference key. */
-    public static final String       BLOCK_LAYOUT_PREF_KEY              = Preferences.getModuleKey(MODULE, BLOCK_LAYOUT_KEY);
-    private static final String      DEFAULT_BLOCK_LAYOUT               = "melee\nranged\nadvantages skills\nspells\nequipment\nother_equipment\nnotes";
-    private static final Scales      DEFAULT_SCALE                      = Scales.QUARTER_AGAIN_SIZE;
-    private static final String      SCALE_KEY                          = "UIScale.v2";
-    private static final String      LENGTH_UNITS_KEY                   = "LengthUnits";
+    public static final  String            BLOCK_LAYOUT_PREF_KEY              = Preferences.getModuleKey(MODULE, BLOCK_LAYOUT_KEY);
+    private static final String            DEFAULT_BLOCK_LAYOUT               = "melee\nranged\nadvantages skills\nspells\nequipment\nother_equipment\nnotes";
+    private static final Scales            DEFAULT_SCALE                      = Scales.QUARTER_AGAIN_SIZE;
+    private static final String            SCALE_KEY                          = "UIScale.v2";
+    private static final String            LENGTH_UNITS_KEY                   = "LengthUnits";
     /** The default length units preference key. */
-    public static final String       LENGTH_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
-    private static final LengthUnits DEFAULT_LENGTH_UNITS               = LengthUnits.FT_IN;
-    private static final String      WEIGHT_UNITS_KEY                   = "WeightUnits";
+    public static final  String            LENGTH_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
+    private static final LengthUnits       DEFAULT_LENGTH_UNITS               = LengthUnits.FT_IN;
+    private static final String            WEIGHT_UNITS_KEY                   = "WeightUnits";
     /** The default weight units preference key. */
-    public static final String       WEIGHT_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
-    private static final WeightUnits DEFAULT_WEIGHT_UNITS               = WeightUnits.LB;
-    private static final String      TOOLTIP_TIMEOUT_KEY                = "TooltipTimeout";
-    private static final int         MINIMUM_TOOLTIP_TIMEOUT            = 1;
-    private static final int         MAXIMUM_TOOLTIP_TIMEOUT            = 9999;
-    private static final int         DEFAULT_TOOLTIP_TIMEOUT            = 60;
-    public static final String       SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip";
-    private static final boolean     DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP = true;
-    public static final String       SHOW_USER_DESC_IN_DISPLAY_KEY      = "ShowUserDescInDisplay";
-    public static final String       SHOW_USER_DESC_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_USER_DESC_IN_DISPLAY_KEY);
-    private static final boolean     DEFAULT_SHOW_USER_DESC_IN_DISPLAY  = false;
-    public static final String       SHOW_MODIFIERS_AS_TOOL_TIP_KEY     = "ShowModifiersAsToolTip";
-    private static final boolean     DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP = false;
-    public static final String       SHOW_MODIFIERS_IN_DISPLAY_KEY      = "ShowModifiersInDisplay";
-    public static final String       SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_MODIFIERS_IN_DISPLAY_KEY);
-    private static final boolean     DEFAULT_SHOW_MODIFIERS_IN_DISPLAY  = true;
-    public static final String       SHOW_NOTES_AS_TOOL_TIP_KEY         = "ShowNotesAsToolTip";
-    private static final boolean     DEFAULT_SHOW_NOTES_AS_TOOL_TIP     = false;
-    public static final String       SHOW_NOTES_IN_DISPLAY_KEY          = "ShowNotesInDisplay";
-    public static final String       SHOW_NOTES_IN_DISPLAY_PREF_KEY     = Preferences.getModuleKey(MODULE, SHOW_NOTES_IN_DISPLAY_KEY);
-    private static final boolean     DEFAULT_SHOW_NOTES_IN_DISPLAY      = true;
-    private JCheckBox                mIncludeUnspentPointsInTotal;
-    private JComboBox<Scales>        mUIScaleCombo;
-    private JComboBox<String>        mLengthUnitsCombo;
-    private JComboBox<String>        mWeightUnitsCombo;
-    private JTextField               mToolTipTimeout;
-    private JTextArea                mBlockLayoutField;
-    private JCheckBox                mShowUserDescAsToolTips;
-    private JCheckBox                mShowUserDescInDisplay;
-    private JCheckBox                mShowModifiersAsToolTips;
-    private JCheckBox                mShowModifiersInDisplay;
-    private JCheckBox                mShowNotesAsToolTips;
-    private JCheckBox                mShowNotesInDisplay;
+    public static final  String            WEIGHT_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
+    private static final WeightUnits       DEFAULT_WEIGHT_UNITS               = WeightUnits.LB;
+    private static final String            TOOLTIP_TIMEOUT_KEY                = "TooltipTimeout";
+    private static final int               MINIMUM_TOOLTIP_TIMEOUT            = 1;
+    private static final int               MAXIMUM_TOOLTIP_TIMEOUT            = 9999;
+    private static final int               DEFAULT_TOOLTIP_TIMEOUT            = 60;
+    public static final  String            SHOW_USER_DESC_AS_TOOL_TIP_KEY     = "ShowUserDescAsToolTip";
+    private static final boolean           DEFAULT_SHOW_USER_DESC_AS_TOOL_TIP = true;
+    public static final  String            SHOW_USER_DESC_IN_DISPLAY_KEY      = "ShowUserDescInDisplay";
+    public static final  String            SHOW_USER_DESC_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_USER_DESC_IN_DISPLAY_KEY);
+    private static final boolean           DEFAULT_SHOW_USER_DESC_IN_DISPLAY  = false;
+    public static final  String            SHOW_MODIFIERS_AS_TOOL_TIP_KEY     = "ShowModifiersAsToolTip";
+    private static final boolean           DEFAULT_SHOW_MODIFIERS_AS_TOOL_TIP = false;
+    public static final  String            SHOW_MODIFIERS_IN_DISPLAY_KEY      = "ShowModifiersInDisplay";
+    public static final  String            SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY = Preferences.getModuleKey(MODULE, SHOW_MODIFIERS_IN_DISPLAY_KEY);
+    private static final boolean           DEFAULT_SHOW_MODIFIERS_IN_DISPLAY  = true;
+    public static final  String            SHOW_NOTES_AS_TOOL_TIP_KEY         = "ShowNotesAsToolTip";
+    private static final boolean           DEFAULT_SHOW_NOTES_AS_TOOL_TIP     = false;
+    public static final  String            SHOW_NOTES_IN_DISPLAY_KEY          = "ShowNotesInDisplay";
+    public static final  String            SHOW_NOTES_IN_DISPLAY_PREF_KEY     = Preferences.getModuleKey(MODULE, SHOW_NOTES_IN_DISPLAY_KEY);
+    private static final boolean           DEFAULT_SHOW_NOTES_IN_DISPLAY      = true;
+    private              JCheckBox         mIncludeUnspentPointsInTotal;
+    private              JComboBox<Scales> mUIScaleCombo;
+    private              JComboBox<String> mLengthUnitsCombo;
+    private              JComboBox<String> mWeightUnitsCombo;
+    private              JTextField        mToolTipTimeout;
+    private              JTextArea         mBlockLayoutField;
+    private              JCheckBox         mShowUserDescAsToolTips;
+    private              JCheckBox         mShowUserDescInDisplay;
+    private              JCheckBox         mShowModifiersAsToolTips;
+    private              JCheckBox         mShowModifiersInDisplay;
+    private              JCheckBox         mShowNotesAsToolTips;
+    private              JCheckBox         mShowNotesInDisplay;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
@@ -263,12 +262,12 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         int    i             = 0;
         String asToolTip     = I18n.Text("as a tooltip");
         String inMainDisplay = I18n.Text("in the main display");
-        mShowUserDescAsToolTips  = createCheckBox(asToolTip, null, showUserDescAsTooltip());
-        mShowUserDescInDisplay   = createCheckBox(inMainDisplay, null, showUserDescInDisplay());
+        mShowUserDescAsToolTips = createCheckBox(asToolTip, null, showUserDescAsTooltip());
+        mShowUserDescInDisplay = createCheckBox(inMainDisplay, null, showUserDescInDisplay());
         mShowModifiersAsToolTips = createCheckBox(asToolTip, null, showModifiersAsTooltip());
-        mShowModifiersInDisplay  = createCheckBox(inMainDisplay, null, showModifiersInDisplay());
-        mShowNotesAsToolTips     = createCheckBox(asToolTip, null, showNotesAsTooltip());
-        mShowNotesInDisplay      = createCheckBox(inMainDisplay, null, showNotesInDisplay());
+        mShowModifiersInDisplay = createCheckBox(inMainDisplay, null, showModifiersInDisplay());
+        mShowNotesAsToolTips = createCheckBox(asToolTip, null, showNotesAsTooltip());
+        mShowNotesInDisplay = createCheckBox(inMainDisplay, null, showNotesInDisplay());
         i++;
         grid.add(new FlexComponent(createLabel(I18n.Text("Show User Descriptions:"), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 1);
         grid.add(mShowUserDescInDisplay, i, 2);
@@ -286,7 +285,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         String blockLayoutTooltip = I18n.Text("Specifies the layout of the various blocks of data on the character sheet");
         row.add(createLabel(I18n.Text("Block Layout"), blockLayoutTooltip));
         column.add(row);
-        row               = new FlexRow();
+        row = new FlexRow();
         mBlockLayoutField = createTextArea(blockLayoutTooltip, getBlockLayout());
         row.add(mBlockLayoutField);
         row.setFillVertical(true);
@@ -356,7 +355,11 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
         if (source == mUIScaleCombo) {
-            Preferences.getInstance().setValue(MODULE, SCALE_KEY, ((Scales) mUIScaleCombo.getSelectedItem()).getScale().getScale());
+            Scales scale = (Scales) mUIScaleCombo.getSelectedItem();
+            if (scale == null) {
+                scale = Scales.ACTUAL_SIZE;
+            }
+            Preferences.getInstance().setValue(MODULE, SCALE_KEY, scale.getScale().getScale());
         } else if (source == mLengthUnitsCombo) {
             Preferences.getInstance().setValue(MODULE, LENGTH_UNITS_KEY, Enums.toId(LengthUnits.values()[mLengthUnitsCombo.getSelectedIndex()]));
         } else if (source == mWeightUnitsCombo) {

@@ -23,15 +23,15 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** A Skill prerequisite. */
 public class SkillPrereq extends NameLevelPrereq {
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT           = "skill_prereq";
-    private static final String TAG_SPECIALIZATION = "specialization";
-    private StringCriteria      mSpecializationCriteria;
+    public static final  String         TAG_ROOT           = "skill_prereq";
+    private static final String         TAG_SPECIALIZATION = "specialization";
+    private              StringCriteria mSpecializationCriteria;
 
     /**
      * Creates a new prerequisite.
@@ -144,13 +144,13 @@ public class SkillPrereq extends NameLevelPrereq {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         super.fillWithNameableKeys(set);
         ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         super.applyNameableKeys(map);
         mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
     }

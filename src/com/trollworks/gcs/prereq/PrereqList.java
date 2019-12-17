@@ -25,19 +25,19 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /** A prerequisite list. */
 public class PrereqList extends Prereq {
     /** The XML tag used for the prereq list. */
-    public static final String  TAG_ROOT      = "prereq_list";
-    private static final String TAG_WHEN_TL   = "when_tl";
-    private static final String ATTRIBUTE_ALL = "all";
-    private boolean             mAll;
-    private IntegerCriteria     mWhenTLCriteria;
-    private ArrayList<Prereq>   mPrereqs;
+    public static final  String          TAG_ROOT      = "prereq_list";
+    private static final String          TAG_WHEN_TL   = "when_tl";
+    private static final String          ATTRIBUTE_ALL = "all";
+    private              boolean         mAll;
+    private              IntegerCriteria mWhenTLCriteria;
+    private              List<Prereq>    mPrereqs;
 
     /**
      * Creates a new prerequisite list.
@@ -48,9 +48,9 @@ public class PrereqList extends Prereq {
      */
     public PrereqList(PrereqList parent, boolean all) {
         super(parent);
-        mAll            = all;
+        mAll = all;
         mWhenTLCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, Integer.MIN_VALUE);
-        mPrereqs        = new ArrayList<>();
+        mPrereqs = new ArrayList<>();
     }
 
     /**
@@ -95,9 +95,9 @@ public class PrereqList extends Prereq {
      */
     public PrereqList(PrereqList parent, PrereqList prereqList) {
         super(parent);
-        mAll            = prereqList.mAll;
+        mAll = prereqList.mAll;
         mWhenTLCriteria = new IntegerCriteria(prereqList.mWhenTLCriteria);
-        mPrereqs        = new ArrayList<>(prereqList.mPrereqs.size());
+        mPrereqs = new ArrayList<>(prereqList.mPrereqs.size());
         for (Prereq prereq : prereqList.mPrereqs) {
             mPrereqs.add(prereq.clone(this));
         }
@@ -241,7 +241,7 @@ public class PrereqList extends Prereq {
         }
 
         boolean satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
-        if (!satisfied && localBuilder != null && builder != null) {
+        if (!satisfied && localBuilder != null) {
             builder.append(MessageFormat.format(requiresAll ? I18n.Text("{0}Requires all of:\n") : I18n.Text("{0}Requires at least one of:\n"), prefix));
             builder.append(localBuilder.toString());
         }
@@ -254,14 +254,14 @@ public class PrereqList extends Prereq {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         for (Prereq prereq : mPrereqs) {
             prereq.fillWithNameableKeys(set);
         }
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         for (Prereq prereq : mPrereqs) {
             prereq.applyNameableKeys(map);
         }

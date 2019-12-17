@@ -24,13 +24,12 @@ import java.io.IOException;
 
 /** Data Object to hold several {@link Modifier} */
 public class ModifierList extends ListFile {
-    private static final int   CURRENT_VERSION = 1;
+    private static final int    CURRENT_VERSION = 1;
     /** The XML tag for advantage lists. */
-    public static final String TAG_ROOT        = "modifier_list";
+    public static final  String TAG_ROOT        = "modifier_list";
 
     /** Creates new {@link ModifierList}. */
     public ModifierList() {
-        super();
     }
 
     /**

@@ -23,7 +23,6 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Container;
 import java.util.List;
-
 import javax.swing.JPanel;
 
 /** An editor for ranged weapon statistics. */
@@ -39,9 +38,9 @@ public class RangedWeaponEditor extends WeaponEditor {
      * Creates a new ranged weapon editor for the specified row.
      *
      * @param row The row to edit ranged weapon statistics for.
-     * @return The editor, or <code>null</code> if the row is not appropriate.
+     * @return The editor, or {@code null} if the row is not appropriate.
      */
-    static public RangedWeaponEditor createEditor(ListRow row) {
+    public static RangedWeaponEditor createEditor(ListRow row) {
         if (row instanceof Equipment) {
             return new RangedWeaponEditor(row, ((Equipment) row).getWeapons());
         } else if (row instanceof Advantage) {
@@ -71,27 +70,27 @@ public class RangedWeaponEditor extends WeaponEditor {
         mAccuracy = createTextField("99+99*", tooltip);
         parent.add(new LinkedLabel(tooltip, mAccuracy));
         panel.add(mAccuracy);
-        tooltip     = I18n.Text("Rate of Fire");
+        tooltip = I18n.Text("Rate of Fire");
         mRateOfFire = createTextField("999*", tooltip);
         panel.add(new LinkedLabel(tooltip, mRateOfFire));
         panel.add(mRateOfFire);
         tooltip = I18n.Text("Range");
-        mRange  = createTextField(null, tooltip);
+        mRange = createTextField(null, tooltip);
         panel.add(new LinkedLabel(tooltip, mRange));
         panel.add(mRange);
         parent.add(panel);
 
-        panel   = new JPanel(new ColumnLayout(5));
+        panel = new JPanel(new ColumnLayout(5));
         tooltip = I18n.Text("Recoil");
         mRecoil = createTextField("9999", tooltip);
         parent.add(new LinkedLabel(tooltip, mRecoil));
         panel.add(mRecoil);
         tooltip = I18n.Text("Shots");
-        mShots  = createTextField(null, tooltip);
+        mShots = createTextField(null, tooltip);
         panel.add(new LinkedLabel(tooltip, mShots));
         panel.add(mShots);
         tooltip = I18n.Text("Bulk");
-        mBulk   = createTextField("9999", tooltip);
+        mBulk = createTextField("9999", tooltip);
         panel.add(new LinkedLabel(tooltip, mBulk));
         panel.add(mBulk);
         parent.add(panel);

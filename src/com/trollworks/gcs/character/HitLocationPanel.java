@@ -12,7 +12,6 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.Wrapper;
@@ -23,12 +22,10 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.text.MessageFormat;
-
 import javax.swing.SwingConstants;
 
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
-    private CharacterSheet mSheet;
 
     /**
      * Creates a new hit location panel.
@@ -37,14 +34,12 @@ public class HitLocationPanel extends DropPanel {
      */
     public HitLocationPanel(CharacterSheet sheet) {
         super(new ColumnLayout(7, 2, 0), I18n.Text("Hit Location"));
-        mSheet = sheet;
 
-        GURPSCharacter   character = mSheet.getCharacter();
+        GURPSCharacter   character = sheet.getCharacter();
         HitLocationTable table     = character.getDescription().getHitLocationTable();
 
-        Wrapper          wrapper   = new Wrapper(new ColumnLayout(1, 2, 0));
-        PageHeader       header    = createHeader(wrapper, I18n.Text("Roll"), null);
-        addHorizontalBackground(header, Color.black);
+        Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
+        addHorizontalBackground(createHeader(wrapper, I18n.Text("Roll"), null), Color.black);
         for (HitLocationTableEntry entry : table.getEntries()) {
             createLabel(wrapper, entry.getRoll(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), entry.getName()), SwingConstants.CENTER);
         }
@@ -54,7 +49,7 @@ public class HitLocationPanel extends DropPanel {
         createDivider();
 
         wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-        header  = createHeader(wrapper, I18n.Text("Where"), null);
+        createHeader(wrapper, I18n.Text("Where"), null);
         for (HitLocationTableEntry entry : table.getEntries()) {
             createLabel(wrapper, entry.getName(), Text.wrapPlainTextForToolTip(entry.getLocation().getDescription()), SwingConstants.CENTER);
         }
@@ -64,7 +59,7 @@ public class HitLocationPanel extends DropPanel {
         createDivider();
 
         wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-        header  = createHeader(wrapper, "-", I18n.Text("The hit penalty for targeting a specific hit location"));
+        createHeader(wrapper, "-", I18n.Text("The hit penalty for targeting a specific hit location"));
         for (HitLocationTableEntry entry : table.getEntries()) {
             createLabel(wrapper, Integer.toString(entry.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), entry.getName()), SwingConstants.RIGHT);
         }
@@ -74,9 +69,9 @@ public class HitLocationPanel extends DropPanel {
         createDivider();
 
         wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-        header  = createHeader(wrapper, I18n.Text("DR"), null);
+        createHeader(wrapper, I18n.Text("DR"), null);
         for (HitLocationTableEntry entry : table.getEntries()) {
-            createDisabledField(wrapper, mSheet, entry.getKey(), MessageFormat.format(I18n.Text("<html><body>The total DR protecting the <b>{0}</b> hit location</body></html>"), entry.getName()), SwingConstants.RIGHT);
+            createDisabledField(wrapper, sheet, entry.getKey(), MessageFormat.format(I18n.Text("<html><body>The total DR protecting the <b>{0}</b> hit location</body></html>"), entry.getName()), SwingConstants.RIGHT);
         }
         wrapper.setAlignmentY(TOP_ALIGNMENT);
         add(wrapper);

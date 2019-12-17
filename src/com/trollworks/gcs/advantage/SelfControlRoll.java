@@ -135,8 +135,8 @@ public enum SelfControlRoll {
     public static final String ATTR_ADJUSTMENT = "adj";
 
     /**
-     * @param tagValue The value within a tag representing a {@link SelfControlRoll}.
-     * @return The actual {@link SelfControlRoll}.
+     * @param tagValue The value within a tag representing a SelfControlRoll.
+     * @return The actual SelfControlRoll.
      */
     public static final SelfControlRoll get(String tagValue) {
         int value = Numbers.extractInteger(tagValue, Integer.MAX_VALUE, false);
@@ -165,10 +165,10 @@ public enum SelfControlRoll {
      * @param adj The {@link SelfControlRollAdjustments} being used.
      */
     public void save(XMLWriter out, String tag, SelfControlRollAdjustments adj) {
-        if (adj != SelfControlRollAdjustments.NONE) {
-            out.simpleTagWithAttribute(tag, getCR(), ATTR_ADJUSTMENT, Enums.toId(adj));
-        } else {
+        if (adj == SelfControlRollAdjustments.NONE) {
             out.simpleTag(tag, getCR());
+        } else {
+            out.simpleTagWithAttribute(tag, getCR(), ATTR_ADJUSTMENT, Enums.toId(adj));
         }
     }
 }

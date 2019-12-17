@@ -30,7 +30,6 @@ import com.trollworks.toolkit.utility.units.WeightUnits;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.text.MessageFormat;
-
 import javax.swing.SwingConstants;
 
 /** Definitions for equipment columns. */
@@ -147,7 +146,7 @@ public enum EquipmentColumn {
             String        notes   = equipment.getNotes();
 
             builder.append(equipment.toString());
-            if (notes.length() > 0) {
+            if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);
             }
@@ -424,9 +423,9 @@ public enum EquipmentColumn {
     };
 
     /**
-     * @param dataFile The {@link DataFile} this equipment list is associated with, or
-     *                 <code>null</code>.
-     * @param carried  <code>true</code> for the carried equipment, <code>false</code> for the other
+     * @param dataFile The {@link DataFile} this equipment list is associated with, or {@code
+     *                 null}.
+     * @param carried  {@code true} for the carried equipment, {@code false} for the other
      *                 equipment.
      * @return The header title.
      */
@@ -463,7 +462,7 @@ public enum EquipmentColumn {
 
     /**
      * @param dataFile The {@link DataFile} to use.
-     * @param carried  <code>true</code> for the carried equipment, <code>false</code> for the other
+     * @param carried  {@code true} for the carried equipment, {@code false} for the other
      *                 equipment.
      * @return Whether this column should be displayed for the specified data file.
      */
@@ -483,7 +482,7 @@ public enum EquipmentColumn {
      *
      * @param outline  The {@link Outline} to use.
      * @param dataFile The {@link DataFile} that data is being displayed for.
-     * @param carried  <code>true</code> for the carried equipment, <code>false</code> for the other
+     * @param carried  {@code true} for the carried equipment, {@code false} for the other
      *                 equipment.
      */
     public static void addColumns(Outline outline, DataFile dataFile, boolean carried) {
@@ -512,11 +511,7 @@ public enum EquipmentColumn {
     public static WeightValue getConvertedWeight(WeightValue weight) {
         WeightUnits defaultWeightUnits = DisplayPreferences.getWeightUnits();
         if (SheetPreferences.areGurpsMetricRulesUsed()) {
-            if (defaultWeightUnits.isMetric()) {
-                weight = GURPSCharacter.convertToGurpsMetric(weight);
-            } else {
-                weight = GURPSCharacter.convertFromGurpsMetric(weight);
-            }
+            weight = defaultWeightUnits.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
         } else {
             weight = new WeightValue(weight, defaultWeightUnits);
         }

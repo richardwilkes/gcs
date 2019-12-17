@@ -30,7 +30,6 @@ import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
@@ -126,7 +125,7 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * Removes a horizontal background added with {@link #addHorizontalBackground(Component,Color)}.
+     * Removes a horizontal background added with {@link #addHorizontalBackground(Component, Color)}.
      *
      * @param panel The panel to remove.
      */
@@ -146,7 +145,7 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * Removes a vertical background added with {@link #addVerticalBackground(Component,Color)}.
+     * Removes a vertical background added with {@link #addVerticalBackground(Component, Color)}.
      *
      * @param panel The panel to remove.
      */
@@ -159,9 +158,9 @@ public class DropPanel extends JPanel {
         super.paintComponent(GraphicsUtilities.prepare(gc));
         Insets    insets      = mTitledBorder.getBorderInsets(this);
         Rectangle localBounds = getBounds();
-        localBounds.x       = insets.left;
-        localBounds.y       = insets.top;
-        localBounds.width  -= insets.left + insets.right;
+        localBounds.x = insets.left;
+        localBounds.y = insets.top;
+        localBounds.width -= insets.left + insets.right;
         localBounds.height -= insets.top + insets.bottom;
         if (mPaintVerticalFirst) {
             paintVerticalBackgrounds(gc, localBounds);

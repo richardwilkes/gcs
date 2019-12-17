@@ -73,7 +73,7 @@ public enum ModifierColumnID {
             String        notes   = modifier.getNotes();
 
             builder.append(modifier.toString());
-            if (notes.length() > 0) {
+            if (!notes.isEmpty()) {
                 builder.append(" (");
                 builder.append(notes);
                 builder.append(')');

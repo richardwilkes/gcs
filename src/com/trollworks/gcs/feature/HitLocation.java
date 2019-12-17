@@ -150,7 +150,7 @@ public enum HitLocation {
                 list.add(one);
             }
         }
-        return list.toArray(new HitLocation[list.size()]);
+        return list.toArray(new HitLocation[0]);
     }
 
     /** @return Whether this location is choosable as an armor protection spot. */

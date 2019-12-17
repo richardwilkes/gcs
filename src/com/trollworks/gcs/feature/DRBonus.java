@@ -21,9 +21,9 @@ import java.io.IOException;
 /** A DR bonus. */
 public class DRBonus extends Bonus {
     /** The XML tag. */
-    public static final String  TAG_ROOT     = "dr_bonus";
-    private static final String TAG_LOCATION = "location";
-    private HitLocation         mLocation;
+    public static final  String      TAG_ROOT     = "dr_bonus";
+    private static final String      TAG_LOCATION = "location";
+    private              HitLocation mLocation;
 
     /** Creates a new DR bonus. */
     public DRBonus() {
@@ -69,11 +69,7 @@ public class DRBonus extends Bonus {
 
     @Override
     public String getKey() {
-        StringBuffer buffer = new StringBuffer();
-
-        buffer.append(Armor.DR_PREFIX);
-        buffer.append(mLocation.name());
-        return buffer.toString();
+        return Armor.DR_PREFIX + mLocation.name();
     }
 
     @Override

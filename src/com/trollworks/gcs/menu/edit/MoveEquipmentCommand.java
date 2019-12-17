@@ -32,14 +32,14 @@ import com.trollworks.toolkit.utility.undo.MultipleUndo;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.undo.StateEdit;
 
 /** Provides the "Toggle State" command. */
 public class MoveEquipmentCommand extends Command {
-    public static final String CMD_TO_CARRIED_EQUIPMENT = "ToCarriedEquipment";
-    public static final String CMD_TO_OTHER_EQUIPMENT   = "ToOtherEquipment";
-    private boolean            mToCarried;
+    public static final String  CMD_TO_CARRIED_EQUIPMENT = "ToCarriedEquipment";
+    public static final String  CMD_TO_OTHER_EQUIPMENT   = "ToOtherEquipment";
+    private             boolean mToCarried;
 
     public MoveEquipmentCommand(boolean toCarried) {
         super(toCarried ? I18n.Text("Move to Carried Equipment") : I18n.Text("Move to Other Equipment"), toCarried ? CMD_TO_CARRIED_EQUIPMENT : CMD_TO_OTHER_EQUIPMENT);
@@ -89,19 +89,19 @@ public class MoveEquipmentCommand extends Command {
                 if (other != null) {
                     MultipleUndo undo = new MultipleUndo(getTitle());
                     outline.postUndo(undo);
-                    ArrayList<RowUndo> undos   = new ArrayList<>();
-                    ArrayList<Row>     rows    = new ArrayList<>();
-                    ArrayList<Row>     topRows = new ArrayList<>();
-                    OutlineModel       target  = other.getModel();
-                    StateEdit          edit1   = new StateEdit(model, getTitle());
-                    StateEdit          edit2   = new StateEdit(target, getTitle());
+                    List<RowUndo> undos   = new ArrayList<>();
+                    List<Row>     rows    = new ArrayList<>();
+                    List<ListRow> topRows = new ArrayList<>();
+                    OutlineModel  target  = other.getModel();
+                    StateEdit     edit1   = new StateEdit(model, getTitle());
+                    StateEdit     edit2   = new StateEdit(target, getTitle());
                     dataFile.startNotify();
                     target.setDragRows(outline.getModel().getSelectionAsList(true).toArray(new Row[0]));
                     other.convertDragRowsToSelf(rows);
                     target.setDragRows(null);
                     for (Row row : rows) {
-                        if (row.getDepth() == 0) {
-                            topRows.add(row);
+                        if (row.getDepth() == 0 && row instanceof ListRow) {
+                            topRows.add((ListRow) row);
                         }
                     }
                     other.addRow(topRows.toArray(new ListRow[0]), getTitle(), true);

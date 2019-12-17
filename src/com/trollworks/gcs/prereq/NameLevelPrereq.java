@@ -21,8 +21,8 @@ import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * An abstract prerequisite class for comparison of name and level and whether or not the specific
@@ -30,11 +30,11 @@ import java.util.HashSet;
  */
 public abstract class NameLevelPrereq extends HasPrereq {
     /** Provided for sub-classes. */
-    private static final String TAG_NAME  = "name";
-    private static final String TAG_LEVEL = "level";
-    private String              mTag;
-    private StringCriteria      mNameCriteria;
-    private IntegerCriteria     mLevelCriteria;
+    private static final String          TAG_NAME  = "name";
+    private static final String          TAG_LEVEL = "level";
+    private              String          mTag;
+    private              StringCriteria  mNameCriteria;
+    private              IntegerCriteria mLevelCriteria;
 
     /**
      * Creates a new prerequisite.
@@ -44,8 +44,8 @@ public abstract class NameLevelPrereq extends HasPrereq {
      */
     public NameLevelPrereq(String tag, PrereqList parent) {
         super(parent);
-        mTag           = tag;
-        mNameCriteria  = new StringCriteria(StringCompareType.IS, "");
+        mTag = tag;
+        mNameCriteria = new StringCriteria(StringCompareType.IS, "");
         mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
     }
 
@@ -76,8 +76,8 @@ public abstract class NameLevelPrereq extends HasPrereq {
      */
     protected NameLevelPrereq(PrereqList parent, NameLevelPrereq prereq) {
         super(parent, prereq);
-        mTag           = prereq.mTag;
-        mNameCriteria  = new StringCriteria(prereq.mNameCriteria);
+        mTag = prereq.mTag;
+        mNameCriteria = new StringCriteria(prereq.mNameCriteria);
         mLevelCriteria = new IntegerCriteria(prereq.mLevelCriteria);
     }
 
@@ -144,12 +144,12 @@ public abstract class NameLevelPrereq extends HasPrereq {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         ListRow.extractNameables(set, mNameCriteria.getQualifier());
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
     }
 }

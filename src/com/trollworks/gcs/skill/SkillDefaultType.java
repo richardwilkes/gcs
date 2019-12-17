@@ -14,7 +14,7 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.toolkit.utility.I18n;
 
-import java.util.HashSet;
+import java.util.Set;
 
 /** The types of possible skill defaults. */
 public enum SkillDefaultType {
@@ -26,7 +26,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             return finalLevel(skillDefault, Math.min(SkillAttribute.ST.getBaseSkillLevel(character), 20));
         }
     },
@@ -38,7 +38,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             return finalLevel(skillDefault, Math.min(SkillAttribute.DX.getBaseSkillLevel(character), 20));
         }
     },
@@ -50,7 +50,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             return finalLevel(skillDefault, Math.min(SkillAttribute.IQ.getBaseSkillLevel(character), 20));
         }
     },
@@ -62,7 +62,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             return finalLevel(skillDefault, Math.min(SkillAttribute.HT.getBaseSkillLevel(character), 20));
         }
     },
@@ -74,7 +74,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             return finalLevel(skillDefault, Math.min(SkillAttribute.Will.getBaseSkillLevel(character), 20));
         }
     },
@@ -86,7 +86,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             return finalLevel(skillDefault, Math.min(SkillAttribute.Per.getBaseSkillLevel(character), 20));
         }
     },
@@ -98,7 +98,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             int best = Integer.MIN_VALUE;
             for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
                 int level = skill.getLevel();
@@ -110,7 +110,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             int best = Integer.MIN_VALUE;
             for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
                 if (skill.getLevel() > best) {
@@ -136,7 +136,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             int best = Integer.MIN_VALUE;
             for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
                 int level = skill.getLevel();
@@ -144,11 +144,11 @@ public enum SkillDefaultType {
                     best = level;
                 }
             }
-            return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getParryBonus() : best);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
         }
 
         @Override
-        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             int best = Integer.MIN_VALUE;
             for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
                 if (skill.getLevel() > best) {
@@ -158,7 +158,7 @@ public enum SkillDefaultType {
                     }
                 }
             }
-            return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getParryBonus() : best);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
         }
 
         @Override
@@ -174,7 +174,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             int best = Integer.MIN_VALUE;
             for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
                 int level = skill.getLevel();
@@ -182,11 +182,11 @@ public enum SkillDefaultType {
                     best = level;
                 }
             }
-            return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getBlockBonus() : best);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
         }
 
         @Override
-        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             int best = Integer.MIN_VALUE;
             for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, excludes)) {
                 if (skill.getLevel() > best) {
@@ -196,7 +196,7 @@ public enum SkillDefaultType {
                     }
                 }
             }
-            return finalLevel(skillDefault, best != Integer.MIN_VALUE ? best / 2 + 3 + character.getBlockBonus() : best);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
         }
 
         @Override
@@ -212,7 +212,7 @@ public enum SkillDefaultType {
         }
 
         @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
             return finalLevel(skillDefault, SkillAttribute.Base10.getBaseSkillLevel(character));
         }
     };
@@ -243,7 +243,7 @@ public enum SkillDefaultType {
      * @param excludes     Exclude these {@link Skill}s from consideration.
      * @return The base skill level for this {@link SkillDefaultType}.
      */
-    public abstract int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes);
+    public abstract int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes);
 
     /**
      * @param character    The character to work with.
@@ -251,7 +251,7 @@ public enum SkillDefaultType {
      * @param excludes     Exclude these {@link Skill}s from consideration.
      * @return The base skill level for this {@link SkillDefaultType}.
      */
-    public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, HashSet<String> excludes) {
+    public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, Set<String> excludes) {
         return getSkillLevelFast(character, skillDefault, excludes);
     }
 

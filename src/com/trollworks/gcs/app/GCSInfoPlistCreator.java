@@ -19,6 +19,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 /** Utility to generate the Info.plist file for GCS. */
 public class GCSInfoPlistCreator {
@@ -30,7 +31,7 @@ public class GCSInfoPlistCreator {
         File pkg   = new File(PKGINFO);
         if (args.length > 0) {
             plist = new File(args[0], PLIST);
-            pkg   = new File(args[0], PKGINFO);
+            pkg = new File(args[0], PKGINFO);
         }
         App.setup(GCS.class);
         new GCSInfoPlistCreator().run(plist, pkg);
@@ -41,7 +42,7 @@ public class GCSInfoPlistCreator {
         GCSCmdLine.registerFileTypes(null);
         BundleInfo info = BundleInfo.getDefault();
         info.write(plist, "app.icns");
-        try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(pkg)))) {
+        try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(pkg)), false, StandardCharsets.UTF_8)) {
             out.print("APPL");
             out.print(info.getSignature());
         } catch (Exception exception) {

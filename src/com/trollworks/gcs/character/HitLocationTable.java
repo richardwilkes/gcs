@@ -74,7 +74,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         HUMANOID = new HitLocationTable(KEY_HUMANOID, I18n.Text("Humanoid"), entries);
 
-        entries  = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
@@ -88,7 +88,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         QUADRUPED = new HitLocationTable(KEY_QUADRUPED, I18n.Text("Quadruped"), entries);
 
-        entries   = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
@@ -102,7 +102,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         WINGED_QUADRUPED = new HitLocationTable(KEY_WINGED_QUADRUPED, I18n.Text("Winged Quadruped"), entries);
 
-        entries          = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 5, 5));
@@ -132,7 +132,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         WINGED_HEXAPOD = new HitLocationTable(KEY_WINGED_HEXAPOD, I18n.Text("Winged Hexapod"), entries);
 
-        entries        = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 5, 5));
@@ -158,7 +158,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.FOOT, 15, 16));
         entries.add(new HitLocationTableEntry(HitLocation.TAIL, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        AVIAN   = new HitLocationTable(KEY_AVIAN, I18n.Text("Avian"), entries);
+        AVIAN = new HitLocationTable(KEY_AVIAN, I18n.Text("Avian"), entries);
 
         entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -169,7 +169,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         VERMIFORM = new HitLocationTable(KEY_VERMIFORM, I18n.Text("Vermiform"), entries);
 
-        entries   = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
@@ -179,7 +179,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         WINGED_VERMIFORM = new HitLocationTable(KEY_WINGED_VERMIFORM, I18n.Text("Winged Vermiform"), entries);
 
-        entries          = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
@@ -192,7 +192,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         SNAKEMEN = new HitLocationTable(KEY_SNAKEMEN, I18n.Text("Snakemen"), entries);
 
-        entries  = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE, 1));
         entries.add(new HitLocationTableEntry(HitLocation.BRAIN, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
@@ -215,7 +215,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.ARM, I18n.Text("Extremity"), 13, 16));
         entries.add(new HitLocationTableEntry(HitLocation.TORSO, 17, 18));
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
-        SQUID   = new HitLocationTable(KEY_SQUID, I18n.Text("Squid"), entries);
+        SQUID = new HitLocationTable(KEY_SQUID, I18n.Text("Squid"), entries);
 
         entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
@@ -229,7 +229,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         CANCROID = new HitLocationTable(KEY_CANCROID, I18n.Text("Cancroid"), entries);
 
-        entries  = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
@@ -242,7 +242,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         SCORPION = new HitLocationTable(KEY_SCORPION, I18n.Text("Scorpion"), entries);
 
-        entries  = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE, 1));
         entries.add(new HitLocationTableEntry(HitLocation.SKULL, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.FACE, 5, 5));
@@ -253,7 +253,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         ICHTHYOID = new HitLocationTable(KEY_ICHTHYOID, I18n.Text("Ichthyoid"), entries);
 
-        entries   = new ArrayList<>();
+        entries = new ArrayList<>();
         entries.add(new HitLocationTableEntry(HitLocation.EYE));
         entries.add(new HitLocationTableEntry(HitLocation.BRAIN, 3, 4));
         entries.add(new HitLocationTableEntry(HitLocation.NECK, 5, 5));
@@ -267,7 +267,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         ARACHNOID = new HitLocationTable(KEY_ARACHNOID, I18n.Text("Arachnoid"), entries);
 
-        ALL       = new HitLocationTable[] { HUMANOID, QUADRUPED, WINGED_QUADRUPED, HEXAPOD, WINGED_HEXAPOD, CENTAUR, AVIAN, VERMIFORM, WINGED_VERMIFORM, SNAKEMEN, OCTOPOD, SQUID, CANCROID, SCORPION, ICHTHYOID, ARACHNOID };
+        ALL = new HitLocationTable[]{HUMANOID, QUADRUPED, WINGED_QUADRUPED, HEXAPOD, WINGED_HEXAPOD, CENTAUR, AVIAN, VERMIFORM, WINGED_VERMIFORM, SNAKEMEN, OCTOPOD, SQUID, CANCROID, SCORPION, ICHTHYOID, ARACHNOID};
         Arrays.sort(ALL);
     }
 
@@ -276,8 +276,8 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
     private List<HitLocationTableEntry> mEntries;
 
     public HitLocationTable(String key, String name, List<HitLocationTableEntry> entries) {
-        mKey     = key;
-        mName    = name;
+        mKey = key;
+        mName = name;
         mEntries = entries;
         MAP.put(mKey, this);
     }

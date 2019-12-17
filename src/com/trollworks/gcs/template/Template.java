@@ -42,50 +42,49 @@ import java.io.IOException;
 /** A template. */
 public class Template extends DataFile {
     /** The extension for templates. */
-    public static final String  EXTENSION              = "gct";
-    private static final int    CURRENT_VERSION        = 2;
-    private static final String TAG_ROOT               = "template";
-    private static final String TAG_OLD_NOTES          = "notes";
+    public static final  String       EXTENSION              = "gct";
+    private static final int          CURRENT_VERSION        = 2;
+    private static final String       TAG_ROOT               = "template";
+    private static final String       TAG_OLD_NOTES          = "notes";
     /** The prefix for all template IDs. */
-    public static final String  TEMPLATE_PREFIX        = "gct.";
+    public static final  String       TEMPLATE_PREFIX        = "gct.";
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
-    public static final String  POINTS_PREFIX          = TEMPLATE_PREFIX + "points.";
+    public static final  String       POINTS_PREFIX          = TEMPLATE_PREFIX + "points.";
     /** The field ID for point total changes. */
-    public static final String  ID_TOTAL_POINTS        = POINTS_PREFIX + "Total";
+    public static final  String       ID_TOTAL_POINTS        = POINTS_PREFIX + "Total";
     /** The field ID for advantage point summary changes. */
-    public static final String  ID_ADVANTAGE_POINTS    = POINTS_PREFIX + "Advantages";
+    public static final  String       ID_ADVANTAGE_POINTS    = POINTS_PREFIX + "Advantages";
     /** The field ID for disadvantage point summary changes. */
-    public static final String  ID_DISADVANTAGE_POINTS = POINTS_PREFIX + "Disadvantages";
+    public static final  String       ID_DISADVANTAGE_POINTS = POINTS_PREFIX + "Disadvantages";
     /** The field ID for quirk point summary changes. */
-    public static final String  ID_QUIRK_POINTS        = POINTS_PREFIX + "Quirks";
+    public static final  String       ID_QUIRK_POINTS        = POINTS_PREFIX + "Quirks";
     /** The field ID for skill point summary changes. */
-    public static final String  ID_SKILL_POINTS        = POINTS_PREFIX + "Skills";
+    public static final  String       ID_SKILL_POINTS        = POINTS_PREFIX + "Skills";
     /** The field ID for spell point summary changes. */
-    public static final String  ID_SPELL_POINTS        = POINTS_PREFIX + "Spells";
-    private OutlineModel        mAdvantages;
-    private OutlineModel        mSkills;
-    private OutlineModel        mSpells;
-    private OutlineModel        mEquipment;
-    private OutlineModel        mOtherEquipment;
-    private OutlineModel        mNotes;
-    private boolean             mNeedAdvantagesPointCalculation;
-    private boolean             mNeedSkillPointCalculation;
-    private boolean             mNeedSpellPointCalculation;
-    private int                 mCachedAdvantagePoints;
-    private int                 mCachedDisadvantagePoints;
-    private int                 mCachedQuirkPoints;
-    private int                 mCachedSkillPoints;
-    private int                 mCachedSpellPoints;
+    public static final  String       ID_SPELL_POINTS        = POINTS_PREFIX + "Spells";
+    private              OutlineModel mAdvantages;
+    private              OutlineModel mSkills;
+    private              OutlineModel mSpells;
+    private              OutlineModel mEquipment;
+    private              OutlineModel mOtherEquipment;
+    private              OutlineModel mNotes;
+    private              boolean      mNeedAdvantagesPointCalculation;
+    private              boolean      mNeedSkillPointCalculation;
+    private              boolean      mNeedSpellPointCalculation;
+    private              int          mCachedAdvantagePoints;
+    private              int          mCachedDisadvantagePoints;
+    private              int          mCachedQuirkPoints;
+    private              int          mCachedSkillPoints;
+    private              int          mCachedSpellPoints;
 
     /** Creates a new character with only default values set. */
     public Template() {
-        super();
-        mAdvantages     = new OutlineModel();
-        mSkills         = new OutlineModel();
-        mSpells         = new OutlineModel();
-        mEquipment      = new OutlineModel();
+        mAdvantages = new OutlineModel();
+        mSkills = new OutlineModel();
+        mSpells = new OutlineModel();
+        mEquipment = new OutlineModel();
         mOtherEquipment = new OutlineModel();
         mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
         mNotes = new OutlineModel();
@@ -249,7 +248,7 @@ public class Template extends DataFile {
 
     /**
      * @param id The field ID to retrieve the data for.
-     * @return The value of the specified field ID, or <code>null</code> if the field ID is invalid.
+     * @return The value of the specified field ID, or {@code null} if the field ID is invalid.
      */
     public Object getValueForID(String id) {
         if (ID_ADVANTAGE_POINTS.equals(id)) {
@@ -269,8 +268,8 @@ public class Template extends DataFile {
     @Override
     protected void startNotifyAtBatchLevelZero() {
         mNeedAdvantagesPointCalculation = false;
-        mNeedSkillPointCalculation      = false;
-        mNeedSpellPointCalculation      = false;
+        mNeedSkillPointCalculation = false;
+        mNeedSpellPointCalculation = false;
     }
 
     @Override
@@ -328,9 +327,9 @@ public class Template extends DataFile {
     }
 
     private void calculateAdvantagePoints() {
-        mCachedAdvantagePoints    = 0;
+        mCachedAdvantagePoints = 0;
         mCachedDisadvantagePoints = 0;
-        mCachedQuirkPoints        = 0;
+        mCachedQuirkPoints = 0;
 
         for (Advantage advantage : getAdvantagesIterator()) {
             if (!advantage.canHaveChildren()) {

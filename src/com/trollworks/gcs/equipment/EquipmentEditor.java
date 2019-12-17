@@ -34,7 +34,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -74,8 +74,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
      * Creates a new {@link Equipment} editor.
      *
      * @param equipment The {@link Equipment} to edit.
-     * @param carried   <code>true</code> for the carried equipment, <code>false</code> for the
-     *                  other equipment.
+     * @param carried   {@code true} for the carried equipment, {@code false} for the other
+     *                  equipment.
      */
     public EquipmentEditor(Equipment equipment, boolean carried) {
         super(equipment);
@@ -88,13 +88,13 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mDescriptionField = createCorrectableField(fields, I18n.Text("Name"), equipment.getDescription(), I18n.Text("The name/description of the equipment, without any notes"));
         createSecondLineFields(fields);
         createValueAndWeightFields(fields);
-        mNotesField      = createField(fields, fields, I18n.Text("Notes"), equipment.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), 0);
+        mNotesField = createField(fields, fields, I18n.Text("Notes"), equipment.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), 0);
         mCategoriesField = createField(fields, fields, I18n.Text("Categories"), equipment.getCategoriesAsString(), I18n.Text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
 
         boolean forCharacterOrTemplate = equipment.getCharacter() != null || equipment.getTemplate() != null;
         JPanel  wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? 5 : 3));
         if (forCharacterOrTemplate) {
-            mUsesField    = createIntegerNumberField(fields, wrapper, I18n.Text("Uses"), mRow.getUses(), I18n.Text("The number of uses remaining for this equipment"), 5);
+            mUsesField = createIntegerNumberField(fields, wrapper, I18n.Text("Uses"), mRow.getUses(), I18n.Text("The number of uses remaining for this equipment"), 5);
             mMaxUsesField = createIntegerNumberField(wrapper, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
         } else {
             mMaxUsesField = createIntegerNumberField(fields, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
@@ -103,15 +103,15 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         fields.add(wrapper);
 
         icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
+        icon.setAlignmentY(-1.0f);
         content.add(icon);
         content.add(fields);
         add(content);
 
-        mTabPanel      = new JTabbedPane();
-        mPrereqs       = new PrereqsPanel(mRow, mRow.getPrereqs());
-        mFeatures      = new FeaturesPanel(mRow, mRow.getFeatures());
-        mMeleeWeapons  = MeleeWeaponEditor.createEditor(mRow);
+        mTabPanel = new JTabbedPane();
+        mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
+        mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+        mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
         mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
         mTabPanel.addTab(mMeleeWeapons.getName(), mMeleeWeapons);
         mTabPanel.addTab(mRangedWeapons.getName(), mRangedWeapons);
@@ -138,7 +138,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         if (!isContainer) {
             mQtyField = createIntegerNumberField(parent, wrapper, I18n.Text("Quantity"), mRow.getQuantity(), I18n.Text("The number of this equipment present"), 9);
         }
-        mTechLevelField     = createField(isContainer ? parent : wrapper, wrapper, I18n.Text("Tech Level"), mRow.getTechLevel(), I18n.Text("The first Tech Level this equipment is available at"), 3);
+        mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, I18n.Text("Tech Level"), mRow.getTechLevel(), I18n.Text("The first Tech Level this equipment is available at"), 3);
         mLegalityClassField = createField(wrapper, wrapper, I18n.Text("Legality Class"), mRow.getLegalityClass(), I18n.Text("The legality class of this equipment"), 3);
         if (showEquipmentState()) {
             mEquippedCheckBox = new JCheckBox(I18n.Text("Equipped"));
@@ -157,22 +157,22 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         Component first;
 
         mContainedValue = mRow.getExtendedValue() - mRow.getValue() * mRow.getQuantity();
-        mValueField     = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The value of one of these pieces of equipment"), 13);
-        mExtValueField  = createNumberField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
-        first           = wrapper.getComponent(1);
+        mValueField = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The value of one of these pieces of equipment"), 13);
+        mExtValueField = createNumberField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
+        first = wrapper.getComponent(1);
         mExtValueField.setEnabled(false);
         wrapper.add(new JPanel());
         parent.add(wrapper);
 
-        wrapper          = new JPanel(new ColumnLayout(3));
+        wrapper = new JPanel(new ColumnLayout(3));
         mContainedWeight = new WeightValue(mRow.getExtendedWeight());
         WeightValue weight = new WeightValue(mRow.getWeight());
         weight.setValue(weight.getValue() * mRow.getQuantity());
         mContainedWeight.subtract(weight);
-        mWeightField    = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
+        mWeightField = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
         mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended Weight"), mRow.getExtendedWeight(), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
         mExtWeightField.setEnabled(false);
-        UIUtilities.adjustToSameSize(new Component[] { first, wrapper.getComponent(1) });
+        UIUtilities.adjustToSameSize(first, wrapper.getComponent(1));
         parent.add(wrapper);
     }
 
@@ -268,11 +268,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         modified |= mRow.setValue(Numbers.extractDouble(mValueField.getText(), 0.0, true));
         modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
         modified |= mRow.setMaxUses(Numbers.extractInteger(mMaxUsesField.getText(), 0, true));
-        if (mUsesField != null) {
-            modified |= mRow.setUses(Numbers.extractInteger(mUsesField.getText(), 0, true));
-        } else {
-            modified |= mRow.setUses(mRow.getMaxUses());
-        }
+        modified |= mUsesField != null ? mRow.setUses(Numbers.extractInteger(mUsesField.getText(), 0, true)) : mRow.setUses(mRow.getMaxUses());
         if (showEquipmentState()) {
             modified |= mRow.setEquipped(mEquippedCheckBox.isSelected());
         }
@@ -285,7 +281,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
             modified |= mRow.setFeatures(mFeatures.getFeatures());
         }
         if (mMeleeWeapons != null) {
-            ArrayList<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
+            List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
             list.addAll(mRangedWeapons.getWeapons());
             modified |= mRow.setWeapons(list);
         }
@@ -314,18 +310,17 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private void valueChanged() {
         int    qty = getQty();
         double value;
-
-        if (qty < 1) {
-            value = 0;
-        } else {
-            value = qty * Numbers.extractDouble(mValueField.getText(), 0.0, true) + mContainedValue;
-        }
+        value = qty < 1 ? 0 : qty * Numbers.extractDouble(mValueField.getText(), 0.0, true) + mContainedValue;
         mExtValueField.setText(Numbers.format(value));
     }
 
     private void weightChanged() {
-        WeightValue weight = WeightValue.extract(mWeightField.getText(), true);
-        weight.setValue(weight.getValue() * Math.max(getQty(), 0));
+        int         qty    = getQty();
+        WeightValue weight = WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true);
+        if (qty > 0) {
+            weight.setValue(weight.getValue() * Math.max(qty, 0));
+            weight.add(mContainedWeight);
+        }
         mExtWeightField.setText(weight.toString());
     }
 
@@ -345,7 +340,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void descriptionChanged() {
-        LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
+        LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
     }
 
     @Override

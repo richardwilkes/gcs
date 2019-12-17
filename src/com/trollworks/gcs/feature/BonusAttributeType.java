@@ -156,7 +156,7 @@ public enum BonusAttributeType {
 
     private String mTag;
 
-    private BonusAttributeType() {
+    BonusAttributeType() {
         mTag = name();
         if (mTag.length() > 2) {
             mTag = mTag.toLowerCase();
@@ -172,7 +172,7 @@ public enum BonusAttributeType {
         return name;
     }
 
-    /** @return <code>true</code> if only integer values are permitted. */
+    /** @return {@code true} if only integer values are permitted. */
     @SuppressWarnings("static-method")
     public boolean isIntegerOnly() {
         return true;

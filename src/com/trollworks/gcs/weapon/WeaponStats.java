@@ -34,21 +34,21 @@ import java.util.Set;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
-    private static final String     TAG_STRENGTH = "strength";
-    private static final String     TAG_USAGE    = "usage";
+    private static final String             TAG_STRENGTH = "strength";
+    private static final String             TAG_USAGE    = "usage";
     /** The prefix used in front of all IDs for weapons. */
-    public static final String      PREFIX       = GURPSCharacter.CHARACTER_PREFIX + "weapon.";
+    public static final  String             PREFIX       = GURPSCharacter.CHARACTER_PREFIX + "weapon.";
     /** The field ID for damage changes. */
-    public static final String      ID_DAMAGE    = PREFIX + WeaponDamage.TAG_ROOT;
+    public static final  String             ID_DAMAGE    = PREFIX + WeaponDamage.TAG_ROOT;
     /** The field ID for strength changes. */
-    public static final String      ID_STRENGTH  = PREFIX + TAG_STRENGTH;
+    public static final  String             ID_STRENGTH  = PREFIX + TAG_STRENGTH;
     /** The field ID for usage changes. */
-    public static final String      ID_USAGE     = PREFIX + TAG_USAGE;
-    protected ListRow               mOwner;
-    private WeaponDamage            mDamage;
-    private String                  mStrength;
-    private String                  mUsage;
-    private ArrayList<SkillDefault> mDefaults;
+    public static final  String             ID_USAGE     = PREFIX + TAG_USAGE;
+    protected            ListRow            mOwner;
+    private              WeaponDamage       mDamage;
+    private              String             mStrength;
+    private              String             mUsage;
+    private              List<SkillDefault> mDefaults;
 
     /**
      * Creates a new weapon.
@@ -56,10 +56,10 @@ public abstract class WeaponStats {
      * @param owner The owning piece of equipment or advantage.
      */
     protected WeaponStats(ListRow owner) {
-        mOwner    = owner;
-        mDamage   = new WeaponDamage(this);
+        mOwner = owner;
+        mDamage = new WeaponDamage(this);
         mStrength = "";
-        mUsage    = "";
+        mUsage = "";
         mDefaults = new ArrayList<>();
         initialize();
     }
@@ -71,10 +71,10 @@ public abstract class WeaponStats {
      * @param other The weapon to clone.
      */
     protected WeaponStats(ListRow owner, WeaponStats other) {
-        mOwner    = owner;
-        mDamage   = other.mDamage.clone(this);
+        mOwner = owner;
+        mDamage = other.mDamage.clone(this);
         mStrength = other.mStrength;
-        mUsage    = other.mUsage;
+        mUsage = other.mUsage;
         mDefaults = new ArrayList<>();
         for (SkillDefault skillDefault : other.mDefaults) {
             mDefaults.add(new SkillDefault(skillDefault));
@@ -253,12 +253,14 @@ public abstract class WeaponStats {
         int best = Integer.MIN_VALUE;
         for (SkillDefault skillDefault : getDefaults()) {
             SkillDefaultType type  = skillDefault.getType();
-            int              level = type.getSkillLevelFast(character, skillDefault, new HashSet<String>());
+            int              level = type.getSkillLevelFast(character, skillDefault, new HashSet<>());
             if (level > best) {
                 best = level;
             }
         }
-        if (best != Integer.MIN_VALUE) {
+        if (best == Integer.MIN_VALUE) {
+            best = 0;
+        } else {
             int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
             if (minST > 0) {
                 best -= minST;
@@ -271,8 +273,6 @@ public abstract class WeaponStats {
             if (best < 0) {
                 best = 0;
             }
-        } else {
-            best = 0;
         }
         return best;
     }
@@ -363,7 +363,7 @@ public abstract class WeaponStats {
 
     /**
      * @param data The data to sanitize.
-     * @return The original data, or "", if the data was <code>null</code>.
+     * @return The original data, or "", if the data was {@code null}.
      */
     @SuppressWarnings("static-method")
     protected String sanitize(String data) {

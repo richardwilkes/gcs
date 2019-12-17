@@ -19,14 +19,13 @@ import com.trollworks.toolkit.ui.widget.Commitable;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.JComboBox;
 
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
     private static final String   CHANGE_TYPE = "ChangeSpellType";
     private static final String   EMPTY       = "";
-    private static final String[] TYPES       = { SpellPrereq.TAG_NAME, SpellPrereq.TAG_ANY, SpellPrereq.TAG_COLLEGE, SpellPrereq.TAG_COLLEGE_COUNT };
+    private static final String[] TYPES       = {SpellPrereq.TAG_NAME, SpellPrereq.TAG_ANY, SpellPrereq.TAG_COLLEGE, SpellPrereq.TAG_COLLEGE_COUNT};
 
     /**
      * Creates a new spell prerequisite editor panel.
@@ -44,7 +43,7 @@ public class SpellPrereqEditor extends PrereqEditor {
         SpellPrereq prereq = (SpellPrereq) mPrereq;
         String      type   = prereq.getType();
 
-        FlexRow     row    = new FlexRow();
+        FlexRow row = new FlexRow();
         row.add(addHasCombo(prereq.has()));
         row.add(addNumericCompareCombo(prereq.getQuantityCriteria(), null));
         row.add(addNumericCompareField(prereq.getQuantityCriteria(), 0, 999, false));
@@ -67,10 +66,11 @@ public class SpellPrereqEditor extends PrereqEditor {
     }
 
     private JComboBox<Object> addChangeTypePopup() {
-        String[] titles    = { I18n.Text("whose name"), I18n.Text("of any kind"), I18n.Text("whose college name"), I18n.Text("from different colleges") };
+        String[] titles    = {I18n.Text("whose name"), I18n.Text("of any kind"), I18n.Text("whose college name"), I18n.Text("from different colleges")};
         int      selection = 0;
         String   current   = ((SpellPrereq) mPrereq).getType();
-        for (int i = 0; i < TYPES.length; i++) {
+        int      length    = TYPES.length;
+        for (int i = 0; i < length; i++) {
             if (TYPES[i].equals(current)) {
                 selection = i;
                 break;

@@ -19,14 +19,14 @@ import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Describes a contained weight reduction. */
 public class ContainedWeightReduction implements Feature {
     /** The XML tag. */
     public static final String TAG_ROOT = "contained_weight_reduction";
-    private Object             mValue;
+    private             Object mValue;
 
     /** Creates a new contained weight reduction. */
     public ContainedWeightReduction() {
@@ -39,11 +39,7 @@ public class ContainedWeightReduction implements Feature {
      * @param other The bonus to clone.
      */
     public ContainedWeightReduction(ContainedWeightReduction other) {
-        if (other.mValue instanceof WeightValue) {
-            mValue = new WeightValue((WeightValue) other.mValue);
-        } else {
-            mValue = other.mValue;
-        }
+        mValue = other.mValue instanceof WeightValue ? new WeightValue((WeightValue) other.mValue) : other.mValue;
     }
 
     /**
@@ -95,16 +91,16 @@ public class ContainedWeightReduction implements Feature {
     }
 
     /**
-     * @return <code>true</code> if the reduction is a percentage of the weight, <code>false</code>
-     *         if it is an absolute number.
+     * @return {@code true} if the reduction is a percentage of the weight, {@code false} if it is
+     *         an absolute number.
      */
     public boolean isPercentage() {
         return mValue instanceof Integer;
     }
 
     /**
-     * @return The percentage the weight should be reduced by. Will return 0 if
-     *         {@link #isPercentage()} returns false.
+     * @return The percentage the weight should be reduced by. Will return 0 if {@link
+     *         #isPercentage()} returns false.
      */
     public int getPercentageReduction() {
         if (isPercentage()) {
@@ -123,8 +119,8 @@ public class ContainedWeightReduction implements Feature {
     }
 
     /**
-     * @return The absolute weight reduction. Will return a weight value of 0 if
-     *         {@link #isPercentage()} returns true.
+     * @return The absolute weight reduction. Will return a weight value of 0 if {@link
+     *         #isPercentage()} returns true.
      */
     public WeightValue getAbsoluteReduction() {
         if (isPercentage()) {
@@ -149,11 +145,7 @@ public class ContainedWeightReduction implements Feature {
      */
     protected void load(XMLReader reader) throws IOException {
         String value = reader.readText().trim();
-        if (value.endsWith("%")) {
-            mValue = Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false));
-        } else {
-            mValue = WeightValue.extract(value, false);
-        }
+        mValue = value.endsWith("%") ? Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false)) : WeightValue.extract(value, false);
     }
 
     @Override
@@ -189,12 +181,12 @@ public class ContainedWeightReduction implements Feature {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         // Nothing to do.
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         // Nothing to do.
     }
 }

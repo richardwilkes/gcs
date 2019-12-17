@@ -33,7 +33,7 @@ public class NewSpellCommand extends Command {
     public static final NewSpellCommand INSTANCE            = new NewSpellCommand(false, I18n.Text("New Spell"), CMD_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);
     /** The "New Spell Container" command. */
     public static final NewSpellCommand CONTAINER_INSTANCE  = new NewSpellCommand(true, I18n.Text("New Spell Container"), CMD_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
-    private boolean                     mContainer;
+    private             boolean         mContainer;
 
     private NewSpellCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
@@ -62,7 +62,7 @@ public class NewSpellCommand extends Command {
         SpellsDockable spells = getTarget(SpellsDockable.class);
         if (spells != null) {
             dataFile = spells.getDataFile();
-            outline  = spells.getOutline();
+            outline = spells.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -70,12 +70,12 @@ public class NewSpellCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline  = sheet.getSheet().getSpellOutline();
+                outline = sheet.getSheet().getSpellOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline  = template.getTemplate().getSpellOutline();
+                    outline = template.getTemplate().getSpellOutline();
                 } else {
                     return;
                 }

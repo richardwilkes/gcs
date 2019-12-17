@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -38,13 +37,13 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";
-    private static final Class<?>[] BASE_TYPES       = new Class<?>[] { AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class, ContainedWeightReduction.class };
-    private static Class<?>         LAST_ITEM_TYPE   = SkillBonus.class;
-    private ListRow                 mRow;
-    private Feature                 mFeature;
-    private JComboBox<Object>       mBaseTypeCombo;
-    private JComboBox<Object>       mLeveledAmountCombo;
+    private static final String            CHANGE_BASE_TYPE = "ChangeBaseType";
+    private static final Class<?>[]        BASE_TYPES       = new Class<?>[]{AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class, ContainedWeightReduction.class};
+    private static       Class<?>          LAST_ITEM_TYPE   = SkillBonus.class;
+    private              ListRow           mRow;
+    private              Feature           mFeature;
+    private              JComboBox<Object> mBaseTypeCombo;
+    private              JComboBox<Object> mLeveledAmountCombo;
 
     /**
      * Creates a new {@link FeatureEditor}.
@@ -85,8 +84,7 @@ public abstract class FeatureEditor extends EditorPanel {
      * @param feature The feature to edit.
      */
     public FeatureEditor(ListRow row, Feature feature) {
-        super();
-        mRow     = row;
+        mRow = row;
         mFeature = feature;
         rebuild();
     }
@@ -156,11 +154,11 @@ public abstract class FeatureEditor extends EditorPanel {
         Object            prototype;
         if (amt.isIntegerOnly()) {
             formatter = new IntegerFormatter(min, max, true);
-            value     = Integer.valueOf(amt.getIntegerAmount());
+            value = Integer.valueOf(amt.getIntegerAmount());
             prototype = Integer.valueOf(max);
         } else {
             formatter = new DoubleFormatter(min, max, true);
-            value     = Double.valueOf(amt.getAmount());
+            value = Double.valueOf(amt.getAmount());
             prototype = Double.valueOf(max + 0.25);
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, prototype, null);
@@ -177,7 +175,7 @@ public abstract class FeatureEditor extends EditorPanel {
      */
     protected JComboBox<Object> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
         String per = usePerDie ? I18n.Text("per die") : I18n.Text("per level");
-        mLeveledAmountCombo = addComboBox(LeveledAmount.ATTRIBUTE_PER_LEVEL, new Object[] { " ", per }, amt.isPerLevel() ? per : " ");
+        mLeveledAmountCombo = addComboBox(LeveledAmount.ATTRIBUTE_PER_LEVEL, new Object[]{" ", per}, amt.isPerLevel() ? per : " ");
         mLeveledAmountCombo.putClientProperty(LeveledAmount.class, amt);
         return mLeveledAmountCombo;
     }

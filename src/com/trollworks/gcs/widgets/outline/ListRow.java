@@ -40,27 +40,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row {
-    private static final String     ATTRIBUTE_OPEN = "open";
-    private static final String     TAG_NOTES      = "notes";
-    private static final String     TAG_CATEGORIES = "categories";
-    private static final String     TAG_CATEGORY   = "category";
+    private static final String             ATTRIBUTE_OPEN = "open";
+    private static final String             TAG_NOTES      = "notes";
+    private static final String             TAG_CATEGORIES = "categories";
+    private static final String             TAG_CATEGORY   = "category";
     /** The data file the row is associated with. */
-    protected DataFile              mDataFile;
-    private ArrayList<Feature>      mFeatures;
-    private PrereqList              mPrereqList;
-    private ArrayList<SkillDefault> mDefaults;
-    private boolean                 mIsSatisfied;
-    private String                  mUnsatisfiedReason;
-    private String                  mNotes;
-    private TreeSet<String>         mCategories;
+    protected            DataFile           mDataFile;
+    private              List<Feature>      mFeatures;
+    private              PrereqList         mPrereqList;
+    private              List<SkillDefault> mDefaults;
+    private              boolean            mIsSatisfied;
+    private              String             mUnsatisfiedReason;
+    private              String             mNotes;
+    private              TreeSet<String>    mCategories;
 
     /**
      * Extracts any "nameable" portions of the buffer and puts their keys into the provided set.
@@ -68,14 +67,14 @@ public abstract class ListRow extends Row {
      * @param set    The set to add the nameable keys to.
      * @param buffer The text to check for nameable portions.
      */
-    public static void extractNameables(HashSet<String> set, String buffer) {
+    public static void extractNameables(Set<String> set, String buffer) {
         int first = buffer.indexOf('@');
         int last  = buffer.indexOf('@', first + 1);
 
         while (first != -1 && last != -1) {
             set.add(buffer.substring(first + 1, last));
             first = buffer.indexOf('@', last + 1);
-            last  = buffer.indexOf('@', first + 1);
+            last = buffer.indexOf('@', first + 1);
         }
     }
 
@@ -86,7 +85,7 @@ public abstract class ListRow extends Row {
      * @param data The data to change.
      * @return The revised string.
      */
-    public static String nameNameables(HashMap<String, String> map, String data) {
+    public static String nameNameables(Map<String, String> map, String data) {
         int           first  = data.indexOf('@');
         int           last   = data.indexOf('@', first + 1);
         StringBuilder buffer = new StringBuilder();
@@ -96,7 +95,7 @@ public abstract class ListRow extends Row {
             String replacement = map.get(key);
 
             if (first != 0) {
-                buffer.append(data.substring(0, first));
+                buffer.append(data, 0, first);
             }
             if (replacement != null) {
                 buffer.append(replacement);
@@ -105,24 +104,16 @@ public abstract class ListRow extends Row {
                 buffer.append(key);
                 buffer.append('@');
             }
-            if (last + 1 != data.length()) {
-                data = data.substring(last + 1);
-            } else {
-                data = "";
-            }
+            data = last + 1 == data.length() ? "" : data.substring(last + 1);
             first = data.indexOf('@');
-            last  = data.indexOf('@', first + 1);
+            last = data.indexOf('@', first + 1);
         }
         buffer.append(data);
         return buffer.toString();
     }
 
     public static Set<String> createCategoriesList(String categories) {
-        TreeSet<String> cats = new TreeSet<>();
-        for (String category : createList(categories)) {
-            cats.add(category);
-        }
-        return cats;
+        return new TreeSet<>(createList(categories));
     }
 
     // This is the decompose method that works with the compose method (getCategoriesAsString())
@@ -137,16 +128,15 @@ public abstract class ListRow extends Row {
      * @param isContainer Whether or not this row allows children.
      */
     public ListRow(DataFile dataFile, boolean isContainer) {
-        super();
         setCanHaveChildren(isContainer);
         setOpen(isContainer);
-        mDataFile    = dataFile;
-        mFeatures    = new ArrayList<>();
-        mPrereqList  = new PrereqList(null, true);
-        mDefaults    = new ArrayList<>();
+        mDataFile = dataFile;
+        mFeatures = new ArrayList<>();
+        mPrereqList = new PrereqList(null, true);
+        mDefaults = new ArrayList<>();
         mIsSatisfied = true;
-        mNotes       = "";
-        mCategories  = new TreeSet<>();
+        mNotes = "";
+        mCategories = new TreeSet<>();
     }
 
     /**
@@ -164,7 +154,7 @@ public abstract class ListRow extends Row {
             mFeatures.add(feature.cloneFeature());
         }
         mPrereqList = new PrereqList(null, rowToClone.getPrereqs());
-        mDefaults   = new ArrayList<>();
+        mDefaults = new ArrayList<>();
         for (SkillDefault skillDefault : rowToClone.mDefaults) {
             mDefaults.add(new SkillDefault(skillDefault));
         }
@@ -242,12 +232,12 @@ public abstract class ListRow extends Row {
         }
     }
 
-    /** @return The reason {@link #isSatisfied()} is returning <code>false</code>. */
+    /** @return The reason {@link #isSatisfied()} is returning {@code false}. */
     public String getReasonForUnsatisfied() {
         return mUnsatisfiedReason;
     }
 
-    /** @param reason The reason {@link #isSatisfied()} is returning <code>false</code>. */
+    /** @param reason The reason {@link #isSatisfied()} is returning {@code false}. */
     public void setReasonForUnsatisfied(String reason) {
         mUnsatisfiedReason = reason;
     }
@@ -423,8 +413,8 @@ public abstract class ListRow extends Row {
     }
 
     /**
-     * Starts the notification process. Should be called before calling
-     * {@link #notify(String,Object)}.
+     * Starts the notification process. Should be called before calling {@link #notify(String,
+     * Object)}.
      */
     protected final void startNotify() {
         if (mDataFile != null) {
@@ -456,7 +446,7 @@ public abstract class ListRow extends Row {
     }
 
     /**
-     * Ends the notification process. Must be called after calling {@link #notify(String,Object)}.
+     * Ends the notification process. Must be called after calling {@link #notify(String, Object)}.
      */
     public void endNotify() {
         if (mDataFile != null) {
@@ -564,11 +554,11 @@ public abstract class ListRow extends Row {
      * @return Whether there was a change or not.
      */
     public boolean setCategories(Collection<String> categories) {
-        TreeSet<String> old = mCategories;
+        Set<String> old = mCategories;
         mCategories = new TreeSet<>();
         for (String category : categories) {
             category = category.trim();
-            if (category.length() > 0) {
+            if (!category.isEmpty()) {
                 mCategories.add(category);
             }
         }
@@ -583,7 +573,8 @@ public abstract class ListRow extends Row {
     }
 
     /**
-     * @param categories The categories this data row belongs to. Use commas to separate categories.
+     * @param categories The categories this data row belongs to. Use commas to separate
+     *                   categories.
      * @return Whether there was a change or not.
      */
     public final boolean setCategories(String categories) {
@@ -596,7 +587,7 @@ public abstract class ListRow extends Row {
      */
     public boolean addCategory(String category) {
         category = category.trim();
-        if (category.length() > 0) {
+        if (!category.isEmpty()) {
             if (mCategories.add(category)) {
                 String id = getCategoryID();
                 if (id != null) {
@@ -656,7 +647,7 @@ public abstract class ListRow extends Row {
     /**
      * @param text          The text to search for.
      * @param lowerCaseOnly The passed in text is all lowercase.
-     * @return <code>true</code> if this row contains the text.
+     * @return {@code true} if this row contains the text.
      */
     @SuppressWarnings("static-method")
     public boolean contains(String text, boolean lowerCaseOnly) {
@@ -670,7 +661,7 @@ public abstract class ListRow extends Row {
     public abstract StdImage getIcon(boolean large);
 
     /** @param set The nameable keys. */
-    public void fillWithNameableKeys(HashSet<String> set) {
+    public void fillWithNameableKeys(Set<String> set) {
         extractNameables(set, mNotes);
         for (SkillDefault def : mDefaults) {
             def.fillWithNameableKeys(set);
@@ -682,7 +673,7 @@ public abstract class ListRow extends Row {
     }
 
     /** @param map The map of nameable keys to names to apply. */
-    public void applyNameableKeys(HashMap<String, String> map) {
+    public void applyNameableKeys(Map<String, String> map) {
         mNotes = nameNameables(map, mNotes);
         for (SkillDefault def : mDefaults) {
             def.applyNameableKeys(map);

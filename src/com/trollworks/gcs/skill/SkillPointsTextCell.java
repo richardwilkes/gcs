@@ -16,7 +16,6 @@ import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 
 import java.awt.Color;
-
 import javax.swing.SwingConstants;
 
 /** Provides a grayed-out point value for skill containers. */

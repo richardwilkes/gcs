@@ -20,7 +20,6 @@ import com.trollworks.toolkit.collections.ReverseListIterator;
 import com.trollworks.toolkit.ui.Selection;
 import com.trollworks.toolkit.ui.menu.Command;
 import com.trollworks.toolkit.ui.widget.StdFileDialog;
-import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.ui.widget.outline.Row;
@@ -34,7 +33,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Provides the "Open Page Reference" command. */
@@ -43,7 +41,7 @@ public class OpenPageReferenceCommand extends Command {
     public static final OpenPageReferenceCommand OPEN_ONE_INSTANCE  = new OpenPageReferenceCommand(true, KeyEvent.VK_G, COMMAND_MODIFIER);
     /** The singleton {@link OpenPageReferenceCommand} for opening all page references. */
     public static final OpenPageReferenceCommand OPEN_EACH_INSTANCE = new OpenPageReferenceCommand(false, KeyEvent.VK_G, SHIFTED_COMMAND_MODIFIER);
-    private ListOutline                          mOutline;
+    private             ListOutline              mOutline;
 
     private OpenPageReferenceCommand(boolean one, int key, int modifiers) {
         super(getTitle(one), getCmd(one), key, modifiers);
@@ -115,16 +113,18 @@ public class OpenPageReferenceCommand extends Command {
                     }
                 }
                 if (ref != null) {
-                    Path                    path     = ref.getFile().toPath();
-                    LibraryExplorerDockable library  = LibraryExplorerDockable.get();
-                    PdfDockable             dockable = (PdfDockable) library.getDockableFor(path);
-                    if (dockable != null) {
-                        dockable.goToPage(ref, page, highlight);
-                        dockable.getDockContainer().setCurrentDockable(dockable);
-                    } else {
-                        dockable = new PdfDockable(ref, page, highlight);
-                        library.dockPdf(dockable);
-                        library.open(path);
+                    Path                    path    = ref.getFile().toPath();
+                    LibraryExplorerDockable library = LibraryExplorerDockable.get();
+                    if (library != null) {
+                        PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
+                        if (dockable != null) {
+                            dockable.goToPage(ref, page, highlight);
+                            dockable.getDockContainer().setCurrentDockable(dockable);
+                        } else {
+                            dockable = new PdfDockable(ref, page, highlight);
+                            library.dockPdf(dockable);
+                            library.open(path);
+                        }
                     }
                 }
             } catch (NumberFormatException nfex) {
@@ -141,7 +141,7 @@ public class OpenPageReferenceCommand extends Command {
             if (comp instanceof OutlineProxy) {
                 comp = ((OutlineProxy) comp).getRealOutline();
             }
-            if (comp instanceof Outline) {
+            if (comp instanceof ListOutline) {
                 outline = (ListOutline) comp;
             }
         }

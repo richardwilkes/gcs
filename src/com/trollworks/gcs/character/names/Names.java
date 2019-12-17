@@ -14,6 +14,7 @@ package com.trollworks.gcs.character.names;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 /** An abstract base class for name generation. */
@@ -61,10 +62,10 @@ public abstract class Names {
 
         try {
             int count = 0;
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line = in.readLine();
                 while (line != null) {
-                    if (line.trim().length() > 0) {
+                    if (!line.trim().isEmpty()) {
                         count++;
                     }
                     line = in.readLine();
@@ -72,12 +73,12 @@ public abstract class Names {
             }
 
             names = new String[count];
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line = in.readLine();
                 count = 0;
                 while (line != null) {
                     line = line.trim();
-                    if (line.length() > 0) {
+                    if (!line.isEmpty()) {
                         names[count++] = line;
                     }
                     line = in.readLine();
@@ -85,7 +86,7 @@ public abstract class Names {
             }
         } catch (Exception exception) {
             // This should never occur... but if it does, we won't fail.
-            names = new String[] { fallback };
+            names = new String[]{fallback};
         }
 
         return names;

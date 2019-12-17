@@ -20,7 +20,6 @@ import com.trollworks.toolkit.ui.scale.ScaleRoot;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 

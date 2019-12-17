@@ -67,7 +67,7 @@ public class WebServiceClient {
     /**
      * Sends the http request and returns string.
      */
-    public String sendRequest(HttpMethodType method, String path, Map<String, String> queryParameters, String body) throws MalformedURLException, IOException, NotImplementedException {
+    public String sendRequest(HttpMethodType method, String path, Map<String, String> queryParameters, String body) throws IOException, NotImplementedException {
         mBody = body;
         return sendRequest(method, path, queryParameters);
     }
@@ -75,7 +75,7 @@ public class WebServiceClient {
     /**
      * Sends the http request and returns a string.
      */
-    public String sendRequest(HttpMethodType method, String path, Map<String, String> queryParameters) throws MalformedURLException, IOException, NotImplementedException {
+    public String sendRequest(HttpMethodType method, String path, Map<String, String> queryParameters) throws IOException, NotImplementedException {
         if (queryParameters != null) {
             mQueryParameters = queryParameters;
         }
@@ -85,14 +85,14 @@ public class WebServiceClient {
     /**
      * Sends the http request and returns a string.
      */
-    public String sendRequest(HttpMethodType method, String path) throws MalformedURLException, IOException, NotImplementedException {
+    public String sendRequest(HttpMethodType method, String path) throws IOException, NotImplementedException {
         mMethod = method;
-        mPath   = path;
+        mPath = path;
         return sendRequest();
     }
 
-    public String sendRequest(HttpMethodType method, String path, byte[] bytes) throws MalformedURLException, IOException, NotImplementedException {
-        mBody     = null;
+    public String sendRequest(HttpMethodType method, String path, byte[] bytes) throws IOException, NotImplementedException {
+        mBody = null;
         mByteBody = bytes;
         return sendRequest(method, path);
     }
@@ -100,7 +100,7 @@ public class WebServiceClient {
     /**
      * Sends the http request and returns a string.
      */
-    public String sendRequest() throws MalformedURLException, IOException, NotImplementedException {
+    public String sendRequest() throws IOException, NotImplementedException {
         URLConnection connection = buildUrl().openConnection();
         connection.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.toString());
         if (mMethod == HttpMethodType.GET) {
@@ -111,8 +111,8 @@ public class WebServiceClient {
         if (mMethod == HttpMethodType.POST) {
             connection.setDoOutput(true); // Triggers POST.
             connection.setRequestProperty("Content-Type", "application/json");
-            if (mBody != null && mBody.length() > 0) {
-                try (OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream())) {
+            if (mBody != null && !mBody.isEmpty()) {
+                try (OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8)) {
                     writer.write(mBody);
                 }
                 try (InputStream stream = connection.getInputStream()) {
@@ -132,17 +132,16 @@ public class WebServiceClient {
     }
 
     static String convertStreamToString(java.io.InputStream is) {
-        try (Scanner s = new Scanner(is)) {
+        try (Scanner s = new Scanner(is, StandardCharsets.UTF_8)) {
             s.useDelimiter("\\A");
-            String result = s.hasNext() ? s.next() : "";
-            return result;
+            return s.hasNext() ? s.next() : "";
         }
     }
 
     private URL buildUrl() throws MalformedURLException {
         // sanitize strings
         mBaseUrl = ditchLeadingTrailingSlashes(mBaseUrl);
-        mPath    = ditchLeadingTrailingSlashes(mPath);
+        mPath = ditchLeadingTrailingSlashes(mPath);
         // build the url
         StringBuilder url = new StringBuilder(mBaseUrl);
         url.append("/");
@@ -153,10 +152,10 @@ public class WebServiceClient {
             return new URL(url.toString());
         }
         url.append("?");
-        for (String key : mQueryParameters.keySet()) {
-            url.append(key);
+        for (Map.Entry<String, String> entry : mQueryParameters.entrySet()) {
+            url.append(entry.getKey());
             url.append("=");
-            url.append(mQueryParameters.get(key));
+            url.append(entry.getValue());
         }
         return new URL(url.toString());
     }
@@ -169,7 +168,7 @@ public class WebServiceClient {
             str = str.substring(0, str.length() - 1);
         }
         if (str.startsWith("/")) {
-            str = str.substring(1, str.length());
+            str = str.substring(1);
         }
         return str;
     }

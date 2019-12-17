@@ -21,7 +21,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
-
 import javax.swing.JPanel;
 
 /** A panel that holds a pair of side-by-side outlines. */
@@ -36,13 +35,12 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
      * @param leftTitle    The localized title for the left panel.
      * @param rightOutline The outline to display on the right.
      * @param rightTitle   The localized title for the right panel.
-     * @param useProxy     <code>true</code> if a proxy of the outlines should be used.
+     * @param useProxy     {@code true} if a proxy of the outlines should be used.
      */
     public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
-        super();
         setLayout(this);
         setBackground(Color.WHITE);
-        mLeftPanel  = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
+        mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
         mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
         add(mLeftPanel);
         add(mRightPanel);
@@ -51,7 +49,7 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
     /**
      * Sets the embedded outline's display range.
      *
-     * @param forRight <code>true</code> to set the right outline.
+     * @param forRight {@code true} to set the right outline.
      * @param first    The first row to display.
      * @param last     The last row to display.
      */
@@ -118,7 +116,7 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
     private Dimension getLayoutSize(Container parent, Dimension leftSize, Dimension rightSize) {
         Dimension size   = new Dimension(leftSize.width + rightSize.width, Math.max(leftSize.height, rightSize.height));
         Insets    insets = getInsets();
-        size.width  += insets.left + Scale.get(parent).scale(2) + insets.right;
+        size.width += insets.left + Scale.get(parent).scale(2) + insets.right;
         size.height += insets.top + insets.bottom;
         return size;
     }

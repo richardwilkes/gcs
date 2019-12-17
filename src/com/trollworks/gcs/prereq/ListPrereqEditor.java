@@ -23,15 +23,14 @@ import com.trollworks.toolkit.ui.widget.IconButton;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 /** A prerequisite list editor panel. */
 public class ListPrereqEditor extends PrereqEditor {
-    private static Class<?>     LAST_ITEM_TYPE = AdvantagePrereq.class;
-    private static final String ANY_ALL        = "AnyAll";
-    private static final String WHEN_TL        = "WhenTL";
+    private static       Class<?> LAST_ITEM_TYPE = AdvantagePrereq.class;
+    private static final String   ANY_ALL        = "AnyAll";
+    private static final String   WHEN_TL        = "WhenTL";
 
     /** @param type The last item type created or switched to. */
     public static void setLastItemType(Class<?> type) {
@@ -64,15 +63,15 @@ public class ListPrereqEditor extends PrereqEditor {
         return " ";
     }
 
-    private static final String tlIs() {
+    private static String tlIs() {
         return I18n.Text("When the Character's TL is");
     }
 
-    private static final String tlIsAtLeast() {
+    private static String tlIsAtLeast() {
         return I18n.Text("When the Character's TL is at least");
     }
 
-    private static final String tlIsAtMost() {
+    private static String tlIsAtMost() {
         return I18n.Text("When the Character's TL is at most");
     }
 
@@ -80,13 +79,13 @@ public class ListPrereqEditor extends PrereqEditor {
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         PrereqList      prereqList     = (PrereqList) mPrereq;
         IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
-        left.add(addComboBox(WHEN_TL, new Object[] { " ", tlIs(), tlIsAtLeast(), tlIsAtMost() }, mapWhenTLToString(whenTLCriteria)));
+        left.add(addComboBox(WHEN_TL, new Object[]{" ", tlIs(), tlIsAtLeast(), tlIsAtMost()}, mapWhenTLToString(whenTLCriteria)));
         if (PrereqList.isWhenTLEnabled(whenTLCriteria)) {
             left.add(addNumericCompareField(whenTLCriteria, 0, 99, false));
         }
         String requiresAll        = I18n.Text("Requires all of:");
         String requiresAtLeastOne = I18n.Text("Requires at least one of:");
-        left.add(addComboBox(ANY_ALL, new Object[] { requiresAll, requiresAtLeastOne }, prereqList.requiresAll() ? requiresAll : requiresAtLeastOne));
+        left.add(addComboBox(ANY_ALL, new Object[]{requiresAll, requiresAtLeastOne}, prereqList.requiresAll() ? requiresAll : requiresAtLeastOne));
 
         grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
@@ -104,7 +103,7 @@ public class ListPrereqEditor extends PrereqEditor {
 
     private void addPrereq() {
         try {
-            addItem((Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance(mPrereq));
+            addItem((Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance((PrereqList) mPrereq));
         } catch (Exception exception) {
             // Shouldn't have a failure...
             exception.printStackTrace(System.err);

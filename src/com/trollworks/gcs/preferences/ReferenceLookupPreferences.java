@@ -27,7 +27,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -58,9 +57,10 @@ public class ReferenceLookupPreferences extends PreferencePanel {
             button.addActionListener(event -> {
                 ref.remove();
                 Component[] children = mPanel.getComponents();
-                for (int i = 0; i < children.length; i++) {
+                int         length   = children.length;
+                for (int i = 0; i < length; i++) {
                     if (children[i] == button) {
-                        for (int j = i + 4; --j >= i;) {
+                        for (int j = i + 4; --j >= i; ) {
                             mPanel.remove(j);
                         }
                         mPanel.setSize(mPanel.getPreferredSize());
@@ -74,9 +74,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
             idLabel.setOpaque(true);
             idLabel.setBackground(Color.YELLOW);
             mPanel.add(idLabel);
-            EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> {
-                ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue());
-            }, SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), I18n.Text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
+            EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue()), SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), I18n.Text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
             mPanel.add(field);
             mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
         }

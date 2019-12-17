@@ -21,7 +21,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-
 import javax.swing.UIManager;
 
 /** Represents cells in a {@link Outline}. */
@@ -30,7 +29,7 @@ public class ListTextCell extends TextCell {
      * Create a new text cell.
      *
      * @param alignment The horizontal text alignment to use.
-     * @param wrapped   Pass in <code>true</code> to enable wrapping.
+     * @param wrapped   Pass in {@code true} to enable wrapping.
      */
     public ListTextCell(int alignment, boolean wrapped) {
         super(alignment, wrapped);

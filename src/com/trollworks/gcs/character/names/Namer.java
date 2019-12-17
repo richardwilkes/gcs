@@ -32,7 +32,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -41,8 +43,8 @@ import javax.swing.SwingConstants;
 
 /** Asks the user to name items that have been marked to be customized. */
 public class Namer extends JPanel {
-    private ListRow               mRow;
-    private ArrayList<JTextField> mFields;
+    private ListRow          mRow;
+    private List<JTextField> mFields;
 
     /**
      * Brings up a modal naming dialog for each row in the list.
@@ -51,11 +53,11 @@ public class Namer extends JPanel {
      * @param list  The rows to name.
      * @return Whether anything was modified.
      */
-    static public boolean name(Component owner, ArrayList<ListRow> list) {
-        ArrayList<ListRow>         rowList  = new ArrayList<>();
-        ArrayList<HashSet<String>> setList  = new ArrayList<>();
-        boolean                    modified = false;
-        int                        count;
+    public static boolean name(Component owner, List<ListRow> list) {
+        List<ListRow>         rowList  = new ArrayList<>();
+        List<HashSet<String>> setList  = new ArrayList<>();
+        boolean               modified = false;
+        int                   count;
 
         for (ListRow row : list) {
             HashSet<String> set = new HashSet<>();
@@ -72,7 +74,7 @@ public class Namer extends JPanel {
             ListRow  row     = rowList.get(i);
             boolean  hasMore = i != count - 1;
             int      type    = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-            String[] options = hasMore ? new String[] { I18n.Text("Apply"), I18n.Text("Cancel"), I18n.Text("Cancel Remaining") } : new String[] { I18n.Text("Apply"), I18n.Text("Cancel") };
+            String[] options = hasMore ? new String[]{I18n.Text("Apply"), I18n.Text("Cancel"), I18n.Text("Cancel Remaining")} : new String[]{I18n.Text("Apply"), I18n.Text("Cancel")};
             Namer    panel   = new Namer(row, setList.get(i), count - i - 1);
             switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(I18n.Text("Name {0}"), row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, I18n.Text("Apply"))) {
             case JOptionPane.YES_OPTION:
@@ -90,9 +92,9 @@ public class Namer extends JPanel {
         return modified;
     }
 
-    private Namer(ListRow row, HashSet<String> set, int remaining) {
+    private Namer(ListRow row, Set<String> set, int remaining) {
         JLabel label;
-        mRow    = row;
+        mRow = row;
         mFields = new ArrayList<>();
 
         FlexColumn column = new FlexColumn();
@@ -106,10 +108,10 @@ public class Namer extends JPanel {
         }
         label = new JLabel(Text.truncateIfNecessary(row.toString(), 80, SwingConstants.RIGHT), SwingConstants.CENTER);
         Dimension size = label.getMaximumSize();
-        size.width   = LayoutSize.MAXIMUM_SIZE;
+        size.width = LayoutSize.MAXIMUM_SIZE;
         size.height += 4;
         label.setMaximumSize(size);
-        size         = label.getPreferredSize();
+        size = label.getPreferredSize();
         size.height += 4;
         label.setPreferredSize(size);
         label.setMinimumSize(size);
@@ -123,12 +125,12 @@ public class Namer extends JPanel {
         int      rowIndex = 0;
         FlexGrid grid     = new FlexGrid();
         grid.setFillHorizontal(true);
-        ArrayList<String> list = new ArrayList<>(set);
+        List<String> list = new ArrayList<>(set);
         Collections.sort(list);
         for (String name : list) {
             JTextField field = new JTextField(25);
             field.setName(name);
-            size       = field.getPreferredSize();
+            size = field.getPreferredSize();
             size.width = LayoutSize.MAXIMUM_SIZE;
             field.setMaximumSize(size);
             mFields.add(field);
@@ -147,7 +149,7 @@ public class Namer extends JPanel {
 
     private void applyChanges() {
         Commitable.sendCommitToFocusOwner();
-        HashMap<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         for (JTextField field : mFields) {
             map.put(field.getName(), field.getText());
         }

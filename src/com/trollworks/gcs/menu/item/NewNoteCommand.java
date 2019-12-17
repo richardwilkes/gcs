@@ -33,7 +33,7 @@ public class NewNoteCommand extends Command {
     public static final NewNoteCommand INSTANCE               = new NewNoteCommand(false, I18n.Text("New Note"), CMD_NEW_NOTE, KeyEvent.VK_M, COMMAND_MODIFIER);
     /** The "New Note Container" command. */
     public static final NewNoteCommand CONTAINER_INSTANCE     = new NewNoteCommand(true, I18n.Text("New Note Container"), CMD_NEW_NOTE_CONTAINER, KeyEvent.VK_M, SHIFTED_COMMAND_MODIFIER);
-    private boolean                    mContainer;
+    private             boolean        mContainer;
 
     private NewNoteCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
@@ -62,7 +62,7 @@ public class NewNoteCommand extends Command {
         NotesDockable eqpDockable = getTarget(NotesDockable.class);
         if (eqpDockable != null) {
             dataFile = eqpDockable.getDataFile();
-            outline  = eqpDockable.getOutline();
+            outline = eqpDockable.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -70,12 +70,12 @@ public class NewNoteCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline  = sheet.getSheet().getNoteOutline();
+                outline = sheet.getSheet().getNoteOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline  = template.getTemplate().getNoteOutline();
+                    outline = template.getTemplate().getNoteOutline();
                 } else {
                     return;
                 }

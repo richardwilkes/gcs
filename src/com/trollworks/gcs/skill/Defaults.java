@@ -55,8 +55,8 @@ public class Defaults extends BandedPanel implements ActionListener {
 
     /** @return The current set of skill defaults. */
     public List<SkillDefault> getDefaults() {
-        int                     count = getComponentCount();
-        ArrayList<SkillDefault> list  = new ArrayList<>(count);
+        int                count = getComponentCount();
+        List<SkillDefault> list  = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             SkillDefault skillDefault = ((SkillDefaultEditor) getComponent(i)).getSkillDefault();
             if (skillDefault != null) {

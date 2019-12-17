@@ -22,7 +22,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-
 import javax.swing.UIManager;
 
 /** Used to draw headers in the lists. */
@@ -35,7 +34,6 @@ public class ListHeaderCell extends HeaderCell {
      * @param forSheet Whether the header will be displayed in the sheet or not.
      */
     public ListHeaderCell(boolean forSheet) {
-        super();
         mForSheet = forSheet;
     }
 

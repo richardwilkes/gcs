@@ -25,26 +25,28 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /** A Spell prerequisite. */
 public class SpellPrereq extends HasPrereq {
     /** The XML tag for this class. */
-    public static final String  TAG_ROOT          = "spell_prereq";
+    public static final  String          TAG_ROOT          = "spell_prereq";
     /** The tag/type for name comparison. */
-    public static final String  TAG_NAME          = "name";
+    public static final  String          TAG_NAME          = "name";
     /** The tag/type for any. */
-    public static final String  TAG_ANY           = "any";
+    public static final  String          TAG_ANY           = "any";
     /** The tag/type for college name comparison. */
-    public static final String  TAG_COLLEGE       = "college";
+    public static final  String          TAG_COLLEGE       = "college";
     /** The tag/type for college count comparison. */
-    public static final String  TAG_COLLEGE_COUNT = "college_count";
-    private static final String TAG_QUANTITY      = "quantity";
-    private static final String EMPTY             = "";
-    private String              mType;
-    private StringCriteria      mStringCriteria;
-    private IntegerCriteria     mQuantityCriteria;
+    public static final  String          TAG_COLLEGE_COUNT = "college_count";
+    private static final String          TAG_QUANTITY      = "quantity";
+    private static final String          EMPTY             = "";
+    private              String          mType;
+    private              StringCriteria  mStringCriteria;
+    private              IntegerCriteria mQuantityCriteria;
 
     /**
      * Creates a new prerequisite.
@@ -53,8 +55,8 @@ public class SpellPrereq extends HasPrereq {
      */
     public SpellPrereq(PrereqList parent) {
         super(parent);
-        mType             = TAG_NAME;
-        mStringCriteria   = new StringCriteria(StringCompareType.IS, EMPTY);
+        mType = TAG_NAME;
+        mStringCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
         mQuantityCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 1);
     }
 
@@ -103,8 +105,8 @@ public class SpellPrereq extends HasPrereq {
      */
     protected SpellPrereq(PrereqList parent, SpellPrereq prereq) {
         super(parent, prereq);
-        mType             = prereq.mType;
-        mStringCriteria   = new StringCriteria(prereq.mStringCriteria);
+        mType = prereq.mType;
+        mStringCriteria = new StringCriteria(prereq.mStringCriteria);
         mQuantityCriteria = new IntegerCriteria(prereq.mQuantityCriteria);
     }
 
@@ -135,14 +137,14 @@ public class SpellPrereq extends HasPrereq {
         out.startTag(TAG_ROOT);
         saveHasAttribute(out);
         out.finishTagEOL();
-        if (mType == TAG_NAME || mType == TAG_COLLEGE) {
+        if (TAG_NAME.equals(mType) || TAG_COLLEGE.equals(mType)) {
             mStringCriteria.save(out, mType);
             if (mQuantityCriteria.getType() != NumericCompareType.AT_LEAST || mQuantityCriteria.getQualifier() != 1) {
                 mQuantityCriteria.save(out, TAG_QUANTITY);
             }
-        } else if (mType == TAG_COLLEGE_COUNT) {
+        } else if (TAG_COLLEGE_COUNT.equals(mType)) {
             mQuantityCriteria.save(out, mType);
-        } else if (mType == TAG_ANY) {
+        } else if (TAG_ANY.equals(mType)) {
             out.startTag(TAG_ANY);
             out.finishEmptyTagEOL();
             mQuantityCriteria.save(out, TAG_QUANTITY);
@@ -156,13 +158,11 @@ public class SpellPrereq extends HasPrereq {
     }
 
     /**
-     * @param type The type of comparison to make. Must be one of {@link #TAG_NAME},
-     *             {@link #TAG_ANY}, {@link #TAG_COLLEGE}, or {@link #TAG_COLLEGE_COUNT}.
+     * @param type The type of comparison to make. Must be one of {@link #TAG_NAME}, {@link
+     *             #TAG_ANY}, {@link #TAG_COLLEGE}, or {@link #TAG_COLLEGE_COUNT}.
      */
     public void setType(String type) {
-        if (type == TAG_NAME || type == TAG_COLLEGE || type == TAG_COLLEGE_COUNT || type == TAG_ANY) {
-            mType = type;
-        } else if (TAG_NAME.equals(type)) {
+        if (TAG_NAME.equals(type)) {
             mType = TAG_NAME;
         } else if (TAG_ANY.equals(type)) {
             mType = TAG_ANY;
@@ -187,10 +187,10 @@ public class SpellPrereq extends HasPrereq {
 
     @Override
     public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
-        HashSet<String> colleges  = new HashSet<>();
-        String          techLevel = null;
-        int             count     = 0;
-        boolean         satisfied;
+        Set<String> colleges  = new HashSet<>();
+        String      techLevel = null;
+        int         count     = 0;
+        boolean     satisfied;
 
         if (exclude instanceof Spell) {
             techLevel = ((Spell) exclude).getTechLevel();
@@ -208,24 +208,24 @@ public class SpellPrereq extends HasPrereq {
                     ok = true;
                 }
                 if (ok) {
-                    if (mType == TAG_NAME) {
+                    if (TAG_NAME.equals(mType)) {
                         if (mStringCriteria.matches(spell.getName())) {
                             count++;
                         }
-                    } else if (mType == TAG_ANY) {
+                    } else if (TAG_ANY.equals(mType)) {
                         count++;
-                    } else if (mType == TAG_COLLEGE) {
+                    } else if (TAG_COLLEGE.equals(mType)) {
                         if (mStringCriteria.matches(spell.getCollege())) {
                             count++;
                         }
-                    } else if (mType == TAG_COLLEGE_COUNT) {
+                    } else if (Objects.equals(mType, TAG_COLLEGE_COUNT)) {
                         colleges.add(spell.getCollege());
                     }
                 }
             }
         }
 
-        if (mType == TAG_COLLEGE_COUNT) {
+        if (Objects.equals(mType, TAG_COLLEGE_COUNT)) {
             count = colleges.size();
         }
 
@@ -236,13 +236,13 @@ public class SpellPrereq extends HasPrereq {
         if (!satisfied && builder != null) {
             String oneSpell       = I18n.Text("spell");
             String multipleSpells = I18n.Text("spells");
-            if (mType == TAG_NAME) {
+            if (Objects.equals(mType, TAG_NAME)) {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose name {4}\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
-            } else if (mType == TAG_ANY) {
+            } else if (Objects.equals(mType, TAG_ANY)) {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} of any kind\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells));
-            } else if (mType == TAG_COLLEGE) {
+            } else if (Objects.equals(mType, TAG_COLLEGE)) {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose college {4}\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
-            } else if (mType == TAG_COLLEGE_COUNT) {
+            } else if (Objects.equals(mType, TAG_COLLEGE_COUNT)) {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} college count which {2}\n"), prefix, hasText(), mQuantityCriteria.toString()));
             }
         }
@@ -250,15 +250,15 @@ public class SpellPrereq extends HasPrereq {
     }
 
     @Override
-    public void fillWithNameableKeys(HashSet<String> set) {
-        if (mType != TAG_COLLEGE_COUNT) {
+    public void fillWithNameableKeys(Set<String> set) {
+        if (!Objects.equals(mType, TAG_COLLEGE_COUNT)) {
             ListRow.extractNameables(set, mStringCriteria.getQualifier());
         }
     }
 
     @Override
-    public void applyNameableKeys(HashMap<String, String> map) {
-        if (mType != TAG_COLLEGE_COUNT) {
+    public void applyNameableKeys(Map<String, String> map) {
+        if (!Objects.equals(mType, TAG_COLLEGE_COUNT)) {
             mStringCriteria.setQualifier(ListRow.nameNameables(map, mStringCriteria.getQualifier()));
         }
     }

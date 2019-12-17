@@ -35,5 +35,5 @@ public enum CostType {
         public String toString() {
             return "\u00d7";
         }
-    };
+    }
 }

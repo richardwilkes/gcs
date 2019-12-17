@@ -43,14 +43,14 @@ public enum AdvantageContainerType {
         }
     },
     /**
-     * The alternative abilities grouping container type. It behaves similar to a
-     * {@link #META_TRAIT} , but applies the rules for alternative abilities (see B61 and P11) to
-     * its immediate children.
+     * The alternative abilities grouping container type. It behaves similar to a {@link
+     * #META_TRAIT} , but applies the rules for alternative abilities (see B61 and P11) to its
+     * immediate children.
      */
     ALTERNATIVE_ABILITIES {
         @Override
         public String toString() {
             return I18n.Text("Alternative Abilities");
         }
-    };
+    }
 }

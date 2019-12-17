@@ -58,7 +58,7 @@ public enum NoteColumn {
             StringBuilder builder = new StringBuilder();
             String        notes   = note.getNotes();
             builder.append(note.toString());
-            if (notes.length() > 0) {
+            if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);
             }
@@ -67,8 +67,8 @@ public enum NoteColumn {
     };
 
     /**
-     * @param character The {@link GURPSCharacter} this note list is associated with, or
-     *                  <code>null</code>.
+     * @param character The {@link GURPSCharacter} this note list is associated with, or {@code
+     *                  null}.
      * @return The header title.
      */
     public String toString(GURPSCharacter character) {

@@ -36,7 +36,7 @@ public class SkillBonusEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         SkillBonus bonus = (SkillBonus) getFeature();
 
-        FlexRow    row   = new FlexRow();
+        FlexRow row = new FlexRow();
         row.add(addChangeBaseTypeCombo());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999, 999));

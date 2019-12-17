@@ -21,16 +21,16 @@ import java.io.IOException;
 /** An attribute bonus. */
 public class AttributeBonus extends Bonus {
     /** The XML tag. */
-    public static final String       TAG_ROOT             = "attribute_bonus";
-    private static final String      TAG_ATTRIBUTE        = "attribute";
-    private static final String      ATTRIBUTE_LIMITATION = "limitation";
-    private BonusAttributeType       mAttribute;
-    private AttributeBonusLimitation mLimitation;
+    public static final  String                   TAG_ROOT             = "attribute_bonus";
+    private static final String                   TAG_ATTRIBUTE        = "attribute";
+    private static final String                   ATTRIBUTE_LIMITATION = "limitation";
+    private              BonusAttributeType       mAttribute;
+    private              AttributeBonusLimitation mLimitation;
 
     /** Creates a new attribute bonus. */
     public AttributeBonus() {
         super(1);
-        mAttribute  = BonusAttributeType.ST;
+        mAttribute = BonusAttributeType.ST;
         mLimitation = AttributeBonusLimitation.NONE;
     }
 
@@ -51,7 +51,7 @@ public class AttributeBonus extends Bonus {
      */
     public AttributeBonus(AttributeBonus other) {
         super(other);
-        mAttribute  = other.mAttribute;
+        mAttribute = other.mAttribute;
         mLimitation = other.mLimitation;
     }
 
@@ -84,8 +84,7 @@ public class AttributeBonus extends Bonus {
 
     @Override
     public String getKey() {
-        StringBuffer buffer = new StringBuffer();
-
+        StringBuilder buffer = new StringBuilder();
         buffer.append(GURPSCharacter.ATTRIBUTES_PREFIX);
         buffer.append(mAttribute.name());
         if (mLimitation != AttributeBonusLimitation.NONE) {

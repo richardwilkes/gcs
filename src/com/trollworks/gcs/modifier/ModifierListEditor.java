@@ -31,7 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
@@ -39,14 +38,14 @@ import javax.swing.ScrollPaneConstants;
 public class ModifierListEditor extends ActionPanel implements ActionListener {
     private DataFile mOwner;
     private Outline  mOutline;
-    IconButton       mAddButton;
-    boolean          mModified;
+    IconButton mAddButton;
+    boolean    mModified;
 
     /**
      * @param advantage The {@link Advantage} to edit.
      * @return An instance of {@link ModifierListEditor}.
      */
-    static public ModifierListEditor createEditor(Advantage advantage) {
+    public static ModifierListEditor createEditor(Advantage advantage) {
         return new ModifierListEditor(advantage);
     }
 
@@ -99,8 +98,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
         mAddButton = new IconButton(StdImage.ADD, I18n.Text("Add a modifier"), () -> addModifier());
 
-        mOutline   = new ModifierOutline();
-        model      = mOutline.getModel();
+        mOutline = new ModifierOutline();
+        model = mOutline.getModel();
         ModifierColumnID.addColumns(mOutline, true);
 
         if (readOnlyModifiers != null) {
@@ -124,7 +123,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     }
 
     private void openDetailEditor() {
-        ArrayList<ListRow> rows = new ArrayList<>();
+        List<ListRow> rows = new ArrayList<>();
         for (Modifier row : new FilteredIterator<>(mOutline.getModel().getSelectionAsList(), Modifier.class)) {
             if (!row.isReadOnly()) {
                 rows.add(row);
@@ -163,7 +162,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
     /** @return Modifiers edited by this editor */
     public List<Modifier> getModifiers() {
-        ArrayList<Modifier> modifiers = new ArrayList<>();
+        List<Modifier> modifiers = new ArrayList<>();
         for (Modifier modifier : new FilteredIterator<>(mOutline.getModel().getRows(), Modifier.class)) {
             if (!modifier.isReadOnly()) {
                 modifiers.add(modifier);

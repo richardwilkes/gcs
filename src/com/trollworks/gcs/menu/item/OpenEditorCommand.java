@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.widgets.outline.ListOutline;
 import com.trollworks.toolkit.ui.menu.Command;
-import com.trollworks.toolkit.ui.widget.outline.Outline;
 import com.trollworks.toolkit.ui.widget.outline.OutlineProxy;
 import com.trollworks.toolkit.utility.I18n;
 
@@ -27,7 +26,7 @@ public class OpenEditorCommand extends Command {
     public static final String            CMD_OPEN_EDITOR = "OpenEditor";
     /** The singleton {@link OpenEditorCommand}. */
     public static final OpenEditorCommand INSTANCE        = new OpenEditorCommand();
-    private ListOutline                   mOutline;
+    private             ListOutline       mOutline;
 
     private OpenEditorCommand() {
         super(I18n.Text("Open Detail Editor"), CMD_OPEN_EDITOR, KeyEvent.VK_I);
@@ -67,7 +66,7 @@ public class OpenEditorCommand extends Command {
             if (comp instanceof OutlineProxy) {
                 comp = ((OutlineProxy) comp).getRealOutline();
             }
-            if (comp instanceof Outline) {
+            if (comp instanceof ListOutline) {
                 outline = (ListOutline) comp;
             }
         }

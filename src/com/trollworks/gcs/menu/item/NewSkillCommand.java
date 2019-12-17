@@ -38,8 +38,8 @@ public class NewSkillCommand extends Command {
     public static final NewSkillCommand CONTAINER_INSTANCE      = new NewSkillCommand(true, false, I18n.Text("New Skill Container"), CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
     /** The "New Technique" command. */
     public static final NewSkillCommand TECHNIQUE_INSTANCE      = new NewSkillCommand(false, true, I18n.Text("New Technique"), CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
-    private boolean                     mContainer;
-    private boolean                     mTechnique;
+    private             boolean         mContainer;
+    private             boolean         mTechnique;
 
     private NewSkillCommand(boolean container, boolean isTechnique, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
@@ -69,7 +69,7 @@ public class NewSkillCommand extends Command {
         SkillsDockable skills = getTarget(SkillsDockable.class);
         if (skills != null) {
             dataFile = skills.getDataFile();
-            outline  = skills.getOutline();
+            outline = skills.getOutline();
             if (outline.getModel().isLocked()) {
                 return;
             }
@@ -77,12 +77,12 @@ public class NewSkillCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline  = sheet.getSheet().getSkillOutline();
+                outline = sheet.getSheet().getSkillOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline  = template.getTemplate().getSkillOutline();
+                    outline = template.getTemplate().getSkillOutline();
                 } else {
                     return;
                 }

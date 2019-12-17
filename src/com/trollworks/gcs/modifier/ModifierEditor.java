@@ -28,7 +28,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
-
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -67,14 +66,10 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         JPanel   fields  = new JPanel(new ColumnLayout(2));
         JLabel   icon;
         StdImage image   = modifier.getIcon(true);
-        if (image != null) {
-            icon = new JLabel(image);
-        } else {
-            icon = new JLabel();
-        }
+        icon = image != null ? new JLabel(image) : new JLabel();
 
         JPanel wrapper = new JPanel(new ColumnLayout(2));
-        mNameField    = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
+        mNameField = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
         mEnabledField = new JCheckBox(I18n.Text("Enabled"), modifier.isEnabled());
         mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
         mEnabledField.setEnabled(mIsEditable);
@@ -83,13 +78,13 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
         createCostModifierFields(fields);
 
-        wrapper         = new JPanel(new ColumnLayout(3));
-        mNotesField     = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
+        wrapper = new JPanel(new ColumnLayout(3));
+        mNotesField = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
         mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         fields.add(wrapper);
 
         icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
+        icon.setAlignmentY(-1.0f);
         content.add(icon);
         content.add(fields);
         add(content);
@@ -108,11 +103,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
-        if (getCostType() == CostType.MULTIPLIER) {
-            modified |= mRow.setCostMultiplier(getCostMultiplier());
-        } else {
-            modified |= mRow.setCost(getCost());
-        }
+        modified |= getCostType() == CostType.MULTIPLIER ? mRow.setCostMultiplier(getCostMultiplier()) : mRow.setCost(getCost());
         if (hasLevels()) {
             modified |= mRow.setLevels(getLevels());
             modified |= mRow.setCostType(CostType.PERCENTAGE);
@@ -221,15 +212,11 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         }
         String costTitle   = I18n.Text("Cost");
         String costTooltip = I18n.Text("The base cost modifier");
-        if (mRow.getCostType() == CostType.MULTIPLIER) {
-            mCostField = createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip, 5);
-        } else {
-            mCostField = createNumberField(parent, wrapper, costTitle, true, mRow.getCost(), costTooltip, 5);
-        }
+        mCostField = mRow.getCostType() == CostType.MULTIPLIER ? createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip, 5) : createNumberField(parent, wrapper, costTitle, true, mRow.getCost(), costTooltip, 5);
         createCostType(wrapper);
-        mLevelField        = createNumberField(wrapper, wrapper, I18n.Text("Levels"), false, mLastLevel, I18n.Text("The number of levels this modifier has"), 3);
+        mLevelField = createNumberField(wrapper, wrapper, I18n.Text("Levels"), false, mLastLevel, I18n.Text("The number of levels this modifier has"), 3);
         mCostModifierField = createNumberField(wrapper, wrapper, I18n.Text("Total"), true, 0, I18n.Text("The cost modifier's total value"), 9);
-        mAffects           = createComboBox(wrapper, Affects.values(), mRow.getAffects());
+        mAffects = createComboBox(wrapper, Affects.values(), mRow.getAffects());
         mCostModifierField.setEnabled(false);
         if (!mRow.hasLevels()) {
             mLevelField.setText("");
@@ -285,7 +272,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         boolean enabled = true;
 
         if (hasLevels()) {
-            mCostModifierField.setText(Numbers.formatWithForcedSign(getCost() * getLevels()) + "%");
+            mCostModifierField.setText(Numbers.formatWithForcedSign((long) getCost() * getLevels()) + "%");
         } else {
             CostType costType = getCostType();
             switch (costType) {
@@ -342,6 +329,6 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     }
 
     private void nameChanged() {
-        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().length() != 0 ? null : I18n.Text("The name field may not be empty"));
+        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
     }
 }

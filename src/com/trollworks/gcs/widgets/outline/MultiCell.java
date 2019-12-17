@@ -28,7 +28,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -37,9 +36,9 @@ import javax.swing.UIManager;
  * information for a {@link ListRow}.
  */
 public class MultiCell implements Cell {
-    private static final int H_MARGIN = 2;
-    private int              mMaxPreferredWidth;
-    private boolean          mForEditor;
+    private static final int     H_MARGIN = 2;
+    private              int     mMaxPreferredWidth;
+    private              boolean mForEditor;
 
     /** Creates a new {@link MultiCell} with a maximum preferred width of 250. */
     public MultiCell() {
@@ -63,7 +62,7 @@ public class MultiCell implements Cell {
      */
     public MultiCell(int maxPreferredWidth, boolean forEditor) {
         mMaxPreferredWidth = maxPreferredWidth;
-        mForEditor         = forEditor;
+        mForEditor = forEditor;
     }
 
     /** @return The primary font. */
@@ -75,7 +74,7 @@ public class MultiCell implements Cell {
     public Font getSecondaryFont() {
         if (mForEditor) {
             Font font = getPrimaryFont();
-            return font.deriveFont(font.getSize() * 7f / 8f);
+            return font.deriveFont(font.getSize() * 7.0f / 8.0f);
         }
         return UIManager.getFont(GCSFonts.KEY_FIELD_NOTES);
     }
@@ -96,7 +95,7 @@ public class MultiCell implements Cell {
     protected String getSortText(ListRow row) {
         String text      = getPrimaryText(row);
         String secondary = getSecondaryText(row);
-        if (secondary != null && secondary.length() > 0) {
+        if (secondary != null && !secondary.isEmpty()) {
             text += '\n';
             text += secondary;
         }
@@ -125,9 +124,9 @@ public class MultiCell implements Cell {
         gc.setFont(font);
         Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? Color.RED : null;
         pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru, scale.scale(1));
-        if (notes.trim().length() > 0) {
+        if (!notes.trim().isEmpty()) {
             insetBounds.height -= pos - insetBounds.y;
-            insetBounds.y       = pos;
+            insetBounds.y = pos;
             gc.setFont(scale.scale(getSecondaryFont()));
             TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
         }
@@ -154,7 +153,7 @@ public class MultiCell implements Cell {
         ListRow theRow = (ListRow) row;
         int     width  = TextDrawing.getWidth(scale.scale(getPrimaryFont()), getPrimaryText(theRow));
         String  notes  = getSecondaryText(theRow);
-        if (notes.trim().length() > 0) {
+        if (!notes.trim().isEmpty()) {
             int notesWidth = TextDrawing.getWidth(scale.scale(getSecondaryFont()), notes);
 
             if (notesWidth > width) {
@@ -173,8 +172,8 @@ public class MultiCell implements Cell {
         Font    font   = scale.scale(getPrimaryFont());
         int     height = TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, getPrimaryText(theRow), font)).height;
         String  notes  = getSecondaryText(theRow);
-        if (notes.trim().length() > 0) {
-            font    = scale.scale(getSecondaryFont());
+        if (!notes.trim().isEmpty()) {
+            font = scale.scale(getSecondaryFont());
             height += TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, notes, font)).height;
         }
         return height;

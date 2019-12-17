@@ -29,7 +29,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.MessageFormat;
-
 import javax.swing.UIManager;
 
 /** The character portrait. */
@@ -42,7 +41,6 @@ public class PortraitPreferencePanel extends ActionPanel {
      * @param image The image to display.
      */
     public PortraitPreferencePanel(StdImage image) {
-        super();
         mPortrait = Profile.createPortrait(image);
         setBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), I18n.Text("Portrait")));
         Insets insets = getInsets();

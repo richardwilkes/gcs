@@ -18,7 +18,6 @@ import com.trollworks.toolkit.ui.layout.FlexSpacer;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-
 import javax.swing.JComboBox;
 
 /** A DR bonus editor. */

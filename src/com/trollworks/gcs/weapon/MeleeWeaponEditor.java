@@ -23,7 +23,6 @@ import com.trollworks.toolkit.utility.I18n;
 
 import java.awt.Container;
 import java.util.List;
-
 import javax.swing.JPanel;
 
 /** An editor for melee weapon statistics. */
@@ -36,9 +35,9 @@ public class MeleeWeaponEditor extends WeaponEditor {
      * Creates a new melee weapon editor for the specified row.
      *
      * @param row The row to edit melee weapon statistics for.
-     * @return The editor, or <code>null</code> if the row is not appropriate.
+     * @return The editor, or {@code null} if the row is not appropriate.
      */
-    static public MeleeWeaponEditor createEditor(ListRow row) {
+    public static MeleeWeaponEditor createEditor(ListRow row) {
         if (row instanceof Equipment) {
             return new MeleeWeaponEditor(row, ((Equipment) row).getWeapons());
         } else if (row instanceof Advantage) {
@@ -69,11 +68,11 @@ public class MeleeWeaponEditor extends WeaponEditor {
         parent.add(new LinkedLabel(tooltip, mReach));
         panel.add(mReach);
         tooltip = I18n.Text("Parry Modifier");
-        mParry  = createTextField("+99**", tooltip);
+        mParry = createTextField("+99**", tooltip);
         panel.add(new LinkedLabel(tooltip, mParry));
         panel.add(mParry);
         tooltip = I18n.Text("Block Modifier");
-        mBlock  = createTextField("+99**", tooltip);
+        mBlock = createTextField("+99**", tooltip);
         panel.add(new LinkedLabel(tooltip, mBlock));
         panel.add(mBlock);
         parent.add(panel);

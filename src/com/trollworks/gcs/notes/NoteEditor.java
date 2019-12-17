@@ -17,7 +17,6 @@ import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.layout.RowDistribution;
 
 import java.awt.Dimension;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -28,17 +27,17 @@ import javax.swing.SwingConstants;
 /** The detailed editor for {@link Note}s. */
 public class NoteEditor extends RowEditor<Note> {
     public static JTextArea addContentTo(JPanel parent, String description, StdImage image, boolean editable) {
-        JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
-        JLabel    icon    = new JLabel(image);
+        JPanel content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
+        JLabel icon    = new JLabel(image);
 
-        JTextArea editor  = new JTextArea(description);
+        JTextArea editor = new JTextArea(description);
         editor.setLineWrap(true);
         editor.setWrapStyleWord(true);
         editor.setEnabled(editable);
         JScrollPane scroller = new JScrollPane(editor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         scroller.setMinimumSize(new Dimension(400, 300));
         icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1f);
+        icon.setAlignmentY(-1.0f);
         content.add(icon);
         content.add(scroller);
         parent.add(content);
