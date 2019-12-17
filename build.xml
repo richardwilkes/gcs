@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project name="com.trollworks.gcs" default="bundle" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<property name="module.name" value="com.trollworks.gcs"/>
-	<property name="module.version" value="4.13.1"/>
+	<property name="module.version" value="4.13.2"/>
     <property name="app.name" value="GURPS Character Sheet"/>
     <property name="app.name.short" value="GCS"/>
     <property name="exe.name" value="gcs"/>
