@@ -224,34 +224,42 @@
 	</target>
 
 	<target name="clone-deps">
+		<echo message="clone org.apache.commons.logging"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/org.apache.commons.logging"/>
 		</exec>
+		<echo message="clone org.apache.fontbox"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/org.apache.fontbox"/>
 		</exec>
+		<echo message="clone org.apache.pdfbox"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/org.apache.pdfbox"/>
 		</exec>
+		<echo message="clone gnu.trove"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/gnu.trove"/>
 		</exec>
+		<echo message="clone com.lowagie.text"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/com.lowagie.text"/>
 		</exec>
+		<echo message="clone toolkit"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/toolkit"/>
 		</exec>
+		<echo message="clone gcs_library"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/gcs_library"/>
 		</exec>
+		<echo message="clone gcs_intellij"/>
 		<exec executable="git" dir="..">
 			<arg value="clone"/>
 			<arg value="https://github.com/richardwilkes/gcs_intellij"/>
@@ -259,30 +267,39 @@
 	</target>
 
 	<target name="pull">
+		<echo message="pull org.apache.commons.logging"/>
 		<exec executable="git" dir="../org.apache.commons.logging">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull org.apache.fontbox"/>
 		<exec executable="git" dir="../org.apache.fontbox">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull org.apache.pdfbox"/>
 		<exec executable="git" dir="../org.apache.pdfbox">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull gnu.trove"/>
 		<exec executable="git" dir="../gnu.trove">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull com.lowagie.text"/>
 		<exec executable="git" dir="../com.lowagie.text">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull toolkit"/>
 		<exec executable="git" dir="../toolkit">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull gcs_library"/>
 		<exec executable="git" dir="../gcs_library">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull gcs_intellij"/>
 		<exec executable="git" dir="../gcs_intellij">
 			<arg value="pull"/>
 		</exec>
+		<echo message="pull gcs"/>
 		<exec executable="git">
 			<arg value="pull"/>
 		</exec>
