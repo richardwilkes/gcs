@@ -41,8 +41,8 @@
     <property if:true="${platform.mac}" name="app.root" value="${dist.root}/${app.name}"/>
     <property if:true="${platform.linux}" name="app.root" value="${dist.root}"/>
     <property if:true="${platform.windows}" name="app.root" value="${dist.root}"/>
-	<property if:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-14.jdk/Contents/Home/bin/jpackage"/>
-	<property unless:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-14/bin/jpackage"/>
+	<property if:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-15.jdk/Contents/Home/bin/jpackage"/>
+	<property unless:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-15/bin/jpackage"/>
 
 	<target name="build">
         <delete>
