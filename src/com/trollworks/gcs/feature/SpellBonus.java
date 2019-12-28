@@ -99,12 +99,7 @@ public class SpellBonus extends Bonus {
     }
 
     public boolean matchesCategories(Set<String> categories) {
-        for (String category : categories) {
-            if (mCategoryCriteria.matches(category)) {
-                return true;
-            }
-        }
-        return false;
+        return matchesCategories(mCategoryCriteria, categories);
     }
 
     @Override

@@ -105,15 +105,7 @@ public class WeaponBonus extends Bonus {
     }
 
     public boolean matchesCategories(Set<String> categories) {
-        if (categories == null || categories.isEmpty()) {
-            return mCategoryCriteria.isTypeAnything();
-        }
-        for (String category : categories) {
-            if (mCategoryCriteria.matches(category)) {
-                return true;
-            }
-        }
-        return false;
+        return matchesCategories(mCategoryCriteria, categories);
     }
 
     @Override

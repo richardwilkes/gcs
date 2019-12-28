@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.io.xml.XMLNodeType;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -143,5 +144,16 @@ public abstract class Bonus implements Feature {
 
     public String getToolTipAmount() {
         return getAmount().getAmountAsString();
+    }
+
+    protected static boolean matchesCategories(StringCriteria criteria, Set<String> categories) {
+        if (categories != null) {
+            for (String category : categories) {
+                if (criteria.matches(category)) {
+                    return true;
+                }
+            }
+        }
+        return criteria.matches("");
     }
 }
