@@ -10,7 +10,7 @@ game system.
    download it for your platform here: http://jdk.java.net/13/
 
 2. Until the packager is part of the released JDK again, we also need to download a pre-release that
-   contains it. You can download it for your platform here: https://jdk.java.net/jpackage/
+   contains it. You can download it for your platform here: https://jdk.java.net/15/
    
    Do **NOT** place this in your path. The build expects to find it in your home directory. If you
    placed it somewhere else, you'll need to adjust the variable for `jpackage` in the build.xml
