@@ -53,6 +53,7 @@ import javax.swing.undo.StateEdit;
 
 /** Base outline class. */
 public class ListOutline extends Outline implements Runnable, ActionListener {
+    public static final String OWNING_LIST = "owning_list";
     /** The owning data file. */
     protected DataFile mDataFile;
     private   String   mRowSetChangedID;
@@ -66,6 +67,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
      */
     public ListOutline(DataFile dataFile, OutlineModel model, String rowSetChangedID) {
         super(model);
+        model.setProperty(OWNING_LIST, this);
         mDataFile = dataFile;
         mRowSetChangedID = rowSetChangedID;
         addActionListener(this);
@@ -240,7 +242,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
         requestFocusInWindow();
     }
 
-    private void updateAllRows() {
+    public void updateAllRows() {
         updateRows(new FilteredList<>(getModel().getTopLevelRows(), ListRow.class));
     }
 

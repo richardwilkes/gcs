@@ -288,6 +288,9 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
                 OutlineModel selfModel  = getModel();
                 if (selfModel != otherModel && (selfModel == carriedModel || selfModel == uncarriedModel) && (otherModel == carriedModel || otherModel == uncarriedModel)) {
                     StateEdit edit = new StateEdit(otherModel, I18n.Text("Remove Rows"));
+                    ListOutline otherOwningList = (ListOutline)otherModel.getProperty(ListOutline.OWNING_LIST);
+                    DataFile otherDataFile = otherOwningList.getDataFile();
+                    otherDataFile.startNotify();
                     otherModel.removeRows(rows);
                     for (Row row : rows) {
                         Row parent = row.getParent();
@@ -295,6 +298,11 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
                             row.removeFromParent();
                         }
                     }
+                    if (otherModel.getRowCount() > 0) {
+                        otherOwningList.updateAllRows();
+                    }
+                    otherDataFile.notify(otherOwningList.getRowSetChangedID(), null);
+                    otherDataFile.endNotify();
                     edit.end();
                     postUndo(edit);
                 }
