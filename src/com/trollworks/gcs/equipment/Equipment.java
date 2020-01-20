@@ -555,7 +555,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             if (percentage >= 100) {
                 contained = new WeightValue(0, units);
             } else {
-                contained.subtract(new WeightValue(contained.getNormalizedValue() * percentage / 100, units));
+                contained.subtract(new WeightValue(contained.getValue() * percentage / 100, contained.getUnits()));
             }
         }
         contained.subtract(reduction);
