@@ -33,6 +33,12 @@ public class SkillDefault {
     public static final  String           TAG_SPECIALIZATION = "specialization";
     /** The tag used for the modifier. */
     public static final  String           TAG_MODIFIER       = "modifier";
+    /** The tag used for the level. */
+    public static final  String           TAG_LEVEL          = "level";
+    /** The tag used for the adjusted level. */
+    public static final  String           TAG_ADJ_LEVEL      = "adjusted_level";
+    /** The tag used for the points. */
+    public static final  String           TAG_POINTS         = "points";
     private static final String           EMPTY              = "";
     private              SkillDefaultType mType;
     private              String           mName;
@@ -77,6 +83,16 @@ public class SkillDefault {
      * @param reader The XML reader to use.
      */
     public SkillDefault(XMLReader reader) throws IOException {
+        this(reader, false);
+    }
+
+    /**
+     * Creates a skill default.
+     *
+     * @param reader The XML reader to use.
+     * @param full   {@code true} if all fields should be loaded.
+     */
+    public SkillDefault(XMLReader reader, boolean full) throws IOException {
         String marker = reader.getMarker();
 
         mType = SkillDefaultType.Skill;
@@ -96,6 +112,12 @@ public class SkillDefault {
                     setSpecialization(reader.readText());
                 } else if (TAG_MODIFIER.equals(name)) {
                     setModifier(reader.readInteger(0));
+                } else if (full && TAG_LEVEL.equals(name)) {
+                    setLevel(reader.readInteger(0));
+                } else if (full && TAG_ADJ_LEVEL.equals(name)) {
+                    setAdjLevel(reader.readInteger(0));
+                } else if (full && TAG_POINTS.equals(name)) {
+                    setPoints(reader.readInteger(0));
                 } else {
                     reader.skipTag(name);
                 }
@@ -147,15 +169,17 @@ public class SkillDefault {
      * @param out The XML writer to use.
      */
     public void save(XMLWriter out) {
-        save(out, TAG_ROOT);
+        save(out, TAG_ROOT, false);
     }
 
     /**
      * Saves the skill default.
      *
      * @param out The XML writer to use.
+     * @param tagRoot The root tag to use.
+     * @param full {@code true} if all fields should be saved.
      */
-    public void save(XMLWriter out, String tagRoot) {
+    public void save(XMLWriter out, String tagRoot, boolean full) {
         out.startSimpleTagEOL(tagRoot);
         out.simpleTag(TAG_TYPE, mType.name());
         if (mType.isSkillBased()) {
@@ -163,6 +187,11 @@ public class SkillDefault {
             out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
         }
         out.simpleTag(TAG_MODIFIER, mModifier);
+        if (full) {
+            out.simpleTag(TAG_LEVEL, mLevel);
+            out.simpleTag(TAG_ADJ_LEVEL, mAdjLevel);
+            out.simpleTag(TAG_POINTS, mPoints);
+        }
         out.endTagEOL(tagRoot, true);
     }
 

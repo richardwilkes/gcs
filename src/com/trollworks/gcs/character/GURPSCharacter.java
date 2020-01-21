@@ -436,6 +436,13 @@ public class GURPSCharacter extends DataFile {
             }
         } while (reader.withinMarker(marker));
 
+        // Loop through the skills and update their levels. It is necessary to do this here and not
+        // as they are loaded, since references to defaults won't work until the entire list is
+        // available.
+        for (Skill skill : getSkillsIterator()) {
+            skill.updateLevel(false);
+        }
+
         calculateAll();
         if (unspentPoints != 0) {
             setUnspentPoints(unspentPoints);

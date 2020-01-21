@@ -56,6 +56,7 @@ public class Skill extends ListRow implements HasSourceReference {
     private static final String            TAG_POINTS               = "points";
     private static final String            TAG_REFERENCE            = "reference";
     private static final String            TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";
+    private static final String            TAG_DEFAULTED_FROM       = "defaulted_from";
     /** The prefix used in front of all IDs for the skills. */
     public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill.";
     /** The field ID for name changes. */
@@ -291,6 +292,8 @@ public class Skill extends ListRow implements HasSourceReference {
                 mPoints = reader.readInteger(1);
             } else if (TAG_ENCUMBRANCE_PENALTY.equals(name)) {
                 mEncumbrancePenaltyMultiplier = Math.min(Math.max(reader.readInteger(0), 0), 9);
+            } else if (TAG_DEFAULTED_FROM.equals(name)) {
+                mDefaultedFrom = new SkillDefault(reader, true);
             } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
                 mWeapons.add(new MeleeWeaponStats(this, reader));
             } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
@@ -301,12 +304,6 @@ public class Skill extends ListRow implements HasSourceReference {
         } else {
             super.loadSubElement(reader, state);
         }
-    }
-
-    @Override
-    protected void finishedLoading(LoadState state) {
-        updateLevel(false);
-        super.finishedLoading(state);
     }
 
     @Override
@@ -327,6 +324,9 @@ public class Skill extends ListRow implements HasSourceReference {
             }
             out.simpleTag(TAG_DIFFICULTY, getDifficultyAsText(false));
             out.simpleTag(TAG_POINTS, mPoints);
+            if (mDefaultedFrom != null) {
+                mDefaultedFrom.save(out, TAG_DEFAULTED_FROM, true);
+            }
             for (WeaponStats weapon : mWeapons) {
                 weapon.save(out);
             }
@@ -462,7 +462,6 @@ public class Skill extends ListRow implements HasSourceReference {
     public void updateLevel(boolean notify) {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
-
         if (notify) {
             startNotify();
             if (savedLevel.isDifferentLevelThan(mLevel)) {
@@ -844,7 +843,6 @@ public class Skill extends ListRow implements HasSourceReference {
                         }
                     }
                 }
-                excludes.remove(exclude);
                 return bestSkill;
             }
         }
