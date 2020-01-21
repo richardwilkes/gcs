@@ -76,6 +76,8 @@ public class PrereqList extends Prereq {
                     mPrereqs.add(new AttributePrereq(this, reader));
                 } else if (ContainedWeightPrereq.TAG_ROOT.equals(name)) {
                     mPrereqs.add(new ContainedWeightPrereq(this, reader));
+                } else if (ContainedQuantityPrereq.TAG_ROOT.equals(name)) {
+                    mPrereqs.add(new ContainedQuantityPrereq(this, reader));
                 } else if (SkillPrereq.TAG_ROOT.equals(name)) {
                     mPrereqs.add(new SkillPrereq(this, reader));
                 } else if (SpellPrereq.TAG_ROOT.equals(name)) {

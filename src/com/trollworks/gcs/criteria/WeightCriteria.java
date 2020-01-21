@@ -21,7 +21,7 @@ public class WeightCriteria extends NumericCriteria {
     private WeightValue mQualifier;
 
     /**
-     * Creates a new double comparison.
+     * Creates a new WeightCriteria.
      *
      * @param type      The {@link NumericCompareType} to use.
      * @param qualifier The qualifier to match against.
@@ -32,7 +32,7 @@ public class WeightCriteria extends NumericCriteria {
     }
 
     /**
-     * Creates a new double comparison.
+     * Creates a new WeightCriteria.
      *
      * @param other A {@link WeightCriteria} to clone.
      */

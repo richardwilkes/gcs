@@ -28,7 +28,7 @@ import javax.swing.JComponent;
 public abstract class PrereqEditor extends EditorPanel {
     private static final String            CHANGE_BASE_TYPE = "ChangeBaseType";
     private static final String            CHANGE_HAS       = "ChangeHas";
-    private static final Class<?>[]        BASE_TYPES       = new Class<?>[]{AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class};
+    private static final Class<?>[]        BASE_TYPES       = new Class<?>[]{AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class, ContainedQuantityPrereq.class};
     /** The prerequisite this panel represents. */
     protected            Prereq            mPrereq;
     /** The row this prerequisite will be attached to. */
@@ -62,6 +62,9 @@ public abstract class PrereqEditor extends EditorPanel {
         }
         if (prereq instanceof ContainedWeightPrereq) {
             return new ContainedWeightPrereqEditor(row, (ContainedWeightPrereq) prereq, depth);
+        }
+        if (prereq instanceof ContainedQuantityPrereq) {
+            return new ContainedQuantityPrereqEditor(row, (ContainedQuantityPrereq) prereq, depth);
         }
         return null;
     }
@@ -126,7 +129,7 @@ public abstract class PrereqEditor extends EditorPanel {
 
     /** @return The {@link JComboBox} that allows the base prereq type to be changed. */
     protected JComboBox<Object> addChangeBaseTypeCombo() {
-        Object[] choices = {I18n.Text("attribute"), I18n.Text("advantage"), I18n.Text("skill"), I18n.Text("spell(s)"), I18n.Text("contained weight")};
+        Object[] choices = {I18n.Text("attribute"), I18n.Text("advantage"), I18n.Text("skill"), I18n.Text("spell(s)"), I18n.Text("contained weight"), I18n.Text("contained quantity of")};
         Class<?> type    = mPrereq.getClass();
         Object   current = choices[0];
         int      length  = BASE_TYPES.length;
