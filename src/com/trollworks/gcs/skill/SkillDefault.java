@@ -147,14 +147,23 @@ public class SkillDefault {
      * @param out The XML writer to use.
      */
     public void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
+        save(out, TAG_ROOT);
+    }
+
+    /**
+     * Saves the skill default.
+     *
+     * @param out The XML writer to use.
+     */
+    public void save(XMLWriter out, String tagRoot) {
+        out.startSimpleTagEOL(tagRoot);
         out.simpleTag(TAG_TYPE, mType.name());
         if (mType.isSkillBased()) {
             out.simpleTagNotEmpty(TAG_NAME, mName);
             out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
         }
         out.simpleTag(TAG_MODIFIER, mModifier);
-        out.endTagEOL(TAG_ROOT, true);
+        out.endTagEOL(tagRoot, true);
     }
 
     /** @return The type of default. */
