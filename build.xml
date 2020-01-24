@@ -181,6 +181,8 @@
 			<arg if:true="${platform.mac}" value="${app.name.short}"/>
 			<arg if:true="${platform.linux}" value="--linux-package-name"/>
             <arg if:true="${platform.linux}" value="${exe.name}"/>
+            <arg if:true="${platform.linux}" value="--linux-app-release"/>
+            <arg if:true="${platform.linux}" value="1"/>
             <arg if:true="${platform.linux}" value="--linux-package-deps"/>
             <arg if:true="${platform.linux}" value=""/>
             <arg if:true="${platform.linux}" value="--linux-deb-maintainer"/>
