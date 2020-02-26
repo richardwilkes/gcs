@@ -31,6 +31,7 @@ import com.trollworks.toolkit.ui.image.StdImage;
 import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.ui.widget.outline.Row;
 import com.trollworks.toolkit.utility.I18n;
+import com.trollworks.toolkit.utility.text.Enums;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class Spell extends ListRow implements HasSourceReference {
     private static final String            TAG_DURATION             = "duration";
     private static final String            TAG_POINTS               = "points";
     private static final String            TAG_REFERENCE            = "reference";
+    private static final String            TAG_ATTRIBUTE            = "attribute";
     private static final String            ATTRIBUTE_VERY_HARD      = "very_hard";
     /** The prefix used in front of all IDs for the spells. */
     public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
@@ -287,6 +289,8 @@ public class Spell extends ListRow implements HasSourceReference {
                     mTechLevel = "";
                 }
             }
+        } else if (TAG_ATTRIBUTE.equals(name)) {
+            mAttribute = Enums.extract(reader.readText(), SkillAttribute.values(), SkillAttribute.IQ);
         } else if (TAG_REFERENCE.equals(name)) {
             mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_SPELL.equals(name) || TAG_SPELL_CONTAINER.equals(name))) {
@@ -344,6 +348,9 @@ public class Spell extends ListRow implements HasSourceReference {
                     out.startTag(TAG_TECH_LEVEL);
                     out.finishEmptyTagEOL();
                 }
+            }
+            if (mAttribute != SkillAttribute.IQ) {
+                out.simpleTagNotEmpty(TAG_ATTRIBUTE, mAttribute.name());
             }
             out.simpleTagNotEmpty(TAG_COLLEGE, mCollege);
             out.simpleTagNotEmpty(TAG_POWER_SOURCE, mPowerSource);
