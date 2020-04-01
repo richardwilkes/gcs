@@ -106,8 +106,8 @@ public class Spell extends ListRow implements HasSourceReference {
     private              String            mMaintenance;
     private              String            mCastingTime;
     private              String            mDuration;
-    private              int               mPoints;
-    private              SkillLevel        mLevel;
+    protected            int               mPoints;
+    protected            SkillLevel        mLevel;
     private              SkillAttribute    mAttribute;
     private              String            mReference;
     private              boolean           mIsVeryHard;
