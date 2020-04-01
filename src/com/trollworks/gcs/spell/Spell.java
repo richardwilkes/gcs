@@ -19,6 +19,7 @@ import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.skill.SkillAttribute;
 import com.trollworks.gcs.skill.SkillDefault;
+import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
@@ -110,7 +111,7 @@ public class Spell extends ListRow implements HasSourceReference {
     protected            SkillLevel        mLevel;
     private              SkillAttribute    mAttribute;
     private              String            mReference;
-    private              boolean           mIsVeryHard;
+    private              SkillDifficulty   mDifficulty;
     private              List<WeaponStats> mWeapons;
 
     /**
@@ -133,7 +134,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mDuration = isContainer ? "" : getDefaultDuration();
         mPoints = 1;
         mReference = "";
-        mIsVeryHard = false;
+        mDifficulty = SkillDifficulty.H;
         mWeapons = new ArrayList<>();
         updateLevel(false);
     }
@@ -160,7 +161,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mDuration = spell.mDuration;
         mPoints = forSheet ? spell.mPoints : 1;
         mReference = spell.mReference;
-        mIsVeryHard = spell.mIsVeryHard;
+        mDifficulty = spell.mDifficulty;
         if (forSheet && dataFile instanceof GURPSCharacter) {
             if (mTechLevel != null) {
                 mTechLevel = ((GURPSCharacter) dataFile).getDescription().getTechLevel();
@@ -207,7 +208,7 @@ public class Spell extends ListRow implements HasSourceReference {
         }
         if (obj instanceof Spell && super.isEquivalentTo(obj)) {
             Spell row = (Spell) obj;
-            if (mIsVeryHard == row.mIsVeryHard && mPoints == row.mPoints && mLevel.isSameLevelAs(row.mLevel) && mAttribute == row.mAttribute) {
+            if (mDifficulty == row.mDifficulty && mPoints == row.mPoints && mLevel.isSameLevelAs(row.mLevel) && mAttribute == row.mAttribute) {
                 if (Objects.equals(mTechLevel, row.mTechLevel)) {
                     if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mPowerSource.equals(row.mPowerSource) && mSpellClass.equals(row.mSpellClass) && mReference.equals(row.mReference)) {
                         if (mCastingCost.equals(row.mCastingCost) && mMaintenance.equals(row.mMaintenance) && mCastingTime.equals(row.mCastingTime) && mDuration.equals(row.mDuration)) {
@@ -261,14 +262,14 @@ public class Spell extends ListRow implements HasSourceReference {
         mDuration = isContainer ? "" : getDefaultDuration();
         mPoints = 1;
         mReference = "";
-        mIsVeryHard = false;
+        mDifficulty = SkillDifficulty.H;
         mWeapons = new ArrayList<>();
     }
 
     @Override
     protected void loadAttributes(XMLReader reader, LoadState state) {
         super.loadAttributes(reader, state);
-        mIsVeryHard = reader.isAttributeSet(ATTRIBUTE_VERY_HARD);
+        mDifficulty = reader.isAttributeSet(ATTRIBUTE_VERY_HARD) ? SkillDifficulty.VH : SkillDifficulty.H;
     }
 
     @Override
@@ -279,7 +280,7 @@ public class Spell extends ListRow implements HasSourceReference {
             // Fix for legacy format...
             if (mName.toLowerCase().endsWith("(vh)")) {
                 mName = mName.substring(0, mName.length() - 4).trim();
-                mIsVeryHard = true;
+                mDifficulty = SkillDifficulty.VH;
             }
         } else if (TAG_TECH_LEVEL.equals(name)) {
             mTechLevel = reader.readText();
@@ -332,7 +333,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     @Override
     protected void saveAttributes(XMLWriter out, boolean forUndo) {
-        if (mIsVeryHard) {
+        if (isVeryHard()) {
             out.writeAttribute(ATTRIBUTE_VERY_HARD, true);
         }
     }
@@ -420,7 +421,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return The calculated spell skill level. */
     private SkillLevel calculateLevelSelf() {
-        return calculateLevel(getCharacter(), mPoints, mAttribute, mIsVeryHard, mCollege, mPowerSource, mName, getCategories());
+        return calculateLevel(getCharacter(), mPoints, mAttribute, isVeryHard(), mCollege, mPowerSource, mName, getCategories());
     }
 
     /**
@@ -728,7 +729,12 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return Whether this is a "Very Hard" spell or not. */
     public boolean isVeryHard() {
-        return mIsVeryHard;
+        return mDifficulty == SkillDifficulty.VH;
+    }
+
+    /** @return The difficulty. */
+    public SkillDifficulty getDifficulty() {
+        return mDifficulty;
     }
 
     /**
@@ -737,9 +743,9 @@ public class Spell extends ListRow implements HasSourceReference {
      * @return Whether it was modified.
      */
     public boolean setDifficulty(SkillAttribute attribute, boolean veryHard) {
-        if (mAttribute != attribute || mIsVeryHard != veryHard) {
+        if (mAttribute != attribute || isVeryHard() != veryHard) {
             mAttribute = attribute;
-            mIsVeryHard = veryHard;
+            mDifficulty = veryHard ? SkillDifficulty.VH : SkillDifficulty.H;
             startNotify();
             notify(ID_DIFFICULTY, this);
             updateLevel(true);
