@@ -14,7 +14,7 @@ package com.trollworks.gcs.widgets.outline;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
-import com.trollworks.gcs.modifier.ModifierEnabler;
+import com.trollworks.gcs.advmod.AdvantageModifierEnabler;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
@@ -52,7 +52,7 @@ public class RowPostProcessor implements Runnable {
         for (Map.Entry<Outline, List<ListRow>> entry : mMap.entrySet()) {
             Outline       outline  = entry.getKey();
             List<ListRow> rows     = entry.getValue();
-            boolean       modified = ModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
+            boolean       modified = AdvantageModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
             modified |= Namer.name(outline, rows);
             if (modified) {
                 outline.updateRowHeights(rows);

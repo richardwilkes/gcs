@@ -16,7 +16,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.advmod.AdvantageModifier;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -124,7 +124,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private              String                     mReference;
     private              AdvantageContainerType     mContainerType;
     private              List<WeaponStats>          mWeapons;
-    private              List<Modifier>             mModifiers;
+    private              List<AdvantageModifier>    mModifiers;
     private              boolean                    mRoundCostDown;
     private              boolean                    mDisabled;
     private              String                     mUserDesc;
@@ -181,8 +181,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             }
         }
         mModifiers = new ArrayList<>(advantage.mModifiers.size());
-        for (Modifier modifier : advantage.mModifiers) {
-            mModifiers.add(new Modifier(mDataFile, modifier));
+        for (AdvantageModifier modifier : advantage.mModifiers) {
+            mModifiers.add(new AdvantageModifier(mDataFile, modifier));
         }
         if (deep) {
             int count = advantage.getChildCount();
@@ -276,8 +276,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
             addChild(new Advantage(mDataFile, reader, state));
-        } else if (Modifier.TAG_MODIFIER.equals(name)) {
-            mModifiers.add(new Modifier(getDataFile(), reader, state));
+        } else if (AdvantageModifier.TAG_MODIFIER.equals(name)) {
+            mModifiers.add(new AdvantageModifier(getDataFile(), reader, state));
         } else if (TAG_USER_DESC.equals(name)) {
             if (getDataFile() instanceof GURPSCharacter) {
                 mUserDesc = Text.standardizeLineEndings(reader.readText());
@@ -356,7 +356,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             }
         }
         mCR.save(out, TAG_CR, mCRAdj);
-        for (Modifier modifier : mModifiers) {
+        for (AdvantageModifier modifier : mModifiers) {
             modifier.save(out, forUndo);
         }
         if (getDataFile() instanceof GURPSCharacter) {
@@ -617,19 +617,19 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
      * @param halfLevel      Whether a half level is present.
      * @param pointsPerLevel The point cost per level.
      * @param cr             The {@link SelfControlRoll} to apply.
-     * @param modifiers      The {@link Modifier}s to apply.
+     * @param modifiers      The {@link AdvantageModifier}s to apply.
      * @param roundCostDown  Whether the point cost should be rounded down rather than up, as is
      *                       normal for most GURPS rules.
      * @return The total points, taking levels and modifiers into account.
      */
-    public static int getAdjustedPoints(int basePoints, int levels, boolean halfLevel, int pointsPerLevel, SelfControlRoll cr, Collection<Modifier> modifiers, boolean roundCostDown) {
+    public static int getAdjustedPoints(int basePoints, int levels, boolean halfLevel, int pointsPerLevel, SelfControlRoll cr, Collection<AdvantageModifier> modifiers, boolean roundCostDown) {
         int    baseEnh    = 0;
         int    levelEnh   = 0;
         int    baseLim    = 0;
         int    levelLim   = 0;
         double multiplier = cr.getMultiplier();
 
-        for (Modifier one : modifiers) {
+        for (AdvantageModifier one : modifiers) {
             if (one.isEnabled()) {
                 int modifier = one.getCostModifier();
                 switch (one.getCostType()) {
@@ -944,7 +944,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 one.fillWithNameableKeys(set);
             }
         }
-        for (Modifier modifier : mModifiers) {
+        for (AdvantageModifier modifier : mModifiers) {
             modifier.fillWithNameableKeys(set);
         }
     }
@@ -958,19 +958,19 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 one.applyNameableKeys(map);
             }
         }
-        for (Modifier modifier : mModifiers) {
+        for (AdvantageModifier modifier : mModifiers) {
             modifier.applyNameableKeys(map);
         }
     }
 
     /** @return The modifiers. */
-    public List<Modifier> getModifiers() {
+    public List<AdvantageModifier> getModifiers() {
         return Collections.unmodifiableList(mModifiers);
     }
 
     /** @return The modifiers including those inherited from parent row. */
-    public List<Modifier> getAllModifiers() {
-        List<Modifier> allModifiers = new ArrayList<>(mModifiers);
+    public List<AdvantageModifier> getAllModifiers() {
+        List<AdvantageModifier> allModifiers = new ArrayList<>(mModifiers);
         if (getParent() != null) {
             allModifiers.addAll(((Advantage) getParent()).getAllModifiers());
         }
@@ -981,7 +981,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
      * @param modifiers The value to set for modifiers.
      * @return {@code true} if modifiers changed
      */
-    public boolean setModifiers(List<Modifier> modifiers) {
+    public boolean setModifiers(List<AdvantageModifier> modifiers) {
         if (!mModifiers.equals(modifiers)) {
             mModifiers = new ArrayList<>(modifiers);
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
@@ -994,8 +994,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
      * @param name The name to match against. Case-insensitive.
      * @return The first modifier that matches the name.
      */
-    public Modifier getActiveModifierFor(String name) {
-        for (Modifier m : getModifiers()) {
+    public AdvantageModifier getActiveModifierFor(String name) {
+        for (AdvantageModifier m : getModifiers()) {
             if (m.isEnabled() && m.getName().equalsIgnoreCase(name)) {
                 return m;
             }
@@ -1016,7 +1016,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             }
             builder.append(MODIFIER_SEPARATOR);
         }
-        for (Modifier modifier : mModifiers) {
+        for (AdvantageModifier modifier : mModifiers) {
             if (modifier.isEnabled()) {
                 builder.append(modifier.getFullDescription());
                 builder.append(MODIFIER_SEPARATOR);

@@ -17,7 +17,7 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
-import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.advmod.AdvantageModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
@@ -964,7 +964,7 @@ public class TextTemplate {
                                          * e.g. Advantage:Language, Modifier:Spoken -> Note:Native, Advantage:Language, Modifier:Written -> Note:Accented
                                          */
                                         if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
-                                            Modifier m = advantage.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
+                                            AdvantageModifier m = advantage.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
                                             if (m != null) {
                                                 writeEncodedText(out, m.getNotes());
                                             }

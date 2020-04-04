@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.modifier;
+package com.trollworks.gcs.advmod;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
@@ -39,16 +39,16 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
-/** Asks the user to enable/disable modifiers. */
-public class ModifierEnabler extends JPanel {
-    private Advantage         mAdvantage;
-    private JCheckBox[]       mEnabled;
-    private Modifier[]        mModifiers;
-    private JComboBox<String> mCRCombo;
+/** Asks the user to enable/disable advantage modifiers. */
+public class AdvantageModifierEnabler extends JPanel {
+    private Advantage           mAdvantage;
+    private JCheckBox[]         mEnabled;
+    private AdvantageModifier[] mModifiers;
+    private JComboBox<String>   mCRCombo;
 
     /**
-     * Brings up a modal dialog that allows {@link Modifier}s to be enabled or disabled for the
-     * specified {@link Advantage}s.
+     * Brings up a modal dialog that allows {@link AdvantageModifier}s to be enabled or disabled for
+     * the specified {@link Advantage}s.
      *
      * @param comp       The component to open the dialog over.
      * @param advantages The {@link Advantage}s to process.
@@ -67,11 +67,11 @@ public class ModifierEnabler extends JPanel {
 
         count = list.size();
         for (int i = 0; i < count; i++) {
-            Advantage       advantage   = list.get(i);
-            boolean         hasMore     = i != count - 1;
-            ModifierEnabler panel       = new ModifierEnabler(advantage, count - i - 1);
-            String          applyTitle  = I18n.Text("Apply");
-            String          cancelTitle = I18n.Text("Cancel");
+            Advantage                advantage   = list.get(i);
+            boolean                  hasMore     = i != count - 1;
+            AdvantageModifierEnabler panel       = new AdvantageModifierEnabler(advantage, count - i - 1);
+            String                   applyTitle  = I18n.Text("Apply");
+            String                   cancelTitle = I18n.Text("Cancel");
             switch (WindowUtils.showOptionDialog(comp, panel, I18n.Text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[]{applyTitle, cancelTitle, I18n.Text("Cancel Remaining")} : new String[]{applyTitle, cancelTitle}, applyTitle)) {
             case JOptionPane.YES_OPTION:
                 panel.applyChanges();
@@ -88,7 +88,7 @@ public class ModifierEnabler extends JPanel {
         return modified;
     }
 
-    private ModifierEnabler(Advantage advantage, int remaining) {
+    private AdvantageModifierEnabler(Advantage advantage, int remaining) {
         super(new BorderLayout());
         mAdvantage = advantage;
         add(createTop(advantage, remaining), BorderLayout.NORTH);
@@ -131,7 +131,7 @@ public class ModifierEnabler extends JPanel {
             wrapper.add(mCRCombo);
         }
 
-        mModifiers = mAdvantage.getModifiers().toArray(new Modifier[0]);
+        mModifiers = mAdvantage.getModifiers().toArray(new AdvantageModifier[0]);
         Arrays.sort(mModifiers);
 
         int length = mModifiers.length;

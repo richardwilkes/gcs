@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.modifier;
+package com.trollworks.gcs.advmod;
 
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
@@ -23,8 +23,8 @@ import com.trollworks.toolkit.utility.I18n;
 
 import javax.swing.SwingConstants;
 
-/** Modifier Columns */
-public enum ModifierColumnID {
+/** AdvantageModifier Columns */
+public enum AdvantageModifierColumnID {
     /** The enabled/disabled column. */
     ENABLED {
         @Override
@@ -46,7 +46,7 @@ public enum ModifierColumnID {
         }
 
         @Override
-        public String getDataAsText(Modifier modifier) {
+        public String getDataAsText(AdvantageModifier modifier) {
             return modifier.isEnabled() ? "\u2713" : "";
         }
     },
@@ -68,7 +68,7 @@ public enum ModifierColumnID {
         }
 
         @Override
-        public String getDataAsText(Modifier modifier) {
+        public String getDataAsText(AdvantageModifier modifier) {
             StringBuilder builder = new StringBuilder();
             String        notes   = modifier.getNotes();
 
@@ -102,7 +102,7 @@ public enum ModifierColumnID {
         }
 
         @Override
-        public String getDataAsText(Modifier modifier) {
+        public String getDataAsText(AdvantageModifier modifier) {
             return modifier.getCostDescription();
         }
     },
@@ -128,24 +128,24 @@ public enum ModifierColumnID {
         }
 
         @Override
-        public String getDataAsText(Modifier modifier) {
+        public String getDataAsText(AdvantageModifier modifier) {
             return modifier.getReference();
         }
     };
 
     /**
-     * @param modifier The {@link Modifier} to get the data from.
+     * @param modifier The {@link AdvantageModifier} to get the data from.
      * @return An object representing the data for this column.
      */
-    public Object getData(Modifier modifier) {
+    public Object getData(AdvantageModifier modifier) {
         return getDataAsText(modifier);
     }
 
     /**
-     * @param modifier The {@link Modifier} to get the data from.
+     * @param modifier The {@link AdvantageModifier} to get the data from.
      * @return Text representing the data for this column.
      */
-    public abstract String getDataAsText(Modifier modifier);
+    public abstract String getDataAsText(AdvantageModifier modifier);
 
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
@@ -171,7 +171,7 @@ public enum ModifierColumnID {
     public static void addColumns(Outline outline, boolean forEditor) {
         OutlineModel model = outline.getModel();
 
-        for (ModifierColumnID one : values()) {
+        for (AdvantageModifierColumnID one : values()) {
             if (one.shouldDisplay()) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell(forEditor));
 

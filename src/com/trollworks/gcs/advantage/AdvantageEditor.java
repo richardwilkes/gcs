@@ -14,7 +14,7 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
-import com.trollworks.gcs.modifier.ModifierListEditor;
+import com.trollworks.gcs.advmod.AdvantageModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
@@ -78,7 +78,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private FeaturesPanel                         mFeatures;
     private MeleeWeaponEditor                     mMeleeWeapons;
     private RangedWeaponEditor                    mRangedWeapons;
-    private ModifierListEditor                    mModifiers;
+    private AdvantageModifierListEditor           mModifiers;
     private int                                   mLastLevel;
     private int                                   mLastPointsPerLevel;
     private boolean                               mLastHalfLevel;
@@ -267,7 +267,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         row.add(mReferenceField);
 
         mTabPanel = new JTabbedPane();
-        mModifiers = ModifierListEditor.createEditor(mRow);
+        mModifiers = AdvantageModifierListEditor.createEditor(mRow);
         mModifiers.addActionListener(this);
         if (notContainer) {
             mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());

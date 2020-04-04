@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.modifier;
+package com.trollworks.gcs.advmod;
 
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.common.LoadState;
@@ -22,22 +22,22 @@ import com.trollworks.toolkit.utility.FileType;
 
 import java.io.IOException;
 
-/** Data Object to hold several {@link Modifier} */
-public class ModifierList extends ListFile {
+/** Data Object to hold several {@link AdvantageModifier}s */
+public class AdvantageModifierList extends ListFile {
     private static final int    CURRENT_VERSION = 1;
     /** The XML tag for advantage lists. */
     public static final  String TAG_ROOT        = "modifier_list";
 
-    /** Creates new {@link ModifierList}. */
-    public ModifierList() {
+    /** Creates new {@link AdvantageModifierList}. */
+    public AdvantageModifierList() {
     }
 
     /**
-     * Creates a new {@link ModifierList}.
+     * Creates a new {@link AdvantageModifierList}.
      *
-     * @param modifiers The {@link ModifierList} to clone.
+     * @param modifiers The {@link AdvantageModifierList} to clone.
      */
-    public ModifierList(ModifierList modifiers) {
+    public AdvantageModifierList(AdvantageModifierList modifiers) {
         this();
         for (Row Row : modifiers.getModel().getRows()) {
             getModel().getRows().add(Row);
@@ -52,8 +52,8 @@ public class ModifierList extends ListFile {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
 
-                if (Modifier.TAG_MODIFIER.equals(name)) {
-                    model.addRow(new Modifier(this, reader, state), true);
+                if (AdvantageModifier.TAG_MODIFIER.equals(name)) {
+                    model.addRow(new AdvantageModifier(this, reader, state), true);
                 } else {
                     reader.skipTag(name);
                 }

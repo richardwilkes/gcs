@@ -9,11 +9,11 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.modifier;
+package com.trollworks.gcs.advmod;
 
 import com.trollworks.toolkit.utility.I18n;
 
-/** Describes how a {@link Modifier} affects the point cost. */
+/** Describes how a {@link AdvantageModifier} affects the point cost. */
 public enum Affects {
     /** Affects the total cost. */
     TOTAL {

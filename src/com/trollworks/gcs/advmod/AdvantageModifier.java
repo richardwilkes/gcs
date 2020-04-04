@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.modifier;
+package com.trollworks.gcs.advmod;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
@@ -29,58 +29,58 @@ import java.util.Map;
 import java.util.Set;
 
 /** Model for trait modifiers */
-public class Modifier extends ListRow implements Comparable<Modifier> {
-    private static final   int      CURRENT_VERSION     = 1;
+public class AdvantageModifier extends ListRow implements Comparable<AdvantageModifier> {
+    private static final   int                       CURRENT_VERSION     = 1;
     /** The root tag. */
-    public static final    String   TAG_MODIFIER        = "modifier";
+    public static final    String                    TAG_MODIFIER        = "modifier";
     /** The tag for the name. */
-    protected static final String   TAG_NAME            = "name";
+    protected static final String                    TAG_NAME            = "name";
     /** The tag for the base cost. */
-    public static final    String   TAG_COST            = "cost";
+    public static final    String                    TAG_COST            = "cost";
     /** The attribute for the cost type. */
-    public static final    String   ATTRIBUTE_COST_TYPE = "type";
+    public static final    String                    ATTRIBUTE_COST_TYPE = "type";
     /** The tag for the cost per level. */
-    public static final    String   TAG_LEVELS          = "levels";
+    public static final    String                    TAG_LEVELS          = "levels";
     /** The tag for how the cost is affected. */
-    public static final    String   TAG_AFFECTS         = "affects";
+    public static final    String                    TAG_AFFECTS         = "affects";
     /** The tag for the page reference. */
-    protected static final String   TAG_REFERENCE       = "reference";
+    protected static final String                    TAG_REFERENCE       = "reference";
     /** The attribute for whether it is enabled. */
-    protected static final String   ATTRIBUTE_ENABLED   = "enabled";
+    protected static final String                    ATTRIBUTE_ENABLED   = "enabled";
     /** The prefix for notifications. */
-    public static final    String   MODIFIER_PREFIX     = TAG_MODIFIER + Notifier.SEPARATOR;
+    public static final    String                    MODIFIER_PREFIX     = TAG_MODIFIER + Notifier.SEPARATOR;
     /** The ID for name change notification. */
-    public static final    String   ID_NAME             = MODIFIER_PREFIX + TAG_NAME;
+    public static final    String                    ID_NAME             = MODIFIER_PREFIX + TAG_NAME;
     /** The ID for enabled change notification. */
-    public static final    String   ID_ENABLED          = MODIFIER_PREFIX + ATTRIBUTE_ENABLED;
+    public static final    String                    ID_ENABLED          = MODIFIER_PREFIX + ATTRIBUTE_ENABLED;
     /** The ID for cost change notification. */
-    public static final    String   ID_COST_MODIFIER    = MODIFIER_PREFIX + TAG_COST;
+    public static final    String                    ID_COST_MODIFIER    = MODIFIER_PREFIX + TAG_COST;
     /** The ID for cost affect change notification. */
-    public static final    String   ID_AFFECTS          = MODIFIER_PREFIX + TAG_AFFECTS;
+    public static final    String                    ID_AFFECTS          = MODIFIER_PREFIX + TAG_AFFECTS;
     /** The ID for page reference change notification. */
-    public static final    String   ID_REFERENCE        = MODIFIER_PREFIX + TAG_REFERENCE;
+    public static final    String                    ID_REFERENCE        = MODIFIER_PREFIX + TAG_REFERENCE;
     /** The ID for list changed change notification. */
-    public static final    String   ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged";
-    /** The name of the {@link Modifier}. */
-    protected              String   mName;
-    /** The page reference for the {@link Modifier}. */
-    protected              String   mReference;
-    /** The cost type of the {@link Modifier}. */
-    protected              CostType mCostType;
-    private                int      mCost;
-    private                double   mCostMultiplier;
-    private                int      mLevels;
-    private                Affects  mAffects;
-    private                boolean  mEnabled;
-    private                boolean  mReadOnly;
+    public static final    String                    ID_LIST_CHANGED     = MODIFIER_PREFIX + "ListChanged";
+    /** The name of the {@link AdvantageModifier}. */
+    protected              String                    mName;
+    /** The page reference for the {@link AdvantageModifier}. */
+    protected              String                    mReference;
+    /** The cost type of the {@link AdvantageModifier}. */
+    protected              AdvantageModifierCostType mCostType;
+    private                int                       mCost;
+    private                double                    mCostMultiplier;
+    private                int                       mLevels;
+    private                Affects                   mAffects;
+    private                boolean                   mEnabled;
+    private                boolean                   mReadOnly;
 
     /**
-     * Creates a new {@link Modifier}.
+     * Creates a new {@link AdvantageModifier}.
      *
      * @param file  The {@link DataFile} to use.
-     * @param other Another {@link Modifier} to clone.
+     * @param other Another {@link AdvantageModifier} to clone.
      */
-    public Modifier(DataFile file, Modifier other) {
+    public AdvantageModifier(DataFile file, AdvantageModifier other) {
         super(file, other);
         mName = other.mName;
         mReference = other.mReference;
@@ -93,27 +93,27 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     /**
-     * Creates a new {@link Modifier}.
+     * Creates a new {@link AdvantageModifier}.
      *
      * @param file   The {@link DataFile} to use.
      * @param reader The {@link XMLReader} to use.
      * @param state  The {@link LoadState} to use.
      */
-    public Modifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
+    public AdvantageModifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
         super(file, false);
         load(reader, state);
     }
 
     /**
-     * Creates a new {@link Modifier}.
+     * Creates a new {@link AdvantageModifier}.
      *
      * @param file The {@link DataFile} to use.
      */
-    public Modifier(DataFile file) {
+    public AdvantageModifier(DataFile file) {
         super(file, false);
         mName = I18n.Text("Modifier");
         mReference = "";
-        mCostType = CostType.PERCENTAGE;
+        mCostType = AdvantageModifierCostType.PERCENTAGE;
         mCost = 0;
         mCostMultiplier = 1.0;
         mLevels = 0;
@@ -126,8 +126,8 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Modifier && super.isEquivalentTo(obj)) {
-            Modifier row = (Modifier) obj;
+        if (obj instanceof AdvantageModifier && super.isEquivalentTo(obj)) {
+            AdvantageModifier row = (AdvantageModifier) obj;
             return mEnabled == row.mEnabled && mLevels == row.mLevels && mCost == row.mCost && mCostMultiplier == row.mCostMultiplier && mCostType == row.mCostType && mAffects == row.mAffects && mName.equals(row.mName) && mReference.equals(row.mReference);
         }
         return false;
@@ -169,12 +169,12 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
         return false;
     }
 
-    /** @return Whether this {@link Modifier} has been marked as "read-only". */
+    /** @return Whether this {@link AdvantageModifier} has been marked as "read-only". */
     public boolean isReadOnly() {
         return mReadOnly;
     }
 
-    /** @param readOnly Whether this {@link Modifier} has been marked as "read-only". */
+    /** @param readOnly Whether this {@link AdvantageModifier} has been marked as "read-only". */
     public void setReadOnly(boolean readOnly) {
         mReadOnly = readOnly;
     }
@@ -185,8 +185,8 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     /** @return An exact clone of this modifier. */
-    public Modifier cloneModifier() {
-        return new Modifier(mDataFile, this);
+    public AdvantageModifier cloneModifier() {
+        return new AdvantageModifier(mDataFile, this);
     }
 
     /** @return The total cost modifier. */
@@ -195,7 +195,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     /** @return The costType. */
-    public CostType getCostType() {
+    public AdvantageModifierCostType getCostType() {
         return mCostType;
     }
 
@@ -203,7 +203,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
      * @param costType The value to set for costType.
      * @return Whether it was changed.
      */
-    public boolean setCostType(CostType costType) {
+    public boolean setCostType(AdvantageModifierCostType costType) {
         if (costType != mCostType) {
             mCostType = costType;
             notifySingle(ID_COST_MODIFIER);
@@ -269,9 +269,9 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
         return false;
     }
 
-    /** @return {@code true} if this {@link Modifier} has levels. */
+    /** @return {@code true} if this {@link AdvantageModifier} has levels. */
     public boolean hasLevels() {
-        return mCostType == CostType.PERCENTAGE && mLevels > 0;
+        return mCostType == AdvantageModifierCostType.PERCENTAGE && mLevels > 0;
     }
 
     @Override
@@ -283,8 +283,8 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     @Override
-    public RowEditor<Modifier> createEditor() {
-        return new ModifierEditor(this);
+    public RowEditor<AdvantageModifier> createEditor() {
+        return new AdvantageModifierEditor(this);
     }
 
     @Override
@@ -331,8 +331,8 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
         } else if (TAG_REFERENCE.equals(name)) {
             mReference = reader.readText().replace("\n", " ");
         } else if (TAG_COST.equals(name)) {
-            mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), CostType.values(), CostType.PERCENTAGE);
-            if (mCostType == CostType.MULTIPLIER) {
+            mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), AdvantageModifierCostType.values(), AdvantageModifierCostType.PERCENTAGE);
+            if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
                 mCostMultiplier = reader.readDouble(1.0);
             } else {
                 mCost = reader.readInteger(0);
@@ -350,7 +350,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mName = I18n.Text("Modifier");
-        mCostType = CostType.PERCENTAGE;
+        mCostType = AdvantageModifierCostType.PERCENTAGE;
         mCost = 0;
         mCostMultiplier = 1.0;
         mLevels = 0;
@@ -370,13 +370,13 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     @Override
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         out.simpleTag(TAG_NAME, mName);
-        if (mCostType == CostType.MULTIPLIER) {
+        if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
             out.simpleTagWithAttribute(TAG_COST, mCostMultiplier, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
         } else {
             out.simpleTagWithAttribute(TAG_COST, mCost, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
         }
         out.simpleTagNotZero(TAG_LEVELS, mLevels);
-        if (mCostType != CostType.MULTIPLIER) {
+        if (mCostType != AdvantageModifierCostType.MULTIPLIER) {
             out.simpleTag(TAG_AFFECTS, Enums.toId(mAffects));
         }
         out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
@@ -384,12 +384,12 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     @Override
     public Object getData(Column column) {
-        return ModifierColumnID.values()[column.getID()].getData(this);
+        return AdvantageModifierColumnID.values()[column.getID()].getData(this);
     }
 
     @Override
     public String getDataAsText(Column column) {
-        return ModifierColumnID.values()[column.getID()].getDataAsText(this);
+        return AdvantageModifierColumnID.values()[column.getID()].getDataAsText(this);
     }
 
     @Override
@@ -404,7 +404,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
         return builder.toString();
     }
 
-    /** @return A full description of this {@link Modifier}. */
+    /** @return A full description of this {@link AdvantageModifier}. */
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();
@@ -422,15 +422,15 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
 
     /** @return The formatted cost. */
     public String getCostDescription() {
-        StringBuilder builder  = new StringBuilder();
-        CostType      costType = getCostType();
+        StringBuilder             builder  = new StringBuilder();
+        AdvantageModifierCostType costType = getCostType();
 
         switch (costType) {
         case PERCENTAGE:
         case POINTS:
         default:
             builder.append(Numbers.formatWithForcedSign(getCostModifier()));
-            if (costType == CostType.PERCENTAGE) {
+            if (costType == AdvantageModifierCostType.PERCENTAGE) {
                 builder.append('%');
             }
             String desc = mAffects.getShortTitle();
@@ -500,7 +500,7 @@ public class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     @Override
-    public int compareTo(Modifier other) {
+    public int compareTo(AdvantageModifier other) {
         if (this == other) {
             return 0;
         }

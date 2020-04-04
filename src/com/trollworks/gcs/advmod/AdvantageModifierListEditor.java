@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.modifier;
+package com.trollworks.gcs.advmod;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
@@ -34,8 +34,8 @@ import java.util.List;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-/** Editor for {@link ModifierList}s. */
-public class ModifierListEditor extends ActionPanel implements ActionListener {
+/** Editor for {@link AdvantageModifierList}s. */
+public class AdvantageModifierListEditor extends ActionPanel implements ActionListener {
     private DataFile mOwner;
     private Outline  mOutline;
     IconButton mAddButton;
@@ -43,21 +43,21 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
     /**
      * @param advantage The {@link Advantage} to edit.
-     * @return An instance of {@link ModifierListEditor}.
+     * @return An instance of {@link AdvantageModifierListEditor}.
      */
-    public static ModifierListEditor createEditor(Advantage advantage) {
-        return new ModifierListEditor(advantage);
+    public static AdvantageModifierListEditor createEditor(Advantage advantage) {
+        return new AdvantageModifierListEditor(advantage);
     }
 
     /**
-     * Creates a new {@link ModifierListEditor} editor.
+     * Creates a new {@link AdvantageModifierListEditor} editor.
      *
      * @param owner             The owning row.
-     * @param readOnlyModifiers The list of {@link Modifier}s from parents, which are not to be
-     *                          modified.
-     * @param modifiers         The list of {@link Modifier}s to modify.
+     * @param readOnlyModifiers The list of {@link AdvantageModifier}s from parents, which are not
+     *                          to be modified.
+     * @param modifiers         The list of {@link AdvantageModifier}s to modify.
      */
-    public ModifierListEditor(DataFile owner, List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
+    public AdvantageModifierListEditor(DataFile owner, List<AdvantageModifier> readOnlyModifiers, List<AdvantageModifier> modifiers) {
         super(new BorderLayout());
         mOwner = owner;
         add(createOutline(readOnlyModifiers, modifiers), BorderLayout.CENTER);
@@ -65,15 +65,15 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     }
 
     /**
-     * Creates a new {@link ModifierListEditor}.
+     * Creates a new {@link AdvantageModifierListEditor}.
      *
      * @param advantage Associated advantage
      */
-    public ModifierListEditor(Advantage advantage) {
+    public AdvantageModifierListEditor(Advantage advantage) {
         this(advantage.getDataFile(), advantage.getParent() != null ? ((Advantage) advantage.getParent()).getAllModifiers() : null, advantage.getModifiers());
     }
 
-    /** @return Whether a {@link Modifier} was modified. */
+    /** @return Whether a {@link AdvantageModifier} was modified. */
     public boolean wasModified() {
         return mModified;
     }
@@ -92,7 +92,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
         }
     }
 
-    private Component createOutline(List<Modifier> readOnlyModifiers, List<Modifier> modifiers) {
+    private Component createOutline(List<AdvantageModifier> readOnlyModifiers, List<AdvantageModifier> modifiers) {
         JScrollPane  scroller;
         OutlineModel model;
 
@@ -100,18 +100,18 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
         mOutline = new ModifierOutline();
         model = mOutline.getModel();
-        ModifierColumnID.addColumns(mOutline, true);
+        AdvantageModifierColumnID.addColumns(mOutline, true);
 
         if (readOnlyModifiers != null) {
-            for (Modifier modifier : readOnlyModifiers) {
+            for (AdvantageModifier modifier : readOnlyModifiers) {
                 if (modifier.isEnabled()) {
-                    Modifier romod = modifier.cloneModifier();
+                    AdvantageModifier romod = modifier.cloneModifier();
                     romod.setReadOnly(true);
                     model.addRow(romod);
                 }
             }
         }
-        for (Modifier modifier : modifiers) {
+        for (AdvantageModifier modifier : modifiers) {
             model.addRow(modifier.cloneModifier());
         }
         mOutline.addActionListener(this);
@@ -124,7 +124,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
 
     private void openDetailEditor() {
         List<ListRow> rows = new ArrayList<>();
-        for (Modifier row : new FilteredIterator<>(mOutline.getModel().getSelectionAsList(), Modifier.class)) {
+        for (AdvantageModifier row : new FilteredIterator<>(mOutline.getModel().getSelectionAsList(), AdvantageModifier.class)) {
             if (!row.isReadOnly()) {
                 rows.add(row);
             }
@@ -144,8 +144,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     }
 
     private void addModifier() {
-        Modifier     modifier = new Modifier(mOwner);
-        OutlineModel model    = mOutline.getModel();
+        AdvantageModifier modifier = new AdvantageModifier(mOwner);
+        OutlineModel      model    = mOutline.getModel();
 
         if (mOwner instanceof ListFile) {
             modifier.setEnabled(false);
@@ -161,9 +161,9 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     }
 
     /** @return Modifiers edited by this editor */
-    public List<Modifier> getModifiers() {
-        List<Modifier> modifiers = new ArrayList<>();
-        for (Modifier modifier : new FilteredIterator<>(mOutline.getModel().getRows(), Modifier.class)) {
+    public List<AdvantageModifier> getModifiers() {
+        List<AdvantageModifier> modifiers = new ArrayList<>();
+        for (AdvantageModifier modifier : new FilteredIterator<>(mOutline.getModel().getRows(), AdvantageModifier.class)) {
             if (!modifier.isReadOnly()) {
                 modifiers.add(modifier);
             }
@@ -172,8 +172,8 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
     }
 
     /** @return Modifiers edited by this editor plus inherited Modifiers */
-    public List<Modifier> getAllModifiers() {
-        return new FilteredList<>(mOutline.getModel().getRows(), Modifier.class);
+    public List<AdvantageModifier> getAllModifiers() {
+        return new FilteredList<>(mOutline.getModel().getRows(), AdvantageModifier.class);
     }
 
     @Override
@@ -194,7 +194,7 @@ public class ModifierListEditor extends ActionPanel implements ActionListener {
             OutlineModel model = getModel();
             boolean      can   = mAddButton.isEnabled() && model.hasSelection();
             if (can) {
-                for (Modifier row : new FilteredIterator<>(model.getSelectionAsList(), Modifier.class)) {
+                for (AdvantageModifier row : new FilteredIterator<>(model.getSelectionAsList(), AdvantageModifier.class)) {
                     if (row.isReadOnly()) {
                         return false;
                     }

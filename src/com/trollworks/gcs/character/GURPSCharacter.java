@@ -27,7 +27,7 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
-import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.advmod.AdvantageModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.preferences.DisplayPreferences;
@@ -828,7 +828,7 @@ public class GURPSCharacter extends DataFile {
     @Override
     public void notify(String type, Object data) {
         super.notify(type, data);
-        if (Advantage.ID_POINTS.equals(type) || Advantage.ID_ROUND_COST_DOWN.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_CONTAINER_TYPE.equals(type) || Advantage.ID_LIST_CHANGED.equals(type) || Advantage.ID_CR.equals(type) || Modifier.ID_LIST_CHANGED.equals(type) || Modifier.ID_ENABLED.equals(type)) {
+        if (Advantage.ID_POINTS.equals(type) || Advantage.ID_ROUND_COST_DOWN.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_CONTAINER_TYPE.equals(type) || Advantage.ID_LIST_CHANGED.equals(type) || Advantage.ID_CR.equals(type) || AdvantageModifier.ID_LIST_CHANGED.equals(type) || AdvantageModifier.ID_ENABLED.equals(type)) {
             mNeedAdvantagesPointCalculation = true;
         }
         if (Skill.ID_POINTS.equals(type) || Skill.ID_LIST_CHANGED.equals(type)) {

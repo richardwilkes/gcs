@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.modifier;
+package com.trollworks.gcs.advmod;
 
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.widgets.outline.RowEditor;
@@ -39,8 +39,8 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-/** Editor for {@link Modifier}s. */
-public class ModifierEditor extends RowEditor<Modifier> implements ActionListener, DocumentListener {
+/** Editor for {@link AdvantageModifier}s. */
+public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implements ActionListener, DocumentListener {
     private JTextField        mNameField;
     private JCheckBox         mEnabledField;
     private JTextField        mNotesField;
@@ -55,11 +55,11 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     private int               mLastLevel;
 
     /**
-     * Creates a new {@link ModifierEditor}.
+     * Creates a new {@link AdvantageModifierEditor}.
      *
-     * @param modifier The {@link Modifier} to edit.
+     * @param modifier The {@link AdvantageModifier} to edit.
      */
-    public ModifierEditor(Modifier modifier) {
+    public AdvantageModifierEditor(AdvantageModifier modifier) {
         super(modifier);
 
         JPanel   content = new JPanel(new ColumnLayout(2));
@@ -103,10 +103,10 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= getCostType() == CostType.MULTIPLIER ? mRow.setCostMultiplier(getCostMultiplier()) : mRow.setCost(getCost());
+        modified |= getCostType() == AdvantageModifierCostType.MULTIPLIER ? mRow.setCostMultiplier(getCostMultiplier()) : mRow.setCost(getCost());
         if (hasLevels()) {
             modified |= mRow.setLevels(getLevels());
-            modified |= mRow.setCostType(CostType.PERCENTAGE);
+            modified |= mRow.setCostType(AdvantageModifierCostType.PERCENTAGE);
         } else {
             modified |= mRow.setLevels(0);
             modified |= mRow.setCostType(getCostType());
@@ -212,7 +212,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         }
         String costTitle   = I18n.Text("Cost");
         String costTooltip = I18n.Text("The base cost modifier");
-        mCostField = mRow.getCostType() == CostType.MULTIPLIER ? createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip, 5) : createNumberField(parent, wrapper, costTitle, true, mRow.getCost(), costTooltip, 5);
+        mCostField = mRow.getCostType() == AdvantageModifierCostType.MULTIPLIER ? createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip, 5) : createNumberField(parent, wrapper, costTitle, true, mRow.getCost(), costTooltip, 5);
         createCostType(wrapper);
         mLevelField = createNumberField(wrapper, wrapper, I18n.Text("Levels"), false, mLastLevel, I18n.Text("The number of levels this modifier has"), 3);
         mCostModifierField = createNumberField(wrapper, wrapper, I18n.Text("Total"), true, 0, I18n.Text("The cost modifier's total value"), 9);
@@ -236,9 +236,9 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
     }
 
     private void createCostType(Container parent) {
-        CostType[] types  = CostType.values();
-        Object[]   values = new Object[types.length + 1];
-        values[0] = MessageFormat.format(I18n.Text("{0} Per Level"), CostType.PERCENTAGE.toString());
+        AdvantageModifierCostType[] types  = AdvantageModifierCostType.values();
+        Object[]                    values = new Object[types.length + 1];
+        values[0] = MessageFormat.format(I18n.Text("{0} Per Level"), AdvantageModifierCostType.PERCENTAGE.toString());
         System.arraycopy(types, 0, values, 1, types.length);
         mCostType = createComboBox(parent, values, mRow.hasLevels() ? values[0] : mRow.getCostType());
     }
@@ -259,7 +259,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
 
     @SuppressWarnings("unused")
     private void updateCostField() {
-        if (getCostType() == CostType.MULTIPLIER) {
+        if (getCostType() == AdvantageModifierCostType.MULTIPLIER) {
             new NumberFilter(mCostField, true, false, true, 5);
             mCostField.setText(Numbers.format(Math.abs(Numbers.extractDouble(mCostField.getText(), 0, true))));
         } else {
@@ -274,7 +274,7 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         if (hasLevels()) {
             mCostModifierField.setText(Numbers.formatWithForcedSign((long) getCost() * getLevels()) + "%");
         } else {
-            CostType costType = getCostType();
+            AdvantageModifierCostType costType = getCostType();
             switch (costType) {
             case PERCENTAGE:
             default:
@@ -293,12 +293,12 @@ public class ModifierEditor extends RowEditor<Modifier> implements ActionListene
         mAffects.setEnabled(mIsEditable && enabled);
     }
 
-    private CostType getCostType() {
+    private AdvantageModifierCostType getCostType() {
         Object obj = mCostType.getSelectedItem();
-        if (!(obj instanceof CostType)) {
-            obj = CostType.PERCENTAGE;
+        if (!(obj instanceof AdvantageModifierCostType)) {
+            obj = AdvantageModifierCostType.PERCENTAGE;
         }
-        return (CostType) obj;
+        return (AdvantageModifierCostType) obj;
     }
 
     private int getCost() {

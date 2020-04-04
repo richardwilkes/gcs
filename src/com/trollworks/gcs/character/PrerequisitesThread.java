@@ -16,7 +16,7 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
-import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.advmod.AdvantageModifier;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
@@ -181,7 +181,7 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
                     processFeature(map, 0, bonus);
                     bonus.setParent(row);
                 }
-                for (Modifier modifier : advantage.getModifiers()) {
+                for (AdvantageModifier modifier : advantage.getModifiers()) {
                     if (modifier.isEnabled()) {
                         for (Feature feature : modifier.getFeatures()) {
                             processFeature(map, modifier.getLevels(), feature);
