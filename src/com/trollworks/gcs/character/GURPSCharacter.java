@@ -27,7 +27,7 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
-import com.trollworks.gcs.advmod.AdvantageModifier;
+import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.preferences.DisplayPreferences;

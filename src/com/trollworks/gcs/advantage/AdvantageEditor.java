@@ -14,7 +14,7 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
-import com.trollworks.gcs.advmod.AdvantageModifierListEditor;
+import com.trollworks.gcs.modifier.AdvantageModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;

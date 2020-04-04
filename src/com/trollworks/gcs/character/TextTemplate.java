@@ -17,7 +17,7 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
-import com.trollworks.gcs.advmod.AdvantageModifier;
+import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;

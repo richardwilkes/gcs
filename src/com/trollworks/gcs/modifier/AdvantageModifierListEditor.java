@@ -1,15 +1,15 @@
 /*
  * Copyright (c) 1998-2020 by Richard A. Wilkes. All rights reserved.
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, version 2.0. If a copy of the MPL was not distributed with
- * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, version 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
  *
- * This Source Code Form is "Incompatible With Secondary Licenses", as
- * defined by the Mozilla Public License, version 2.0.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the
+ * Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.advmod;
+package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
@@ -29,6 +29,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JScrollPane;
@@ -187,6 +188,24 @@ public class AdvantageModifierListEditor extends ActionPanel implements ActionLi
             setAllowColumnDrag(false);
             setAllowColumnResize(false);
             setAllowRowDrag(false);
+        }
+
+        @Override
+        public void keyPressed(KeyEvent event) {
+            super.keyPressed(event);
+            if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0 && event.getKeyCode() == KeyEvent.VK_SPACE) {
+                OutlineModel model = getModel();
+                if (mAddButton.isEnabled() && model.hasSelection()) {
+                    for (AdvantageModifier modifier : new FilteredIterator<>(model.getSelectionAsList(), AdvantageModifier.class)) {
+                        if (!modifier.isReadOnly()) {
+                            modifier.setEnabled(!modifier.isEnabled());
+                            mModified = true;
+                        }
+                    }
+                    repaintSelection();
+                }
+                event.consume();
+            }
         }
 
         @Override

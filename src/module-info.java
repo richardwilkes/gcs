@@ -19,7 +19,6 @@ open module com.trollworks.gcs {
     requires transitive org.apache.pdfbox;
 
     exports com.trollworks.gcs.advantage;
-    exports com.trollworks.gcs.advmod;
     exports com.trollworks.gcs.app;
     exports com.trollworks.gcs.character;
     exports com.trollworks.gcs.character.names;
@@ -32,6 +31,7 @@ open module com.trollworks.gcs {
     exports com.trollworks.gcs.menu.edit;
     exports com.trollworks.gcs.menu.file;
     exports com.trollworks.gcs.menu.item;
+    exports com.trollworks.gcs.modifier;
     exports com.trollworks.gcs.notes;
     exports com.trollworks.gcs.page;
     exports com.trollworks.gcs.pdfview;

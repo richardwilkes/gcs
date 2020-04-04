@@ -14,7 +14,7 @@ package com.trollworks.gcs.widgets.outline;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
-import com.trollworks.gcs.advmod.AdvantageModifierEnabler;
+import com.trollworks.gcs.modifier.AdvantageModifierEnabler;
 import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
