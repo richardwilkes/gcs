@@ -18,6 +18,7 @@ import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
@@ -1323,7 +1324,7 @@ public class TextTemplate {
                 break;
             case KEY_COST:
                 if (equipment != null) {
-                    writeEncodedText(out, Numbers.format(equipment.getValue()));
+                    writeEncodedText(out, Numbers.format(equipment.getAdjustedValue()));
                 }
                 break;
             case KEY_LEGALITY_CLASS:
@@ -1672,7 +1673,7 @@ public class TextTemplate {
                                     writeEncodedText(out, Numbers.format(equipment.getQuantity()));
                                     break;
                                 case KEY_COST:
-                                    writeEncodedText(out, Numbers.format(equipment.getValue()));
+                                    writeEncodedText(out, Numbers.format(equipment.getAdjustedValue()));
                                     break;
                                 case KEY_WEIGHT:
                                     writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getWeight()));
@@ -1709,7 +1710,14 @@ public class TextTemplate {
                                     }
                                     break;
                                 default:
-                                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
+                                        EquipmentModifier m = equipment.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
+                                        if (m != null) {
+                                            writeEncodedText(out, m.getNotes());
+                                        }
+                                    } else {
+                                        writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    }
                                     break;
                                 }
                             }

@@ -279,7 +279,6 @@ public class AdvantageModifier extends Modifier {
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();
-
         builder.append(toString());
         if (!modNote.isEmpty()) {
             builder.append(" (");

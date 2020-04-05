@@ -23,8 +23,8 @@ import com.trollworks.toolkit.utility.I18n;
 
 import javax.swing.SwingConstants;
 
-/** AdvantageModifier Columns */
-public enum AdvantageModifierColumnID {
+/** EquipmentModifier Columns */
+public enum EquipmentModifierColumnID {
     /** The enabled/disabled column. */
     ENABLED {
         @Override
@@ -39,11 +39,14 @@ public enum AdvantageModifierColumnID {
 
         @Override
         public Cell getCell(boolean forEditor) {
-            return new ModifierCheckCell(forEditor);
+            if (forEditor) {
+                return new TextCell(SwingConstants.CENTER, false);
+            }
+            return new ListTextCell(SwingConstants.CENTER, false);
         }
 
         @Override
-        public String getDataAsText(AdvantageModifier modifier) {
+        public String getDataAsText(EquipmentModifier modifier) {
             return modifier.isEnabled() ? "\u2713" : "";
         }
     },
@@ -65,7 +68,7 @@ public enum AdvantageModifierColumnID {
         }
 
         @Override
-        public String getDataAsText(AdvantageModifier modifier) {
+        public String getDataAsText(EquipmentModifier modifier) {
             StringBuilder builder = new StringBuilder();
             String        notes   = modifier.getNotes();
             builder.append(modifier.toString());
@@ -98,7 +101,7 @@ public enum AdvantageModifierColumnID {
         }
 
         @Override
-        public String getDataAsText(AdvantageModifier modifier) {
+        public String getDataAsText(EquipmentModifier modifier) {
             return modifier.getCostDescription();
         }
     },
@@ -124,24 +127,24 @@ public enum AdvantageModifierColumnID {
         }
 
         @Override
-        public String getDataAsText(AdvantageModifier modifier) {
+        public String getDataAsText(EquipmentModifier modifier) {
             return modifier.getReference();
         }
     };
 
     /**
-     * @param modifier The {@link AdvantageModifier} to get the data from.
+     * @param modifier The {@link EquipmentModifier} to get the data from.
      * @return An object representing the data for this column.
      */
-    public Object getData(AdvantageModifier modifier) {
+    public Object getData(EquipmentModifier modifier) {
         return getDataAsText(modifier);
     }
 
     /**
-     * @param modifier The {@link AdvantageModifier} to get the data from.
+     * @param modifier The {@link EquipmentModifier} to get the data from.
      * @return Text representing the data for this column.
      */
-    public abstract String getDataAsText(AdvantageModifier modifier);
+    public abstract String getDataAsText(EquipmentModifier modifier);
 
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
@@ -166,7 +169,7 @@ public enum AdvantageModifierColumnID {
      */
     public static void addColumns(Outline outline, boolean forEditor) {
         OutlineModel model = outline.getModel();
-        for (AdvantageModifierColumnID one : values()) {
+        for (EquipmentModifierColumnID one : values()) {
             if (one.shouldDisplay()) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell(forEditor));
                 if (!forEditor) {

@@ -22,22 +22,22 @@ import com.trollworks.toolkit.utility.FileType;
 
 import java.io.IOException;
 
-/** Data Object to hold several {@link AdvantageModifier}s */
-public class AdvantageModifierList extends ListFile {
+/** Data Object to hold several {@link EquipmentModifier}s */
+public class EquipmentModifierList extends ListFile {
     private static final int    CURRENT_VERSION = 1;
-    /** The XML tag for advantage modifier lists. */
-    public static final  String TAG_ROOT        = "modifier_list";
+    /** The XML tag for equipment modifier lists. */
+    public static final  String TAG_ROOT        = "eqp_modifier_list";
 
-    /** Creates new {@link AdvantageModifierList}. */
-    public AdvantageModifierList() {
+    /** Creates new {@link EquipmentModifierList}. */
+    public EquipmentModifierList() {
     }
 
     /**
-     * Creates a new {@link AdvantageModifierList}.
+     * Creates a new {@link EquipmentModifierList}.
      *
-     * @param modifiers The {@link AdvantageModifierList} to clone.
+     * @param modifiers The {@link EquipmentModifierList} to clone.
      */
-    public AdvantageModifierList(AdvantageModifierList modifiers) {
+    public EquipmentModifierList(EquipmentModifierList modifiers) {
         this();
         for (Row Row : modifiers.getModel().getRows()) {
             getModel().getRows().add(Row);
@@ -52,8 +52,8 @@ public class AdvantageModifierList extends ListFile {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
 
-                if (AdvantageModifier.TAG_MODIFIER.equals(name)) {
-                    model.addRow(new AdvantageModifier(this, reader, state), true);
+                if (EquipmentModifier.TAG_MODIFIER.equals(name)) {
+                    model.addRow(new EquipmentModifier(this, reader, state), true);
                 } else {
                     reader.skipTag(name);
                 }

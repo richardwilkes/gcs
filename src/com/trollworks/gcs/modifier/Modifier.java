@@ -56,6 +56,9 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier> {
         mEnabled = true;
     }
 
+    /** @return An exact clone of this modifier. */
+    public abstract Modifier cloneModifier();
+
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
@@ -105,7 +108,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier> {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Enhancement/Limitation");
+        return I18n.Text("Modifier");
     }
 
     @Override

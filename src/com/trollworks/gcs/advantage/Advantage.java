@@ -17,6 +17,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -27,6 +28,7 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.gcs.widgets.outline.Switchable;
 import com.trollworks.toolkit.collections.FilteredIterator;
+import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -981,9 +983,10 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
      * @param modifiers The value to set for modifiers.
      * @return {@code true} if modifiers changed
      */
-    public boolean setModifiers(List<AdvantageModifier> modifiers) {
-        if (!mModifiers.equals(modifiers)) {
-            mModifiers = new ArrayList<>(modifiers);
+    public boolean setModifiers(List<? extends Modifier> modifiers) {
+        ArrayList<AdvantageModifier> in = new FilteredList<>(modifiers, AdvantageModifier.class);
+        if (!mModifiers.equals(in)) {
+            mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
             return true;
         }
@@ -1025,7 +1028,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         if (builder.length() > 0) {
             // Remove the trailing MODIFIER_SEPARATOR
             builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
-            builder.append('.');
         }
         return builder.toString();
     }

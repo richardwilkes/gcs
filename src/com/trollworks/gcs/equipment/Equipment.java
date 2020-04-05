@@ -18,6 +18,8 @@ import com.trollworks.gcs.common.HasSourceReference;
 import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.modifier.EquipmentModifier;
+import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -26,6 +28,7 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.io.xml.XMLReader;
 import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -44,70 +47,73 @@ import java.util.Set;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
-    private static final int               CURRENT_VERSION          = 6;
-    private static final int               EQUIPMENT_SPLIT_VERSION  = 6;
-    private static final String            DEFAULT_LEGALITY_CLASS   = "4";
+    private static final int                     CURRENT_VERSION            = 6;
+    private static final int                     EQUIPMENT_SPLIT_VERSION    = 6;
+    private static final String                  DEFAULT_LEGALITY_CLASS     = "4";
     /** The extension for Equipment lists. */
-    public static final  String            OLD_EQUIPMENT_EXTENSION  = "eqp";
+    public static final  String                  OLD_EQUIPMENT_EXTENSION    = "eqp";
     /** The XML tag used for items. */
-    public static final  String            TAG_EQUIPMENT            = "equipment";
+    public static final  String                  TAG_EQUIPMENT              = "equipment";
     /** The XML tag used for containers. */
-    public static final  String            TAG_EQUIPMENT_CONTAINER  = "equipment_container";
-    private static final String            ATTRIBUTE_EQUIPPED       = "equipped";
-    private static final String            TAG_QUANTITY             = "quantity";
-    private static final String            TAG_USES                 = "uses";
-    private static final String            TAG_MAX_USES             = "max_uses";
-    private static final String            TAG_DESCRIPTION          = "description";
-    private static final String            TAG_TECH_LEVEL           = "tech_level";
-    private static final String            TAG_LEGALITY_CLASS       = "legality_class";
-    private static final String            TAG_VALUE                = "value";
-    private static final String            TAG_WEIGHT               = "weight";
-    private static final String            TAG_REFERENCE            = "reference";
+    public static final  String                  TAG_EQUIPMENT_CONTAINER    = "equipment_container";
+    private static final String                  ATTRIBUTE_EQUIPPED         = "equipped";
+    private static final String                  TAG_QUANTITY               = "quantity";
+    private static final String                  TAG_USES                   = "uses";
+    private static final String                  TAG_MAX_USES               = "max_uses";
+    private static final String                  TAG_DESCRIPTION            = "description";
+    private static final String                  TAG_TECH_LEVEL             = "tech_level";
+    private static final String                  TAG_LEGALITY_CLASS         = "legality_class";
+    private static final String                  TAG_VALUE                  = "value";
+    private static final String                  TAG_WEIGHT                 = "weight";
+    private static final String                  TAG_REFERENCE              = "reference";
     /** The prefix used in front of all IDs for the equipment. */
-    public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "equipment.";
+    public static final  String                  PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "equipment.";
     /** The field ID for equipped/carried/not carried changes. */
-    public static final  String            ID_EQUIPPED              = PREFIX + "Equipped";
+    public static final  String                  ID_EQUIPPED                = PREFIX + "Equipped";
     /** The field ID for quantity changes. */
-    public static final  String            ID_QUANTITY              = PREFIX + "Quantity";
+    public static final  String                  ID_QUANTITY                = PREFIX + "Quantity";
     /** The field ID for uses changes. */
-    public static final  String            ID_USES                  = PREFIX + "Uses";
+    public static final  String                  ID_USES                    = PREFIX + "Uses";
     /** The field ID for max uses changes. */
-    public static final  String            ID_MAX_USES              = PREFIX + "MaxUses";
+    public static final  String                  ID_MAX_USES                = PREFIX + "MaxUses";
     /** The field ID for description changes. */
-    public static final  String            ID_DESCRIPTION           = PREFIX + "Description";
+    public static final  String                  ID_DESCRIPTION             = PREFIX + "Description";
     /** The field ID for tech level changes. */
-    public static final  String            ID_TECH_LEVEL            = PREFIX + "TechLevel";
+    public static final  String                  ID_TECH_LEVEL              = PREFIX + "TechLevel";
     /** The field ID for legality changes. */
-    public static final  String            ID_LEGALITY_CLASS        = PREFIX + "LegalityClass";
+    public static final  String                  ID_LEGALITY_CLASS          = PREFIX + "LegalityClass";
     /** The field ID for value changes. */
-    public static final  String            ID_VALUE                 = PREFIX + "Value";
+    public static final  String                  ID_VALUE                   = PREFIX + "Value";
     /** The field ID for weight changes. */
-    public static final  String            ID_WEIGHT                = PREFIX + "Weight";
+    public static final  String                  ID_WEIGHT                  = PREFIX + "Weight";
     /** The field ID for extended value changes */
-    public static final  String            ID_EXTENDED_VALUE        = PREFIX + "ExtendedValue";
+    public static final  String                  ID_EXTENDED_VALUE          = PREFIX + "ExtendedValue";
     /** The field ID for extended weight changes */
-    public static final  String            ID_EXTENDED_WEIGHT       = PREFIX + "ExtendedWeight";
+    public static final  String                  ID_EXTENDED_WEIGHT         = PREFIX + "ExtendedWeight";
     /** The field ID for page reference changes. */
-    public static final  String            ID_REFERENCE             = PREFIX + "Reference";
+    public static final  String                  ID_REFERENCE               = PREFIX + "Reference";
     /** The field ID for when the categories change. */
-    public static final  String            ID_CATEGORY              = PREFIX + "Category";
+    public static final  String                  ID_CATEGORY                = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final  String            ID_LIST_CHANGED          = PREFIX + "ListChanged";
+    public static final  String                  ID_LIST_CHANGED            = PREFIX + "ListChanged";
     /** The field ID for when the equipment becomes or stops being a weapon. */
-    public static final  String            ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
-    private              boolean           mEquipped;
-    private              int               mQuantity;
-    private              int               mUses;
-    private              int               mMaxUses;
-    private              String            mDescription;
-    private              String            mTechLevel;
-    private              String            mLegalityClass;
-    private              double            mValue;
-    private              WeightValue       mWeight;
-    private              double            mExtendedValue;
-    private              WeightValue       mExtendedWeight;
-    private              String            mReference;
-    private              List<WeaponStats> mWeapons;
+    public static final  String                  ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus";
+    /** The field ID for when the equipment gets Modifiers. */
+    public static final  String                  ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier";
+    private              boolean                 mEquipped;
+    private              int                     mQuantity;
+    private              int                     mUses;
+    private              int                     mMaxUses;
+    private              String                  mDescription;
+    private              String                  mTechLevel;
+    private              String                  mLegalityClass;
+    private              double                  mValue;
+    private              WeightValue             mWeight;
+    private              double                  mExtendedValue;
+    private              WeightValue             mExtendedWeight;
+    private              String                  mReference;
+    private              List<WeaponStats>       mWeapons;
+    private              List<EquipmentModifier> mModifiers;
 
     /**
      * Creates a new equipment.
@@ -126,6 +132,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mWeight = new WeightValue(0, DisplayPreferences.getWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
         mWeapons = new ArrayList<>();
+        mModifiers = new ArrayList<>();
     }
 
     /**
@@ -147,9 +154,6 @@ public class Equipment extends ListRow implements HasSourceReference {
         mLegalityClass = equipment.mLegalityClass;
         mValue = equipment.mValue;
         mWeight = new WeightValue(equipment.mWeight);
-        mExtendedValue = mQuantity * mValue;
-        mExtendedWeight = new WeightValue(mWeight);
-        mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
         mReference = equipment.mReference;
         mWeapons = new ArrayList<>(equipment.mWeapons.size());
         for (WeaponStats weapon : equipment.mWeapons) {
@@ -159,6 +163,13 @@ public class Equipment extends ListRow implements HasSourceReference {
                 mWeapons.add(new RangedWeaponStats(this, (RangedWeaponStats) weapon));
             }
         }
+        mModifiers = new ArrayList<>(equipment.mModifiers.size());
+        for (EquipmentModifier modifier : equipment.mModifiers) {
+            mModifiers.add(new EquipmentModifier(mDataFile, modifier));
+        }
+        mExtendedValue = mQuantity * getAdjustedValue();
+        mExtendedWeight = new WeightValue(mWeight);
+        mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
         if (deep) {
             int count = equipment.getChildCount();
             for (int i = 0; i < count; i++) {
@@ -187,7 +198,9 @@ public class Equipment extends ListRow implements HasSourceReference {
         if (obj instanceof Equipment && super.isEquivalentTo(obj)) {
             Equipment row = (Equipment) obj;
             if (mQuantity == row.mQuantity && mUses == row.mUses && mMaxUses == row.mMaxUses && mValue == row.mValue && mEquipped == row.mEquipped && mWeight.equals(row.mWeight) && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
-                return mWeapons.equals(row.mWeapons);
+                if (mWeapons.equals(row.mWeapons)) {
+                    return mModifiers.equals(row.mModifiers);
+                }
             }
         }
         return false;
@@ -232,6 +245,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mValue = 0.0;
         mWeight.setValue(0.0);
         mWeapons = new ArrayList<>();
+        mModifiers = new ArrayList<>();
     }
 
     @Override
@@ -268,6 +282,8 @@ public class Equipment extends ListRow implements HasSourceReference {
             mMaxUses = reader.readInteger(0);
         } else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
             addChild(new Equipment(mDataFile, reader, state));
+        } else if (EquipmentModifier.TAG_MODIFIER.equals(name)) {
+            mModifiers.add(new EquipmentModifier(getDataFile(), reader, state));
         } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
             mWeapons.add(new MeleeWeaponStats(this, reader));
         } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
@@ -322,6 +338,9 @@ public class Equipment extends ListRow implements HasSourceReference {
         out.simpleTagNotZero(TAG_MAX_USES, mMaxUses);
         for (WeaponStats weapon : mWeapons) {
             weapon.save(out);
+        }
+        for (EquipmentModifier modifier : mModifiers) {
+            modifier.save(out, forUndo);
         }
     }
 
@@ -478,6 +497,63 @@ public class Equipment extends ListRow implements HasSourceReference {
         return false;
     }
 
+    /** @return The value after any cost adjustments. */
+    public double getAdjustedValue() {
+        return getValueAdjustedForModifiers(mValue, getModifiers());
+    }
+
+    public static double getValueAdjustedForModifiers(double value, List<EquipmentModifier> modifiers) {
+        double baseCostMultiplier      = 0;
+        int    baseCostMultiplierCount = 0;
+        double costFactor              = 0;
+        double finalCostMultiplier     = 0;
+        double finalCostAddition       = 0;
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled()) {
+                double amt = modifier.getCostAmount();
+                switch (modifier.getCostType()) {
+                case BASE_COST_ADDITION:
+                    value += amt;
+                    break;
+                case BASE_COST_MULTIPLIER:
+                    baseCostMultiplier += amt;
+                    baseCostMultiplierCount++;
+                    break;
+                case COST_FACTOR:
+                    costFactor += amt;
+                    break;
+                case FINAL_COST_MULTIPLIER:
+                    finalCostMultiplier += amt;
+                    break;
+                case FINAL_COST_ADDITION:
+                    finalCostAddition += amt;
+                    break;
+                }
+            }
+        }
+        if (baseCostMultiplier != 0 && costFactor != 0) {
+            // Has a mix of base cost multipliers and cost factors... so we need to convert the base
+            // cost multipliers into cost factors.
+            costFactor += baseCostMultiplier - baseCostMultiplierCount;
+        }
+        if (costFactor != 0) {
+            if (costFactor < -0.8) {
+                costFactor = -0.8;
+            }
+            value *= 1 + costFactor;
+        } else if (baseCostMultiplier != 0) {
+            if (baseCostMultiplier < 0.2) {
+                baseCostMultiplier = 0.2;
+            }
+            value *= baseCostMultiplier;
+        }
+        if (finalCostMultiplier != 0) {
+            value *= finalCostMultiplier;
+        }
+        value += finalCostAddition;
+        return value;
+    }
+
     /** @return The value. */
     public double getValue() {
         return mValue;
@@ -586,7 +662,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     private boolean updateExtendedValue(boolean okToNotify) {
         double savedValue = mExtendedValue;
         int    count      = getChildCount();
-        mExtendedValue = mQuantity * mValue;
+        mExtendedValue = mQuantity * getAdjustedValue();
         for (int i = 0; i < count; i++) {
             Equipment child = (Equipment) getChild(i);
             mExtendedValue += child.mExtendedValue;
@@ -718,6 +794,9 @@ public class Equipment extends ListRow implements HasSourceReference {
                 one.fillWithNameableKeys(set);
             }
         }
+        for (EquipmentModifier modifier : mModifiers) {
+            modifier.fillWithNameableKeys(set);
+        }
     }
 
     @Override
@@ -729,6 +808,68 @@ public class Equipment extends ListRow implements HasSourceReference {
                 one.applyNameableKeys(map);
             }
         }
+        for (EquipmentModifier modifier : mModifiers) {
+            modifier.applyNameableKeys(map);
+        }
+    }
+
+    /** @return The modifiers. */
+    public List<EquipmentModifier> getModifiers() {
+        return Collections.unmodifiableList(mModifiers);
+    }
+
+    /** @return The modifiers including those inherited from parent row. */
+    public List<EquipmentModifier> getAllModifiers() {
+        List<EquipmentModifier> allModifiers = new ArrayList<>(mModifiers);
+        if (getParent() != null) {
+            allModifiers.addAll(((Equipment) getParent()).getAllModifiers());
+        }
+        return Collections.unmodifiableList(allModifiers);
+    }
+
+    /**
+     * @param modifiers The value to set for modifiers.
+     * @return {@code true} if modifiers changed
+     */
+    public boolean setModifiers(List<? extends Modifier> modifiers) {
+        ArrayList<EquipmentModifier> in = new FilteredList<>(modifiers, EquipmentModifier.class);
+        if (!mModifiers.equals(in)) {
+            mModifiers = in;
+            notifySingle(ID_MODIFIER_STATUS_CHANGED);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param name The name to match against. Case-insensitive.
+     * @return The first modifier that matches the name.
+     */
+    public EquipmentModifier getActiveModifierFor(String name) {
+        for (EquipmentModifier m : getModifiers()) {
+            if (m.isEnabled() && m.getName().equalsIgnoreCase(name)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    private static final String MODIFIER_SEPARATOR = "; ";
+
+    @Override
+    public String getModifierNotes() {
+        StringBuilder builder = new StringBuilder();
+        for (EquipmentModifier modifier : mModifiers) {
+            if (modifier.isEnabled()) {
+                builder.append(modifier.getFullDescription());
+                builder.append(MODIFIER_SEPARATOR);
+            }
+        }
+        if (builder.length() > 0) {
+            // Remove the trailing MODIFIER_SEPARATOR
+            builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
+        }
+        return builder.toString();
     }
 
     @Override

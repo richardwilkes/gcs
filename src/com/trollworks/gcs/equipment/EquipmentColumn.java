@@ -111,6 +111,29 @@ public enum EquipmentColumn {
         }
 
         @Override
+        public String getToolTip(Equipment equipment) {
+            StringBuilder builder = new StringBuilder();
+            if (DisplayPreferences.showModifiersAsTooltip()) {
+                String desc = equipment.getModifierNotes();
+                builder.append(desc);
+                if (!desc.isEmpty()) {
+                    builder.append('\n');
+                }
+            }
+            if (DisplayPreferences.showNotesAsTooltip()) {
+                String desc = equipment.getNotes();
+                builder.append(desc);
+                if (!desc.isEmpty()) {
+                    builder.append('\n');
+                }
+            }
+            if (builder.length() > 0) {
+                builder.setLength(builder.length() - 1);   // Remove the last '\n'
+            }
+            return builder.length() == 0 ? null : builder.toString();
+        }
+
+        @Override
         public String toString(DataFile dataFile, boolean carried) {
             if (dataFile instanceof GURPSCharacter) {
                 GURPSCharacter character = (GURPSCharacter) dataFile;
@@ -143,12 +166,20 @@ public enum EquipmentColumn {
         @Override
         public String getDataAsText(Equipment equipment) {
             StringBuilder builder = new StringBuilder();
-            String        notes   = equipment.getNotes();
-
-            builder.append(equipment.toString());
-            if (!notes.isEmpty()) {
-                builder.append(" - ");
-                builder.append(notes);
+            builder.append(equipment);
+            if (DisplayPreferences.showModifiersInDisplay()) {
+                String desc = equipment.getModifierNotes();
+                if (!desc.isEmpty()) {
+                    builder.append(" - ");
+                }
+                builder.append(desc);
+            }
+            if (DisplayPreferences.showNotesInDisplay()) {
+                String desc = equipment.getNotes();
+                if (!desc.isEmpty()) {
+                    builder.append(" - ");
+                }
+                builder.append(desc);
             }
             return builder.toString();
         }
@@ -263,12 +294,12 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return Double.valueOf(equipment.getValue());
+            return Double.valueOf(equipment.getAdjustedValue());
         }
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return Numbers.format(equipment.getValue());
+            return Numbers.format(equipment.getAdjustedValue());
         }
     },
     /** The weight. */

@@ -14,12 +14,14 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.app.GCSImages;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
+import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.AdvantageModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.RetinaIcon;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.Alignment;
@@ -547,7 +549,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         if (mModifiers == null || !enabled()) {
             return 0;
         }
-        return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, allowHalfLevels() && getHalfLevel(), getPointsPerLevel(), getCR(), mModifiers.getAllModifiers(), shouldRoundCostDown());
+        List<AdvantageModifier> modifiers = new FilteredList<>(mModifiers.getAllModifiers(), AdvantageModifier.class);
+        return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, allowHalfLevels() && getHalfLevel(), getPointsPerLevel(), getCR(), modifiers, shouldRoundCostDown());
     }
 
     private void updatePoints() {

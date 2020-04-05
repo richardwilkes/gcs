@@ -12,11 +12,14 @@
 package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.feature.FeaturesPanel;
+import com.trollworks.gcs.modifier.EquipmentModifier;
+import com.trollworks.gcs.modifier.EquipmentModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.RowEditor;
+import com.trollworks.toolkit.collections.FilteredList;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.ui.widget.LinkedLabel;
@@ -47,28 +50,29 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
-    private JCheckBox          mEquippedCheckBox;
-    private JTextField         mDescriptionField;
-    private JTextField         mTechLevelField;
-    private JTextField         mLegalityClassField;
-    private JTextField         mQtyField;
-    private JTextField         mUsesField;
-    private JTextField         mMaxUsesField;
-    private JTextField         mValueField;
-    private JTextField         mExtValueField;
-    private JTextField         mWeightField;
-    private JTextField         mExtWeightField;
-    private JTextField         mNotesField;
-    private JTextField         mCategoriesField;
-    private JTextField         mReferenceField;
-    private JTabbedPane        mTabPanel;
-    private PrereqsPanel       mPrereqs;
-    private FeaturesPanel      mFeatures;
-    private MeleeWeaponEditor  mMeleeWeapons;
-    private RangedWeaponEditor mRangedWeapons;
-    private double             mContainedValue;
-    private WeightValue        mContainedWeight;
-    private boolean            mCarried;
+    private JCheckBox                   mEquippedCheckBox;
+    private JTextField                  mDescriptionField;
+    private JTextField                  mTechLevelField;
+    private JTextField                  mLegalityClassField;
+    private JTextField                  mQtyField;
+    private JTextField                  mUsesField;
+    private JTextField                  mMaxUsesField;
+    private JTextField                  mValueField;
+    private JTextField                  mExtValueField;
+    private JTextField                  mWeightField;
+    private JTextField                  mExtWeightField;
+    private JTextField                  mNotesField;
+    private JTextField                  mCategoriesField;
+    private JTextField                  mReferenceField;
+    private JTabbedPane                 mTabPanel;
+    private PrereqsPanel                mPrereqs;
+    private FeaturesPanel               mFeatures;
+    private MeleeWeaponEditor           mMeleeWeapons;
+    private RangedWeaponEditor          mRangedWeapons;
+    private EquipmentModifierListEditor mModifiers;
+    private double                      mContainedValue;
+    private WeightValue                 mContainedWeight;
+    private boolean                     mCarried;
 
     /**
      * Creates a new {@link Equipment} editor.
@@ -109,6 +113,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         add(content);
 
         mTabPanel = new JTabbedPane();
+        mModifiers = EquipmentModifierListEditor.createEditor(mRow);
+        mModifiers.addActionListener(this);
         mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
         mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
         mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
@@ -119,9 +125,11 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mTabPanel.addTab(panel.getName(), panel);
         panel = embedEditor(mFeatures);
         mTabPanel.addTab(panel.getName(), panel);
+        mTabPanel.addTab(mModifiers.getName(), mModifiers);
         if (!mIsEditable) {
             UIUtilities.disableControls(mMeleeWeapons);
             UIUtilities.disableControls(mRangedWeapons);
+            UIUtilities.disableControls(mModifiers);
         }
         UIUtilities.selectTab(mTabPanel, getLastTabName());
         add(mTabPanel);
@@ -156,8 +164,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         JPanel    wrapper = new JPanel(new ColumnLayout(4));
         Component first;
 
-        mContainedValue = mRow.getExtendedValue() - mRow.getValue() * mRow.getQuantity();
-        mValueField = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The value of one of these pieces of equipment"), 13);
+        mContainedValue = mRow.getExtendedValue() - mRow.getAdjustedValue() * mRow.getQuantity();
+        mValueField = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The base value of one of these pieces of equipment before cost modifiers"), 13);
         mExtValueField = createNumberField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         first = wrapper.getComponent(1);
         mExtValueField.setEnabled(false);
@@ -285,6 +293,10 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
             list.addAll(mRangedWeapons.getWeapons());
             modified |= mRow.setWeapons(list);
         }
+        if (mModifiers.wasModified()) {
+            modified = true;
+            mRow.setModifiers(mModifiers.getModifiers());
+        }
         return modified;
     }
 
@@ -310,7 +322,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private void valueChanged() {
         int    qty = getQty();
         double value;
-        value = qty < 1 ? 0 : qty * Numbers.extractDouble(mValueField.getText(), 0.0, true) + mContainedValue;
+        value = qty < 1 ? 0 : qty * Equipment.getValueAdjustedForModifiers(Numbers.extractDouble(mValueField.getText(), 0.0, true), new FilteredList<EquipmentModifier>(mModifiers.getAllModifiers(), EquipmentModifier.class)) + mContainedValue;
         mExtValueField.setText(Numbers.format(value));
     }
 
@@ -354,7 +366,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void adjustForChange(Object field) {
-        if (field == mValueField) {
+        if (field == mValueField || field == mModifiers) {
             valueChanged();
         } else if (field == mWeightField) {
             weightChanged();
