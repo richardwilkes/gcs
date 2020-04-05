@@ -672,6 +672,20 @@ public class Equipment extends ListRow implements HasSourceReference {
                 }
             }
         }
+        for (EquipmentModifier modifier : getModifiers()) {
+            if (modifier.isEnabled()) {
+                for (Feature feature : modifier.getFeatures()) {
+                    if (feature instanceof ContainedWeightReduction) {
+                        ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
+                        if (cwr.isPercentage()) {
+                            percentage += cwr.getPercentageReduction();
+                        } else {
+                            reduction.add(cwr.getAbsoluteReduction());
+                        }
+                    }
+                }
+            }
+        }
         if (percentage > 0) {
             if (percentage >= 100) {
                 contained = new WeightValue(0, units);
@@ -861,15 +875,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     /** @return The modifiers. */
     public List<EquipmentModifier> getModifiers() {
         return Collections.unmodifiableList(mModifiers);
-    }
-
-    /** @return The modifiers including those inherited from parent row. */
-    public List<EquipmentModifier> getAllModifiers() {
-        List<EquipmentModifier> allModifiers = new ArrayList<>(mModifiers);
-        if (getParent() != null) {
-            allModifiers.addAll(((Equipment) getParent()).getAllModifiers());
-        }
-        return Collections.unmodifiableList(allModifiers);
     }
 
     /**

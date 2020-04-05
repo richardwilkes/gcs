@@ -15,6 +15,7 @@ import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.toolkit.ui.widget.outline.Outline;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Editor for {@link EquipmentModifierList}s. */
@@ -24,19 +25,17 @@ public class EquipmentModifierListEditor extends ModifierListEditor {
      * @return An instance of {@link EquipmentModifierListEditor}.
      */
     public static EquipmentModifierListEditor createEditor(Equipment equipment) {
-        return new EquipmentModifierListEditor(equipment.getDataFile(), equipment.getParent() != null ? ((Equipment) equipment.getParent()).getAllModifiers() : null, equipment.getModifiers());
+        return new EquipmentModifierListEditor(equipment.getDataFile(), equipment.getModifiers());
     }
 
     /**
      * Creates a new {@link EquipmentModifierListEditor} editor.
      *
      * @param owner             The owning row.
-     * @param readOnlyModifiers The list of {@link EquipmentModifier}s from parents, which are not
-     *                          to be modified.
      * @param modifiers         The list of {@link EquipmentModifier}s to modify.
      */
-    public EquipmentModifierListEditor(DataFile owner, List<EquipmentModifier> readOnlyModifiers, List<EquipmentModifier> modifiers) {
-        super(owner, readOnlyModifiers, modifiers);
+    public EquipmentModifierListEditor(DataFile owner, List<EquipmentModifier> modifiers) {
+        super(owner, new ArrayList<EquipmentModifier>(), modifiers);
     }
 
     @Override

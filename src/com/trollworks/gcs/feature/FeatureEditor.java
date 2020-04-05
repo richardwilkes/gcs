@@ -13,6 +13,7 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -126,7 +127,7 @@ public abstract class FeatureEditor extends EditorPanel {
         choices.add(I18n.Text("Gives a spell level bonus of"));
         choices.add(I18n.Text("Gives a weapon damage bonus of"));
         choices.add(I18n.Text("Reduces the attribute cost of"));
-        if (mRow instanceof Equipment) {
+        if (mRow instanceof Equipment || mRow instanceof EquipmentModifier) {
             choices.add(I18n.Text("Reduces the contained weight by"));
         }
         Class<?> type    = mFeature.getClass();

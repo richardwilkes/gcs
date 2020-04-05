@@ -25,7 +25,6 @@ public class NoFeature extends FeatureEditor {
      */
     public NoFeature(ListRow row) {
         super(row, null);
-
     }
 
     @Override
