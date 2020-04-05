@@ -877,7 +877,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @return {@code true} if modifiers changed
      */
     public boolean setModifiers(List<? extends Modifier> modifiers) {
-        ArrayList<EquipmentModifier> in = new FilteredList<>(modifiers, EquipmentModifier.class);
+        List<EquipmentModifier> in = new FilteredList<>(modifiers, EquipmentModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);

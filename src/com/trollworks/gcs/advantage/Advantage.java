@@ -984,7 +984,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
      * @return {@code true} if modifiers changed
      */
     public boolean setModifiers(List<? extends Modifier> modifiers) {
-        ArrayList<AdvantageModifier> in = new FilteredList<>(modifiers, AdvantageModifier.class);
+        List<AdvantageModifier> in = new FilteredList<>(modifiers, AdvantageModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);

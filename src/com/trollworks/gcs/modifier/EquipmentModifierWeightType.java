@@ -31,5 +31,5 @@ public enum EquipmentModifierWeightType {
         public String toString() {
             return "\u00d7 weight";
         }
-    };
+    }
 }

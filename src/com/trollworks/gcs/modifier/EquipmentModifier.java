@@ -128,7 +128,7 @@ public class EquipmentModifier extends Modifier {
 
     /**
      * @param costType The type of cost modifier to set.
-     * @return <code>true</code> if a change was made.
+     * @return {@code true} if a change was made.
      */
     public boolean setCostAdjType(EquipmentModifierCostType costType) {
         if (costType != mCostType) {
@@ -146,7 +146,7 @@ public class EquipmentModifier extends Modifier {
 
     /**
      * @param costAmount The amount for the cost modifier to set.
-     * @return <code>true</code> if a change was made.
+     * @return {@code true} if a change was made.
      */
     public boolean setCostAdjAmount(double costAmount) {
         if (costAmount != mCostAmount) {
@@ -164,7 +164,7 @@ public class EquipmentModifier extends Modifier {
 
     /**
      * @param weightType The type of weight modifier to set.
-     * @return <code>true</code> if a change was made.
+     * @return {@code true} if a change was made.
      */
     public boolean setWeightAdjType(EquipmentModifierWeightType weightType) {
         if (weightType != mWeightType) {
@@ -177,7 +177,7 @@ public class EquipmentModifier extends Modifier {
 
     /**
      * @return The amount for the weight multiplier. Only valid if
-     *         <code>getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER</code>.
+     *         {@code getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER}.
      */
     public double getWeightAdjMultiplier() {
         return mWeightMultiplier;
@@ -185,8 +185,8 @@ public class EquipmentModifier extends Modifier {
 
     /**
      * @param multiplier The amount for the weight multiplier. Only valid if
-     *                   <code>getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER</code>.
-     * @return <code>true</code> if a change was made.
+     *                   {@code getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER}.
+     * @return {@code true} if a change was made.
      */
     public boolean setWeightAdjMultiplier(double multiplier) {
         if (mWeightType == EquipmentModifierWeightType.MULTIPLIER && multiplier != mWeightMultiplier) {
@@ -199,7 +199,7 @@ public class EquipmentModifier extends Modifier {
 
     /**
      * @return The amount for the weight addition. Only valid if
-     *         <code>getWeightAdjType() == EquipmentModifierWeightType.ADDITION</code>.
+     *         {@code getWeightAdjType() == EquipmentModifierWeightType.ADDITION}.
      */
     public WeightValue getWeightAdjAddition() {
         return mWeightAddition;
@@ -207,8 +207,8 @@ public class EquipmentModifier extends Modifier {
 
     /**
      * @param addition The amount for the weight addition. Only valid if
-     *                   <code>getWeightAdjType() == EquipmentModifierWeightType.ADDITION</code>.
-     * @return <code>true</code> if a change was made.
+     *                   {@code getWeightAdjType() == EquipmentModifierWeightType.ADDITION}.
+     * @return {@code true} if a change was made.
      */
     public boolean setWeightAdjAddition(WeightValue addition) {
         if (mWeightType == EquipmentModifierWeightType.ADDITION && !mWeightAddition.equals(addition)) {
@@ -305,11 +305,7 @@ public class EquipmentModifier extends Modifier {
 
     /** @return The formatted cost adjustment. */
     public String getCostDescription() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(mCostType.isMultiplier() ? Numbers.format(mCostAmount) : Numbers.formatWithForcedSign(mCostAmount));
-        builder.append(' ');
-        builder.append(mCostType);
-        return builder.toString();
+        return (mCostType.isMultiplier() ? Numbers.format(mCostAmount) : Numbers.formatWithForcedSign(mCostAmount)) + " " + mCostType;
     }
 
     /** @return The formatted weight adjustment. */

@@ -13,6 +13,7 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.toolkit.ui.widget.outline.Outline;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class EquipmentModifierListEditor extends ModifierListEditor {
     }
 
     @Override
-    protected void addColumns(ModifierOutline outline) {
+    protected void addColumns(Outline outline) {
         EquipmentModifierColumnID.addColumns(outline, true);
     }
 

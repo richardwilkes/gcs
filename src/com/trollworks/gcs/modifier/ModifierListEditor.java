@@ -66,7 +66,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         }
     }
 
-    protected abstract void addColumns(ModifierOutline outline);
+    protected abstract void addColumns(Outline outline);
 
     private Component createOutline(List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
         JScrollPane  scroller;
@@ -74,7 +74,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
 
         mAddButton = new IconButton(StdImage.ADD, I18n.Text("Add a modifier"), () -> addModifier());
 
-        mOutline = new ModifierOutline(this);
+        mOutline = new ModifierOutline();
         model = mOutline.getModel();
         addColumns(mOutline);
 
@@ -160,14 +160,11 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     }
 
     class ModifierOutline extends Outline {
-        private ModifierListEditor mEditor;
-
-        ModifierOutline(ModifierListEditor editor) {
+        ModifierOutline() {
             super(false);
             setAllowColumnDrag(false);
             setAllowColumnResize(false);
             setAllowRowDrag(false);
-            mEditor = editor;
         }
 
         @Override
@@ -188,7 +185,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
                 }
                 event.consume();
                 if (doNotify) {
-                    mEditor.notifyActionListeners();
+                    ModifierListEditor.this.notifyActionListeners();
                 }
             }
         }
@@ -213,7 +210,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
                 getModel().removeSelection();
                 sizeColumnsToFit();
                 mModified = true;
-                mEditor.notifyActionListeners();
+                ModifierListEditor.this.notifyActionListeners();
             }
         }
     }

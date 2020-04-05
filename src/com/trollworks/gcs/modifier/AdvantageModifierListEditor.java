@@ -13,6 +13,7 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.common.DataFile;
+import com.trollworks.toolkit.ui.widget.outline.Outline;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class AdvantageModifierListEditor extends ModifierListEditor {
     }
 
     @Override
-    protected void addColumns(ModifierListEditor.ModifierOutline outline) {
+    protected void addColumns(Outline outline) {
         AdvantageModifierColumnID.addColumns(outline, true);
     }
 

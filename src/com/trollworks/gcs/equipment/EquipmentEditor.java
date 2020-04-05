@@ -322,13 +322,13 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private void valueChanged() {
         int    qty = getQty();
         double value;
-        value = qty < 1 ? 0 : qty * Equipment.getValueAdjustedForModifiers(Numbers.extractDouble(mValueField.getText(), 0.0, true), new FilteredList<EquipmentModifier>(mModifiers.getAllModifiers(), EquipmentModifier.class)) + mContainedValue;
+        value = qty < 1 ? 0 : qty * Equipment.getValueAdjustedForModifiers(Numbers.extractDouble(mValueField.getText(), 0.0, true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class)) + mContainedValue;
         mExtValueField.setText(Numbers.format(value));
     }
 
     private void weightChanged() {
         int         qty    = getQty();
-        WeightValue weight = Equipment.getWeightAdjustedForModifiers(WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true), new FilteredList<EquipmentModifier>(mModifiers.getAllModifiers(), EquipmentModifier.class));
+        WeightValue weight = Equipment.getWeightAdjustedForModifiers(WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class));
         if (qty > 0) {
             weight.setValue(weight.getValue() * Math.max(qty, 0));
             weight.add(mContainedWeight);

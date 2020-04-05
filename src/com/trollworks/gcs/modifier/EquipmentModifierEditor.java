@@ -312,13 +312,8 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void weightChanged() {
-        switch (getWeightType()) {
-        case ADDITION:
-            break;
-        case MULTIPLIER:
-        default:
-            break;
-        }
+        // Does nothing right now... could potentially try to alter the input field to be suitable
+        // to the data type (double vs WeightValue)
     }
 
     private void costChanged() {
