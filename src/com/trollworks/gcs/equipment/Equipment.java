@@ -168,7 +168,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             mModifiers.add(new EquipmentModifier(mDataFile, modifier));
         }
         mExtendedValue = mQuantity * getAdjustedValue();
-        mExtendedWeight = new WeightValue(mWeight);
+        mExtendedWeight = new WeightValue(getAdjustedWeight());
         mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
         if (deep) {
             int count = equipment.getChildCount();
@@ -502,6 +502,11 @@ public class Equipment extends ListRow implements HasSourceReference {
         return getValueAdjustedForModifiers(mValue, getModifiers());
     }
 
+    /**
+     * @param value The base value to adjust.
+     * @param modifiers The modifiers to apply.
+     * @return The adjusted value.
+     */
     public static double getValueAdjustedForModifiers(double value, List<EquipmentModifier> modifiers) {
         double baseCostMultiplier      = 0;
         int    baseCostMultiplierCount = 0;
@@ -510,8 +515,8 @@ public class Equipment extends ListRow implements HasSourceReference {
         double finalCostAddition       = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled()) {
-                double amt = modifier.getCostAmount();
-                switch (modifier.getCostType()) {
+                double amt = modifier.getCostAdjAmount();
+                switch (modifier.getCostAdjType()) {
                 case BASE_COST_ADDITION:
                     value += amt;
                     break;
@@ -551,6 +556,9 @@ public class Equipment extends ListRow implements HasSourceReference {
             value *= finalCostMultiplier;
         }
         value += finalCostAddition;
+        if (value < 0) {
+            value = 0;
+        }
         return value;
     }
 
@@ -580,6 +588,43 @@ public class Equipment extends ListRow implements HasSourceReference {
         return mExtendedValue;
     }
 
+    /** @return The weight after any adjustments. */
+    public WeightValue getAdjustedWeight() {
+        return getWeightAdjustedForModifiers(mWeight, getModifiers());
+    }
+
+    /**
+     * @param value The base value to adjust.
+     * @param modifiers The modifiers to apply.
+     * @return The adjusted value.
+     */
+    public static WeightValue getWeightAdjustedForModifiers(WeightValue value, List<EquipmentModifier> modifiers) {
+        value      = new WeightValue(value);
+        double    multiplier = 0;
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled()) {
+                switch (modifier.getWeightAdjType()) {
+                case ADDITION:
+                    value.add(modifier.getWeightAdjAddition());
+                    break;
+                case MULTIPLIER:
+                    multiplier += modifier.getWeightAdjMultiplier();
+                    break;
+                }
+            }
+        }
+        if (multiplier != 0) {
+            if (multiplier < 0.2) {
+                multiplier = 0.2;
+            }
+            value.setValue(value.getValue() * multiplier);
+        }
+        if (value.getValue() < 0) {
+            value.setValue(0);
+        }
+        return value;
+    }
+
     /** @return The weight. */
     public WeightValue getWeight() {
         return mWeight;
@@ -605,7 +650,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         WeightValue saved = mExtendedWeight;
         int         count = getChildCount();
         WeightUnits units = mWeight.getUnits();
-        mExtendedWeight = new WeightValue(mWeight.getValue() * mQuantity, units);
+        mExtendedWeight = new WeightValue(getAdjustedWeight().getValue() * mQuantity, units);
         WeightValue contained = new WeightValue(0, units);
         for (int i = 0; i < count; i++) {
             Equipment   one    = (Equipment) getChild(i);

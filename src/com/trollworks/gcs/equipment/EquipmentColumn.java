@@ -321,12 +321,12 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return equipment.getWeight();
+            return equipment.getAdjustedWeight();
         }
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return getDisplayWeight(equipment.getWeight());
+            return getDisplayWeight(equipment.getAdjustedWeight());
         }
     },
     /** The value. */

@@ -77,16 +77,16 @@ public enum EquipmentModifierColumnID {
             return builder.toString();
         }
     },
-    /** The total cost modifier. */
-    COST_MODIFIER_TOTAL {
+    /** The cost adjustment. */
+    COST_ADJUSTMENT {
         @Override
         public String toString() {
-            return I18n.Text("Cost Modifier");
+            return I18n.Text("Cost Adjustment");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The cost modifier for this modifier");
+            return I18n.Text("The cost adjustment for this modifier");
         }
 
         @Override
@@ -102,7 +102,31 @@ public enum EquipmentModifierColumnID {
             return modifier.getCostDescription();
         }
     },
+    /** The weight adjustment. */
+    WEIGHT_ADJUSTMENT {
+        @Override
+        public String toString() {
+            return I18n.Text("Weight Adjustment");
+        }
 
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The weight adjustment for this modifier");
+        }
+
+        @Override
+        public Cell getCell(boolean forEditor) {
+            if (forEditor) {
+                return new TextCell(SwingConstants.LEFT, false);
+            }
+            return new ListTextCell(SwingConstants.LEFT, false);
+        }
+
+        @Override
+        public String getDataAsText(EquipmentModifier modifier) {
+            return modifier.getWeightDescription();
+        }
+    },
     /** The page reference. */
     REFERENCE {
         @Override

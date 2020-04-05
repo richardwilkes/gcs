@@ -13,6 +13,7 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.io.xml.XMLReader;
@@ -21,27 +22,37 @@ import com.trollworks.toolkit.ui.widget.outline.Column;
 import com.trollworks.toolkit.utility.notification.Notifier;
 import com.trollworks.toolkit.utility.text.Enums;
 import com.trollworks.toolkit.utility.text.Numbers;
+import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
-    private static final int                       CURRENT_VERSION     = 1;
+    private static final int                         CURRENT_VERSION       = 1;
     /** The root tag. */
-    public static final  String                    TAG_MODIFIER        = "eqp_modifier";
+    public static final  String                      TAG_MODIFIER          = "eqp_modifier";
     /** The attribute for the cost. */
-    public static final  String                    TAG_COST            = "cost";
+    public static final  String                      TAG_COST_ADJ          = "cost";
     /** The attribute for the cost type. */
-    public static final  String                    ATTRIBUTE_COST_TYPE = "cost_type";
+    public static final  String                      ATTRIBUTE_COST_TYPE   = "cost_type";
+    /** The attribute for the weight. */
+    public static final  String                      TAG_WEIGHT_ADJ        = "weight";
+    /** The attribute for the weight type. */
+    public static final  String                      ATTRIBUTE_WEIGHT_TYPE = "weight_type";
     /** The notification prefix used. */
-    public static final  String                    NOTIFICATION_PREFIX = "eqpmod" + Notifier.SEPARATOR;
+    public static final  String                      NOTIFICATION_PREFIX   = "eqpmod" + Notifier.SEPARATOR;
     /** The notification ID for enabled changes. */
-    public static final  String                    ID_ENABLED          = NOTIFICATION_PREFIX + ATTRIBUTE_ENABLED;
+    public static final  String                      ID_ENABLED            = NOTIFICATION_PREFIX + ATTRIBUTE_ENABLED;
     /** The notification ID for list changes. */
-    public static final  String                    ID_LIST_CHANGED     = NOTIFICATION_PREFIX + "list_changed";
-    /** The notification ID for cost changes. */
-    public static final  String                    ID_COST             = NOTIFICATION_PREFIX + TAG_COST;
-    private              EquipmentModifierCostType mCostType;
-    private              double                    mCostAmount;
+    public static final  String                      ID_LIST_CHANGED       = NOTIFICATION_PREFIX + "list_changed";
+    /** The notification ID for cost adjustment changes. */
+    public static final  String                      ID_COST_ADJ           = NOTIFICATION_PREFIX + TAG_COST_ADJ;
+    /** The notification ID for weight adjustment changes. */
+    public static final  String                      ID_WEIGHT_ADJ         = NOTIFICATION_PREFIX + TAG_WEIGHT_ADJ;
+    private              EquipmentModifierCostType   mCostType;
+    private              double                      mCostAmount;
+    private              EquipmentModifierWeightType mWeightType;
+    private              double                      mWeightMultiplier;
+    private              WeightValue                 mWeightAddition;
 
     /**
      * Creates a new {@link EquipmentModifier}.
@@ -53,6 +64,9 @@ public class EquipmentModifier extends Modifier {
         super(file, other);
         mCostType = other.mCostType;
         mCostAmount = other.mCostAmount;
+        mWeightType = other.mWeightType;
+        mWeightMultiplier = other.mWeightMultiplier;
+        mWeightAddition = new WeightValue(other.mWeightAddition);
     }
 
     /**
@@ -75,6 +89,9 @@ public class EquipmentModifier extends Modifier {
         super(file);
         mCostType = EquipmentModifierCostType.COST_FACTOR;
         mCostAmount = 1;
+        mWeightType = EquipmentModifierWeightType.MULTIPLIER;
+        mWeightMultiplier = 1;
+        mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
     }
 
     @Override
@@ -104,27 +121,99 @@ public class EquipmentModifier extends Modifier {
         return new EquipmentModifierEditor(this);
     }
 
-    public EquipmentModifierCostType getCostType() {
+    /** @return The type of the cost modifier. */
+    public EquipmentModifierCostType getCostAdjType() {
         return mCostType;
     }
 
-    public boolean setCostType(EquipmentModifierCostType costType) {
+    /**
+     * @param costType The type of cost modifier to set.
+     * @return <code>true</code> if a change was made.
+     */
+    public boolean setCostAdjType(EquipmentModifierCostType costType) {
         if (costType != mCostType) {
             mCostType = costType;
-            notifySingle(ID_COST);
+            notifySingle(ID_COST_ADJ);
             return true;
         }
         return false;
     }
 
-    public double getCostAmount() {
+    /** @return The amount for the cost modifier. */
+    public double getCostAdjAmount() {
         return mCostAmount;
     }
 
-    public boolean setCostAmount(double costAmount) {
+    /**
+     * @param costAmount The amount for the cost modifier to set.
+     * @return <code>true</code> if a change was made.
+     */
+    public boolean setCostAdjAmount(double costAmount) {
         if (costAmount != mCostAmount) {
             mCostAmount = costAmount;
-            notifySingle(ID_COST);
+            notifySingle(ID_COST_ADJ);
+            return true;
+        }
+        return false;
+    }
+
+    /** @return The type of the weight modifier. */
+    public EquipmentModifierWeightType getWeightAdjType() {
+        return mWeightType;
+    }
+
+    /**
+     * @param weightType The type of weight modifier to set.
+     * @return <code>true</code> if a change was made.
+     */
+    public boolean setWeightAdjType(EquipmentModifierWeightType weightType) {
+        if (weightType != mWeightType) {
+            mWeightType = weightType;
+            notifySingle(ID_WEIGHT_ADJ);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return The amount for the weight multiplier. Only valid if
+     *         <code>getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER</code>.
+     */
+    public double getWeightAdjMultiplier() {
+        return mWeightMultiplier;
+    }
+
+    /**
+     * @param multiplier The amount for the weight multiplier. Only valid if
+     *                   <code>getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER</code>.
+     * @return <code>true</code> if a change was made.
+     */
+    public boolean setWeightAdjMultiplier(double multiplier) {
+        if (mWeightType == EquipmentModifierWeightType.MULTIPLIER && multiplier != mWeightMultiplier) {
+            mWeightMultiplier = multiplier;
+            notifySingle(ID_WEIGHT_ADJ);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return The amount for the weight addition. Only valid if
+     *         <code>getWeightAdjType() == EquipmentModifierWeightType.ADDITION</code>.
+     */
+    public WeightValue getWeightAdjAddition() {
+        return mWeightAddition;
+    }
+
+    /**
+     * @param addition The amount for the weight addition. Only valid if
+     *                   <code>getWeightAdjType() == EquipmentModifierWeightType.ADDITION</code>.
+     * @return <code>true</code> if a change was made.
+     */
+    public boolean setWeightAdjAddition(WeightValue addition) {
+        if (mWeightType == EquipmentModifierWeightType.ADDITION && !mWeightAddition.equals(addition)) {
+            mWeightAddition = new WeightValue(addition);
+            notifySingle(ID_WEIGHT_ADJ);
             return true;
         }
         return false;
@@ -155,14 +244,28 @@ public class EquipmentModifier extends Modifier {
         super.prepareForLoad(state);
         mCostType = EquipmentModifierCostType.COST_FACTOR;
         mCostAmount = 1;
+        mWeightType = EquipmentModifierWeightType.MULTIPLIER;
+        mWeightMultiplier = 1;
+        mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
     }
 
     @Override
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
         String name = reader.getName();
-        if (TAG_COST.equals(name)) {
+        if (TAG_COST_ADJ.equals(name)) {
             mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.COST_FACTOR);
             mCostAmount = reader.readDouble(1);
+        } else if (TAG_WEIGHT_ADJ.equals(name)) {
+            mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
+            switch (mWeightType) {
+            case ADDITION:
+                mWeightAddition = WeightValue.extract(reader.readText(), false);
+                break;
+            case MULTIPLIER:
+            default:
+                mWeightMultiplier = reader.readDouble(1);
+                break;
+            }
         } else {
             super.loadSubElement(reader, state);
         }
@@ -171,7 +274,20 @@ public class EquipmentModifier extends Modifier {
     @Override
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         super.saveSelf(out, forUndo);
-        out.simpleTagWithAttribute(TAG_COST, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+        out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+        switch (mWeightType) {
+        case ADDITION:
+            if (mWeightAddition.getNormalizedValue() != 0) {
+                out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAddition.toString(false), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+            }
+            break;
+        case MULTIPLIER:
+        default:
+            if (mWeightMultiplier != 1) {
+                out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightMultiplier, ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+            }
+            break;
+        }
     }
 
     /** @return A full description of this {@link EquipmentModifier}. */
@@ -187,12 +303,39 @@ public class EquipmentModifier extends Modifier {
         return builder.toString();
     }
 
-    /** @return The formatted cost. */
+    /** @return The formatted cost adjustment. */
     public String getCostDescription() {
         StringBuilder builder = new StringBuilder();
         builder.append(mCostType.isMultiplier() ? Numbers.format(mCostAmount) : Numbers.formatWithForcedSign(mCostAmount));
         builder.append(' ');
         builder.append(mCostType);
+        return builder.toString();
+    }
+
+    /** @return The formatted weight adjustment. */
+    public String getWeightDescription() {
+        StringBuilder builder = new StringBuilder();
+        switch (mWeightType) {
+        case ADDITION:
+            if (mWeightAddition.getNormalizedValue() != 0) {
+                String weight = mWeightAddition.toString();
+                if (!weight.startsWith("-")) {
+                    builder.append('+');
+                }
+                builder.append(weight);
+                builder.append(' ');
+                builder.append(mWeightType);
+            }
+            break;
+        case MULTIPLIER:
+        default:
+            if (mWeightMultiplier != 1) {
+                builder.append(Numbers.format(mWeightMultiplier));
+                builder.append(' ');
+                builder.append(mWeightType);
+            }
+            break;
+        }
         return builder.toString();
     }
 }

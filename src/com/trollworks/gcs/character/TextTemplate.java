@@ -1339,7 +1339,7 @@ public class TextTemplate {
                 break;
             case KEY_WEIGHT:
                 if (equipment != null) {
-                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getWeight()));
+                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getAdjustedWeight()));
                 }
                 break;
             case KEY_AMMO:
@@ -1676,7 +1676,7 @@ public class TextTemplate {
                                     writeEncodedText(out, Numbers.format(equipment.getAdjustedValue()));
                                     break;
                                 case KEY_WEIGHT:
-                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getWeight()));
+                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getAdjustedWeight()));
                                     break;
                                 case KEY_COST_SUMMARY:
                                     writeEncodedText(out, Numbers.format(equipment.getExtendedValue()));
@@ -1685,7 +1685,7 @@ public class TextTemplate {
                                     writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getExtendedWeight()));
                                     break;
                                 case KEY_WEIGHT_RAW:
-                                    writeEncodedText(out, Numbers.format(equipment.getWeight().getNormalizedValue()));
+                                    writeEncodedText(out, Numbers.format(equipment.getAdjustedWeight().getNormalizedValue()));
                                     break;
                                 case KEY_REF:
                                     writeEncodedText(out, equipment.getReference());

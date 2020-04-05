@@ -174,7 +174,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
         wrapper = new JPanel(new ColumnLayout(3));
         mContainedWeight = new WeightValue(mRow.getExtendedWeight());
-        WeightValue weight = new WeightValue(mRow.getWeight());
+        WeightValue weight = new WeightValue(mRow.getAdjustedWeight());
         weight.setValue(weight.getValue() * mRow.getQuantity());
         mContainedWeight.subtract(weight);
         mWeightField = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
@@ -328,10 +328,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     private void weightChanged() {
         int         qty    = getQty();
-        WeightValue weight = WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true);
+        WeightValue weight = Equipment.getWeightAdjustedForModifiers(WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true), new FilteredList<EquipmentModifier>(mModifiers.getAllModifiers(), EquipmentModifier.class));
         if (qty > 0) {
             weight.setValue(weight.getValue() * Math.max(qty, 0));
             weight.add(mContainedWeight);
+        } else {
+            weight.setValue(0);
         }
         mExtWeightField.setText(weight.toString());
     }
@@ -366,11 +368,11 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void adjustForChange(Object field) {
-        if (field == mValueField || field == mModifiers) {
+        if (field == mValueField) {
             valueChanged();
         } else if (field == mWeightField) {
             weightChanged();
-        } else if (field == mQtyField) {
+        } else if (field == mQtyField || field == mModifiers) {
             valueChanged();
             weightChanged();
         }

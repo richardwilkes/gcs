@@ -21,12 +21,15 @@ import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
+import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -39,7 +42,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** Editor for {@link EquipmentModifier}s. */
-public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements ActionListener, DocumentListener {
+public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements ActionListener, DocumentListener, FocusListener {
     private JTextField        mNameField;
     private JCheckBox         mEnabledField;
     private JTextField        mNotesField;
@@ -48,6 +51,8 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private JTabbedPane       mTabPanel;
     private JComboBox<Object> mCostType;
     private JTextField        mCostAmountField;
+    private JComboBox<Object> mWeightType;
+    private JTextField        mWeightAmountField;
 
     /**
      * Creates a new {@link EquipmentModifierEditor}.
@@ -71,7 +76,8 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         wrapper.add(mEnabledField);
         fields.add(wrapper);
 
-        createCostModifierFields(fields);
+        createCostAdjustmentFields(fields);
+        createWeightAdjustmentFields(fields);
 
         wrapper = new JPanel(new ColumnLayout(3));
         mNotesField = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
@@ -101,13 +107,19 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         if (mFeatures != null) {
             modified |= mRow.setFeatures(mFeatures.getFeatures());
         }
-        modified |= mRow.setCostType(getCostType());
-        modified |= mRow.setCostAmount(getCostAmount());
+        modified |= mRow.setCostAdjType(getCostType());
+        modified |= mRow.setCostAdjAmount(getCostAmount());
+        modified |= mRow.setWeightAdjType(getWeightType());
+        switch (mRow.getWeightAdjType()) {
+        case ADDITION:
+            modified |= mRow.setWeightAdjAddition(getWeightAddition());
+            break;
+        case MULTIPLIER:
+        default:
+            modified |= mRow.setWeightAdjMultiplier(getWeightMultiplier());
+            break;
+        }
         return modified;
-    }
-
-    private boolean hasLevels() {
-        return mCostType.getSelectedIndex() == 0;
     }
 
     @Override
@@ -152,18 +164,18 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return scrollPanel;
     }
 
-    private void createCostModifierFields(Container parent) {
+    private void createCostAdjustmentFields(Container parent) {
         JPanel wrapper = new JPanel(new ColumnLayout(2));
-        createNumberField(parent, wrapper);
-        createCostType(wrapper);
+        createCostAdjustmentField(parent, wrapper);
+        createCostTypeCombo(wrapper);
         parent.add(wrapper);
     }
 
-    private void createNumberField(Container labelParent, Container fieldParent) {
+    private void createCostAdjustmentField(Container labelParent, Container fieldParent) {
         mCostAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mCostAmountField);
-        double amt = mRow.getCostAmount();
-        mCostAmountField.setText(mRow.getCostType().isMultiplier() ? Numbers.format(amt) : Numbers.formatWithForcedSign(amt));
+        double amt = mRow.getCostAdjAmount();
+        mCostAmountField.setText(mRow.getCostAdjType().isMultiplier() ? Numbers.format(amt) : Numbers.formatWithForcedSign(amt));
         mCostAmountField.setToolTipText(I18n.Text("The cost modifier"));
         mCostAmountField.setEnabled(mIsEditable);
         new NumberFilter(mCostAmountField, true, true, true, 11);
@@ -172,10 +184,10 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         fieldParent.add(mCostAmountField);
     }
 
-    private void createCostType(Container parent) {
+    private void createCostTypeCombo(Container parent) {
         EquipmentModifierCostType[] types = EquipmentModifierCostType.values();
         mCostType = new JComboBox<>(types);
-        mCostType.setSelectedItem(mRow.getCostType());
+        mCostType.setSelectedItem(mRow.getCostAdjType());
         mCostType.addActionListener(this);
         mCostType.setMaximumRowCount(types.length);
         UIUtilities.setToPreferredSizeOnly(mCostType);
@@ -198,18 +210,74 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return value;
     }
 
+    private void createWeightAdjustmentFields(Container parent) {
+        JPanel wrapper = new JPanel(new ColumnLayout(2));
+        createWeightAdjustmentField(parent, wrapper);
+        createWeightTypeCombo(wrapper);
+        parent.add(wrapper);
+    }
+
+    private void createWeightAdjustmentField(Container labelParent, Container fieldParent) {
+        mWeightAmountField = new JTextField("-999,999,999.00");
+        UIUtilities.setToPreferredSizeOnly(mWeightAmountField);
+        switch (mRow.getWeightAdjType()) {
+        case ADDITION:
+            String addition = mRow.getWeightAdjAddition().toString();
+            if (!addition.startsWith("-")) {
+                addition = "+" + addition;
+            }
+            mWeightAmountField.setText(addition);
+            break;
+        case MULTIPLIER:
+        default:
+            mWeightAmountField.setText(Numbers.format(mRow.getWeightAdjMultiplier()));
+            break;
+        }
+        mWeightAmountField.setToolTipText(I18n.Text("The weight modifier"));
+        mWeightAmountField.setEnabled(mIsEditable);
+        mWeightAmountField.addActionListener(this);
+        mWeightAmountField.addFocusListener(this);
+        labelParent.add(new LinkedLabel("", mWeightAmountField));
+        fieldParent.add(mWeightAmountField);
+    }
+
+    private void createWeightTypeCombo(Container parent) {
+        EquipmentModifierWeightType[] types = EquipmentModifierWeightType.values();
+        mWeightType = new JComboBox<>(types);
+        mWeightType.setSelectedItem(mRow.getWeightAdjType());
+        mWeightType.addActionListener(this);
+        mWeightType.setMaximumRowCount(types.length);
+        UIUtilities.setToPreferredSizeOnly(mWeightType);
+        parent.add(mWeightType);
+    }
+
+    private EquipmentModifierWeightType getWeightType() {
+        Object obj = mWeightType.getSelectedItem();
+        if (!(obj instanceof EquipmentModifierWeightType)) {
+            obj = EquipmentModifierWeightType.MULTIPLIER;
+        }
+        return (EquipmentModifierWeightType) obj;
+    }
+
+    private double getWeightMultiplier() {
+        double value = Numbers.extractDouble(mWeightAmountField.getText(), 0, true);
+        if (value <= 0 && getWeightType() == EquipmentModifierWeightType.MULTIPLIER) {
+            value = 1;
+        }
+        return value;
+    }
+
+    private WeightValue getWeightAddition() {
+        return WeightValue.extract(mWeightAmountField.getText(), true);
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
-        String text = mCostAmountField.getText().trim();
-        if (getCostType().isMultiplier()) {
-            double value = Numbers.extractDouble(text, 0, true);
-            if (value <= 0) {
-                mCostAmountField.setText("1");
-            } else if (text.startsWith("+")) {
-                mCostAmountField.setText(text.substring(1));
-            }
-        } else if (!text.startsWith("+") && !text.startsWith("-")) {
-            mCostAmountField.setText("+" + text);
+        Object src = event.getSource();
+        if (src == mCostAmountField || src == mCostType) {
+            costChanged();
+        } else if (src == mWeightAmountField || src == mWeightType) {
+            weightChanged();
         }
     }
 
@@ -230,5 +298,40 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private void nameChanged() {
         LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+    }
+
+
+    @Override
+    public void focusGained(FocusEvent event) {
+        // Not used.
+    }
+
+    @Override
+    public void focusLost(FocusEvent event) {
+        weightChanged();
+    }
+
+    private void weightChanged() {
+        switch (getWeightType()) {
+        case ADDITION:
+            break;
+        case MULTIPLIER:
+        default:
+            break;
+        }
+    }
+
+    private void costChanged() {
+        String text = mCostAmountField.getText().trim();
+        if (getCostType().isMultiplier()) {
+            double value = Numbers.extractDouble(text, 0, true);
+            if (value <= 0) {
+                mCostAmountField.setText("1");
+            } else if (text.startsWith("+")) {
+                mCostAmountField.setText(text.substring(1));
+            }
+        } else if (!text.startsWith("+") && !text.startsWith("-")) {
+            mCostAmountField.setText("+" + text);
+        }
     }
 }
