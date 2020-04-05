@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.MultipleRowUndo;
 import com.trollworks.gcs.widgets.outline.RowUndo;
@@ -23,12 +22,10 @@ import com.trollworks.toolkit.ui.widget.outline.TextCell;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 public class ModifierCheckCell extends TextCell {
     private boolean mForEditor;
@@ -36,11 +33,6 @@ public class ModifierCheckCell extends TextCell {
     public ModifierCheckCell(boolean forEditor) {
         super(SwingConstants.CENTER, false);
         mForEditor = forEditor;
-    }
-
-    @Override
-    public Font getFont(Row row, Column column) {
-        return mForEditor ? UIManager.getFont(GCSFonts.KEY_FIELD) : super.getFont(row, column);
     }
 
     @Override
@@ -63,12 +55,14 @@ public class ModifierCheckCell extends TextCell {
     @Override
     public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
         if (row instanceof Modifier) {
+            Component src = (Component)event.getSource();
             Modifier modifier = (Modifier) row;
             if (mForEditor) {
                 modifier.setEnabled(!modifier.isEnabled());
-                ModifierListEditor editor = UIUtilities.getAncestorOfType((Component) (event.getSource()), ModifierListEditor.class);
+                ModifierListEditor editor = UIUtilities.getAncestorOfType(src, ModifierListEditor.class);
                 if (editor != null) {
                     editor.mModified = true;
+                    editor.notifyActionListeners();
                 }
             } else {
                 RowUndo undo = new RowUndo(modifier);
@@ -79,6 +73,11 @@ public class ModifierCheckCell extends TextCell {
                     new MultipleRowUndo(list);
                 }
             }
+            Outline outline = UIUtilities.getSelfOrAncestorOfType(src, Outline.class);
+            if (outline != null) {
+                outline.repaintSelection();
+            }
+            event.consume();
         }
     }
 }

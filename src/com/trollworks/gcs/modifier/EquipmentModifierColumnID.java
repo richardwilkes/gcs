@@ -39,10 +39,7 @@ public enum EquipmentModifierColumnID {
 
         @Override
         public Cell getCell(boolean forEditor) {
-            if (forEditor) {
-                return new TextCell(SwingConstants.CENTER, false);
-            }
-            return new ListTextCell(SwingConstants.CENTER, false);
+            return new ModifierCheckCell(forEditor);
         }
 
         @Override
