@@ -53,7 +53,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
-public class SpellTechniqueEditor extends RowEditor<SpellTechnique> implements ActionListener, DocumentListener {
+public class RitualMagicSpellEditor extends RowEditor<RitualMagicSpell> implements ActionListener, DocumentListener {
     private JTextField         mNameField;
     private JCheckBox          mHasTechLevel;
     private JTextField         mTechLevel;
@@ -82,10 +82,10 @@ public class SpellTechniqueEditor extends RowEditor<SpellTechnique> implements A
     /**
      * Creates a new {@link Spell} {@link RowEditor}.
      *
-     * @param spellTechnique The row being edited.
+     * @param ritualMagicSpell The row being edited.
      */
-    protected SpellTechniqueEditor(SpellTechnique spellTechnique) {
-        super(spellTechnique);
+    protected RitualMagicSpellEditor(RitualMagicSpell ritualMagicSpell) {
+        super(ritualMagicSpell);
 
         Container content      = new JPanel(new ColumnLayout(2));
         Container fields       = new JPanel(new ColumnLayout());
@@ -93,29 +93,29 @@ public class SpellTechniqueEditor extends RowEditor<SpellTechnique> implements A
         Container wrapper2     = new JPanel(new ColumnLayout(4));
         Container wrapper3     = new JPanel(new ColumnLayout(2));
         Container noGapWrapper = new JPanel(new ColumnLayout(2, 0, 0));
-        JLabel    icon         = new JLabel(spellTechnique.getIcon(true));
+        JLabel    icon         = new JLabel(ritualMagicSpell.getIcon(true));
         Dimension size         = new Dimension();
         Container ptsPanel;
 
-        mNameField = createCorrectableField(wrapper1, wrapper1, I18n.Text("Name"), spellTechnique.getName(), I18n.Text("The name of the spell, without any notes"));
+        mNameField = createCorrectableField(wrapper1, wrapper1, I18n.Text("Name"), ritualMagicSpell.getName(), I18n.Text("The name of the spell, without any notes"));
         fields.add(wrapper1);
 
         createTechLevelFields(wrapper1);
-        mCollegeField         = createField(wrapper2, wrapper2, I18n.Text("College"), spellTechnique.getCollege(), I18n.Text("The college the spell belongs to"), 0);
-        mPowerSourceField     = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spellTechnique.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
-        mClassField           = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spellTechnique.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
-        mCastingCostField     = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spellTechnique.getCastingCost(), I18n.Text("The casting cost of the spell"));
-        mMaintenanceField     = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), spellTechnique.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
-        mCastingTimeField     = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), spellTechnique.getCastingTime(), I18n.Text("The casting time of the spell"));
-        mDurationField        = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spellTechnique.getDuration(), I18n.Text("The duration of the spell once its cast"));
+        mCollegeField         = createField(wrapper2, wrapper2, I18n.Text("College"), ritualMagicSpell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
+        mPowerSourceField     = createField(wrapper2, wrapper2, I18n.Text("Power Source"), ritualMagicSpell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
+        mClassField           = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), ritualMagicSpell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
+        mCastingCostField     = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), ritualMagicSpell.getCastingCost(), I18n.Text("The casting cost of the spell"));
+        mMaintenanceField     = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), ritualMagicSpell.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
+        mCastingTimeField     = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), ritualMagicSpell.getCastingTime(), I18n.Text("The casting time of the spell"));
+        mDurationField        = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), ritualMagicSpell.getDuration(), I18n.Text("The duration of the spell once its cast"));
         mDefaultModifierField = createNumberField(wrapper2, wrapper2, I18n.Text("Prerequisite Count"), I18n.Text("The number of prerequisite SPELLS needed to cast this spell"), mRow.getSpellPrerequisiteCount(), 2);
         fields.add(wrapper2);
 
         ptsPanel = createPointsFields();
         fields.add(ptsPanel);
 
-        mNotesField      = createField(wrapper3, wrapper3, I18n.Text("Notes"), spellTechnique.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
-        mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), spellTechnique.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
+        mNotesField      = createField(wrapper3, wrapper3, I18n.Text("Notes"), ritualMagicSpell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
+        mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), ritualMagicSpell.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
         mReferenceField  = createField(ptsPanel, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         noGapWrapper.add(new JPanel());
         ptsPanel.add(noGapWrapper);

@@ -41,7 +41,7 @@ public class ItemMenuProvider implements MenuProvider {
         cmds.add(NewSkillCommand.TECHNIQUE_INSTANCE);
         cmds.add(NewSpellCommand.INSTANCE);
         cmds.add(NewSpellCommand.CONTAINER_INSTANCE);
-        cmds.add(NewSpellCommand.TECHNIQUE_INSTANCE);
+        cmds.add(NewSpellCommand.RITUAL_MAGIC_INSTANCE);
         cmds.add(NewEquipmentCommand.CARRIED_INSTANCE);
         cmds.add(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE);
         cmds.add(NewEquipmentCommand.NOT_CARRIED_INSTANCE);
@@ -72,7 +72,7 @@ public class ItemMenuProvider implements MenuProvider {
         menu.addSeparator();
         menu.add(new DynamicMenuItem(NewSpellCommand.INSTANCE));
         menu.add(new DynamicMenuItem(NewSpellCommand.CONTAINER_INSTANCE));
-        menu.add(new DynamicMenuItem(NewSpellCommand.TECHNIQUE_INSTANCE));
+        menu.add(new DynamicMenuItem(NewSpellCommand.RITUAL_MAGIC_INSTANCE));
         menu.addSeparator();
         menu.add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_INSTANCE));
         menu.add(new DynamicMenuItem(NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE));

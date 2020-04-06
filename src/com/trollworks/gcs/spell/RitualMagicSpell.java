@@ -32,10 +32,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /** A GURPS Spell for the Ritual Magic system. */
-public class SpellTechnique extends Spell {
-    private static final int          CURRENT_VERSION     = 1;
+public class RitualMagicSpell extends Spell {
+    private static final int    CURRENT_VERSION        = 1;
     /** The XML tag used for items. */
-    public  static final String TAG_SPELL_TECHNIQUE = "spell_technique";
+    public  static final String TAG_RITUAL_MAGIC_SPELL = "ritual_magic_spell";
     /** The (positive) number of spell prerequsites needed to cast this spell. Used as skill penalty relative to the College skill */
     private              int    mSpellPrerequisiteCount;
 
@@ -44,7 +44,7 @@ public class SpellTechnique extends Spell {
      *
      * @param dataFile    The data file to associate it with.
      */
-    public SpellTechnique(DataFile dataFile) {
+    public RitualMagicSpell(DataFile dataFile) {
         super(dataFile, false);
         mPoints  = 0;
         updateLevel(false);
@@ -53,14 +53,14 @@ public class SpellTechnique extends Spell {
     /**
      * Creates a clone of an existing ritual magic spell and associates it with the specified data file.
      *
-     * @param dataFile       The data file to associate it with.
-     * @param spellTechnique The spell to clone.
-     * @param deep           Whether or not to clone the children, grandchildren, etc.
-     * @param forSheet       Whether this is for a character sheet or a list.
+     * @param dataFile         The data file to associate it with.
+     * @param ritualMagicSpell The spell to clone.
+     * @param deep             Whether or not to clone the children, grandchildren, etc.
+     * @param forSheet         Whether this is for a character sheet or a list.
      */
-    public SpellTechnique(DataFile dataFile, SpellTechnique spellTechnique, boolean deep, boolean forSheet) {
-        super(dataFile, spellTechnique, deep, forSheet);
-        mPoints = forSheet ? spellTechnique.mPoints : 0;
+    public RitualMagicSpell(DataFile dataFile, RitualMagicSpell ritualMagicSpell, boolean deep, boolean forSheet) {
+        super(dataFile, ritualMagicSpell, deep, forSheet);
+        mPoints = forSheet ? ritualMagicSpell.mPoints : 0;
         updateLevel(false);
     }
 
@@ -71,7 +71,7 @@ public class SpellTechnique extends Spell {
      * @param reader   The XML reader to load from.
      * @param state    The {@link LoadState} to use.
      */
-    public SpellTechnique(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
+    public RitualMagicSpell(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
         this(dataFile);
         load(reader, state);
         if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
@@ -127,8 +127,8 @@ public class SpellTechnique extends Spell {
     public boolean isEquivalentTo(Object obj) {
         if (obj == this)
             return true;
-        if (obj instanceof SpellTechnique) {
-            SpellTechnique that = (SpellTechnique) obj;
+        if (obj instanceof RitualMagicSpell) {
+            RitualMagicSpell that = (RitualMagicSpell) obj;
             if (mSpellPrerequisiteCount != that.mSpellPrerequisiteCount)
                 return false;
             return super.isEquivalentTo(obj);
@@ -143,7 +143,7 @@ public class SpellTechnique extends Spell {
 
     @Override
     public String getXMLTagName() {
-        return TAG_SPELL_TECHNIQUE;
+        return TAG_RITUAL_MAGIC_SPELL;
     }
 
     @Override
@@ -163,7 +163,7 @@ public class SpellTechnique extends Spell {
 
     @Override
     public RowEditor<? extends ListRow> createEditor() {
-        return new SpellTechniqueEditor(this);
+        return new RitualMagicSpellEditor(this);
     }
 
     /**

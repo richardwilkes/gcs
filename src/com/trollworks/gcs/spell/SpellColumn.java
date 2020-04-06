@@ -15,7 +15,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.common.DataFile;
 import com.trollworks.gcs.common.ListFile;
 import com.trollworks.gcs.skill.SkillPointsTextCell;
-import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListHeaderCell;
 import com.trollworks.gcs.widgets.outline.ListTextCell;
@@ -261,8 +260,8 @@ public enum SpellColumn {
                         return Integer.MIN_VALUE;
                     }
                     int level = spell.getRelativeLevel();
-                    if (spell instanceof SpellTechnique) {
-                        level += ((SpellTechnique) spell).getDefault().getModifier();
+                    if (spell instanceof RitualMagicSpell) {
+                        level += ((RitualMagicSpell) spell).getDefault().getModifier();
                     }
                     return level;
                 }
@@ -280,7 +279,7 @@ public enum SpellColumn {
                 }
 
                 StringBuilder builder = new StringBuilder();
-                if (!(spell instanceof SpellTechnique)) {
+                if (!(spell instanceof RitualMagicSpell)) {
                     builder.append(spell.getAttribute());
                 }
                 builder.append(Numbers.formatWithForcedSign(level));
