@@ -12,8 +12,6 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.common.EditorPanel;
-import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.image.StdImage;
@@ -38,9 +36,8 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
-    private static final String            CHANGE_BASE_TYPE = "ChangeBaseType";
-    private static final Class<?>[]        BASE_TYPES       = new Class<?>[]{AttributeBonus.class, DRBonus.class, SkillBonus.class, SpellBonus.class, WeaponBonus.class, CostReduction.class, ContainedWeightReduction.class};
-    private static       Class<?>          LAST_ITEM_TYPE   = SkillBonus.class;
+    private static final String            CHANGE_BASE_TYPE  = "ChangeBaseType";
+    private static       FeatureType       LAST_FEATURE_TYPE = FeatureType.SKILL_LEVEL_BONUS;
     private              ListRow           mRow;
     private              Feature           mFeature;
     private              JComboBox<Object> mBaseTypeCombo;
@@ -54,26 +51,10 @@ public abstract class FeatureEditor extends EditorPanel {
      * @return The newly created editor panel.
      */
     public static FeatureEditor create(ListRow row, Feature feature) {
-        if (feature instanceof AttributeBonus) {
-            return new AttributeBonusEditor(row, (AttributeBonus) feature);
-        }
-        if (feature instanceof DRBonus) {
-            return new DRBonusEditor(row, (DRBonus) feature);
-        }
-        if (feature instanceof SkillBonus) {
-            return new SkillBonusEditor(row, (SkillBonus) feature);
-        }
-        if (feature instanceof SpellBonus) {
-            return new SpellBonusEditor(row, (SpellBonus) feature);
-        }
-        if (feature instanceof WeaponBonus) {
-            return new WeaponBonusEditor(row, (WeaponBonus) feature);
-        }
-        if (feature instanceof CostReduction) {
-            return new CostReductionEditor(row, (CostReduction) feature);
-        }
-        if (feature instanceof ContainedWeightReduction) {
-            return new ContainedWeightReductionEditor(row, (ContainedWeightReduction) feature);
+        for (FeatureType featureType : FeatureType.values()) {
+            if (featureType.matches(feature)) {
+                return featureType.createFeatureEditor(row, feature);
+            }
         }
         return null;
     }
@@ -120,24 +101,18 @@ public abstract class FeatureEditor extends EditorPanel {
 
     /** @return The {@link JComboBox} that allows the base feature type to be changed. */
     protected JComboBox<Object> addChangeBaseTypeCombo() {
-        List<String> choices = new ArrayList<>();
-        choices.add(I18n.Text("Gives an attribute bonus of"));
-        choices.add(I18n.Text("Gives a DR bonus of"));
-        choices.add(I18n.Text("Gives a skill level bonus of"));
-        choices.add(I18n.Text("Gives a spell level bonus of"));
-        choices.add(I18n.Text("Gives a weapon damage bonus of"));
-        choices.add(I18n.Text("Reduces the attribute cost of"));
-        if (mRow instanceof Equipment || mRow instanceof EquipmentModifier) {
-            choices.add(I18n.Text("Reduces the contained weight by"));
-        }
-        Class<?> type    = mFeature.getClass();
-        Object   current = choices.get(0);
-        int      length  = choices.size();
-        for (int i = 0; i < length; i++) {
-            if (type.equals(BASE_TYPES[i])) {
-                current = choices.get(i);
-                break;
+        List<FeatureType> choices = new ArrayList<>();
+        FeatureType       current = null;
+        for (FeatureType featureType : FeatureType.values()) {
+            if (featureType.validRow(mRow)) {
+                choices.add(featureType);
+                if (featureType.matches(mFeature)) {
+                    current = featureType;
+                }
             }
+        }
+        if (current == null) {
+            current = choices.get(0);
         }
         mBaseTypeCombo = addComboBox(CHANGE_BASE_TYPE, choices.toArray(), current);
         return mBaseTypeCombo;
@@ -189,7 +164,7 @@ public abstract class FeatureEditor extends EditorPanel {
     private void addFeature() {
         JComponent parent = (JComponent) getParent();
         try {
-            parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.getConstructor().newInstance()));
+            parent.add(create(mRow, LAST_FEATURE_TYPE.createFeature()));
         } catch (Exception exception) {
             // Shouldn't have a failure...
             exception.printStackTrace(System.err);
@@ -214,15 +189,14 @@ public abstract class FeatureEditor extends EditorPanel {
     public void actionPerformed(ActionEvent event) {
         String     command = event.getActionCommand();
         JComponent parent  = (JComponent) getParent();
-
         if (LeveledAmount.ATTRIBUTE_PER_LEVEL.equals(command)) {
             ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountCombo.getSelectedIndex() == 1);
         } else if (CHANGE_BASE_TYPE.equals(command)) {
-            LAST_ITEM_TYPE = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];
-            if (!mFeature.getClass().equals(LAST_ITEM_TYPE)) {
+            LAST_FEATURE_TYPE = (FeatureType)mBaseTypeCombo.getSelectedItem();
+            if (LAST_FEATURE_TYPE != null && !LAST_FEATURE_TYPE.matches(mFeature)) {
                 Commitable.sendCommitToFocusOwner();
                 try {
-                    parent.add(create(mRow, (Feature) LAST_ITEM_TYPE.getConstructor().newInstance()), UIUtilities.getIndexOf(parent, this));
+                    parent.add(create(mRow, LAST_FEATURE_TYPE.createFeature()), UIUtilities.getIndexOf(parent, this));
                 } catch (Exception exception) {
                     // Shouldn't have a failure...
                     exception.printStackTrace(System.err);

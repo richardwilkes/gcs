@@ -24,7 +24,7 @@ import java.awt.Insets;
 /** A weapon bonus editor. */
 public class WeaponBonusEditor extends FeatureEditor {
     /**
-     * Create a new skill bonus editor.
+     * Create a new weapon skill bonus editor.
      *
      * @param row   The row this feature will belong to.
      * @param bonus The bonus to edit.
