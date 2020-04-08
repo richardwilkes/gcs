@@ -19,6 +19,7 @@ import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.EquipmentModifier;
+import com.trollworks.gcs.modifier.EquipmentModifierWeightType;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -503,7 +504,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     /**
-     * @param value The base value to adjust.
+     * @param value     The base value to adjust.
      * @param modifiers The modifiers to apply.
      * @return The adjusted value.
      */
@@ -594,30 +595,21 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     /**
-     * @param value The base value to adjust.
+     * @param value     The base value to adjust.
      * @param modifiers The modifiers to apply.
      * @return The adjusted value.
      */
     public static WeightValue getWeightAdjustedForModifiers(WeightValue value, List<EquipmentModifier> modifiers) {
-        value      = new WeightValue(value);
-        double    multiplier = 0;
+        value = new WeightValue(value);
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled()) {
-                switch (modifier.getWeightAdjType()) {
-                case ADDITION:
-                    value.add(modifier.getWeightAdjAddition());
-                    break;
-                case MULTIPLIER:
-                    multiplier += modifier.getWeightAdjMultiplier();
-                    break;
-                }
+            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.ADDITION) {
+                value.add(modifier.getWeightAdjAddition());
             }
         }
-        if (multiplier != 0) {
-            if (multiplier < 0.2) {
-                multiplier = 0.2;
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER) {
+                value.setValue(value.getValue() * modifier.getWeightAdjMultiplier());
             }
-            value.setValue(value.getValue() * multiplier);
         }
         if (value.getValue() < 0) {
             value.setValue(0);
