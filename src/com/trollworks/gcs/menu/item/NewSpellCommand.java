@@ -13,8 +13,8 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.RitualMagicSpell;
+import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.widgets.outline.ListOutline;
@@ -39,11 +39,11 @@ public class NewSpellCommand extends Command {
     /** The "New Technique" command. */
     public static final NewSpellCommand RITUAL_MAGIC_INSTANCE  = new NewSpellCommand(false, true, I18n.Text("New Ritual Magic Spell"), CMD_RITUAL_MAGIC_SPELL, KeyEvent.VK_UNDEFINED, 0);
     private             boolean         mContainer;
-    private             boolean mRitualMagic;
+    private             boolean         mRitualMagic;
 
     private NewSpellCommand(boolean container, boolean isRitualMagic, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
-        mContainer   = container;
+        mContainer = container;
         mRitualMagic = isRitualMagic;
     }
 

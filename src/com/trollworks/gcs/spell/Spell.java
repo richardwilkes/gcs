@@ -271,8 +271,9 @@ public class Spell extends ListRow implements HasSourceReference {
     protected void loadAttributes(XMLReader reader, LoadState state) {
         super.loadAttributes(reader, state);
         // Compatibility with version 3 of the Spell format
-        if (reader.isAttributeSet(ATTRIBUTE_VERY_HARD))
+        if (reader.isAttributeSet(ATTRIBUTE_VERY_HARD)) {
             mDifficulty = SkillDifficulty.VH;
+        }
     }
 
     @Override

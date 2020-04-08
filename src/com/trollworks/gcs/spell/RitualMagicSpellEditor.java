@@ -67,22 +67,22 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         fields.add(wrapper1);
 
         createTechLevelFields(wrapper1);
-        mCollegeField                 = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
-        mPowerSourceField             = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
-        mClassField                   = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
-        mCastingCostField             = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
-        mMaintenanceField             = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), spell.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
-        mCastingTimeField             = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), spell.getCastingTime(), I18n.Text("The casting time of the spell"));
-        mDurationField                = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spell.getDuration(), I18n.Text("The duration of the spell once its cast"));
+        mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
+        mPowerSourceField = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
+        mClassField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
+        mCastingCostField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
+        mMaintenanceField = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), spell.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
+        mCastingTimeField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), spell.getCastingTime(), I18n.Text("The casting time of the spell"));
+        mDurationField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spell.getDuration(), I18n.Text("The duration of the spell once its cast"));
         mPrerequisiteSpellsCountField = createNumberField(wrapper2, wrapper2, I18n.Text("Prerequisite Count"), I18n.Text("The penalty to skill level based on the number of prerequisite spells"), mRow.getPrerequisiteSpellsCount(), 2);
         fields.add(wrapper2);
 
         ptsPanel = createPointsFields();
         fields.add(ptsPanel);
 
-        mNotesField      = createField(wrapper3, wrapper3, I18n.Text("Notes"), spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
+        mNotesField = createField(wrapper3, wrapper3, I18n.Text("Notes"), spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
         mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), spell.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
-        mReferenceField  = createField(ptsPanel, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
+        mReferenceField = createField(ptsPanel, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         noGapWrapper.add(new JPanel());
         ptsPanel.add(noGapWrapper);
         fields.add(wrapper3);
@@ -207,7 +207,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         SkillDifficulty difficulty        = getDifficulty();
         int             prereqSpellsCount = getPrerequisiteSpellsCount();
         int             points            = getPoints();
-        SkillLevel skillLevel = RitualMagicSpell.calculateLevel(character, spellName, collegeName, powerSource, categories, difficulty, prereqSpellsCount, points);
+        SkillLevel      skillLevel        = RitualMagicSpell.calculateLevel(character, spellName, collegeName, powerSource, categories, difficulty, prereqSpellsCount, points);
 
         // FIXME: the skill level does not account for the "penalty from default" assigned to the SkillDefault
         String levelFieldText    = makeLevelFieldText(skillLevel.getLevel(), skillLevel.getRelativeLevel());

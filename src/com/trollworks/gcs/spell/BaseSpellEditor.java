@@ -43,27 +43,27 @@ import javax.swing.text.Document;
 
 /** An editor implementing functionalities common to all spell implementations. */
 public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> implements ActionListener, DocumentListener {
-    protected JTextField                  mNameField;
-    protected JTextField                  mCollegeField;
-    protected JTextField                  mPowerSourceField;
-    protected JTextField                  mClassField;
-    protected JTextField                  mCastingCostField;
-    protected JTextField                  mMaintenanceField;
-    protected JTextField                  mCastingTimeField;
-    protected JTextField                  mDurationField;
-    protected JComboBox<SkillDifficulty>  mDifficultyCombo;
-    protected JTextField                  mNotesField;
-    protected JTextField                  mCategoriesField;
-    protected JTextField                  mPointsField;
-    protected JTextField                  mLevelField;
-    protected JTextField                  mReferenceField;
-    protected JTabbedPane                 mTabPanel;
-    protected PrereqsPanel                mPrereqs;
-    protected JCheckBox                   mHasTechLevel;
-    protected JTextField                  mTechLevel;
-    protected String                      mSavedTechLevel;
-    protected MeleeWeaponEditor           mMeleeWeapons;
-    protected RangedWeaponEditor          mRangedWeapons;
+    protected JTextField                 mNameField;
+    protected JTextField                 mCollegeField;
+    protected JTextField                 mPowerSourceField;
+    protected JTextField                 mClassField;
+    protected JTextField                 mCastingCostField;
+    protected JTextField                 mMaintenanceField;
+    protected JTextField                 mCastingTimeField;
+    protected JTextField                 mDurationField;
+    protected JComboBox<SkillDifficulty> mDifficultyCombo;
+    protected JTextField                 mNotesField;
+    protected JTextField                 mCategoriesField;
+    protected JTextField                 mPointsField;
+    protected JTextField                 mLevelField;
+    protected JTextField                 mReferenceField;
+    protected JTabbedPane                mTabPanel;
+    protected PrereqsPanel               mPrereqs;
+    protected JCheckBox                  mHasTechLevel;
+    protected JTextField                 mTechLevel;
+    protected String                     mSavedTechLevel;
+    protected MeleeWeaponEditor          mMeleeWeapons;
+    protected RangedWeaponEditor         mRangedWeapons;
 
     /**
      * Creates a new {@link RowEditor}.
@@ -147,8 +147,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     }
 
     /**
-     * Utility function to create a text field (with a label) that accepts only
-     * integral, unsigned numbers.
+     * Utility function to create a text field (with a label) that accepts only integral, unsigned
+     * numbers.
      *
      * @param labelParent Container for the label.
      * @param fieldParent Container for the text field.
@@ -257,9 +257,9 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     }
 
     /**
-     * Called by actionPerformed() to update the text and tooltip of the level field.
-     * Implement this function by building appropriate strings and assign them to the
-     * text and tooltip of the level field
+     * Called by actionPerformed() to update the text and tooltip of the level field. Implement this
+     * function by building appropriate strings and assign them to the text and tooltip of the level
+     * field
      *
      * @param levelField The text field to update.
      */
@@ -283,7 +283,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
                 mTechLevel.setText("");
             }
         } else if (src == mPointsField || src == mDifficultyCombo) {
-            if(mLevelField != null) {
+            if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }
         }

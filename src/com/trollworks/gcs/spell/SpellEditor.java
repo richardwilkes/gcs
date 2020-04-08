@@ -203,7 +203,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         super.actionPerformed(event);
         Object src = event.getSource();
         if (src == mAttributePopup) {
-            if(mLevelField != null) {
+            if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }
         }
