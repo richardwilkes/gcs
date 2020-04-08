@@ -259,11 +259,7 @@ public enum SpellColumn {
                     if (spell.getLevel() < 0) {
                         return Integer.MIN_VALUE;
                     }
-                    int level = spell.getRelativeLevel();
-                    if (spell instanceof RitualMagicSpell) {
-                        level += ((RitualMagicSpell) spell).getDefault().getModifier();
-                    }
-                    return level;
+                    return spell.getRelativeLevel();
                 }
             }
             return Integer.MIN_VALUE;
