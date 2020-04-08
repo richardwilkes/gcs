@@ -273,7 +273,13 @@ public enum SpellColumn {
                 if (level == Integer.MIN_VALUE) {
                     return "-";
                 }
-                return spell.getAttribute().toString() + Numbers.formatWithForcedSign(level);
+
+                StringBuilder builder = new StringBuilder();
+                if (!(spell instanceof RitualMagicSpell)) {
+                    builder.append(spell.getAttribute());
+                }
+                builder.append(Numbers.formatWithForcedSign(level));
+                return builder.toString();
             }
             return "";
         }

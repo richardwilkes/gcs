@@ -22,6 +22,7 @@ import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
+import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.Preferences;
@@ -245,6 +246,9 @@ public class PrerequisitesThread extends Thread implements NotifierTarget {
             boolean satisfied = row.getPrereqs().satisfied(mCharacter, row, builder, "<li>");
             if (satisfied && row instanceof Technique) {
                 satisfied = ((Technique) row).satisfied(builder, "<li>");
+            }
+            if (satisfied && row instanceof RitualMagicSpell) {
+                satisfied = ((RitualMagicSpell) row).satisfied(builder, "<li>");
             }
             if (row.isSatisfied() != satisfied) {
                 row.setSatisfied(satisfied);

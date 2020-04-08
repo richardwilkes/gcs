@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.spell;
 
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillAttribute;
 import com.trollworks.gcs.skill.SkillDifficulty;
@@ -20,11 +19,8 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.widgets.outline.ListRow;
-import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
-import com.trollworks.toolkit.ui.widget.LinkedLabel;
-import com.trollworks.toolkit.ui.widget.outline.OutlineModel;
 import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
@@ -34,45 +30,18 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 
 /** The detailed editor for {@link Spell}s. */
-public class SpellEditor extends RowEditor<Spell> implements ActionListener, DocumentListener {
-    private JTextField         mNameField;
-    private JTextField         mCollegeField;
-    private JTextField         mPowerSourceField;
-    private JTextField         mClassField;
-    private JTextField         mCastingCostField;
-    private JTextField         mMaintenanceField;
-    private JTextField         mCastingTimeField;
-    private JTextField         mDurationField;
-    private JComboBox<Object>  mAttributePopup;
-    private JComboBox<Object>  mDifficultyCombo;
-    private JTextField         mNotesField;
-    private JTextField         mCategoriesField;
-    private JTextField         mPointsField;
-    private JTextField         mLevelField;
-    private JTextField         mReferenceField;
-    private JTabbedPane        mTabPanel;
-    private PrereqsPanel       mPrereqs;
-    private JCheckBox          mHasTechLevel;
-    private JTextField         mTechLevel;
-    private String             mSavedTechLevel;
-    private MeleeWeaponEditor  mMeleeWeapons;
-    private RangedWeaponEditor mRangedWeapons;
+public class SpellEditor extends BaseSpellEditor<Spell> {
+    protected JComboBox<SkillAttribute> mAttributePopup;
 
     /**
      * Creates a new {@link Spell} editor.
@@ -155,87 +124,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
         }
     }
 
-    private static void determineLargest(Container panel, int every, Dimension size) {
-        int count = panel.getComponentCount();
-
-        for (int i = 0; i < count; i += every) {
-            Dimension oneSize = panel.getComponent(i).getPreferredSize();
-
-            if (oneSize.width > size.width) {
-                size.width = oneSize.width;
-            }
-            if (oneSize.height > size.height) {
-                size.height = oneSize.height;
-            }
-        }
-    }
-
-    private static void applySize(Container panel, int every, Dimension size) {
-        int count = panel.getComponentCount();
-
-        for (int i = 0; i < count; i += every) {
-            UIUtilities.setOnlySize(panel.getComponent(i), size);
-        }
-    }
-
-    private JScrollPane embedEditor(Component editor) {
-        JScrollPane scrollPanel = new JScrollPane(editor);
-
-        scrollPanel.setMinimumSize(new Dimension(500, 120));
-        scrollPanel.setName(editor.toString());
-        if (!mIsEditable) {
-            UIUtilities.disableControls(editor);
-        }
-        return scrollPanel;
-    }
-
-    private void createTechLevelFields(Container parent) {
-        OutlineModel   owner     = mRow.getOwner();
-        GURPSCharacter character = mRow.getCharacter();
-        boolean        enabled   = !owner.isLocked();
-        boolean        hasTL;
-
-        mSavedTechLevel = mRow.getTechLevel();
-        hasTL = mSavedTechLevel != null;
-        if (!hasTL) {
-            mSavedTechLevel = "";
-        }
-
-        if (character != null) {
-            JPanel wrapper = new JPanel(new ColumnLayout(2));
-
-            mHasTechLevel = new JCheckBox(I18n.Text("Tech Level"), hasTL);
-            UIUtilities.setToPreferredSizeOnly(mHasTechLevel);
-            String tlTooltip = I18n.Text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mHasTechLevel.setEnabled(enabled);
-            mHasTechLevel.addActionListener(this);
-            wrapper.add(mHasTechLevel);
-
-            mTechLevel = new JTextField("9999");
-            UIUtilities.setToPreferredSizeOnly(mTechLevel);
-            mTechLevel.setText(mSavedTechLevel);
-            mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mTechLevel.setEnabled(enabled && hasTL);
-            wrapper.add(mTechLevel);
-            UIUtilities.setToPreferredSizeOnly(wrapper);
-            parent.add(wrapper);
-
-            if (!hasTL) {
-                mSavedTechLevel = character.getDescription().getTechLevel();
-            }
-        } else {
-            mTechLevel = new JTextField(mSavedTechLevel);
-            mHasTechLevel = new JCheckBox(I18n.Text("Tech Level Required"), hasTL);
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this spell requires tech level specialization")));
-            mHasTechLevel.setEnabled(enabled);
-            mHasTechLevel.addActionListener(this);
-            parent.add(mHasTechLevel);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private Container createPointsFields() {
+    protected Container createPointsFields() {
         boolean forCharacter = mRow.getCharacter() != null;
         boolean forTemplate  = mRow.getTemplate() != null;
         int     columns      = forTemplate ? 8 : 6;
@@ -247,7 +136,7 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
 
         mAttributePopup = createComboBox(panel, SkillAttribute.values(), mRow.getAttribute(), I18n.Text("The attribute this spell is based on"));
         panel.add(new JLabel(" /"));
-        mDifficultyCombo = createComboBox(panel, new Object[]{SkillDifficulty.H, SkillDifficulty.VH}, mRow.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H, I18n.Text("The difficulty of the spell"));
+        mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.Text("The difficulty of the spell"));
 
         if (forCharacter || forTemplate) {
             mPointsField = createField(panel, panel, I18n.Text("Points"), Integer.toString(mRow.getPoints()), I18n.Text("The number of points spent on this spell"), 4);
@@ -255,62 +144,23 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             mPointsField.addActionListener(this);
 
             if (forCharacter) {
-                mLevelField = createField(panel, panel, I18n.Text("Level"), getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), editorLevelTooltip() + mRow.getLevelToolTip(), 7);
+                String levelTooltip = I18n.Text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip();
+                mLevelField = createField(panel, panel, I18n.Text("Level"), getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), levelTooltip, 7);
                 mLevelField.setEnabled(false);
             }
         }
         return panel;
     }
 
-    private static String editorLevelTooltip() {
-        return I18n.Text("The spell level and relative spell level to roll against.\n");
+    protected SkillAttribute getAttribute() {
+        return (SkillAttribute) mAttributePopup.getSelectedItem();
     }
 
-    private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
-        JComboBox<Object> combo = new JComboBox<>(items);
-        combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        combo.setSelectedItem(selection);
-        combo.addActionListener(this);
-        combo.setMaximumRowCount(items.length);
-        UIUtilities.setToPreferredSizeOnly(combo);
-        combo.setEnabled(mIsEditable);
-        parent.add(combo);
-        return combo;
-    }
-
-    private static String getDisplayLevel(SkillAttribute attribute, int level, int relativeLevel) {
+    public static String getDisplayLevel(SkillAttribute attribute, int level, int relativeLevel) {
         if (level < 0) {
             return "-";
         }
         return Numbers.format(level) + "/" + attribute + Numbers.formatWithForcedSign(relativeLevel);
-    }
-
-    private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
-        JTextField field = new JTextField(text);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
-        field.getDocument().addDocumentListener(this);
-
-        LinkedLabel label = new LinkedLabel(title);
-        label.setLink(field);
-
-        labelParent.add(label);
-        fieldParent.add(field);
-        return field;
-    }
-
-    private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-
-        if (maxChars > 0) {
-            UIUtilities.setToPreferredSizeOnly(field);
-            field.setText(text);
-        }
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
-        return field;
     }
 
     @Override
@@ -330,9 +180,9 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
             modified |= mRow.setMaintenance(mMaintenanceField.getText());
             modified |= mRow.setCastingTime(mCastingTimeField.getText());
             modified |= mRow.setDuration(mDurationField.getText());
-            modified |= mRow.setDifficulty(getAttribute(), isVeryHard());
+            modified |= mRow.setDifficulty(getAttribute(), getDifficulty());
             if (mRow.getCharacter() != null || mRow.getTemplate() != null) {
-                modified |= mRow.setPoints(getSpellPoints());
+                modified |= mRow.setPoints(getPoints());
             }
         }
         modified |= mRow.setNotes(mNotesField.getText());
@@ -349,75 +199,22 @@ public class SpellEditor extends RowEditor<Spell> implements ActionListener, Doc
     }
 
     @Override
-    public void finished() {
-        if (mTabPanel != null) {
-            updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
-        }
-    }
-
-    @Override
     public void actionPerformed(ActionEvent event) {
+        super.actionPerformed(event);
         Object src = event.getSource();
-        if (src == mHasTechLevel) {
-            boolean enabled = mHasTechLevel.isSelected();
-
-            mTechLevel.setEnabled(enabled);
-            if (enabled) {
-                mTechLevel.setText(mSavedTechLevel);
-                mTechLevel.requestFocus();
-            } else {
-                mSavedTechLevel = mTechLevel.getText();
-                mTechLevel.setText("");
+        if (src == mAttributePopup) {
+            if (mLevelField != null) {
+                recalculateLevel(mLevelField);
             }
-        } else if (src == mPointsField || src == mAttributePopup || src == mDifficultyCombo) {
-            recalculateLevel();
-        }
-    }
-
-    private void recalculateLevel() {
-        if (mLevelField != null) {
-            SkillAttribute attribute = getAttribute();
-            SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getSpellPoints(), attribute, isVeryHard(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
-            mLevelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
-            mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
-        }
-    }
-
-    private int getSpellPoints() {
-        return Numbers.extractInteger(mPointsField.getText(), 0, true);
-    }
-
-    private SkillAttribute getAttribute() {
-        return (SkillAttribute) mAttributePopup.getSelectedItem();
-    }
-
-    private boolean isVeryHard() {
-        return mDifficultyCombo.getSelectedItem() == SkillDifficulty.VH;
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent event) {
-        Document doc = event.getDocument();
-        if (doc == mNameField.getDocument()) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
-        } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.Text("The class field may not be empty") : null);
-        } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.Text("The casting cost field may not be empty") : null);
-        } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.Text("The casting time field may not be empty") : null);
-        } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.Text("The duration field may not be empty") : null);
         }
     }
 
     @Override
-    public void insertUpdate(DocumentEvent event) {
-        changedUpdate(event);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent event) {
-        changedUpdate(event);
+    protected void recalculateLevel(JTextField levelField) {
+        SkillAttribute attribute = getAttribute();
+        SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getPoints(), attribute, getDifficulty(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
+        levelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
+        String tooltip = I18n.Text("The spell level and relative spell level to roll against.\n") + level.getToolTip();
+        levelField.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
     }
 }

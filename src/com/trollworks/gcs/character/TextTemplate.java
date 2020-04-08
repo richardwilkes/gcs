@@ -1175,7 +1175,7 @@ public class TextTemplate {
                                     writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
                                     break;
                                 case KEY_DIFFICULTY:
-                                    writeEncodedText(out, (spell.isVeryHard() ? SkillDifficulty.VH : SkillDifficulty.H).toString());
+                                    writeEncodedText(out, spell.getDifficultyAsText());
                                     break;
                                 case KEY_POINTS:
                                     writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
