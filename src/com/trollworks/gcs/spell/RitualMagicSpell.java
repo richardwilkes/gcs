@@ -31,13 +31,19 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 
-/** A GURPS Spell for the Ritual Magic system. */
+/**
+ * A GURPS Spell for the Ritual Magic system.
+ *
+ *  Ritual Magic spells are techniques and as such they must default to a skill.
+ *  The convention used is to default to a skill named by RitualMagicSpell.getDefaultSkillName()
+ *  whose specialization is the actual college of the spell.
+ */
 public class RitualMagicSpell extends Spell {
     private static final int    CURRENT_VERSION        = 1;
     /** The XML tag used for items. */
     public  static final String TAG_RITUAL_MAGIC_SPELL = "ritual_magic_spell";
     /** The (positive) number of spell prerequsites needed to cast this spell. Used as skill penalty relative to the College skill */
-    private              int    mSpellPrerequisiteCount;
+    private              int    mPrerequisiteSpellsCount;
 
     /**
      * Creates a new ritual magic spell.
@@ -80,33 +86,21 @@ public class RitualMagicSpell extends Spell {
     }
 
     /**
+     * @return The name (without specialization) of the skill to which Ritual Magic spells default.
+     */
+    public static String getDefaultSkillName() {
+        // Using "College" as the default skill is only a convention
+        return I18n.Text("College");
+    }
+
+    /**
      * Call to force an update of the level and relative level for this spell.
      *
      * @param notify Whether or not a notification should be issued on a change.
      */
     @Override
     public void updateLevel(boolean notify) {
-        GURPSCharacter  character      = getCharacter();
-        String          name           = getName();
-        String          specialization = null;
-        Set<String>     categories     = getCategories();
-        SkillDefault    def            = getDefault();
-        SkillDifficulty difficulty     = getDifficulty();
-        int             points         = mPoints;
-        boolean         limited        = true;
-        int             limitModifier  = 0;
-
-        SkillLevel skillLevel = Technique.calculateTechniqueLevel(character, name, specialization, categories, def, difficulty, points, limited, limitModifier);
-        if (skillLevel.mLevel != -1) {
-            int bonusLevels = 0;
-            StringBuilder toolTip = new StringBuilder(skillLevel.mToolTip);
-            bonusLevels += getSpellBonuses(character, ID_COLLEGE,      getCollege(),     categories, toolTip);
-            bonusLevels += getSpellBonuses(character, ID_POWER_SOURCE, getPowerSource(), categories, toolTip);
-            bonusLevels += getSpellBonuses(character, ID_NAME,         name,             categories, toolTip);
-            skillLevel.mLevel         += bonusLevels;
-            skillLevel.mRelativeLevel += bonusLevels;
-        }
-
+        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getCollege(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, mPoints);
         if(mLevel == null || !mLevel.isSameLevelAs(skillLevel)) {
             mLevel = skillLevel;
             if(notify) {
@@ -115,12 +109,38 @@ public class RitualMagicSpell extends Spell {
         }
     }
 
-    // Copied from Spell class
-    private static int getSpellBonuses(GURPSCharacter character, String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
-        int level = character.getIntegerBonusFor(id, toolTip);
-        level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase(), toolTip);
-        level += character.getSpellComparedIntegerBonusFor(id + '*', qualifier, categories, toolTip);
-        return level;
+    /**
+     * Calculates the spell level.
+     *
+     * @param character         The character the spell will be attached to.
+     * @param name              The name of the spell.
+     * @param college           The college of the spell.
+     * @param powerSource       The power source of the spell.
+     * @param difficulty        The difficulty of the spell.
+     * @param prereqSpellsCount The number of prerequisite spells for the spell with this name.
+     * @param points            The number of points spent in the spell.
+     * @return The calculated spell level.
+     */
+    public static SkillLevel calculateLevel(GURPSCharacter character, String name, String college, String powerSource, Set<String> categories, SkillDifficulty difficulty, int prereqSpellsCount, int points) {
+        // Compute initial level using the technique formula
+        SkillDefault def = makeSkillDefault(college, prereqSpellsCount);
+        // TODO: Is the specialiaztion parameter the specialization of the technique or the full name of the default skill?
+        SkillLevel skillLevel = Technique.calculateTechniqueLevel(character, name, null, categories, def, difficulty, points, true, 0);
+        // FIXME: calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
+        skillLevel.mRelativeLevel += def.getModifier();
+
+        // And then apply bonuses for spells
+        if (character != null) {
+            int bonusLevels = 0;
+            StringBuilder toolTip = new StringBuilder(skillLevel.mToolTip);
+            // TODO: Should college-wide bonuses be applied direcly to the College skills?
+            bonusLevels += Spell.getSpellBonusesFor(character, ID_COLLEGE,      college,     categories, toolTip);
+            bonusLevels += Spell.getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, toolTip);
+            bonusLevels += Spell.getSpellBonusesFor(character, ID_NAME,         name,        categories, toolTip);
+            skillLevel.mLevel         += bonusLevels;
+            skillLevel.mRelativeLevel += bonusLevels;
+        }
+        return skillLevel;
     }
 
     @Override
@@ -129,7 +149,7 @@ public class RitualMagicSpell extends Spell {
             return true;
         if (obj instanceof RitualMagicSpell) {
             RitualMagicSpell that = (RitualMagicSpell) obj;
-            if (mSpellPrerequisiteCount != that.mSpellPrerequisiteCount)
+            if (mPrerequisiteSpellsCount != that.mPrerequisiteSpellsCount)
                 return false;
             return super.isEquivalentTo(obj);
         }
@@ -159,6 +179,7 @@ public class RitualMagicSpell extends Spell {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
+        mPrerequisiteSpellsCount = 0;
     }
 
     @Override
@@ -173,7 +194,8 @@ public class RitualMagicSpell extends Spell {
      * @return {@code true} if this technique has its default satisfied.
      */
     public boolean satisfied(StringBuilder builder, String prefix) {
-        if(getCollege() == null || getCollege().isBlank()) {
+        String college = getCollege();
+        if(college == null || college.isBlank()) {
             if (builder != null) {
                 String format = I18n.Text("{0}Must be assigned to a college\n");
                 builder.append(MessageFormat.format(format, prefix));
@@ -196,17 +218,30 @@ public class RitualMagicSpell extends Spell {
         return result;
     }
 
-    public SkillDefault getDefault() {
-        return new SkillDefault(SkillDefaultType.Skill, I18n.Text("College"), getCollege(), -mSpellPrerequisiteCount);
+    /**
+     * Creates a SkillDefault for this spell.
+     * Intended for compatibility with other methods that require a SkillDefault instance.
+     *
+     * @param college                 The college of the spell.
+     * @param prerequisiteSpellsCount The (unsigned) number of prerequisite spells of this spell.
+     * @return A {@link SkillDefault}.
+     */
+    public static SkillDefault makeSkillDefault(String college, int prerequisiteSpellsCount) {
+        // If college is invalid, return an (hopefully) invalid default
+        if(college == null || college.isBlank())
+            return new SkillDefault(SkillDefaultType.Skill, null, college, -prerequisiteSpellsCount);
+        return new SkillDefault(SkillDefaultType.Skill, getDefaultSkillName(), college, -prerequisiteSpellsCount);
     }
 
-    public int getSpellPrerequisiteCount() {
-        return mSpellPrerequisiteCount;
+    public int getPrerequisiteSpellsCount() {
+        return mPrerequisiteSpellsCount;
     }
 
-    public boolean setSpellPrerequisiteCount(int spellPrerequisiteCount) {
-        if (mSpellPrerequisiteCount != spellPrerequisiteCount) {
-            mSpellPrerequisiteCount = spellPrerequisiteCount;
+    public boolean setPrerequisiteSpellsCount(int prerequisiteSpellsCount) {
+        if (mPrerequisiteSpellsCount != prerequisiteSpellsCount) {
+            mPrerequisiteSpellsCount = prerequisiteSpellsCount;
+            // TODO: Should this call something like notifySingle(ID_PREREQ_COUNT) like the setters in the Spell class do?
+            updateLevel(true);
             return true;
         }
         return false;
