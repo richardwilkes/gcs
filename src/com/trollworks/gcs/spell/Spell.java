@@ -44,7 +44,7 @@ import java.util.Set;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
-    private static final int               CURRENT_VERSION          = 3;
+    private static final int               CURRENT_VERSION          = 4;
     /** The extension for Spell lists. */
     public static final  String            OLD_SPELL_EXTENSION      = "spl";
     /** The XML tag used for items. */
@@ -63,6 +63,7 @@ public class Spell extends ListRow implements HasSourceReference {
     private static final String            TAG_POINTS               = "points";
     private static final String            TAG_REFERENCE            = "reference";
     private static final String            TAG_ATTRIBUTE            = "attribute";
+    private static final String            TAG_DIFFICULTY           = "difficulty";
     private static final String            ATTRIBUTE_VERY_HARD      = "very_hard";
     /** The prefix used in front of all IDs for the spells. */
     public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
@@ -269,7 +270,9 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     protected void loadAttributes(XMLReader reader, LoadState state) {
         super.loadAttributes(reader, state);
-        mDifficulty = reader.isAttributeSet(ATTRIBUTE_VERY_HARD) ? SkillDifficulty.VH : SkillDifficulty.H;
+        // Compatibility with version 3 of the Spell format
+        if (reader.isAttributeSet(ATTRIBUTE_VERY_HARD))
+            mDifficulty = SkillDifficulty.VH;
     }
 
     @Override
@@ -311,6 +314,8 @@ public class Spell extends ListRow implements HasSourceReference {
                 mCastingTime = reader.readText().replace("\n", " ");
             } else if (TAG_DURATION.equals(name)) {
                 mDuration = reader.readText().replace("\n", " ");
+            } else if (TAG_DIFFICULTY.equals(name)) {
+                setDifficultyFromText(reader.readText().replace("\n", " "));
             } else if (TAG_POINTS.equals(name)) {
                 mPoints = reader.readInteger(1);
             } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
@@ -329,13 +334,6 @@ public class Spell extends ListRow implements HasSourceReference {
     protected void finishedLoading(LoadState state) {
         updateLevel(false);
         super.finishedLoading(state);
-    }
-
-    @Override
-    protected void saveAttributes(XMLWriter out, boolean forUndo) {
-        if (isVeryHard()) {
-            out.writeAttribute(ATTRIBUTE_VERY_HARD, true);
-        }
     }
 
     @Override
@@ -421,7 +419,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return The calculated spell skill level. */
     private SkillLevel calculateLevelSelf() {
-        return calculateLevel(getCharacter(), mPoints, mAttribute, isVeryHard(), mCollege, mPowerSource, mName, getCategories());
+        return calculateLevel(getCharacter(), mPoints, mAttribute, mDifficulty, mCollege, mPowerSource, mName, getCategories());
     }
 
     /**
@@ -443,15 +441,16 @@ public class Spell extends ListRow implements HasSourceReference {
      *
      * @param character   The character the spell will be attached to.
      * @param points      The number of points spent in the spell.
-     * @param isVeryHard  Whether the spell is "Very Hard" or not.
+     * @param difficulty  The difficulty of the spell.
      * @param college     The college the spell belongs to.
      * @param powerSource The source of power for the spell.
      * @param name        The name of the spell.
      * @return The calculated spell level.
      */
-    public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, boolean isVeryHard, String college, String powerSource, String name, Set<String> categories) {
+    // TODO
+    public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, SkillDifficulty difficulty, String college, String powerSource, String name, Set<String> categories) {
         StringBuilder toolTip       = new StringBuilder();
-        int           relativeLevel = isVeryHard ? -3 : -2;
+        int           relativeLevel = difficulty.getBaseRelativeLevel();
         int           level;
 
         if (character != null) {
@@ -480,7 +479,7 @@ public class Spell extends ListRow implements HasSourceReference {
         return new SkillLevel(level, relativeLevel, toolTip);
     }
 
-    private static int getSpellBonusesFor(GURPSCharacter character, String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
+    public static int getSpellBonusesFor(GURPSCharacter character, String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
         int level = character.getIntegerBonusFor(id, toolTip);
         level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase(), toolTip);
         level += character.getSpellComparedIntegerBonusFor(id + '*', qualifier, categories, toolTip);
@@ -685,6 +684,41 @@ public class Spell extends ListRow implements HasSourceReference {
         return SpellColumn.values()[column.getID()].getDataAsText(this);
     }
 
+    /** @param text The combined attribute/difficulty to set. */
+    // Copied from Skill class
+    public void setDifficultyFromText(String text) {
+        SkillAttribute[]  attribute  = SkillAttribute.values();
+        SkillDifficulty[] difficulty = SkillDifficulty.values();
+        String            input      = text.trim();
+
+        for (SkillAttribute element : attribute) {
+            // We have to go backwards through the list to avoid the
+            // regex grabbing the "H" in "VH".
+            for (int j = difficulty.length - 1; j >= 0; j--) {
+                if (input.matches("(?i).*" + element.name() + ".*/.*" + difficulty[j].name() + ".*")) {
+                    setDifficulty(element, difficulty[j]);
+                    return;
+                }
+            }
+        }
+    }
+
+    /** @return The formatted attribute/difficulty. */
+    public String getDifficultyAsText() {
+        return getDifficultyAsText(true);
+    }
+
+    /**
+     * @param localized Whether to use localized versions of attribute and difficulty.
+     * @return The formatted attribute/difficulty.
+     */
+    public String getDifficultyAsText(boolean localized) {
+        if (canHaveChildren()) {
+            return "";
+        }
+        return (localized ? mAttribute.toString() : mAttribute.name()) + "/" + (localized ? mDifficulty.toString() : mDifficulty.name());
+    }
+
     @Override
     public boolean contains(String text, boolean lowerCaseOnly) {
         if (getName().toLowerCase().contains(text)) {
@@ -727,25 +761,20 @@ public class Spell extends ListRow implements HasSourceReference {
         return mAttribute;
     }
 
-    /** @return Whether this is a "Very Hard" spell or not. */
-    public boolean isVeryHard() {
-        return mDifficulty == SkillDifficulty.VH;
-    }
-
     /** @return The difficulty. */
     public SkillDifficulty getDifficulty() {
         return mDifficulty;
     }
 
     /**
-     * @param attribute The attribute to use.
-     * @param veryHard  Whether this is a "Very Hard" spell or not.
+     * @param attribute  The attribute to set.
+     * @param difficulty The difficulty to set.
      * @return Whether it was modified.
      */
-    public boolean setDifficulty(SkillAttribute attribute, boolean veryHard) {
-        if (mAttribute != attribute || isVeryHard() != veryHard) {
+    public boolean setDifficulty(SkillAttribute attribute, SkillDifficulty difficulty) {
+        if (mAttribute != attribute || mDifficulty != difficulty) {
             mAttribute = attribute;
-            mDifficulty = veryHard ? SkillDifficulty.VH : SkillDifficulty.H;
+            mDifficulty = difficulty;
             startNotify();
             notify(ID_DIFFICULTY, this);
             updateLevel(true);
