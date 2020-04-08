@@ -431,7 +431,6 @@ public class Spell extends ListRow implements HasSourceReference {
     public void updateLevel(boolean notify) {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
-
         if (notify && (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel))) {
             notify(ID_LEVEL, this);
         }

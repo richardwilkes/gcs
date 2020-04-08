@@ -24,6 +24,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.io.xml.XMLReader;
+import com.trollworks.toolkit.io.xml.XMLWriter;
 import com.trollworks.toolkit.utility.I18n;
 
 import java.io.IOException;
@@ -35,16 +36,19 @@ import java.util.Set;
  * A GURPS Spell for the Ritual Magic system.
  * <p>
  * Ritual Magic spells are techniques and as such they must default to a skill. The convention used
- * is to default to a skill named by RitualMagicSpell.getDefaultSkillName() whose specialization is
- * the actual college of the spell.
+ * is to default to a skill named "Ritual Magic College" whose specialization is the actual college
+ * of the spell.
  */
 public class RitualMagicSpell extends Spell {
     private static final int    CURRENT_VERSION        = 1;
     /** The XML tag used for items. */
     public static final  String TAG_RITUAL_MAGIC_SPELL = "ritual_magic_spell";
+    private static final String TAG_PREREQ_COUNT       = "prereq_count";
+    /** The base name of the skill Ritual Magic Spells default from. */
+    public static final  String BASE_SKILL_NAME        = "Ritual Magic College";
     /**
-     * The (positive) number of spell prerequsites needed to cast this spell. Used as skill penalty
-     * relative to the College skill
+     * The (positive) number of spell prerequisites needed to cast this spell. Used as skill penalty
+     * relative to the Ritual Magic College skill.
      */
     private              int    mPrerequisiteSpellsCount;
 
@@ -90,14 +94,6 @@ public class RitualMagicSpell extends Spell {
     }
 
     /**
-     * @return The name (without specialization) of the skill to which Ritual Magic spells default.
-     */
-    public static String getDefaultSkillName() {
-        // Using "College" as the default skill is only a convention
-        return I18n.Text("College");
-    }
-
-    /**
      * Call to force an update of the level and relative level for this spell.
      *
      * @param notify Whether or not a notification should be issued on a change.
@@ -126,23 +122,23 @@ public class RitualMagicSpell extends Spell {
      * @return The calculated spell level.
      */
     public static SkillLevel calculateLevel(GURPSCharacter character, String name, String college, String powerSource, Set<String> categories, SkillDifficulty difficulty, int prereqSpellsCount, int points) {
-        // Compute initial level using the technique formula
-        SkillDefault def = makeSkillDefault(college, prereqSpellsCount);
-        // TODO: Is the specialiaztion parameter the specialization of the technique or the full name of the default skill?
-        SkillLevel skillLevel = Technique.calculateTechniqueLevel(character, name, null, categories, def, difficulty, points, true, 0);
-        // FIXME: calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
+        if (college == null) {
+            college = "";
+        }
+        SkillDefault def        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : BASE_SKILL_NAME, college, -prereqSpellsCount);
+        SkillLevel   skillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, def, difficulty, points, true, 0);
+        // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
         skillLevel.mRelativeLevel += def.getModifier();
 
         // And then apply bonuses for spells
         if (character != null) {
-            int           bonusLevels = 0;
-            StringBuilder toolTip     = new StringBuilder(skillLevel.mToolTip);
-            // TODO: Should college-wide bonuses be applied direcly to the College skills?
-            bonusLevels += Spell.getSpellBonusesFor(character, ID_COLLEGE, college, categories, toolTip);
-            bonusLevels += Spell.getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, toolTip);
-            bonusLevels += Spell.getSpellBonusesFor(character, ID_NAME, name, categories, toolTip);
+            StringBuilder tip         = new StringBuilder(skillLevel.mToolTip);
+            int           bonusLevels = Spell.getSpellBonusesFor(character, ID_COLLEGE, college, categories, tip);
+            bonusLevels += Spell.getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, tip);
+            bonusLevels += Spell.getSpellBonusesFor(character, ID_NAME, name, categories, tip);
             skillLevel.mLevel += bonusLevels;
             skillLevel.mRelativeLevel += bonusLevels;
+            skillLevel.mToolTip = tip.toString();
         }
         return skillLevel;
     }
@@ -153,8 +149,8 @@ public class RitualMagicSpell extends Spell {
             return true;
         }
         if (obj instanceof RitualMagicSpell) {
-            RitualMagicSpell that = (RitualMagicSpell) obj;
-            if (mPrerequisiteSpellsCount != that.mPrerequisiteSpellsCount) {
+            RitualMagicSpell other = (RitualMagicSpell) obj;
+            if (mPrerequisiteSpellsCount != other.mPrerequisiteSpellsCount) {
                 return false;
             }
             return super.isEquivalentTo(obj);
@@ -164,7 +160,7 @@ public class RitualMagicSpell extends Spell {
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Spell (Ritual Magic)");
+        return I18n.Text("Ritual Magic Spell");
     }
 
     @Override
@@ -179,13 +175,29 @@ public class RitualMagicSpell extends Spell {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Spell (Ritual Magic)");
+        return I18n.Text("Ritual Magic Spell");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mPrerequisiteSpellsCount = 0;
+        mPoints = 0;
+    }
+
+    @Override
+    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+        if (TAG_PREREQ_COUNT.equals(reader.getName())) {
+            mPrerequisiteSpellsCount = reader.readInteger(0);
+        } else {
+            super.loadSubElement(reader, state);
+        }
+    }
+
+    @Override
+    public void saveSelf(XMLWriter out, boolean forUndo) {
+        super.saveSelf(out, forUndo);
+        out.simpleTagNotZero(TAG_PREREQ_COUNT, mPrerequisiteSpellsCount);
     }
 
     @Override
@@ -203,41 +215,19 @@ public class RitualMagicSpell extends Spell {
         String college = getCollege();
         if (college == null || college.isBlank()) {
             if (builder != null) {
-                String format = I18n.Text("{0}Must be assigned to a college\n");
-                builder.append(MessageFormat.format(format, prefix));
+                builder.append(MessageFormat.format(I18n.Text("{0}Must be assigned to a college\n"), prefix));
             }
-            return false; // Do not check further requirements
+            return false;
         }
 
-        boolean result    = true;
-        String  skillName = I18n.Text("College");
-        String  skillSpec = getCollege();
-        Skill   skill     = getCharacter().getBestSkillNamed(skillName, skillSpec, false, new HashSet<>());
-
+        Skill skill = getCharacter().getBestSkillNamed(BASE_SKILL_NAME, college, false, new HashSet<>());
         if (skill == null) {
             if (builder != null) {
-                String format = I18n.Text("{0}Requires a skill named {1} ({2})\n");
-                builder.append(MessageFormat.format(format, prefix, skillName, skillSpec));
+                builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1} ({2})\n"), prefix, BASE_SKILL_NAME, college));
             }
-            result = false;
+            return false;
         }
-        return result;
-    }
-
-    /**
-     * Creates a SkillDefault for this spell. Intended for compatibility with other methods that
-     * require a SkillDefault instance.
-     *
-     * @param college                 The college of the spell.
-     * @param prerequisiteSpellsCount The (unsigned) number of prerequisite spells of this spell.
-     * @return A {@link SkillDefault}.
-     */
-    public static SkillDefault makeSkillDefault(String college, int prerequisiteSpellsCount) {
-        // If college is invalid, return an (hopefully) invalid default
-        if (college == null || college.isBlank()) {
-            return new SkillDefault(SkillDefaultType.Skill, null, college, -prerequisiteSpellsCount);
-        }
-        return new SkillDefault(SkillDefaultType.Skill, getDefaultSkillName(), college, -prerequisiteSpellsCount);
+        return true;
     }
 
     public int getPrerequisiteSpellsCount() {
@@ -247,7 +237,6 @@ public class RitualMagicSpell extends Spell {
     public boolean setPrerequisiteSpellsCount(int prerequisiteSpellsCount) {
         if (mPrerequisiteSpellsCount != prerequisiteSpellsCount) {
             mPrerequisiteSpellsCount = prerequisiteSpellsCount;
-            // TODO: Should this call something like notifySingle(ID_PREREQ_COUNT) like the setters in the Spell class do?
             updateLevel(true);
             return true;
         }

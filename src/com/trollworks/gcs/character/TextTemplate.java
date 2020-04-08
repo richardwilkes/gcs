@@ -24,7 +24,6 @@ import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
-import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellColumn;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;

@@ -31,6 +31,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -42,7 +44,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 /** An editor implementing functionalities common to all spell implementations. */
-public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> implements ActionListener, DocumentListener {
+public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> implements ActionListener, DocumentListener, FocusListener {
     protected JTextField                 mNameField;
     protected JTextField                 mCollegeField;
     protected JTextField                 mPowerSourceField;
@@ -66,7 +68,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected RangedWeaponEditor         mRangedWeapons;
 
     /**
-     * Creates a new {@link RowEditor}.
+     * Creates a new {@link BaseSpellEditor}.
      *
      * @param row The row being edited.
      */
@@ -76,10 +78,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
 
     protected static void determineLargest(Container panel, int every, Dimension size) {
         int count = panel.getComponentCount();
-
         for (int i = 0; i < count; i += every) {
             Dimension oneSize = panel.getComponent(i).getPreferredSize();
-
             if (oneSize.width > size.width) {
                 size.width = oneSize.width;
             }
@@ -91,29 +91,23 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
 
     protected static void applySize(Container panel, int every, Dimension size) {
         int count = panel.getComponentCount();
-
         for (int i = 0; i < count; i += every) {
             UIUtilities.setOnlySize(panel.getComponent(i), size);
         }
     }
 
-    /**
-     * Get the points in the points text field, as an integer.
-     */
+    /** @return The points in the points field, as an integer. */
     protected int getPoints() {
         return Numbers.extractInteger(mPointsField.getText(), 0, true);
     }
 
-    /**
-     * Get the selected item of the difficulty combobox, as a SkillDifficulty.
-     */
+    /** @return The selected item of the difficulty combobox, as a SkillDifficulty. */
     protected SkillDifficulty getDifficulty() {
         return (SkillDifficulty) mDifficultyCombo.getSelectedItem();
     }
 
     protected JScrollPane embedEditor(Component editor) {
         JScrollPane scrollPanel = new JScrollPane(editor);
-
         scrollPanel.setMinimumSize(new Dimension(500, 120));
         scrollPanel.setName(editor.toString());
         if (!mIsEditable) {
@@ -134,7 +128,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-
         if (maxChars > 0) {
             UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
@@ -143,6 +136,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         field.setEnabled(mIsEditable);
         labelParent.add(new LinkedLabel(title, field));
         fieldParent.add(field);
+        field.addActionListener(this);
+        field.addFocusListener(this);
         return field;
     }
 
@@ -265,15 +260,14 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected abstract void recalculateLevel(JTextField levelField);
 
-    /**
-     * Always call the super implementation when overriding this method.
-     */
     @Override
     public void actionPerformed(ActionEvent event) {
-        Object src = event.getSource();
+        adjustForSource(event.getSource());
+    }
+
+    protected void adjustForSource(Object src) {
         if (src == mHasTechLevel) {
             boolean enabled = mHasTechLevel.isSelected();
-
             mTechLevel.setEnabled(enabled);
             if (enabled) {
                 mTechLevel.setText(mSavedTechLevel);
@@ -289,9 +283,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         }
     }
 
-    /**
-     * Always call the super implementation when overriding this method.
-     */
     @Override
     public void finished() {
         if (mTabPanel != null) {
@@ -299,9 +290,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         }
     }
 
-    /**
-     * Always call the super implementation when overriding this method.
-     */
+    /** Always call the super implementation when overriding this method. */
     @Override
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
@@ -326,5 +315,15 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     @Override
     public void removeUpdate(DocumentEvent event) {
         changedUpdate(event);
+    }
+
+    @Override
+    public void focusGained(FocusEvent event) {
+        // Nothing to do
+    }
+
+    @Override
+    public void focusLost(FocusEvent event) {
+        adjustForSource(event.getSource());
     }
 }

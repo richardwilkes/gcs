@@ -33,6 +33,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,7 +51,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Skill}s. */
-public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener {
+public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener, FocusListener {
     private JTextField         mNameField;
     private JTextField         mSpecializationField;
     private JTextField         mNotesField;
@@ -153,7 +155,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-
         if (maxChars > 0) {
             UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
@@ -162,6 +163,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         field.setEnabled(mIsEditable);
         labelParent.add(new LinkedLabel(title, field));
         fieldParent.add(field);
+        field.addActionListener(this);
+        field.addFocusListener(this);
         return field;
     }
 
@@ -173,8 +176,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private void createPointsFields(Container parent, boolean forCharacter) {
         mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getPoints()), I18n.Text("The number of points spent on this skill"), 4);
         new NumberFilter(mPointsField, false, false, false, 4);
-        mPointsField.addActionListener(this);
-
         if (forCharacter) {
             mLevelField = createField(parent, parent, I18n.Text("Level"), Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), editorLevelTooltip() + mRow.getLevelToolTip(), 8);
             mLevelField.setEnabled(false);
@@ -345,11 +346,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        Object src = event.getSource();
+        adjustForSource(event.getSource());
+    }
 
+    protected void adjustForSource(Object src) {
         if (src == mHasTechLevel) {
             boolean enabled = mHasTechLevel.isSelected();
-
             mTechLevel.setEnabled(enabled);
             if (enabled) {
                 mTechLevel.setText(mSavedTechLevel);
@@ -380,5 +382,15 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private void nameChanged() {
         LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+    }
+
+    @Override
+    public void focusGained(FocusEvent event) {
+        // Nothing to do
+    }
+
+    @Override
+    public void focusLost(FocusEvent event) {
+        adjustForSource(event.getSource());
     }
 }

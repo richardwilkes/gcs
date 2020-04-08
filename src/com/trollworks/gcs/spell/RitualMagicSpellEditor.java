@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.spell;
 
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
@@ -23,7 +22,6 @@ import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
 import com.trollworks.toolkit.utility.I18n;
-import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
 
@@ -33,7 +31,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -43,7 +40,6 @@ import javax.swing.SwingConstants;
 /** The detailed editor for {@link RitualMagicSpell}s. */
 public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     private JTextField mPrerequisiteSpellsCountField;
-
 
     /**
      * Creates a new {@link Spell} {@link RowEditor}.
@@ -132,21 +128,16 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         mDifficultyCombo = createComboBox(panel, allowedDifficulties, mRow.getDifficulty(), I18n.Text("The difficulty of the spell"));
 
         if (forCharacter || forTemplate) {
-            mPointsField = createField(panel, panel, I18n.Text("Points"), Integer.toString(mRow.getPoints()), I18n.Text("The number of points spent on this spell"), 4);
-            new NumberFilter(mPointsField, false, false, false, 4);
-            mPointsField.addActionListener(this);
-
+            mPointsField = createNumberField(panel, panel, I18n.Text("Points"), I18n.Text("The number of points spent on this spell"), mRow.getPoints(), 4);
             if (forCharacter) {
-                String levelText    = makeLevelFieldText(mRow.getLevel(), mRow.getRelativeLevel());
-                String levelTooltip = I18n.Text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip();
-                mLevelField = createField(panel, panel, I18n.Text("Level"), levelText, levelTooltip, 7);
+                mLevelField = createField(panel, panel, I18n.Text("Level"), getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()), I18n.Text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(), 7);
                 mLevelField.setEnabled(false);
             }
         }
         return panel;
     }
 
-    public static String makeLevelFieldText(int level, int relativeLevel) {
+    public static String getDisplayLevel(int level, int relativeLevel) {
         if (level < 0) {
             return "-";
         }
@@ -189,30 +180,30 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        super.actionPerformed(event);
         Object src = event.getSource();
         if (src == mPrerequisiteSpellsCountField) {
             if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }
+        } else {
+            super.actionPerformed(event);
         }
     }
 
     protected void recalculateLevel(JTextField levelField) {
-        GURPSCharacter  character         = mRow.getCharacter();
-        String          spellName         = mNameField.getText();
-        String          collegeName       = mCollegeField.getText();
-        String          powerSource       = mPowerSourceField.getText();
-        Set<String>     categories        = ListRow.createCategoriesList(mCategoriesField.getText());
-        SkillDifficulty difficulty        = getDifficulty();
-        int             prereqSpellsCount = getPrerequisiteSpellsCount();
-        int             points            = getPoints();
-        SkillLevel      skillLevel        = RitualMagicSpell.calculateLevel(character, spellName, collegeName, powerSource, categories, difficulty, prereqSpellsCount, points);
+        SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mCollegeField.getText(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getPoints());
+        levelField.setText(getDisplayLevel(level.getLevel(), level.getRelativeLevel()));
+        levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
+    }
 
-        // FIXME: the skill level does not account for the "penalty from default" assigned to the SkillDefault
-        String levelFieldText    = makeLevelFieldText(skillLevel.getLevel(), skillLevel.getRelativeLevel());
-        String levelFieldTooltip = I18n.Text("The spell level and relative spell level to roll against.\n") + skillLevel.getToolTip();
-        levelField.setText(levelFieldText);
-        levelField.setToolTipText(Text.wrapPlainTextForToolTip(levelFieldTooltip));
+    @Override
+    protected void adjustForSource(Object src) {
+        if (src == mPrerequisiteSpellsCountField) {
+            if (mLevelField != null) {
+                recalculateLevel(mLevelField);
+            }
+        } else {
+            super.adjustForSource(src);
+        }
     }
 }
