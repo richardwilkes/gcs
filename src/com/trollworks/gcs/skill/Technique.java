@@ -46,16 +46,18 @@ public class Technique extends Skill {
      * @param def            The default the technique is based on.
      * @param difficulty     The difficulty of the technique.
      * @param points         The number of points spent in the technique.
+     * @param requirePoints  Whether only skills that have points in them are considered for
+     *                       defaults.
      * @param limited        Whether the technique has been limited or not.
      * @param limitModifier  The maximum bonus the technique can grant.
      * @return The calculated technique level.
      */
-    public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, Set<String> categories, SkillDefault def, SkillDifficulty difficulty, int points, boolean limited, int limitModifier) {
+    public static SkillLevel calculateTechniqueLevel(GURPSCharacter character, String name, String specialization, Set<String> categories, SkillDefault def, SkillDifficulty difficulty, int points, boolean requirePoints, boolean limited, int limitModifier) {
         StringBuilder toolTip       = new StringBuilder();
         int           relativeLevel = 0;
         int           level         = Integer.MIN_VALUE;
         if (character != null) {
-            level = getBaseLevel(character, def);
+            level = getBaseLevel(character, def, requirePoints);
             if (level != Integer.MIN_VALUE) {
                 int baseLevel = level;
                 level += def.getModifier();
@@ -81,10 +83,10 @@ public class Technique extends Skill {
         return new SkillLevel(level, relativeLevel, toolTip);
     }
 
-    private static int getBaseLevel(GURPSCharacter character, SkillDefault def) {
+    private static int getBaseLevel(GURPSCharacter character, SkillDefault def, boolean requirePoints) {
         SkillDefaultType type = def.getType();
         if (type == SkillDefaultType.Skill) {
-            Skill skill = getBaseSkill(character, def);
+            Skill skill = getBaseSkill(character, def, requirePoints);
             return skill != null ? skill.getLevel() : Integer.MIN_VALUE;
         }
         // Take the modifier back out, as we wanted the base, not the final value.
@@ -235,7 +237,7 @@ public class Technique extends Skill {
     public boolean satisfied(StringBuilder builder, String prefix) {
         if (mDefault.getType().isSkillBased()) {
             Skill   skill     = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<>());
-            boolean satisfied = skill != null && skill.getPoints() > 0;
+            boolean satisfied = skill != null && (skill instanceof Technique || skill.getPoints() > 0);
             if (!satisfied && builder != null) {
                 if (skill == null) {
                     builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1}\n"), prefix, mDefault.getFullName()));
@@ -250,7 +252,7 @@ public class Technique extends Skill {
 
     @Override
     protected SkillLevel calculateLevelSelf() {
-        return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getCategories(), getDefault(), getDifficulty(), getPoints(), isLimited(), getLimitModifier());
+        return calculateTechniqueLevel(getCharacter(), getName(), getSpecialization(), getCategories(), getDefault(), getDifficulty(), getPoints(), true, isLimited(), getLimitModifier());
     }
 
     @Override
@@ -389,7 +391,7 @@ public class Technique extends Skill {
 
     @Override
     public Skill getDefaultSkill() {
-        return getBaseSkill(getCharacter(), mDefault);
+        return getBaseSkill(getCharacter(), mDefault, true);
     }
 
     @Override

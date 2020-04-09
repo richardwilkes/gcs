@@ -126,7 +126,7 @@ public class RitualMagicSpell extends Spell {
             college = "";
         }
         SkillDefault def        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : BASE_SKILL_NAME, college, -prereqSpellsCount);
-        SkillLevel   skillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, def, difficulty, points, true, 0);
+        SkillLevel   skillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, def, difficulty, points, false, true, 0);
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
         skillLevel.mRelativeLevel += def.getModifier();
 

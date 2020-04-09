@@ -2468,7 +2468,8 @@ public class GURPSCharacter extends DataFile {
      * @param name           The name to look for.
      * @param specialization The specialization to look for. Pass in {@code null} or an empty string
      *                       to ignore.
-     * @param requirePoints  Only look at {@link Skill}s that have points.
+     * @param requirePoints  Only look at {@link Skill}s that have points. {@link Technique}s,
+     *                       however, still won't need points even if this is {@code true}.
      * @param excludes       The set of {@link Skill}s to exclude from consideration.
      * @return The skill if it is present, or {@code null} if its not.
      */
@@ -2478,7 +2479,7 @@ public class GURPSCharacter extends DataFile {
         for (Skill skill : getSkillsIterator()) {
             if (!skill.canHaveChildren()) {
                 if (excludes == null || !excludes.contains(skill.toString())) {
-                    if (!requirePoints || skill.getPoints() > 0) {
+                    if (!requirePoints || skill instanceof Technique || skill.getPoints() > 0) {
                         if (skill.getName().equalsIgnoreCase(name)) {
                             if (!checkSpecialization || skill.getSpecialization().equalsIgnoreCase(specialization)) {
                                 skills.add(skill);
@@ -2498,17 +2499,16 @@ public class GURPSCharacter extends DataFile {
      * @param name           The {@link Skill} name to look for.
      * @param specialization An optional specialization to look for. Pass {@code null} if it is not
      *                       needed.
-     * @param requirePoints  Only look at {@link Skill}s that have points.
+     * @param requirePoints  Only look at {@link Skill}s that have points. {@link Technique}s,
+     *                       however, still won't need points even if this is {@code true}.
      * @param excludes       The set of {@link Skill}s to exclude from consideration.
      * @return The {@link Skill} that matches with the highest level.
      */
     public Skill getBestSkillNamed(String name, String specialization, boolean requirePoints, Set<String> excludes) {
         Skill best  = null;
         int   level = Integer.MIN_VALUE;
-
         for (Skill skill : getSkillNamed(name, specialization, requirePoints, excludes)) {
             int skillLevel = skill.getLevel(excludes);
-
             if (best == null || skillLevel > level) {
                 best = skill;
                 level = skillLevel;

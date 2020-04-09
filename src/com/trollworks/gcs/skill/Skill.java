@@ -905,9 +905,9 @@ public class Skill extends ListRow implements HasSourceReference {
      * @param skillDefault Skill default
      * @return Returns the skill defaulted to.
      */
-    protected static Skill getBaseSkill(GURPSCharacter character, SkillDefault skillDefault) {
+    protected static Skill getBaseSkill(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints) {
         if (character != null && skillDefault != null && skillDefault.getType().isSkillBased()) {
-            return character.getBestSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, new HashSet<>());
+            return character.getBestSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, new HashSet<>());
         }
         return null;
     }
@@ -918,7 +918,7 @@ public class Skill extends ListRow implements HasSourceReference {
      * @return Skill the skill currently Defaults to.
      */
     public Skill getDefaultSkill() {
-        return getBaseSkill(getCharacter(), mDefaultedFrom);
+        return getBaseSkill(getCharacter(), mDefaultedFrom, true);
     }
 
     @Override
