@@ -40,12 +40,14 @@ import java.util.Set;
  * spell.
  */
 public class RitualMagicSpell extends Spell {
-    private static final int    CURRENT_VERSION        = 1;
+    private static final int    CURRENT_VERSION         = 1;
     /** The XML tag used for items. */
-    public static final  String TAG_RITUAL_MAGIC_SPELL = "ritual_magic_spell";
-    private static final String TAG_PREREQ_COUNT       = "prereq_count";
-    /** The base name of the skill Ritual Magic Spells default from. */
-    public static final  String BASE_SKILL_NAME        = "Ritual Magic";
+    public static final  String TAG_RITUAL_MAGIC_SPELL  = "ritual_magic_spell";
+    private static final String TAG_BASE_SKILL_NAME     = "base_skill";
+    private static final String TAG_PREREQ_COUNT        = "prereq_count";
+    /** The default base name of the skill Ritual Magic Spells default from. */
+    public static final  String DEFAULT_BASE_SKILL_NAME = "Ritual Magic";
+    private              String mBaseSkillName;
     /**
      * The (positive) number of spell prerequisites needed to cast this spell. Used as skill penalty
      * relative to the Ritual Magic skill.
@@ -59,6 +61,7 @@ public class RitualMagicSpell extends Spell {
      */
     public RitualMagicSpell(DataFile dataFile) {
         super(dataFile, false);
+        mBaseSkillName = DEFAULT_BASE_SKILL_NAME;
         mPoints = 0;
         updateLevel(false);
     }
@@ -74,6 +77,7 @@ public class RitualMagicSpell extends Spell {
      */
     public RitualMagicSpell(DataFile dataFile, RitualMagicSpell ritualMagicSpell, boolean deep, boolean forSheet) {
         super(dataFile, ritualMagicSpell, deep, forSheet);
+        mBaseSkillName = ritualMagicSpell.mBaseSkillName;
         mPoints = forSheet ? ritualMagicSpell.mPoints : 0;
         updateLevel(false);
     }
@@ -100,7 +104,7 @@ public class RitualMagicSpell extends Spell {
      */
     @Override
     public void updateLevel(boolean notify) {
-        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getCollege(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, mPoints);
+        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getBaseSkillName(), getCollege(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, mPoints);
         if (mLevel == null || !mLevel.isSameLevelAs(skillLevel)) {
             mLevel = skillLevel;
             if (notify) {
@@ -114,6 +118,7 @@ public class RitualMagicSpell extends Spell {
      *
      * @param character         The character the spell will be attached to.
      * @param name              The name of the spell.
+     * @param baseSkillName     The base name of the skill the Ritual Magic Spell defaults from.
      * @param college           The college of the spell.
      * @param powerSource       The power source of the spell.
      * @param difficulty        The difficulty of the spell.
@@ -121,14 +126,24 @@ public class RitualMagicSpell extends Spell {
      * @param points            The number of points spent in the spell.
      * @return The calculated spell level.
      */
-    public static SkillLevel calculateLevel(GURPSCharacter character, String name, String college, String powerSource, Set<String> categories, SkillDifficulty difficulty, int prereqSpellsCount, int points) {
+    public static SkillLevel calculateLevel(GURPSCharacter character, String name, String baseSkillName, String college, String powerSource, Set<String> categories, SkillDifficulty difficulty, int prereqSpellsCount, int points) {
         if (college == null) {
             college = "";
         }
-        SkillDefault def        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : BASE_SKILL_NAME, college, -prereqSpellsCount);
+
+        SkillDefault def        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : baseSkillName, college, -prereqSpellsCount);
         SkillLevel   skillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, def, difficulty, points, false, true, 0);
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
         skillLevel.mRelativeLevel += def.getModifier();
+
+        SkillDefault def2        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : baseSkillName, null, -(6 + prereqSpellsCount));
+        SkillLevel   skillLevel2 = Technique.calculateTechniqueLevel(character, name, college, categories, def2, difficulty, points, false, true, 0);
+        // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
+        skillLevel2.mRelativeLevel += def2.getModifier();
+
+        if (skillLevel.mLevel < skillLevel2.mLevel) {
+            skillLevel = skillLevel2;
+        }
 
         // And then apply bonuses for spells
         if (character != null) {
@@ -181,13 +196,17 @@ public class RitualMagicSpell extends Spell {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
+        mBaseSkillName = DEFAULT_BASE_SKILL_NAME;
         mPrerequisiteSpellsCount = 0;
         mPoints = 0;
     }
 
     @Override
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        if (TAG_PREREQ_COUNT.equals(reader.getName())) {
+        String name = reader.getName();
+        if (TAG_BASE_SKILL_NAME.equals(name)) {
+            mBaseSkillName = reader.readText().replace("\n", " ");
+        } else if (TAG_PREREQ_COUNT.equals(name)) {
             mPrerequisiteSpellsCount = reader.readInteger(0);
         } else {
             super.loadSubElement(reader, state);
@@ -197,6 +216,7 @@ public class RitualMagicSpell extends Spell {
     @Override
     public void saveSelf(XMLWriter out, boolean forUndo) {
         super.saveSelf(out, forUndo);
+        out.simpleTag(TAG_BASE_SKILL_NAME, mBaseSkillName);
         out.simpleTagNotZero(TAG_PREREQ_COUNT, mPrerequisiteSpellsCount);
     }
 
@@ -220,14 +240,33 @@ public class RitualMagicSpell extends Spell {
             return false;
         }
 
-        Skill skill = getCharacter().getBestSkillNamed(BASE_SKILL_NAME, college, false, new HashSet<>());
+        Skill skill = getCharacter().getBestSkillNamed(mBaseSkillName, college, false, new HashSet<>());
         if (skill == null) {
-            if (builder != null) {
-                builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1} ({2})\n"), prefix, BASE_SKILL_NAME, college));
+            skill = getCharacter().getBestSkillNamed(mBaseSkillName, null, false, new HashSet<>());
+            if (skill == null) {
+                if (builder != null) {
+                    builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1} ({2})\n"), prefix, mBaseSkillName, college));
+                }
+                return false;
             }
-            return false;
         }
         return true;
+    }
+
+    public String getBaseSkillName() {
+        return mBaseSkillName;
+    }
+
+    public boolean setBaseSkillName(String name) {
+        if (name == null) {
+            name = "";
+        }
+        if (!mBaseSkillName.equals(name)) {
+            mBaseSkillName = name;
+            updateLevel(true);
+            return true;
+        }
+        return false;
     }
 
     public int getPrerequisiteSpellsCount() {

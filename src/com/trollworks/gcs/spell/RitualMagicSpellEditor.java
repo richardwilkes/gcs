@@ -21,6 +21,7 @@ import com.trollworks.gcs.widgets.outline.ListRow;
 import com.trollworks.gcs.widgets.outline.RowEditor;
 import com.trollworks.toolkit.ui.UIUtilities;
 import com.trollworks.toolkit.ui.layout.ColumnLayout;
+import com.trollworks.toolkit.ui.widget.LinkedLabel;
 import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
@@ -28,7 +29,6 @@ import com.trollworks.toolkit.utility.text.Text;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
@@ -36,9 +36,12 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.Document;
 
 /** The detailed editor for {@link RitualMagicSpell}s. */
 public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
+    private JTextField mBaseSkillNameField;
     private JTextField mPrerequisiteSpellsCountField;
 
     /**
@@ -61,8 +64,12 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
 
         mNameField = createCorrectableField(wrapper1, wrapper1, I18n.Text("Name"), spell.getName(), I18n.Text("The name of the spell, without any notes"));
         fields.add(wrapper1);
-
         createTechLevelFields(wrapper1);
+
+
+        mBaseSkillNameField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Base Skill"), spell.getBaseSkillName(), I18n.Text("The name of the base skill, such as \"Ritual Magic\" or \"Thaumatology\""));
+        wrapper2.add(new JPanel());
+        wrapper2.add(new JPanel());
         mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
         mPowerSourceField = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
         mClassField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
@@ -151,7 +158,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     @Override
     protected boolean applyChangesSelf() {
         boolean modified = mRow.setName(mNameField.getText());
-
+        modified |= mRow.setBaseSkillName(mBaseSkillNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         if (mHasTechLevel != null) {
             modified |= mRow.setTechLevel(mHasTechLevel.isSelected() ? mTechLevel.getText() : null);
@@ -170,40 +177,36 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         modified |= mRow.setNotes(mNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
-
         List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
         list.addAll(mRangedWeapons.getWeapons());
         modified |= mRow.setWeapons(list);
-
         return modified;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        Object src = event.getSource();
-        if (src == mPrerequisiteSpellsCountField) {
-            if (mLevelField != null) {
-                recalculateLevel(mLevelField);
-            }
-        } else {
-            super.actionPerformed(event);
-        }
-    }
-
     protected void recalculateLevel(JTextField levelField) {
-        SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mCollegeField.getText(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getPoints());
+        SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mBaseSkillNameField.getText(), mCollegeField.getText(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getPoints());
         levelField.setText(getDisplayLevel(level.getLevel(), level.getRelativeLevel()));
         levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
     }
 
     @Override
     protected void adjustForSource(Object src) {
-        if (src == mPrerequisiteSpellsCountField) {
+        if (src == mPrerequisiteSpellsCountField || src == mBaseSkillNameField) {
             if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }
         } else {
             super.adjustForSource(src);
+        }
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent event) {
+        Document doc = event.getDocument();
+        if (doc == mBaseSkillNameField.getDocument()) {
+            LinkedLabel.setErrorMessage(mBaseSkillNameField, mBaseSkillNameField.getText().trim().isEmpty() ? I18n.Text("The base skill field may not be empty") : null);
+        } else {
+            super.changedUpdate(event);
         }
     }
 }

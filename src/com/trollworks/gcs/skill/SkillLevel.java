@@ -22,10 +22,6 @@ public class SkillLevel {
     /** The tooltip describing how this level was calculated. */
     public String mToolTip;
 
-    public String getToolTip() {
-        return mToolTip;
-    }
-
     /**
      * Creates a new {@link SkillLevel}.
      *
@@ -72,5 +68,14 @@ public class SkillLevel {
 
     public boolean isSameLevelAs(SkillLevel other) {
         return mLevel == other.mLevel && mRelativeLevel == other.mRelativeLevel;
+    }
+
+    public String getToolTip() {
+        return mToolTip;
+    }
+
+    @Override
+    public String toString() {
+        return "SkillLevel{" + "mLevel=" + mLevel + ", mRelativeLevel=" + mRelativeLevel + '}';
     }
 }

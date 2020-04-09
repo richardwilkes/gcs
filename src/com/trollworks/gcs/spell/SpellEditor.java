@@ -28,7 +28,6 @@ import com.trollworks.toolkit.utility.text.Text;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
@@ -194,13 +193,13 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
     }
 
     @Override
-    public void actionPerformed(ActionEvent event) {
-        super.actionPerformed(event);
-        Object src = event.getSource();
+    public void adjustForSource(Object src) {
         if (src == mAttributePopup) {
             if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }
+        } else {
+            super.adjustForSource(src);
         }
     }
 

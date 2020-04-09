@@ -172,6 +172,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
+        field.addActionListener(this);
+        field.addFocusListener(this);
 
         LinkedLabel label = new LinkedLabel(title);
         label.setLink(field);
@@ -276,7 +278,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
                 mSavedTechLevel = mTechLevel.getText();
                 mTechLevel.setText("");
             }
-        } else if (src == mPointsField || src == mDifficultyCombo) {
+        } else if (src == mPointsField || src == mDifficultyCombo || src == mNameField) {
             if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }
