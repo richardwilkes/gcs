@@ -36,8 +36,8 @@ import java.util.Set;
  * A GURPS Spell for the Ritual Magic system.
  * <p>
  * Ritual Magic spells are techniques and as such they must default to a skill. The convention used
- * is to default to a skill named "Ritual Magic College" whose specialization is the actual college
- * of the spell.
+ * is to default to a skill named "Ritual Magic" whose specialization is the actual college of the
+ * spell.
  */
 public class RitualMagicSpell extends Spell {
     private static final int    CURRENT_VERSION        = 1;
@@ -45,10 +45,10 @@ public class RitualMagicSpell extends Spell {
     public static final  String TAG_RITUAL_MAGIC_SPELL = "ritual_magic_spell";
     private static final String TAG_PREREQ_COUNT       = "prereq_count";
     /** The base name of the skill Ritual Magic Spells default from. */
-    public static final  String BASE_SKILL_NAME        = "Ritual Magic College";
+    public static final  String BASE_SKILL_NAME        = "Ritual Magic";
     /**
      * The (positive) number of spell prerequisites needed to cast this spell. Used as skill penalty
-     * relative to the Ritual Magic College skill.
+     * relative to the Ritual Magic skill.
      */
     private              int    mPrerequisiteSpellsCount;
 
