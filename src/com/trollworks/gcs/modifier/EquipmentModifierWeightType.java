@@ -19,11 +19,11 @@ import com.trollworks.toolkit.utility.I18n;
  * before being applied.
  */
 public enum EquipmentModifierWeightType {
-    /** Adds to the weight. */
-    ADDITION {
+    /** Adds to the base weight. */
+    BASE_ADDITION {
         @Override
         public String toString() {
-            return I18n.Text("to weight");
+            return I18n.Text("to base weight");
         }
     },
     /** Multiplies the weight. */
@@ -31,6 +31,13 @@ public enum EquipmentModifierWeightType {
         @Override
         public String toString() {
             return "\u00d7 weight";
+        }
+    },
+    /** Adds to the final weight. */
+    FINAL_ADDITION {
+        @Override
+        public String toString() {
+            return I18n.Text("to final weight");
         }
     }
 }

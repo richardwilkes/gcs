@@ -176,16 +176,16 @@ public class EquipmentModifier extends Modifier {
     }
 
     /**
-     * @return The amount for the weight multiplier. Only valid if
-     *         {@code getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER}.
+     * @return The amount for the weight multiplier. Only valid if {@code getWeightAdjType() ==
+     *         EquipmentModifierWeightType.MULTIPLIER}.
      */
     public double getWeightAdjMultiplier() {
         return mWeightMultiplier;
     }
 
     /**
-     * @param multiplier The amount for the weight multiplier. Only valid if
-     *                   {@code getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER}.
+     * @param multiplier The amount for the weight multiplier. Only valid if {@code
+     *                   getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER}.
      * @return {@code true} if a change was made.
      */
     public boolean setWeightAdjMultiplier(double multiplier) {
@@ -198,20 +198,20 @@ public class EquipmentModifier extends Modifier {
     }
 
     /**
-     * @return The amount for the weight addition. Only valid if
-     *         {@code getWeightAdjType() == EquipmentModifierWeightType.ADDITION}.
+     * @return The amount for the weight addition. Only valid if {@code getWeightAdjType() ==
+     *         EquipmentModifierWeightType.ADDITION}.
      */
     public WeightValue getWeightAdjAddition() {
         return mWeightAddition;
     }
 
     /**
-     * @param addition The amount for the weight addition. Only valid if
-     *                   {@code getWeightAdjType() == EquipmentModifierWeightType.ADDITION}.
+     * @param addition The amount for the weight addition. Only valid if {@code getWeightAdjType()
+     *                 != EquipmentModifierWeightType.MULTIPLIER}.
      * @return {@code true} if a change was made.
      */
     public boolean setWeightAdjAddition(WeightValue addition) {
-        if (mWeightType == EquipmentModifierWeightType.ADDITION && !mWeightAddition.equals(addition)) {
+        if (mWeightType != EquipmentModifierWeightType.MULTIPLIER && !mWeightAddition.equals(addition)) {
             mWeightAddition = new WeightValue(addition);
             notifySingle(ID_WEIGHT_ADJ);
             return true;
@@ -258,7 +258,8 @@ public class EquipmentModifier extends Modifier {
         } else if (TAG_WEIGHT_ADJ.equals(name)) {
             mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
             switch (mWeightType) {
-            case ADDITION:
+            case BASE_ADDITION:
+            case FINAL_ADDITION:
                 mWeightAddition = WeightValue.extract(reader.readText(), false);
                 break;
             case MULTIPLIER:
@@ -276,7 +277,8 @@ public class EquipmentModifier extends Modifier {
         super.saveSelf(out, forUndo);
         out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
         switch (mWeightType) {
-        case ADDITION:
+        case BASE_ADDITION:
+        case FINAL_ADDITION:
             if (mWeightAddition.getNormalizedValue() != 0) {
                 out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAddition.toString(false), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
             }
@@ -305,14 +307,15 @@ public class EquipmentModifier extends Modifier {
 
     /** @return The formatted cost adjustment. */
     public String getCostDescription() {
-        return (mCostType.isMultiplier() ? Numbers.format(mCostAmount) : Numbers.formatWithForcedSign(mCostAmount)) + " " + mCostType;
+        return (mCostType == EquipmentModifierCostType.MULTIPLIER ? Numbers.format(mCostAmount) : Numbers.formatWithForcedSign(mCostAmount)) + " " + mCostType;
     }
 
     /** @return The formatted weight adjustment. */
     public String getWeightDescription() {
         StringBuilder builder = new StringBuilder();
         switch (mWeightType) {
-        case ADDITION:
+        case BASE_ADDITION:
+        case FINAL_ADDITION:
             if (mWeightAddition.getNormalizedValue() != 0) {
                 String weight = mWeightAddition.toString();
                 if (!weight.startsWith("-")) {

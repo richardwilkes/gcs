@@ -21,6 +21,7 @@ import com.trollworks.toolkit.utility.I18n;
 import com.trollworks.toolkit.utility.text.NumberFilter;
 import com.trollworks.toolkit.utility.text.Numbers;
 import com.trollworks.toolkit.utility.text.Text;
+import com.trollworks.toolkit.utility.units.Units;
 import com.trollworks.toolkit.utility.units.WeightValue;
 
 import java.awt.Component;
@@ -111,7 +112,8 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         modified |= mRow.setCostAdjAmount(getCostAmount());
         modified |= mRow.setWeightAdjType(getWeightType());
         switch (mRow.getWeightAdjType()) {
-        case ADDITION:
+        case BASE_ADDITION:
+        case FINAL_ADDITION:
             modified |= mRow.setWeightAdjAddition(getWeightAddition());
             break;
         case MULTIPLIER:
@@ -175,7 +177,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mCostAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mCostAmountField);
         double amt = mRow.getCostAdjAmount();
-        mCostAmountField.setText(mRow.getCostAdjType().isMultiplier() ? Numbers.format(amt) : Numbers.formatWithForcedSign(amt));
+        mCostAmountField.setText(mRow.getCostAdjType() == EquipmentModifierCostType.MULTIPLIER ? Numbers.format(amt) : Numbers.formatWithForcedSign(amt));
         mCostAmountField.setToolTipText(I18n.Text("The cost modifier"));
         mCostAmountField.setEnabled(mIsEditable);
         new NumberFilter(mCostAmountField, true, true, true, 11);
@@ -204,7 +206,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private double getCostAmount() {
         double value = Numbers.extractDouble(mCostAmountField.getText(), 0, true);
-        if (value <= 0 && getCostType().isMultiplier()) {
+        if (value <= 0 && getCostType() == EquipmentModifierCostType.MULTIPLIER) {
             value = 1;
         }
         return value;
@@ -221,7 +223,8 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mWeightAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mWeightAmountField);
         switch (mRow.getWeightAdjType()) {
-        case ADDITION:
+        case BASE_ADDITION:
+        case FINAL_ADDITION:
             String addition = mRow.getWeightAdjAddition().toString();
             if (!addition.startsWith("-")) {
                 addition = "+" + addition;
@@ -312,13 +315,43 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void weightChanged() {
-        // Does nothing right now... could potentially try to alter the input field to be suitable
-        // to the data type (double vs WeightValue)
+        String      text   = mWeightAmountField.getText().trim();
+        WeightValue weight = WeightValue.extract(text, true);
+        if (getWeightType() == EquipmentModifierWeightType.MULTIPLIER) {
+            double value = weight.getValue();
+            if (value <= 0) {
+                mWeightAmountField.setText("1");
+            } else {
+                if (text.startsWith("+")) {
+                    text = text.substring(1);
+                }
+                if (text.toLowerCase().endsWith(weight.getUnits().getAbbreviation().toLowerCase())) {
+                    text = text.substring(0, text.length() - weight.getUnits().getAbbreviation().length()).trim();
+                }
+                mWeightAmountField.setText(text);
+            }
+        } else {
+            String lowered = text.toLowerCase();
+            boolean found = false;
+            for (Units unit : weight.getUnits().getCompatibleUnits()) {
+                if (lowered.endsWith(unit.getAbbreviation().toLowerCase())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                text += " " + weight.getUnits().getAbbreviation();
+            }
+            if (!text.startsWith("+") && !text.startsWith("-")) {
+                text = "+" + text;
+            }
+            mWeightAmountField.setText(text);
+        }
     }
 
     private void costChanged() {
         String text = mCostAmountField.getText().trim();
-        if (getCostType().isMultiplier()) {
+        if (getCostType() == EquipmentModifierCostType.MULTIPLIER) {
             double value = Numbers.extractDouble(text, 0, true);
             if (value <= 0) {
                 mCostAmountField.setText("1");

@@ -19,7 +19,6 @@ import com.trollworks.gcs.common.LoadState;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.EquipmentModifier;
-import com.trollworks.gcs.modifier.EquipmentModifierWeightType;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -509,54 +508,48 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @return The adjusted value.
      */
     public static double getValueAdjustedForModifiers(double value, List<EquipmentModifier> modifiers) {
-        double baseCostMultiplier      = 0;
-        int    baseCostMultiplierCount = 0;
-        double costFactor              = 0;
-        double finalCostMultiplier     = 0;
-        double finalCostAddition       = 0;
+        double multiplier      = 0;
+        int    multiplierCount = 0;
+        double costFactor      = 0;
+        double finalAddition   = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled()) {
                 double amt = modifier.getCostAdjAmount();
                 switch (modifier.getCostAdjType()) {
-                case BASE_COST_ADDITION:
+                case BASE_ADDITION:
                     value += amt;
                     break;
-                case BASE_COST_MULTIPLIER:
-                    baseCostMultiplier += amt;
-                    baseCostMultiplierCount++;
+                case MULTIPLIER:
+                    multiplier += amt;
+                    multiplierCount++;
                     break;
                 case COST_FACTOR:
                     costFactor += amt;
                     break;
-                case FINAL_COST_MULTIPLIER:
-                    finalCostMultiplier += amt;
-                    break;
-                case FINAL_COST_ADDITION:
-                    finalCostAddition += amt;
+                case FINAL_ADDITION:
+                    finalAddition += amt;
                     break;
                 }
             }
         }
-        if (baseCostMultiplier != 0 && costFactor != 0) {
+        if (multiplier != 0 && costFactor != 0) {
             // Has a mix of base cost multipliers and cost factors... so we need to convert the base
             // cost multipliers into cost factors.
-            costFactor += baseCostMultiplier - baseCostMultiplierCount;
+            costFactor += multiplier - multiplierCount;
+            multiplier = 0;
         }
         if (costFactor != 0) {
             if (costFactor < -0.8) {
                 costFactor = -0.8;
             }
             value *= 1 + costFactor;
-        } else if (baseCostMultiplier != 0) {
-            if (baseCostMultiplier < 0.2) {
-                baseCostMultiplier = 0.2;
+        } else if (multiplier != 0) {
+            if (multiplier < 0.2) {
+                multiplier = 0.2;
             }
-            value *= baseCostMultiplier;
+            value *= multiplier;
         }
-        if (finalCostMultiplier != 0) {
-            value *= finalCostMultiplier;
-        }
-        value += finalCostAddition;
+        value += finalAddition;
         if (value < 0) {
             value = 0;
         }
@@ -600,17 +593,28 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @return The adjusted value.
      */
     public static WeightValue getWeightAdjustedForModifiers(WeightValue value, List<EquipmentModifier> modifiers) {
+        double      multiplier    = 1;
+        WeightValue finalAddition = new WeightValue(0, value.getUnits());
         value = new WeightValue(value);
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.ADDITION) {
-                value.add(modifier.getWeightAdjAddition());
+            if (modifier.isEnabled()) {
+                switch (modifier.getWeightAdjType()) {
+                case BASE_ADDITION:
+                    value.add(modifier.getWeightAdjAddition());
+                    break;
+                case MULTIPLIER:
+                    multiplier *= modifier.getWeightAdjMultiplier();
+                    break;
+                case FINAL_ADDITION:
+                    finalAddition.add(modifier.getWeightAdjAddition());
+                    break;
+                }
             }
         }
-        for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER) {
-                value.setValue(value.getValue() * modifier.getWeightAdjMultiplier());
-            }
+        if (multiplier != 1) {
+            value.setValue(value.getValue() * multiplier);
         }
+        value.add(finalAddition);
         if (value.getValue() < 0) {
             value.setValue(0);
         }
