@@ -28,6 +28,7 @@ import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.preferences.DisplayPreferences;
@@ -840,7 +841,7 @@ public class GURPSCharacter extends DataFile {
         if (Spell.ID_POINTS.equals(type) || Spell.ID_LIST_CHANGED.equals(type)) {
             mNeedSpellPointCalculation = true;
         }
-        if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type)) {
+        if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type) || EquipmentModifier.ID_WEIGHT_ADJ.equals(type) || EquipmentModifier.ID_COST_ADJ.equals(type)) {
             mNeedEquipmentCalculation = true;
         }
         if (Profile.ID_SIZE_MODIFIER.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type)) {
@@ -883,7 +884,6 @@ public class GURPSCharacter extends DataFile {
         }
         if (mDidModify) {
             long now = System.currentTimeMillis();
-
             if (mLastModified != now) {
                 mLastModified = now;
                 notify(ID_LAST_MODIFIED, Long.valueOf(mLastModified));

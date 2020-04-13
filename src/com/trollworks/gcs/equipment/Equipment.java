@@ -690,6 +690,9 @@ public class Equipment extends ListRow implements HasSourceReference {
             mExtendedWeight.add(contained);
         }
         if (!saved.equals(mExtendedWeight)) {
+            // RAW: Unclear why, but we have to update both containing weights & values here or it doesn't propagate correctly.
+            updateContainingWeights(okToNotify);
+            updateContainingValues(okToNotify);
             if (okToNotify) {
                 notify(ID_EXTENDED_WEIGHT, this);
             }
@@ -719,6 +722,9 @@ public class Equipment extends ListRow implements HasSourceReference {
             mExtendedValue += child.mExtendedValue;
         }
         if (savedValue != mExtendedValue) {
+            // RAW: Unclear why, but we have to update both containing weights & values here or it doesn't propagate correctly.
+            updateContainingWeights(okToNotify);
+            updateContainingValues(okToNotify);
             if (okToNotify) {
                 notify(ID_EXTENDED_VALUE, this);
             }
