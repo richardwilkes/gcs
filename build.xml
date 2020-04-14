@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project name="com.trollworks.gcs" default="bundle" xmlns:if="ant:if" xmlns:unless="ant:unless">
 	<property name="module.name" value="com.trollworks.gcs"/>
-	<property name="module.version" value="4.14.0"/>
+	<property name="module.version" value="4.15.0"/>
     <property name="app.name" value="GURPS Character Sheet"/>
     <property name="app.name.short" value="GCS"/>
     <property name="exe.name" value="gcs"/>
 	<property name="copyright.owner" value="Richard A. Wilkes"/>
 	<property name="maintainer.email" value="wilkes@me.com"/>
-	<property name="target.version" value="13"/>
+	<property name="target.version" value="14"/>
 	<property name="build.dir" value="antbuild"/>
     <property name="dist.dir" value="dist"/>
 	<property name="modules.dir" value="../java_modules"/>
@@ -41,8 +41,6 @@
     <property if:true="${platform.mac}" name="app.root" value="${dist.root}/${app.name}"/>
     <property if:true="${platform.linux}" name="app.root" value="${dist.root}"/>
     <property if:true="${platform.windows}" name="app.root" value="${dist.root}"/>
-	<property if:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-15.jdk/Contents/Home/bin/jpackage"/>
-	<property unless:true="${platform.mac}" name="jpackage" value="${user.home}/jdk-15/bin/jpackage"/>
 
 	<target name="build">
         <delete>
@@ -139,7 +137,7 @@
             <arg value="--add-modules"/>
             <arg value="${module.name}"/>
         </exec>
-		<exec executable="${jpackage}" failonerror="true">
+		<exec executable="jpackage" failonerror="true">
             <arg value="--name"/>
             <arg unless:true="${platform.linux}" value="${app.name}"/>
             <arg if:true="${platform.linux}" value="${app.name.short}"/>
