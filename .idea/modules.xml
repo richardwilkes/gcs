@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/third_party/com.lowagie.text/com.lowagie.text.iml" filepath="$PROJECT_DIR$/third_party/com.lowagie.text/com.lowagie.text.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.trollworks.gcs/com.trollworks.gcs.iml" filepath="$PROJECT_DIR$/com.trollworks.gcs/com.trollworks.gcs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/gcs.iml" filepath="$PROJECT_DIR$/.idea/gcs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/third_party/org.apache.commons.logging/org.apache.commons.logging.iml" filepath="$PROJECT_DIR$/third_party/org.apache.commons.logging/org.apache.commons.logging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/third_party/org.apache.fontbox/org.apache.fontbox.iml" filepath="$PROJECT_DIR$/third_party/org.apache.fontbox/org.apache.fontbox.iml" />
+      <module fileurl="file://$PROJECT_DIR$/third_party/org.apache.pdfbox/org.apache.pdfbox.iml" filepath="$PROJECT_DIR$/third_party/org.apache.pdfbox/org.apache.pdfbox.iml" />
+    </modules>
+  </component>
+</project>
