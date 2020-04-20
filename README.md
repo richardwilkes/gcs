@@ -17,6 +17,10 @@ system.
    ```
    % git clone https://github.com/richardwilkes/gcs
    ```
+   and optionally:
+   ```
+   % git clone https://github.com/richardwilkes/gcs_library
+   ```
 
 4. Build and bundle the code for your platform:
 
