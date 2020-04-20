@@ -571,6 +571,8 @@ public class Bundler {
             args.add("");
             break;
         case "windows":
+            args.add("--java-options");
+            args.add("-Dsun.java2d.dpiaware=false");
             args.add("--win-menu");
             args.add("--win-menu-group");
             args.add("Roleplaying");

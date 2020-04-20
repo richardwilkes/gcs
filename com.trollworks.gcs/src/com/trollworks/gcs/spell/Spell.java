@@ -447,7 +447,6 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param name        The name of the spell.
      * @return The calculated spell level.
      */
-    // TODO
     public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, SkillDifficulty difficulty, String college, String powerSource, String name, Set<String> categories) {
         StringBuilder toolTip       = new StringBuilder();
         int           relativeLevel = difficulty.getBaseRelativeLevel();
