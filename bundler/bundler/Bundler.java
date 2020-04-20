@@ -546,6 +546,8 @@ public class Bundler {
         args.add(EXTRA_DIR.toString());
         args.add("--runtime-image");
         args.add(JRE.toString());
+        args.add("--java-options");
+        args.add("-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1");
         switch (OS) {
         case "macos":
             args.add("--mac-package-name");
