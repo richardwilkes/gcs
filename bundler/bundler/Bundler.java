@@ -221,7 +221,21 @@ public class Bundler {
         System.out.flush();
         long timing = System.nanoTime();
         createManifest();
-        runNoOutputCmd("jar", "--create", "--file", MODULE_DIR.resolve("com.trollworks.gcs-" + GCS_VERSION + ".jar").toString(), "--module-version", GCS_VERSION, "--manifest", MANIFEST.toString(), "--main-class", "com.trollworks.gcs.app.GCS", "-C", BUILD_DIR.resolve("com.trollworks.gcs").toString(), ".");
+        List<String> args = new ArrayList<>();
+        args.add("jar");
+        args.add("--create");
+        args.add("--file");
+        args.add(MODULE_DIR.resolve("com.trollworks.gcs-" + GCS_VERSION + ".jar").toString());
+        args.add("--module-version");
+        args.add(GCS_VERSION);
+        args.add("--manifest");
+        args.add(MANIFEST.toString());
+        args.add("--main-class");
+        args.add("com.trollworks.gcs.app.GCS");
+        args.add("-C");
+        args.add(BUILD_DIR.resolve("com.trollworks.gcs").toString());
+        args.add(".");
+        runNoOutputCmd(args);
         buildJar("com.lowagie.text", ITEXT_VERSION);
         buildJar("org.apache.commons.logging", LOGGING_VERSION);
         buildJar("org.apache.fontbox", FONTBOX_VERSION);
@@ -245,7 +259,17 @@ public class Bundler {
     }
 
     private static void buildJar(String pkg, String version) {
-        runNoOutputCmd("jar", "--create", "--file", MODULE_DIR.resolve(pkg + "-" + version + ".jar").toString(), "--module-version", version, "-C", BUILD_DIR.resolve(pkg).toString(), ".");
+        List<String> args = new ArrayList<>();
+        args.add("jar");
+        args.add("--create");
+        args.add("--file");
+        args.add(MODULE_DIR.resolve(pkg + "-" + version + ".jar").toString());
+        args.add("--module-version");
+        args.add(version);
+        args.add("-C");
+        args.add(BUILD_DIR.resolve(pkg).toString());
+        args.add(".");
+        runNoOutputCmd(args);
     }
 
     private static void extractLocalizationTemplate() {
@@ -484,8 +508,21 @@ public class Bundler {
         System.out.print("Packaging the application... ");
         System.out.flush();
         long timing = System.nanoTime();
-        runNoOutputCmd("jlink", "--module-path", MODULE_DIR.toString(), "--output", JRE.toString(), "--compress=2", "--no-header-files", "--no-man-pages", "--strip-debug", "--strip-native-commands", "--add-modules", "com.trollworks.gcs");
         List<String> args = new ArrayList<>();
+        args.add("jlink");
+        args.add("--module-path");
+        args.add(MODULE_DIR.toString());
+        args.add("--output");
+        args.add(JRE.toString());
+        args.add("--compress=2");
+        args.add("--no-header-files");
+        args.add("--no-man-pages");
+        args.add("--strip-debug");
+        args.add("--strip-native-commands");
+        args.add("--add-modules");
+        args.add("com.trollworks.gcs");
+        runNoOutputCmd("jlink", "--module-path", MODULE_DIR.toString(), "--output", JRE.toString(), "--compress=2", "--no-header-files", "--no-man-pages", "--strip-debug", "--strip-native-commands", "--add-modules", "com.trollworks.gcs");
+        args.clear();
         args.add("jpackage");
         args.add("--module");
         args.add("com.trollworks.gcs/com.trollworks.gcs.app.GCS");
@@ -543,8 +580,12 @@ public class Bundler {
             args.add("E71F99DA-AD84-4E6E-9bE7-4E65421752E1");
             break;
         }
-        runNoOutputCmd(args.toArray(new String[]{}));
+        runNoOutputCmd(args);
         showTiming(timing);
+    }
+
+    private static void runNoOutputCmd(List<String> args) {
+        runNoOutputCmd(args.toArray(new String[0]));
     }
 
     private static void runNoOutputCmd(String... args) {

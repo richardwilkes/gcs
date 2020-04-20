@@ -26,7 +26,7 @@ public class Log {
     static {
         OUT = System.out;
         String property = Debug.getPropertyOrEnvironmentSetting("com.trollworks.log");
-        if (property != null && !property.isEmpty()) {
+        if (property != null && !property.isBlank()) {
             try {
                 OUT = new PrintStream(property);
             } catch (Throwable throwable) {
