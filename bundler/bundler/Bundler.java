@@ -582,6 +582,16 @@ public class Bundler {
             args.add("--win-dir-chooser");
             args.add("--win-upgrade-uuid");
             args.add("E71F99DA-AD84-4E6E-9bE7-4E65421752E1");
+            Path propsFile = BUILD_DIR.resolve("console.properties");
+            try (PrintWriter out = new PrintWriter(Files.newBufferedWriter(propsFile))) {
+                out.println("win-console=true");
+            } catch (IOException exception) {
+                System.out.println();
+                exception.printStackTrace(System.err);
+                System.exit(1);
+            }
+            args.add("--add-launcher");
+            args.add("GCScmdline="+propsFile.toString());
             break;
         }
         runNoOutputCmd(args);
