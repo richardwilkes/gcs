@@ -24,7 +24,6 @@ import com.trollworks.gcs.utility.text.Text;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -40,7 +39,6 @@ import javax.swing.UIManager;
 /** The main entry point for the character sheet. */
 public class GCS {
     public static final String WEB_SITE = "https://gurpscharactersheet.com";
-    public static final Path   APP_HOME_PATH;
     public static final long   VERSION;
     public static final String COPYRIGHT;
     public static final String COPYRIGHT_BANNER;
@@ -56,27 +54,7 @@ public class GCS {
             System.setProperty("user.dir", pwd);
         }
 
-        Path path;
-        try {
-            path = Paths.get(System.getProperty("java.home"));
-            if (path.endsWith("Contents/runtime/Contents/Home")) {
-                // Running inside a macOS package
-                path = path.getParent().getParent().getParent().getParent().getParent();
-            } else if (path.endsWith("runtime")) {
-                // Running inside a linux package
-                path = path.getParent();
-            } else if (path.endsWith("support")) {
-                // Running inside module-ized package
-                path = path.getParent();
-            } else {
-                URI uri = GCS.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-                path = Paths.get(uri).normalize().getParent().toAbsolutePath();
-            }
-        } catch (Throwable throwable) {
-            path = Paths.get(".");
-        }
-        APP_HOME_PATH = path.normalize().toAbsolutePath();
-
+        // Determine the version
         long   version = 0;
         String years   = null;
         try (InputStream in = GCS.class.getModule().getResourceAsStream("/META-INF/MANIFEST.MF")) {
@@ -90,6 +68,11 @@ public class GCS {
             years = "1998-" + DateTimeFormatter.ofPattern("yyyy").format(Instant.now().atZone(ZoneOffset.UTC));
         }
         VERSION = version;
+
+        // Setup localizations -- must be called AFTER the version is determined
+        I18n.initialize();
+
+        // Setup the copyright notices and such that rely on the version and year info
         COPYRIGHT = String.format(I18n.Text("Copyright \u00A9%s by %s"), years, "Richard A. Wilkes");
         COPYRIGHT_BANNER = String.format("%s. All rights reserved.", COPYRIGHT);
         StringBuilder buffer = new StringBuilder();
