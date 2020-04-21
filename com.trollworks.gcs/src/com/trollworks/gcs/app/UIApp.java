@@ -77,7 +77,7 @@ class UIApp {
                     desktop.setDefaultMenuBar(new StdMenuBar());
                 }
             }
-            if (Platform.isMacintosh() && GCS.APP_HOME_PATH.toString().toLowerCase().contains("/apptranslocation/")) {
+            if (Platform.isMacintosh() && System.getProperty("java.home").toLowerCase().contains("/apptranslocation/")) {
                 WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.Text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + "xattr -d com.apple.quarantine \"GURPS Character Sheet.app\"");
             }
             setNotificationAllowed(true);
