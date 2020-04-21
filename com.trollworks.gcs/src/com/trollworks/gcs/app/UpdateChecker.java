@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.app;
 
+import com.trollworks.gcs.io.UrlUtils;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.help.UpdateSystemLibraryCommand;
-import com.trollworks.gcs.io.UrlUtils;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
@@ -162,20 +162,24 @@ public class UpdateChecker implements Runnable {
     }
 
     private void checkForLibraryUpdates() {
-        String recorded = Library.getRecordedCommit();
-        String latest   = Library.getLatestCommit();
-        if (latest.equals(recorded)) {
-            setDataResult(I18n.Text("You have the most recent version of the GCS Library"), false);
-        } else if (GCS.VERSION == 0 || GCS.VERSION >= Library.getMinimumGCSVersion()) {
-            Preferences prefs = Preferences.getInstance();
-            setDataResult(I18n.Text("A new version of the GCS Library is available"), true);
-            if (!latest.equals(prefs.getStringValue(MODULE, LAST_LIBRARY_COMMIT_KEY, ""))) {
-                prefs.setValue(MODULE, LAST_LIBRARY_COMMIT_KEY, latest);
-                prefs.save();
-                mMode = Mode.NOTIFY;
-            }
+        String latest = Library.getLatestCommit();
+        if (latest == "") {
+            setDataResult(I18n.Text("Unable to access GitHub to check GCS Library version"), false);
         } else {
-            setDataResult(I18n.Text("Your version of GCS must be updated to use the latest GCS Library"), false);
+            String recorded = Library.getRecordedCommit();
+            if (latest.equals(recorded)) {
+                setDataResult(I18n.Text("You have the most recent version of the GCS Library"), false);
+            } else if (GCS.VERSION == 0 || GCS.VERSION >= Library.getMinimumGCSVersion()) {
+                Preferences prefs = Preferences.getInstance();
+                setDataResult(I18n.Text("A new version of the GCS Library is available"), true);
+                if (!latest.equals(prefs.getStringValue(MODULE, LAST_LIBRARY_COMMIT_KEY, ""))) {
+                    prefs.setValue(MODULE, LAST_LIBRARY_COMMIT_KEY, latest);
+                    prefs.save();
+                    mMode = Mode.NOTIFY;
+                }
+            } else {
+                setDataResult(I18n.Text("Your version of GCS must be updated to use the latest GCS Library"), false);
+            }
         }
     }
 
