@@ -12,7 +12,8 @@
 package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.collections.FilteredIterator;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.menu.edit.UsesIncrementable;
@@ -20,11 +21,10 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
-import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
-import com.trollworks.gcs.ui.widget.outline.RowUndo;
-import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
+import com.trollworks.gcs.ui.widget.outline.RowUndo;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.undo.MultipleUndo;
@@ -287,9 +287,9 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
                 OutlineModel otherModel = rows[0].getOwner();
                 OutlineModel selfModel  = getModel();
                 if (selfModel != otherModel && (selfModel == carriedModel || selfModel == uncarriedModel) && (otherModel == carriedModel || otherModel == uncarriedModel)) {
-                    StateEdit edit = new StateEdit(otherModel, I18n.Text("Remove Rows"));
-                    ListOutline otherOwningList = (ListOutline)otherModel.getProperty(ListOutline.OWNING_LIST);
-                    DataFile otherDataFile = otherOwningList.getDataFile();
+                    StateEdit   edit            = new StateEdit(otherModel, I18n.Text("Remove Rows"));
+                    ListOutline otherOwningList = (ListOutline) otherModel.getProperty(ListOutline.OWNING_LIST);
+                    DataFile    otherDataFile   = otherOwningList.getDataFile();
                     otherDataFile.startNotify();
                     otherModel.removeRows(rows);
                     for (Row row : rows) {

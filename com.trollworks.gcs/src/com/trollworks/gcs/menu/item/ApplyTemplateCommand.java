@@ -12,9 +12,9 @@
 package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.SheetDockable;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.undo.MultipleUndo;

@@ -125,7 +125,8 @@ public class DropPanel extends JPanel {
     }
 
     /**
-     * Removes a horizontal background added with {@link #addHorizontalBackground(Component, Color)}.
+     * Removes a horizontal background added with {@link #addHorizontalBackground(Component,
+     * Color)}.
      *
      * @param panel The panel to remove.
      */

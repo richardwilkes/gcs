@@ -12,8 +12,8 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.feature.AttributeBonus;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.CostReduction;
@@ -22,14 +22,14 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.io.xml.XMLNodeType;
+import com.trollworks.gcs.io.xml.XMLReader;
+import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.io.xml.XMLNodeType;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.utility.VersionException;
 

@@ -29,9 +29,9 @@ public class Column implements Transferable {
     private             Cell       mRowCell;
     private             boolean    mVisible;
     private             int        mWidth;
-    private String     mName;
-    private RetinaIcon mIcon;
-    private int        mID;
+    private             String     mName;
+    private             RetinaIcon mIcon;
+    private             int        mID;
     private             String     mToolTipText;
 
     /**
@@ -250,8 +250,8 @@ public class Column implements Transferable {
      * @return The preferred width of this column.
      */
     public int getPreferredWidth(Outline outline) {
-        Scale scale          = Scale.get(outline);
-        int   preferredWidth = getPreferredHeaderWidth(outline);
+        Scale        scale          = Scale.get(outline);
+        int          preferredWidth = getPreferredHeaderWidth(outline);
         OutlineModel model          = outline.getModel();
         for (Row row : model.getRows()) {
             int width = getRowCell(row).getPreferredWidth(outline, row, this) + scale.scale(model.getIndentWidth(row, this));

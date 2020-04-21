@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.weapon.WeaponColumn;
-import com.trollworks.gcs.weapon.WeaponStats;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.weapon.WeaponColumn;
+import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.dnd.DropTargetDragEvent;
 

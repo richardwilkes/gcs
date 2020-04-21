@@ -9,11 +9,11 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.common;
+package com.trollworks.gcs.datafile;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 

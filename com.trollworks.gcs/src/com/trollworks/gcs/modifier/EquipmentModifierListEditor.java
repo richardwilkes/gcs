@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 
@@ -31,8 +31,8 @@ public class EquipmentModifierListEditor extends ModifierListEditor {
     /**
      * Creates a new {@link EquipmentModifierListEditor} editor.
      *
-     * @param owner             The owning row.
-     * @param modifiers         The list of {@link EquipmentModifier}s to modify.
+     * @param owner     The owning row.
+     * @param modifiers The list of {@link EquipmentModifier}s to modify.
      */
     public EquipmentModifierListEditor(DataFile owner, List<EquipmentModifier> modifiers) {
         super(owner, new ArrayList<EquipmentModifier>(), modifiers);

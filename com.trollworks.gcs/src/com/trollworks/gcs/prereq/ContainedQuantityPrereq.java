@@ -15,9 +15,9 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Enums;
@@ -28,7 +28,7 @@ import java.text.MessageFormat;
 /** An equipment contained quantity prerequisite. */
 public class ContainedQuantityPrereq extends HasPrereq {
     /** The XML tag for this class. */
-    public static final  String         TAG_ROOT          = "contained_quantity_prereq";
+    public static final  String          TAG_ROOT          = "contained_quantity_prereq";
     private static final String          ATTRIBUTE_COMPARE = "compare";
     private              IntegerCriteria mQuantityCompare;
 
@@ -117,7 +117,7 @@ public class ContainedQuantityPrereq extends HasPrereq {
                 int qty = 0;
                 for (Row child : equipment.getChildren()) {
                     if (child instanceof Equipment) {
-                        qty += ((Equipment)child).getQuantity();
+                        qty += ((Equipment) child).getQuantity();
                     }
                 }
                 satisfied = mQuantityCompare.matches(qty);

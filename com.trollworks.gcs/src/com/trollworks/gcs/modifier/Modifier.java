@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.io.IOException;

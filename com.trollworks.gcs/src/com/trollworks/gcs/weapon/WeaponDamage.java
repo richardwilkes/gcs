@@ -13,13 +13,13 @@ package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.WeaponBonus;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Enums;

@@ -9,13 +9,11 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.common;
+package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.menu.file.SignificantFrame;
-import com.trollworks.gcs.ui.widget.Toolbar;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.DockLocation;

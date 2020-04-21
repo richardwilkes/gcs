@@ -11,11 +11,11 @@
 
 package com.trollworks.gcs.equipment;
 
+import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
-import com.trollworks.gcs.ui.widget.outline.RowUndo;
-import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.RowUndo;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;

@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.io.IOException;
@@ -175,9 +175,9 @@ public class SkillDefault {
     /**
      * Saves the skill default.
      *
-     * @param out The XML writer to use.
+     * @param out     The XML writer to use.
      * @param tagRoot The root tag to use.
-     * @param full {@code true} if all fields should be saved.
+     * @param full    {@code true} if all fields should be saved.
      */
     public void save(XMLWriter out, String tagRoot, boolean full) {
         out.startSimpleTagEOL(tagRoot);

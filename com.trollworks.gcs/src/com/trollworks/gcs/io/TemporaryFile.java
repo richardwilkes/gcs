@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.common;
+package com.trollworks.gcs.io;
 
 import java.io.Closeable;
 import java.io.File;

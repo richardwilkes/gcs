@@ -13,19 +13,19 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateSheet;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.RowUndo;
-import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.RowUndo;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.undo.MultipleUndo;
 

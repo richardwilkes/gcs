@@ -15,9 +15,9 @@ import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Color;
 import java.awt.Component;

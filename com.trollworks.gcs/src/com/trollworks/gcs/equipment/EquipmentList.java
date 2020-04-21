@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.equipment;
 
-import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.ui.RetinaIcon;

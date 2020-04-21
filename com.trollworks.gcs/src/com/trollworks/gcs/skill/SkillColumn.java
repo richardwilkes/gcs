@@ -12,14 +12,14 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.ListFile;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.widget.outline.Cell;
+import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultiCell;
-import com.trollworks.gcs.ui.widget.outline.Cell;
-import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.utility.I18n;

@@ -11,17 +11,17 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.collections.FilteredList;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
+import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;

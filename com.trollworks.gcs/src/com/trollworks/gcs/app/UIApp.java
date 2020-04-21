@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.edit.PreferencesCommand;
 import com.trollworks.gcs.menu.file.OpenCommand;
@@ -22,6 +21,7 @@ import com.trollworks.gcs.menu.help.AboutCommand;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.text.Text;

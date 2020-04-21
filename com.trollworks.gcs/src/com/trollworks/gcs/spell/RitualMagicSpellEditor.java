@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 1998-2020 by Richard A. Wilkes. All rights reserved.
  *
- * This Source Code Form is subject to the terms of the Mozilla Public License, version 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the
- * Mozilla Public License, version 2.0.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
  */
 
 package com.trollworks.gcs.spell;
@@ -14,17 +14,17 @@ package com.trollworks.gcs.spell;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
-import com.trollworks.gcs.weapon.MeleeWeaponEditor;
-import com.trollworks.gcs.weapon.RangedWeaponEditor;
-import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
+import com.trollworks.gcs.weapon.MeleeWeaponEditor;
+import com.trollworks.gcs.weapon.RangedWeaponEditor;
+import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.Component;
 import java.awt.Container;

@@ -12,11 +12,14 @@
 package com.trollworks.gcs.equipment;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.HasSourceReference;
-import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.collections.FilteredList;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.io.xml.XMLReader;
+import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.DisplayPreferences;
@@ -24,19 +27,16 @@ import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.weapon.MeleeWeaponStats;
-import com.trollworks.gcs.weapon.RangedWeaponStats;
-import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.collections.FilteredList;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
+import com.trollworks.gcs.weapon.MeleeWeaponStats;
+import com.trollworks.gcs.weapon.RangedWeaponStats;
+import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -694,7 +694,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             mExtendedWeight.add(contained);
         }
         if (getParent() instanceof Equipment) {
-            ((Equipment)getParent()).updateContainingWeights(okToNotify);
+            ((Equipment) getParent()).updateContainingWeights(okToNotify);
         }
         if (!saved.equals(mExtendedWeight)) {
             if (okToNotify) {
@@ -726,7 +726,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             mExtendedValue += child.mExtendedValue;
         }
         if (getParent() instanceof Equipment) {
-            ((Equipment)getParent()).updateContainingValues(okToNotify);
+            ((Equipment) getParent()).updateContainingValues(okToNotify);
         }
         if (savedValue != mExtendedValue) {
             if (okToNotify) {
@@ -838,7 +838,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public RetinaIcon getIcon(boolean marker) {
-        return marker ? Images.EQP_MARKER: Images.EQP_FILE;
+        return marker ? Images.EQP_MARKER : Images.EQP_FILE;
     }
 
     @Override

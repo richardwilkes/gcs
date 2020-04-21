@@ -9,14 +9,14 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.common;
+package com.trollworks.gcs.datafile;
 
-import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.io.SafeFileUpdater;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileType;

@@ -12,10 +12,10 @@
 package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.gcs.ui.widget.outline.ListOutline;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.template.TemplateDockable;
+import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.utility.I18n;
 

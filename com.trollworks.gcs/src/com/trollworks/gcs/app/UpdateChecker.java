@@ -163,7 +163,7 @@ public class UpdateChecker implements Runnable {
 
     private void checkForLibraryUpdates() {
         String latest = Library.getLatestCommit();
-        if (latest == "") {
+        if (latest.isBlank()) {
             setDataResult(I18n.Text("Unable to access GitHub to check GCS Library version"), false);
         } else {
             String recorded = Library.getRecordedCommit();

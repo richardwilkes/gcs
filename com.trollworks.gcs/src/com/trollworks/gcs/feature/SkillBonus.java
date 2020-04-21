@@ -13,10 +13,10 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 
 import java.io.IOException;
 import java.util.Map;

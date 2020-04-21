@@ -11,15 +11,15 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.common.EditorPanel;
-import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.EditorPanel;
 import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
@@ -192,7 +192,7 @@ public abstract class FeatureEditor extends EditorPanel {
         if (LeveledAmount.ATTRIBUTE_PER_LEVEL.equals(command)) {
             ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountCombo.getSelectedIndex() == 1);
         } else if (CHANGE_BASE_TYPE.equals(command)) {
-            LAST_FEATURE_TYPE = (FeatureType)mBaseTypeCombo.getSelectedItem();
+            LAST_FEATURE_TYPE = (FeatureType) mBaseTypeCombo.getSelectedItem();
             if (LAST_FEATURE_TYPE != null && !LAST_FEATURE_TYPE.matches(mFeature)) {
                 Commitable.sendCommitToFocusOwner();
                 try {

@@ -9,20 +9,18 @@
  * Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.common;
+package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.file.SaveCommand;
 import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.preferences.MenuKeyPreferences;
-import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexRow;
-import com.trollworks.gcs.ui.widget.Commitable;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FileProxyProvider;
 import com.trollworks.gcs.utility.PathUtils;

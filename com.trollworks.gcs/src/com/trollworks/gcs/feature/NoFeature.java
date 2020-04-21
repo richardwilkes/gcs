@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 
 /** This is a placeholder feature, used for the empty state. */
 public class NoFeature extends FeatureEditor {

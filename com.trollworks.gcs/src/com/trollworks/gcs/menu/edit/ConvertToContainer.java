@@ -13,12 +13,12 @@ package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
-import com.trollworks.gcs.ui.widget.outline.RowUndo;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
+import com.trollworks.gcs.ui.widget.outline.RowUndo;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Component;

@@ -401,8 +401,8 @@ public final class PrecisionLayout implements LayoutManager2 {
     }
 
     private Dimension layout(Container target, boolean move, int x, int y, int width, int height, boolean useMinimumSize) {
-        Scale scale      = Scale.get(target);
-        int   totalWidth = scale.scale(mMarginLeft) + scale.scale(mMarginRight);
+        Scale scale       = Scale.get(target);
+        int   totalWidth  = scale.scale(mMarginLeft) + scale.scale(mMarginRight);
         int   totalHeight = scale.scale(mMarginTop) + scale.scale(mMarginBottom);
         if (mColumns > 0) {
             Component[] children = getChildren(target, useMinimumSize);

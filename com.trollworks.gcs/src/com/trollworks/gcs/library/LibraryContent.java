@@ -12,10 +12,10 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

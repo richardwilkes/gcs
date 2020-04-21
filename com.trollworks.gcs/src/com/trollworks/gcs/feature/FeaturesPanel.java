@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.BandedPanel;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.util.ArrayList;

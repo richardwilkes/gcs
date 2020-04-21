@@ -11,11 +11,11 @@
 
 package com.trollworks.gcs.app;
 
-import com.trollworks.gcs.menu.file.OpenCommand;
-import com.trollworks.gcs.menu.file.OpenDataFileCommand;
 import com.trollworks.gcs.io.conduit.Conduit;
 import com.trollworks.gcs.io.conduit.ConduitMessage;
 import com.trollworks.gcs.io.conduit.ConduitReceiver;
+import com.trollworks.gcs.menu.file.OpenCommand;
+import com.trollworks.gcs.menu.file.OpenDataFileCommand;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 
 import java.awt.EventQueue;

@@ -685,9 +685,9 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
     }
 
     /**
-     * @return A {@link Img} containing the currently visible header and contents (no scroll
-     *         bars). If something goes wrong (unable to allocate an offscreen buffer, for
-     *         instance), then {@code null} may be returned.
+     * @return A {@link Img} containing the currently visible header and contents (no scroll bars).
+     *         If something goes wrong (unable to allocate an offscreen buffer, for instance), then
+     *         {@code null} may be returned.
      */
     public Img createImage() {
         int        width     = mHeaderBounds.width;

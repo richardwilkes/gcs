@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 
 /** A non-editable row for displaying weapon information. */

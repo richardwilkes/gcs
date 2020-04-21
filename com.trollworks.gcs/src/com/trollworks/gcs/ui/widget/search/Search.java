@@ -13,9 +13,9 @@ package com.trollworks.gcs.ui.widget.search;
 
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.FlexRow;
+import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Container;
 import java.awt.Dimension;

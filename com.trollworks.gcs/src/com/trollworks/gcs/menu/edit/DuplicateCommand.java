@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.ui.widget.outline.Row;

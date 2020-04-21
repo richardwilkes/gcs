@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 1998-2020 by Richard A. Wilkes. All rights reserved.
  *
- * This Source Code Form is subject to the terms of the Mozilla Public License, version 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the
- * Mozilla Public License, version 2.0.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
  */
 
 package com.trollworks.gcs.ui;
@@ -41,8 +41,8 @@ public class RetinaIcon implements Icon {
     public void paintIcon(Component component, Graphics g, int x, int y) {
         Graphics2D     gc    = (Graphics2D) g;
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
-        Scale scale = Scale.get(component);
-        Img   img   = mRetina != null && (scale.getScale() > 1 || GraphicsUtilities.isRetinaDisplay(g)) ? mRetina : mNormal;
+        Scale          scale = Scale.get(component);
+        Img            img   = mRetina != null && (scale.getScale() > 1 || GraphicsUtilities.isRetinaDisplay(g)) ? mRetina : mNormal;
         gc.drawImage(img, x, y, scale.scale(getIconWidth()), scale.scale(getIconHeight()), component);
         gc.setRenderingHints(saved);
     }

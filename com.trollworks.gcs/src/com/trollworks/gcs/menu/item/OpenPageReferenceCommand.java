@@ -11,15 +11,14 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.common.HasSourceReference;
+import com.trollworks.gcs.collections.ReverseListIterator;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.pdfview.PdfRef;
-import com.trollworks.gcs.ui.widget.outline.ListOutline;
-import com.trollworks.gcs.collections.ReverseListIterator;
 import com.trollworks.gcs.ui.Selection;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.ui.widget.outline.Row;

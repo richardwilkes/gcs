@@ -1,19 +1,21 @@
 /*
  * Copyright (c) 1998-2020 by Richard A. Wilkes. All rights reserved.
  *
- * This Source Code Form is subject to the terms of the Mozilla Public License, version 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the
- * Mozilla Public License, version 2.0.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
  */
 
 package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.io.xml.XMLReader;
+import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
@@ -23,8 +25,6 @@ import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.utility.I18n;
 
 import java.io.IOException;

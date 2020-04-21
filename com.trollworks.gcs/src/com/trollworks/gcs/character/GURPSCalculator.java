@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.common.TemporaryFile;
 import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.io.TemporaryFile;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.preferences.OutputPreferences;

@@ -12,9 +12,9 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;

@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.LoadState;
-import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;

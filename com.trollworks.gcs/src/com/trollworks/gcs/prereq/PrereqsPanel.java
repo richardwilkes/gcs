@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.BandedPanel;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 /** Displays and edits {@link Prereq} objects. */

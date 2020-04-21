@@ -11,13 +11,13 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
-import com.trollworks.gcs.ui.widget.outline.RowUndo;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.RowUndo;
 import com.trollworks.gcs.ui.widget.outline.TextCell;
 
 import java.awt.Color;
@@ -55,8 +55,8 @@ public class ModifierCheckCell extends TextCell {
     @Override
     public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
         if (row instanceof Modifier) {
-            Component src = (Component)event.getSource();
-            Modifier modifier = (Modifier) row;
+            Component src      = (Component) event.getSource();
+            Modifier  modifier = (Modifier) row;
             if (mForEditor) {
                 modifier.setEnabled(!modifier.isEnabled());
                 ModifierListEditor editor = UIUtilities.getAncestorOfType(src, ModifierListEditor.class);

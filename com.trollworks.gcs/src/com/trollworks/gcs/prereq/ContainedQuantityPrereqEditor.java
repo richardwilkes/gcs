@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 
 /** A contained quantity prerequisite editor panel. */
 public class ContainedQuantityPrereqEditor extends PrereqEditor {

@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.menu.help;
 
-import com.trollworks.gcs.common.Workspace;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 

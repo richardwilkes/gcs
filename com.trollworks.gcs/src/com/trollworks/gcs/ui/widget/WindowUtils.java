@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.common.BaseWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;

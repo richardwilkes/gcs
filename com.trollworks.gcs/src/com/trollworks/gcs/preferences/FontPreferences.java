@@ -15,7 +15,7 @@ import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.Alignment;
 import com.trollworks.gcs.ui.layout.FlexComponent;
 import com.trollworks.gcs.ui.layout.FlexGrid;
-import com.trollworks.gcs.common.BaseWindow;
+import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.utility.I18n;
 

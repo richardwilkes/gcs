@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 1998-2020 by Richard A. Wilkes. All rights reserved.
  *
- * This Source Code Form is subject to the terms of the Mozilla Public License, version 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the
- * Mozilla Public License, version 2.0.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
  */
 
 package com.trollworks.gcs.ui.widget.outline;
@@ -14,10 +14,10 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
+import com.trollworks.gcs.collections.FilteredList;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.modifier.AdvantageModifierEnabler;
 import com.trollworks.gcs.modifier.EquipmentModifierEnabler;
-import com.trollworks.gcs.collections.FilteredList;
 import com.trollworks.gcs.ui.UIUtilities;
 
 import java.util.HashMap;

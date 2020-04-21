@@ -1,17 +1,20 @@
 /*
  * Copyright (c) 1998-2020 by Richard A. Wilkes. All rights reserved.
  *
- * This Source Code Form is subject to the terms of the Mozilla Public License, version 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the
- * Mozilla Public License, version 2.0.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
  */
 
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.menu.edit.Deletable;
+import com.trollworks.gcs.menu.edit.SelectAllCapable;
+import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -24,13 +27,10 @@ import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Icons;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
-import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.menu.edit.Deletable;
-import com.trollworks.gcs.menu.edit.SelectAllCapable;
-import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -80,15 +80,15 @@ import javax.swing.undo.UndoableEdit;
 /** A panel that can show both hierarchical and tabular data. */
 public class Outline extends ActionPanel implements OutlineModelListener, ComponentListener, FocusListener, Autoscroll, Scrollable, Deletable, SelectAllCapable, DragGestureListener, DropTargetListener, MouseListener, MouseMotionListener, KeyListener {
     /** The default double-click action command. */
-    public static final  String    CMD_OPEN_SELECTION                = "Outline.OpenSelection";
+    public static final  String            CMD_OPEN_SELECTION                = "Outline.OpenSelection";
     /** The default selection changed action command. */
-    public static final  String    CMD_SELECTION_CHANGED             = "Outline.SelectionChanged";
+    public static final  String            CMD_SELECTION_CHANGED             = "Outline.SelectionChanged";
     /** The default potential content size change action command. */
-    public static final  String    CMD_POTENTIAL_CONTENT_SIZE_CHANGE = "Outline.ContentSizeMayHaveChanged";
+    public static final  String            CMD_POTENTIAL_CONTENT_SIZE_CHANGE = "Outline.ContentSizeMayHaveChanged";
     /** The column visibility command. */
-    public static final  String    CMD_TOGGLE_COLUMN_VISIBILITY      = "Outline.ToggleColumnVisibility";
-    private static final int       DIVIDER_HIT_SLOP                  = 2;
-    private static final int       AUTO_SCROLL_MARGIN                = 10;
+    public static final  String            CMD_TOGGLE_COLUMN_VISIBILITY      = "Outline.ToggleColumnVisibility";
+    private static final int               DIVIDER_HIT_SLOP                  = 2;
+    private static final int               AUTO_SCROLL_MARGIN                = 10;
     private              OutlineModel      mModel;
     /** The header panel. */
     protected            OutlineHeader     mHeaderPanel;
@@ -123,9 +123,9 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     private              int               mSelectOnMouseUp;
     private              boolean           mUserSortable;
     private              boolean           mIgnoreClick;
-    private              Deletable mDeletableProxy;
-    private              Dock      mAlternateDragDestination;
-    private              String    mLastTooltipText;
+    private              Deletable         mDeletableProxy;
+    private              Dock              mAlternateDragDestination;
+    private              String            mLastTooltipText;
     private              int               mLastTooltipX;
 
     /** Creates a new outline. */
@@ -279,8 +279,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public Dimension getPreferredSize() {
-        Scale scale = Scale.get(this);
-        int   one   = scale.scale(1);
+        Scale        scale          = Scale.get(this);
+        int          one            = scale.scale(1);
         Insets       insets         = getInsets();
         Dimension    size           = new Dimension(insets.left + insets.right, insets.top + insets.bottom);
         List<Column> columns        = mModel.getColumns();
@@ -1660,8 +1660,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     }
 
     /**
-     * @return An {@link Img} containing the current contents of this component, minus the
-     *         specified component and its children.
+     * @return An {@link Img} containing the current contents of this component, minus the specified
+     *         component and its children.
      */
     public Img getImage() {
         Img offscreen = null;

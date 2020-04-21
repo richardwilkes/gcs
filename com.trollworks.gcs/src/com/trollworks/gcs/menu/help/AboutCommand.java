@@ -15,7 +15,7 @@ import com.trollworks.gcs.app.AboutPanel;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.common.BaseWindow;
+import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 

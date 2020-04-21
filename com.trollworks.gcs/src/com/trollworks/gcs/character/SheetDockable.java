@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.common.CommonDockable;
+import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.menu.RetargetableFocus;
@@ -61,7 +61,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable extends CommonDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
+public class SheetDockable extends DataFileDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
     private static SheetDockable               LAST_ACTIVATED;
     private        CharacterSheet              mSheet;
     private        JComboBox<Scales>           mScaleCombo;

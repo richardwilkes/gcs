@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.utility.units;
 
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.text.Numbers;
 
 import java.text.MessageFormat;
 

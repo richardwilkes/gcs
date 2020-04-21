@@ -12,8 +12,8 @@
 package com.trollworks.gcs.notes;
 
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
 
 /** A list of notes from a library. */

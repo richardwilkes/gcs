@@ -12,27 +12,27 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.common.CommonDockable;
+import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.ui.widget.outline.ListOutline;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.RowItemRenderer;
-import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dock;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.RowItemRenderer;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
+import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
 import com.trollworks.gcs.ui.widget.search.Search;
 import com.trollworks.gcs.ui.widget.search.SearchTarget;
 import com.trollworks.gcs.utility.FileType;
@@ -57,7 +57,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 /** A list of advantages and disadvantages from a library. */
-public class TemplateDockable extends CommonDockable implements NotifierTarget, SearchTarget, RetargetableFocus {
+public class TemplateDockable extends DataFileDockable implements NotifierTarget, SearchTarget, RetargetableFocus {
     private static TemplateDockable  LAST_ACTIVATED;
     private        TemplateSheet     mTemplate;
     private        JComboBox<Scales> mScaleCombo;

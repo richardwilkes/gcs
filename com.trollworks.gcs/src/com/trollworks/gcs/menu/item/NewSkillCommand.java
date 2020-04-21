@@ -12,13 +12,13 @@
 package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.SheetDockable;
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;

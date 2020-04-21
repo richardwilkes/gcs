@@ -12,7 +12,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 
 import java.util.List;

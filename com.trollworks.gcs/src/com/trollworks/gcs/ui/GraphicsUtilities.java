@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui;
 
-import com.trollworks.gcs.common.BaseWindow;
+import com.trollworks.gcs.ui.widget.BaseWindow;
 
 import java.awt.Frame;
 import java.awt.Graphics;

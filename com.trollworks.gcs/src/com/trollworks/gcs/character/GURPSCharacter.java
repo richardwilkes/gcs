@@ -15,8 +15,8 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.collections.FilteredIterator;
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
@@ -75,7 +75,6 @@ import java.util.Set;
 public class GURPSCharacter extends DataFile {
     /** The extension for character sheets. */
     public static final  String                              EXTENSION                            = "gcs";
-   // public static final FileType FILE_TYPE = new FileType("gcs", Images.GCS_FILE, I18n.Text("GURPS Character Sheet"));
     private static final int                                 CURRENT_VERSION                      = 4;
     /**
      * The version where equipment was separated out into different lists based on carried/not

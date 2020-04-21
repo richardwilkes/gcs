@@ -66,38 +66,37 @@ public class I18n {
             Path path = base.resolve(filename + ".i18n");
             if (Files.isRegularFile(path) && Files.isReadable(path)) {
                 try (BufferedReader in = Files.newBufferedReader(path)) {
-                    int    lineNum          = 0;
-                    int    lastKeyLineStart = 0;
-                    String key              = null;
-                    String value            = null;
-                    char   last             = 0;
-                    String line             = in.readLine();
+                    int           lineNum          = 0;
+                    int           lastKeyLineStart = 0;
+                    StringBuilder keyBuilder       = null;
+                    StringBuilder valueBuilder     = null;
+                    char          last             = 0;
+                    String        line             = in.readLine();
                     while (line != null) {
                         lineNum++;
                         if (line.startsWith("k:")) {
                             if (last == 'v') {
                                 // We only keep the most specific translation.
+                                String key = keyBuilder.toString();
                                 if (!TRANSLATIONS.containsKey(key)) {
-                                    TRANSLATIONS.put(key, value);
+                                    TRANSLATIONS.put(key, valueBuilder.toString());
                                 }
-                                key = null;
-                                value = null;
+                                keyBuilder = null;
+                                valueBuilder = null;
                             }
-                            if (key == null) {
-                                key = Text.unquote(line.substring(2));
+                            if (keyBuilder == null) {
+                                keyBuilder = new StringBuilder(Text.unquote(line.substring(2)));
                                 lastKeyLineStart = lineNum;
                             } else {
-                                key += '\n';
-                                key += Text.unquote(line.substring(2));
+                                keyBuilder.append("\n").append(Text.unquote(line.substring(2)));
                             }
                             last = 'k';
                         } else if (line.startsWith("v:")) {
-                            if (key != null) {
-                                if (value == null) {
-                                    value = Text.unquote(line.substring(2));
+                            if (keyBuilder != null) {
+                                if (valueBuilder == null) {
+                                    valueBuilder = new StringBuilder(Text.unquote(line.substring(2)));
                                 } else {
-                                    value += '\n';
-                                    value += Text.unquote(line.substring(2));
+                                    valueBuilder.append("\n").append(Text.unquote(line.substring(2)));
                                 }
                                 last = 'v';
                             } else {
@@ -106,11 +105,12 @@ public class I18n {
                         }
                         line = in.readLine();
                     }
-                    if (key != null) {
-                        if (value != null) {
+                    if (keyBuilder != null) {
+                        if (valueBuilder != null) {
                             // We only keep the most specific translation.
+                            String key = keyBuilder.toString();
                             if (!TRANSLATIONS.containsKey(key)) {
-                                TRANSLATIONS.put(key, value);
+                                TRANSLATIONS.put(key, valueBuilder.toString());
                             }
                         } else {
                             System.err.println("ignoring key with missing value on line " + lastKeyLineStart);

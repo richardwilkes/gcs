@@ -13,7 +13,7 @@ package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.common.BaseWindow;
+import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;

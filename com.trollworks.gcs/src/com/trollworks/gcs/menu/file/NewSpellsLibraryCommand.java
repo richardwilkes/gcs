@@ -12,9 +12,9 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.spell.SpellsDockable;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;

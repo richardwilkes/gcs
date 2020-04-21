@@ -9,13 +9,13 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.common;
+package com.trollworks.gcs.datafile;
 
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.SaveCommand;
 import com.trollworks.gcs.menu.file.Saveable;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
@@ -30,16 +30,16 @@ import java.io.File;
 import javax.swing.Icon;
 
 /** Provides a common base for library and sheet files. */
-public abstract class CommonDockable extends Dockable implements CloseHandler, Saveable, Undoable {
+public abstract class DataFileDockable extends Dockable implements CloseHandler, Saveable, Undoable {
     private DataFile mDataFile;
     private String   mUntitledName;
 
     /**
-     * Creates a new {@link CommonDockable}.
+     * Creates a new {@link DataFileDockable}.
      *
      * @param file The {@link DataFile} to use.
      */
-    protected CommonDockable(DataFile file) {
+    protected DataFileDockable(DataFile file) {
         super(new BorderLayout());
         mDataFile = file;
         mDataFile.setUndoManager(new StdUndoManager());

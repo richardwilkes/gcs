@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.ui.UIUtilities;
 
 import java.awt.Color;
 import java.awt.Component;

@@ -25,7 +25,7 @@ open module com.trollworks.gcs {
     exports com.trollworks.gcs.character.names;
     exports com.trollworks.gcs.character;
     exports com.trollworks.gcs.collections;
-    exports com.trollworks.gcs.common;
+    exports com.trollworks.gcs.datafile;
     exports com.trollworks.gcs.criteria;
     exports com.trollworks.gcs.equipment;
     exports com.trollworks.gcs.feature;

@@ -12,23 +12,23 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.common.DataFile;
-import com.trollworks.gcs.common.HasSourceReference;
-import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.common.LoadState;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.io.xml.XMLReader;
+import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
+import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
-import com.trollworks.gcs.ui.widget.outline.Column;
-import com.trollworks.gcs.ui.widget.outline.Row;
-import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Numbers;
 
 import java.io.IOException;
 import java.util.ArrayList;

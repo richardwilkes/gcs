@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.utility.I18n;
 

@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.Row;
 
 import java.awt.Color;

@@ -12,9 +12,9 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;

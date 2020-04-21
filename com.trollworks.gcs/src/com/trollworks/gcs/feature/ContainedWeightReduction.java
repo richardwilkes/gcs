@@ -12,9 +12,9 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightValue;
 

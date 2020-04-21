@@ -12,20 +12,20 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.common.CommonDockable;
-import com.trollworks.gcs.common.ListFile;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.outline.ListOutline;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.datafile.DataFileDockable;
+import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
+import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowFilter;
@@ -51,7 +51,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable extends CommonDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget, RetargetableFocus {
+public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget, RetargetableFocus {
     private Toolbar           mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;

@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.common.EditorPanel;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.Alignment;
@@ -20,6 +19,7 @@ import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.EditorPanel;
 import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;

@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.utility.undo;
 
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.menu.edit.Undoable;
+import com.trollworks.gcs.ui.UIUtilities;
 
 import java.awt.Component;
 import javax.swing.undo.CannotRedoException;

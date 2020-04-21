@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.character.names;
 
-import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.Alignment;
 import com.trollworks.gcs.ui.layout.FlexColumn;
@@ -21,6 +20,7 @@ import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.layout.LayoutSize;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 

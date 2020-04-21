@@ -11,11 +11,11 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexColumn;

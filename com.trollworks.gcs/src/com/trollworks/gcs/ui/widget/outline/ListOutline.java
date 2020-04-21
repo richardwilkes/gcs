@@ -14,10 +14,12 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
-import com.trollworks.gcs.common.DataFile;
+import com.trollworks.gcs.collections.FilteredList;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.edit.ConvertToContainer;
 import com.trollworks.gcs.menu.edit.MoveEquipmentCommand;
 import com.trollworks.gcs.menu.item.ApplyTemplateCommand;
@@ -27,9 +29,7 @@ import com.trollworks.gcs.menu.item.OpenEditorCommand;
 import com.trollworks.gcs.menu.item.OpenPageReferenceCommand;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.gcs.collections.FilteredList;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 
@@ -49,10 +49,10 @@ import javax.swing.undo.StateEdit;
 
 /** Base outline class. */
 public class ListOutline extends Outline implements Runnable, ActionListener {
-    public static final String OWNING_LIST = "owning_list";
+    public static final String   OWNING_LIST = "owning_list";
     /** The owning data file. */
-    protected DataFile mDataFile;
-    private   String   mRowSetChangedID;
+    protected           DataFile mDataFile;
+    private             String   mRowSetChangedID;
 
     /**
      * Create a new outline.
