@@ -60,11 +60,6 @@ public class I18n {
             base = base.resolve("../app/i18n");
         }
         base = base.normalize();
-        try {
-            Files.writeString(Paths.get(System.getProperty("user.home"), "GCS_INFO.txt"), base.toString() + "\n");
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
 
         String filename = Locale.getDefault().toString();
         while (true) {
