@@ -32,5 +32,5 @@ system.
    Windows:
    ```
    > cd gcs
-   > bundle.bat
+   > .\bundle.bat
    ```
