@@ -1189,9 +1189,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
             Paper        paper    = format.getPaper();
             int          width    = (int) (paper.getWidth() / 72.0 * dpi);
-            int height  = (int) (paper.getHeight() / 72.0 * dpi);
-            Img buffer  = Img.create(width, height, Transparency.OPAQUE);
-            int pageNum = 0;
+            int          height   = (int) (paper.getHeight() / 72.0 * dpi);
+            Img          buffer   = Img.create(width, height, Transparency.OPAQUE);
+            int          pageNum  = 0;
             String       name     = PathUtils.getLeafName(file.getName(), false);
 
             file = file.getParentFile();
