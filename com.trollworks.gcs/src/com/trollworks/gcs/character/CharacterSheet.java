@@ -18,7 +18,6 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.app.GCS;
-import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -874,8 +873,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         bounds.y = insets.top;
         int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
         String      pageString = MessageFormat.format(I18n.Text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
-        Font        font1      = mScale.scale(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
-        Font        font2      = mScale.scale(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
+        Font        font1      = mScale.scale(UIManager.getFont(Fonts.KEY_SECONDARY_FOOTER));
+        Font        font2      = mScale.scale(UIManager.getFont(Fonts.KEY_PRIMARY_FOOTER));
         FontMetrics fm1        = gc.getFontMetrics(font1);
         FontMetrics fm2        = gc.getFontMetrics(font2);
         int         y          = bounds.y + bounds.height + fm2.getAscent();
@@ -922,8 +921,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public Insets getPageAdornmentsInsets(Page page) {
-        FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_SECONDARY_FOOTER));
-        FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(GCSFonts.KEY_PRIMARY_FOOTER));
+        FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_SECONDARY_FOOTER));
+        FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_PRIMARY_FOOTER));
         return new Insets(0, 0, fm1.getAscent() + fm1.getDescent() + fm2.getAscent() + fm2.getDescent(), 0);
     }
 

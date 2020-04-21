@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -69,7 +69,7 @@ public class DropPanel extends JPanel {
      * @param title  The title to use.
      */
     public DropPanel(LayoutManager layout, String title) {
-        this(layout, title, UIManager.getFont(GCSFonts.KEY_LABEL), false);
+        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL), false);
     }
 
     /**
@@ -81,7 +81,7 @@ public class DropPanel extends JPanel {
      *                                preferred size or not.
      */
     public DropPanel(LayoutManager layout, String title, boolean onlyReportPreferredSize) {
-        this(layout, title, UIManager.getFont(GCSFonts.KEY_LABEL), onlyReportPreferredSize);
+        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL), onlyReportPreferredSize);
     }
 
     /**

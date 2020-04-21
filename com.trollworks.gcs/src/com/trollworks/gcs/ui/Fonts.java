@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui;
 
+import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
 
 import java.awt.Font;
@@ -24,49 +25,68 @@ import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
 public class Fonts {
+    /** The standard text field font. */
+    public static final  String                 KEY_STD_TEXT_FIELD    = "TextField.font";
+    /** The label font. */
+    public static final  String                 KEY_LABEL             = "trollworks.v2.label";
+    /** The field font. */
+    public static final  String                 KEY_FIELD             = "trollworks.v2.field";
+    /** The field notes font. */
+    public static final  String                 KEY_FIELD_NOTES       = "trollworks.v2.field.notes";
+    /** The technique field font. */
+    public static final  String                 KEY_TECHNIQUE_FIELD   = "trollworks.v2.field.technique";
+    /** The primary footer font. */
+    public static final  String                 KEY_PRIMARY_FOOTER    = "trollworks.v2.footer.primary";
+    /** The secondary footer font. */
+    public static final  String                 KEY_SECONDARY_FOOTER  = "trollworks.v2.footer.secondary";
+    /** The notes font. */
+    public static final  String                 KEY_NOTES             = "trollworks.v2.notes";
     /** The notification key used when font change notifications are broadcast. */
     public static final  String                 FONT_NOTIFICATION_KEY = "FontsChanged";
     private static final String                 MODULE                = "Font";
-    /** The standard text field font. */
-    public static final  String                 KEY_STD_TEXT_FIELD    = "TextField.font";
     private static final TreeMap<String, Fonts> DEFAULTS              = new TreeMap<>();
     private              String                 mDescription;
     private              Font                   mDefaultFont;
 
-    /**
-     * Registers a default for a specific font key.
-     *
-     * @param key         The key the font maps to.
-     * @param description A human-readable label for the font.
-     * @param defaultFont The default font.
-     */
-    public static void register(String key, String description, Font defaultFont) {
+    private Fonts(String description, Font defaultFont) {
+        mDescription = description;
+        mDefaultFont = defaultFont;
+    }
+
+    /** Loads the current font settings from the preferences file. */
+    public static void loadFromPreferences() {
+        String name = getDefaultFont().getName();
+        register(KEY_LABEL, I18n.Text("Labels"), new Font(name, Font.PLAIN, 9));
+        register(KEY_FIELD, I18n.Text("Fields"), new Font(name, Font.BOLD, 9));
+        register(KEY_FIELD_NOTES, I18n.Text("Field Notes"), new Font(name, Font.PLAIN, 8));
+        register(KEY_TECHNIQUE_FIELD, I18n.Text("Technique Fields"), new Font(name, Font.BOLD + Font.ITALIC, 9));
+        register(KEY_PRIMARY_FOOTER, I18n.Text("Primary Footer"), new Font(name, Font.BOLD, 8));
+        register(KEY_SECONDARY_FOOTER, I18n.Text("Secondary Footer"), new Font(name, Font.PLAIN, 6));
+        register(KEY_NOTES, I18n.Text("Notes"), new Font(name, Font.PLAIN, 9));
+        Preferences prefs = Preferences.getInstance();
+        for (String key : DEFAULTS.keySet()) {
+            Font font = prefs.getFontValue(MODULE, key);
+            if (font != null) {
+                UIManager.put(key, font);
+            }
+        }
+    }
+
+    /** Saves the current font settings to the preferences file. */
+    public static void saveToPreferences() {
+        Preferences prefs = Preferences.getInstance();
+        prefs.removePreferences(MODULE);
+        for (String key : DEFAULTS.keySet()) {
+            Font font = UIManager.getFont(key);
+            if (font != null) {
+                prefs.setValue(MODULE, key, font);
+            }
+        }
+    }
+
+    private static void register(String key, String description, Font defaultFont) {
         UIManager.put(key, defaultFont);
         DEFAULTS.put(key, new Fonts(description, defaultFont));
-    }
-
-    /** @return The available font keys. */
-    public static String[] getKeys() {
-        return DEFAULTS.keySet().toArray(new String[0]);
-    }
-
-    /**
-     * @param key The font key to lookup.
-     * @return The human-readable label for the font.
-     */
-    public static String getDescription(String key) {
-        Fonts match = DEFAULTS.get(key);
-        return match != null ? match.mDescription : null;
-    }
-
-    /** @return The default font to use. */
-    public static Font getDefaultFont() {
-        return UIManager.getFont(KEY_STD_TEXT_FIELD);
-    }
-
-    /** @return The default font name to use. */
-    public static String getDefaultFontName() {
-        return getDefaultFont().getName();
     }
 
     /** Restores the default fonts. */
@@ -86,6 +106,25 @@ public class Fonts {
         return true;
     }
 
+    /** @return The default font to use. */
+    public static Font getDefaultFont() {
+        return UIManager.getFont(KEY_STD_TEXT_FIELD);
+    }
+
+    /** @return The available font keys. */
+    public static String[] getKeys() {
+        return DEFAULTS.keySet().toArray(new String[0]);
+    }
+
+    /**
+     * @param key The font key to lookup.
+     * @return The human-readable label for the font.
+     */
+    public static String getDescription(String key) {
+        Fonts match = DEFAULTS.get(key);
+        return match != null ? match.mDescription : null;
+    }
+
     /**
      * @param font The font to work on.
      * @return The specified font as a canonical string.
@@ -103,14 +142,6 @@ public class Fonts {
         FontMetrics fm  = g2d.getFontMetrics(font);
         g2d.dispose();
         return fm;
-    }
-
-    /**
-     * @param buffer The string to create the font from.
-     * @return A font created from the specified string.
-     */
-    public static Font create(String buffer) {
-        return create(buffer, null);
     }
 
     /**
@@ -174,36 +205,8 @@ public class Fonts {
         return false;
     }
 
-    /** Loads the current font settings from the preferences file. */
-    public static void loadFromPreferences() {
-        Preferences prefs = Preferences.getInstance();
-        for (String key : DEFAULTS.keySet()) {
-            Font font = prefs.getFontValue(MODULE, key);
-            if (font != null) {
-                UIManager.put(key, font);
-            }
-        }
-    }
-
-    /** Saves the current font settings to the preferences file. */
-    public static void saveToPreferences() {
-        Preferences prefs = Preferences.getInstance();
-        prefs.removePreferences(MODULE);
-        for (String key : DEFAULTS.keySet()) {
-            Font font = UIManager.getFont(key);
-            if (font != null) {
-                prefs.setValue(MODULE, key, font);
-            }
-        }
-    }
-
     /** Cause font change listeners to be notified. */
     public static void notifyOfFontChanges() {
         Preferences.getInstance().getNotifier().notify(null, FONT_NOTIFICATION_KEY, null);
-    }
-
-    private Fonts(String description, Font defaultFont) {
-        mDescription = description;
-        mDefaultFont = defaultFont;
     }
 }

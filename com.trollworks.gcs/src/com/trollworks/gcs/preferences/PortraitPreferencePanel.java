@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.TitledBorder;
@@ -42,7 +42,7 @@ public class PortraitPreferencePanel extends ActionPanel {
      */
     public PortraitPreferencePanel(Img image) {
         mPortrait = Profile.createPortrait(image);
-        setBorder(new TitledBorder(UIManager.getFont(GCSFonts.KEY_LABEL), I18n.Text("Portrait")));
+        setBorder(new TitledBorder(UIManager.getFont(Fonts.KEY_LABEL), I18n.Text("Portrait")));
         Insets insets = getInsets();
         UIUtilities.setOnlySize(this, new Dimension(insets.left + insets.right + Profile.PORTRAIT_WIDTH, insets.top + insets.bottom + Profile.PORTRAIT_HEIGHT));
         setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.Text("<html><body>The portrait to use when a new character sheet is created.<br><br>Ideal original portrait size is {0} pixels wide by {1} pixels tall,<br>although the image will be automatically scaled to these<br>dimensions, if necessary.</body></html>"), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));

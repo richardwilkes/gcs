@@ -319,7 +319,7 @@ public class Preferences {
      */
     public Font getFontValue(String module, String key) {
         String value = getStringValue(module, key);
-        return value == null ? null : Fonts.create(value);
+        return value == null ? null : Fonts.create(value, null);
     }
 
     /**

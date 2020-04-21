@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -29,7 +29,7 @@ public class PageHeader extends Label {
      */
     public PageHeader(String title, String tooltip) {
         super(title, SwingConstants.CENTER);
-        setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
+        setFont(UIManager.getFont(Fonts.KEY_LABEL));
         setForeground(Color.white);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
     }

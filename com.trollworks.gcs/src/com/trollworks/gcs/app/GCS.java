@@ -267,7 +267,6 @@ public class GCS {
             ex.printStackTrace(System.err);
         }
         Preferences.setPreferenceFile("gcs.pref");
-        GCSFonts.register();
         Fonts.loadFromPreferences();
 
         // Increase ToolTip time so the user has time to read the skill modifiers

@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.Label;
 
 import javax.swing.JComponent;
@@ -27,7 +27,7 @@ public class PageLabel extends Label {
      */
     public PageLabel(String title, JComponent field) {
         super(title);
-        setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
+        setFont(UIManager.getFont(Fonts.KEY_LABEL));
         setRefersTo(field);
     }
 
@@ -40,7 +40,7 @@ public class PageLabel extends Label {
      */
     public PageLabel(String title, JComponent field, int alignment) {
         super(title, alignment);
-        setFont(UIManager.getFont(GCSFonts.KEY_LABEL));
+        setFont(UIManager.getFont(Fonts.KEY_LABEL));
         setRefersTo(field);
     }
 }

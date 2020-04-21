@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.app.GCSFonts;
+import com.trollworks.gcs.ui.Fonts;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -33,7 +33,7 @@ public class ListTextCell extends TextCell {
 
     @Override
     public Font getFont(Row row, Column column) {
-        return UIManager.getFont(GCSFonts.KEY_FIELD);
+        return UIManager.getFont(Fonts.KEY_FIELD);
     }
 
     @Override

@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.app.GCSFonts;
 import com.trollworks.gcs.character.Armor;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Encumbrance;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.Platform;
@@ -107,7 +107,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         }
         mSheet = sheet;
         mConsumedType = consumedType;
-        setFont(sheet.getScale().scale(UIManager.getFont(GCSFonts.KEY_FIELD)));
+        setFont(sheet.getScale().scale(UIManager.getFont(Fonts.KEY_FIELD)));
         setBorder(null);
         setOpaque(false);
         // Just setting opaque to false isn't enough for some reason, so I'm also setting the
