@@ -30,18 +30,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class CmdLineExport {
-    public static void export(List<Path> files, boolean generatePDF, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
-        if (generateText || generatePDF || generatePNG) {
-            double[] paperSize    = getPaperSize(paper);
-            double[] marginsInfo  = getMargins(margins);
+public class CmdLineExport implements Runnable {
+    List<Path> mFiles;
+    boolean    mGeneratePDF;
+    boolean    mGeneratePNG;
+    boolean    mGenerateText;
+    Path       mTemplate;
+    String     mMargins;
+    String     mPaper;
+
+    public CmdLineExport(List<Path> files, boolean generatePDF, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
+        mFiles = files;
+        mGeneratePDF = generatePDF;
+        mGeneratePNG = generatePNG;
+        mGenerateText = generateText;
+        mTemplate = template;
+        mMargins = margins;
+        mPaper = paper;
+    }
+
+    public void run() {
+        if (mGenerateText || mGeneratePDF || mGeneratePNG) {
+            double[] paperSize    = getPaperSize();
+            double[] marginsInfo  = getMargins();
             Timing   timing       = new Timing();
             File     textTemplate = null;
-            if (template != null) {
-                textTemplate = template.toFile();
+            if (mTemplate != null) {
+                textTemplate = mTemplate.toFile();
             }
             GraphicsUtilities.setHeadlessPrintMode(true);
-            for (Path path : files) {
+            for (Path path : mFiles) {
                 File file = path.toFile();
                 if (GURPSCharacter.EXTENSION.equals(PathUtils.getExtension(file.getName())) && file.canRead()) {
                     System.out.printf(I18n.Text("Loading %s... "), file);
@@ -70,7 +88,7 @@ public class CmdLineExport {
                         sheet.setSize(sheet.getPreferredSize());
 
                         System.out.println(timing);
-                        if (generateText) {
+                        if (mGenerateText) {
                             System.out.print(I18n.Text("  Creating from text template... "));
                             System.out.flush();
                             textTemplate = TextTemplate.resolveTextTemplate(textTemplate);
@@ -83,7 +101,7 @@ public class CmdLineExport {
                                 System.out.printf(I18n.Text("    Created: %s\n"), output);
                             }
                         }
-                        if (generatePDF) {
+                        if (mGeneratePDF) {
                             System.out.print(I18n.Text("  Creating PDF... "));
                             System.out.flush();
                             output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PDF.getExtension()));
@@ -94,7 +112,7 @@ public class CmdLineExport {
                                 System.out.printf(I18n.Text("    Created: %s\n"), output);
                             }
                         }
-                        if (generatePNG) {
+                        if (mGeneratePNG) {
                             List<File> result = new ArrayList<>();
                             System.out.print(I18n.Text("  Creating PNG... "));
                             System.out.flush();
@@ -119,38 +137,38 @@ public class CmdLineExport {
         }
     }
 
-    private static double[] getPaperSize(String spec) {
-        if (spec != null) {
+    private double[] getPaperSize() {
+        if (mPaper != null) {
             int index;
 
-            if ("LETTER".equalsIgnoreCase(spec)) {
+            if ("LETTER".equalsIgnoreCase(mPaper)) {
                 return new double[]{8.5, 11};
             }
 
-            if ("A4".equalsIgnoreCase(spec)) {
+            if ("A4".equalsIgnoreCase(mPaper)) {
                 return new double[]{LengthUnits.IN.convert(LengthUnits.CM, 21), LengthUnits.IN.convert(LengthUnits.CM, 29.7)};
             }
 
-            index = spec.indexOf('x');
+            index = mPaper.indexOf('x');
             if (index == -1) {
-                index = spec.indexOf('X');
+                index = mPaper.indexOf('X');
             }
             if (index != -1) {
-                double width  = Numbers.extractDouble(spec.substring(0, index), -1.0, true);
-                double height = Numbers.extractDouble(spec.substring(index + 1), -1.0, true);
+                double width  = Numbers.extractDouble(mPaper.substring(0, index), -1.0, true);
+                double height = Numbers.extractDouble(mPaper.substring(index + 1), -1.0, true);
                 if (width > 0.0 && height > 0.0) {
                     return new double[]{width, height};
                 }
             }
-            System.err.println(I18n.Text("invalid paper size specification: ") + spec);
+            System.err.println(I18n.Text("invalid paper size specification: ") + mPaper);
             System.exit(1);
         }
         return null;
     }
 
-    private static double[] getMargins(String spec) {
-        if (spec != null) {
-            StringTokenizer tokenizer = new StringTokenizer(spec, ":");
+    private double[] getMargins() {
+        if (mMargins != null) {
+            StringTokenizer tokenizer = new StringTokenizer(mMargins, ":");
             double[]        values    = new double[4];
             int             index     = 0;
             while (tokenizer.hasMoreTokens()) {
@@ -166,7 +184,7 @@ public class CmdLineExport {
             if (index == 4) {
                 return values;
             }
-            System.err.println(I18n.Text("invalid paper margins specification: ") + spec);
+            System.err.println(I18n.Text("invalid paper margins specification: ") + mMargins);
             System.exit(1);
         }
         return null;

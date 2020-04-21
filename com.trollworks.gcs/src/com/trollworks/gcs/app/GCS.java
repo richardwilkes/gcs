@@ -21,6 +21,7 @@ import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.Version;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.InputStream;
@@ -226,7 +227,15 @@ public class GCS {
             }
             System.setProperty("java.awt.headless", Boolean.TRUE.toString());
             initialize();
-            CmdLineExport.export(files, generatePDF, generatePNG, generateText, template, margins, paper);
+            try {
+                // This is run on the event queue since much of the sheet logic assumes a UI
+                // environment and would otherwise cause concurrent modification exceptions, as the
+                // detection of whether it was safe to modify data would be inaccurate.
+                EventQueue.invokeAndWait(new CmdLineExport(files, generatePDF, generatePNG, generateText, template, margins, paper));
+            } catch (Exception exception) {
+                exception.printStackTrace(System.err);
+                System.exit(1);
+            }
             System.exit(0);
         }
 
