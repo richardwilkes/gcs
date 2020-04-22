@@ -177,7 +177,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mCostAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mCostAmountField);
         double amt = mRow.getCostAdjAmount();
-        mCostAmountField.setText(mRow.getCostAdjType() == EquipmentModifierCostType.MULTIPLIER ? Numbers.format(amt) : Numbers.formatWithForcedSign(amt));
+        mCostAmountField.setText(mRow.getCostAdjType().isMultiplier() ? Numbers.format(amt) : Numbers.formatWithForcedSign(amt));
         mCostAmountField.setToolTipText(I18n.Text("The cost modifier"));
         mCostAmountField.setEnabled(mIsEditable);
         new NumberFilter(mCostAmountField, true, true, true, 11);
@@ -206,7 +206,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private double getCostAmount() {
         double value = Numbers.extractDouble(mCostAmountField.getText(), 0, true);
-        if (value <= 0 && getCostType() == EquipmentModifierCostType.MULTIPLIER) {
+        if (value <= 0 && getCostType().isMultiplier()) {
             value = 1;
         }
         return value;
@@ -351,7 +351,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private void costChanged() {
         String text = mCostAmountField.getText().trim();
-        if (getCostType() == EquipmentModifierCostType.MULTIPLIER) {
+        if (getCostType().isMultiplier()) {
             double value = Numbers.extractDouble(text, 0, true);
             if (value <= 0) {
                 mCostAmountField.setText("1");

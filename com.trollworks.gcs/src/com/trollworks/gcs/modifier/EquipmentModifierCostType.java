@@ -25,11 +25,16 @@ public enum EquipmentModifierCostType {
             return I18n.Text("to base cost");
         }
     },
-    /** Multiplies the cost. */
-    MULTIPLIER {
+    /** Multiplies the base cost. */
+    BASE_MULTIPLIER {
         @Override
         public String toString() {
-            return "\u00d7 cost";
+            return "\u00d7 base cost";
+        }
+
+        @Override
+        public boolean isMultiplier() {
+            return true;
         }
     },
     /** Adds to the cost factor. */
@@ -39,11 +44,27 @@ public enum EquipmentModifierCostType {
             return "CF";
         }
     },
+    /** Multiplies the final cost. */
+    FINAL_MULTIPLIER {
+        @Override
+        public String toString() {
+            return "\u00d7 final cost";
+        }
+
+        @Override
+        public boolean isMultiplier() {
+            return true;
+        }
+    },
     /** Adds to the final cost. */
     FINAL_ADDITION {
         @Override
         public String toString() {
             return "to final cost";
         }
+    };
+
+    public boolean isMultiplier() {
+        return false;
     }
 }

@@ -511,6 +511,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         double multiplier      = 0;
         int    multiplierCount = 0;
         double costFactor      = 0;
+        double finalMultiplier = 0;
         double finalAddition   = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled()) {
@@ -519,12 +520,15 @@ public class Equipment extends ListRow implements HasSourceReference {
                 case BASE_ADDITION:
                     value += amt;
                     break;
-                case MULTIPLIER:
+                case BASE_MULTIPLIER:
                     multiplier += amt;
                     multiplierCount++;
                     break;
                 case COST_FACTOR:
                     costFactor += amt;
+                    break;
+                case FINAL_MULTIPLIER:
+                    finalMultiplier += amt;
                     break;
                 case FINAL_ADDITION:
                     finalAddition += amt;
@@ -548,6 +552,12 @@ public class Equipment extends ListRow implements HasSourceReference {
                 multiplier = 0.2;
             }
             value *= multiplier;
+        }
+        if (finalMultiplier != 0) {
+            if (finalMultiplier < 0.2) {
+                finalMultiplier = 0.2;
+            }
+            value *= finalMultiplier;
         }
         value += finalAddition;
         if (value < 0) {
