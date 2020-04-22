@@ -165,7 +165,7 @@ public class MeleeWeaponStats extends WeaponStats {
                                 int best = Integer.MIN_VALUE;
                                 for (SkillDefault skillDefault : getDefaults()) {
                                     SkillDefaultType type  = skillDefault.getType();
-                                    int              level = type.getSkillLevelFast(character, skillDefault, new HashSet<>());
+                                    int              level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>());
                                     if (level != Integer.MIN_VALUE && type != baseDefaultType) {
                                         level = level / 2 + 3 + (baseDefaultType == SkillDefaultType.Parry ? character.getParryBonus() : character.getBlockBonus());
                                     }

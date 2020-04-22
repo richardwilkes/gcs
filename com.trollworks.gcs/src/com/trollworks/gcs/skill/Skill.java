@@ -829,7 +829,7 @@ public class Skill extends ListRow implements HasSourceReference {
                     // For skill-based defaults, prune out any that already use a default that we
                     // are involved with
                     if (!skillDefault.equals(excludedDefault) && !isInDefaultChain(this, skillDefault, new HashSet<>())) {
-                        int level = skillDefault.getType().getSkillLevel(character, skillDefault, excludes);
+                        int level = skillDefault.getType().getSkillLevel(character, skillDefault, true, excludes);
                         if (skillDefault.getType().isSkillBased()) {
                             String name  = skillDefault.getName();
                             Skill  skill = character.getBestSkillNamed(name, skillDefault.getSpecialization(), true, excludes);

@@ -90,7 +90,7 @@ public class Technique extends Skill {
             return skill != null ? skill.getLevel() : Integer.MIN_VALUE;
         }
         // Take the modifier back out, as we wanted the base, not the final value.
-        return type.getSkillLevelFast(character, def, null) - def.getModifier();
+        return type.getSkillLevelFast(character, def, true, null) - def.getModifier();
     }
 
     /**
