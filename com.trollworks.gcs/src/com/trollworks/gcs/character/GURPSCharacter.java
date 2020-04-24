@@ -841,7 +841,7 @@ public class GURPSCharacter extends DataFile {
         if (Spell.ID_POINTS.equals(type) || Spell.ID_LIST_CHANGED.equals(type)) {
             mNeedSpellPointCalculation = true;
         }
-        if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type) || EquipmentModifier.ID_WEIGHT_ADJ.equals(type) || EquipmentModifier.ID_COST_ADJ.equals(type)) {
+        if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type) || EquipmentModifier.ID_WEIGHT_ADJ.equals(type) || EquipmentModifier.ID_COST_ADJ.equals(type) || EquipmentModifier.ID_ENABLED.equals(type)) {
             mNeedEquipmentCalculation = true;
         }
         if (Profile.ID_SIZE_MODIFIER.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type)) {
