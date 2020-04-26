@@ -33,12 +33,12 @@ public class NewEquipmentModifierCommand extends Command {
 
     @Override
     public void adjust() {
-        boolean                    enabled  = false;
+        boolean                    enable   = false;
         EquipmentModifiersDockable dockable = getTarget(EquipmentModifiersDockable.class);
         if (dockable != null) {
-            enabled = !dockable.getOutline().getModel().isLocked();
+            enable = !dockable.getOutline().getModel().isLocked();
         }
-        setEnabled(enabled);
+        setEnabled(enable);
     }
 
     @Override

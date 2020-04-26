@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.advantage.AdvantageList;
-import com.trollworks.gcs.advantage.AdvantagesDockable;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.modifier.AdvantageModifierList;

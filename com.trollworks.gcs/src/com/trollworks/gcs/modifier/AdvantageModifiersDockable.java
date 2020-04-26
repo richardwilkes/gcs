@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;

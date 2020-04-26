@@ -20,7 +20,6 @@ import com.trollworks.gcs.utility.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.JMenu;
 
 /** Provides the standard "Edit" menu. */

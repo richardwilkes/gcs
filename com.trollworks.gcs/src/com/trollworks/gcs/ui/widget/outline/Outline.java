@@ -2215,7 +2215,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      */
     protected int dragOverRow(DropTargetDragEvent dtde) {
         Row[] dragRows = mModel.getDragRows();
-        if (dragRows[0] instanceof AdvantageModifier || dragRows[0] instanceof EquipmentModifier) {
+        if (dragRows != null && dragRows.length > 0 && (dragRows[0] instanceof AdvantageModifier || dragRows[0] instanceof EquipmentModifier)) {
             Point pt = UIUtilities.convertDropTargetDragPointTo(dtde, this);
             setDragTargetRow(overRow(pt.y));
             return getDragTargetRow() != null ? DnDConstants.ACTION_MOVE : DnDConstants.ACTION_NONE;
