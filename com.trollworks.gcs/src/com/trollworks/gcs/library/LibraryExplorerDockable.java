@@ -209,7 +209,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
     public List<Object> collectLibraryFiles() {
         List<Object> list = new ArrayList<>();
         list.add("GCS");
-        list.add(collectLibraryFileLists(I18n.Text("Library"), Library.getSystemRootPath()));
+        list.add(collectLibraryFileLists(I18n.Text("Master Library"), Library.getMasterRootPath()));
         list.add(collectLibraryFileLists(I18n.Text("User Library"), Library.getUserRootPath()));
         return list;
     }

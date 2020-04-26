@@ -28,7 +28,7 @@ public class ShowLibraryFolderCommand extends Command {
 
     /** Creates a new {@link ShowLibraryFolderCommand}. */
     public ShowLibraryFolderCommand(boolean system) {
-        super(system ? I18n.Text("Show GCS Library on Disk") : I18n.Text("Show GCS User Library on Disk"), system ? "show_gcs_library" : "show_gcs_user_library");
+        super(system ? I18n.Text("Show GCS Master Library on Disk") : I18n.Text("Show GCS User Library on Disk"), system ? "show_gcs_master_library" : "show_gcs_user_library");
         mSystem = system;
     }
 
@@ -40,7 +40,7 @@ public class ShowLibraryFolderCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            File    dir     = (mSystem ? Library.getSystemRootPath() : Library.getUserRootPath()).toFile();
+            File    dir     = (mSystem ? Library.getMasterRootPath() : Library.getUserRootPath()).toFile();
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Action.BROWSE_FILE_DIR)) {
                 File[] contents = dir.listFiles();

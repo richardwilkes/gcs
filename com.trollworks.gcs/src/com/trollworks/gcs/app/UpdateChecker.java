@@ -76,7 +76,7 @@ public class UpdateChecker implements Runnable {
 
     /** @return The result of the new data check. */
     public static synchronized String getDataResult() {
-        return DATA_RESULT != null ? DATA_RESULT : I18n.Text("Checking for GCS Library updates\u2026");
+        return DATA_RESULT != null ? DATA_RESULT : I18n.Text("Checking for GCS Master Library updates\u2026");
     }
 
     private static synchronized void setDataResult(String result, boolean available) {
@@ -164,21 +164,21 @@ public class UpdateChecker implements Runnable {
     private void checkForLibraryUpdates() {
         String latest = Library.getLatestCommit();
         if (latest.isBlank()) {
-            setDataResult(I18n.Text("Unable to access GitHub to check GCS Library version"), false);
+            setDataResult(I18n.Text("Unable to access GitHub to check GCS Master Library version"), false);
         } else {
             String recorded = Library.getRecordedCommit();
             if (latest.equals(recorded)) {
-                setDataResult(I18n.Text("You have the most recent version of the GCS Library"), false);
+                setDataResult(I18n.Text("You have the most recent version of the GCS Master Library"), false);
             } else if (GCS.VERSION == 0 || GCS.VERSION >= Library.getMinimumGCSVersion()) {
                 Preferences prefs = Preferences.getInstance();
-                setDataResult(I18n.Text("A new version of the GCS Library is available"), true);
+                setDataResult(I18n.Text("A new version of the GCS Master Library is available"), true);
                 if (!latest.equals(prefs.getStringValue(MODULE, LAST_LIBRARY_COMMIT_KEY, ""))) {
                     prefs.setValue(MODULE, LAST_LIBRARY_COMMIT_KEY, latest);
                     prefs.save();
                     mMode = Mode.NOTIFY;
                 }
             } else {
-                setDataResult(I18n.Text("Your version of GCS must be updated to use the latest GCS Library"), false);
+                setDataResult(I18n.Text("Your version of GCS must be updated to use the latest GCS Master Library"), false);
             }
         }
     }

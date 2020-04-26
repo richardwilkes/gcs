@@ -38,14 +38,14 @@ public class Library {
     private static final String ROOT_PREFIX  = "richardwilkes-gcs_library-";
     private static final String VERSION_FILE = "version.txt";
 
-    /** @return The path to the system GCS library files. */
-    public static Path getSystemRootPath() {
+    /** @return The path to the master GCS library files. */
+    public static Path getMasterRootPath() {
         Path   path;
-        String library = System.getenv("GCS_LIBRARY");
+        String library = System.getenv("GCS_MASTER_LIBRARY");
         if (library != null) {
             path = Paths.get(library);
         } else {
-            path = Paths.get(System.getProperty("user.home", "."), "GCS", "Library");
+            path = Paths.get(System.getProperty("user.home", "."), "GCS", "Master Library");
         }
         path = path.normalize();
         if (!Files.exists(path)) {
@@ -79,7 +79,7 @@ public class Library {
     }
 
     public static final String getRecordedCommit() {
-        try (BufferedReader in = Files.newBufferedReader(getSystemRootPath().resolve(VERSION_FILE))) {
+        try (BufferedReader in = Files.newBufferedReader(getMasterRootPath().resolve(VERSION_FILE))) {
             String line = in.readLine();
             while (line != null) {
                 line = line.trim();
@@ -128,7 +128,7 @@ public class Library {
     }
 
     public static final boolean download() {
-        Path root = getSystemRootPath();
+        Path root = getMasterRootPath();
         try (ZipInputStream in = new ZipInputStream(new BufferedInputStream(UrlUtils.setupConnection("https://api.github.com/repos/richardwilkes/gcs_library/zipball/master").getInputStream()))) {
             RecursiveDirectoryRemover.remove(root, false);
             byte[]   buffer = new byte[8192];

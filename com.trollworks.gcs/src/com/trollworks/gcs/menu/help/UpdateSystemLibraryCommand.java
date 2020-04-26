@@ -27,7 +27,7 @@ import javax.swing.JOptionPane;
 public class UpdateSystemLibraryCommand extends Command {
     /** Creates a new {@link UpdateSystemLibraryCommand}. */
     public UpdateSystemLibraryCommand() {
-        super(I18n.Text("Update GCS Library"), "update_gcs_system_library");
+        super(I18n.Text("Update GCS Master Library"), "update_gcs_master_library");
     }
 
     @Override
@@ -42,7 +42,7 @@ public class UpdateSystemLibraryCommand extends Command {
 
     public static void askUserToUpdate() {
         String no = I18n.Text("No");
-        if (WindowUtils.showConfirmDialog(null, I18n.Text("Update the GCS Library to the latest content?\n\nNote that any existing content will be removed and replaced.\nContent in the GCS User Library will not be modified."), I18n.Text("GCS Library Update"), JOptionPane.OK_CANCEL_OPTION, new String[]{I18n.Text("Update"), no}, no) == JOptionPane.OK_OPTION) {
+        if (WindowUtils.showConfirmDialog(null, I18n.Text("Update the GCS Master Library to the latest content?\n\nNote that any existing content will be removed and replaced.\nContent in the GCS User Library will not be modified."), I18n.Text("GCS Master Library Update"), JOptionPane.OK_CANCEL_OPTION, new String[]{I18n.Text("Update"), no}, no) == JOptionPane.OK_OPTION) {
             for (Dockable dockable : Workspace.get().getDock().getDockables()) {
                 if (dockable instanceof CloseHandler) {
                     CloseHandler handler = (CloseHandler) dockable;
@@ -57,9 +57,9 @@ public class UpdateSystemLibraryCommand extends Command {
                 libraryDockable.refresh();
             }
             if (success) {
-                JOptionPane.showMessageDialog(null, I18n.Text("GCS Library update was successful."), I18n.Text("Success!"), JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, I18n.Text("GCS Master Library update was successful."), I18n.Text("Success!"), JOptionPane.INFORMATION_MESSAGE);
             } else {
-                WindowUtils.showError(null, I18n.Text("An error occurred while trying to update the GCS Library."));
+                WindowUtils.showError(null, I18n.Text("An error occurred while trying to update the GCS Master Library."));
             }
         }
     }
