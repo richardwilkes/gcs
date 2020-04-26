@@ -538,7 +538,7 @@ public class Bundler {
         args.add("LICENSE");
         args.add("--icon");
         args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
-        for (String ext : new String[]{"adq", "eqp", "gcs", "gct", "not", "skl", "spl"}) {
+        for (String ext : new String[]{"adm", "adq", "eqm", "eqp", "gcs", "gct", "not", "skl", "spl"}) {
             args.add("--file-associations");
             args.add(Paths.get("artifacts", "file_associations", OS, ext + "_ext.properties").toString());
         }
