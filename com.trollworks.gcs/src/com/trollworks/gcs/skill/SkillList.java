@@ -28,8 +28,6 @@ public class SkillList extends ListFile {
     public static final int    CURRENT_VERSION = 1;
     /** The XML tag for {@link SkillList}s. */
     public static final String TAG_ROOT        = "skill_list";
-    /** The extension for {@link SkillList}s. */
-    public static final String EXTENSION       = "skl";
 
     @Override
     public int getXMLTagVersion() {

@@ -22,19 +22,21 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Describes a file. */
 public class FileType {
-    public static final FileType                  SHEET         = new FileType(I18n.Text("Character Sheet"), Images.GCS_FILE, "gcs");
-    public static final FileType                  TEMPLATE      = new FileType(I18n.Text("Character Template"), Images.GCT_FILE, "gct");
-    public static final FileType                  ADVANTAGE     = new FileType(I18n.Text("Advantage Library"), Images.ADQ_FILE, "adq");
-    public static final FileType                  EQUIPMENT     = new FileType(I18n.Text("Equipment Library"), Images.EQP_FILE, "eqp");
-    public static final FileType                  SKILL         = new FileType(I18n.Text("Skill Library"), Images.SKL_FILE, "skl");
-    public static final FileType                  SPELL         = new FileType(I18n.Text("Spell Library"), Images.SPL_FILE, "spl");
-    public static final FileType                  NOTE          = new FileType(I18n.Text("Note Library"), Images.NOT_FILE, "not");
-    public static final FileType                  PDF           = new FileType(I18n.Text("PDF Files"), Images.FILE, "pdf"); // RAW: Create PDF icon
-    public static final FileType                  PNG           = new FileType(I18n.Text("PNG Files"), Images.FILE, "png"); // RAW: Create PNG icon
-    public static final FileType                  JPEG          = new FileType(I18n.Text("JPEG Files"), Images.FILE, "jpg", "jpeg"); // RAW: Create JPEG icon
-    public static final FileType                  GIF           = new FileType(I18n.Text("GIF Files"), Images.FILE, "gif"); // RAW: Create GIF icon
-    public static final FileType[]                OPENABLE      = {SHEET, TEMPLATE, ADVANTAGE, EQUIPMENT, SKILL, SPELL, NOTE, PDF};
-    public static final FileNameExtensionFilter[] IMAGE_FILTERS = createFileFilters(I18n.Text("Image Files"), PNG, JPEG, GIF);
+    public static final FileType                  SHEET              = new FileType(I18n.Text("Character Sheet"), Images.GCS_FILE, "gcs");
+    public static final FileType                  TEMPLATE           = new FileType(I18n.Text("Character Template"), Images.GCT_FILE, "gct");
+    public static final FileType                  ADVANTAGE          = new FileType(I18n.Text("Advantages Library"), Images.ADQ_FILE, "adq");
+    public static final FileType                  ADVANTAGE_MODIFIER = new FileType(I18n.Text("Advantage Modifiers Library"), Images.ADM_FILE, "adm");
+    public static final FileType                  EQUIPMENT          = new FileType(I18n.Text("Equipment Library"), Images.EQP_FILE, "eqp");
+    public static final FileType                  EQUIPMENT_MODIFIER = new FileType(I18n.Text("Equipment Modifiers Library"), Images.EQM_FILE, "eqm");
+    public static final FileType                  SKILL              = new FileType(I18n.Text("Skills Library"), Images.SKL_FILE, "skl");
+    public static final FileType                  SPELL              = new FileType(I18n.Text("Spells Library"), Images.SPL_FILE, "spl");
+    public static final FileType                  NOTE               = new FileType(I18n.Text("Notes Library"), Images.NOT_FILE, "not");
+    public static final FileType                  PDF                = new FileType(I18n.Text("PDF Files"), Images.FILE, "pdf"); // RAW: Create PDF icon
+    public static final FileType                  PNG                = new FileType(I18n.Text("PNG Files"), Images.FILE, "png"); // RAW: Create PNG icon
+    public static final FileType                  JPEG               = new FileType(I18n.Text("JPEG Files"), Images.FILE, "jpg", "jpeg"); // RAW: Create JPEG icon
+    public static final FileType                  GIF                = new FileType(I18n.Text("GIF Files"), Images.FILE, "gif"); // RAW: Create GIF icon
+    public static final FileType[]                OPENABLE           = {SHEET, TEMPLATE, ADVANTAGE, ADVANTAGE_MODIFIER, EQUIPMENT, EQUIPMENT_MODIFIER, SKILL, SPELL, NOTE, PDF};
+    public static final FileNameExtensionFilter[] IMAGE_FILTERS      = createFileFilters(I18n.Text("Image Files"), PNG, JPEG, GIF);
     private             String                    mDescription;
     private             RetinaIcon                mIcon;
     private             String                    mPrimaryExtension;

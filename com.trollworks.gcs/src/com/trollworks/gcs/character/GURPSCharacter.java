@@ -73,8 +73,6 @@ import java.util.Set;
 
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
-    /** The extension for character sheets. */
-    public static final  String                              EXTENSION                            = "gcs";
     private static final int                                 CURRENT_VERSION                      = 4;
     /**
      * The version where equipment was separated out into different lists based on carried/not

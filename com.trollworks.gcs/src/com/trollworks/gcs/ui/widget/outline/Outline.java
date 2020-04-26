@@ -11,10 +11,14 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
+import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -484,6 +488,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
         if (mDragChildInsertIndex != -1) {
             drawDragRowInsertionMarker(gc, mDragParentRow, mDragChildInsertIndex);
+        }
+        Row dragTargetRow = getDragTargetRow();
+        if (dragTargetRow != null) {
+            Graphics2D g2d = (Graphics2D) gc;
+            g2d.setColor(Color.RED);
+            g2d.draw(Geometry.inset(1, getRowBounds(dragTargetRow)));
         }
     }
 
@@ -2204,6 +2214,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @return The value to return via {@link DropTargetDragEvent#acceptDrag(int)}.
      */
     protected int dragOverRow(DropTargetDragEvent dtde) {
+        Row[] dragRows = mModel.getDragRows();
+        if (dragRows[0] instanceof AdvantageModifier || dragRows[0] instanceof EquipmentModifier) {
+            Point pt = UIUtilities.convertDropTargetDragPointTo(dtde, this);
+            setDragTargetRow(overRow(pt.y));
+            return getDragTargetRow() != null ? DnDConstants.ACTION_MOVE : DnDConstants.ACTION_NONE;
+        }
         Scale     scale                 = Scale.get(this);
         int       one                   = scale.scale(1);
         Row       savedParentRow        = mDragParentRow;
@@ -2213,7 +2229,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         Point     pt                    = UIUtilities.convertDropTargetDragPointTo(dtde, this);
         int       y                     = getInsets().top;
         int       last                  = getLastRowToDisplay();
-        Row[]     dragRows              = mModel.getDragRows();
         boolean   isFromSelf            = dragRows != null && dragRows.length > 0 && mModel.getRows().contains(dragRows[0]);
         int       indentWidth           = scale.scale(mModel.getIndentWidth());
         Rectangle bounds;
@@ -2399,6 +2414,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dte The drop target event.
      */
     protected void dragExitRow(DropTargetEvent dte) {
+        setDragTargetRow(null);
         repaint(getDragRowInsertionMarkerBounds(mDragParentRow, mDragChildInsertIndex));
         removeDragHighlight(this);
         mDragParentRow = null;
@@ -2425,7 +2441,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 dropColumn(dtde);
             } else {
                 Row[] rows = mModel.getDragRows();
-
                 if (rows != null && rows.length > 0) {
                     dropRow(dtde);
                 }
@@ -2471,6 +2486,53 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      */
     protected void dropRow(DropTargetDropEvent dtde) {
         removeDragHighlight(this);
+        Row target = getDragTargetRow();
+        if (target instanceof Advantage) {
+            Advantage targetAdvantage = (Advantage)target;
+            StateEdit               edit  = new StateEdit(mModel, I18n.Text("Advantage Modifier Drag & Drop"));
+            List<AdvantageModifier> list  = new ArrayList<>(targetAdvantage.getModifiers());
+            for (Row row : mModel.getDragRows()) {
+                if (row instanceof AdvantageModifier) {
+                    Object property = mModel.getProperty(ListOutline.OWNING_LIST);
+                    if (property instanceof ListOutline) {
+                        AdvantageModifier modifier = new AdvantageModifier(((ListOutline)property).getDataFile(), (AdvantageModifier) row);
+                        modifier.setEnabled(true);
+                        list.add(modifier);
+                    }
+                }
+            }
+            targetAdvantage.setModifiers(list);
+            setDragTargetRow(null);
+            edit.end();
+            postUndo(edit);
+            repaint();
+            contentSizeMayHaveChanged();
+            mModel.setDragRows(null);
+            return;
+        }
+        if (target instanceof Equipment) {
+            Equipment targetEquipment = (Equipment)target;
+            StateEdit               edit  = new StateEdit(mModel, I18n.Text("Equipment Modifier Drag & Drop"));
+            List<EquipmentModifier> list  = new ArrayList<>(targetEquipment.getModifiers());
+            for (Row row : mModel.getDragRows()) {
+                if (row instanceof EquipmentModifier) {
+                    Object property = mModel.getProperty(ListOutline.OWNING_LIST);
+                    if (property instanceof ListOutline) {
+                        EquipmentModifier modifier = new EquipmentModifier(((ListOutline)property).getDataFile(), (EquipmentModifier) row);
+                        modifier.setEnabled(true);
+                        list.add(modifier);
+                    }
+                }
+            }
+            targetEquipment.setModifiers(list);
+            setDragTargetRow(null);
+            edit.end();
+            postUndo(edit);
+            repaint();
+            contentSizeMayHaveChanged();
+            mModel.setDragRows(null);
+            return;
+        }
         if (mDragChildInsertIndex != -1) {
             StateEdit edit         = new StateEdit(mModel, I18n.Text("Row Drag & Drop"));
             Row[]     dragRows     = mModel.getDragRows();
@@ -2585,7 +2647,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     private int getAbsoluteInsertionIndex(Row parent, int childInsertIndex) {
         int insertAt;
         int count;
-
         if (parent == null) {
             count = mModel.getRowCount();
             insertAt = childInsertIndex;
@@ -2594,14 +2655,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             }
         } else {
             int i = parent.getChildCount();
-
             if (i == 0 || !parent.isOpen()) {
                 insertAt = mModel.getIndexOfRow(parent) + 1;
             } else if (childInsertIndex < i) {
                 insertAt = mModel.getIndexOfRow(parent.getChild(childInsertIndex));
             } else {
                 Row row = parent.getChild(i - 1);
-
                 count = mModel.getRowCount();
                 insertAt = mModel.getIndexOfRow(row) + 1;
                 while (insertAt < count && mModel.getRowAtIndex(insertAt).isDescendantOf(row)) {
@@ -2858,5 +2917,20 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     @Override
     public void componentShown(ComponentEvent event) {
         // Not used.
+    }
+
+    public Row getDragTargetRow() {
+        return mModel.getDragTargetRow();
+    }
+
+    public void setDragTargetRow(Row row) {
+        Row dragTargetRow = mModel.getDragTargetRow();
+        if (dragTargetRow != null) {
+            repaint(getRowBounds(dragTargetRow));
+        }
+        mModel.setDragTargetRow(row);
+        if (row != null) {
+            repaint(getRowBounds(row));
+        }
     }
 }

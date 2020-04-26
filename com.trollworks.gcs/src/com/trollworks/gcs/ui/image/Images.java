@@ -24,6 +24,8 @@ public class Images {
     public static final RetinaIcon ABOUT                 = getRetina("about");
     public static final RetinaIcon ACTUAL_SIZE           = getRetina("actual_size");
     public static final RetinaIcon ADD                   = getRetina("add");
+    public static final RetinaIcon ADM_FILE              = getRetina("adm_file");
+    public static final RetinaIcon ADM_MARKER            = getRetina("adm_marker");
     public static final RetinaIcon ADQ_FILE              = getRetina("adq_file");
     public static final RetinaIcon ADQ_MARKER            = getRetina("adq_marker");
     public static final RetinaIcon COLLAPSE              = getRetina("collapse");
@@ -34,6 +36,8 @@ public class Images {
     public static final RetinaIcon DOCK_CLOSE            = getRetina("dock_close");
     public static final RetinaIcon DOCK_MAXIMIZE         = getRetina("dock_maximize");
     public static final RetinaIcon DOCK_RESTORE          = getRetina("dock_restore");
+    public static final RetinaIcon EQM_FILE              = getRetina("eqm_file");
+    public static final RetinaIcon EQM_MARKER            = getRetina("eqm_marker");
     public static final RetinaIcon EQP_FILE              = getRetina("eqp_file");
     public static final RetinaIcon EQP_MARKER            = getRetina("eqp_marker");
     public static final RetinaIcon EXOTIC_TYPE           = getRetina("exotic_type");

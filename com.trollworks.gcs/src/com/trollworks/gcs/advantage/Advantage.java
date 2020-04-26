@@ -32,6 +32,7 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.ui.widget.outline.Switchable;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -71,7 +72,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String                     ATTR_ALLOW_HALF_LEVELS     = "allow_half_levels";
     private static final String                     ATTR_HALF_LEVEL            = "half_level";
     /** The prefix used in front of all IDs for the advantages. */
-    public static final  String                     PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage.";
+    public static final  String                     PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage" + Notifier.SEPARATOR;
     /** The field ID for type changes. */
     public static final  String                     ID_TYPE                    = PREFIX + "Type";
     /** The field ID for container type changes. */
@@ -988,6 +989,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
+            update();
             return true;
         }
         return false;

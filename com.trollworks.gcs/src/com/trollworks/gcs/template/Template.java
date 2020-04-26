@@ -41,8 +41,6 @@ import java.io.IOException;
 
 /** A template. */
 public class Template extends DataFile {
-    /** The extension for templates. */
-    public static final  String       EXTENSION              = "gct";
     private static final int          CURRENT_VERSION        = 2;
     private static final String       TAG_ROOT               = "template";
     private static final String       TAG_OLD_NOTES          = "notes";

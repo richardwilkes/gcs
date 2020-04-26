@@ -28,8 +28,6 @@ public class SpellList extends ListFile {
     public static final int    CURRENT_VERSION = 1;
     /** The XML tag for {@link SpellList}s. */
     public static final String TAG_ROOT        = "spell_list";
-    /** The extension for {@link SpellList}s. */
-    public static final String EXTENSION       = "spl";
 
     @Override
     public int getXMLTagVersion() {

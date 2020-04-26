@@ -30,8 +30,6 @@ public class EquipmentList extends ListFile {
     public static final String TAG_CARRIED_ROOT = "equipment_list";
     /** The XML tag for {@link EquipmentList}s. */
     public static final String TAG_OTHER_ROOT   = "other_equipment_list";
-    /** The extension for {@link EquipmentList}s. */
-    public static final String EXTENSION        = "eqp";
 
     @Override
     public int getXMLTagVersion() {

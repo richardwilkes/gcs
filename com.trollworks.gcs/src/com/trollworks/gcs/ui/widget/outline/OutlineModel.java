@@ -39,6 +39,7 @@ public class OutlineModel implements SelectionOwner, StateEditable {
     private              ArrayList<Row>                  mRows;
     private              Selection                       mSelection;
     private              Column                          mDragColumn;
+    private              Row                             mDragTargetRow;
     private              Row[]                           mDragRows;
     private              boolean                         mLocked;
     private              boolean                         mNotifyOfSelections;
@@ -1115,5 +1116,13 @@ public class OutlineModel implements SelectionOwner, StateEditable {
                 mSelection.setAnchor(anchor);
             }
         }
+    }
+
+    public Row getDragTargetRow() {
+        return mDragTargetRow;
+    }
+
+    public void setDragTargetRow(Row dragTargetRow) {
+        mDragTargetRow = dragTargetRow;
     }
 }

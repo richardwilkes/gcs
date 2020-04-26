@@ -20,6 +20,7 @@ import com.trollworks.gcs.utility.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JMenu;
 
 /** Provides the standard "Edit" menu. */
@@ -72,16 +73,23 @@ public class EditMenuProvider {
         menu.addSeparator();
         menu.add(new DynamicMenuItem(ConvertToContainer.INSTANCE));
         menu.addSeparator();
-        menu.add(new DynamicMenuItem(IncrementCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(DecrementCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(IncrementUsesCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(DecrementUsesCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(SkillLevelIncrementCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(SkillLevelDecrementCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(TechLevelIncrementCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(TechLevelDecrementCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(ToggleStateCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(SwapDefaultsCommand.INSTANCE));
+        JMenu stateMenu = new JMenu(I18n.Text("State…"));
+        stateMenu.add(new DynamicMenuItem(ToggleStateCommand.INSTANCE));
+        stateMenu.addSeparator();
+        stateMenu.add(new DynamicMenuItem(IncrementCommand.INSTANCE));
+        stateMenu.add(new DynamicMenuItem(DecrementCommand.INSTANCE));
+        stateMenu.addSeparator();
+        stateMenu.add(new DynamicMenuItem(IncrementUsesCommand.INSTANCE));
+        stateMenu.add(new DynamicMenuItem(DecrementUsesCommand.INSTANCE));
+        stateMenu.addSeparator();
+        stateMenu.add(new DynamicMenuItem(SkillLevelIncrementCommand.INSTANCE));
+        stateMenu.add(new DynamicMenuItem(SkillLevelDecrementCommand.INSTANCE));
+        stateMenu.addSeparator();
+        stateMenu.add(new DynamicMenuItem(TechLevelIncrementCommand.INSTANCE));
+        stateMenu.add(new DynamicMenuItem(TechLevelDecrementCommand.INSTANCE));
+        stateMenu.addSeparator();
+        stateMenu.add(new DynamicMenuItem(SwapDefaultsCommand.INSTANCE));
+        menu.add(stateMenu);
         menu.addSeparator();
         menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
         menu.addSeparator();
@@ -96,6 +104,7 @@ public class EditMenuProvider {
             menu.addSeparator();
             menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
         }
+        DynamicMenuEnabler.add(stateMenu);
         DynamicMenuEnabler.add(menu);
         return menu;
     }

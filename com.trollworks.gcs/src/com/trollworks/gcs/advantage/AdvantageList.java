@@ -28,8 +28,6 @@ public class AdvantageList extends ListFile {
     public static final int    CURRENT_VERSION = 1;
     /** The XML tag for {@link AdvantageList}s. */
     public static final String TAG_ROOT        = "advantage_list";
-    /** The extension for {@link AdvantageList}s. */
-    public static final String EXTENSION       = "adq";
 
     @Override
     public int getXMLTagVersion() {

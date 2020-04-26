@@ -20,6 +20,10 @@ import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.menu.edit.Openable;
 import com.trollworks.gcs.menu.file.RecentFilesMenu;
+import com.trollworks.gcs.modifier.AdvantageModifierList;
+import com.trollworks.gcs.modifier.AdvantageModifiersDockable;
+import com.trollworks.gcs.modifier.EquipmentModifierList;
+import com.trollworks.gcs.modifier.EquipmentModifiersDockable;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
 import com.trollworks.gcs.pdfview.PdfDockable;
@@ -302,8 +306,12 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
                 String ext = PathUtils.getExtension(path);
                 if (FileType.ADVANTAGE.matchExtension(ext)) {
                     proxy = openAdvantageList(path);
+                } else if (FileType.ADVANTAGE_MODIFIER.matchExtension(ext)) {
+                    proxy = openAdvantageModifierList(path);
                 } else if (FileType.EQUIPMENT.matchExtension(ext)) {
                     proxy = openEquipmentList(path);
+                } else if (FileType.EQUIPMENT_MODIFIER.matchExtension(ext)) {
+                    proxy = openEquipmentModifierList(path);
                 } else if (FileType.SKILL.matchExtension(ext)) {
                     proxy = openSkillList(path);
                 } else if (FileType.SPELL.matchExtension(ext)) {
@@ -341,11 +349,25 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         return dockLibrary(new AdvantagesDockable(list));
     }
 
+    private FileProxy openAdvantageModifierList(Path path) throws IOException {
+        AdvantageModifierList list = new AdvantageModifierList();
+        list.load(path.toFile());
+        list.getModel().setLocked(true);
+        return dockLibrary(new AdvantageModifiersDockable(list));
+    }
+
     private FileProxy openEquipmentList(Path path) throws IOException {
         EquipmentList list = new EquipmentList();
         list.load(path.toFile());
         list.getModel().setLocked(true);
         return dockLibrary(new EquipmentDockable(list));
+    }
+
+    private FileProxy openEquipmentModifierList(Path path) throws IOException {
+        EquipmentModifierList list = new EquipmentModifierList();
+        list.load(path.toFile());
+        list.getModel().setLocked(true);
+        return dockLibrary(new EquipmentModifiersDockable(list));
     }
 
     private FileProxy openSkillList(Path path) throws IOException {

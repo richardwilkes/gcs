@@ -17,6 +17,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.menu.edit.UsesIncrementable;
+import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -261,7 +262,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
 
     @Override
     protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
-        return !getModel().isLocked() && rows.length > 0 && rows[0] instanceof Equipment;
+        return !getModel().isLocked() && rows.length > 0 && (rows[0] instanceof Equipment || rows[0] instanceof EquipmentModifier);
     }
 
     @Override

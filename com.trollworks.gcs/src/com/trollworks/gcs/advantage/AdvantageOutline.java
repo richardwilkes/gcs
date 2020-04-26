@@ -16,6 +16,7 @@ import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
+import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -65,7 +66,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 
     @Override
     protected boolean isRowDragAcceptable(DropTargetDragEvent dtde, Row[] rows) {
-        return !getModel().isLocked() && rows.length > 0 && rows[0] instanceof Advantage;
+        return !getModel().isLocked() && rows.length > 0 && (rows[0] instanceof Advantage || rows[0] instanceof AdvantageModifier);
     }
 
     @Override
@@ -74,16 +75,13 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
         Row[]              rows               = model.getDragRows();
         boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
         ArrayList<ListRow> process            = new ArrayList<>();
-
         for (Row element : rows) {
             Advantage advantage = new Advantage(mDataFile, (Advantage) element, true);
-
             model.collectRowsAndSetOwner(list, advantage, false);
             if (forSheetOrTemplate) {
                 addRowsToBeProcessed(process, advantage);
             }
         }
-
         if (forSheetOrTemplate && !process.isEmpty()) {
             EventQueue.invokeLater(new RowPostProcessor(this, process));
         }

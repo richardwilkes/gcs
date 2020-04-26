@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
@@ -39,15 +40,17 @@ public class EquipmentModifier extends Modifier {
     /** The attribute for the weight type. */
     public static final  String                      ATTRIBUTE_WEIGHT_TYPE = "weight_type";
     /** The notification prefix used. */
-    public static final  String                      NOTIFICATION_PREFIX   = "eqpmod" + Notifier.SEPARATOR;
+    public static final  String                      PREFIX                = GURPSCharacter.CHARACTER_PREFIX + "eqpmod" + Notifier.SEPARATOR;
     /** The notification ID for enabled changes. */
-    public static final  String                      ID_ENABLED            = NOTIFICATION_PREFIX + ATTRIBUTE_ENABLED;
+    public static final  String                      ID_ENABLED            = PREFIX + ATTRIBUTE_ENABLED;
+    /** The field ID for when the categories change. */
+    public static final  String                      ID_CATEGORY           = PREFIX + "Category";
     /** The notification ID for list changes. */
-    public static final  String                      ID_LIST_CHANGED       = NOTIFICATION_PREFIX + "list_changed";
+    public static final  String                      ID_LIST_CHANGED       = PREFIX + "list_changed";
     /** The notification ID for cost adjustment changes. */
-    public static final  String                      ID_COST_ADJ           = NOTIFICATION_PREFIX + TAG_COST_ADJ;
+    public static final  String                      ID_COST_ADJ           = PREFIX + TAG_COST_ADJ;
     /** The notification ID for weight adjustment changes. */
-    public static final  String                      ID_WEIGHT_ADJ         = NOTIFICATION_PREFIX + TAG_WEIGHT_ADJ;
+    public static final  String                      ID_WEIGHT_ADJ         = PREFIX + TAG_WEIGHT_ADJ;
     private              EquipmentModifierCostType   mCostType;
     private              double                      mCostAmount;
     private              EquipmentModifierWeightType mWeightType;
@@ -101,7 +104,7 @@ public class EquipmentModifier extends Modifier {
 
     @Override
     public String getNotificationPrefix() {
-        return NOTIFICATION_PREFIX;
+        return PREFIX;
     }
 
     @Override
@@ -336,5 +339,10 @@ public class EquipmentModifier extends Modifier {
             break;
         }
         return builder.toString();
+    }
+
+    @Override
+    protected String getCategoryID() {
+        return ID_CATEGORY;
     }
 }

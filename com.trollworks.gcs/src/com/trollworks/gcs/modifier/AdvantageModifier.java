@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
@@ -37,11 +38,13 @@ public class AdvantageModifier extends Modifier {
     /** The tag for how the cost is affected. */
     public static final  String                    TAG_AFFECTS         = "affects";
     /** The notification prefix used. */
-    public static final  String                    NOTIFICATION_PREFIX = "advmod" + Notifier.SEPARATOR;
-    /** The notification ID for enabled changes. */
-    public static final  String                    ID_ENABLED          = NOTIFICATION_PREFIX + ATTRIBUTE_ENABLED;
-    /** The notification ID for list changes. */
-    public static final  String                    ID_LIST_CHANGED     = NOTIFICATION_PREFIX + "list_changed";
+    public static final  String                    PREFIX              = GURPSCharacter.CHARACTER_PREFIX + "advmod" + Notifier.SEPARATOR;
+    /** The field ID for when the categories change. */
+    public static final  String                    ID_CATEGORY         = PREFIX + "Category";
+    /** The field ID for enabled changes. */
+    public static final  String                    ID_ENABLED          = PREFIX + ATTRIBUTE_ENABLED;
+    /** The field ID for list changes. */
+    public static final  String                    ID_LIST_CHANGED     = PREFIX + "list_changed";
     /** The cost type of the {@link AdvantageModifier}. */
     protected            AdvantageModifierCostType mCostType;
     private              int                       mCost;
@@ -91,7 +94,7 @@ public class AdvantageModifier extends Modifier {
 
     @Override
     public String getNotificationPrefix() {
-        return NOTIFICATION_PREFIX;
+        return PREFIX;
     }
 
     @Override
@@ -332,5 +335,10 @@ public class AdvantageModifier extends Modifier {
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected String getCategoryID() {
+        return ID_CATEGORY;
     }
 }

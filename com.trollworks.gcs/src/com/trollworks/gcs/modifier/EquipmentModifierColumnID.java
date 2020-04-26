@@ -46,6 +46,11 @@ public enum EquipmentModifierColumnID {
         public String getDataAsText(EquipmentModifier modifier) {
             return modifier.isEnabled() ? "\u2713" : "";
         }
+
+        @Override
+        public boolean shouldDisplay(boolean forEditor) {
+            return forEditor;
+        }
     },
     /** The description. */
     DESCRIPTION {
@@ -177,8 +182,7 @@ public enum EquipmentModifierColumnID {
     public abstract Cell getCell(boolean forEditor);
 
     /** @return Whether this column should be displayed for the specified data file. */
-    @SuppressWarnings("static-method")
-    public boolean shouldDisplay() {
+    public boolean shouldDisplay(boolean forEditor) {
         return true;
     }
 
@@ -191,10 +195,10 @@ public enum EquipmentModifierColumnID {
     public static void addColumns(Outline outline, boolean forEditor) {
         OutlineModel model = outline.getModel();
         for (EquipmentModifierColumnID one : values()) {
-            if (one.shouldDisplay()) {
+            if (one.shouldDisplay(forEditor)) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell(forEditor));
                 if (!forEditor) {
-                    column.setHeaderCell(new ListHeaderCell(true));
+                    column.setHeaderCell(new ListHeaderCell(false));
                 }
                 model.addColumn(column);
             }

@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
@@ -64,13 +65,13 @@ public class EquipmentModifierList extends ListFile {
     @Override
     // Not used
     public FileType getFileType() {
-        return null;
+        return FileType.EQUIPMENT_MODIFIER;
     }
 
     @Override
     // Not used
     public RetinaIcon getFileIcons() {
-        return null;
+        return Images.EQM_FILE;
     }
 
     @Override

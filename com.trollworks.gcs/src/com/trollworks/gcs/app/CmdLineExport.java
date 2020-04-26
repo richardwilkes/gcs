@@ -61,7 +61,7 @@ public class CmdLineExport implements Runnable {
             GraphicsUtilities.setHeadlessPrintMode(true);
             for (Path path : mFiles) {
                 File file = path.toFile();
-                if (GURPSCharacter.EXTENSION.equals(PathUtils.getExtension(file.getName())) && file.canRead()) {
+                if (FileType.SHEET.matchExtension(PathUtils.getExtension(file.getName())) && file.canRead()) {
                     System.out.printf(I18n.Text("Loading %s... "), file);
                     System.out.flush();
                     timing.reset();

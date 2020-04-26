@@ -28,8 +28,6 @@ public class NoteList extends ListFile {
     public static final int    CURRENT_VERSION = 1;
     /** The XML tag for {@link NoteList}s. */
     public static final String TAG_ROOT        = "note_list";
-    /** The extension for {@link NoteList}s. */
-    public static final String EXTENSION       = "not";
 
     @Override
     public int getXMLTagVersion() {

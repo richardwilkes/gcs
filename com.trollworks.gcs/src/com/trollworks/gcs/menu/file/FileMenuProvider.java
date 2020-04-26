@@ -28,7 +28,9 @@ public class FileMenuProvider {
         cmds.add(NewCharacterSheetCommand.INSTANCE);
         cmds.add(NewCharacterTemplateCommand.INSTANCE);
         cmds.add(NewAdvantagesLibraryCommand.INSTANCE);
+        cmds.add(NewAdvantageModifiersLibraryCommand.INSTANCE);
         cmds.add(NewEquipmentLibraryCommand.INSTANCE);
+        cmds.add(NewEquipmentModifiersLibraryCommand.INSTANCE);
         cmds.add(NewNoteLibraryCommand.INSTANCE);
         cmds.add(NewSkillsLibraryCommand.INSTANCE);
         cmds.add(NewSpellsLibraryCommand.INSTANCE);
@@ -47,14 +49,17 @@ public class FileMenuProvider {
 
     public static JMenu createMenu() {
         JMenu menu = new JMenu(I18n.Text("File"));
-        menu.add(new DynamicMenuItem(NewCharacterSheetCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(NewCharacterTemplateCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(NewAdvantagesLibraryCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(NewEquipmentLibraryCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(NewNoteLibraryCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(NewSkillsLibraryCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(NewSpellsLibraryCommand.INSTANCE));
-        menu.addSeparator();
+        JMenu newMenu = new JMenu(I18n.Text("New File…"));
+        newMenu.add(new DynamicMenuItem(NewCharacterSheetCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewCharacterTemplateCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewAdvantagesLibraryCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewAdvantageModifiersLibraryCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewEquipmentLibraryCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewEquipmentModifiersLibraryCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewNoteLibraryCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewSkillsLibraryCommand.INSTANCE));
+        newMenu.add(new DynamicMenuItem(NewSpellsLibraryCommand.INSTANCE));
+        menu.add(newMenu);
         menu.add(new DynamicMenuItem(OpenCommand.INSTANCE));
         menu.add(new RecentFilesMenu());
         menu.add(new DynamicMenuItem(CloseCommand.INSTANCE));
@@ -69,6 +74,7 @@ public class FileMenuProvider {
             menu.addSeparator();
             menu.add(new DynamicMenuItem(QuitCommand.INSTANCE));
         }
+        DynamicMenuEnabler.add(newMenu);
         DynamicMenuEnabler.add(menu);
         return menu;
     }

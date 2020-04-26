@@ -43,8 +43,6 @@ import java.util.Set;
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
     private static final int               CURRENT_VERSION          = 3;
-    /** The extension for Skill lists. */
-    public static final  String            OLD_SKILL_EXTENSION      = "skl";
     /** The XML tag used for items. */
     public static final  String            TAG_SKILL                = "skill";
     /** The XML tag used for containers. */

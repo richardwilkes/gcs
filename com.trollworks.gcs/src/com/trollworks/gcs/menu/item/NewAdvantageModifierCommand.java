@@ -1,0 +1,64 @@
+/*
+ * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
+ */
+
+package com.trollworks.gcs.menu.item;
+
+import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.AdvantageModifiersDockable;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
+import com.trollworks.gcs.utility.I18n;
+
+import java.awt.event.ActionEvent;
+
+/** Provides the "New Advantage Modifier" command. */
+public class NewAdvantageModifierCommand extends Command {
+    /** The action command this command will issue. */
+    public static final String                      CMD_NEW_ADVANTAGE_MODIFIER = "NewAdvantageModifier";
+    /** The "New Advantage Modifier" command. */
+    public static final NewAdvantageModifierCommand INSTANCE                   = new NewAdvantageModifierCommand(I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER);
+
+    private NewAdvantageModifierCommand(String title, String cmd) {
+        super(title, cmd);
+    }
+
+    @Override
+    public void adjust() {
+        boolean                    enabled  = false;
+        AdvantageModifiersDockable dockable = getTarget(AdvantageModifiersDockable.class);
+        if (dockable != null) {
+            enabled = !dockable.getOutline().getModel().isLocked();
+        }
+        setEnabled(enabled);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        ListOutline                outline;
+        DataFile                   dataFile;
+        AdvantageModifiersDockable dockable = getTarget(AdvantageModifiersDockable.class);
+        if (dockable == null) {
+            return;
+        }
+        dataFile = dockable.getDataFile();
+        outline = dockable.getOutline();
+        if (outline.getModel().isLocked()) {
+            return;
+        }
+        AdvantageModifier modifier = new AdvantageModifier(dataFile);
+        outline.addRow(modifier, getTitle(), false);
+        outline.getModel().select(modifier, false);
+        outline.scrollSelectionIntoView();
+        outline.openDetailEditor(true);
+    }
+}

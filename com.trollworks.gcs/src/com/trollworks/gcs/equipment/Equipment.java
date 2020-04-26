@@ -50,8 +50,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     private static final int                     CURRENT_VERSION            = 6;
     private static final int                     EQUIPMENT_SPLIT_VERSION    = 6;
     private static final String                  DEFAULT_LEGALITY_CLASS     = "4";
-    /** The extension for Equipment lists. */
-    public static final  String                  OLD_EQUIPMENT_EXTENSION    = "eqp";
     /** The XML tag used for items. */
     public static final  String                  TAG_EQUIPMENT              = "equipment";
     /** The XML tag used for containers. */
@@ -898,6 +896,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
+            update();
             return true;
         }
         return false;
