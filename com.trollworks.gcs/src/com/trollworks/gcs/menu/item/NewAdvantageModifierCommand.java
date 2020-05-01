@@ -19,16 +19,17 @@ import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 /** Provides the "New Advantage Modifier" command. */
 public class NewAdvantageModifierCommand extends Command {
     /** The action command this command will issue. */
     public static final String                      CMD_NEW_ADVANTAGE_MODIFIER = "NewAdvantageModifier";
     /** The "New Advantage Modifier" command. */
-    public static final NewAdvantageModifierCommand INSTANCE                   = new NewAdvantageModifierCommand(I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER);
+    public static final NewAdvantageModifierCommand INSTANCE                   = new NewAdvantageModifierCommand(I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, KeyEvent.VK_M, SHIFTED_COMMAND_MODIFIER);
 
-    private NewAdvantageModifierCommand(String title, String cmd) {
-        super(title, cmd);
+    private NewAdvantageModifierCommand(String title, String cmd, int keyCode, int modifiers) {
+        super(title, cmd, keyCode, modifiers);
     }
 
     @Override

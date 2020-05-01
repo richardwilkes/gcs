@@ -19,16 +19,17 @@ import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 /** Provides the "New Equipment Modifier" command. */
 public class NewEquipmentModifierCommand extends Command {
     /** The action command this command will issue. */
     public static final String                      CMD_NEW_EQUIPMENT_MODIFIER = "NewEquipmentModifier";
     /** The "New Equipment Modifier" command. */
-    public static final NewEquipmentModifierCommand INSTANCE                   = new NewEquipmentModifierCommand(I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER);
+    public static final NewEquipmentModifierCommand INSTANCE                   = new NewEquipmentModifierCommand(I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, KeyEvent.VK_M, COMMAND_MODIFIER);
 
-    private NewEquipmentModifierCommand(String title, String cmd) {
-        super(title, cmd);
+    private NewEquipmentModifierCommand(String title, String cmd, int keyCode, int modifiers) {
+        super(title, cmd, keyCode, modifiers);
     }
 
     @Override
