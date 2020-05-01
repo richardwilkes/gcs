@@ -37,9 +37,15 @@ public class NewSpellCommand extends Command {
     /** The "New Spell Container" command. */
     public static final NewSpellCommand CONTAINER_INSTANCE     = new NewSpellCommand(true, false, I18n.Text("New Spell Container"), CMD_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
     /** The "New Technique" command. */
-    public static final NewSpellCommand RITUAL_MAGIC_INSTANCE  = new NewSpellCommand(false, true, I18n.Text("New Ritual Magic Spell"), CMD_RITUAL_MAGIC_SPELL, KeyEvent.VK_UNDEFINED, 0);
+    public static final NewSpellCommand RITUAL_MAGIC_INSTANCE  = new NewSpellCommand(false, true, I18n.Text("New Ritual Magic Spell"), CMD_RITUAL_MAGIC_SPELL);
     private             boolean         mContainer;
     private             boolean         mRitualMagic;
+
+    private NewSpellCommand(boolean container, boolean isRitualMagic, String title, String cmd) {
+        super(title, cmd);
+        mContainer = container;
+        mRitualMagic = isRitualMagic;
+    }
 
     private NewSpellCommand(boolean container, boolean isRitualMagic, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
