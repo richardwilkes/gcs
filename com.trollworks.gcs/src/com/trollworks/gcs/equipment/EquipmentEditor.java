@@ -165,7 +165,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         Component first;
 
         mContainedValue = mRow.getExtendedValue() - mRow.getAdjustedValue() * mRow.getQuantity();
-        mValueField = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The base value of one of these pieces of equipment before cost modifiers"), 13);
+        mValueField = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The base value of one of these pieces of equipment before modifiers"), 13);
         mExtValueField = createNumberField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         first = wrapper.getComponent(1);
         mExtValueField.setEnabled(false);

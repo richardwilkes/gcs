@@ -536,9 +536,9 @@ public class Equipment extends ListRow implements HasSourceReference {
                 cf += modifier.getCostAdjAmount();
             }
         }
-        if (cf > 0) {
-            if (cf < 0.2) {
-                cf = 0.2;
+        if (cf != 0) {
+            if (cf < -0.8) {
+                cf = -0.8;
             }
             value += cf * base;
         }

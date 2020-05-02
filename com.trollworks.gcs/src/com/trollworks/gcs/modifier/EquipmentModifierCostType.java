@@ -14,7 +14,7 @@ package com.trollworks.gcs.modifier;
 import com.trollworks.gcs.utility.I18n;
 
 /**
- * Describes how a {@link EquipmentModifier}'s cost is applied. These should be applied from top to
+ * Describes how an {@link EquipmentModifier}'s cost is applied. These should be applied from top to
  * bottom, with any values of the same type adding together before being applied.
  */
 public enum EquipmentModifierCostType {
