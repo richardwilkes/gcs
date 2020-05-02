@@ -516,7 +516,6 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
 
         // Apply all base multipliers
-        double base = value;
         double multipliers = 0;
         int multiplierCount = 0;
         for (EquipmentModifier modifier : modifiers) {
@@ -540,7 +539,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             if (cf < -0.8) {
                 cf = -0.8;
             }
-            value += cf * base;
+            value *= cf + 1;
         }
 
         // Apply all final multipliers
@@ -612,16 +611,10 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
 
         // Apply all multipliers
-        double multipliers = 0;
-        int multiplierCount = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER) {
-                multipliers += modifier.getWeightAdjMultiplier();
-                multiplierCount++;
+                value.setValue(value.getValue() * modifier.getWeightAdjMultiplier());
             }
-        }
-        if (multiplierCount > 0) {
-            value.setValue(value.getValue() * (multipliers - (multiplierCount - 1)));
         }
 
         // Apply all final additions

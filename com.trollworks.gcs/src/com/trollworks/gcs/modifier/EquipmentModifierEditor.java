@@ -177,7 +177,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mCostAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mCostAmountField);
         double amt = mRow.getCostAdjAmount();
-        mCostAmountField.setText(mRow.getCostAdjType().isMultiplier() ? Numbers.format(amt) : Numbers.formatWithForcedSign(amt));
+        mCostAmountField.setText(mRow.getCostAdjType().format(amt));
         mCostAmountField.setToolTipText(I18n.Text("The cost modifier"));
         mCostAmountField.setEnabled(mIsEditable);
         new NumberFilter(mCostAmountField, true, true, true, 11);
@@ -205,11 +205,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private double getCostAmount() {
-        double value = Numbers.extractDouble(mCostAmountField.getText(), 0, true);
-        if (value <= 0 && getCostType().isMultiplier()) {
-            value = 1;
-        }
-        return value;
+        return getCostType().extract(mCostAmountField.getText(), true);
     }
 
     private void createWeightAdjustmentFields(Container parent) {
@@ -351,15 +347,9 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private void costChanged() {
         String text = mCostAmountField.getText().trim();
-        if (getCostType().isMultiplier()) {
-            double value = Numbers.extractDouble(text, 0, true);
-            if (value <= 0) {
-                mCostAmountField.setText("1");
-            } else if (text.startsWith("+")) {
-                mCostAmountField.setText(text.substring(1));
-            }
-        } else if (!text.startsWith("+") && !text.startsWith("-")) {
-            mCostAmountField.setText("+" + text);
+        String revised = getCostType().adjustText(text);
+        if (!text.equals(revised)) {
+            mCostAmountField.setText(revised);
         }
     }
 }

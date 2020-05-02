@@ -310,7 +310,7 @@ public class EquipmentModifier extends Modifier {
 
     /** @return The formatted cost adjustment. */
     public String getCostDescription() {
-        return (mCostType.isMultiplier() ? Numbers.format(mCostAmount) : Numbers.formatWithForcedSign(mCostAmount)) + " " + mCostType;
+        return mCostType.format(mCostAmount) + " " + mCostType;
     }
 
     /** @return The formatted weight adjustment. */

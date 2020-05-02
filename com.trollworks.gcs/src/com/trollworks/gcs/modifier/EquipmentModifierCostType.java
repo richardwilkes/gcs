@@ -12,6 +12,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.text.Numbers;
 
 /**
  * Describes how an {@link EquipmentModifier}'s cost is applied. These should be applied from top to
@@ -24,6 +25,21 @@ public enum EquipmentModifierCostType {
         public String toString() {
             return I18n.Text("to base cost");
         }
+
+        @Override
+        public String format(double value) {
+            return Numbers.formatWithForcedSign(value);
+        }
+
+        @Override
+        public double extract(String text, boolean localized) {
+            return Numbers.extractDouble(text, 0, localized);
+        }
+
+        @Override
+        public String adjustText(String text) {
+            return ensureTextStartsWithPlusOrMinus(text);
+        }
     },
     /** Multiplies the base cost. */
     BASE_MULTIPLIER {
@@ -33,8 +49,19 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public boolean isMultiplier() {
-            return true;
+        public String format(double value) {
+            return Numbers.format(value);
+        }
+
+        @Override
+        public double extract(String text, boolean localized) {
+            double value = Numbers.extractDouble(text, 0, localized);
+            return value < 0 ? 1 : value;
+        }
+
+        @Override
+        public String adjustText(String text) {
+            return adjustTextForMultiplier(text);
         }
     },
     /** Adds to the cost factor. */
@@ -42,6 +69,21 @@ public enum EquipmentModifierCostType {
         @Override
         public String toString() {
             return "CF";
+        }
+
+        @Override
+        public String format(double value) {
+            return Numbers.formatWithForcedSign(value);
+        }
+
+        @Override
+        public double extract(String text, boolean localized) {
+            return Numbers.extractDouble(text, 0, localized);
+        }
+
+        @Override
+        public String adjustText(String text) {
+            return ensureTextStartsWithPlusOrMinus(text);
         }
     },
     /** Multiplies the final cost. */
@@ -52,8 +94,19 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public boolean isMultiplier() {
-            return true;
+        public String format(double value) {
+            return Numbers.format(value);
+        }
+
+        @Override
+        public double extract(String text, boolean localized) {
+            double value = Numbers.extractDouble(text, 0, localized);
+            return value < 0 ? 1 : value;
+        }
+
+        @Override
+        public String adjustText(String text) {
+            return adjustTextForMultiplier(text);
         }
     },
     /** Adds to the final cost. */
@@ -62,9 +115,44 @@ public enum EquipmentModifierCostType {
         public String toString() {
             return "to final cost";
         }
+
+        @Override
+        public String format(double value) {
+            return Numbers.formatWithForcedSign(value);
+        }
+
+        @Override
+        public double extract(String text, boolean localized) {
+            return Numbers.extractDouble(text, 0, localized);
+        }
+
+        @Override
+        public String adjustText(String text) {
+            return ensureTextStartsWithPlusOrMinus(text);
+        }
     };
 
-    public boolean isMultiplier() {
-        return false;
+    public abstract String format(double value);
+
+    public abstract double extract(String text, boolean localized);
+
+    public abstract String adjustText(String text);
+
+    String ensureTextStartsWithPlusOrMinus(String text) {
+        if (!text.startsWith("+") && !text.startsWith("-")) {
+            return "+" + text;
+        }
+        return text;
+    }
+
+    String adjustTextForMultiplier(String text) {
+        double value = Numbers.extractDouble(text, 0, true);
+        if (value <= 0) {
+            return "1";
+        }
+        if (text.startsWith("+")) {
+            return text.substring(1);
+        }
+        return text;
     }
 }
