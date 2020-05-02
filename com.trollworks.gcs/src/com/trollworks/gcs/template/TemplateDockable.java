@@ -35,7 +35,6 @@ import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
 import com.trollworks.gcs.ui.widget.search.Search;
 import com.trollworks.gcs.ui.widget.search.SearchTarget;
-import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
@@ -148,11 +147,6 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
     @Override
     protected String getUntitledBaseName() {
         return I18n.Text("Untitled Template");
-    }
-
-    @Override
-    public FileType[] getSaveableFileTypes() {
-        return new FileType[]{FileType.TEMPLATE};
     }
 
     @Override

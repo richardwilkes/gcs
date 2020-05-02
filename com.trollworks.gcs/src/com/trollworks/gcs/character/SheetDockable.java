@@ -22,7 +22,6 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -167,16 +166,6 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     @Override
     public String getDescriptor() {
         // RAW: Implement
-        return null;
-    }
-
-    @Override
-    public FileType[] getSaveableFileTypes() {
-        return new FileType[]{FileType.SHEET, FileType.PDF, FileType.PNG, new FileType(I18n.Text("Text Template"), Images.FILE, PathUtils.getExtension(TextTemplate.resolveTextTemplate(null).getName()))};
-    }
-
-    @Override
-    public String getPreferredSavePath() {
         return null;
     }
 

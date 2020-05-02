@@ -20,6 +20,7 @@ import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
@@ -48,6 +49,11 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     /** @return The {@link DataFile}. */
     public DataFile getDataFile() {
         return mDataFile;
+    }
+
+    @Override
+    public FileType getFileType() {
+        return mDataFile.getFileType();
     }
 
     @Override
@@ -90,11 +96,6 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     @Override
     public String getSaveTitle() {
         return getTitle();
-    }
-
-    @Override
-    public String getPreferredSavePath() {
-        return null;
     }
 
     @Override

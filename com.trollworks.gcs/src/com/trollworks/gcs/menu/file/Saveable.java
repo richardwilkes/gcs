@@ -31,17 +31,11 @@ public interface Saveable extends FileProxy {
     /** @param listener The listener to remove. */
     void removeDataModifiedListener(DataModifiedListener listener);
 
-    /**
-     * @return The {@link FileType}s allowed when saving. The first one should be used if the user
-     *         doesn't specify an extension.
-     */
-    FileType[] getSaveableFileTypes();
+    /** @return The {@link FileType}. */
+    FileType getFileType();
 
     /** @return The name the user will recognize as the name of the object being saved. */
     String getSaveTitle();
-
-    /** @return The preferred file path to use when saving. */
-    String getPreferredSavePath();
 
     /**
      * Called to actually save the contents to a file.

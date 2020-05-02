@@ -14,7 +14,6 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -30,7 +29,7 @@ public class SaveAsCommand extends Command {
     public static final SaveAsCommand INSTANCE = new SaveAsCommand();
 
     private SaveAsCommand() {
-        super(I18n.Text("Save As\u2026"), CMD_SAVE_AS, KeyEvent.VK_S, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.Text("Save As…"), CMD_SAVE_AS, KeyEvent.VK_S, SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override
@@ -53,8 +52,7 @@ public class SaveAsCommand extends Command {
         if (saveable == null) {
             return new File[0];
         }
-        String path   = saveable.getPreferredSavePath();
-        File   result = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable), I18n.Text("Save As\u2026"), path != null ? new File(path) : null, FileType.createFileFilters(null, saveable.getSaveableFileTypes()));
+        File   result = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable), I18n.Text("Save As…"), null, saveable.getFileType().getFilter());
         File[] files  = result != null ? saveable.saveTo(result) : new File[0];
         if (files != null) {
             for (File file : files) {

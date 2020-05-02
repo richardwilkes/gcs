@@ -11,18 +11,38 @@
 
 package com.trollworks.gcs.menu.file;
 
+import com.trollworks.gcs.io.FileScanner;
+import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.DynamicMenuEnabler;
 import com.trollworks.gcs.menu.DynamicMenuItem;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Platform;
+import com.trollworks.gcs.utility.text.NumericComparator;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JMenu;
 
 /** Provides the standard "File" menu. */
 public class FileMenuProvider {
+    private static List<Command> LIBRARY_EXPORT_TEMPLATE_CMDS;
+
+    public static synchronized List<Command> getLibraryExportTemplateCommands() {
+        if (LIBRARY_EXPORT_TEMPLATE_CMDS == null) {
+            List<Path> paths = new ArrayList<>();
+            FileScanner.walk(Library.getMasterRootPath().resolve("Output Templates"), (path) -> paths.add(path));
+            paths.sort((Path p1, Path p2) -> NumericComparator.caselessCompareStrings(PathUtils.getLeafName(p1, true), PathUtils.getLeafName(p2, true)));
+            LIBRARY_EXPORT_TEMPLATE_CMDS = new ArrayList<>();
+            for (Path path : paths) {
+                LIBRARY_EXPORT_TEMPLATE_CMDS.add(new ExportToTextTemplateCommand(path));
+            }
+        }
+        return LIBRARY_EXPORT_TEMPLATE_CMDS;
+    }
+
     public static List<Command> getModifiableCommands() {
         List<Command> cmds = new ArrayList<>();
         cmds.add(NewCharacterSheetCommand.INSTANCE);
@@ -39,6 +59,9 @@ public class FileMenuProvider {
         cmds.add(SaveCommand.INSTANCE);
         cmds.add(SaveAsCommand.INSTANCE);
         cmds.add(ExportToGurpsCalculatorCommand.INSTANCE);
+        cmds.add(ExportToPDFCommand.INSTANCE);
+        cmds.add(ExportToPNGCommand.INSTANCE);
+        cmds.addAll(getLibraryExportTemplateCommands());
         cmds.add(PageSetupCommand.INSTANCE);
         cmds.add(PrintCommand.INSTANCE);
         if (!Platform.isMacintosh()) {
@@ -66,7 +89,15 @@ public class FileMenuProvider {
         menu.addSeparator();
         menu.add(new DynamicMenuItem(SaveCommand.INSTANCE));
         menu.add(new DynamicMenuItem(SaveAsCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(ExportToGurpsCalculatorCommand.INSTANCE));
+        JMenu exportMenu = new JMenu(I18n.Text("Export To…"));
+        exportMenu.add(new DynamicMenuItem(ExportToGurpsCalculatorCommand.INSTANCE));
+        exportMenu.add(new DynamicMenuItem(ExportToPDFCommand.INSTANCE));
+        exportMenu.add(new DynamicMenuItem(ExportToPNGCommand.INSTANCE));
+        exportMenu.addSeparator();
+        for (Command cmd : getLibraryExportTemplateCommands()) {
+            exportMenu.add(new DynamicMenuItem(cmd));
+        }
+        menu.add(exportMenu);
         menu.addSeparator();
         menu.add(new DynamicMenuItem(PageSetupCommand.INSTANCE));
         menu.add(new DynamicMenuItem(PrintCommand.INSTANCE));
@@ -75,6 +106,7 @@ public class FileMenuProvider {
             menu.add(new DynamicMenuItem(QuitCommand.INSTANCE));
         }
         DynamicMenuEnabler.add(newMenu);
+        DynamicMenuEnabler.add(exportMenu);
         DynamicMenuEnabler.add(menu);
         return menu;
     }

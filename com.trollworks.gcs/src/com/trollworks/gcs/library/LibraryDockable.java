@@ -29,7 +29,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowFilter;
-import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
@@ -122,11 +121,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     @Override
     public ListFile getDataFile() {
         return (ListFile) super.getDataFile();
-    }
-
-    @Override
-    public FileType[] getSaveableFileTypes() {
-        return new FileType[]{getDataFile().getFileType()};
     }
 
     @Override

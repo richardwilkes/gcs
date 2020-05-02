@@ -41,6 +41,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -51,6 +52,7 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -211,6 +213,7 @@ public class TextTemplate {
     private static final String         KEY_PLAYER                            = "PLAYER";
     private static final String         KEY_POINTS                            = "POINTS";
     private static final String         KEY_PORTRAIT                          = "PORTRAIT";
+    private static final String         KEY_PORTRAIT_EMBEDDED                 = "PORTRAIT_EMBEDDED";
     private static final String         KEY_PREFIX_DEPTH                      = "DEPTHx";
     private static final String         KEY_QTY                               = "QTY";
     private static final String         KEY_QUIRK_POINTS                      = "QUIRK_POINTS";
@@ -360,6 +363,12 @@ public class TextTemplate {
             String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG.getExtension());
             ImageIO.write(description.getPortrait().getRetina(), "png", new File(base.getParentFile(), fileName));
             writeEncodedData(out, fileName);
+            break;
+        case KEY_PORTRAIT_EMBEDDED:
+            out.write("data:image/png;base64,");
+            ByteArrayOutputStream imgBuffer = new ByteArrayOutputStream();
+            ImageIO.write(description.getPortrait().getRetina(), "png", Base64.getUrlEncoder().wrap(imgBuffer));
+            out.write(imgBuffer.toString(StandardCharsets.UTF_8));
             break;
         case KEY_NAME:
             writeEncodedText(out, description.getName());
@@ -791,7 +800,7 @@ public class TextTemplate {
                             }
                             break;
                         case KEY_LEVEL:
-                            writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? "\u2022 {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                            writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? "• {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
                             break;
                         case KEY_LEVEL_ONLY:
                             writeEncodedText(out, Numbers.format(-encumbrance.getEncumbrancePenalty()));
@@ -1655,7 +1664,7 @@ public class TextTemplate {
                                     break;
                                 case KEY_EQUIPPED:
                                     if (carried && equipment.isEquipped()) {
-                                        out.write("\u2713");
+                                        out.write("✓");
                                     }
                                     break;
                                 case KEY_EQUIPPED_NUM:
