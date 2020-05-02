@@ -517,24 +517,43 @@ public class Equipment extends ListRow implements HasSourceReference {
 
         // Apply all base multipliers
         double base = value;
+        double multipliers = 0;
+        int multiplierCount = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_MULTIPLIER) {
-                value *= modifier.getCostAdjAmount();
+                multipliers += modifier.getCostAdjAmount();
+                multiplierCount++;
             }
+        }
+        if (multiplierCount > 0) {
+            value *= multipliers - (multiplierCount - 1);
         }
 
         // Apply all cost factors
+        double cf = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.COST_FACTOR) {
-                value += base * modifier.getCostAdjAmount();
+                cf += modifier.getCostAdjAmount();
             }
+        }
+        if (cf > 0) {
+            if (cf < 0.2) {
+                cf = 0.2;
+            }
+            value += cf * base;
         }
 
         // Apply all final multipliers
+        multipliers = 0;
+        multiplierCount = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_MULTIPLIER) {
-                value *= modifier.getCostAdjAmount();
+                multipliers += modifier.getCostAdjAmount();
+                multiplierCount++;
             }
+        }
+        if (multiplierCount > 0) {
+            value *= multipliers - (multiplierCount - 1);
         }
 
         // Apply all final additions
