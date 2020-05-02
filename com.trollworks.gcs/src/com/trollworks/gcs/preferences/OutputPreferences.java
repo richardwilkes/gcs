@@ -120,7 +120,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
 
     /** @return The default text template to use when exporting to a text format. */
     public static String getDefaultTextTemplate() {
-        return Library.getMasterRootPath().resolve("Output Templates").resolve("html_template.html").toString();
+        return Library.getMasterRootPath().resolve("Output Templates").resolve("PC.html").toString();
     }
 
     public static String getGurpsCalculatorKey() {
