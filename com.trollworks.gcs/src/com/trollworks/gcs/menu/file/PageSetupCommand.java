@@ -30,7 +30,7 @@ public class PageSetupCommand extends Command {
     public static final PageSetupCommand INSTANCE = new PageSetupCommand();
 
     private PageSetupCommand() {
-        super(I18n.Text("Page Setup\u2026"), CMD_PAGE_SETUP, KeyEvent.VK_P, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.Text("Page Setup…"), CMD_PAGE_SETUP, KeyEvent.VK_P, SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override

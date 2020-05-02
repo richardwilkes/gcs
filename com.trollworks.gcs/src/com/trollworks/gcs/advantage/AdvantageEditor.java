@@ -161,7 +161,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             row.add(createLabel(I18n.Text("Level"), mLevelField));
             row.add(mLevelField);
 
-            mHalfLevel = new JCheckBox("+\u00bd");
+            mHalfLevel = new JCheckBox("+½");
             mHalfLevel.setSelected(mLastHalfLevel);
             mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Add a half Level")));
             mHalfLevel.setEnabled(mIsEditable && advantage.allowHalfLevels());

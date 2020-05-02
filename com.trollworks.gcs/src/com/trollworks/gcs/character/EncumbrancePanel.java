@@ -73,7 +73,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
     }
 
     private static String getMarkerText(Encumbrance which, Encumbrance current) {
-        return MessageFormat.format(which == current ? "\u2022 {0} ({1})" : "{0} ({1})", which, Numbers.format(-which.getEncumbrancePenalty()));
+        return MessageFormat.format(which == current ? "• {0} ({1})" : "{0} ({1})", which, Numbers.format(-which.getEncumbrancePenalty()));
     }
 
     private Container createDivider() {

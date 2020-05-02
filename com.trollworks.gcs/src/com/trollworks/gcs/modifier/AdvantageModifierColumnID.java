@@ -44,7 +44,7 @@ public enum AdvantageModifierColumnID {
 
         @Override
         public String getDataAsText(AdvantageModifier modifier) {
-            return modifier.isEnabled() ? "\u2713" : "";
+            return modifier.isEnabled() ? "✓" : "";
         }
 
         @Override

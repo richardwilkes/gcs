@@ -63,7 +63,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return equipment.isEquipped() ? "\u2713" : "";
+            return equipment.isEquipped() ? "✓" : "";
         }
     },
     /** The quantity. */
@@ -333,7 +333,7 @@ public enum EquipmentColumn {
     EXT_VALUE {
         @Override
         public String toString() {
-            return I18n.Text("\u2211 $");
+            return I18n.Text("∑ $");
         }
 
         @Override
@@ -365,7 +365,7 @@ public enum EquipmentColumn {
     EXT_WEIGHT {
         @Override
         public String toString() {
-            return I18n.Text("\u2211 W");
+            return I18n.Text("∑ W");
         }
 
         @Override

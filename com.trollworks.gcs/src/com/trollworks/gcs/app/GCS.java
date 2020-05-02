@@ -74,7 +74,7 @@ public class GCS {
         I18n.initialize();
 
         // Setup the copyright notices and such that rely on the version and year info
-        COPYRIGHT = String.format(I18n.Text("Copyright \u00A9%s by %s"), years, "Richard A. Wilkes");
+        COPYRIGHT = String.format(I18n.Text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
         COPYRIGHT_BANNER = String.format("%s. All rights reserved.", COPYRIGHT);
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");
@@ -87,7 +87,7 @@ public class GCS {
         if (Platform.isWindows()) {
             // The windows command prompt doesn't understand the copyright symbol, so translate it
             // to something it can deal with.
-            buffer.append(COPYRIGHT_BANNER.replaceAll("\u00A9", "(c)"));
+            buffer.append(COPYRIGHT_BANNER.replaceAll("©", "(c)"));
         } else {
             buffer.append(COPYRIGHT_BANNER);
         }
@@ -281,7 +281,7 @@ public class GCS {
         if (Platform.isWindows()) {
             // The windows command prompt doesn't understand the copyright symbol, so translate it
             // to something it can deal with.
-            banner = banner.replaceAll("\u00A9", "(c)");
+            banner = banner.replaceAll("©", "(c)");
         }
         System.out.println(banner);
         System.out.println();

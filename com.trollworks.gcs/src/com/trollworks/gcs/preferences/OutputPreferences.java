@@ -208,7 +208,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         row.add(mUseTextTemplateOverride);
         mTextTemplatePath = createTextTemplatePathField();
         row.add(mTextTemplatePath);
-        mTextTemplatePicker = createButton(I18n.Text("Choose\u2026"), textTemplateOverrideTooltip());
+        mTextTemplatePicker = createButton(I18n.Text("Choose…"), textTemplateOverrideTooltip());
         mTextTemplatePicker.setEnabled(isTextTemplateOverridden());
         row.add(mTextTemplatePicker);
         column.add(row);

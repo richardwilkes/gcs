@@ -45,7 +45,7 @@ public enum EquipmentModifierCostType {
     BASE_MULTIPLIER {
         @Override
         public String toString() {
-            return "\u00d7 base cost";
+            return "× base cost";
         }
 
         @Override
@@ -90,7 +90,7 @@ public enum EquipmentModifierCostType {
     FINAL_MULTIPLIER {
         @Override
         public String toString() {
-            return "\u00d7 final cost";
+            return "× final cost";
         }
 
         @Override

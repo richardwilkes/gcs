@@ -30,7 +30,7 @@ public class TextDrawing {
     private static       Map<Font, Integer>                 HEIGHT_MAP = new HashMap<>();
     private static final String                             SPACE      = " ";
     private static final String                             NEWLINE    = "\n";
-    private static final char                               ELLIPSIS   = '\u2026';
+    private static final char                               ELLIPSIS   = '…';
 
     /**
      * @param font The {@link Font} to measure with.

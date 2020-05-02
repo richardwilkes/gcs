@@ -37,7 +37,7 @@ public class PrintCommand extends Command implements PrintFilesHandler {
     public static final PrintCommand INSTANCE = new PrintCommand();
 
     private PrintCommand() {
-        super(I18n.Text("Print\u2026"), CMD_PRINT, KeyEvent.VK_P);
+        super(I18n.Text("Print…"), CMD_PRINT, KeyEvent.VK_P);
     }
 
     @Override

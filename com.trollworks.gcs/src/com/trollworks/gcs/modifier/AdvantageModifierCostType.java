@@ -33,7 +33,7 @@ public enum AdvantageModifierCostType {
     MULTIPLIER {
         @Override
         public String toString() {
-            return "\u00d7";
+            return "×";
         }
     }
 }

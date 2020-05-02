@@ -26,7 +26,7 @@ public class ExportToGurpsCalculatorCommand extends Command {
     public static final ExportToGurpsCalculatorCommand INSTANCE                       = new ExportToGurpsCalculatorCommand();
 
     private ExportToGurpsCalculatorCommand() {
-        super(I18n.Text("Export to GURPS Calculator\u2026"), CMD_EXPORT_TO_GUPRS_CALCULATOR, KeyEvent.VK_L);
+        super(I18n.Text("Export to GURPS Calculator…"), CMD_EXPORT_TO_GUPRS_CALCULATOR, KeyEvent.VK_L);
     }
 
     @Override

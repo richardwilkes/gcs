@@ -29,7 +29,7 @@ public class RandomizeDescriptionCommand extends Command {
     public static final RandomizeDescriptionCommand INSTANCE                  = new RandomizeDescriptionCommand();
 
     private RandomizeDescriptionCommand() {
-        super(I18n.Text("Randomize Description\u2026"), CMD_RANDOMIZE_DESCRIPTION);
+        super(I18n.Text("Randomize Description…"), CMD_RANDOMIZE_DESCRIPTION);
     }
 
     @Override

@@ -105,7 +105,7 @@ public class ShowTabsButton extends JComponent implements MouseListener, MouseMo
     }
 
     private String getText() {
-        return "\u00bb" + Numbers.format(mHidden.size());
+        return "»" + Numbers.format(mHidden.size());
     }
 
     @Override

@@ -900,7 +900,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                     builder.append(mLevels);
                 }
                 if (halfLevel) {
-                    builder.append('\u00bd');
+                    builder.append('½');
                 }
             }
         }

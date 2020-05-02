@@ -143,7 +143,7 @@ public class Text {
         if (count > 0) {
             count++; // Count is now the amount to remove from the string
             if (truncationPolicy == SwingConstants.LEFT) {
-                return "\u2026" + text.substring(count);
+                return "…" + text.substring(count);
             }
             if (truncationPolicy == SwingConstants.CENTER) {
                 int           remaining = tCount - count;
@@ -154,13 +154,13 @@ public class Text {
                 if (left > 0) {
                     buffer.append(text, 0, left);
                 }
-                buffer.append("\u2026");
+                buffer.append("…");
                 if (right > 0) {
                     buffer.append(text.substring(tCount - right));
                 }
                 return buffer.toString();
             }
-            return text.substring(0, tCount - count) + "\u2026";
+            return text.substring(0, tCount - count) + "…";
         }
         return text;
     }

@@ -61,7 +61,7 @@ public class UpdateChecker implements Runnable {
 
     /** @return The result of the new app check. */
     public static synchronized String getAppResult() {
-        return APP_RESULT != null ? APP_RESULT : I18n.Text("Checking for GCS updates\u2026");
+        return APP_RESULT != null ? APP_RESULT : I18n.Text("Checking for GCS updates…");
     }
 
     private static synchronized void setAppResult(String result, boolean available) {
@@ -76,7 +76,7 @@ public class UpdateChecker implements Runnable {
 
     /** @return The result of the new data check. */
     public static synchronized String getDataResult() {
-        return DATA_RESULT != null ? DATA_RESULT : I18n.Text("Checking for GCS Master Library updates\u2026");
+        return DATA_RESULT != null ? DATA_RESULT : I18n.Text("Checking for GCS Master Library updates…");
     }
 
     private static synchronized void setDataResult(String result, boolean available) {

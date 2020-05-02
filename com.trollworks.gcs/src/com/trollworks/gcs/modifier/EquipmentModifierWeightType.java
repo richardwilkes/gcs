@@ -30,7 +30,7 @@ public enum EquipmentModifierWeightType {
     MULTIPLIER {
         @Override
         public String toString() {
-            return "\u00d7 weight";
+            return "× weight";
         }
     },
     /** Adds to the final weight. */

@@ -82,7 +82,7 @@ public class MenuKeyPreferences extends PreferencePanel implements ActionListene
         JButton          button  = (JButton) event.getSource();
         Command          command = mMap.get(button);
         KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command.getAccelerator());
-        switch (WindowUtils.showOptionDialog(this, ksd, I18n.Text("Type a keystroke\u2026"), false, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[]{I18n.Text("Accept"), I18n.Text("Clear"), I18n.Text("Reset")}, null)) {
+        switch (WindowUtils.showOptionDialog(this, ksd, I18n.Text("Type a keystroke…"), false, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[]{I18n.Text("Accept"), I18n.Text("Clear"), I18n.Text("Reset")}, null)) {
         case JOptionPane.CLOSED_OPTION:
         default:
             break;

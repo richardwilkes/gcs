@@ -36,7 +36,7 @@ public class OpenCommand extends Command implements OpenFilesHandler {
     public static final OpenCommand INSTANCE = new OpenCommand();
 
     private OpenCommand() {
-        super(I18n.Text("Open\u2026"), CMD_OPEN, KeyEvent.VK_O);
+        super(I18n.Text("Open…"), CMD_OPEN, KeyEvent.VK_O);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class OpenCommand extends Command implements OpenFilesHandler {
 
     /** Ask the user to open a file. */
     public static void open() {
-        open(StdFileDialog.showOpenDialog(getFocusOwner(), I18n.Text("Open\u2026"), FileType.createFileFilters(I18n.Text("All Readable Files"), FileType.OPENABLE)));
+        open(StdFileDialog.showOpenDialog(getFocusOwner(), I18n.Text("Open…"), FileType.createFileFilters(I18n.Text("All Readable Files"), FileType.OPENABLE)));
     }
 
     /** @param file The file to open. */
