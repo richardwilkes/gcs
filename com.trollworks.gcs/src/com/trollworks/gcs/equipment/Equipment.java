@@ -612,10 +612,16 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
 
         // Apply all multipliers
+        double multipliers = 0;
+        int multiplierCount = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER) {
-                value.setValue(value.getValue() * modifier.getWeightAdjMultiplier());
+                multipliers += modifier.getWeightAdjMultiplier();
+                multiplierCount++;
             }
+        }
+        if (multiplierCount > 0) {
+            value.setValue(value.getValue() * (multipliers - (multiplierCount - 1)));
         }
 
         // Apply all final additions
