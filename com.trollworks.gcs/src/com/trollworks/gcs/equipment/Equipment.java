@@ -21,6 +21,8 @@ import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.modifier.EquipmentModifier;
+import com.trollworks.gcs.modifier.EquipmentModifierCostType;
+import com.trollworks.gcs.modifier.EquipmentModifierWeightType;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
@@ -506,62 +508,42 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @return The adjusted value.
      */
     public static double getValueAdjustedForModifiers(double value, List<EquipmentModifier> modifiers) {
-        double multiplier      = 0;
-        int    multiplierCount = 0;
-        double costFactor      = 0;
-        double finalMultiplier = 0;
-        double finalAddition   = 0;
+        // Apply all base additions
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled()) {
-                double amt = modifier.getCostAdjAmount();
-                switch (modifier.getCostAdjType()) {
-                case BASE_ADDITION:
-                    value += amt;
-                    break;
-                case BASE_MULTIPLIER:
-                    multiplier += amt;
-                    multiplierCount++;
-                    break;
-                case COST_FACTOR:
-                    costFactor += amt;
-                    break;
-                case FINAL_MULTIPLIER:
-                    finalMultiplier += amt;
-                    break;
-                case FINAL_ADDITION:
-                    finalAddition += amt;
-                    break;
-                }
+            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_ADDITION) {
+                value += modifier.getCostAdjAmount();
             }
         }
-        if (multiplier != 0 && costFactor != 0) {
-            // Has a mix of base cost multipliers and cost factors... so we need to convert the base
-            // cost multipliers into cost factors.
-            costFactor += multiplier - multiplierCount;
-            multiplier = 0;
-        }
-        if (costFactor != 0) {
-            if (costFactor < -0.8) {
-                costFactor = -0.8;
+
+        // Apply all base multipliers
+        double base = value;
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_MULTIPLIER) {
+                value *= modifier.getCostAdjAmount();
             }
-            value *= 1 + costFactor;
-        } else if (multiplier != 0) {
-            if (multiplier < 0.2) {
-                multiplier = 0.2;
+        }
+
+        // Apply all cost factors
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.COST_FACTOR) {
+                value += base * modifier.getCostAdjAmount();
             }
-            value *= multiplier;
         }
-        if (finalMultiplier != 0) {
-            if (finalMultiplier < 0.2) {
-                finalMultiplier = 0.2;
+
+        // Apply all final multipliers
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_MULTIPLIER) {
+                value *= modifier.getCostAdjAmount();
             }
-            value *= finalMultiplier;
         }
-        value += finalAddition;
-        if (value < 0) {
-            value = 0;
+
+        // Apply all final additions
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_ADDITION) {
+                value += modifier.getCostAdjAmount();
+            }
         }
-        return value;
+        return Math.max(value, 0);
     }
 
     /** @return The value. */
@@ -601,28 +583,28 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @return The adjusted value.
      */
     public static WeightValue getWeightAdjustedForModifiers(WeightValue value, List<EquipmentModifier> modifiers) {
-        double      multiplier    = 1;
-        WeightValue finalAddition = new WeightValue(0, value.getUnits());
         value = new WeightValue(value);
+
+        // Apply all base additions
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled()) {
-                switch (modifier.getWeightAdjType()) {
-                case BASE_ADDITION:
-                    value.add(modifier.getWeightAdjAddition());
-                    break;
-                case MULTIPLIER:
-                    multiplier *= modifier.getWeightAdjMultiplier();
-                    break;
-                case FINAL_ADDITION:
-                    finalAddition.add(modifier.getWeightAdjAddition());
-                    break;
-                }
+            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.BASE_ADDITION) {
+                value.add(modifier.getWeightAdjAddition());
             }
         }
-        if (multiplier != 1) {
-            value.setValue(value.getValue() * multiplier);
+
+        // Apply all multipliers
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER) {
+                value.setValue(value.getValue() * modifier.getWeightAdjMultiplier());
+            }
         }
-        value.add(finalAddition);
+
+        // Apply all final additions
+        for (EquipmentModifier modifier : modifiers) {
+            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.FINAL_ADDITION) {
+                value.add(modifier.getWeightAdjAddition());
+            }
+        }
         if (value.getValue() < 0) {
             value.setValue(0);
         }
