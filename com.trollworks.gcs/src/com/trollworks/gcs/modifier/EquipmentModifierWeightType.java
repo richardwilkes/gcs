@@ -15,8 +15,8 @@ import com.trollworks.gcs.utility.I18n;
 
 /**
  * Describes how a {@link EquipmentModifier}'s weight is applied. These should be applied from top
- * to bottom. Unlike with costs, all multipliers should be multiplied rather than added together
- * before being applied.
+ * to bottom. Unlike with costs, all multipliers should be multiplied together rather than added
+ * together before being applied.
  */
 public enum EquipmentModifierWeightType {
     /** Adds to the base weight. */
