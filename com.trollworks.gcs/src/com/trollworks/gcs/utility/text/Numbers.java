@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.utility.text;
 
-import com.trollworks.gcs.utility.I18n;
-
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -25,8 +23,6 @@ public class Numbers {
     public static final  String        NO                                = "no";
     private static final String        LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
     private static final String        SAFE_LOCALIZED_GROUPING_SEPARATOR = Pattern.quote(Character.toString(DecimalFormatSymbols.getInstance().getGroupingSeparator()));
-    private static final int[]         ROMAN_VALUES                      = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-    private static final String[]      ROMAN_TEXT                        = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
     private static final DecimalFormat NUMBER_FORMAT;
     private static final DecimalFormat NUMBER_PLUS_FORMAT;
 
@@ -311,55 +307,6 @@ public class Numbers {
             pos--;
         }
         return text.substring(0, pos + 1);
-    }
-
-    /**
-     * @param place The place, from 1 to 10.
-     * @return The word representing the appropriate position, or the empty string if the value was
-     *         outside the allowed range.
-     */
-    public static final String toPlace(int place) {
-        switch (place) {
-        case 1:
-            return I18n.Text("First");
-        case 2:
-            return I18n.Text("Second");
-        case 3:
-            return I18n.Text("Third");
-        case 4:
-            return I18n.Text("Fourth");
-        case 5:
-            return I18n.Text("Fifth");
-        case 6:
-            return I18n.Text("Sixth");
-        case 7:
-            return I18n.Text("Seventh");
-        case 8:
-            return I18n.Text("Eighth");
-        case 9:
-            return I18n.Text("Ninth");
-        case 10:
-            return I18n.Text("Tenth");
-        default:
-            return "";
-        }
-    }
-
-    public static final String toRoman(int number) {
-        if (number < 1) {
-            throw new IllegalArgumentException(I18n.Text("Number must be greater than 0"));
-        }
-        String text    = "I";
-        int    closest = 1;
-        int    length  = ROMAN_VALUES.length;
-        for (int i = 0; i < length; i++) {
-            if (number >= ROMAN_VALUES[i]) {
-                closest = ROMAN_VALUES[i];
-                text = ROMAN_TEXT[i];
-                break;
-            }
-        }
-        return number == closest ? text : text + toRoman(number - closest);
     }
 
     private static String normalizeNumber(String buffer, boolean localized) {
