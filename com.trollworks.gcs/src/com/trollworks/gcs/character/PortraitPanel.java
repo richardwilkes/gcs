@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.Fonts;
@@ -29,14 +30,22 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.List;
 import javax.swing.UIManager;
 
 /** The character portrait. */
-public class PortraitPanel extends DropPanel implements NotifierTarget {
+public class PortraitPanel extends DropPanel implements DropTargetListener, NotifierTarget {
     private CharacterSheet mSheet;
 
     /**
@@ -50,6 +59,7 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
         mSheet = sheet;
         setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.Text("<html><body><b>Double-click</b> to set a character portrait.<br><br>The dimensions of the chosen picture should be in a ratio of<br><b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br><br>Dimensions of <b>{0}x{1}</b> are ideal.</body></html>"), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
         sheet.getCharacter().addTarget(this, Profile.ID_PORTRAIT);
+        setDropTarget(new DropTarget(this, DnDConstants.ACTION_COPY, this));
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent event) {
@@ -108,5 +118,59 @@ public class PortraitPanel extends DropPanel implements NotifierTarget {
     @Override
     public Dimension getMaximumSize() {
         return getPreferredSize();
+    }
+
+    @Override
+    public void dragEnter(DropTargetDragEvent dtde) {
+        acceptOrRejectDrag(dtde);
+    }
+
+    @Override
+    public void dragOver(DropTargetDragEvent dtde) {
+        acceptOrRejectDrag(dtde);
+    }
+
+    @Override
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+        acceptOrRejectDrag(dtde);
+    }
+
+    @Override
+    public void dragExit(DropTargetEvent dte) {
+        // Unused
+    }
+
+    @Override
+    public void drop(DropTargetDropEvent dtde) {
+        for (DataFlavor dataFlavor : dtde.getCurrentDataFlavors()) {
+            if (dataFlavor.isFlavorJavaFileListType()) {
+                try {
+                    dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                    @SuppressWarnings("unchecked") List<File> transferData = (List<File>) dtde.getTransferable().getTransferData(dataFlavor);
+                    for (File file : transferData) {
+                        try {
+                            mSheet.getCharacter().getDescription().setPortrait(Img.create(file));
+                            break;
+                        } catch (Exception exception) {
+                            WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
+                        }
+                    }
+                    dtde.dropComplete(true);
+                    dtde.getDropTargetContext().getComponent().requestFocusInWindow();
+                } catch (Exception exception) {
+                    Log.error(exception);
+                }
+                return;
+            }
+        }
+        dtde.dropComplete(false);
+    }
+
+    private static void acceptOrRejectDrag(DropTargetDragEvent dtde) {
+        if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+            dtde.acceptDrag(DnDConstants.ACTION_COPY);
+        } else {
+            dtde.rejectDrag();
+        }
     }
 }
