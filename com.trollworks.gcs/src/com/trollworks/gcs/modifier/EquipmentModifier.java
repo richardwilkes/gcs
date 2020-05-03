@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.Fixed4;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -55,9 +56,9 @@ public class EquipmentModifier extends Modifier {
     public static final  String                      ID_COST_ADJ            = PREFIX + TAG_COST_ADJ;
     /** The notification ID for weight adjustment changes. */
     public static final  String                      ID_WEIGHT_ADJ          = PREFIX + TAG_WEIGHT_ADJ;
-    private              EquipmentModifierCostType   mCostType;
-    private              double                      mCostAmount;
-    private              EquipmentModifierWeightType mWeightType;
+    private EquipmentModifierCostType   mCostType;
+    private Fixed4                      mCostAmount;
+    private EquipmentModifierWeightType mWeightType;
     private              double                      mWeightMultiplier;
     private              WeightValue                 mWeightAddition;
 
@@ -104,7 +105,7 @@ public class EquipmentModifier extends Modifier {
     public EquipmentModifier(DataFile file, boolean isContainer) {
         super(file, isContainer);
         mCostType = EquipmentModifierCostType.COST_FACTOR;
-        mCostAmount = 1;
+        mCostAmount = Fixed4.ONE;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
         mWeightMultiplier = 1;
         mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
@@ -132,7 +133,7 @@ public class EquipmentModifier extends Modifier {
         }
         if (obj instanceof EquipmentModifier && super.isEquivalentTo(obj)) {
             EquipmentModifier row = (EquipmentModifier) obj;
-            return mCostType == row.mCostType && mCostAmount == row.mCostAmount;
+            return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount);
         }
         return false;
     }
@@ -161,7 +162,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     /** @return The amount for the cost modifier. */
-    public double getCostAdjAmount() {
+    public Fixed4 getCostAdjAmount() {
         return mCostAmount;
     }
 
@@ -169,8 +170,8 @@ public class EquipmentModifier extends Modifier {
      * @param costAmount The amount for the cost modifier to set.
      * @return {@code true} if a change was made.
      */
-    public boolean setCostAdjAmount(double costAmount) {
-        if (costAmount != mCostAmount) {
+    public boolean setCostAdjAmount(Fixed4 costAmount) {
+        if (!mCostAmount.equals(costAmount)) {
             mCostAmount = costAmount;
             notifySingle(ID_COST_ADJ);
             return true;
@@ -264,7 +265,7 @@ public class EquipmentModifier extends Modifier {
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mCostType = EquipmentModifierCostType.COST_FACTOR;
-        mCostAmount = 1;
+        mCostAmount = Fixed4.ONE;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
         mWeightMultiplier = 1;
         mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
@@ -278,7 +279,7 @@ public class EquipmentModifier extends Modifier {
         } else if (!canHaveChildren()) {
             if (TAG_COST_ADJ.equals(name)) {
                 mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.COST_FACTOR);
-                mCostAmount = reader.readDouble(1);
+                mCostAmount = new Fixed4(reader.readText(), Fixed4.ONE, false);
             } else if (TAG_WEIGHT_ADJ.equals(name)) {
                 mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
                 switch (mWeightType) {
@@ -303,7 +304,7 @@ public class EquipmentModifier extends Modifier {
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         super.saveSelf(out, forUndo);
         if (!canHaveChildren()) {
-            out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+            out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount.toString(), ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
             switch (mWeightType) {
             case BASE_ADDITION:
             case FINAL_ADDITION:

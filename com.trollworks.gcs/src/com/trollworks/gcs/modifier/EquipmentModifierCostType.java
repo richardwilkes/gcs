@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.utility.Fixed4;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Numbers;
 
 /**
  * Describes how an {@link EquipmentModifier}'s cost is applied. These should be applied from top to
@@ -27,13 +27,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(double value) {
-            return Numbers.formatWithForcedSign(value);
+        public String format(Fixed4 value) {
+            String str = value.toLocalizedString();
+            return value.greaterThanOrEqual(Fixed4.ZERO) ? "+" + str : str;
         }
 
         @Override
-        public double extract(String text, boolean localized) {
-            return Numbers.extractDouble(text, 0, localized);
+        public Fixed4 extract(String text, boolean localized) {
+            return new Fixed4(text, Fixed4.ZERO, localized);
         }
 
         @Override
@@ -49,14 +50,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(double value) {
-            return Numbers.format(value);
+        public String format(Fixed4 value) {
+            return value.toLocalizedString();
         }
 
         @Override
-        public double extract(String text, boolean localized) {
-            double value = Numbers.extractDouble(text, 0, localized);
-            return value < 0 ? 1 : value;
+        public Fixed4 extract(String text, boolean localized) {
+            Fixed4 value = new Fixed4(text, Fixed4.ZERO, localized);
+            return value.lessThan(Fixed4.ZERO) ? Fixed4.ONE : value;
         }
 
         @Override
@@ -72,13 +73,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(double value) {
-            return Numbers.formatWithForcedSign(value);
+        public String format(Fixed4 value) {
+            String str = value.toLocalizedString();
+            return value.greaterThanOrEqual(Fixed4.ZERO) ? "+" + str : str;
         }
 
         @Override
-        public double extract(String text, boolean localized) {
-            return Numbers.extractDouble(text, 0, localized);
+        public Fixed4 extract(String text, boolean localized) {
+            return new Fixed4(text, Fixed4.ZERO, localized);
         }
 
         @Override
@@ -94,14 +96,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(double value) {
-            return Numbers.format(value);
+        public String format(Fixed4 value) {
+            return value.toLocalizedString();
         }
 
         @Override
-        public double extract(String text, boolean localized) {
-            double value = Numbers.extractDouble(text, 0, localized);
-            return value < 0 ? 1 : value;
+        public Fixed4 extract(String text, boolean localized) {
+            Fixed4 value = new Fixed4(text, Fixed4.ZERO, localized);
+            return value.lessThan(Fixed4.ZERO) ? Fixed4.ONE : value;
         }
 
         @Override
@@ -117,13 +119,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(double value) {
-            return Numbers.formatWithForcedSign(value);
+        public String format(Fixed4 value) {
+            String str = value.toLocalizedString();
+            return value.greaterThanOrEqual(Fixed4.ZERO) ? "+" + str : str;
         }
 
         @Override
-        public double extract(String text, boolean localized) {
-            return Numbers.extractDouble(text, 0, localized);
+        public Fixed4 extract(String text, boolean localized) {
+            return new Fixed4(text, Fixed4.ZERO, localized);
         }
 
         @Override
@@ -132,9 +135,9 @@ public enum EquipmentModifierCostType {
         }
     };
 
-    public abstract String format(double value);
+    public abstract String format(Fixed4 value);
 
-    public abstract double extract(String text, boolean localized);
+    public abstract Fixed4 extract(String text, boolean localized);
 
     public abstract String adjustText(String text);
 
@@ -146,8 +149,8 @@ public enum EquipmentModifierCostType {
     }
 
     String adjustTextForMultiplier(String text) {
-        double value = Numbers.extractDouble(text, 0, true);
-        if (value <= 0) {
+        Fixed4 value = new Fixed4(text, Fixed4.ZERO, true);
+        if (value.lessThanOrEqual(Fixed4.ZERO)) {
             return "1";
         }
         if (text.startsWith("+")) {

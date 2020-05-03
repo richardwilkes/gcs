@@ -138,9 +138,9 @@ public enum EquipmentColumn {
             if (dataFile instanceof GURPSCharacter) {
                 GURPSCharacter character = (GURPSCharacter) dataFile;
                 if (carried) {
-                    return MessageFormat.format(I18n.Text("Carried Equipment ({0}; ${1})"), character.getWeightCarried().toString(), Numbers.format(character.getWealthCarried()));
+                    return MessageFormat.format(I18n.Text("Carried Equipment ({0}; ${1})"), character.getWeightCarried().toString(), character.getWealthCarried().toLocalizedString());
                 }
-                return MessageFormat.format(I18n.Text("Other Equipment (${0})"), Numbers.format(character.getWealthNotCarried()));
+                return MessageFormat.format(I18n.Text("Other Equipment (${0})"), character.getWealthNotCarried().toLocalizedString());
             }
             if (dataFile instanceof Template) {
                 return carried ? I18n.Text("Carried Equipment") : I18n.Text("Other Equipment");
@@ -294,12 +294,12 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return Double.valueOf(equipment.getAdjustedValue());
+            return equipment.getAdjustedValue();
         }
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return Numbers.format(equipment.getAdjustedValue());
+            return equipment.getAdjustedValue().toLocalizedString();
         }
     },
     /** The weight. */
@@ -353,12 +353,12 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return Double.valueOf(equipment.getExtendedValue());
+            return equipment.getExtendedValue();
         }
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return Numbers.format(equipment.getExtendedValue());
+            return equipment.getExtendedValue().toLocalizedString();
         }
     },
     /** The weight. */

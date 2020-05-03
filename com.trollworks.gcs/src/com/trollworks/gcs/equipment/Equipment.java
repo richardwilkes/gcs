@@ -33,6 +33,7 @@ import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.Fixed4;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
@@ -100,6 +101,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final  String                  ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus";
     /** The field ID for when the equipment gets Modifiers. */
     public static final  String                  ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier";
+    private static final Fixed4                  MIN_CF                     = new Fixed4(-0.8);
     private              boolean                 mEquipped;
     private              int                     mQuantity;
     private              int                     mUses;
@@ -107,9 +109,9 @@ public class Equipment extends ListRow implements HasSourceReference {
     private              String                  mDescription;
     private              String                  mTechLevel;
     private              String                  mLegalityClass;
-    private              double                  mValue;
+    private              Fixed4                  mValue;
     private              WeightValue             mWeight;
-    private              double                  mExtendedValue;
+    private              Fixed4                  mExtendedValue;
     private              WeightValue             mExtendedWeight;
     private              String                  mReference;
     private              List<WeaponStats>       mWeapons;
@@ -129,6 +131,8 @@ public class Equipment extends ListRow implements HasSourceReference {
         mTechLevel = "";
         mLegalityClass = DEFAULT_LEGALITY_CLASS;
         mReference = "";
+        mValue = Fixed4.ZERO;
+        mExtendedValue = Fixed4.ZERO;
         mWeight = new WeightValue(0, DisplayPreferences.getWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
         mWeapons = new ArrayList<>();
@@ -167,7 +171,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         for (EquipmentModifier modifier : equipment.mModifiers) {
             mModifiers.add(new EquipmentModifier(mDataFile, modifier, false));
         }
-        mExtendedValue = mQuantity * getAdjustedValue();
+        mExtendedValue = new Fixed4(mQuantity).mul(getAdjustedValue());
         mExtendedWeight = new WeightValue(getAdjustedWeight());
         mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
         if (deep) {
@@ -197,7 +201,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (obj instanceof Equipment && super.isEquivalentTo(obj)) {
             Equipment row = (Equipment) obj;
-            if (mQuantity == row.mQuantity && mUses == row.mUses && mMaxUses == row.mMaxUses && mValue == row.mValue && mEquipped == row.mEquipped && mWeight.equals(row.mWeight) && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
+            if (mQuantity == row.mQuantity && mUses == row.mUses && mMaxUses == row.mMaxUses && mValue.equals(row.mValue) && mEquipped == row.mEquipped && mWeight.equals(row.mWeight) && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
                 if (mWeapons.equals(row.mWeapons)) {
                     return mModifiers.equals(row.mModifiers);
                 }
@@ -242,7 +246,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mTechLevel = "";
         mLegalityClass = DEFAULT_LEGALITY_CLASS;
         mReference = "";
-        mValue = 0.0;
+        mValue = Fixed4.ZERO;
         mWeight.setValue(0.0);
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
@@ -271,7 +275,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         } else if (TAG_LEGALITY_CLASS.equals(name)) {
             mLegalityClass = reader.readText().replace("\n", " ");
         } else if (TAG_VALUE.equals(name)) {
-            mValue = reader.readDouble(0.0);
+            mValue = new Fixed4(reader.readText(), Fixed4.ZERO, false);
         } else if (TAG_WEIGHT.equals(name)) {
             mWeight = WeightValue.extract(reader.readText(), false);
         } else if (TAG_REFERENCE.equals(name)) {
@@ -329,7 +333,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         out.simpleTagNotEmpty(TAG_DESCRIPTION, mDescription);
         out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
         out.simpleTagNotEmpty(TAG_LEGALITY_CLASS, mLegalityClass);
-        out.simpleTag(TAG_VALUE, mValue);
+        out.simpleTag(TAG_VALUE, mValue.toString());
         if (mWeight.getNormalizedValue() != 0) {
             out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
         }
@@ -498,7 +502,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     /** @return The value after any cost adjustments. */
-    public double getAdjustedValue() {
+    public Fixed4 getAdjustedValue() {
         return getValueAdjustedForModifiers(mValue, getModifiers());
     }
 
@@ -507,81 +511,81 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @param modifiers The modifiers to apply.
      * @return The adjusted value.
      */
-    public static double getValueAdjustedForModifiers(double value, List<EquipmentModifier> modifiers) {
+    public static Fixed4 getValueAdjustedForModifiers(Fixed4 value, List<EquipmentModifier> modifiers) {
         // Apply all base additions
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_ADDITION) {
-                value += modifier.getCostAdjAmount();
+                value = value.add(modifier.getCostAdjAmount());
             }
         }
 
         // Apply all base multipliers
-        double multipliers = 0;
-        int multiplierCountOneOrGreater = 0;
-        boolean hadMultiplier = false;
+        Fixed4  multipliers                 = Fixed4.ZERO;
+        int     multiplierCountOneOrGreater = 0;
+        boolean hadMultiplier               = false;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_MULTIPLIER) {
                 hadMultiplier = true;
-                double amt = modifier.getCostAdjAmount();
-                multipliers += amt;
-                if (amt >= 1) {
+                Fixed4 amt = modifier.getCostAdjAmount();
+                multipliers = multipliers.add(amt);
+                if (amt.greaterThanOrEqual(Fixed4.ONE)) {
                     multiplierCountOneOrGreater++;
                 }
             }
         }
         if (hadMultiplier) {
             if (multiplierCountOneOrGreater > 0) {
-                multipliers -= multiplierCountOneOrGreater - 1;
+                multipliers = multipliers.sub(new Fixed4(multiplierCountOneOrGreater - 1));
             }
-            value *= multipliers;
+            value = value.mul(multipliers);
         }
 
         // Apply all cost factors
-        double cf = 0;
+        Fixed4 cf = Fixed4.ZERO;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.COST_FACTOR) {
-                cf += modifier.getCostAdjAmount();
+                cf = cf.add(modifier.getCostAdjAmount());
             }
         }
-        if (cf != 0) {
-            if (cf < -0.8) {
-                cf = -0.8;
+        if (!cf.equals(Fixed4.ZERO)) {
+            if (cf.lessThanOrEqual(MIN_CF)) {
+                cf = MIN_CF;
             }
-            value *= cf + 1;
+            value = value.mul(cf.add(Fixed4.ONE));
         }
 
         // Apply all final multipliers
-        multipliers = 0;
+        multipliers = Fixed4.ZERO;
         multiplierCountOneOrGreater = 0;
         hadMultiplier = false;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_MULTIPLIER) {
                 hadMultiplier = true;
-                double amt = modifier.getCostAdjAmount();
-                multipliers += amt;
-                if (amt >= 1) {
+                Fixed4 amt = modifier.getCostAdjAmount();
+                multipliers = multipliers.add(amt);
+                if (amt.greaterThanOrEqual(Fixed4.ONE)) {
                     multiplierCountOneOrGreater++;
                 }
             }
         }
         if (hadMultiplier) {
             if (multiplierCountOneOrGreater > 0) {
-                multipliers -= multiplierCountOneOrGreater - 1;
+                multipliers = multipliers.sub(new Fixed4(multiplierCountOneOrGreater - 1));
             }
-            value *= multipliers;
+            value = value.mul(multipliers);
         }
 
         // Apply all final additions
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_ADDITION) {
-                value += modifier.getCostAdjAmount();
+                value = value.add(modifier.getCostAdjAmount());
             }
         }
-        return Math.max(value, 0);
+        return value.greaterThanOrEqual(Fixed4.ZERO) ? value : Fixed4.ZERO;
     }
 
     /** @return The value. */
-    public double getValue() {
+    public Fixed4 getValue() {
         return mValue;
     }
 
@@ -589,8 +593,8 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @param value The value to set.
      * @return Whether it was modified.
      */
-    public boolean setValue(double value) {
-        if (value != mValue) {
+    public boolean setValue(Fixed4 value) {
+        if (!mValue.equals(value)) {
             mValue = value;
             startNotify();
             notify(ID_VALUE, this);
@@ -602,7 +606,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     /** @return The extended value. */
-    public double getExtendedValue() {
+    public Fixed4 getExtendedValue() {
         return mExtendedValue;
     }
 
@@ -742,17 +746,17 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     private boolean updateExtendedValue(boolean okToNotify) {
-        double savedValue = mExtendedValue;
+        Fixed4 savedValue = mExtendedValue;
         int    count      = getChildCount();
-        mExtendedValue = mQuantity * getAdjustedValue();
+        mExtendedValue = new Fixed4(mQuantity).mul(getAdjustedValue());
         for (int i = 0; i < count; i++) {
             Equipment child = (Equipment) getChild(i);
-            mExtendedValue += child.mExtendedValue;
+            mExtendedValue = mExtendedValue.add(child.mExtendedValue);
         }
         if (getParent() instanceof Equipment) {
             ((Equipment) getParent()).updateContainingValues(okToNotify);
         }
-        if (savedValue != mExtendedValue) {
+        if (!mExtendedValue.equals(savedValue)) {
             if (okToNotify) {
                 notify(ID_EXTENDED_VALUE, this);
             }

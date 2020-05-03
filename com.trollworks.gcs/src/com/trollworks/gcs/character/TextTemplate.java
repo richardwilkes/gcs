@@ -609,10 +609,10 @@ public class TextTemplate {
             writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter.getWeightCarried()));
             break;
         case KEY_CARRIED_VALUE:
-            writeEncodedText(out, "$" + Numbers.format(gurpsCharacter.getWealthCarried()));
+            writeEncodedText(out, "$" + gurpsCharacter.getWealthCarried().toLocalizedString());
             break;
         case KEY_OTHER_VALUE:
-            writeEncodedText(out, "$" + Numbers.format(gurpsCharacter.getWealthNotCarried()));
+            writeEncodedText(out, "$" + gurpsCharacter.getWealthNotCarried().toLocalizedString());
             break;
         case KEY_NOTES:
             StringBuilder buffer = new StringBuilder();
@@ -1320,7 +1320,7 @@ public class TextTemplate {
                 break;
             case KEY_COST:
                 if (equipment != null) {
-                    writeEncodedText(out, Numbers.format(equipment.getAdjustedValue()));
+                    writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
                 }
                 break;
             case KEY_LEGALITY_CLASS:
@@ -1669,13 +1669,13 @@ public class TextTemplate {
                                     writeEncodedText(out, Numbers.format(equipment.getQuantity()));
                                     break;
                                 case KEY_COST:
-                                    writeEncodedText(out, Numbers.format(equipment.getAdjustedValue()));
+                                    writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
                                     break;
                                 case KEY_WEIGHT:
                                     writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getAdjustedWeight()));
                                     break;
                                 case KEY_COST_SUMMARY:
-                                    writeEncodedText(out, Numbers.format(equipment.getExtendedValue()));
+                                    writeEncodedText(out, equipment.getExtendedValue().toLocalizedString());
                                     break;
                                 case KEY_WEIGHT_SUMMARY:
                                     writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getExtendedWeight()));

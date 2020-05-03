@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 public class Numbers {
     public static final  String        YES                               = "yes";
     public static final  String        NO                                = "no";
-    private static final String        LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
+    public static final  String        LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
     private static final String        SAFE_LOCALIZED_GROUPING_SEPARATOR = Pattern.quote(Character.toString(DecimalFormatSymbols.getInstance().getGroupingSeparator()));
     private static final DecimalFormat NUMBER_FORMAT;
     private static final DecimalFormat NUMBER_PLUS_FORMAT;
@@ -309,7 +309,7 @@ public class Numbers {
         return text.substring(0, pos + 1);
     }
 
-    private static String normalizeNumber(String buffer, boolean localized) {
+    public static String normalizeNumber(String buffer, boolean localized) {
         if (buffer == null) {
             return "";
         }

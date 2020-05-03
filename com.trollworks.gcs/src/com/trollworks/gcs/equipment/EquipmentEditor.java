@@ -20,6 +20,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.Fixed4;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -70,7 +71,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private MeleeWeaponEditor           mMeleeWeapons;
     private RangedWeaponEditor          mRangedWeapons;
     private EquipmentModifierListEditor mModifiers;
-    private double                      mContainedValue;
+    private Fixed4                      mContainedValue;
     private WeightValue                 mContainedWeight;
     private boolean                     mCarried;
 
@@ -164,9 +165,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         JPanel    wrapper = new JPanel(new ColumnLayout(4));
         Component first;
 
-        mContainedValue = mRow.getExtendedValue() - mRow.getAdjustedValue() * mRow.getQuantity();
-        mValueField = createNumberField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The base value of one of these pieces of equipment before modifiers"), 13);
-        mExtValueField = createNumberField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
+        mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed4(mRow.getQuantity())));
+        mValueField = createValueField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The base value of one of these pieces of equipment before modifiers"), 13);
+        mExtValueField = createValueField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         first = wrapper.getComponent(1);
         mExtValueField.setEnabled(false);
         wrapper.add(new JPanel());
@@ -239,10 +240,10 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     @SuppressWarnings("unused")
-    private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
+    private JTextField createValueField(Container labelParent, Container fieldParent, String title, Fixed4 value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
         UIUtilities.setToPreferredSizeOnly(field);
-        field.setText(Numbers.format(value));
+        field.setText(value.toLocalizedString());
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
         new NumberFilter(field, true, false, true, maxDigits);
@@ -273,7 +274,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         modified |= mRow.setTechLevel(mTechLevelField.getText());
         modified |= mRow.setLegalityClass(mLegalityClassField.getText());
         modified |= mRow.setQuantity(getQty());
-        modified |= mRow.setValue(Numbers.extractDouble(mValueField.getText(), 0.0, true));
+        modified |= mRow.setValue(new Fixed4(mValueField.getText(), Fixed4.ZERO, true));
         modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
         modified |= mRow.setMaxUses(Numbers.extractInteger(mMaxUsesField.getText(), 0, true));
         modified |= mUsesField != null ? mRow.setUses(Numbers.extractInteger(mUsesField.getText(), 0, true)) : mRow.setUses(mRow.getMaxUses());
@@ -320,10 +321,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void valueChanged() {
-        int    qty = getQty();
-        double value;
-        value = qty < 1 ? 0 : qty * Equipment.getValueAdjustedForModifiers(Numbers.extractDouble(mValueField.getText(), 0.0, true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class)) + mContainedValue;
-        mExtValueField.setText(Numbers.format(value));
+        int    qty   = getQty();
+        Fixed4 value = qty < 1 ? Fixed4.ZERO : new Fixed4(qty).mul(Equipment.getValueAdjustedForModifiers(new Fixed4(mValueField.getText(), Fixed4.ZERO, true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class))).add(mContainedValue);
+        mExtValueField.setText(value.toLocalizedString());
     }
 
     private void weightChanged() {

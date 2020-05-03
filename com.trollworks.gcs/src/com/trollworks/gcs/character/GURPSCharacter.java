@@ -53,6 +53,7 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.FileType;
+import com.trollworks.gcs.utility.Fixed4;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
@@ -281,8 +282,8 @@ public class GURPSCharacter extends DataFile {
     private              boolean                             mNeedSpellPointCalculation;
     private              boolean                             mNeedEquipmentCalculation;
     private              WeightValue                         mCachedWeightCarried;
-    private              double                              mCachedWealthCarried;
-    private              double                              mCachedWealthNotCarried;
+    private              Fixed4                              mCachedWealthCarried;
+    private              Fixed4                              mCachedWealthNotCarried;
     private              int                                 mCachedAttributePoints;
     private              int                                 mCachedAdvantagePoints;
     private              int                                 mCachedDisadvantagePoints;
@@ -1481,12 +1482,12 @@ public class GURPSCharacter extends DataFile {
     }
 
     /** @return The current wealth being carried. */
-    public double getWealthCarried() {
+    public Fixed4 getWealthCarried() {
         return mCachedWealthCarried;
     }
 
     /** @return The current wealth not being carried. */
-    public double getWealthNotCarried() {
+    public Fixed4 getWealthNotCarried() {
         return mCachedWealthNotCarried;
     }
 
@@ -1539,9 +1540,9 @@ public class GURPSCharacter extends DataFile {
      */
     public void calculateWeightAndWealthCarried(boolean notify) {
         WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
-        double      savedWealth = mCachedWealthCarried;
+        Fixed4      savedWealth = mCachedWealthCarried;
         mCachedWeightCarried = new WeightValue(0, DisplayPreferences.getWeightUnits());
-        mCachedWealthCarried = 0.0;
+        mCachedWealthCarried = Fixed4.ZERO;
         for (Row one : mEquipment.getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
             WeightValue weight    = new WeightValue(equipment.getExtendedWeight());
@@ -1549,14 +1550,14 @@ public class GURPSCharacter extends DataFile {
                 weight = DisplayPreferences.getWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
             }
             mCachedWeightCarried.add(weight);
-            mCachedWealthCarried += equipment.getExtendedValue();
+            mCachedWealthCarried = mCachedWealthCarried.add(equipment.getExtendedValue());
         }
         if (notify) {
             if (!savedWeight.equals(mCachedWeightCarried)) {
                 notify(ID_CARRIED_WEIGHT, mCachedWeightCarried);
             }
-            if (savedWealth != mCachedWealthCarried) {
-                notify(ID_CARRIED_WEALTH, Double.valueOf(mCachedWealthCarried));
+            if (!mCachedWealthCarried.equals(savedWealth)) {
+                notify(ID_CARRIED_WEALTH, mCachedWealthCarried);
             }
         }
     }
@@ -1568,14 +1569,14 @@ public class GURPSCharacter extends DataFile {
      *               the previous values.
      */
     public void calculateWealthNotCarried(boolean notify) {
-        double savedWealth = mCachedWealthNotCarried;
-        mCachedWealthNotCarried = 0.0;
+        Fixed4 savedWealth = mCachedWealthNotCarried;
+        mCachedWealthNotCarried = Fixed4.ZERO;
         for (Row one : mOtherEquipment.getTopLevelRows()) {
-            mCachedWealthNotCarried += ((Equipment) one).getExtendedValue();
+            mCachedWealthNotCarried = mCachedWealthNotCarried.add(((Equipment) one).getExtendedValue());
         }
         if (notify) {
-            if (savedWealth != mCachedWealthNotCarried) {
-                notify(ID_NOT_CARRIED_WEALTH, Double.valueOf(mCachedWealthNotCarried));
+            if (!mCachedWealthNotCarried.equals(savedWealth)) {
+                notify(ID_NOT_CARRIED_WEALTH, mCachedWealthNotCarried);
             }
         }
     }

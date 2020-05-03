@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.Fixed4;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -186,8 +187,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private void createCostAdjustmentField(Container labelParent, Container fieldParent) {
         mCostAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mCostAmountField);
-        double amt = mRow.getCostAdjAmount();
-        mCostAmountField.setText(mRow.getCostAdjType().format(amt));
+        mCostAmountField.setText(mRow.getCostAdjType().format(mRow.getCostAdjAmount()));
         mCostAmountField.setToolTipText(I18n.Text("The cost modifier"));
         mCostAmountField.setEnabled(mIsEditable);
         new NumberFilter(mCostAmountField, true, true, true, 11);
@@ -214,7 +214,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return (EquipmentModifierCostType) obj;
     }
 
-    private double getCostAmount() {
+    private Fixed4 getCostAmount() {
         return getCostType().extract(mCostAmountField.getText(), true);
     }
 
