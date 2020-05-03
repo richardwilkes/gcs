@@ -19,17 +19,20 @@ import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Advantage Modifier" command. */
 public class NewAdvantageModifierCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                      CMD_NEW_ADVANTAGE_MODIFIER = "NewAdvantageModifier";
-    /** The "New Advantage Modifier" command. */
-    public static final NewAdvantageModifierCommand INSTANCE                   = new NewAdvantageModifierCommand(I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, KeyEvent.VK_M, SHIFTED_COMMAND_MODIFIER);
+    public static final String                      CMD_NEW_ADVANTAGE_MODIFIER           = "NewAdvantageModifier";
+    public static final String                      CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER = "NewAdvantageModifierContainer";
+    public static final NewAdvantageModifierCommand INSTANCE                             = new NewAdvantageModifierCommand(false, I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, KeyEvent.VK_M, COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
+    public static final NewAdvantageModifierCommand CONTAINER_INSTANCE                   = new NewAdvantageModifierCommand(true, I18n.Text("New Advantage Modifier Container"), CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER, KeyEvent.VK_M, SHIFTED_COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
+    private             boolean                     mContainer;
 
-    private NewAdvantageModifierCommand(String title, String cmd, int keyCode, int modifiers) {
+    private NewAdvantageModifierCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
+        mContainer = container;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class NewAdvantageModifierCommand extends Command {
         if (outline.getModel().isLocked()) {
             return;
         }
-        AdvantageModifier modifier = new AdvantageModifier(dataFile);
+        AdvantageModifier modifier = new AdvantageModifier(dataFile, mContainer);
         outline.addRow(modifier, getTitle(), false);
         outline.getModel().select(modifier, false);
         outline.scrollSelectionIntoView();

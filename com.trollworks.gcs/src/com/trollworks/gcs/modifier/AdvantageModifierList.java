@@ -53,7 +53,7 @@ public class AdvantageModifierList extends ListFile {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
 
-                if (AdvantageModifier.TAG_MODIFIER.equals(name)) {
+                if (AdvantageModifier.TAG_MODIFIER.equals(name) || AdvantageModifier.TAG_MODIFIER_CONTAINER.equals(name)) {
                     model.addRow(new AdvantageModifier(this, reader, state), true);
                 } else {
                     reader.skipTag(name);

@@ -16,6 +16,8 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.notification.Notifier;
@@ -26,25 +28,27 @@ import java.io.IOException;
 
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
-    private static final int                       CURRENT_VERSION     = 1;
+    private static final int                       CURRENT_VERSION        = 1;
     /** The root tag. */
-    public static final  String                    TAG_MODIFIER        = "modifier";
+    public static final  String                    TAG_MODIFIER           = "modifier";
+    /** The root tag for containers. */
+    public static final  String                    TAG_MODIFIER_CONTAINER = "modifier_container";
     /** The tag for the base cost. */
-    public static final  String                    TAG_COST            = "cost";
+    public static final  String                    TAG_COST               = "cost";
     /** The attribute for the cost type. */
-    public static final  String                    ATTRIBUTE_COST_TYPE = "type";
+    public static final  String                    ATTRIBUTE_COST_TYPE    = "type";
     /** The tag for the cost per level. */
-    public static final  String                    TAG_LEVELS          = "levels";
+    public static final  String                    TAG_LEVELS             = "levels";
     /** The tag for how the cost is affected. */
-    public static final  String                    TAG_AFFECTS         = "affects";
+    public static final  String                    TAG_AFFECTS            = "affects";
     /** The notification prefix used. */
-    public static final  String                    PREFIX              = GURPSCharacter.CHARACTER_PREFIX + "advmod" + Notifier.SEPARATOR;
+    public static final  String                    PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "advmod" + Notifier.SEPARATOR;
     /** The field ID for when the categories change. */
-    public static final  String                    ID_CATEGORY         = PREFIX + "Category";
+    public static final  String                    ID_CATEGORY            = PREFIX + "Category";
     /** The field ID for enabled changes. */
-    public static final  String                    ID_ENABLED          = PREFIX + ATTRIBUTE_ENABLED;
+    public static final  String                    ID_ENABLED             = PREFIX + ATTRIBUTE_ENABLED;
     /** The field ID for list changes. */
-    public static final  String                    ID_LIST_CHANGED     = PREFIX + "list_changed";
+    public static final  String                    ID_LIST_CHANGED        = PREFIX + "list_changed";
     /** The cost type of the {@link AdvantageModifier}. */
     protected            AdvantageModifierCostType mCostType;
     private              int                       mCost;
@@ -57,14 +61,21 @@ public class AdvantageModifier extends Modifier {
      *
      * @param file  The {@link DataFile} to use.
      * @param other Another {@link AdvantageModifier} to clone.
+     * @param deep  Whether or not to clone the children, grandchildren, etc.
      */
-    public AdvantageModifier(DataFile file, AdvantageModifier other) {
+    public AdvantageModifier(DataFile file, AdvantageModifier other, boolean deep) {
         super(file, other);
         mCostType = other.mCostType;
         mCost = other.mCost;
         mCostMultiplier = other.mCostMultiplier;
         mLevels = other.mLevels;
         mAffects = other.mAffects;
+        if (deep) {
+            int count = other.getChildCount();
+            for (int i = 0; i < count; i++) {
+                addChild(new AdvantageModifier(file, (AdvantageModifier) other.getChild(i), true));
+            }
+        }
     }
 
     /**
@@ -75,16 +86,18 @@ public class AdvantageModifier extends Modifier {
      * @param state  The {@link LoadState} to use.
      */
     public AdvantageModifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
-        super(file, reader, state);
+        this(file, TAG_MODIFIER_CONTAINER.equals(reader.getName()));
+        load(reader, state);
     }
 
     /**
      * Creates a new {@link AdvantageModifier}.
      *
-     * @param file The {@link DataFile} to use.
+     * @param file        The {@link DataFile} to use.
+     * @param isContainer Whether or not this row allows children.
      */
-    public AdvantageModifier(DataFile file) {
-        super(file);
+    public AdvantageModifier(DataFile file, boolean isContainer) {
+        super(file, isContainer);
         mCostType = AdvantageModifierCostType.PERCENTAGE;
         mCost = 0;
         mCostMultiplier = 1.0;
@@ -110,8 +123,13 @@ public class AdvantageModifier extends Modifier {
     }
 
     /** @return An exact clone of this modifier. */
-    public AdvantageModifier cloneModifier() {
-        return new AdvantageModifier(mDataFile, this);
+    public AdvantageModifier cloneModifier(boolean deep) {
+        return new AdvantageModifier(mDataFile, this, deep);
+    }
+
+    @Override
+    public RetinaIcon getIcon(boolean marker) {
+        return marker ? Images.ADM_MARKER : Images.ADM_FILE;
     }
 
     /** @return The total cost modifier. */
@@ -206,31 +224,12 @@ public class AdvantageModifier extends Modifier {
 
     @Override
     public String getXMLTagName() {
-        return TAG_MODIFIER;
+        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
     }
 
     @Override
     public int getXMLTagVersion() {
         return CURRENT_VERSION;
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (TAG_COST.equals(name)) {
-            mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), AdvantageModifierCostType.values(), AdvantageModifierCostType.PERCENTAGE);
-            if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
-                mCostMultiplier = reader.readDouble(1.0);
-            } else {
-                mCost = reader.readInteger(0);
-            }
-        } else if (TAG_LEVELS.equals(name)) {
-            mLevels = reader.readInteger(0);
-        } else if (TAG_AFFECTS.equals(name)) {
-            mAffects = Enums.extract(reader.readText(), Affects.values(), Affects.TOTAL);
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override
@@ -244,16 +243,43 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
+    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
+        String name = reader.getName();
+        if (!state.mForUndo && (TAG_MODIFIER.equals(name) || TAG_MODIFIER_CONTAINER.equals(name))) {
+            addChild(new AdvantageModifier(mDataFile, reader, state));
+        } else if (!canHaveChildren()) {
+            if (TAG_COST.equals(name)) {
+                mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), AdvantageModifierCostType.values(), AdvantageModifierCostType.PERCENTAGE);
+                if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
+                    mCostMultiplier = reader.readDouble(1.0);
+                } else {
+                    mCost = reader.readInteger(0);
+                }
+            } else if (TAG_LEVELS.equals(name)) {
+                mLevels = reader.readInteger(0);
+            } else if (TAG_AFFECTS.equals(name)) {
+                mAffects = Enums.extract(reader.readText(), Affects.values(), Affects.TOTAL);
+            } else {
+                super.loadSubElement(reader, state);
+            }
+        } else {
+            super.loadSubElement(reader, state);
+        }
+    }
+
+    @Override
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         super.saveSelf(out, forUndo);
-        if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
-            out.simpleTagWithAttribute(TAG_COST, mCostMultiplier, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
-        } else {
-            out.simpleTagWithAttribute(TAG_COST, mCost, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
-        }
-        out.simpleTagNotZero(TAG_LEVELS, mLevels);
-        if (mCostType != AdvantageModifierCostType.MULTIPLIER) {
-            out.simpleTag(TAG_AFFECTS, Enums.toId(mAffects));
+        if (!canHaveChildren()) {
+            if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
+                out.simpleTagWithAttribute(TAG_COST, mCostMultiplier, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+            } else {
+                out.simpleTagWithAttribute(TAG_COST, mCost, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+            }
+            out.simpleTagNotZero(TAG_LEVELS, mLevels);
+            if (mCostType != AdvantageModifierCostType.MULTIPLIER) {
+                out.simpleTag(TAG_AFFECTS, Enums.toId(mAffects));
+            }
         }
     }
 

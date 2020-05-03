@@ -49,8 +49,8 @@ public class EquipmentModifiersOutline extends ListOutline {
     @Override
     public void convertDragRowsToSelf(List<Row> list) {
         OutlineModel model = getModel();
-        for (Row element : model.getDragRows()) {
-            EquipmentModifier modifier = new EquipmentModifier(mDataFile, (EquipmentModifier) element);
+        for (Row row : model.getDragRows()) {
+            EquipmentModifier modifier = new EquipmentModifier(mDataFile, (EquipmentModifier) row, true);
             model.collectRowsAndSetOwner(list, modifier, false);
         }
     }

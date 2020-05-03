@@ -45,6 +45,6 @@ public class EquipmentModifierListEditor extends ModifierListEditor {
 
     @Override
     protected Modifier createModifier(DataFile owner) {
-        return new EquipmentModifier(owner);
+        return new EquipmentModifier(owner, false);
     }
 }

@@ -69,21 +69,27 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         RetinaIcon icon    = modifier.getIcon(true);
         iconLabel = icon != null ? new JLabel(icon) : new JLabel();
 
-        JPanel wrapper = new JPanel(new ColumnLayout(2));
-        mNameField = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
-        mEnabledField = new JCheckBox(I18n.Text("Enabled"), modifier.isEnabled());
-        mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
-        mEnabledField.setEnabled(mIsEditable);
-        wrapper.add(mEnabledField);
-        fields.add(wrapper);
+        if (modifier.canHaveChildren()) {
+            mNameField = createCorrectableField(fields, fields, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of container"));
+            mNotesField = createField(fields, fields, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
+            mReferenceField = createField(fields, fields, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
+        } else {
+            JPanel wrapper = new JPanel(new ColumnLayout(2));
+            mNameField = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
+            mEnabledField = new JCheckBox(I18n.Text("Enabled"), modifier.isEnabled());
+            mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
+            mEnabledField.setEnabled(mIsEditable);
+            wrapper.add(mEnabledField);
+            fields.add(wrapper);
 
-        createCostAdjustmentFields(fields);
-        createWeightAdjustmentFields(fields);
+            createCostAdjustmentFields(fields);
+            createWeightAdjustmentFields(fields);
 
-        wrapper = new JPanel(new ColumnLayout(3));
-        mNotesField = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
-        mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
-        fields.add(wrapper);
+            wrapper = new JPanel(new ColumnLayout(3));
+            mNotesField = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
+            mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
+            fields.add(wrapper);
+        }
 
         iconLabel.setVerticalAlignment(SwingConstants.TOP);
         iconLabel.setAlignmentY(-1.0f);
@@ -91,12 +97,14 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         content.add(fields);
         add(content);
 
-        mTabPanel = new JTabbedPane();
-        mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-        Component panel = embedEditor(mFeatures);
-        mTabPanel.addTab(panel.getName(), panel);
-        UIUtilities.selectTab(mTabPanel, getLastTabName());
-        add(mTabPanel);
+        if (!modifier.canHaveChildren()) {
+            mTabPanel = new JTabbedPane();
+            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+            Component panel = embedEditor(mFeatures);
+            mTabPanel.addTab(panel.getName(), panel);
+            UIUtilities.selectTab(mTabPanel, getLastTabName());
+            add(mTabPanel);
+        }
     }
 
     @Override
@@ -104,22 +112,24 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         boolean modified = mRow.setName(mNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setEnabled(mEnabledField.isSelected());
-        if (mFeatures != null) {
-            modified |= mRow.setFeatures(mFeatures.getFeatures());
-        }
-        modified |= mRow.setCostAdjType(getCostType());
-        modified |= mRow.setCostAdjAmount(getCostAmount());
-        modified |= mRow.setWeightAdjType(getWeightType());
-        switch (mRow.getWeightAdjType()) {
-        case BASE_ADDITION:
-        case FINAL_ADDITION:
-            modified |= mRow.setWeightAdjAddition(getWeightAddition());
-            break;
-        case MULTIPLIER:
-        default:
-            modified |= mRow.setWeightAdjMultiplier(getWeightMultiplier());
-            break;
+        if (!mRow.canHaveChildren()) {
+            modified |= mRow.setEnabled(mEnabledField.isSelected());
+            if (mFeatures != null) {
+                modified |= mRow.setFeatures(mFeatures.getFeatures());
+            }
+            modified |= mRow.setCostAdjType(getCostType());
+            modified |= mRow.setCostAdjAmount(getCostAmount());
+            modified |= mRow.setWeightAdjType(getWeightType());
+            switch (mRow.getWeightAdjType()) {
+            case BASE_ADDITION:
+            case FINAL_ADDITION:
+                modified |= mRow.setWeightAdjAddition(getWeightAddition());
+                break;
+            case MULTIPLIER:
+            default:
+                modified |= mRow.setWeightAdjMultiplier(getWeightMultiplier());
+                break;
+            }
         }
         return modified;
     }
@@ -272,11 +282,13 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        Object src = event.getSource();
-        if (src == mCostAmountField || src == mCostType) {
-            costChanged();
-        } else if (src == mWeightAmountField || src == mWeightType) {
-            weightChanged();
+        if (!mRow.canHaveChildren()) {
+            Object src = event.getSource();
+            if (src == mCostAmountField || src == mCostType) {
+                costChanged();
+            } else if (src == mWeightAmountField || src == mWeightType) {
+                weightChanged();
+            }
         }
     }
 
@@ -299,7 +311,6 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
     }
 
-
     @Override
     public void focusGained(FocusEvent event) {
         // Not used.
@@ -307,7 +318,9 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     @Override
     public void focusLost(FocusEvent event) {
-        weightChanged();
+        if (!mRow.canHaveChildren()) {
+            weightChanged();
+        }
     }
 
     private void weightChanged() {
@@ -346,7 +359,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void costChanged() {
-        String text = mCostAmountField.getText().trim();
+        String text    = mCostAmountField.getText().trim();
         String revised = getCostType().adjustText(text);
         if (!text.equals(revised)) {
             mCostAmountField.setText(revised);

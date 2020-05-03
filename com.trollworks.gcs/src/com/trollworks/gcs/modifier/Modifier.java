@@ -15,7 +15,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
-import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class Modifier extends ListRow implements Comparable<Modifier> {
+public abstract class Modifier extends ListRow implements Comparable<Modifier>, HasSourceReference {
     /** The tag for the name. */
     protected static final String  TAG_NAME          = "name";
     /** The tag for the page reference. */
@@ -44,27 +44,22 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier> {
         mEnabled = other.mEnabled;
     }
 
-    protected Modifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
-        super(file, false);
-        load(reader, state);
-    }
-
-    protected Modifier(DataFile file) {
-        super(file, false);
-        mName = I18n.Text("Modifier");
+    protected Modifier(DataFile file, boolean isContainer) {
+        super(file, isContainer);
+        mName = getLocalizedName();
         mReference = "";
-        mEnabled = true;
+        mEnabled = !isContainer;
     }
 
     /** @return An exact clone of this modifier. */
-    public abstract Modifier cloneModifier();
+    public abstract Modifier cloneModifier(boolean deep);
 
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mName = I18n.Text("Modifier");
+        mName = getLocalizedName();
         mReference = "";
-        mEnabled = true;
+        mEnabled = !canHaveChildren();
     }
 
     @Override
@@ -112,11 +107,6 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     @Override
-    public RetinaIcon getIcon(boolean marker) {
-        return null;
-    }
-
-    @Override
     public String getLocalizedName() {
         return I18n.Text("Modifier");
     }
@@ -139,15 +129,12 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier> {
         return false;
     }
 
-    /** @return The page reference. */
+    @Override
     public String getReference() {
         return mReference;
     }
 
-    /**
-     * @param reference The new page reference.
-     * @return {@code true} if page reference has changed.
-     */
+    @Override
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
@@ -155,6 +142,11 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier> {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String getReferenceHighlight() {
+        return getName();
     }
 
     /** @return The enabled. */
@@ -216,27 +208,10 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier> {
     }
 
     /** @return The formatted cost. */
-    public String getCostDescription() {
-        return "";
-    }
+    public abstract String getCostDescription();
 
     /** @return A full description of this modifier. */
-    public String getFullDescription() {
-        StringBuilder builder = new StringBuilder();
-        String        modNote = getNotes();
-        builder.append(toString());
-        if (!modNote.isEmpty()) {
-            builder.append(" (");
-            builder.append(modNote);
-            builder.append(')');
-        }
-        String cost = getCostDescription();
-        if (!cost.isEmpty()) {
-            builder.append(", ");
-            builder.append(cost);
-        }
-        return builder.toString();
-    }
+    public abstract String getFullDescription();
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {

@@ -50,10 +50,10 @@ public class ItemMenuProvider {
 
     public static JMenu createMenu() {
         JMenu menu = new JMenu(I18n.Text("Item"));
-        menu.add(MenuHelpers.createSubMenu(I18n.Text("Advantages"), NewAdvantageCommand.INSTANCE, NewAdvantageCommand.CONTAINER_INSTANCE, null, NewAdvantageModifierCommand.INSTANCE));
+        menu.add(MenuHelpers.createSubMenu(I18n.Text("Advantages"), NewAdvantageCommand.INSTANCE, NewAdvantageCommand.CONTAINER_INSTANCE, null, NewAdvantageModifierCommand.INSTANCE, NewAdvantageModifierCommand.CONTAINER_INSTANCE));
         menu.add(MenuHelpers.createSubMenu(I18n.Text("Skills"), NewSkillCommand.INSTANCE, NewSkillCommand.CONTAINER_INSTANCE, null, NewSkillCommand.TECHNIQUE_INSTANCE));
         menu.add(MenuHelpers.createSubMenu(I18n.Text("Spells"), NewSpellCommand.INSTANCE, NewSpellCommand.CONTAINER_INSTANCE, null, NewSpellCommand.RITUAL_MAGIC_INSTANCE));
-        menu.add(MenuHelpers.createSubMenu(I18n.Text("Equipment"), NewEquipmentCommand.CARRIED_INSTANCE, NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE, null, NewEquipmentCommand.NOT_CARRIED_INSTANCE, NewEquipmentCommand.NOT_CARRIED_CONTAINER_INSTANCE, null, NewEquipmentModifierCommand.INSTANCE));
+        menu.add(MenuHelpers.createSubMenu(I18n.Text("Equipment"), NewEquipmentCommand.CARRIED_INSTANCE, NewEquipmentCommand.CARRIED_CONTAINER_INSTANCE, null, NewEquipmentCommand.NOT_CARRIED_INSTANCE, NewEquipmentCommand.NOT_CARRIED_CONTAINER_INSTANCE, null, NewEquipmentModifierCommand.INSTANCE, NewEquipmentModifierCommand.CONTAINER_INSTANCE));
         menu.add(MenuHelpers.createSubMenu(I18n.Text("Notes"), NewNoteCommand.INSTANCE, NewNoteCommand.CONTAINER_INSTANCE));
         menu.addSeparator();
         menu.add(new DynamicMenuItem(OpenEditorCommand.INSTANCE));

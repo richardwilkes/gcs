@@ -344,15 +344,18 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
             ArrayList<RowUndo>      undoList        = new ArrayList<>();
             RowUndo                 undo            = new RowUndo(targetEquipment);
             List<EquipmentModifier> list            = new ArrayList<>(targetEquipment.getModifiers());
+            Object                  property        = model.getProperty(ListOutline.OWNING_LIST);
             removeDragHighlight(this);
-            for (Row row : model.getDragRows()) {
-                if (row instanceof EquipmentModifier) {
-                    Object property = model.getProperty(ListOutline.OWNING_LIST);
-                    if (property instanceof ListOutline) {
-                        EquipmentModifier modifier = new EquipmentModifier(((ListOutline) property).getDataFile(), (EquipmentModifier) row);
-                        modifier.setEnabled(true);
-                        list.add(modifier);
-                    }
+            if (property instanceof ListOutline) {
+                List<EquipmentModifier> collection = new ArrayList<>();
+                for (Row row : model.getDragRows()) {
+                    collectEquipmentModifiers(row, collection);
+                }
+                DataFile dataFile = ((ListOutline) property).getDataFile();
+                for (EquipmentModifier eqpmod : collection) {
+                    EquipmentModifier modifier = new EquipmentModifier(dataFile, eqpmod, false);
+                    modifier.setEnabled(true);
+                    list.add(modifier);
                 }
             }
             targetEquipment.setModifiers(list);
@@ -370,6 +373,19 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
             }
         } else {
             super.dropRow(dtde);
+        }
+    }
+
+    private void collectEquipmentModifiers(Row row, List<EquipmentModifier> result) {
+        if (row instanceof EquipmentModifier) {
+            EquipmentModifier eqpmod = (EquipmentModifier) row;
+            if (eqpmod.canHaveChildren()) {
+                for (Row child : eqpmod.getChildren()) {
+                    collectEquipmentModifiers(child, result);
+                }
+            } else {
+                result.add(eqpmod);
+            }
         }
     }
 }

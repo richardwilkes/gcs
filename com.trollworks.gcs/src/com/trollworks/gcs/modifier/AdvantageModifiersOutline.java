@@ -49,8 +49,8 @@ public class AdvantageModifiersOutline extends ListOutline {
     @Override
     public void convertDragRowsToSelf(List<Row> list) {
         OutlineModel model = getModel();
-        for (Row element : model.getDragRows()) {
-            AdvantageModifier modifier = new AdvantageModifier(mDataFile, (AdvantageModifier) element);
+        for (Row row : model.getDragRows()) {
+            AdvantageModifier modifier = new AdvantageModifier(mDataFile, (AdvantageModifier) row, true);
             model.collectRowsAndSetOwner(list, modifier, false);
         }
     }

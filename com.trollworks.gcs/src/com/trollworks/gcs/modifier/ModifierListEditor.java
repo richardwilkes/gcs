@@ -81,14 +81,14 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         if (readOnlyModifiers != null) {
             for (Modifier modifier : readOnlyModifiers) {
                 if (modifier.isEnabled()) {
-                    Modifier romod = modifier.cloneModifier();
+                    Modifier romod = modifier.cloneModifier(false);
                     romod.setReadOnly(true);
                     model.addRow(romod);
                 }
             }
         }
         for (Modifier modifier : modifiers) {
-            model.addRow(modifier.cloneModifier());
+            model.addRow(modifier.cloneModifier(false));
         }
         mOutline.addActionListener(this);
 

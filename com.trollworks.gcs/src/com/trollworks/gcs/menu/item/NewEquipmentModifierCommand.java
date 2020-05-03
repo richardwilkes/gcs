@@ -23,13 +23,15 @@ import java.awt.event.KeyEvent;
 
 /** Provides the "New Equipment Modifier" command. */
 public class NewEquipmentModifierCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                      CMD_NEW_EQUIPMENT_MODIFIER = "NewEquipmentModifier";
-    /** The "New Equipment Modifier" command. */
-    public static final NewEquipmentModifierCommand INSTANCE                   = new NewEquipmentModifierCommand(I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, KeyEvent.VK_M, COMMAND_MODIFIER);
+    public static final String                      CMD_NEW_EQUIPMENT_MODIFIER           = "NewEquipmentModifier";
+    public static final String                      CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER = "NewEquipmentModifierContainer";
+    public static final NewEquipmentModifierCommand INSTANCE                             = new NewEquipmentModifierCommand(false, I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, KeyEvent.VK_M, COMMAND_MODIFIER);
+    public static final NewEquipmentModifierCommand CONTAINER_INSTANCE                   = new NewEquipmentModifierCommand(true, I18n.Text("New Equipment Modifier Container"), CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER, KeyEvent.VK_M, SHIFTED_COMMAND_MODIFIER);
+    private             boolean                     mContainer;
 
-    private NewEquipmentModifierCommand(String title, String cmd, int keyCode, int modifiers) {
+    private NewEquipmentModifierCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
         super(title, cmd, keyCode, modifiers);
+        mContainer = container;
     }
 
     @Override
@@ -55,7 +57,7 @@ public class NewEquipmentModifierCommand extends Command {
         if (outline.getModel().isLocked()) {
             return;
         }
-        EquipmentModifier modifier = new EquipmentModifier(dataFile);
+        EquipmentModifier modifier = new EquipmentModifier(dataFile, mContainer);
         outline.addRow(modifier, getTitle(), false);
         outline.getModel().select(modifier, false);
         outline.scrollSelectionIntoView();

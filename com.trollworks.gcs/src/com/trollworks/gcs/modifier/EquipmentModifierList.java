@@ -53,7 +53,7 @@ public class EquipmentModifierList extends ListFile {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
 
-                if (EquipmentModifier.TAG_MODIFIER.equals(name)) {
+                if (EquipmentModifier.TAG_MODIFIER.equals(name) || EquipmentModifier.TAG_MODIFIER_CONTAINER.equals(name)) {
                     model.addRow(new EquipmentModifier(this, reader, state), true);
                 } else {
                     reader.skipTag(name);

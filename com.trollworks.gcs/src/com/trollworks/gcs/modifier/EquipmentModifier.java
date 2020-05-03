@@ -17,6 +17,8 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -28,29 +30,31 @@ import com.trollworks.gcs.utility.units.WeightValue;
 import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
-    private static final int                         CURRENT_VERSION       = 1;
+    private static final int                         CURRENT_VERSION        = 1;
     /** The root tag. */
-    public static final  String                      TAG_MODIFIER          = "eqp_modifier";
+    public static final  String                      TAG_MODIFIER           = "eqp_modifier";
+    /** The root tag for containers. */
+    public static final  String                      TAG_MODIFIER_CONTAINER = "eqp_modifier_container";
     /** The attribute for the cost. */
-    public static final  String                      TAG_COST_ADJ          = "cost";
+    public static final  String                      TAG_COST_ADJ           = "cost";
     /** The attribute for the cost type. */
-    public static final  String                      ATTRIBUTE_COST_TYPE   = "cost_type";
+    public static final  String                      ATTRIBUTE_COST_TYPE    = "cost_type";
     /** The attribute for the weight. */
-    public static final  String                      TAG_WEIGHT_ADJ        = "weight";
+    public static final  String                      TAG_WEIGHT_ADJ         = "weight";
     /** The attribute for the weight type. */
-    public static final  String                      ATTRIBUTE_WEIGHT_TYPE = "weight_type";
+    public static final  String                      ATTRIBUTE_WEIGHT_TYPE  = "weight_type";
     /** The notification prefix used. */
-    public static final  String                      PREFIX                = GURPSCharacter.CHARACTER_PREFIX + "eqpmod" + Notifier.SEPARATOR;
+    public static final  String                      PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "eqpmod" + Notifier.SEPARATOR;
     /** The notification ID for enabled changes. */
-    public static final  String                      ID_ENABLED            = PREFIX + ATTRIBUTE_ENABLED;
+    public static final  String                      ID_ENABLED             = PREFIX + ATTRIBUTE_ENABLED;
     /** The field ID for when the categories change. */
-    public static final  String                      ID_CATEGORY           = PREFIX + "Category";
+    public static final  String                      ID_CATEGORY            = PREFIX + "Category";
     /** The notification ID for list changes. */
-    public static final  String                      ID_LIST_CHANGED       = PREFIX + "list_changed";
+    public static final  String                      ID_LIST_CHANGED        = PREFIX + "list_changed";
     /** The notification ID for cost adjustment changes. */
-    public static final  String                      ID_COST_ADJ           = PREFIX + TAG_COST_ADJ;
+    public static final  String                      ID_COST_ADJ            = PREFIX + TAG_COST_ADJ;
     /** The notification ID for weight adjustment changes. */
-    public static final  String                      ID_WEIGHT_ADJ         = PREFIX + TAG_WEIGHT_ADJ;
+    public static final  String                      ID_WEIGHT_ADJ          = PREFIX + TAG_WEIGHT_ADJ;
     private              EquipmentModifierCostType   mCostType;
     private              double                      mCostAmount;
     private              EquipmentModifierWeightType mWeightType;
@@ -62,14 +66,21 @@ public class EquipmentModifier extends Modifier {
      *
      * @param file  The {@link DataFile} to use.
      * @param other Another {@link EquipmentModifier} to clone.
+     * @param deep  Whether or not to clone the children, grandchildren, etc.
      */
-    public EquipmentModifier(DataFile file, EquipmentModifier other) {
+    public EquipmentModifier(DataFile file, EquipmentModifier other, boolean deep) {
         super(file, other);
         mCostType = other.mCostType;
         mCostAmount = other.mCostAmount;
         mWeightType = other.mWeightType;
         mWeightMultiplier = other.mWeightMultiplier;
         mWeightAddition = new WeightValue(other.mWeightAddition);
+        if (deep) {
+            int count = other.getChildCount();
+            for (int i = 0; i < count; i++) {
+                addChild(new EquipmentModifier(file, (EquipmentModifier) other.getChild(i), true));
+            }
+        }
     }
 
     /**
@@ -80,16 +91,18 @@ public class EquipmentModifier extends Modifier {
      * @param state  The {@link LoadState} to use.
      */
     public EquipmentModifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
-        super(file, reader, state);
+        this(file, TAG_MODIFIER_CONTAINER.equals(reader.getName()));
+        load(reader, state);
     }
 
     /**
      * Creates a new {@link EquipmentModifier}.
      *
-     * @param file The {@link DataFile} to use.
+     * @param file        The {@link DataFile} to use.
+     * @param isContainer Whether or not this row allows children.
      */
-    public EquipmentModifier(DataFile file) {
-        super(file);
+    public EquipmentModifier(DataFile file, boolean isContainer) {
+        super(file, isContainer);
         mCostType = EquipmentModifierCostType.COST_FACTOR;
         mCostAmount = 1;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
@@ -98,8 +111,13 @@ public class EquipmentModifier extends Modifier {
     }
 
     @Override
-    public EquipmentModifier cloneModifier() {
-        return new EquipmentModifier(mDataFile, this);
+    public EquipmentModifier cloneModifier(boolean deep) {
+        return new EquipmentModifier(mDataFile, this, deep);
+    }
+
+    @Override
+    public RetinaIcon getIcon(boolean marker) {
+        return marker ? Images.EQM_MARKER : Images.EQM_FILE;
     }
 
     @Override
@@ -224,7 +242,7 @@ public class EquipmentModifier extends Modifier {
 
     @Override
     public String getXMLTagName() {
-        return TAG_MODIFIER;
+        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
     }
 
     @Override
@@ -255,20 +273,26 @@ public class EquipmentModifier extends Modifier {
     @Override
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
         String name = reader.getName();
-        if (TAG_COST_ADJ.equals(name)) {
-            mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.COST_FACTOR);
-            mCostAmount = reader.readDouble(1);
-        } else if (TAG_WEIGHT_ADJ.equals(name)) {
-            mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
-            switch (mWeightType) {
-            case BASE_ADDITION:
-            case FINAL_ADDITION:
-                mWeightAddition = WeightValue.extract(reader.readText(), false);
-                break;
-            case MULTIPLIER:
-            default:
-                mWeightMultiplier = reader.readDouble(1);
-                break;
+        if (!state.mForUndo && (TAG_MODIFIER.equals(name) || TAG_MODIFIER_CONTAINER.equals(name))) {
+            addChild(new EquipmentModifier(mDataFile, reader, state));
+        } else if (!canHaveChildren()) {
+            if (TAG_COST_ADJ.equals(name)) {
+                mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.COST_FACTOR);
+                mCostAmount = reader.readDouble(1);
+            } else if (TAG_WEIGHT_ADJ.equals(name)) {
+                mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
+                switch (mWeightType) {
+                case BASE_ADDITION:
+                case FINAL_ADDITION:
+                    mWeightAddition = WeightValue.extract(reader.readText(), false);
+                    break;
+                case MULTIPLIER:
+                default:
+                    mWeightMultiplier = reader.readDouble(1);
+                    break;
+                }
+            } else {
+                super.loadSubElement(reader, state);
             }
         } else {
             super.loadSubElement(reader, state);
@@ -278,20 +302,22 @@ public class EquipmentModifier extends Modifier {
     @Override
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         super.saveSelf(out, forUndo);
-        out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
-        switch (mWeightType) {
-        case BASE_ADDITION:
-        case FINAL_ADDITION:
-            if (mWeightAddition.getNormalizedValue() != 0) {
-                out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAddition.toString(false), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+        if (!canHaveChildren()) {
+            out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+            switch (mWeightType) {
+            case BASE_ADDITION:
+            case FINAL_ADDITION:
+                if (mWeightAddition.getNormalizedValue() != 0) {
+                    out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAddition.toString(false), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+                }
+                break;
+            case MULTIPLIER:
+            default:
+                if (mWeightMultiplier != 1) {
+                    out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightMultiplier, ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+                }
+                break;
             }
-            break;
-        case MULTIPLIER:
-        default:
-            if (mWeightMultiplier != 1) {
-                out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightMultiplier, ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
-            }
-            break;
         }
     }
 
@@ -310,11 +336,14 @@ public class EquipmentModifier extends Modifier {
 
     /** @return The formatted cost adjustment. */
     public String getCostDescription() {
-        return mCostType.format(mCostAmount) + " " + mCostType;
+        return canHaveChildren() ? "" : mCostType.format(mCostAmount) + " " + mCostType;
     }
 
     /** @return The formatted weight adjustment. */
     public String getWeightDescription() {
+        if (canHaveChildren()) {
+            return "";
+        }
         StringBuilder builder = new StringBuilder();
         switch (mWeightType) {
         case BASE_ADDITION:

@@ -165,7 +165,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         mModifiers = new ArrayList<>(equipment.mModifiers.size());
         for (EquipmentModifier modifier : equipment.mModifiers) {
-            mModifiers.add(new EquipmentModifier(mDataFile, modifier));
+            mModifiers.add(new EquipmentModifier(mDataFile, modifier, false));
         }
         mExtendedValue = mQuantity * getAdjustedValue();
         mExtendedWeight = new WeightValue(getAdjustedWeight());

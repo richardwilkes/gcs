@@ -46,6 +46,6 @@ public class AdvantageModifierListEditor extends ModifierListEditor {
 
     @Override
     protected Modifier createModifier(DataFile owner) {
-        return new AdvantageModifier(owner);
+        return new AdvantageModifier(owner, false);
     }
 }

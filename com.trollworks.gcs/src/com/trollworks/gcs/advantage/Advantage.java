@@ -185,7 +185,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         mModifiers = new ArrayList<>(advantage.mModifiers.size());
         for (AdvantageModifier modifier : advantage.mModifiers) {
-            mModifiers.add(new AdvantageModifier(mDataFile, modifier));
+            mModifiers.add(new AdvantageModifier(mDataFile, modifier, false));
         }
         if (deep) {
             int count = advantage.getChildCount();

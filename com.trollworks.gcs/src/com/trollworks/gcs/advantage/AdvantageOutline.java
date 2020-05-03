@@ -106,20 +106,23 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
     protected void dropRow(DropTargetDropEvent dtde) {
         Row target = getDragTargetRow();
         if (target instanceof Advantage) {
-            Advantage               targetAdvantage = (Advantage)target;
+            Advantage               targetAdvantage = (Advantage) target;
             OutlineModel            model           = getModel();
             ArrayList<RowUndo>      undoList        = new ArrayList<>();
             RowUndo                 undo            = new RowUndo(targetAdvantage);
             List<AdvantageModifier> list            = new ArrayList<>(targetAdvantage.getModifiers());
+            Object                  property        = model.getProperty(ListOutline.OWNING_LIST);
             removeDragHighlight(this);
-            for (Row row : model.getDragRows()) {
-                if (row instanceof AdvantageModifier) {
-                    Object property = model.getProperty(ListOutline.OWNING_LIST);
-                    if (property instanceof ListOutline) {
-                        AdvantageModifier modifier = new AdvantageModifier(((ListOutline)property).getDataFile(), (AdvantageModifier) row);
-                        modifier.setEnabled(true);
-                        list.add(modifier);
-                    }
+            if (property instanceof ListOutline) {
+                List<AdvantageModifier> collection = new ArrayList<>();
+                for (Row row : model.getDragRows()) {
+                    collectAdvantageModifiers(row, collection);
+                }
+                DataFile dataFile = ((ListOutline) property).getDataFile();
+                for (AdvantageModifier advmod : collection) {
+                    AdvantageModifier modifier = new AdvantageModifier(dataFile, advmod, false);
+                    modifier.setEnabled(true);
+                    list.add(modifier);
                 }
             }
             targetAdvantage.setModifiers(list);
@@ -137,6 +140,19 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
             }
         } else {
             super.dropRow(dtde);
+        }
+    }
+
+    private void collectAdvantageModifiers(Row row, List<AdvantageModifier> result) {
+        if (row instanceof AdvantageModifier) {
+            AdvantageModifier advmod = (AdvantageModifier) row;
+            if (advmod.canHaveChildren()) {
+                for (Row child : advmod.getChildren()) {
+                    collectAdvantageModifiers(child, result);
+                }
+            } else {
+                result.add(advmod);
+            }
         }
     }
 
