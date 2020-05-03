@@ -339,6 +339,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public void saveSelf(XMLWriter out, boolean forUndo) {
         out.simpleTag(TAG_NAME, mName);
         if (!canHaveChildren()) {
+            out.simpleTag(TAG_DIFFICULTY, getDifficultyAsText(false));
             if (mTechLevel != null) {
                 if (getCharacter() != null) {
                     out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
@@ -687,7 +688,6 @@ public class Spell extends ListRow implements HasSourceReference {
         SkillAttribute[]  attribute  = SkillAttribute.values();
         SkillDifficulty[] difficulty = SkillDifficulty.values();
         String            input      = text.trim();
-
         for (SkillAttribute element : attribute) {
             // We have to go backwards through the list to avoid the
             // regex grabbing the "H" in "VH".
