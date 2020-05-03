@@ -517,15 +517,23 @@ public class Equipment extends ListRow implements HasSourceReference {
 
         // Apply all base multipliers
         double multipliers = 0;
-        int multiplierCount = 0;
+        int multiplierCountOneOrGreater = 0;
+        boolean hadMultiplier = false;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_MULTIPLIER) {
-                multipliers += modifier.getCostAdjAmount();
-                multiplierCount++;
+                hadMultiplier = true;
+                double amt = modifier.getCostAdjAmount();
+                multipliers += amt;
+                if (amt >= 1) {
+                    multiplierCountOneOrGreater++;
+                }
             }
         }
-        if (multiplierCount > 0) {
-            value *= multipliers - (multiplierCount - 1);
+        if (hadMultiplier) {
+            if (multiplierCountOneOrGreater > 0) {
+                multipliers -= multiplierCountOneOrGreater - 1;
+            }
+            value *= multipliers;
         }
 
         // Apply all cost factors
@@ -544,15 +552,23 @@ public class Equipment extends ListRow implements HasSourceReference {
 
         // Apply all final multipliers
         multipliers = 0;
-        multiplierCount = 0;
+        multiplierCountOneOrGreater = 0;
+        hadMultiplier = false;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_MULTIPLIER) {
-                multipliers += modifier.getCostAdjAmount();
-                multiplierCount++;
+                hadMultiplier = true;
+                double amt = modifier.getCostAdjAmount();
+                multipliers += amt;
+                if (amt >= 1) {
+                    multiplierCountOneOrGreater++;
+                }
             }
         }
-        if (multiplierCount > 0) {
-            value *= multipliers - (multiplierCount - 1);
+        if (hadMultiplier) {
+            if (multiplierCountOneOrGreater > 0) {
+                multipliers -= multiplierCountOneOrGreater - 1;
+            }
+            value *= multipliers;
         }
 
         // Apply all final additions
