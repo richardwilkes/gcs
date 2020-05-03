@@ -11,14 +11,10 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
-import com.trollworks.gcs.modifier.AdvantageModifier;
-import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -2214,12 +2210,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @return The value to return via {@link DropTargetDragEvent#acceptDrag(int)}.
      */
     protected int dragOverRow(DropTargetDragEvent dtde) {
-        Row[] dragRows = mModel.getDragRows();
-        if (dragRows != null && dragRows.length > 0 && (dragRows[0] instanceof AdvantageModifier || dragRows[0] instanceof EquipmentModifier)) {
-            Point pt = UIUtilities.convertDropTargetDragPointTo(dtde, this);
-            setDragTargetRow(overRow(pt.y));
-            return getDragTargetRow() != null ? DnDConstants.ACTION_MOVE : DnDConstants.ACTION_NONE;
-        }
+        Row[]     dragRows              = mModel.getDragRows();
         Scale     scale                 = Scale.get(this);
         int       one                   = scale.scale(1);
         Row       savedParentRow        = mDragParentRow;
@@ -2486,53 +2477,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      */
     protected void dropRow(DropTargetDropEvent dtde) {
         removeDragHighlight(this);
-        Row target = getDragTargetRow();
-        if (target instanceof Advantage) {
-            Advantage targetAdvantage = (Advantage)target;
-            StateEdit               edit  = new StateEdit(mModel, I18n.Text("Advantage Modifier Drag & Drop"));
-            List<AdvantageModifier> list  = new ArrayList<>(targetAdvantage.getModifiers());
-            for (Row row : mModel.getDragRows()) {
-                if (row instanceof AdvantageModifier) {
-                    Object property = mModel.getProperty(ListOutline.OWNING_LIST);
-                    if (property instanceof ListOutline) {
-                        AdvantageModifier modifier = new AdvantageModifier(((ListOutline)property).getDataFile(), (AdvantageModifier) row);
-                        modifier.setEnabled(true);
-                        list.add(modifier);
-                    }
-                }
-            }
-            targetAdvantage.setModifiers(list);
-            setDragTargetRow(null);
-            edit.end();
-            postUndo(edit);
-            repaint();
-            contentSizeMayHaveChanged();
-            mModel.setDragRows(null);
-            return;
-        }
-        if (target instanceof Equipment) {
-            Equipment targetEquipment = (Equipment)target;
-            StateEdit               edit  = new StateEdit(mModel, I18n.Text("Equipment Modifier Drag & Drop"));
-            List<EquipmentModifier> list  = new ArrayList<>(targetEquipment.getModifiers());
-            for (Row row : mModel.getDragRows()) {
-                if (row instanceof EquipmentModifier) {
-                    Object property = mModel.getProperty(ListOutline.OWNING_LIST);
-                    if (property instanceof ListOutline) {
-                        EquipmentModifier modifier = new EquipmentModifier(((ListOutline)property).getDataFile(), (EquipmentModifier) row);
-                        modifier.setEnabled(true);
-                        list.add(modifier);
-                    }
-                }
-            }
-            targetEquipment.setModifiers(list);
-            setDragTargetRow(null);
-            edit.end();
-            postUndo(edit);
-            repaint();
-            contentSizeMayHaveChanged();
-            mModel.setDragRows(null);
-            return;
-        }
         if (mDragChildInsertIndex != -1) {
             StateEdit edit         = new StateEdit(mModel, I18n.Text("Row Drag & Drop"));
             Row[]     dragRows     = mModel.getDragRows();
@@ -2634,12 +2578,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         // Does nothing.
     }
 
-    private static void addDragHighlight(Outline outline) {
+    protected static void addDragHighlight(Outline outline) {
         outline.mDragFocus = true;
         outline.repaintFocus();
     }
 
-    private static void removeDragHighlight(Outline outline) {
+    protected static void removeDragHighlight(Outline outline) {
         outline.mDragFocus = false;
         outline.repaintFocus();
     }

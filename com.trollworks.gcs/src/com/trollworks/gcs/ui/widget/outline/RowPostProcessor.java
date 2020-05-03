@@ -27,6 +27,7 @@ import java.util.Map;
 /** Helper for causing the row post-processing to occur. */
 public class RowPostProcessor implements Runnable {
     private Map<Outline, List<ListRow>> mMap;
+    private boolean                     mRunModifierEnabler;
 
     /**
      * Creates a new post processor for name substitution.
@@ -35,6 +36,7 @@ public class RowPostProcessor implements Runnable {
      */
     public RowPostProcessor(Map<Outline, List<ListRow>> map) {
         mMap = map;
+        mRunModifierEnabler = true;
     }
 
     /**
@@ -44,8 +46,19 @@ public class RowPostProcessor implements Runnable {
      * @param list    The list to process.
      */
     public RowPostProcessor(Outline outline, List<ListRow> list) {
+        this(outline, list, true);
+    }
+
+    /**
+     * Creates a new post processor for name substitution.
+     *
+     * @param outline The outline containing the rows.
+     * @param list    The list to process.
+     */
+    public RowPostProcessor(Outline outline, List<ListRow> list, boolean runModifierEnabler) {
         mMap = new HashMap<>();
         mMap.put(outline, list);
+        mRunModifierEnabler = runModifierEnabler;
     }
 
     @Override
@@ -53,8 +66,11 @@ public class RowPostProcessor implements Runnable {
         for (Map.Entry<Outline, List<ListRow>> entry : mMap.entrySet()) {
             Outline       outline  = entry.getKey();
             List<ListRow> rows     = entry.getValue();
-            boolean       modified = AdvantageModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
-            modified |= EquipmentModifierEnabler.process(outline, new FilteredList<>(rows, Equipment.class));
+            boolean       modified = false;
+            if (mRunModifierEnabler) {
+                modified = AdvantageModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
+                modified |= EquipmentModifierEnabler.process(outline, new FilteredList<>(rows, Equipment.class));
+            }
             modified |= Namer.name(outline, rows);
             if (modified) {
                 outline.updateRowHeights(rows);

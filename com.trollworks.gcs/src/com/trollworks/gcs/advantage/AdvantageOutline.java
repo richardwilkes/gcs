@@ -18,6 +18,7 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
@@ -28,7 +29,10 @@ import com.trollworks.gcs.ui.widget.outline.RowUndo;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +74,17 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
     }
 
     @Override
+    protected int dragOverRow(DropTargetDragEvent dtde) {
+        Row[] dragRows = getModel().getDragRows();
+        if (dragRows != null && dragRows.length > 0 && dragRows[0] instanceof AdvantageModifier) {
+            Point pt = UIUtilities.convertDropTargetDragPointTo(dtde, this);
+            setDragTargetRow(overRow(pt.y));
+            return getDragTargetRow() != null ? DnDConstants.ACTION_MOVE : DnDConstants.ACTION_NONE;
+        }
+        return super.dragOverRow(dtde);
+    }
+
+    @Override
     public void convertDragRowsToSelf(List<Row> list) {
         OutlineModel       model              = getModel();
         Row[]              rows               = model.getDragRows();
@@ -84,6 +99,44 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
         }
         if (forSheetOrTemplate && !process.isEmpty()) {
             EventQueue.invokeLater(new RowPostProcessor(this, process));
+        }
+    }
+
+    @Override
+    protected void dropRow(DropTargetDropEvent dtde) {
+        Row target = getDragTargetRow();
+        if (target instanceof Advantage) {
+            Advantage               targetAdvantage = (Advantage)target;
+            OutlineModel            model           = getModel();
+            ArrayList<RowUndo>      undoList        = new ArrayList<>();
+            RowUndo                 undo            = new RowUndo(targetAdvantage);
+            List<AdvantageModifier> list            = new ArrayList<>(targetAdvantage.getModifiers());
+            removeDragHighlight(this);
+            for (Row row : model.getDragRows()) {
+                if (row instanceof AdvantageModifier) {
+                    Object property = model.getProperty(ListOutline.OWNING_LIST);
+                    if (property instanceof ListOutline) {
+                        AdvantageModifier modifier = new AdvantageModifier(((ListOutline)property).getDataFile(), (AdvantageModifier) row);
+                        modifier.setEnabled(true);
+                        list.add(modifier);
+                    }
+                }
+            }
+            targetAdvantage.setModifiers(list);
+            setDragTargetRow(null);
+            undo.finish();
+            undoList.add(undo);
+            new MultipleRowUndo(undoList);
+            repaint();
+            contentSizeMayHaveChanged();
+            model.setDragRows(null);
+            if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {
+                ArrayList<ListRow> process = new ArrayList<>();
+                process.add(targetAdvantage);
+                EventQueue.invokeLater(new RowPostProcessor(this, process, false));
+            }
+        } else {
+            super.dropRow(dtde);
         }
     }
 
