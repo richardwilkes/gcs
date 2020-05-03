@@ -53,7 +53,7 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.FileType;
-import com.trollworks.gcs.utility.Fixed4;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
@@ -281,10 +281,10 @@ public class GURPSCharacter extends DataFile {
     private              boolean                             mNeedSkillPointCalculation;
     private              boolean                             mNeedSpellPointCalculation;
     private              boolean                             mNeedEquipmentCalculation;
-    private              WeightValue                         mCachedWeightCarried;
-    private              Fixed4                              mCachedWealthCarried;
-    private              Fixed4                              mCachedWealthNotCarried;
-    private              int                                 mCachedAttributePoints;
+    private WeightValue mCachedWeightCarried;
+    private Fixed6      mCachedWealthCarried;
+    private Fixed6      mCachedWealthNotCarried;
+    private int         mCachedAttributePoints;
     private              int                                 mCachedAdvantagePoints;
     private              int                                 mCachedDisadvantagePoints;
     private              int                                 mCachedQuirkPoints;
@@ -1482,12 +1482,12 @@ public class GURPSCharacter extends DataFile {
     }
 
     /** @return The current wealth being carried. */
-    public Fixed4 getWealthCarried() {
+    public Fixed6 getWealthCarried() {
         return mCachedWealthCarried;
     }
 
     /** @return The current wealth not being carried. */
-    public Fixed4 getWealthNotCarried() {
+    public Fixed6 getWealthNotCarried() {
         return mCachedWealthNotCarried;
     }
 
@@ -1540,9 +1540,9 @@ public class GURPSCharacter extends DataFile {
      */
     public void calculateWeightAndWealthCarried(boolean notify) {
         WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
-        Fixed4      savedWealth = mCachedWealthCarried;
+        Fixed6      savedWealth = mCachedWealthCarried;
         mCachedWeightCarried = new WeightValue(0, DisplayPreferences.getWeightUnits());
-        mCachedWealthCarried = Fixed4.ZERO;
+        mCachedWealthCarried = Fixed6.ZERO;
         for (Row one : mEquipment.getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
             WeightValue weight    = new WeightValue(equipment.getExtendedWeight());
@@ -1569,8 +1569,8 @@ public class GURPSCharacter extends DataFile {
      *               the previous values.
      */
     public void calculateWealthNotCarried(boolean notify) {
-        Fixed4 savedWealth = mCachedWealthNotCarried;
-        mCachedWealthNotCarried = Fixed4.ZERO;
+        Fixed6 savedWealth = mCachedWealthNotCarried;
+        mCachedWealthNotCarried = Fixed6.ZERO;
         for (Row one : mOtherEquipment.getTopLevelRows()) {
             mCachedWealthNotCarried = mCachedWealthNotCarried.add(((Equipment) one).getExtendedValue());
         }

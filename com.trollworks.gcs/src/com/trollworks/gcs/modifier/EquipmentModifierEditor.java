@@ -17,7 +17,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.utility.Fixed4;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -214,7 +214,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return (EquipmentModifierCostType) obj;
     }
 
-    private Fixed4 getCostAmount() {
+    private Fixed6 getCostAmount() {
         return getCostType().extract(mCostAmountField.getText(), true);
     }
 

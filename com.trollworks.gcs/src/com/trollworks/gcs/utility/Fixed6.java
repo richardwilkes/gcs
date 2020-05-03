@@ -13,26 +13,26 @@ package com.trollworks.gcs.utility;
 
 import com.trollworks.gcs.utility.text.Numbers;
 
-// Fixed4 holds a fixed-point value that contains up to 4 decimal places. Values are truncated, not
+// Fixed6 holds a fixed-point value that contains up to 6 decimal places. Values are truncated, not
 // rounded.
-public class Fixed4 implements Comparable<Fixed4> {
-    public static final Fixed4 ZERO = new Fixed4(0);
-    public static final Fixed4 ONE  = new Fixed4(1);
+public class Fixed6 implements Comparable<Fixed6> {
+    public static final Fixed6 ZERO = new Fixed6(0);
+    public static final Fixed6 ONE  = new Fixed6(1);
     private             long   mRawValue;
 
-    private Fixed4(long value, boolean unused) {
+    private Fixed6(long value, boolean unused) {
         mRawValue = value;
     }
 
-    public Fixed4(double value) {
-        mRawValue = (long) (value * 10000);
+    public Fixed6(double value) {
+        mRawValue = (long) (value * 1000000);
     }
 
-    public Fixed4(long value) {
-        mRawValue = value * 10000;
+    public Fixed6(long value) {
+        mRawValue = value * 1000000;
     }
 
-    public Fixed4(String in, boolean localized) throws NumberFormatException {
+    public Fixed6(String in, boolean localized) throws NumberFormatException {
         if (in == null || in.isBlank()) {
             throw new NumberFormatException("empty or null string is not valid");
         }
@@ -46,7 +46,7 @@ public class Fixed4 implements Comparable<Fixed4> {
         if (in.contains("E") || in.contains("e")) {
             // Given a floating-point value with an exponent, which technically isn't valid input,
             // but we'll try to convert it anyway.
-            mRawValue = (long) (Double.parseDouble(in) * 10000);
+            mRawValue = (long) (Double.parseDouble(in) * 1000000);
         } else {
             boolean  neg   = false;
             String[] parts = in.split("\\.", 2);
@@ -54,7 +54,7 @@ public class Fixed4 implements Comparable<Fixed4> {
                 if ("-".equals(parts[0]) || "-0".equals(parts[0])) {
                     neg = true;
                 } else {
-                    mRawValue = Long.parseLong(parts[0]) * 10000;
+                    mRawValue = Long.parseLong(parts[0]) * 1000000;
                     if (mRawValue < 0) {
                         neg = true;
                         mRawValue = -mRawValue;
@@ -65,14 +65,14 @@ public class Fixed4 implements Comparable<Fixed4> {
                 StringBuilder buffer = new StringBuilder();
                 buffer.append('1');
                 buffer.append(parts[1]);
-                if (buffer.length() > 5) {
-                    buffer.setLength(5);
+                if (buffer.length() > 7) {
+                    buffer.setLength(7);
                 } else {
-                    while (buffer.length() < 5) {
+                    while (buffer.length() < 7) {
                         buffer.append('0');
                     }
                 }
-                mRawValue += Long.parseLong(buffer.toString()) - 10000;
+                mRawValue += Long.parseLong(buffer.toString()) - 1000000;
             }
             if (neg) {
                 mRawValue = -mRawValue;
@@ -80,61 +80,61 @@ public class Fixed4 implements Comparable<Fixed4> {
         }
     }
 
-    public Fixed4(String in, Fixed4 def, boolean localized) {
+    public Fixed6(String in, Fixed6 def, boolean localized) {
         try {
-            mRawValue = new Fixed4(in, localized).mRawValue;
+            mRawValue = new Fixed6(in, localized).mRawValue;
         } catch (Exception exception) {
             mRawValue = def.mRawValue;
         }
     }
 
-    public Fixed4 add(Fixed4 other) {
-        return new Fixed4(mRawValue + other.mRawValue, true);
+    public Fixed6 add(Fixed6 other) {
+        return new Fixed6(mRawValue + other.mRawValue, true);
     }
 
-    public Fixed4 sub(Fixed4 other) {
-        return new Fixed4(mRawValue - other.mRawValue, true);
+    public Fixed6 sub(Fixed6 other) {
+        return new Fixed6(mRawValue - other.mRawValue, true);
     }
 
-    public Fixed4 mul(Fixed4 other) {
-        return new Fixed4((mRawValue * other.mRawValue) / 10000, true);
+    public Fixed6 mul(Fixed6 other) {
+        return new Fixed6((mRawValue * other.mRawValue) / 1000000, true);
     }
 
-    public Fixed4 div(Fixed4 other) {
-        return new Fixed4((mRawValue * 10000) / other.mRawValue, true);
+    public Fixed6 div(Fixed6 other) {
+        return new Fixed6((mRawValue * 1000000) / other.mRawValue, true);
     }
 
     /** @return a new value which has everything to the right of the decimal place truncated */
-    public Fixed4 trunc() {
-        return new Fixed4((mRawValue / 10000) * 10000, true);
+    public Fixed6 trunc() {
+        return new Fixed6((mRawValue / 1000000) * 1000000, true);
     }
 
     public long asLong() {
-        return mRawValue / 10000;
+        return mRawValue / 1000000;
     }
 
     public double asDouble() {
-        return ((double) mRawValue) / 10000;
+        return ((double) mRawValue) / 1000000;
     }
 
-    public boolean lessThan(Fixed4 other) {
+    public boolean lessThan(Fixed6 other) {
         return mRawValue < other.mRawValue;
     }
 
-    public boolean lessThanOrEqual(Fixed4 other) {
+    public boolean lessThanOrEqual(Fixed6 other) {
         return mRawValue <= other.mRawValue;
     }
 
-    public boolean greaterThan(Fixed4 other) {
+    public boolean greaterThan(Fixed6 other) {
         return mRawValue > other.mRawValue;
     }
 
-    public boolean greaterThanOrEqual(Fixed4 other) {
+    public boolean greaterThanOrEqual(Fixed6 other) {
         return mRawValue >= other.mRawValue;
     }
 
     @Override
-    public int compareTo(Fixed4 other) {
+    public int compareTo(Fixed6 other) {
         return Long.compare(mRawValue, other.mRawValue);
     }
 
@@ -146,7 +146,7 @@ public class Fixed4 implements Comparable<Fixed4> {
         if (other == null || getClass() != other.getClass()) {
             return false;
         }
-        return mRawValue == ((Fixed4) other).mRawValue;
+        return mRawValue == ((Fixed6) other).mRawValue;
     }
 
     @Override
@@ -156,15 +156,15 @@ public class Fixed4 implements Comparable<Fixed4> {
 
     /** @return the same as toString(), but localized */
     public String toLocalizedString() {
-        long whole    = mRawValue / 10000;
-        long fraction = mRawValue % 10000;
+        long whole    = mRawValue / 1000000;
+        long fraction = mRawValue % 1000000;
         if (fraction == 0) {
             return Numbers.format(whole);
         }
         if (fraction < 0) {
             fraction = -fraction;
         }
-        fraction += 10000;
+        fraction += 1000000;
         String str = Long.toString(fraction);
         while (str.endsWith("0")) {
             str = str.substring(0, str.length() - 1);
@@ -180,15 +180,15 @@ public class Fixed4 implements Comparable<Fixed4> {
     }
 
     public String toString() {
-        long whole    = mRawValue / 10000;
-        long fraction = mRawValue % 10000;
+        long whole    = mRawValue / 1000000;
+        long fraction = mRawValue % 1000000;
         if (fraction == 0) {
             return Long.toString(whole);
         }
         if (fraction < 0) {
             fraction = -fraction;
         }
-        fraction += 10000;
+        fraction += 1000000;
         String str = Long.toString(fraction);
         while (str.endsWith("0")) {
             str = str.substring(0, str.length() - 1);

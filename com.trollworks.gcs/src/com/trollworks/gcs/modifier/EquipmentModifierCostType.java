@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.utility.Fixed4;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 
 /**
@@ -27,14 +27,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(Fixed4 value) {
+        public String format(Fixed6 value) {
             String str = value.toLocalizedString();
-            return value.greaterThanOrEqual(Fixed4.ZERO) ? "+" + str : str;
+            return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
         }
 
         @Override
-        public Fixed4 extract(String text, boolean localized) {
-            return new Fixed4(text, Fixed4.ZERO, localized);
+        public Fixed6 extract(String text, boolean localized) {
+            return new Fixed6(text, Fixed6.ZERO, localized);
         }
 
         @Override
@@ -50,14 +50,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(Fixed4 value) {
+        public String format(Fixed6 value) {
             return value.toLocalizedString();
         }
 
         @Override
-        public Fixed4 extract(String text, boolean localized) {
-            Fixed4 value = new Fixed4(text, Fixed4.ZERO, localized);
-            return value.lessThan(Fixed4.ZERO) ? Fixed4.ONE : value;
+        public Fixed6 extract(String text, boolean localized) {
+            Fixed6 value = new Fixed6(text, Fixed6.ZERO, localized);
+            return value.lessThan(Fixed6.ZERO) ? Fixed6.ONE : value;
         }
 
         @Override
@@ -73,14 +73,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(Fixed4 value) {
+        public String format(Fixed6 value) {
             String str = value.toLocalizedString();
-            return value.greaterThanOrEqual(Fixed4.ZERO) ? "+" + str : str;
+            return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
         }
 
         @Override
-        public Fixed4 extract(String text, boolean localized) {
-            return new Fixed4(text, Fixed4.ZERO, localized);
+        public Fixed6 extract(String text, boolean localized) {
+            return new Fixed6(text, Fixed6.ZERO, localized);
         }
 
         @Override
@@ -96,14 +96,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(Fixed4 value) {
+        public String format(Fixed6 value) {
             return value.toLocalizedString();
         }
 
         @Override
-        public Fixed4 extract(String text, boolean localized) {
-            Fixed4 value = new Fixed4(text, Fixed4.ZERO, localized);
-            return value.lessThan(Fixed4.ZERO) ? Fixed4.ONE : value;
+        public Fixed6 extract(String text, boolean localized) {
+            Fixed6 value = new Fixed6(text, Fixed6.ZERO, localized);
+            return value.lessThan(Fixed6.ZERO) ? Fixed6.ONE : value;
         }
 
         @Override
@@ -119,14 +119,14 @@ public enum EquipmentModifierCostType {
         }
 
         @Override
-        public String format(Fixed4 value) {
+        public String format(Fixed6 value) {
             String str = value.toLocalizedString();
-            return value.greaterThanOrEqual(Fixed4.ZERO) ? "+" + str : str;
+            return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
         }
 
         @Override
-        public Fixed4 extract(String text, boolean localized) {
-            return new Fixed4(text, Fixed4.ZERO, localized);
+        public Fixed6 extract(String text, boolean localized) {
+            return new Fixed6(text, Fixed6.ZERO, localized);
         }
 
         @Override
@@ -135,9 +135,9 @@ public enum EquipmentModifierCostType {
         }
     };
 
-    public abstract String format(Fixed4 value);
+    public abstract String format(Fixed6 value);
 
-    public abstract Fixed4 extract(String text, boolean localized);
+    public abstract Fixed6 extract(String text, boolean localized);
 
     public abstract String adjustText(String text);
 
@@ -149,8 +149,8 @@ public enum EquipmentModifierCostType {
     }
 
     String adjustTextForMultiplier(String text) {
-        Fixed4 value = new Fixed4(text, Fixed4.ZERO, true);
-        if (value.lessThanOrEqual(Fixed4.ZERO)) {
+        Fixed6 value = new Fixed6(text, Fixed6.ZERO, true);
+        if (value.lessThanOrEqual(Fixed6.ZERO)) {
             return "1";
         }
         if (text.startsWith("+")) {

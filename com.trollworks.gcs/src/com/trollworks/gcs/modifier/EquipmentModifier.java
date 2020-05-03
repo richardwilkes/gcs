@@ -22,7 +22,7 @@ import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.utility.Fixed4;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -57,7 +57,7 @@ public class EquipmentModifier extends Modifier {
     /** The notification ID for weight adjustment changes. */
     public static final  String                      ID_WEIGHT_ADJ          = PREFIX + TAG_WEIGHT_ADJ;
     private EquipmentModifierCostType   mCostType;
-    private Fixed4                      mCostAmount;
+    private Fixed6                      mCostAmount;
     private EquipmentModifierWeightType mWeightType;
     private              double                      mWeightMultiplier;
     private              WeightValue                 mWeightAddition;
@@ -105,7 +105,7 @@ public class EquipmentModifier extends Modifier {
     public EquipmentModifier(DataFile file, boolean isContainer) {
         super(file, isContainer);
         mCostType = EquipmentModifierCostType.COST_FACTOR;
-        mCostAmount = Fixed4.ONE;
+        mCostAmount = Fixed6.ONE;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
         mWeightMultiplier = 1;
         mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
@@ -162,7 +162,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     /** @return The amount for the cost modifier. */
-    public Fixed4 getCostAdjAmount() {
+    public Fixed6 getCostAdjAmount() {
         return mCostAmount;
     }
 
@@ -170,7 +170,7 @@ public class EquipmentModifier extends Modifier {
      * @param costAmount The amount for the cost modifier to set.
      * @return {@code true} if a change was made.
      */
-    public boolean setCostAdjAmount(Fixed4 costAmount) {
+    public boolean setCostAdjAmount(Fixed6 costAmount) {
         if (!mCostAmount.equals(costAmount)) {
             mCostAmount = costAmount;
             notifySingle(ID_COST_ADJ);
@@ -265,7 +265,7 @@ public class EquipmentModifier extends Modifier {
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mCostType = EquipmentModifierCostType.COST_FACTOR;
-        mCostAmount = Fixed4.ONE;
+        mCostAmount = Fixed6.ONE;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
         mWeightMultiplier = 1;
         mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
@@ -279,7 +279,7 @@ public class EquipmentModifier extends Modifier {
         } else if (!canHaveChildren()) {
             if (TAG_COST_ADJ.equals(name)) {
                 mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.COST_FACTOR);
-                mCostAmount = new Fixed4(reader.readText(), Fixed4.ONE, false);
+                mCostAmount = new Fixed6(reader.readText(), Fixed6.ONE, false);
             } else if (TAG_WEIGHT_ADJ.equals(name)) {
                 mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
                 switch (mWeightType) {
