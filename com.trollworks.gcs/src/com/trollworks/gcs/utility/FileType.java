@@ -31,10 +31,10 @@ public class FileType {
     public static final FileType                  SKILL              = new FileType(I18n.Text("Skills Library"), Images.SKL_FILE, "skl");
     public static final FileType                  SPELL              = new FileType(I18n.Text("Spells Library"), Images.SPL_FILE, "spl");
     public static final FileType                  NOTE               = new FileType(I18n.Text("Notes Library"), Images.NOT_FILE, "not");
-    public static final FileType                  PDF                = new FileType(I18n.Text("PDF Files"), Images.FILE, "pdf"); // RAW: Create PDF icon
-    public static final FileType                  PNG                = new FileType(I18n.Text("PNG Files"), Images.FILE, "png"); // RAW: Create PNG icon
-    public static final FileType                  JPEG               = new FileType(I18n.Text("JPEG Files"), Images.FILE, "jpg", "jpeg"); // RAW: Create JPEG icon
-    public static final FileType                  GIF                = new FileType(I18n.Text("GIF Files"), Images.FILE, "gif"); // RAW: Create GIF icon
+    public static final FileType                  PDF                = new FileType(I18n.Text("PDF Files"), Images.PDF_FILE, "pdf");
+    public static final FileType                  PNG                = new FileType(I18n.Text("PNG Files"), Images.FILE, "png");
+    public static final FileType                  JPEG               = new FileType(I18n.Text("JPEG Files"), Images.FILE, "jpg", "jpeg");
+    public static final FileType                  GIF                = new FileType(I18n.Text("GIF Files"), Images.FILE, "gif");
     public static final FileType[]                OPENABLE           = {SHEET, TEMPLATE, ADVANTAGE, ADVANTAGE_MODIFIER, EQUIPMENT, EQUIPMENT_MODIFIER, SKILL, SPELL, NOTE, PDF};
     public static final FileNameExtensionFilter[] IMAGE_FILTERS      = createFileFilters(I18n.Text("Image Files"), PNG, JPEG, GIF);
     private             String                    mDescription;
