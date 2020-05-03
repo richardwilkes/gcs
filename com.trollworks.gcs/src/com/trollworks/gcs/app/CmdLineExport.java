@@ -35,7 +35,7 @@ public class CmdLineExport implements Runnable {
     boolean    mGeneratePDF;
     boolean    mGeneratePNG;
     boolean    mGenerateText;
-    Path       mTemplate;
+    File       mTemplate;
     String     mMargins;
     String     mPaper;
 
@@ -44,20 +44,16 @@ public class CmdLineExport implements Runnable {
         mGeneratePDF = generatePDF;
         mGeneratePNG = generatePNG;
         mGenerateText = generateText;
-        mTemplate = template;
+        mTemplate = mGenerateText ? template.toFile() : null;
         mMargins = margins;
         mPaper = paper;
     }
 
     public void run() {
         if (mGenerateText || mGeneratePDF || mGeneratePNG) {
-            double[] paperSize    = getPaperSize();
-            double[] marginsInfo  = getMargins();
-            Timing   timing       = new Timing();
-            File     textTemplate = null;
-            if (mTemplate != null) {
-                textTemplate = mTemplate.toFile();
-            }
+            double[] paperSize   = getPaperSize();
+            double[] marginsInfo = getMargins();
+            Timing   timing      = new Timing();
             GraphicsUtilities.setHeadlessPrintMode(true);
             for (Path path : mFiles) {
                 File file = path.toFile();
@@ -91,11 +87,11 @@ public class CmdLineExport implements Runnable {
                         if (mGenerateText) {
                             System.out.print(I18n.Text("  Creating from text template... "));
                             System.out.flush();
-                            output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(textTemplate.getName())));
+                            output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(mTemplate.getName())));
                             timing.reset();
-                            success = new TextTemplate(sheet).export(output, textTemplate);
+                            success = new TextTemplate(sheet).export(output, mTemplate);
                             System.out.println(timing);
-                            System.out.printf(I18n.Text("    Used text template file: %s\n"), PathUtils.getFullPath(textTemplate));
+                            System.out.printf(I18n.Text("    Used text template file: %s\n"), PathUtils.getFullPath(mTemplate));
                             if (success) {
                                 System.out.printf(I18n.Text("    Created: %s\n"), output);
                             }

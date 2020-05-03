@@ -15,7 +15,6 @@ import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexColumn;
@@ -24,10 +23,8 @@ import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.print.PageOrientation;
 import com.trollworks.gcs.ui.print.PrintManager;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
@@ -41,7 +38,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -53,7 +49,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
 public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {

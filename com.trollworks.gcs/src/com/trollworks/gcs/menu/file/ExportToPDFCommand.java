@@ -38,7 +38,11 @@ public class ExportToPDFCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         SheetDockable sheet = getTarget(SheetDockable.class);
         if (sheet != null) {
-            File file = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), null, FileType.PDF.getFilter());
+            String name = sheet.getSheet().getCharacter().getDescription().getName();
+            if (name.isBlank()) {
+                name = "untitled";
+            }
+            File file = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), new File(StdFileDialog.getLastDir(), name), FileType.PDF.getFilter());
             if (file != null) {
                 if (!sheet.getSheet().saveAsPDF(file)) {
                     WindowUtils.showError(sheet, I18n.Text("An error occurred while trying to export the sheet as PDF."));

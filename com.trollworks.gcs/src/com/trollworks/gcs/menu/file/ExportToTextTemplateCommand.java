@@ -42,8 +42,12 @@ public class ExportToTextTemplateCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         SheetDockable sheet = getTarget(SheetDockable.class);
         if (sheet != null) {
+            String name = sheet.getSheet().getCharacter().getDescription().getName();
+            if (name.isBlank()) {
+                name = "untitled";
+            }
             String ext  = PathUtils.getExtension(mTemplatePath);
-            File   file = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), null, new FileNameExtensionFilter(ext + I18n.Text(" Files"), ext));
+            File   file = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), new File(StdFileDialog.getLastDir(), name), new FileNameExtensionFilter(ext + I18n.Text(" Files"), ext));
             if (file != null) {
                 if (!new TextTemplate(sheet.getSheet()).export(file, mTemplatePath.toFile())) {
                     WindowUtils.showError(sheet, String.format(I18n.Text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(mTemplatePath, false)));
