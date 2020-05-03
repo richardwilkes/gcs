@@ -91,7 +91,6 @@ public class CmdLineExport implements Runnable {
                         if (mGenerateText) {
                             System.out.print(I18n.Text("  Creating from text template... "));
                             System.out.flush();
-                            textTemplate = TextTemplate.resolveTextTemplate(textTemplate);
                             output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(textTemplate.getName())));
                             timing.reset();
                             success = new TextTemplate(sheet).export(output, textTemplate);

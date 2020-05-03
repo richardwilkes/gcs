@@ -172,8 +172,6 @@ public class GCS {
                     break;
                 case "--text":
                     generateText = true;
-                    break;
-                case "--template":
                     boolean missingTemplateArg = false;
                     if (parts.length > 1) {
                         if (parts[1].isBlank()) {
@@ -190,7 +188,7 @@ public class GCS {
                         }
                     }
                     if (missingTemplateArg) {
-                        msgs.add(I18n.Text("missing argument for --template"));
+                        msgs.add(I18n.Text("missing argument for --text"));
                     }
                     break;
                 case "-v":
@@ -298,10 +296,8 @@ public class GCS {
         options.add(I18n.Text("Create PDF versions of sheets specified on the command line."));
         options.add(I18n.Text("--png"));
         options.add(I18n.Text("Create PNG versions of sheets specified on the command line."));
-        options.add(I18n.Text("--text"));
-        options.add(I18n.Text("Create text versions of sheets specified on the command line."));
-        options.add(I18n.Text("--template <file>"));
-        options.add(I18n.Text("A template to use when creating text versions of the sheets from the command line. If not specified, the template specified in preferences will be used."));
+        options.add(I18n.Text("--text <file>"));
+        options.add(I18n.Text("Create text versions of sheets specified on the command line using the specified template file."));
         options.add(I18n.Text("-v"));
         options.add(I18n.Text("Displays the program version."));
         options.add(I18n.Text("--version"));

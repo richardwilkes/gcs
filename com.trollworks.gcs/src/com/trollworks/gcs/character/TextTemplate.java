@@ -23,7 +23,6 @@ import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
 import com.trollworks.gcs.spell.Spell;
@@ -285,16 +284,6 @@ public class TextTemplate {
     private              Set<String>    mOnlyCategories                       = new HashSet<>();
     private              Set<String>    mExcludedCategories                   = new HashSet<>();
 
-    public static File resolveTextTemplate(File template) {
-        if (template == null || !template.isFile() || !template.canRead()) {
-            template = new File(OutputPreferences.getTextTemplate());
-            if (!template.isFile() || !template.canRead()) {
-                template = new File(OutputPreferences.getDefaultTextTemplate());
-            }
-        }
-        return template;
-    }
-
     public TextTemplate(CharacterSheet sheet) {
         mSheet = sheet;
     }
@@ -309,7 +298,6 @@ public class TextTemplate {
             char[]        buffer           = new char[1];
             boolean       lookForKeyMarker = true;
             StringBuilder keyBuffer        = new StringBuilder();
-            template = resolveTextTemplate(template);
             try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template), StandardCharsets.UTF_8))) {
                 try (BufferedWriter out = new BufferedWriter(new FileWriter(exportTo, StandardCharsets.UTF_8))) {
                     while (in.read(buffer) != -1) {

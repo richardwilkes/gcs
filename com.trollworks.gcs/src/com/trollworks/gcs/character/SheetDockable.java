@@ -170,37 +170,6 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     }
 
     @Override
-    public File[] saveTo(File file) {
-        List<File> result            = new ArrayList<>();
-        String     extension         = PathUtils.getExtension(file.getName());
-        File       textTemplate      = TextTemplate.resolveTextTemplate(null);
-        String     templateExtension = PathUtils.getExtension(textTemplate.getName());
-        if (FileType.PNG.matchExtension(extension)) {
-            if (!mSheet.saveAsPNG(file, result)) {
-                WindowUtils.showError(this, I18n.Text("An error occurred while trying to export the sheet as a PNG."));
-            }
-            return result.toArray(new File[0]);
-        }
-        if (FileType.PDF.matchExtension(extension)) {
-            if (mSheet.saveAsPDF(file)) {
-                result.add(file);
-            } else {
-                WindowUtils.showError(this, I18n.Text("An error occurred while trying to export the sheet as a PDF."));
-            }
-            return result.toArray(new File[0]);
-        }
-        if (templateExtension.equals(extension)) {
-            if (new TextTemplate(mSheet).export(file, null)) {
-                result.add(file);
-            } else {
-                WindowUtils.showError(this, I18n.Text("An error occurred while trying to export the sheet using the text template."));
-            }
-            return result.toArray(new File[0]);
-        }
-        return super.saveTo(file);
-    }
-
-    @Override
     public boolean isJumpToSearchAvailable() {
         return mSearch.isEnabled() && mSearch != KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
     }

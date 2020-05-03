@@ -61,16 +61,11 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     private static final int               DEFAULT_PNG_RESOLUTION    = 200;
     private static final String            PNG_RESOLUTION_KEY        = "PNGResolution";
     private static final int[]             DPI                       = {72, 96, 144, 150, 200, 300};
-    private static final String            USE_TEMPLATE_OVERRIDE_KEY = "UseTextTemplateOverride";
-    private static final String            TEMPLATE_OVERRIDE_KEY     = "TextTemplateOverride";
     private static final String            GURPS_CALCULATOR_KEY_KEY  = "GurpsCalculatorKey";
     public static final  String            BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
     public static final  String            GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
     private static final String            DEFAULT_PAGE_SETTINGS_KEY = "DefaultPageSettings";
     private              JComboBox<String> mPNGResolutionCombo;
-    private              JCheckBox         mUseTextTemplateOverride;
-    private              JTextField        mTextTemplatePath;
-    private              JButton           mTextTemplatePicker;
     private              JButton           mGurpsCalculatorLink;
     private              JTextField        mGurpsCalculatorKey;
     private              JCheckBox         mUseNativePrinter;
@@ -83,12 +78,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
             if (PNG_RESOLUTION_KEY.equals(key)) {
                 prefs.setValue(MODULE, PNG_RESOLUTION_KEY, prefs.getIntValue(SheetPreferences.MODULE, PNG_RESOLUTION_KEY, DEFAULT_PNG_RESOLUTION));
                 prefs.removePreference(SheetPreferences.MODULE, PNG_RESOLUTION_KEY);
-            } else if (USE_TEMPLATE_OVERRIDE_KEY.equals(key)) {
-                prefs.setValue(MODULE, USE_TEMPLATE_OVERRIDE_KEY, prefs.getBooleanValue(SheetPreferences.MODULE, USE_TEMPLATE_OVERRIDE_KEY));
-                prefs.removePreference(SheetPreferences.MODULE, USE_TEMPLATE_OVERRIDE_KEY);
-            } else if (TEMPLATE_OVERRIDE_KEY.equals(key)) {
-                prefs.setValue(MODULE, TEMPLATE_OVERRIDE_KEY, prefs.getStringValue(SheetPreferences.MODULE, TEMPLATE_OVERRIDE_KEY));
-                prefs.removePreference(SheetPreferences.MODULE, TEMPLATE_OVERRIDE_KEY);
             } else if (GURPS_CALCULATOR_KEY_KEY.equals(key)) {
                 prefs.setValue(MODULE, GURPS_CALCULATOR_KEY_KEY, prefs.getStringValue(SheetPreferences.MODULE, GURPS_CALCULATOR_KEY_KEY));
                 prefs.removePreference(SheetPreferences.MODULE, GURPS_CALCULATOR_KEY_KEY);
@@ -102,25 +91,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     /** @return The resolution to use when saving the sheet as a PNG. */
     public static int getPNGResolution() {
         return Preferences.getInstance().getIntValue(MODULE, PNG_RESOLUTION_KEY, DEFAULT_PNG_RESOLUTION);
-    }
-
-    /** @return Whether the default text template has been overridden. */
-    public static boolean isTextTemplateOverridden() {
-        return Preferences.getInstance().getBooleanValue(MODULE, USE_TEMPLATE_OVERRIDE_KEY);
-    }
-
-    /** @return The text template to use when exporting to a text format. */
-    public static String getTextTemplate() {
-        return isTextTemplateOverridden() ? getTextTemplateOverride() : getDefaultTextTemplate();
-    }
-
-    private static String getTextTemplateOverride() {
-        return Preferences.getInstance().getStringValue(MODULE, TEMPLATE_OVERRIDE_KEY);
-    }
-
-    /** @return The default text template to use when exporting to a text format. */
-    public static String getDefaultTextTemplate() {
-        return Library.getMasterRootPath().resolve("Output Templates").resolve("PC.html").toString();
     }
 
     public static String getGurpsCalculatorKey() {
@@ -204,16 +174,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         column.add(mUseNativePrinter);
 
         row = new FlexRow();
-        mUseTextTemplateOverride = createCheckBox(I18n.Text("Text Export Template"), textTemplateOverrideTooltip(), isTextTemplateOverridden());
-        row.add(mUseTextTemplateOverride);
-        mTextTemplatePath = createTextTemplatePathField();
-        row.add(mTextTemplatePath);
-        mTextTemplatePicker = createButton(I18n.Text("Choose…"), textTemplateOverrideTooltip());
-        mTextTemplatePicker.setEnabled(isTextTemplateOverridden());
-        row.add(mTextTemplatePicker);
-        column.add(row);
-
-        row = new FlexRow();
         row.add(createLabel(I18n.Text("Use"), pngDPIMsg()));
         mPNGResolutionCombo = createPNGResolutionPopup();
         row.add(mPNGResolutionCombo);
@@ -223,10 +183,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         column.add(new FlexSpacer(0, 0, false, true));
 
         column.apply(this);
-    }
-
-    private static String textTemplateOverrideTooltip() {
-        return I18n.Text("Specify a file to use as the template when exporting to a text format, such as HTML");
     }
 
     private static String pngDPIMsg() {
@@ -241,19 +197,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         UIUtilities.setToPreferredSizeOnly(button);
         add(button);
         return button;
-    }
-
-    private JTextField createTextTemplatePathField() {
-        JTextField field = new JTextField(getTextTemplate());
-        field.setToolTipText(Text.wrapPlainTextForToolTip(textTemplateOverrideTooltip()));
-        field.setEnabled(isTextTemplateOverridden());
-        field.getDocument().addDocumentListener(this);
-        Dimension size    = field.getPreferredSize();
-        Dimension maxSize = field.getMaximumSize();
-        maxSize.height = size.height;
-        field.setMaximumSize(maxSize);
-        add(field);
-        return field;
     }
 
     private JButton createHyperlinkButton(String linkText, String tooltip) {
@@ -307,11 +250,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         Object source = event.getSource();
         if (source == mPNGResolutionCombo) {
             Preferences.getInstance().setValue(MODULE, PNG_RESOLUTION_KEY, DPI[mPNGResolutionCombo.getSelectedIndex()]);
-        } else if (source == mTextTemplatePicker) {
-            File file = StdFileDialog.showOpenDialog(this, I18n.Text("Select A Text Template"));
-            if (file != null) {
-                mTextTemplatePath.setText(PathUtils.getFullPath(file));
-            }
         } else if (source == mGurpsCalculatorLink && Desktop.isDesktopSupported()) {
             try {
                 Desktop.getDesktop().browse(new URI(GURPS_CALCULATOR_URL));
@@ -332,21 +270,17 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
                 break;
             }
         }
-        mUseTextTemplateOverride.setSelected(false);
         mUseNativePrinter.setSelected(false);
     }
 
     @Override
     public boolean isSetToDefaults() {
-        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && !isTextTemplateOverridden() && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText() != null && mGurpsCalculatorKey.getText().isEmpty();
+        return getPNGResolution() == DEFAULT_PNG_RESOLUTION && !PrintManager.useNativeDialogs() && mGurpsCalculatorKey.getText() != null && mGurpsCalculatorKey.getText().isEmpty();
     }
 
     @Override
     public void changedUpdate(DocumentEvent event) {
-        Document document = event.getDocument();
-        if (mTextTemplatePath.getDocument() == document) {
-            Preferences.getInstance().setValue(MODULE, TEMPLATE_OVERRIDE_KEY, mTextTemplatePath.getText());
-        } else if (mGurpsCalculatorKey.getDocument() == document) {
+        if (mGurpsCalculatorKey.getDocument() == event.getDocument()) {
             Preferences.getInstance().setValue(MODULE, GURPS_CALCULATOR_KEY_KEY, mGurpsCalculatorKey.getText());
         }
         adjustResetButton();
@@ -365,13 +299,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     @Override
     public void itemStateChanged(ItemEvent event) {
         Object source = event.getSource();
-        if (source == mUseTextTemplateOverride) {
-            boolean checked = mUseTextTemplateOverride.isSelected();
-            Preferences.getInstance().setValue(MODULE, USE_TEMPLATE_OVERRIDE_KEY, checked);
-            mTextTemplatePath.setEnabled(checked);
-            mTextTemplatePicker.setEnabled(checked);
-            mTextTemplatePath.setText(getTextTemplate());
-        } else if (source == mUseNativePrinter) {
+        if (source == mUseNativePrinter) {
             PrintManager.useNativeDialogs(mUseNativePrinter.isSelected());
         }
         adjustResetButton();
