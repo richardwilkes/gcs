@@ -27,6 +27,9 @@ public class HelpMenuProvider {
             menu.add(new JMenuItem(AboutCommand.INSTANCE));
             menu.addSeparator();
         }
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Sponsor GCS Development"), "https://github.com/sponsors/richardwilkes")));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Make A Donation For GCS Development"), "https://paypal.me/GURPSCharacterSheet")));
+        menu.addSeparator();
         menu.add(new JMenuItem(UpdateAppCommand.INSTANCE));
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Release Notes"), "https://github.com/richardwilkes/gcs/releases")));
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Web Site"), GCS.WEB_SITE)));
