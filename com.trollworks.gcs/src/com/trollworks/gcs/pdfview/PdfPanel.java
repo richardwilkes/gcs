@@ -77,6 +77,9 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
                 // Had no catalog... we will just use the original page number
             }
             mPageIndex += pdfRef.getPageToIndexOffset();
+            if (mPageIndex >= mPdf.getNumberOfPages()) {
+                mPageIndex = mPdf.getNumberOfPages() - 1;
+            }
             if (mPageIndex != lastPageIndex || isHighlightNew(highlight)) {
                 mHighlight = highlight;
                 markPageForLoading();
