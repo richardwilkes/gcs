@@ -704,15 +704,23 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             int    y      = visibleRect.y - insets.top;
             int    rowIndex;
             int    rowTop;
-
             if (direction < 0) {
                 rowIndex = overRowIndex(y);
                 if (rowIndex > -1) {
                     rowTop = getRowIndexStart(rowIndex);
                     if (rowTop < y) {
                         return y - rowTop;
-                    } else if (--rowIndex > -1) {
-                        return y - getRowIndexStart(rowIndex);
+                    } else {
+                        List<Row> rows = mModel.getRows();
+                        int first = getFirstRowToDisplay();
+                        do {
+                            if (--rowIndex <= first) {
+                                break;
+                            }
+                        } while (mModel.isRowFiltered(rows.get(rowIndex)));
+                        if (rowIndex >= first) {
+                            return y - getRowIndexStart(rowIndex);
+                        }
                     }
                 }
             } else {

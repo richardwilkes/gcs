@@ -133,11 +133,6 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         }
     }
 
-    /** @param event The {@link MouseWheelEvent}. */
-    protected void processMouseWheelEventSuper(MouseWheelEvent event) {
-        super.processMouseWheelEvent(event);
-    }
-
     @Override
     public void dispose() {
         if (!isClosed()) {
