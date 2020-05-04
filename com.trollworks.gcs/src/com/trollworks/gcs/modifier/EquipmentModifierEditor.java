@@ -20,7 +20,6 @@ import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.Units;
 import com.trollworks.gcs.utility.units.WeightValue;
@@ -239,7 +238,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             break;
         case MULTIPLIER:
         default:
-            mWeightAmountField.setText(Numbers.format(mRow.getWeightAdjMultiplier()));
+            mWeightAmountField.setText(mRow.getWeightAdjMultiplier().toLocalizedString());
             break;
         }
         mWeightAmountField.setToolTipText(I18n.Text("The weight modifier"));
@@ -268,10 +267,10 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return (EquipmentModifierWeightType) obj;
     }
 
-    private double getWeightMultiplier() {
-        double value = Numbers.extractDouble(mWeightAmountField.getText(), 0, true);
-        if (value <= 0 && getWeightType() == EquipmentModifierWeightType.MULTIPLIER) {
-            value = 1;
+    private Fixed6 getWeightMultiplier() {
+        Fixed6 value = new Fixed6(mWeightAmountField.getText(), Fixed6.ZERO, true);
+        if (value.lessThanOrEqual(Fixed6.ZERO) && getWeightType() == EquipmentModifierWeightType.MULTIPLIER) {
+            value = Fixed6.ONE;
         }
         return value;
     }
@@ -327,8 +326,8 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         String      text   = mWeightAmountField.getText().trim();
         WeightValue weight = WeightValue.extract(text, true);
         if (getWeightType() == EquipmentModifierWeightType.MULTIPLIER) {
-            double value = weight.getValue();
-            if (value <= 0) {
+            Fixed6 value = weight.getValue();
+            if (value.lessThanOrEqual(Fixed6.ZERO)) {
                 mWeightAmountField.setText("1");
             } else {
                 if (text.startsWith("+")) {

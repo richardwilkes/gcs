@@ -176,7 +176,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         wrapper = new JPanel(new ColumnLayout(3));
         mContainedWeight = new WeightValue(mRow.getExtendedWeight());
         WeightValue weight = new WeightValue(mRow.getAdjustedWeight());
-        weight.setValue(weight.getValue() * mRow.getQuantity());
+        weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));
         mContainedWeight.subtract(weight);
         mWeightField = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
         mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended Weight"), mRow.getExtendedWeight(), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
@@ -330,10 +330,10 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         int         qty    = getQty();
         WeightValue weight = Equipment.getWeightAdjustedForModifiers(WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class));
         if (qty > 0) {
-            weight.setValue(weight.getValue() * Math.max(qty, 0));
+            weight.setValue(weight.getValue().mul(new Fixed6(Math.max(qty, 0))));
             weight.add(mContainedWeight);
         } else {
-            weight.setValue(0);
+            weight.setValue(Fixed6.ZERO);
         }
         mExtWeightField.setText(weight.toString());
     }

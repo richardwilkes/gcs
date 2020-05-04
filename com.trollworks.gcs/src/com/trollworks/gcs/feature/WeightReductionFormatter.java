@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightValue;
 
@@ -38,7 +39,7 @@ public class WeightReductionFormatter extends JFormattedTextField.AbstractFormat
             return "";
         } else if (value instanceof WeightValue) {
             WeightValue weight = (WeightValue) value;
-            if (weight.getValue() == 0) {
+            if (weight.getValue().equals(Fixed6.ZERO)) {
                 return "";
             }
             return weight.toString();

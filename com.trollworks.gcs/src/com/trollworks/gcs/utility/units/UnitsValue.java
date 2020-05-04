@@ -11,13 +11,15 @@
 
 package com.trollworks.gcs.utility.units;
 
+import com.trollworks.gcs.utility.Fixed6;
+
 /**
  * Holds a value and {@link Units} pair.
  *
  * @param <T> The type of {@link Units} to use.
  */
 public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
-    private double mValue;
+    private Fixed6 mValue;
     private T      mUnits;
 
     /**
@@ -26,7 +28,7 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
      * @param value The value to use.
      * @param units The {@link Units} to use.
      */
-    public UnitsValue(double value, T units) {
+    public UnitsValue(Fixed6 value, T units) {
         mValue = value;
         mUnits = units;
     }
@@ -70,28 +72,28 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
     }
 
     /** @return The value. */
-    public double getValue() {
+    public Fixed6 getValue() {
         return mValue;
     }
 
     /** @param value The value to set for value. */
-    public void setValue(double value) {
+    public void setValue(Fixed6 value) {
         mValue = value;
     }
 
     /** @return The normalized value. */
-    public double getNormalizedValue() {
+    public Fixed6 getNormalizedValue() {
         return mUnits.normalize(mValue);
     }
 
     /** @param other The value to add to this one. */
     public void add(UnitsValue<?> other) {
-        mValue += mUnits.convert(other.mUnits, other.mValue);
+        mValue = mValue.add(mUnits.convert(other.mUnits, other.mValue));
     }
 
     /** @param other The value to subtract from this one. */
     public void subtract(UnitsValue<?> other) {
-        mValue -= mUnits.convert(other.mUnits, other.mValue);
+        mValue = mValue.sub(mUnits.convert(other.mUnits, other.mValue));
     }
 
     /**
@@ -107,7 +109,7 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
         if (this == other) {
             return 0;
         }
-        return Double.compare(getNormalizedValue() - other.getNormalizedValue(), 0.0);
+        return getNormalizedValue().compareTo(other.getNormalizedValue());
     }
 
     @Override
@@ -130,7 +132,7 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
         }
         if (obj instanceof UnitsValue<?>) {
             UnitsValue<?> uv = (UnitsValue<?>) obj;
-            return mUnits == uv.mUnits && mValue == uv.mValue;
+            return mUnits == uv.mUnits && mValue.equals(uv.mValue);
         }
         return false;
     }

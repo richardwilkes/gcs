@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.utility.text;
 
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.text.ParseException;
@@ -36,7 +37,7 @@ public class WeightFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
     public String valueToString(Object value) throws ParseException {
         WeightValue weight = (WeightValue) value;
-        if (mBlankOnZero && weight.getValue() == 0) {
+        if (mBlankOnZero && weight.getValue().equals(Fixed6.ZERO)) {
             return "";
         }
         return weight.toString();

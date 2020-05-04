@@ -11,36 +11,36 @@
 
 package com.trollworks.gcs.utility.units;
 
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Numbers;
 
 import java.text.MessageFormat;
 
 /** Common weight units. */
 public enum WeightUnits implements Units {
     /** Ounces. */
-    OZ(1.0 / 16.0, false) {
+    OZ(Fixed6.ONE.div(new Fixed6(16)), false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Ounces");
         }
     },
     /** Pounds. */
-    LB(1.0, false) {
+    LB(Fixed6.ONE, false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Pounds");
         }
     },
     /** Short Tons */
-    TN(2000.0, false) {
+    TN(new Fixed6(2000), false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Short Tons");
         }
     },
     /** Long Tons */
-    LT(2240.0, false) {
+    LT(new Fixed6(2240), false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Long Tons");
@@ -49,54 +49,53 @@ public enum WeightUnits implements Units {
     /**
      * Metric Tons. Must come after Long Tons and Short Tons since it's abbreviation is a subset.
      */
-    T(2205.0, true) {
+    T(new Fixed6(2205), true) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Metric Tons");
         }
     },
     /** Kilograms. */
-    KG(2.205, true) {
+    KG(new Fixed6("2.205", Fixed6.ZERO, false), true) { // entered as text to ensure precision
         @Override
         public String getLocalizedName() {
             return I18n.Text("Kilograms");
         }
     },
     /** Grams. Must come after Kilograms since it's abbreviation is a subset. */
-    G(0.002205, true) {
+    G(new Fixed6("0.002205", Fixed6.ZERO, false), true) { // entered as text to ensure precision
         @Override
         public String getLocalizedName() {
             return I18n.Text("Grams");
         }
     };
 
-    private double  mFactor;
+    private Fixed6  mFactor;
     private boolean mIsMetric;
 
-    WeightUnits(double factor, boolean isMetric) {
+    WeightUnits(Fixed6 factor, boolean isMetric) {
         mFactor = factor;
         mIsMetric = isMetric;
     }
 
     @Override
-    public double convert(Units units, double value) {
-        return value * units.getFactor() / mFactor;
+    public Fixed6 convert(Units units, Fixed6 value) {
+        return units.getFactor().mul(value).div(mFactor);
     }
 
     @Override
-    public double normalize(double value) {
-        return value * mFactor;
+    public Fixed6 normalize(Fixed6 value) {
+        return mFactor.mul(value);
     }
 
     @Override
-    public double getFactor() {
+    public Fixed6 getFactor() {
         return mFactor;
     }
 
     @Override
-    public String format(double value, boolean localize) {
-        String textValue = localize ? Numbers.format(value) : Double.toString(value);
-        return MessageFormat.format("{0} {1}", Numbers.trimTrailingZeroes(textValue, localize), getAbbreviation());
+    public String format(Fixed6 value, boolean localize) {
+        return MessageFormat.format("{0} {1}", localize ? value.toLocalizedString() : value.toString(), getAbbreviation());
     }
 
     @Override

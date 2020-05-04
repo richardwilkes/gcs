@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.FileType;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.text.Text;
@@ -153,8 +154,8 @@ public class Profile {
         mHair = full ? getRandomHair() : "";
         mSkinColor = full ? getRandomSkinColor() : "";
         mHandedness = full ? getRandomHandedness() : "";
-        mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(0, DisplayPreferences.getLengthUnits());
-        mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), 1.0) : new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(Fixed6.ZERO, DisplayPreferences.getLengthUnits());
+        mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE) : new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
         mGender = full ? getRandomGender() : "";
         mName = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender)) : "";
         mRace = full ? I18n.Text("Human") : "";
@@ -247,10 +248,10 @@ public class Profile {
         out.simpleTagNotEmpty(TAG_HAIR, mHair);
         out.simpleTagNotEmpty(TAG_SKIN, mSkinColor);
         out.simpleTagNotEmpty(TAG_HANDEDNESS, mHandedness);
-        if (mHeight.getNormalizedValue() != 0) {
+        if (!mHeight.getNormalizedValue().equals(Fixed6.ZERO)) {
             out.simpleTag(TAG_HEIGHT, mHeight.toString(false));
         }
-        if (mWeight.getNormalizedValue() != 0) {
+        if (!mWeight.getNormalizedValue().equals(Fixed6.ZERO)) {
             out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
         }
         out.simpleTag(BonusAttributeType.SM.getXMLTag(), mSizeModifier);
@@ -658,17 +659,17 @@ public class Profile {
     }
 
     /** @return The multiplier compared to average weight for this character. */
-    public double getWeightMultiplier() {
+    public Fixed6 getWeightMultiplier() {
         if (mCharacter.hasAdvantageNamed("Very Fat")) {
-            return 2.0;
+            return new Fixed6(2);
         } else if (mCharacter.hasAdvantageNamed("Fat")) {
-            return 1.5;
+            return new Fixed6("1.5", Fixed6.ZERO, false);
         } else if (mCharacter.hasAdvantageNamed("Overweight")) {
-            return 1.3;
+            return new Fixed6("1.3", Fixed6.ZERO, false);
         } else if (mCharacter.hasAdvantageNamed("Skinny")) {
-            return 0.67;
+            return new Fixed6("0.67", Fixed6.ZERO, false);
         }
-        return 1.0;
+        return Fixed6.ONE;
     }
 
     /** @return The size modifier. */
@@ -920,28 +921,29 @@ public class Profile {
      * @return A random height.
      */
     public static LengthValue getRandomHeight(int strength, int sm) {
-        int base;
-
+        Fixed6 base;
         if (strength < 7) {
-            base = 52;
+            base = new Fixed6(52);
         } else if (strength < 10) {
-            base = 55 + (strength - 7) * 3;
+            base = new Fixed6(55 + (strength - 7) * 3);
         } else if (strength == 10) {
-            base = 63;
+            base = new Fixed6(63);
         } else if (strength < 14) {
-            base = 65 + (strength - 11) * 3;
+            base = new Fixed6(65 + (strength - 11) * 3);
         } else {
-            base = 74;
+            base = new Fixed6(74);
         }
         boolean useMetric = DisplayPreferences.getWeightUnits().isMetric();
         if (useMetric) {
-            base = (int) Math.round(LengthUnits.CM.convert(LengthUnits.FT_IN, base));
-            base += RANDOM.nextInt(16);
+            base = LengthUnits.CM.convert(LengthUnits.FT_IN, base).round().add(new Fixed6(RANDOM.nextInt(16)));
         } else {
-            base += RANDOM.nextInt(11);
+            base = base.add(new Fixed6(RANDOM.nextInt(11)));
         }
         if (sm != 0) {
-            base = (int) Math.max(Math.round(base * Math.pow(10.0, sm / 6.0)), 1);
+            base = base.mul(new Fixed6(Math.pow(10.0, sm / 6.0))).round();
+            if (base.lessThan(Fixed6.ONE)) {
+                base = Fixed6.ONE;
+            }
         }
         LengthUnits calcUnits    = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
         LengthUnits desiredUnits = DisplayPreferences.getLengthUnits();
@@ -954,36 +956,38 @@ public class Profile {
      * @param multiplier The weight multiplier for being under- or overweight.
      * @return A random weight.
      */
-    public static WeightValue getRandomWeight(int strength, int sm, double multiplier) {
-        int base;
-        int range;
-
+    public static WeightValue getRandomWeight(int strength, int sm, Fixed6 multiplier) {
+        Fixed6 base;
+        Fixed6 range;
         if (strength < 7) {
-            base = 60;
-            range = 61;
+            base = new Fixed6(60);
+            range = new Fixed6(61);
         } else if (strength < 10) {
-            base = 75 + (strength - 7) * 15;
-            range = 61;
+            base = new Fixed6(75 + (strength - 7) * 15);
+            range = new Fixed6(61);
         } else if (strength == 10) {
-            base = 115;
-            range = 61;
+            base = new Fixed6(115);
+            range = new Fixed6(61);
         } else if (strength < 14) {
-            base = 125 + (strength - 11) * 15;
-            range = 71 + (strength - 11) * 10;
+            base = new Fixed6(125 + (strength - 11) * 15);
+            range = new Fixed6(71 + (strength - 11) * 10);
         } else {
-            base = 170;
-            range = 101;
+            base = new Fixed6(170);
+            range = new Fixed6(101);
         }
         boolean useMetric = DisplayPreferences.getWeightUnits().isMetric();
         if (useMetric) {
-            base = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, base));
-            range = (int) Math.round(WeightUnits.KG.convert(WeightUnits.LB, range - 1)) + 1;
+            base = WeightUnits.KG.convert(WeightUnits.LB, base).round();
+            range = WeightUnits.KG.convert(WeightUnits.LB, range.sub(Fixed6.ONE)).round().add(Fixed6.ONE);
         }
-        base += RANDOM.nextInt(range);
+        base = base.add(new Fixed6(RANDOM.nextInt((int) range.asLong())));
         if (sm != 0) {
-            base = (int) Math.round(base * Math.pow(1000.0, sm / 6.0));
+            base = base.mul(new Fixed6(Math.pow(1000.0, sm / 6.0))).round();
         }
-        base = (int) Math.max(Math.round(base * multiplier), 1);
+        base = base.mul(multiplier).round();
+        if (base.lessThan(Fixed6.ONE)) {
+            base = Fixed6.ONE;
+        }
         WeightUnits calcUnits    = useMetric ? WeightUnits.KG : WeightUnits.LB;
         WeightUnits desiredUnits = DisplayPreferences.getWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);

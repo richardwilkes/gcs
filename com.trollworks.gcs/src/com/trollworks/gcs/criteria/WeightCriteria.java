@@ -88,9 +88,9 @@ public class WeightCriteria extends NumericCriteria {
             return mQualifier.equals(data);
         case AT_LEAST:
         default:
-            return data.getNormalizedValue() >= mQualifier.getNormalizedValue();
+            return data.getNormalizedValue().greaterThanOrEqual(mQualifier.getNormalizedValue());
         case AT_MOST:
-            return data.getNormalizedValue() <= mQualifier.getNormalizedValue();
+            return data.getNormalizedValue().lessThanOrEqual(mQualifier.getNormalizedValue());
         }
     }
 }

@@ -11,36 +11,36 @@
 
 package com.trollworks.gcs.utility.units;
 
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Numbers;
 
 import java.text.MessageFormat;
 
 /** Common length units. */
 public enum LengthUnits implements Units {
     /** Points (1/72 of an inch). */
-    PT(1.0 / 72.0, false) {
+    PT(Fixed6.ONE.div(new Fixed6(72)), false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Points");
         }
     },
     /** Inches. */
-    IN(1.0, false) {
+    IN(Fixed6.ONE, false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Inches");
         }
     },
     /** Feet. */
-    FT(12.0, false) {
+    FT(new Fixed6(12), false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Feet");
         }
     },
     /** Feet and Inches */
-    FT_IN(1.0, false) {
+    FT_IN(Fixed6.ONE, false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Feet & Inches");
@@ -52,93 +52,93 @@ public enum LengthUnits implements Units {
         }
 
         @Override
-        public String format(double value, boolean localize) {
-            int feet = (int) (Math.floor(value) / 12);
-            value -= 12.0 * feet;
-            if (feet > 0) {
-                String buffer = formatNumber(feet, localize) + '\'';
-                if (value > 0) {
-                    return buffer + ' ' + formatNumber(value, localize) + '"';
+        public String format(Fixed6 value, boolean localize) {
+            Fixed6 twelve = new Fixed6(12);
+            Fixed6 feet = value.div(twelve).trunc();
+            Fixed6 inches = value.sub(twelve.mul(feet));
+            if (feet.greaterThan(Fixed6.ZERO)) {
+                String buffer = formatNumber(feet, localize) + "'";
+                if (inches.greaterThan(Fixed6.ZERO)) {
+                    return buffer + ' ' + formatNumber(inches, localize) + '"';
                 }
                 return buffer;
             }
             return formatNumber(value, localize) + '"';
         }
 
-        private String formatNumber(double value, boolean localize) {
-            return Numbers.trimTrailingZeroes(localize ? Numbers.format(value) : Double.toString(value), localize);
+        private String formatNumber(Fixed6 value, boolean localize) {
+            return localize ? value.toLocalizedString() : value.toString();
         }
     },
     /** Yards. */
-    YD(36.0, false) {
+    YD(new Fixed6(36), false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Yards");
         }
     },
     /** Miles. */
-    MI(5280.0 * 12.0, false) {
+    MI(new Fixed6(5280).mul(new Fixed6(12)), false) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Miles");
         }
     },
     /** Millimeters. */
-    MM(0.1 / 2.54, true) {
+    MM(new Fixed6("0.1", Fixed6.ZERO, false).div(LengthValue.METRIC_CONVERSION_FACTOR), true) { // entered as text to ensure precision
         @Override
         public String getLocalizedName() {
             return I18n.Text("Millimeters");
         }
     },
     /** Centimeters. */
-    CM(1.0 / 2.54, true) {
+    CM(Fixed6.ONE.div(LengthValue.METRIC_CONVERSION_FACTOR), true) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Centimeters");
         }
     },
     /** Kilometers. */
-    KM(100000.0 / 2.54, true) {
+    KM(new Fixed6(100000).div(LengthValue.METRIC_CONVERSION_FACTOR), true) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Kilometers");
         }
     },
     /** Meters. Must be after all the other 'meter' types. */
-    M(100.0 / 2.54, true) {
+    M(new Fixed6(100).div(LengthValue.METRIC_CONVERSION_FACTOR), true) {
         @Override
         public String getLocalizedName() {
             return I18n.Text("Meters");
         }
     };
 
-    private double  mFactor;
+    private Fixed6  mFactor;
     private boolean mIsMetric;
 
-    LengthUnits(double factor, boolean isMetric) {
+    LengthUnits(Fixed6 factor, boolean isMetric) {
         mFactor = factor;
         mIsMetric = isMetric;
     }
 
     @Override
-    public double convert(Units units, double value) {
-        return value * units.getFactor() / mFactor;
+    public Fixed6 convert(Units units, Fixed6 value) {
+        return units.getFactor().mul(value).div(mFactor);
     }
 
     @Override
-    public double normalize(double value) {
-        return value * mFactor;
+    public Fixed6 normalize(Fixed6 value) {
+        return mFactor.mul(value);
     }
 
     @Override
-    public double getFactor() {
+    public Fixed6 getFactor() {
         return mFactor;
     }
 
     @Override
-    public String format(double value, boolean localize) {
-        String textValue = localize ? Numbers.format(value) : Double.toString(value);
-        return MessageFormat.format("{0} {1}", Numbers.trimTrailingZeroes(textValue, localize), getAbbreviation());
+    public String format(Fixed6 value, boolean localize) {
+        return MessageFormat.format("{0} {1}", localize ? value.toLocalizedString() : value.toString(), getAbbreviation());
     }
 
     @Override

@@ -109,6 +109,15 @@ public class Fixed6 implements Comparable<Fixed6> {
         return new Fixed6((mRawValue / 1000000) * 1000000, true);
     }
 
+    public Fixed6 round() {
+        long whole    = mRawValue / 1000000;
+        long fraction = mRawValue % 1000000;
+        if (fraction > 499999) {
+            whole++;
+        }
+        return new Fixed6(whole * 1000000, true);
+    }
+
     public long asLong() {
         return mRawValue / 1000000;
     }

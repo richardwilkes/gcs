@@ -100,19 +100,19 @@ public class Equipment extends ListRow implements HasSourceReference {
     /** The field ID for when the equipment becomes or stops being a weapon. */
     public static final  String                  ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus";
     /** The field ID for when the equipment gets Modifiers. */
-    public static final  String      ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier";
-    private static final Fixed6      MIN_CF                     = new Fixed6(-0.8);
-    private              boolean     mEquipped;
+    public static final  String                  ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier";
+    private static final Fixed6                  MIN_CF                     = new Fixed6(-0.8);
+    private              boolean                 mEquipped;
     private              int                     mQuantity;
     private              int                     mUses;
     private              int                     mMaxUses;
     private              String                  mDescription;
     private              String                  mTechLevel;
-    private              String      mLegalityClass;
-    private              Fixed6      mValue;
-    private              WeightValue mWeight;
-    private              Fixed6      mExtendedValue;
-    private              WeightValue mExtendedWeight;
+    private              String                  mLegalityClass;
+    private              Fixed6                  mValue;
+    private              WeightValue             mWeight;
+    private              Fixed6                  mExtendedValue;
+    private              WeightValue             mExtendedWeight;
     private              String                  mReference;
     private              List<WeaponStats>       mWeapons;
     private              List<EquipmentModifier> mModifiers;
@@ -133,7 +133,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mReference = "";
         mValue = Fixed6.ZERO;
         mExtendedValue = Fixed6.ZERO;
-        mWeight = new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mWeight = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
@@ -173,7 +173,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         mExtendedValue = new Fixed6(mQuantity).mul(getAdjustedValue());
         mExtendedWeight = new WeightValue(getAdjustedWeight());
-        mExtendedWeight.setValue(mExtendedWeight.getValue() * mQuantity);
+        mExtendedWeight.setValue(mExtendedWeight.getValue().mul(new Fixed6(mQuantity)));
         if (deep) {
             int count = equipment.getChildCount();
             for (int i = 0; i < count; i++) {
@@ -247,7 +247,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mLegalityClass = DEFAULT_LEGALITY_CLASS;
         mReference = "";
         mValue = Fixed6.ZERO;
-        mWeight.setValue(0.0);
+        mWeight.setValue(Fixed6.ZERO);
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
     }
@@ -334,7 +334,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
         out.simpleTagNotEmpty(TAG_LEGALITY_CLASS, mLegalityClass);
         out.simpleTag(TAG_VALUE, mValue.toString());
-        if (mWeight.getNormalizedValue() != 0) {
+        if (!mWeight.getNormalizedValue().equals(Fixed6.ZERO)) {
             out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
         }
         out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
@@ -520,8 +520,8 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
 
         // Apply all base multipliers
-        Fixed6 multipliers                 = Fixed6.ZERO;
-        int    multiplierCountOneOrGreater = 0;
+        Fixed6  multipliers                 = Fixed6.ZERO;
+        int     multiplierCountOneOrGreater = 0;
         boolean hadMultiplier               = false;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_MULTIPLIER) {
@@ -633,7 +633,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         // Apply all multipliers
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER) {
-                value.setValue(value.getValue() * modifier.getWeightAdjMultiplier());
+                value.setValue(value.getValue().mul(modifier.getWeightAdjMultiplier()));
             }
         }
 
@@ -643,8 +643,8 @@ public class Equipment extends ListRow implements HasSourceReference {
                 value.add(modifier.getWeightAdjAddition());
             }
         }
-        if (value.getValue() < 0) {
-            value.setValue(0);
+        if (value.getValue().lessThan(Fixed6.ZERO)) {
+            value.setValue(Fixed6.ZERO);
         }
         return value;
     }
@@ -674,8 +674,8 @@ public class Equipment extends ListRow implements HasSourceReference {
         WeightValue saved = mExtendedWeight;
         int         count = getChildCount();
         WeightUnits units = mWeight.getUnits();
-        mExtendedWeight = new WeightValue(getAdjustedWeight().getValue() * mQuantity, units);
-        WeightValue contained = new WeightValue(0, units);
+        mExtendedWeight = new WeightValue(getAdjustedWeight().getValue().mul(new Fixed6(mQuantity)), units);
+        WeightValue contained = new WeightValue(Fixed6.ZERO, units);
         for (int i = 0; i < count; i++) {
             Equipment   one    = (Equipment) getChild(i);
             WeightValue weight = one.mExtendedWeight;
@@ -684,13 +684,13 @@ public class Equipment extends ListRow implements HasSourceReference {
             }
             contained.add(weight);
         }
-        int         percentage = 0;
-        WeightValue reduction  = new WeightValue(0, units);
+        Fixed6         percentage = Fixed6.ZERO;
+        WeightValue reduction  = new WeightValue(Fixed6.ZERO, units);
         for (Feature feature : getFeatures()) {
             if (feature instanceof ContainedWeightReduction) {
                 ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
                 if (cwr.isPercentage()) {
-                    percentage += cwr.getPercentageReduction();
+                    percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
                 } else {
                     reduction.add(cwr.getAbsoluteReduction());
                 }
@@ -702,7 +702,7 @@ public class Equipment extends ListRow implements HasSourceReference {
                     if (feature instanceof ContainedWeightReduction) {
                         ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
                         if (cwr.isPercentage()) {
-                            percentage += cwr.getPercentageReduction();
+                            percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
                         } else {
                             reduction.add(cwr.getAbsoluteReduction());
                         }
@@ -710,15 +710,16 @@ public class Equipment extends ListRow implements HasSourceReference {
                 }
             }
         }
-        if (percentage > 0) {
-            if (percentage >= 100) {
-                contained = new WeightValue(0, units);
+        if (percentage.greaterThan(Fixed6.ZERO)) {
+            Fixed6 oneHundred = new Fixed6(100);
+            if (percentage.greaterThanOrEqual(oneHundred)) {
+                contained = new WeightValue(Fixed6.ZERO, units);
             } else {
-                contained.subtract(new WeightValue(contained.getValue() * percentage / 100, contained.getUnits()));
+                contained.subtract(new WeightValue(contained.getValue().mul(percentage).div(oneHundred), contained.getUnits()));
             }
         }
         contained.subtract(reduction);
-        if (contained.getNormalizedValue() > 0) {
+        if (contained.getNormalizedValue().greaterThan(Fixed6.ZERO)) {
             mExtendedWeight.add(contained);
         }
         if (getParent() instanceof Equipment) {

@@ -1681,7 +1681,7 @@ public class TextTemplate {
                                     writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getExtendedWeight()));
                                     break;
                                 case KEY_WEIGHT_RAW:
-                                    writeEncodedText(out, Numbers.format(equipment.getAdjustedWeight().getNormalizedValue()));
+                                    writeEncodedText(out, equipment.getAdjustedWeight().getNormalizedValue().toLocalizedString());
                                     break;
                                 case KEY_REF:
                                     writeEncodedText(out, equipment.getReference());

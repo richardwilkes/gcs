@@ -15,6 +15,7 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightValue;
 
@@ -124,7 +125,7 @@ public class ContainedWeightReduction implements Feature {
      */
     public WeightValue getAbsoluteReduction() {
         if (isPercentage()) {
-            return new WeightValue(0, DisplayPreferences.getWeightUnits());
+            return new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
         }
         return (WeightValue) mValue;
     }
@@ -173,7 +174,7 @@ public class ContainedWeightReduction implements Feature {
             }
         } else if (mValue instanceof WeightValue) {
             WeightValue weight = (WeightValue) mValue;
-            if (weight.getValue() != 0) {
+            if (!weight.getValue().equals(Fixed6.ZERO)) {
                 text = weight.toString(false);
             }
         }

@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.utility.units;
 
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.text.Numbers;
 
 /** Holds a value and {@link WeightUnits} pair. */
 public class WeightValue extends UnitsValue<WeightUnits> {
@@ -34,7 +34,7 @@ public class WeightValue extends UnitsValue<WeightUnits> {
                 }
             }
         }
-        return new WeightValue(localized ? Numbers.extractDouble(buffer, 0, true) : Numbers.extractDouble(buffer, 0, false), units);
+        return new WeightValue(new Fixed6(buffer, Fixed6.ZERO, localized), units);
     }
 
     /**
@@ -43,7 +43,7 @@ public class WeightValue extends UnitsValue<WeightUnits> {
      * @param value The value to use.
      * @param units The {@link WeightUnits} to use.
      */
-    public WeightValue(double value, WeightUnits units) {
+    public WeightValue(Fixed6 value, WeightUnits units) {
         super(value, units);
     }
 

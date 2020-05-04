@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.print;
 
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.units.LengthUnits;
 
@@ -91,15 +92,12 @@ public class PrintUtilities {
     public static double[] getPaperMargins(PrintService service, PrintRequestAttributeSet set, LengthUnits units) {
         double[]           size    = getPaperSize(service, set, LengthUnits.IN);
         MediaPrintableArea current = (MediaPrintableArea) getSetting(service, set, MediaPrintableArea.class, true);
-        double             x;
-        double             y;
-
         if (current == null) {
             current = new MediaPrintableArea(0.5f, 0.5f, (float) (size[0] - 1.0), (float) (size[1] - 1.0), MediaPrintableArea.INCH);
         }
-        x = current.getX(MediaPrintableArea.INCH);
-        y = current.getY(MediaPrintableArea.INCH);
-        return new double[]{units.convert(LengthUnits.IN, y), units.convert(LengthUnits.IN, x), units.convert(LengthUnits.IN, size[1] - (y + current.getHeight(MediaPrintableArea.INCH))), units.convert(LengthUnits.IN, size[0] - (x + current.getWidth(MediaPrintableArea.INCH)))};
+        double x = current.getX(MediaPrintableArea.INCH);
+        double y = current.getY(MediaPrintableArea.INCH);
+        return new double[]{units.convert(LengthUnits.IN, new Fixed6(y)).asDouble(), units.convert(LengthUnits.IN, new Fixed6(x)).asDouble(), units.convert(LengthUnits.IN, new Fixed6(size[1] - (y + current.getHeight(MediaPrintableArea.INCH)))).asDouble(), units.convert(LengthUnits.IN, new Fixed6(size[0] - (x + current.getWidth(MediaPrintableArea.INCH)))).asDouble()};
     }
 
     /**
@@ -113,7 +111,7 @@ public class PrintUtilities {
     public static void setPaperMargins(PrintService service, PrintRequestAttributeSet set, double[] margins, LengthUnits units) {
         double[] size = getPaperSize(service, set, units);
 
-        set.add(new MediaPrintableArea((float) LengthUnits.IN.convert(units, margins[1]), (float) LengthUnits.IN.convert(units, margins[0]), (float) LengthUnits.IN.convert(units, size[0] - (margins[1] + margins[3])), (float) LengthUnits.IN.convert(units, size[1] - (margins[0] + margins[2])), Size2DSyntax.INCH));
+        set.add(new MediaPrintableArea((float) LengthUnits.IN.convert(units, new Fixed6(margins[1])).asDouble(), (float) LengthUnits.IN.convert(units, new Fixed6(margins[0])).asDouble(), (float) LengthUnits.IN.convert(units, new Fixed6(size[0] - (margins[1] + margins[3]))).asDouble(), (float) LengthUnits.IN.convert(units, new Fixed6(size[1] - (margins[0] + margins[2]))).asDouble(), Size2DSyntax.INCH));
     }
 
     /**
@@ -179,7 +177,7 @@ public class PrintUtilities {
         if (size == null) {
             size = MediaSize.NA.LETTER;
         }
-        return new double[]{units.convert(LengthUnits.IN, size.getX(Size2DSyntax.INCH)), units.convert(LengthUnits.IN, size.getY(Size2DSyntax.INCH))};
+        return new double[]{units.convert(LengthUnits.IN, new Fixed6(size.getX(Size2DSyntax.INCH))).asDouble(), units.convert(LengthUnits.IN, new Fixed6(size.getY(Size2DSyntax.INCH))).asDouble()};
     }
 
     /**
@@ -192,7 +190,7 @@ public class PrintUtilities {
      */
     public static void setPaperSize(PrintService service, PrintRequestAttributeSet set, double[] size, LengthUnits units) {
         double[]      margins       = getPaperMargins(service, set, units);
-        MediaSizeName mediaSizeName = MediaSize.findMedia((float) LengthUnits.IN.convert(units, size[0]), (float) LengthUnits.IN.convert(units, size[1]), Size2DSyntax.INCH);
+        MediaSizeName mediaSizeName = MediaSize.findMedia((float) LengthUnits.IN.convert(units, new Fixed6(size[0])).asDouble(), (float) LengthUnits.IN.convert(units, new Fixed6(size[1])).asDouble(), Size2DSyntax.INCH);
 
         if (mediaSizeName == null) {
             mediaSizeName = MediaSizeName.NA_LETTER;

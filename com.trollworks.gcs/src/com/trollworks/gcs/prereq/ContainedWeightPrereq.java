@@ -19,6 +19,7 @@ import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightValue;
@@ -40,7 +41,7 @@ public class ContainedWeightPrereq extends HasPrereq {
      */
     public ContainedWeightPrereq(PrereqList parent) {
         super(parent);
-        mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(5.0, DisplayPreferences.getWeightUnits()));
+        mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(new Fixed6(5), DisplayPreferences.getWeightUnits()));
     }
 
     /**

@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.utility.text;
 
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.units.LengthValue;
 
 import java.text.ParseException;
@@ -36,7 +37,7 @@ public class HeightFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
     public String valueToString(Object value) throws ParseException {
         LengthValue length = (LengthValue) value;
-        if (mBlankOnZero && length.getValue() == 0) {
+        if (mBlankOnZero && length.getValue().equals(Fixed6.ZERO)) {
             return "";
         }
         return length.toString();

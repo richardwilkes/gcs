@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.WeightValue;
 
@@ -47,7 +48,7 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
                 feature.setValue(source.getValue());
                 notifyActionListeners();
             }
-        }, SwingConstants.LEFT, feature.getValue(), new WeightValue(999999999, DisplayPreferences.getWeightUnits()), I18n.Text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
+        }, SwingConstants.LEFT, feature.getValue(), new WeightValue(new Fixed6(999999999), DisplayPreferences.getWeightUnits()), I18n.Text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
         UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         row.add(field);

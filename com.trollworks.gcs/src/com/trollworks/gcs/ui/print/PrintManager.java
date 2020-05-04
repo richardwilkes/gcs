@@ -16,6 +16,7 @@ import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
@@ -195,7 +196,7 @@ public class PrintManager {
     }
 
     private static double getNumber(XMLReader reader, LengthUnits units, double defInches) throws IOException {
-        return reader.readDouble(units.convert(LengthUnits.IN, defInches));
+        return reader.readDouble(units.convert(LengthUnits.IN, new Fixed6(defInches)).asDouble());
     }
 
     /**

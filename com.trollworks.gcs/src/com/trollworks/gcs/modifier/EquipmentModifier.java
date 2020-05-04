@@ -25,7 +25,6 @@ import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.io.IOException;
@@ -56,10 +55,10 @@ public class EquipmentModifier extends Modifier {
     public static final  String                      ID_COST_ADJ            = PREFIX + TAG_COST_ADJ;
     /** The notification ID for weight adjustment changes. */
     public static final  String                      ID_WEIGHT_ADJ          = PREFIX + TAG_WEIGHT_ADJ;
-    private EquipmentModifierCostType   mCostType;
-    private Fixed6                      mCostAmount;
-    private EquipmentModifierWeightType mWeightType;
-    private              double                      mWeightMultiplier;
+    private              EquipmentModifierCostType   mCostType;
+    private              Fixed6                      mCostAmount;
+    private              EquipmentModifierWeightType mWeightType;
+    private              Fixed6                      mWeightMultiplier;
     private              WeightValue                 mWeightAddition;
 
     /**
@@ -107,8 +106,8 @@ public class EquipmentModifier extends Modifier {
         mCostType = EquipmentModifierCostType.COST_FACTOR;
         mCostAmount = Fixed6.ONE;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
-        mWeightMultiplier = 1;
-        mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mWeightMultiplier = Fixed6.ONE;
+        mWeightAddition = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
     }
 
     @Override
@@ -133,7 +132,7 @@ public class EquipmentModifier extends Modifier {
         }
         if (obj instanceof EquipmentModifier && super.isEquivalentTo(obj)) {
             EquipmentModifier row = (EquipmentModifier) obj;
-            return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount);
+            return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount) && mWeightType == row.mWeightType && mWeightMultiplier.equals(row.mWeightMultiplier) && mWeightAddition.equals(row.mWeightAddition);
         }
         return false;
     }
@@ -201,7 +200,7 @@ public class EquipmentModifier extends Modifier {
      * @return The amount for the weight multiplier. Only valid if {@code getWeightAdjType() ==
      *         EquipmentModifierWeightType.MULTIPLIER}.
      */
-    public double getWeightAdjMultiplier() {
+    public Fixed6 getWeightAdjMultiplier() {
         return mWeightMultiplier;
     }
 
@@ -210,8 +209,8 @@ public class EquipmentModifier extends Modifier {
      *                   getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER}.
      * @return {@code true} if a change was made.
      */
-    public boolean setWeightAdjMultiplier(double multiplier) {
-        if (mWeightType == EquipmentModifierWeightType.MULTIPLIER && multiplier != mWeightMultiplier) {
+    public boolean setWeightAdjMultiplier(Fixed6 multiplier) {
+        if (mWeightType == EquipmentModifierWeightType.MULTIPLIER && !mWeightMultiplier.equals(multiplier)) {
             mWeightMultiplier = multiplier;
             notifySingle(ID_WEIGHT_ADJ);
             return true;
@@ -267,8 +266,8 @@ public class EquipmentModifier extends Modifier {
         mCostType = EquipmentModifierCostType.COST_FACTOR;
         mCostAmount = Fixed6.ONE;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
-        mWeightMultiplier = 1;
-        mWeightAddition = new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mWeightMultiplier = Fixed6.ONE;
+        mWeightAddition = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
     }
 
     @Override
@@ -289,7 +288,7 @@ public class EquipmentModifier extends Modifier {
                     break;
                 case MULTIPLIER:
                 default:
-                    mWeightMultiplier = reader.readDouble(1);
+                    mWeightMultiplier = new Fixed6(reader.readText(), Fixed6.ONE, false);
                     break;
                 }
             } else {
@@ -308,14 +307,14 @@ public class EquipmentModifier extends Modifier {
             switch (mWeightType) {
             case BASE_ADDITION:
             case FINAL_ADDITION:
-                if (mWeightAddition.getNormalizedValue() != 0) {
+                if (!mWeightAddition.getNormalizedValue().equals(Fixed6.ZERO)) {
                     out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAddition.toString(false), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
                 }
                 break;
             case MULTIPLIER:
             default:
-                if (mWeightMultiplier != 1) {
-                    out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightMultiplier, ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+                if (!mWeightMultiplier.equals(Fixed6.ONE)) {
+                    out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightMultiplier.toString(), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
                 }
                 break;
             }
@@ -349,7 +348,7 @@ public class EquipmentModifier extends Modifier {
         switch (mWeightType) {
         case BASE_ADDITION:
         case FINAL_ADDITION:
-            if (mWeightAddition.getNormalizedValue() != 0) {
+            if (!mWeightAddition.getNormalizedValue().equals(Fixed6.ZERO)) {
                 String weight = mWeightAddition.toString();
                 if (!weight.startsWith("-")) {
                     builder.append('+');
@@ -361,8 +360,8 @@ public class EquipmentModifier extends Modifier {
             break;
         case MULTIPLIER:
         default:
-            if (mWeightMultiplier != 1) {
-                builder.append(Numbers.format(mWeightMultiplier));
+            if (!mWeightMultiplier.equals(Fixed6.ONE)) {
+                builder.append(mWeightMultiplier.toLocalizedString());
                 builder.append(' ');
                 builder.append(mWeightType);
             }

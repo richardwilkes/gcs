@@ -11,11 +11,13 @@
 
 package com.trollworks.gcs.utility.units;
 
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.text.Numbers;
 
 /** Holds a value and {@link LengthUnits} pair. */
 public class LengthValue extends UnitsValue<LengthUnits> {
+    protected static final Fixed6 METRIC_CONVERSION_FACTOR = new Fixed6(2.54);
+
     /**
      * @param buffer    The buffer to extract a {@link LengthValue} from.
      * @param localized {@code true} if the string might have localized notation within it.
@@ -30,14 +32,11 @@ public class LengthValue extends UnitsValue<LengthUnits> {
             int inchesMark = buffer.indexOf('"');
             if (feetMark != -1 || inchesMark != -1) {
                 if (feetMark == -1) {
-                    String part = buffer.substring(0, inchesMark);
-                    return new LengthValue(localized ? Numbers.extractDouble(part, 0, true) : Numbers.extractDouble(part, 0, false), LengthUnits.FT_IN);
+                    return new LengthValue(new Fixed6(buffer.substring(0, inchesMark), Fixed6.ZERO, localized), LengthUnits.FT_IN);
                 }
-                String part   = buffer.substring(inchesMark != -1 && feetMark > inchesMark ? inchesMark + 1 : 0, feetMark);
-                double inches = (localized ? Numbers.extractDouble(part, 0, true) : Numbers.extractDouble(part, 0, false)) * 12;
+                Fixed6 inches = new Fixed6(buffer.substring(inchesMark != -1 && feetMark > inchesMark ? inchesMark + 1 : 0, feetMark), Fixed6.ZERO, localized).mul(new Fixed6(12));
                 if (inchesMark != -1) {
-                    part = buffer.substring(feetMark < inchesMark ? feetMark + 1 : 0, inchesMark);
-                    inches += localized ? Numbers.extractDouble(part, 0, true) : Numbers.extractDouble(part, 0, false);
+                    inches = inches.add(new Fixed6(buffer.substring(feetMark < inchesMark ? feetMark + 1 : 0, inchesMark), Fixed6.ZERO, localized));
                 }
                 return new LengthValue(inches, LengthUnits.FT_IN);
             }
@@ -50,7 +49,7 @@ public class LengthValue extends UnitsValue<LengthUnits> {
                 }
             }
         }
-        return new LengthValue(localized ? Numbers.extractDouble(buffer, 0, true) : Numbers.extractDouble(buffer, 0, false), units);
+        return new LengthValue(new Fixed6(buffer, Fixed6.ZERO, localized), units);
     }
 
     /**
@@ -59,7 +58,7 @@ public class LengthValue extends UnitsValue<LengthUnits> {
      * @param value The value to use.
      * @param units The {@link Units} to use.
      */
-    public LengthValue(double value, LengthUnits units) {
+    public LengthValue(Fixed6 value, LengthUnits units) {
         super(value, units);
     }
 

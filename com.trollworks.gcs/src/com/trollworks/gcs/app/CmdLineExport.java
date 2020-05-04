@@ -18,6 +18,7 @@ import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.utility.FileType;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Timing;
@@ -141,7 +142,7 @@ public class CmdLineExport implements Runnable {
             }
 
             if ("A4".equalsIgnoreCase(mPaper)) {
-                return new double[]{LengthUnits.IN.convert(LengthUnits.CM, 21), LengthUnits.IN.convert(LengthUnits.CM, 29.7)};
+                return new double[]{LengthUnits.IN.convert(LengthUnits.CM, new Fixed6(21)).asDouble(), LengthUnits.IN.convert(LengthUnits.CM, new Fixed6(29.7)).asDouble()};
             }
 
             index = mPaper.indexOf('x');

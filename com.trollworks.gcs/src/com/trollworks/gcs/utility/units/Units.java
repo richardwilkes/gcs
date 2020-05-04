@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.utility.units;
 
+import com.trollworks.gcs.utility.Fixed6;
+
 /** Specifies the methods a type of unit must implement. */
 public interface Units {
     /**
@@ -18,7 +20,7 @@ public interface Units {
      * @param localize Whether or not the number should be localized.
      * @return The formatted value.
      */
-    String format(double value, boolean localize);
+    String format(Fixed6 value, boolean localize);
 
     /**
      * Converts from a specified units type into this units type.
@@ -27,7 +29,7 @@ public interface Units {
      * @param value The value to convert.
      * @return The new value, in units of this type.
      */
-    double convert(Units units, double value);
+    Fixed6 convert(Units units, Fixed6 value);
 
     /**
      * Normalizes a value to a common scale.
@@ -35,10 +37,10 @@ public interface Units {
      * @param value The value to normalize.
      * @return The normalized value.
      */
-    double normalize(double value);
+    Fixed6 normalize(Fixed6 value);
 
     /** @return The factor used. */
-    double getFactor();
+    Fixed6 getFactor();
 
     /** @return The description, which includes the localized name and the abbreviation. */
     String getDescription();

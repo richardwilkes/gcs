@@ -336,7 +336,7 @@ public class GURPSCharacter extends DataFile {
         mIncludePunch = true;
         mIncludeKick = true;
         mIncludeKickBoots = true;
-        mCachedWeightCarried = new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
         mPageSettings = OutputPreferences.getDefaultPageSettings();
         mLastModified = System.currentTimeMillis();
         mCreatedOn = mLastModified;
@@ -1189,25 +1189,26 @@ public class GURPSCharacter extends DataFile {
     }
 
     private WeightValue getBasicLift(WeightUnits desiredUnits) {
+        Fixed6 ten = new Fixed6(10);
         WeightUnits units;
-        double      divisor;
-        double      multiplier;
-        double      roundAt;
+        Fixed6      divisor;
+        Fixed6      multiplier;
+        Fixed6      roundAt;
         if (SheetPreferences.areGurpsMetricRulesUsed() && DisplayPreferences.getWeightUnits().isMetric()) {
             units = WeightUnits.KG;
-            divisor = 10;
-            multiplier = 1;
-            roundAt = 5;
+            divisor = ten;
+            multiplier = Fixed6.ONE;
+            roundAt = new Fixed6(5);
         } else {
             units = WeightUnits.LB;
-            divisor = 5;
-            multiplier = 2;
-            roundAt = 10;
+            divisor = new Fixed6(5);
+            multiplier = new Fixed6(2);
+            roundAt = ten;
         }
         int    strength = getStrength() + mLiftingStrengthBonus;
-        double value;
+        Fixed6 value;
         if (strength < 1) {
-            value = 0;
+            value = Fixed6.ZERO;
         } else {
             if (SheetPreferences.areOptionalStrengthRulesUsed()) {
                 int diff = 0;
@@ -1215,23 +1216,24 @@ public class GURPSCharacter extends DataFile {
                     diff = strength / 10 - 1;
                     strength -= diff * 10;
                 }
-                value = Math.pow(10.0, strength / 10.0) * multiplier;
-                value = strength <= 6 ? Math.round(value * 10.0) / 10.0 : Math.round(value);
-                value *= Math.pow(10, diff);
+                value = new Fixed6(Math.pow(10.0, strength / 10.0)).mul(multiplier);
+                value = strength <= 6 ? value.mul(ten).round().div(ten) : value.round();
+                value = value.mul(new Fixed6(Math.pow(10, diff)));
             } else {
-                value = strength * strength / divisor;
+                //noinspection UnnecessaryExplicitNumericCast
+                value = new Fixed6((long)strength * (long)strength).div(divisor);
             }
-            if (value >= roundAt) {
-                value = Math.round(value);
+            if (value.greaterThanOrEqual(roundAt)) {
+                value = value.round();
             }
-            value = Math.floor(value * 10.0) / 10.0;
+            value = value.mul(ten).trunc().div(ten);
         }
         return new WeightValue(desiredUnits.convert(units, value), desiredUnits);
     }
 
-    private WeightValue getMultipleOfBasicLift(double multiple) {
+    private WeightValue getMultipleOfBasicLift(int multiple) {
         WeightValue lift = getBasicLift();
-        lift.setValue(lift.getValue() * multiple);
+        lift.setValue(lift.getValue().mul(new Fixed6(multiple)));
         return lift;
     }
 
@@ -1272,7 +1274,7 @@ public class GURPSCharacter extends DataFile {
     public WeightValue getMaximumCarry(Encumbrance encumbrance) {
         WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() && DisplayPreferences.getWeightUnits().isMetric() ? WeightUnits.KG : WeightUnits.LB;
         WeightValue lift      = getBasicLift(calcUnits);
-        lift.setValue(lift.getValue() * encumbrance.getWeightMultiplier());
+        lift.setValue(lift.getValue().mul(new Fixed6(encumbrance.getWeightMultiplier())));
         WeightUnits desiredUnits = DisplayPreferences.getWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, lift.getValue()), desiredUnits);
     }
@@ -1459,9 +1461,9 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The current encumbrance level. */
     public Encumbrance getEncumbranceLevel() {
-        double carried = getWeightCarried().getNormalizedValue();
+        Fixed6 carried = getWeightCarried().getNormalizedValue();
         for (Encumbrance encumbrance : Encumbrance.values()) {
-            if (carried <= getMaximumCarry(encumbrance).getNormalizedValue()) {
+            if (carried.lessThanOrEqual(getMaximumCarry(encumbrance).getNormalizedValue())) {
                 return encumbrance;
             }
         }
@@ -1473,7 +1475,7 @@ public class GURPSCharacter extends DataFile {
      *         extra-heavy load.
      */
     public boolean isCarryingGreaterThanMaxLoad() {
-        return getWeightCarried().getNormalizedValue() > getMaximumCarry(Encumbrance.EXTRA_HEAVY).getNormalizedValue();
+        return getWeightCarried().getNormalizedValue().greaterThan(getMaximumCarry(Encumbrance.EXTRA_HEAVY).getNormalizedValue());
     }
 
     /** @return The current weight being carried. */
@@ -1501,9 +1503,9 @@ public class GURPSCharacter extends DataFile {
     public static WeightValue convertFromGurpsMetric(WeightValue value) {
         switch (value.getUnits()) {
         case G:
-            return new WeightValue(value.getValue() / 30, WeightUnits.OZ);
+            return new WeightValue(value.getValue().div(new Fixed6(30)), WeightUnits.OZ);
         case KG:
-            return new WeightValue(value.getValue() * 2, WeightUnits.LB);
+            return new WeightValue(value.getValue().mul(new Fixed6(2)), WeightUnits.LB);
         case T:
             return new WeightValue(value.getValue(), WeightUnits.LT);
         default:
@@ -1521,12 +1523,12 @@ public class GURPSCharacter extends DataFile {
     public static WeightValue convertToGurpsMetric(WeightValue value) {
         switch (value.getUnits()) {
         case LB:
-            return new WeightValue(value.getValue() / 2, WeightUnits.KG);
+            return new WeightValue(value.getValue().div(new Fixed6(2)), WeightUnits.KG);
         case LT:
         case TN:
             return new WeightValue(value.getValue(), WeightUnits.T);
         case OZ:
-            return new WeightValue(value.getValue() * 30, WeightUnits.G);
+            return new WeightValue(value.getValue().mul(new Fixed6(30)), WeightUnits.G);
         default:
             return value;
         }
@@ -1541,7 +1543,7 @@ public class GURPSCharacter extends DataFile {
     public void calculateWeightAndWealthCarried(boolean notify) {
         WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
         Fixed6      savedWealth = mCachedWealthCarried;
-        mCachedWeightCarried = new WeightValue(0, DisplayPreferences.getWeightUnits());
+        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
         mCachedWealthCarried = Fixed6.ZERO;
         for (Row one : mEquipment.getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
