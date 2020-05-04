@@ -54,7 +54,11 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
         setFocusable(true);
         addMouseListener(this);
         addKeyListener(this);
-        goToPage(pdfRef, page, highlight);
+        if (page < 1) {
+            markPageForLoading();
+        } else {
+            goToPage(pdfRef, page, highlight);
+        }
     }
 
     public void goToPage(PdfRef pdfRef, int page, String highlight) {

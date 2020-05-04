@@ -89,7 +89,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
                     mPageField.setValue(Integer.valueOf(newPageIndex + 1));
                 }
             }
-        }, SwingConstants.RIGHT, Integer.valueOf(page), Integer.valueOf(9999), null);
+        }, SwingConstants.RIGHT, Integer.valueOf(page < 1 ? 1 : page), Integer.valueOf(9999), null);
         mToolbar.add(mPageField, Toolbar.LAYOUT_EXTRA_BEFORE);
         mPageStatus = new JLabel("/ -");
         mToolbar.add(mPageStatus);

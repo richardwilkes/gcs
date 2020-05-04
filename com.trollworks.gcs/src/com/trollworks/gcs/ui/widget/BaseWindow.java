@@ -22,7 +22,6 @@ import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.utility.FileProxy;
-import com.trollworks.gcs.utility.FileProxyProvider;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
@@ -416,11 +415,6 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
                     if (PathUtils.getFullPath(wFile).equals(fullPath)) {
                         return proxy;
                     }
-                }
-            } else if (window instanceof FileProxyProvider) {
-                FileProxy proxy = ((FileProxyProvider) window).getFileProxy(file);
-                if (proxy != null) {
-                    return proxy;
                 }
             }
         }

@@ -323,7 +323,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
                 } else if (FileType.TEMPLATE.matchExtension(ext)) {
                     proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
                 } else if (FileType.PDF.matchExtension(ext)) {
-                    proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), 1, null));
+                    proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), -1, null));
                 }
             } catch (Throwable throwable) {
                 StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
