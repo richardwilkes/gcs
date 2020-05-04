@@ -33,8 +33,6 @@ public class Fonts {
     public static final  String                 KEY_FIELD             = "trollworks.v2.field";
     /** The field notes font. */
     public static final  String                 KEY_FIELD_NOTES       = "trollworks.v2.field.notes";
-    /** The technique field font. */
-    public static final  String                 KEY_TECHNIQUE_FIELD   = "trollworks.v2.field.technique";
     /** The primary footer font. */
     public static final  String                 KEY_PRIMARY_FOOTER    = "trollworks.v2.footer.primary";
     /** The secondary footer font. */
@@ -59,7 +57,6 @@ public class Fonts {
         register(KEY_LABEL, I18n.Text("Labels"), new Font(name, Font.PLAIN, 9));
         register(KEY_FIELD, I18n.Text("Fields"), new Font(name, Font.BOLD, 9));
         register(KEY_FIELD_NOTES, I18n.Text("Field Notes"), new Font(name, Font.PLAIN, 8));
-        register(KEY_TECHNIQUE_FIELD, I18n.Text("Technique Fields"), new Font(name, Font.BOLD + Font.ITALIC, 9));
         register(KEY_PRIMARY_FOOTER, I18n.Text("Primary Footer"), new Font(name, Font.BOLD, 8));
         register(KEY_SECONDARY_FOOTER, I18n.Text("Secondary Footer"), new Font(name, Font.PLAIN, 6));
         register(KEY_NOTES, I18n.Text("Notes"), new Font(name, Font.PLAIN, 9));
