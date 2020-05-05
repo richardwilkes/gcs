@@ -19,7 +19,6 @@ import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.Units;
 import com.trollworks.gcs.utility.units.WeightValue;
@@ -118,7 +117,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
                 modified |= mRow.setFeatures(mFeatures.getFeatures());
             }
             modified |= mRow.setCostAdjType(getCostType());
-            modified |= mRow.setCostAdjAmount(getCostAmount());
+            modified |= mRow.setCostAdjAmount(getCostType().format(mCostAmountField.getText(), false));
             modified |= mRow.setWeightAdjType(getWeightType());
             switch (mRow.getWeightAdjType()) {
             case BASE_ADDITION:
@@ -186,10 +185,10 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private void createCostAdjustmentField(Container labelParent, Container fieldParent) {
         mCostAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mCostAmountField);
-        mCostAmountField.setText(mRow.getCostAdjType().format(mRow.getCostAdjAmount()));
+        mCostAmountField.setText(mRow.getCostAdjType().format(mRow.getCostAdjAmount(), true));
         mCostAmountField.setToolTipText(I18n.Text("The cost modifier"));
         mCostAmountField.setEnabled(mIsEditable);
-        new NumberFilter(mCostAmountField, true, true, true, 11);
+        mCostAmountField.addFocusListener(this);
         mCostAmountField.addActionListener(this);
         labelParent.add(new LinkedLabel("", mCostAmountField));
         fieldParent.add(mCostAmountField);
@@ -208,13 +207,9 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private EquipmentModifierCostType getCostType() {
         Object obj = mCostType.getSelectedItem();
         if (!(obj instanceof EquipmentModifierCostType)) {
-            obj = EquipmentModifierCostType.COST_FACTOR;
+            obj = EquipmentModifierCostType.TO_ORIGINAL_COST;
         }
         return (EquipmentModifierCostType) obj;
-    }
-
-    private Fixed6 getCostAmount() {
-        return getCostType().extract(mCostAmountField.getText(), true);
     }
 
     private void createWeightAdjustmentFields(Container parent) {
@@ -318,7 +313,12 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     @Override
     public void focusLost(FocusEvent event) {
         if (!mRow.canHaveChildren()) {
-            weightChanged();
+            Object src = event.getSource();
+            if (src == mCostAmountField) {
+                costChanged();
+            } else if (src == mWeightAmountField) {
+                weightChanged();
+            }
         }
     }
 
@@ -358,8 +358,8 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void costChanged() {
-        String text    = mCostAmountField.getText().trim();
-        String revised = getCostType().adjustText(text);
+        String text    = mCostAmountField.getText();
+        String revised = getCostType().format(text, true);
         if (!text.equals(revised)) {
             mCostAmountField.setText(revised);
         }

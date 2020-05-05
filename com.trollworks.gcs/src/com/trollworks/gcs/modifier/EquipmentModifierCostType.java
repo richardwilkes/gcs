@@ -12,150 +12,97 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.utility.Fixed6;
-import com.trollworks.gcs.utility.I18n;
 
-/**
- * Describes how an {@link EquipmentModifier}'s cost is applied. These should be applied from top to
- * bottom, with any values of the same type adding together before being applied.
- */
+/** Describes how an {@link EquipmentModifier}'s cost is applied. */
 public enum EquipmentModifierCostType {
-    /** Adds to the base cost. */
-    BASE_ADDITION {
+    /**
+     * Modifies the original value stored in the equipment. Can be a ±value or a ±% value. Examples:
+     * '+5', '-5', '+10%', '-10%'
+     */
+    TO_ORIGINAL_COST(ModifierValueType.ADDITION, ModifierValueType.PERCENTAGE) {
+        @Override
+        public String toShortString() {
+            return "to original cost";
+        }
+
         @Override
         public String toString() {
-            return I18n.Text("to base cost");
-        }
-
-        @Override
-        public String format(Fixed6 value) {
-            String str = value.toLocalizedString();
-            return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
-        }
-
-        @Override
-        public Fixed6 extract(String text, boolean localized) {
-            return new Fixed6(text, Fixed6.ZERO, localized);
-        }
-
-        @Override
-        public String adjustText(String text) {
-            return ensureTextStartsWithPlusOrMinus(text);
+            return toShortString() + " (e.g. '+5', '-5', '+10%', '-10%')";
         }
     },
-    /** Multiplies the base cost. */
-    BASE_MULTIPLIER {
+    /**
+     * Modifies the base cost. Can be an additive multiplier or a CF value. Examples: 'x2', '+2 CF',
+     * '-2 CF'
+     */
+    TO_BASE_COST(ModifierValueType.CF, ModifierValueType.MULTIPLIER) {
+        @Override
+        public String toShortString() {
+            return "to base cost";
+        }
+
         @Override
         public String toString() {
-            return "× base cost";
-        }
-
-        @Override
-        public String format(Fixed6 value) {
-            return value.toLocalizedString();
-        }
-
-        @Override
-        public Fixed6 extract(String text, boolean localized) {
-            Fixed6 value = new Fixed6(text, Fixed6.ZERO, localized);
-            return value.lessThan(Fixed6.ZERO) ? Fixed6.ONE : value;
-        }
-
-        @Override
-        public String adjustText(String text) {
-            return adjustTextForMultiplier(text);
+            return toShortString() + " (e.g. 'x2', '+2 CF', '-2 CF')";
         }
     },
-    /** Adds to the cost factor. */
-    COST_FACTOR {
+    /**
+     * Modifies the final base cost. Can be a ±value or a ±% value. Examples: '+5', '-5', '+10%',
+     * '-10%'
+     */
+    TO_FINAL_BASE_COST(ModifierValueType.ADDITION, ModifierValueType.PERCENTAGE) {
+        @Override
+        public String toShortString() {
+            return "to final base cost";
+        }
+
         @Override
         public String toString() {
-            return "CF";
-        }
-
-        @Override
-        public String format(Fixed6 value) {
-            String str = value.toLocalizedString();
-            return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
-        }
-
-        @Override
-        public Fixed6 extract(String text, boolean localized) {
-            return new Fixed6(text, Fixed6.ZERO, localized);
-        }
-
-        @Override
-        public String adjustText(String text) {
-            return ensureTextStartsWithPlusOrMinus(text);
+            return toShortString() + " (e.g. '+5', '-5', '+10%', '-10%')";
         }
     },
-    /** Multiplies the final cost. */
-    FINAL_MULTIPLIER {
+    /**
+     * Modifies the final cost. Can be a ±value or a ±% value. Examples: '+5', '-5', '+10%', '-10%'
+     */
+    TO_FINAL_COST(ModifierValueType.ADDITION, ModifierValueType.PERCENTAGE) {
         @Override
-        public String toString() {
-            return "× final cost";
-        }
-
-        @Override
-        public String format(Fixed6 value) {
-            return value.toLocalizedString();
-        }
-
-        @Override
-        public Fixed6 extract(String text, boolean localized) {
-            Fixed6 value = new Fixed6(text, Fixed6.ZERO, localized);
-            return value.lessThan(Fixed6.ZERO) ? Fixed6.ONE : value;
-        }
-
-        @Override
-        public String adjustText(String text) {
-            return adjustTextForMultiplier(text);
-        }
-    },
-    /** Adds to the final cost. */
-    FINAL_ADDITION {
-        @Override
-        public String toString() {
+        public String toShortString() {
             return "to final cost";
         }
 
         @Override
-        public String format(Fixed6 value) {
-            String str = value.toLocalizedString();
-            return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
-        }
-
-        @Override
-        public Fixed6 extract(String text, boolean localized) {
-            return new Fixed6(text, Fixed6.ZERO, localized);
-        }
-
-        @Override
-        public String adjustText(String text) {
-            return ensureTextStartsWithPlusOrMinus(text);
+        public String toString() {
+            return toShortString() + " (e.g. '+5', '-5', '+10%', '-10%')";
         }
     };
 
-    public abstract String format(Fixed6 value);
+    private ModifierValueType[] mPermittedTypes;
 
-    public abstract Fixed6 extract(String text, boolean localized);
-
-    public abstract String adjustText(String text);
-
-    String ensureTextStartsWithPlusOrMinus(String text) {
-        if (!text.startsWith("+") && !text.startsWith("-")) {
-            return "+" + text;
-        }
-        return text;
+    EquipmentModifierCostType(ModifierValueType... permittedTypes) {
+        mPermittedTypes = permittedTypes;
     }
 
-    String adjustTextForMultiplier(String text) {
-        Fixed6 value = new Fixed6(text, Fixed6.ZERO, true);
-        if (value.lessThanOrEqual(Fixed6.ZERO)) {
-            return "1";
+    public abstract String toShortString();
+
+    public ModifierValueType determineType(String text) {
+        ModifierValueType mvt = ModifierValueType.determineType(text);
+        return allowed(mvt) ? mvt : mPermittedTypes[0];
+    }
+
+    public Fixed6 extractValue(String text, boolean localized) {
+        return determineType(text).extractValue(text, localized);
+    }
+
+    public String format(String text, boolean localized) {
+        ModifierValueType mvt = determineType(text);
+        return mvt.format(mvt.extractValue(text, localized), localized);
+    }
+
+    private boolean allowed(ModifierValueType mvt) {
+        for (ModifierValueType allowed : mPermittedTypes) {
+            if (allowed == mvt) {
+                return true;
+            }
         }
-        if (text.startsWith("+")) {
-            return text.substring(1);
-        }
-        return text;
+        return false;
     }
 }

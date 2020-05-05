@@ -35,7 +35,6 @@ import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.MouseWheelEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;

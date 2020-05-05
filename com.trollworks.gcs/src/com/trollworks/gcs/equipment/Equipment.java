@@ -24,6 +24,7 @@ import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.modifier.EquipmentModifierCostType;
 import com.trollworks.gcs.modifier.EquipmentModifierWeightType;
 import com.trollworks.gcs.modifier.Modifier;
+import com.trollworks.gcs.modifier.ModifierValueType;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -101,7 +102,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final  String                  ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus";
     /** The field ID for when the equipment gets Modifiers. */
     public static final  String                  ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier";
-    private static final Fixed6                  MIN_CF                     = new Fixed6(-0.8);
+    private static final Fixed6                  MIN_CF                     = new Fixed6("-0.8", Fixed6.ZERO, false);
     private              boolean                 mEquipped;
     private              int                     mQuantity;
     private              int                     mUses;
@@ -512,76 +513,58 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @return The adjusted value.
      */
     public static Fixed6 getValueAdjustedForModifiers(Fixed6 value, List<EquipmentModifier> modifiers) {
-        // Apply all base additions
-        for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_ADDITION) {
-                value = value.add(modifier.getCostAdjAmount());
-            }
-        }
+        // Apply all EquipmentModifierCostType.TO_ORIGINAL_COST
+        Fixed6 cost = processAdditiveStep(EquipmentModifierCostType.TO_ORIGINAL_COST, value, modifiers);
 
-        // Apply all base multipliers
-        Fixed6  multipliers                 = Fixed6.ZERO;
-        int     multiplierCountOneOrGreater = 0;
-        boolean hadMultiplier               = false;
+        // Apply all EquipmentModifierCostType.TO_BASE_COST
+        Fixed6 cf    = Fixed6.ZERO;
+        int    count = 0;
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.BASE_MULTIPLIER) {
-                hadMultiplier = true;
-                Fixed6 amt = modifier.getCostAdjAmount();
-                multipliers = multipliers.add(amt);
-                if (amt.greaterThanOrEqual(Fixed6.ONE)) {
-                    multiplierCountOneOrGreater++;
+            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.TO_BASE_COST) {
+                String            adj = modifier.getCostAdjAmount();
+                ModifierValueType mvt = EquipmentModifierCostType.TO_BASE_COST.determineType(adj);
+                Fixed6            amt = mvt.extractValue(adj, false);
+                if (mvt == ModifierValueType.MULTIPLIER) {
+                    amt = amt.sub(Fixed6.ONE);
                 }
-            }
-        }
-        if (hadMultiplier) {
-            if (multiplierCountOneOrGreater > 0) {
-                multipliers = multipliers.sub(new Fixed6(multiplierCountOneOrGreater - 1));
-            }
-            value = value.mul(multipliers);
-        }
-
-        // Apply all cost factors
-        Fixed6 cf = Fixed6.ZERO;
-        for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.COST_FACTOR) {
-                cf = cf.add(modifier.getCostAdjAmount());
+                cf = cf.add(amt);
+                count++;
             }
         }
         if (!cf.equals(Fixed6.ZERO)) {
-            if (cf.lessThanOrEqual(MIN_CF)) {
+            if (cf.lessThan(MIN_CF)) {
                 cf = MIN_CF;
             }
-            value = value.mul(cf.add(Fixed6.ONE));
+            cost = cost.mul(cf.add(Fixed6.ONE));
         }
 
-        // Apply all final multipliers
-        multipliers = Fixed6.ZERO;
-        multiplierCountOneOrGreater = 0;
-        hadMultiplier = false;
+        // Apply all EquipmentModifierCostType.TO_FINAL_BASE_COST
+        cost = processAdditiveStep(EquipmentModifierCostType.TO_FINAL_BASE_COST, cost, modifiers);
+
+        // Apply all EquipmentModifierCostType.TO_FINAL_BASE_COST
+        cost = processAdditiveStep(EquipmentModifierCostType.TO_FINAL_COST, cost, modifiers);
+        return cost.greaterThanOrEqual(Fixed6.ZERO) ? cost : Fixed6.ZERO;
+    }
+
+    private static Fixed6 processAdditiveStep(EquipmentModifierCostType costType, Fixed6 value, List<EquipmentModifier> modifiers) {
+        Fixed6 percentages = Fixed6.ZERO;
+        Fixed6 cost        = value;
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_MULTIPLIER) {
-                hadMultiplier = true;
-                Fixed6 amt = modifier.getCostAdjAmount();
-                multipliers = multipliers.add(amt);
-                if (amt.greaterThanOrEqual(Fixed6.ONE)) {
-                    multiplierCountOneOrGreater++;
+            if (modifier.isEnabled() && modifier.getCostAdjType() == costType) {
+                String            adj = modifier.getCostAdjAmount();
+                ModifierValueType mvt = costType.determineType(adj);
+                Fixed6            amt = mvt.extractValue(adj, false);
+                if (mvt == ModifierValueType.ADDITION) {
+                    cost = cost.add(amt);
+                } else {
+                    percentages = percentages.add(amt);
                 }
             }
         }
-        if (hadMultiplier) {
-            if (multiplierCountOneOrGreater > 0) {
-                multipliers = multipliers.sub(new Fixed6(multiplierCountOneOrGreater - 1));
-            }
-            value = value.mul(multipliers);
+        if (!percentages.equals(Fixed6.ZERO)) {
+            cost = cost.add(value.mul(percentages.div(new Fixed6(100))));
         }
-
-        // Apply all final additions
-        for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.FINAL_ADDITION) {
-                value = value.add(modifier.getCostAdjAmount());
-            }
-        }
-        return value.greaterThanOrEqual(Fixed6.ZERO) ? value : Fixed6.ZERO;
+        return cost;
     }
 
     /** @return The value. */
@@ -684,7 +667,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             }
             contained.add(weight);
         }
-        Fixed6         percentage = Fixed6.ZERO;
+        Fixed6      percentage = Fixed6.ZERO;
         WeightValue reduction  = new WeightValue(Fixed6.ZERO, units);
         for (Feature feature : getFeatures()) {
             if (feature instanceof ContainedWeightReduction) {

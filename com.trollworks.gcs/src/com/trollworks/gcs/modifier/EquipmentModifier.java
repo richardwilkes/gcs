@@ -55,8 +55,9 @@ public class EquipmentModifier extends Modifier {
     public static final  String                      ID_COST_ADJ            = PREFIX + TAG_COST_ADJ;
     /** The notification ID for weight adjustment changes. */
     public static final  String                      ID_WEIGHT_ADJ          = PREFIX + TAG_WEIGHT_ADJ;
+    private static final String                      DEFAULT_COST_AMOUNT    = "+0";
     private              EquipmentModifierCostType   mCostType;
-    private              Fixed6                      mCostAmount;
+    private              String                      mCostAmount;
     private              EquipmentModifierWeightType mWeightType;
     private              Fixed6                      mWeightMultiplier;
     private              WeightValue                 mWeightAddition;
@@ -103,8 +104,8 @@ public class EquipmentModifier extends Modifier {
      */
     public EquipmentModifier(DataFile file, boolean isContainer) {
         super(file, isContainer);
-        mCostType = EquipmentModifierCostType.COST_FACTOR;
-        mCostAmount = Fixed6.ONE;
+        mCostType = EquipmentModifierCostType.TO_ORIGINAL_COST;
+        mCostAmount = DEFAULT_COST_AMOUNT;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
         mWeightMultiplier = Fixed6.ONE;
         mWeightAddition = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
@@ -161,7 +162,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     /** @return The amount for the cost modifier. */
-    public Fixed6 getCostAdjAmount() {
+    public String getCostAdjAmount() {
         return mCostAmount;
     }
 
@@ -169,7 +170,8 @@ public class EquipmentModifier extends Modifier {
      * @param costAmount The amount for the cost modifier to set.
      * @return {@code true} if a change was made.
      */
-    public boolean setCostAdjAmount(Fixed6 costAmount) {
+    public boolean setCostAdjAmount(String costAmount) {
+        costAmount = mCostType.format(costAmount, false);
         if (!mCostAmount.equals(costAmount)) {
             mCostAmount = costAmount;
             notifySingle(ID_COST_ADJ);
@@ -263,8 +265,8 @@ public class EquipmentModifier extends Modifier {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mCostType = EquipmentModifierCostType.COST_FACTOR;
-        mCostAmount = Fixed6.ONE;
+        mCostType = EquipmentModifierCostType.TO_ORIGINAL_COST;
+        mCostAmount = DEFAULT_COST_AMOUNT;
         mWeightType = EquipmentModifierWeightType.MULTIPLIER;
         mWeightMultiplier = Fixed6.ONE;
         mWeightAddition = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
@@ -277,8 +279,8 @@ public class EquipmentModifier extends Modifier {
             addChild(new EquipmentModifier(mDataFile, reader, state));
         } else if (!canHaveChildren()) {
             if (TAG_COST_ADJ.equals(name)) {
-                mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.COST_FACTOR);
-                mCostAmount = new Fixed6(reader.readText(), Fixed6.ONE, false);
+                mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.TO_ORIGINAL_COST);
+                mCostAmount = mCostType.format(reader.readText(), false);
             } else if (TAG_WEIGHT_ADJ.equals(name)) {
                 mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
                 switch (mWeightType) {
@@ -303,7 +305,9 @@ public class EquipmentModifier extends Modifier {
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         super.saveSelf(out, forUndo);
         if (!canHaveChildren()) {
-            out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount.toString(), ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+            if (mCostType != EquipmentModifierCostType.TO_ORIGINAL_COST && !mCostAmount.equals(DEFAULT_COST_AMOUNT)) {
+                out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+            }
             switch (mWeightType) {
             case BASE_ADDITION:
             case FINAL_ADDITION:
@@ -336,7 +340,10 @@ public class EquipmentModifier extends Modifier {
 
     /** @return The formatted cost adjustment. */
     public String getCostDescription() {
-        return canHaveChildren() ? "" : mCostType.format(mCostAmount) + " " + mCostType;
+        if (canHaveChildren() || (mCostType == EquipmentModifierCostType.TO_ORIGINAL_COST && DEFAULT_COST_AMOUNT.equals(mCostAmount))) {
+            return "";
+        }
+        return mCostType.format(mCostAmount, true) + " " + mCostType.toShortString();
     }
 
     /** @return The formatted weight adjustment. */
