@@ -32,7 +32,7 @@ public enum EquipmentModifierCostType {
     },
     /**
      * Modifies the base cost. Can be an additive multiplier or a CF value. Examples: 'x2', '+2 CF',
-     * '-2 CF'
+     * '-0.2 CF'
      */
     TO_BASE_COST(ModifierValueType.CF, ModifierValueType.MULTIPLIER) {
         @Override
@@ -42,7 +42,7 @@ public enum EquipmentModifierCostType {
 
         @Override
         public String toString() {
-            return toShortString() + " (e.g. 'x2', '+2 CF', '-2 CF')";
+            return toShortString() + " (e.g. 'x2', '+2 CF', '-0.2 CF')";
         }
     },
     /**
