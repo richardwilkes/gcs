@@ -23,8 +23,10 @@ import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.modifier.EquipmentModifierCostType;
 import com.trollworks.gcs.modifier.EquipmentModifierWeightType;
+import com.trollworks.gcs.modifier.Fraction;
 import com.trollworks.gcs.modifier.Modifier;
-import com.trollworks.gcs.modifier.ModifierValueType;
+import com.trollworks.gcs.modifier.ModifierCostValueType;
+import com.trollworks.gcs.modifier.ModifierWeightValueType;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -514,17 +516,17 @@ public class Equipment extends ListRow implements HasSourceReference {
      */
     public static Fixed6 getValueAdjustedForModifiers(Fixed6 value, List<EquipmentModifier> modifiers) {
         // Apply all EquipmentModifierCostType.TO_ORIGINAL_COST
-        Fixed6 cost = processAdditiveStep(EquipmentModifierCostType.TO_ORIGINAL_COST, value, modifiers);
+        Fixed6 cost = processAdditiveValueStep(EquipmentModifierCostType.TO_ORIGINAL_COST, value, modifiers);
 
         // Apply all EquipmentModifierCostType.TO_BASE_COST
         Fixed6 cf    = Fixed6.ZERO;
         int    count = 0;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == EquipmentModifierCostType.TO_BASE_COST) {
-                String            adj = modifier.getCostAdjAmount();
-                ModifierValueType mvt = EquipmentModifierCostType.TO_BASE_COST.determineType(adj);
-                Fixed6            amt = mvt.extractValue(adj, false);
-                if (mvt == ModifierValueType.MULTIPLIER) {
+                String                adj = modifier.getCostAdjAmount();
+                ModifierCostValueType mvt = EquipmentModifierCostType.TO_BASE_COST.determineType(adj);
+                Fixed6                amt = mvt.extractValue(adj, false);
+                if (mvt == ModifierCostValueType.MULTIPLIER) {
                     amt = amt.sub(Fixed6.ONE);
                 }
                 cf = cf.add(amt);
@@ -539,22 +541,22 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
 
         // Apply all EquipmentModifierCostType.TO_FINAL_BASE_COST
-        cost = processAdditiveStep(EquipmentModifierCostType.TO_FINAL_BASE_COST, cost, modifiers);
+        cost = processAdditiveValueStep(EquipmentModifierCostType.TO_FINAL_BASE_COST, cost, modifiers);
 
-        // Apply all EquipmentModifierCostType.TO_FINAL_BASE_COST
-        cost = processAdditiveStep(EquipmentModifierCostType.TO_FINAL_COST, cost, modifiers);
+        // Apply all EquipmentModifierCostType.TO_FINAL_COST
+        cost = processAdditiveValueStep(EquipmentModifierCostType.TO_FINAL_COST, cost, modifiers);
         return cost.greaterThanOrEqual(Fixed6.ZERO) ? cost : Fixed6.ZERO;
     }
 
-    private static Fixed6 processAdditiveStep(EquipmentModifierCostType costType, Fixed6 value, List<EquipmentModifier> modifiers) {
+    private static Fixed6 processAdditiveValueStep(EquipmentModifierCostType costType, Fixed6 value, List<EquipmentModifier> modifiers) {
         Fixed6 percentages = Fixed6.ZERO;
         Fixed6 cost        = value;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == costType) {
-                String            adj = modifier.getCostAdjAmount();
-                ModifierValueType mvt = costType.determineType(adj);
-                Fixed6            amt = mvt.extractValue(adj, false);
-                if (mvt == ModifierValueType.ADDITION) {
+                String                adj = modifier.getCostAdjAmount();
+                ModifierCostValueType mvt = costType.determineType(adj);
+                Fixed6                amt = mvt.extractValue(adj, false);
+                if (mvt == ModifierCostValueType.ADDITION) {
                     cost = cost.add(amt);
                 } else {
                     percentages = percentages.add(amt);
@@ -599,37 +601,72 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     /**
-     * @param value     The base value to adjust.
+     * @param weight    The base weight to adjust.
      * @param modifiers The modifiers to apply.
      * @return The adjusted value.
      */
-    public static WeightValue getWeightAdjustedForModifiers(WeightValue value, List<EquipmentModifier> modifiers) {
-        value = new WeightValue(value);
+    public static WeightValue getWeightAdjustedForModifiers(WeightValue weight, List<EquipmentModifier> modifiers) {
+        weight = new WeightValue(weight);
 
-        // Apply all base additions
+        // Apply all EquipmentModifierWeightType.TO_ORIGINAL_COST
+        Fixed6      percentages = Fixed6.ZERO;
+        WeightValue original    = new WeightValue(weight);
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.BASE_ADDITION) {
-                value.add(modifier.getWeightAdjAddition());
+            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT) {
+                String                  adj = modifier.getWeightAdjAmount();
+                ModifierWeightValueType mvt = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT.determineType(adj);
+                Fixed6                  amt = mvt.extractFraction(adj, false).value();
+                if (mvt == ModifierWeightValueType.ADDITION) {
+                    weight.add(new WeightValue(amt, ModifierWeightValueType.extractUnits(adj)));
+                } else {
+                    percentages = percentages.add(amt);
+                }
             }
         }
-
-        // Apply all multipliers
-        for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER) {
-                value.setValue(value.getValue().mul(modifier.getWeightAdjMultiplier()));
-            }
+        if (!percentages.equals(Fixed6.ZERO)) {
+            original.setValue(original.getValue().mul(percentages.div(new Fixed6(100))));
+            weight.add(original);
         }
 
-        // Apply all final additions
+        // Apply all EquipmentModifierWeightType.TO_BASE_COST
+        weight = processMultiplyAddWeightStep(EquipmentModifierWeightType.TO_BASE_WEIGHT, weight, modifiers);
+
+        // Apply all EquipmentModifierWeightType.TO_FINAL_BASE_COST
+        weight = processMultiplyAddWeightStep(EquipmentModifierWeightType.TO_FINAL_BASE_WEIGHT, weight, modifiers);
+
+        // Apply all EquipmentModifierWeightType.TO_FINAL_COST
+        weight = processMultiplyAddWeightStep(EquipmentModifierWeightType.TO_FINAL_WEIGHT, weight, modifiers);
+        if (weight.getValue().lessThan(Fixed6.ZERO)) {
+            weight.setValue(Fixed6.ZERO);
+        }
+        return weight;
+    }
+
+    private static WeightValue processMultiplyAddWeightStep(EquipmentModifierWeightType weightType, WeightValue weight, List<EquipmentModifier> modifiers) {
+        weight = new WeightValue(weight);
+        WeightValue sum = new WeightValue(Fixed6.ZERO, weight.getUnits());
         for (EquipmentModifier modifier : modifiers) {
-            if (modifier.isEnabled() && modifier.getWeightAdjType() == EquipmentModifierWeightType.FINAL_ADDITION) {
-                value.add(modifier.getWeightAdjAddition());
+            if (modifier.isEnabled() && modifier.getWeightAdjType() == weightType) {
+                String                  adj      = modifier.getWeightAdjAmount();
+                ModifierWeightValueType mvt      = weightType.determineType(adj);
+                Fraction                fraction = mvt.extractFraction(adj, false);
+                switch (mvt) {
+                case MULTIPLIER:
+                    weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator));
+                    break;
+                case PERCENTAGE_MULTIPLIER:
+                    weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator.mul(new Fixed6(100))));
+                    break;
+                case ADDITION:
+                    sum.add(new WeightValue(fraction.value(), ModifierWeightValueType.extractUnits(adj)));
+                    break;
+                default:
+                    break;
+                }
             }
         }
-        if (value.getValue().lessThan(Fixed6.ZERO)) {
-            value.setValue(Fixed6.ZERO);
-        }
-        return value;
+        weight.add(sum);
+        return weight;
     }
 
     /** @return The weight. */

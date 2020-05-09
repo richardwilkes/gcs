@@ -13,9 +13,7 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.utility.Fixed6;
 
-import java.text.DecimalFormatSymbols;
-
-public enum ModifierValueType {
+public enum ModifierCostValueType {
     ADDITION {
         @Override
         public String format(Fixed6 value, boolean localized) {
@@ -54,37 +52,10 @@ public enum ModifierValueType {
     public abstract String format(Fixed6 value, boolean localized);
 
     public Fixed6 extractValue(String in, boolean localized) {
-        in = in.trim();
-        StringBuilder buffer        = new StringBuilder();
-        char          decimal       = localized ? DecimalFormatSymbols.getInstance().getDecimalSeparator() : '.';
-        char          group         = localized ? DecimalFormatSymbols.getInstance().getGroupingSeparator() : ',';
-        int           length        = in.length();
-        boolean       allowDecimal  = true;
-        boolean       allowNegative = true;
-        boolean       allowOther    = true;
-        for (int i = 0; i < length; i++) {
-            char ch = in.charAt(i);
-            if (ch != group) {
-                if (allowDecimal && ch == decimal) {
-                    allowDecimal = false;
-                    allowOther = false;
-                    buffer.append('.');
-                } else if (allowNegative && ch == '-') {
-                    allowNegative = false;
-                    allowOther = false;
-                    buffer.append('-');
-                } else if (ch >= '0' && ch <= '9') {
-                    allowOther = false;
-                    buffer.append(ch);
-                } else if (!allowOther) {
-                    break;
-                }
-            }
-        }
-        return adjustValue(new Fixed6(buffer.toString(), Fixed6.ZERO, false));
+        return adjustValue(Fraction.extractFixed6(in, localized));
     }
 
-    public static ModifierValueType determineType(String in) {
+    public static ModifierCostValueType determineType(String in) {
         in = in.trim().toLowerCase();
         if (in.endsWith("cf")) {
             return CF;

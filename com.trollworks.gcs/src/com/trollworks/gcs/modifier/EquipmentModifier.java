@@ -59,8 +59,7 @@ public class EquipmentModifier extends Modifier {
     private              EquipmentModifierCostType   mCostType;
     private              String                      mCostAmount;
     private              EquipmentModifierWeightType mWeightType;
-    private              Fixed6                      mWeightMultiplier;
-    private              WeightValue                 mWeightAddition;
+    private              String                      mWeightAmount;
 
     /**
      * Creates a new {@link EquipmentModifier}.
@@ -74,8 +73,7 @@ public class EquipmentModifier extends Modifier {
         mCostType = other.mCostType;
         mCostAmount = other.mCostAmount;
         mWeightType = other.mWeightType;
-        mWeightMultiplier = other.mWeightMultiplier;
-        mWeightAddition = new WeightValue(other.mWeightAddition);
+        mWeightAmount = other.mWeightAmount;
         if (deep) {
             int count = other.getChildCount();
             for (int i = 0; i < count; i++) {
@@ -106,9 +104,12 @@ public class EquipmentModifier extends Modifier {
         super(file, isContainer);
         mCostType = EquipmentModifierCostType.TO_ORIGINAL_COST;
         mCostAmount = DEFAULT_COST_AMOUNT;
-        mWeightType = EquipmentModifierWeightType.MULTIPLIER;
-        mWeightMultiplier = Fixed6.ONE;
-        mWeightAddition = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
+        mWeightType = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
+        mWeightAmount = getDefaultWeightAmount();
+    }
+
+    private static String getDefaultWeightAmount() {
+        return "+" + new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits()).toString();
     }
 
     @Override
@@ -133,7 +134,7 @@ public class EquipmentModifier extends Modifier {
         }
         if (obj instanceof EquipmentModifier && super.isEquivalentTo(obj)) {
             EquipmentModifier row = (EquipmentModifier) obj;
-            return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount) && mWeightType == row.mWeightType && mWeightMultiplier.equals(row.mWeightMultiplier) && mWeightAddition.equals(row.mWeightAddition);
+            return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount) && mWeightType == row.mWeightType && mWeightAmount.equals(row.mWeightAmount);
         }
         return false;
     }
@@ -167,13 +168,13 @@ public class EquipmentModifier extends Modifier {
     }
 
     /**
-     * @param costAmount The amount for the cost modifier to set.
+     * @param amount The amount for the cost modifier to set.
      * @return {@code true} if a change was made.
      */
-    public boolean setCostAdjAmount(String costAmount) {
-        costAmount = mCostType.format(costAmount, false);
-        if (!mCostAmount.equals(costAmount)) {
-            mCostAmount = costAmount;
+    public boolean setCostAdjAmount(String amount) {
+        amount = mCostType.format(amount, false);
+        if (!mCostAmount.equals(amount)) {
+            mCostAmount = amount;
             notifySingle(ID_COST_ADJ);
             return true;
         }
@@ -198,44 +199,19 @@ public class EquipmentModifier extends Modifier {
         return false;
     }
 
-    /**
-     * @return The amount for the weight multiplier. Only valid if {@code getWeightAdjType() ==
-     *         EquipmentModifierWeightType.MULTIPLIER}.
-     */
-    public Fixed6 getWeightAdjMultiplier() {
-        return mWeightMultiplier;
+    /** @return The amount for the weight multiplier. */
+    public String getWeightAdjAmount() {
+        return mWeightAmount;
     }
 
     /**
-     * @param multiplier The amount for the weight multiplier. Only valid if {@code
-     *                   getWeightAdjType() == EquipmentModifierWeightType.MULTIPLIER}.
+     * @param amount The amount for the weight modifier to set.
      * @return {@code true} if a change was made.
      */
-    public boolean setWeightAdjMultiplier(Fixed6 multiplier) {
-        if (mWeightType == EquipmentModifierWeightType.MULTIPLIER && !mWeightMultiplier.equals(multiplier)) {
-            mWeightMultiplier = multiplier;
-            notifySingle(ID_WEIGHT_ADJ);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @return The amount for the weight addition. Only valid if {@code getWeightAdjType() ==
-     *         EquipmentModifierWeightType.ADDITION}.
-     */
-    public WeightValue getWeightAdjAddition() {
-        return mWeightAddition;
-    }
-
-    /**
-     * @param addition The amount for the weight addition. Only valid if {@code getWeightAdjType()
-     *                 != EquipmentModifierWeightType.MULTIPLIER}.
-     * @return {@code true} if a change was made.
-     */
-    public boolean setWeightAdjAddition(WeightValue addition) {
-        if (mWeightType != EquipmentModifierWeightType.MULTIPLIER && !mWeightAddition.equals(addition)) {
-            mWeightAddition = new WeightValue(addition);
+    public boolean setWeightAdjAmount(String amount) {
+        amount = mWeightType.format(amount, false);
+        if (!mWeightAmount.equals(amount)) {
+            mWeightAmount = amount;
             notifySingle(ID_WEIGHT_ADJ);
             return true;
         }
@@ -267,9 +243,8 @@ public class EquipmentModifier extends Modifier {
         super.prepareForLoad(state);
         mCostType = EquipmentModifierCostType.TO_ORIGINAL_COST;
         mCostAmount = DEFAULT_COST_AMOUNT;
-        mWeightType = EquipmentModifierWeightType.MULTIPLIER;
-        mWeightMultiplier = Fixed6.ONE;
-        mWeightAddition = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
+        mWeightType = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
+        mWeightAmount = getDefaultWeightAmount();
     }
 
     @Override
@@ -282,17 +257,8 @@ public class EquipmentModifier extends Modifier {
                 mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.TO_ORIGINAL_COST);
                 mCostAmount = mCostType.format(reader.readText(), false);
             } else if (TAG_WEIGHT_ADJ.equals(name)) {
-                mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.MULTIPLIER);
-                switch (mWeightType) {
-                case BASE_ADDITION:
-                case FINAL_ADDITION:
-                    mWeightAddition = WeightValue.extract(reader.readText(), false);
-                    break;
-                case MULTIPLIER:
-                default:
-                    mWeightMultiplier = new Fixed6(reader.readText(), Fixed6.ONE, false);
-                    break;
-                }
+                mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
+                mWeightAmount = mWeightType.format(reader.readText(), false);
             } else {
                 super.loadSubElement(reader, state);
             }
@@ -305,22 +271,11 @@ public class EquipmentModifier extends Modifier {
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         super.saveSelf(out, forUndo);
         if (!canHaveChildren()) {
-            if (mCostType != EquipmentModifierCostType.TO_ORIGINAL_COST && !mCostAmount.equals(DEFAULT_COST_AMOUNT)) {
+            if (mCostType != EquipmentModifierCostType.TO_ORIGINAL_COST || !mCostAmount.equals(DEFAULT_COST_AMOUNT)) {
                 out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
             }
-            switch (mWeightType) {
-            case BASE_ADDITION:
-            case FINAL_ADDITION:
-                if (!mWeightAddition.getNormalizedValue().equals(Fixed6.ZERO)) {
-                    out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAddition.toString(false), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
-                }
-                break;
-            case MULTIPLIER:
-            default:
-                if (!mWeightMultiplier.equals(Fixed6.ONE)) {
-                    out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightMultiplier.toString(), ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
-                }
-                break;
+            if (mWeightType != EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT || !mWeightAmount.equals(getDefaultWeightAmount())) {
+                out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAmount, ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
             }
         }
     }
@@ -348,33 +303,10 @@ public class EquipmentModifier extends Modifier {
 
     /** @return The formatted weight adjustment. */
     public String getWeightDescription() {
-        if (canHaveChildren()) {
+        if (canHaveChildren() || (mWeightType == EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT && getDefaultWeightAmount().equals(mWeightAmount))) {
             return "";
         }
-        StringBuilder builder = new StringBuilder();
-        switch (mWeightType) {
-        case BASE_ADDITION:
-        case FINAL_ADDITION:
-            if (!mWeightAddition.getNormalizedValue().equals(Fixed6.ZERO)) {
-                String weight = mWeightAddition.toString();
-                if (!weight.startsWith("-")) {
-                    builder.append('+');
-                }
-                builder.append(weight);
-                builder.append(' ');
-                builder.append(mWeightType);
-            }
-            break;
-        case MULTIPLIER:
-        default:
-            if (!mWeightMultiplier.equals(Fixed6.ONE)) {
-                builder.append(mWeightMultiplier.toLocalizedString());
-                builder.append(' ');
-                builder.append(mWeightType);
-            }
-            break;
-        }
-        return builder.toString();
+        return mWeightType.format(mWeightAmount, true) + " " + mWeightType.toShortString();
     }
 
     @Override

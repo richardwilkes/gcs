@@ -38,7 +38,6 @@ public class Enums {
      */
     public static final <T extends Enum<?>> T extract(String buffer, T[] values) {
         if (buffer != null) {
-            // Check for the standard forms first
             for (T type : values) {
                 String name = type.name();
                 if (name.equalsIgnoreCase(buffer) || name.replace('_', ' ').equalsIgnoreCase(buffer) || name.replace('_', ',').equalsIgnoreCase(buffer) || name.replace('_', '-').equalsIgnoreCase(buffer) || name.replaceAll("_", "").equalsIgnoreCase(buffer)) {

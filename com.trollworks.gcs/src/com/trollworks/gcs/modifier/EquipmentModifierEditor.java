@@ -17,11 +17,8 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.utility.units.Units;
-import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -116,19 +113,12 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             if (mFeatures != null) {
                 modified |= mRow.setFeatures(mFeatures.getFeatures());
             }
-            modified |= mRow.setCostAdjType(getCostType());
-            modified |= mRow.setCostAdjAmount(getCostType().format(mCostAmountField.getText(), false));
-            modified |= mRow.setWeightAdjType(getWeightType());
-            switch (mRow.getWeightAdjType()) {
-            case BASE_ADDITION:
-            case FINAL_ADDITION:
-                modified |= mRow.setWeightAdjAddition(getWeightAddition());
-                break;
-            case MULTIPLIER:
-            default:
-                modified |= mRow.setWeightAdjMultiplier(getWeightMultiplier());
-                break;
-            }
+            EquipmentModifierCostType costType = getCostType();
+            modified |= mRow.setCostAdjType(costType);
+            modified |= mRow.setCostAdjAmount(costType.format(mCostAmountField.getText(), false));
+            EquipmentModifierWeightType weightType = getWeightType();
+            modified |= mRow.setWeightAdjType(weightType);
+            modified |= mRow.setWeightAdjAmount(weightType.format(mWeightAmountField.getText(), false));
         }
         return modified;
     }
@@ -222,20 +212,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private void createWeightAdjustmentField(Container labelParent, Container fieldParent) {
         mWeightAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mWeightAmountField);
-        switch (mRow.getWeightAdjType()) {
-        case BASE_ADDITION:
-        case FINAL_ADDITION:
-            String addition = mRow.getWeightAdjAddition().toString();
-            if (!addition.startsWith("-")) {
-                addition = "+" + addition;
-            }
-            mWeightAmountField.setText(addition);
-            break;
-        case MULTIPLIER:
-        default:
-            mWeightAmountField.setText(mRow.getWeightAdjMultiplier().toLocalizedString());
-            break;
-        }
+        mWeightAmountField.setText(mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(), true));
         mWeightAmountField.setToolTipText(I18n.Text("The weight modifier"));
         mWeightAmountField.setEnabled(mIsEditable);
         mWeightAmountField.addActionListener(this);
@@ -257,21 +234,9 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private EquipmentModifierWeightType getWeightType() {
         Object obj = mWeightType.getSelectedItem();
         if (!(obj instanceof EquipmentModifierWeightType)) {
-            obj = EquipmentModifierWeightType.MULTIPLIER;
+            obj = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
         }
         return (EquipmentModifierWeightType) obj;
-    }
-
-    private Fixed6 getWeightMultiplier() {
-        Fixed6 value = new Fixed6(mWeightAmountField.getText(), Fixed6.ZERO, true);
-        if (value.lessThanOrEqual(Fixed6.ZERO) && getWeightType() == EquipmentModifierWeightType.MULTIPLIER) {
-            value = Fixed6.ONE;
-        }
-        return value;
-    }
-
-    private WeightValue getWeightAddition() {
-        return WeightValue.extract(mWeightAmountField.getText(), true);
     }
 
     @Override
@@ -323,37 +288,10 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void weightChanged() {
-        String      text   = mWeightAmountField.getText().trim();
-        WeightValue weight = WeightValue.extract(text, true);
-        if (getWeightType() == EquipmentModifierWeightType.MULTIPLIER) {
-            Fixed6 value = weight.getValue();
-            if (value.lessThanOrEqual(Fixed6.ZERO)) {
-                mWeightAmountField.setText("1");
-            } else {
-                if (text.startsWith("+")) {
-                    text = text.substring(1);
-                }
-                if (text.toLowerCase().endsWith(weight.getUnits().getAbbreviation().toLowerCase())) {
-                    text = text.substring(0, text.length() - weight.getUnits().getAbbreviation().length()).trim();
-                }
-                mWeightAmountField.setText(text);
-            }
-        } else {
-            String  lowered = text.toLowerCase();
-            boolean found   = false;
-            for (Units unit : weight.getUnits().getCompatibleUnits()) {
-                if (lowered.endsWith(unit.getAbbreviation().toLowerCase())) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                text += " " + weight.getUnits().getAbbreviation();
-            }
-            if (!text.startsWith("+") && !text.startsWith("-")) {
-                text = "+" + text;
-            }
-            mWeightAmountField.setText(text);
+        String text    = mWeightAmountField.getText();
+        String revised = getWeightType().format(text, true);
+        if (!text.equals(revised)) {
+            mWeightAmountField.setText(revised);
         }
     }
 

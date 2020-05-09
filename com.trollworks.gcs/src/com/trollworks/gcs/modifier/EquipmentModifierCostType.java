@@ -12,6 +12,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.utility.Fixed6;
+import com.trollworks.gcs.utility.I18n;
 
 /** Describes how an {@link EquipmentModifier}'s cost is applied. */
 public enum EquipmentModifierCostType {
@@ -19,72 +20,72 @@ public enum EquipmentModifierCostType {
      * Modifies the original value stored in the equipment. Can be a ±value or a ±% value. Examples:
      * '+5', '-5', '+10%', '-10%'
      */
-    TO_ORIGINAL_COST(ModifierValueType.ADDITION, ModifierValueType.PERCENTAGE) {
+    TO_ORIGINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE) {
         @Override
         public String toShortString() {
-            return "to original cost";
+            return I18n.Text("to original cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + " (e.g. '+5', '-5', '+10%', '-10%')";
+            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%')");
         }
     },
     /**
      * Modifies the base cost. Can be an additive multiplier or a CF value. Examples: 'x2', '+2 CF',
      * '-0.2 CF'
      */
-    TO_BASE_COST(ModifierValueType.CF, ModifierValueType.MULTIPLIER) {
+    TO_BASE_COST(ModifierCostValueType.CF, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
-            return "to base cost";
+            return I18n.Text("to base cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + " (e.g. 'x2', '+2 CF', '-0.2 CF')";
+            return toShortString() + I18n.Text(" (e.g. 'x2', '+2 CF', '-0.2 CF')");
         }
     },
     /**
      * Modifies the final base cost. Can be a ±value or a ±% value. Examples: '+5', '-5', '+10%',
      * '-10%'
      */
-    TO_FINAL_BASE_COST(ModifierValueType.ADDITION, ModifierValueType.PERCENTAGE) {
+    TO_FINAL_BASE_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE) {
         @Override
         public String toShortString() {
-            return "to final base cost";
+            return I18n.Text("to final base cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + " (e.g. '+5', '-5', '+10%', '-10%')";
+            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%')");
         }
     },
     /**
      * Modifies the final cost. Can be a ±value or a ±% value. Examples: '+5', '-5', '+10%', '-10%'
      */
-    TO_FINAL_COST(ModifierValueType.ADDITION, ModifierValueType.PERCENTAGE) {
+    TO_FINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE) {
         @Override
         public String toShortString() {
-            return "to final cost";
+            return I18n.Text("to final cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + " (e.g. '+5', '-5', '+10%', '-10%')";
+            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%')");
         }
     };
 
-    private ModifierValueType[] mPermittedTypes;
+    private ModifierCostValueType[] mPermittedTypes;
 
-    EquipmentModifierCostType(ModifierValueType... permittedTypes) {
+    EquipmentModifierCostType(ModifierCostValueType... permittedTypes) {
         mPermittedTypes = permittedTypes;
     }
 
     public abstract String toShortString();
 
-    public ModifierValueType determineType(String text) {
-        ModifierValueType mvt = ModifierValueType.determineType(text);
+    public ModifierCostValueType determineType(String text) {
+        ModifierCostValueType mvt = ModifierCostValueType.determineType(text);
         return allowed(mvt) ? mvt : mPermittedTypes[0];
     }
 
@@ -93,12 +94,12 @@ public enum EquipmentModifierCostType {
     }
 
     public String format(String text, boolean localized) {
-        ModifierValueType mvt = determineType(text);
+        ModifierCostValueType mvt = determineType(text);
         return mvt.format(mvt.extractValue(text, localized), localized);
     }
 
-    private boolean allowed(ModifierValueType mvt) {
-        for (ModifierValueType allowed : mPermittedTypes) {
+    private boolean allowed(ModifierCostValueType mvt) {
+        for (ModifierCostValueType allowed : mPermittedTypes) {
             if (allowed == mvt) {
                 return true;
             }
