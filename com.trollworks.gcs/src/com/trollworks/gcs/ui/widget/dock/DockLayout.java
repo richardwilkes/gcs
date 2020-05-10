@@ -372,6 +372,10 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
         return 0;
     }
 
+    public int getRawDividerPosition() {
+        return mDividerPosition;
+    }
+
     /** @return The current divider position. */
     public int getDividerPosition() {
         if (isFull()) {

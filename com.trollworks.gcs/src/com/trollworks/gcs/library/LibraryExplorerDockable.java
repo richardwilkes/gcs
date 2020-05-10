@@ -134,7 +134,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     }
 
     public int getDesiredDividerPosition() {
-        return Preferences.getInstance().getIntValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, 225);
+        return Preferences.getInstance().getIntValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, 300);
     }
 
     public void savePreferences() {
@@ -147,7 +147,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
             buffer.append("\n");
         }
         prefs.setValue(EXPLORER_PREFERENCES, KEY_OPEN_ROWS, buffer.toString());
-        prefs.setValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, getDockContainer().getDock().getLayout().findLayout(getDockContainer()).getDividerPosition());
+        prefs.setValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, getDockContainer().getDock().getLayout().findLayout(getDockContainer()).getRawDividerPosition());
     }
 
     @Override
