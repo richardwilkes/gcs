@@ -18,6 +18,7 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.Openable;
 import com.trollworks.gcs.menu.file.RecentFilesMenu;
 import com.trollworks.gcs.modifier.AdvantageModifierList;
@@ -39,6 +40,7 @@ import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.Toolbar;
+import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
@@ -78,17 +80,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.swing.Icon;
+import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 
 /** A list of available library files. */
-public class LibraryExplorerDockable extends Dockable implements SearchTarget, FieldAccessor, IconAccessor, Openable {
-    private static final String    EXPLORER_PREFERENCES         = "Explorer";
-    private static final int       EXPLORER_PREFERENCES_VERSION = 1;
-    private static final String    KEY_OPEN_ROWS                = "OpenRows";
-    private static final String    KEY_DIVIDER_POSITION         = "DividerPosition";
-    private              Search    mSearch;
-    private              TreePanel mTreePanel;
-    private              Notifier  mNotifier;
+public class LibraryExplorerDockable extends Dockable implements SearchTarget, FieldAccessor, IconAccessor, Openable, Deletable {
+    private static final String         EXPLORER_PREFERENCES         = "Explorer";
+    private static final int            EXPLORER_PREFERENCES_VERSION = 1;
+    private static final String         KEY_OPEN_ROWS                = "OpenRows";
+    private static final String         KEY_DIVIDER_POSITION         = "DividerPosition";
+    private              Search         mSearch;
+    private              TreePanel      mTreePanel;
+    private              Notifier       mNotifier;
+    private              LibraryWatcher mWatcher;
 
     public static LibraryExplorerDockable get() {
         for (Dockable dockable : Workspace.get().getDock().getDockables()) {
@@ -103,6 +107,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public LibraryExplorerDockable() {
         super(new BorderLayout());
         mNotifier = new Notifier();
+        mWatcher = new LibraryWatcher();
         TreeRoot root = new TreeRoot(mNotifier);
         fillTree(collectLibraryFiles(), root);
         mTreePanel = new TreePanel(root);
@@ -118,6 +123,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel.setUseBanding(false);
         mTreePanel.setUserSortable(false);
         mTreePanel.setOpenableProxy(this);
+        mTreePanel.setDeletableProxy(this);
         Toolbar toolbar = new Toolbar();
         mSearch = new Search(this);
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
@@ -131,6 +137,9 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         if (openRows != null) {
             mTreePanel.setOpen(true, collectRowsToOpen(root, new HashSet<>(Arrays.asList(openRows.split("\n"))), null));
         }
+        Thread thread = new Thread(mWatcher, "Library Watcher");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public int getDesiredDividerPosition() {
@@ -211,20 +220,23 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     }
 
     public List<Object> collectLibraryFiles() {
+        Set<Path>    dirs = new HashSet<>();
         List<Object> list = new ArrayList<>();
         list.add("GCS");
-        list.add(collectLibraryFileLists(I18n.Text("Master Library"), Library.getMasterRootPath()));
-        list.add(collectLibraryFileLists(I18n.Text("User Library"), Library.getUserRootPath()));
+        list.add(collectLibraryFileLists(I18n.Text("Master Library"), Library.getMasterRootPath(), dirs));
+        list.add(collectLibraryFileLists(I18n.Text("User Library"), Library.getUserRootPath(), dirs));
+        mWatcher.watchDirs(dirs);
         return list;
     }
 
-    private List<Object> collectLibraryFileLists(String name, Path root) {
+    private List<Object> collectLibraryFileLists(String name, Path root, Set<Path> dirs) {
         LibraryCollector collector = new LibraryCollector();
         try {
             Files.walkFileTree(root, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, collector);
         } catch (Exception exception) {
             Log.error(exception);
         }
+        dirs.addAll(collector.getDirs());
         return collector.getResult(name);
     }
 
@@ -599,5 +611,67 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel.setParentsOpen(list);
         mTreePanel.select(list);
         mTreePanel.requestFocus();
+    }
+
+    @Override
+    public boolean canDeleteSelection() {
+        return !collectSelectedFilePaths().isEmpty();
+    }
+
+    @Override
+    public void deleteSelection() {
+        List<Path> paths = collectSelectedFilePaths();
+        if (!paths.isEmpty()) {
+            String   message = paths.size() == 1 ? I18n.Text("Are you sure you want to delete this file?") : I18n.Text("Are you sure you want to delete these files?");
+            String   title   = paths.size() == 1 ? I18n.Text("Delete File") : String.format(I18n.Text("Delete {0} Files"), Integer.valueOf(paths.size()));
+            String   cancel  = I18n.Text("Cancel");
+            Object[] options = {I18n.Text("Delete"), cancel};
+            if (WindowUtils.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.YES_OPTION) {
+                int failed = 0;
+                for (Path p : paths) {
+                    FileProxy proxy = (FileProxy) getDockableFor(p);
+                    if (proxy != null) {
+                        Dockable      dockable = (Dockable) proxy;
+                        DockContainer dc       = dockable.getDockContainer();
+                        dc.close(dockable);
+                    }
+                    try {
+                        Files.deleteIfExists(p);
+                    } catch (IOException exception) {
+                        failed++;
+                    }
+                }
+                refresh();
+                if (failed != 0) {
+                    WindowUtils.showError(this, failed == 1 ? I18n.Text("A file could not be deleted.") : String.format(I18n.Text("{0} files could not be deleted."), Integer.valueOf(failed)));
+                }
+            }
+        }
+    }
+
+    private List<Path> collectSelectedFilePaths() {
+        Set<TreeRow> set = new HashSet<>();
+        for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
+            set.add(row);
+            if (row instanceof TreeContainerRow) {
+                TreeContainerRow container = (TreeContainerRow) row;
+                set.addAll(container.getChildren());
+                for (TreeContainerRow subContainer : container.getRecursiveChildContainers(null)) {
+                    set.add(subContainer);
+                    set.addAll(subContainer.getChildren());
+                }
+            }
+        }
+        Set<TreeRow> forbidden = new HashSet<>(mTreePanel.getRoot().getChildren());
+        List<Path>   paths     = new ArrayList<>();
+        for (TreeRow one : set) {
+            if (forbidden.contains(one)) {
+                return new ArrayList<>();
+            }
+            if (one instanceof LibraryFileRow) {
+                paths.add(((LibraryFileRow) one).getPath());
+            }
+        }
+        return paths;
     }
 }

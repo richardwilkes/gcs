@@ -24,13 +24,17 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class LibraryCollector implements FileVisitor<Path>, Comparator<Object> {
-    List<Object>        mCurrent;
-    Stack<List<Object>> mStack;
+    private List<Object>        mCurrent;
+    private Stack<List<Object>> mStack;
+    private Set<Path>           mDirs;
 
     public LibraryCollector() {
+        mDirs = new HashSet<>();
         mCurrent = new ArrayList<>();
         mStack = new Stack<>();
     }
@@ -46,11 +50,16 @@ public class LibraryCollector implements FileVisitor<Path>, Comparator<Object> {
         return mCurrent;
     }
 
+    public Set<Path> getDirs() {
+        return mDirs;
+    }
+
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         if (shouldSkip(dir)) {
             return FileVisitResult.SKIP_SUBTREE;
         }
+        mDirs.add(dir);
         mStack.push(mCurrent);
         mCurrent = new ArrayList<>();
         mCurrent.add(dir.getFileName().toString());

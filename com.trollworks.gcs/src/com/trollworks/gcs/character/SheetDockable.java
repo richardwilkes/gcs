@@ -150,6 +150,12 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     }
 
     @Override
+    protected String getUntitledName() {
+        String name = mSheet.getCharacter().getDescription().getName().trim();
+        return (name.isBlank()) ? super.getUntitledName() : name;
+    }
+
+    @Override
     protected String getUntitledBaseName() {
         return I18n.Text("Untitled Sheet");
     }

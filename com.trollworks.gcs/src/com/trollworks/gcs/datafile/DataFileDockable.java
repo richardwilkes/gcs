@@ -123,15 +123,19 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
         return false;
     }
 
+    protected String getUntitledName() {
+        if (mUntitledName == null) {
+            mUntitledName = getDockContainer().getDock().getNextUntitledDockableName(getUntitledBaseName(), this);
+        }
+        return mUntitledName;
+    }
+
     @Override
     public String getTitle() {
         File   file = getBackingFile();
         String title;
         if (file == null) {
-            if (mUntitledName == null) {
-                mUntitledName = getDockContainer().getDock().getNextUntitledDockableName(getUntitledBaseName(), this);
-            }
-            title = mUntitledName;
+            title = getUntitledName();
         } else {
             title = PathUtils.getLeafName(file.getName(), false);
         }

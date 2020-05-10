@@ -109,7 +109,6 @@ public class SaveCommand extends Command {
                 RecentFilesMenu.addRecent(one);
             }
             return files;
-
         }
         return SaveAsCommand.saveAs(saveable);
     }
