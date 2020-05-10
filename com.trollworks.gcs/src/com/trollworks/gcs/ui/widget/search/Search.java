@@ -124,7 +124,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
     }
 
     private boolean redirectKeyEventToFloater(KeyEvent event) {
-        if (mFloater != null) {
+        if (mFloater != null && !event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
             int keyCode = event.getKeyCode();
             if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
                 mFloater.handleKeyPressed(event);
@@ -136,10 +136,8 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
 
     @Override
     public void keyPressed(KeyEvent event) {
-        if (!redirectKeyEventToFloater(event)) {
-            if (event.getKeyCode() == KeyEvent.VK_ENTER) {
-                searchSelect();
-            }
+        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0 && !redirectKeyEventToFloater(event) && event.getKeyCode() == KeyEvent.VK_ENTER) {
+            searchSelect();
         }
     }
 

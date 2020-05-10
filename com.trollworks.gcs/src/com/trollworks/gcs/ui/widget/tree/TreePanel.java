@@ -1730,29 +1730,31 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     @Override
     public void keyPressed(KeyEvent event) {
-        switch (event.getKeyCode()) {
-        case KeyEvent.VK_LEFT:
-            setOpen(false, getTreeContainerRows(mSelectedRows, event.isAltDown()));
-            break;
-        case KeyEvent.VK_RIGHT:
-            setOpen(true, getTreeContainerRows(mSelectedRows, event.isAltDown()));
-            break;
-        case KeyEvent.VK_UP:
-            keyScroll(selectUp(event.isShiftDown()));
-            break;
-        case KeyEvent.VK_DOWN:
-            keyScroll(selectDown(event.isShiftDown()));
-            break;
-        case KeyEvent.VK_HOME:
-            keyScroll(selectToHome(event.isShiftDown()));
-            break;
-        case KeyEvent.VK_END:
-            keyScroll(selectToEnd(event.isShiftDown()));
-            break;
-        default:
-            return;
+        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+            switch (event.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                setOpen(false, getTreeContainerRows(mSelectedRows, event.isAltDown()));
+                break;
+            case KeyEvent.VK_RIGHT:
+                setOpen(true, getTreeContainerRows(mSelectedRows, event.isAltDown()));
+                break;
+            case KeyEvent.VK_UP:
+                keyScroll(selectUp(event.isShiftDown()));
+                break;
+            case KeyEvent.VK_DOWN:
+                keyScroll(selectDown(event.isShiftDown()));
+                break;
+            case KeyEvent.VK_HOME:
+                keyScroll(selectToHome(event.isShiftDown()));
+                break;
+            case KeyEvent.VK_END:
+                keyScroll(selectToEnd(event.isShiftDown()));
+                break;
+            default:
+                return;
+            }
+            event.consume();
         }
-        event.consume();
     }
 
     private void keyScroll(TreeRow row) {
@@ -1772,17 +1774,19 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     @Override
     public void keyTyped(KeyEvent event) {
-        char ch = event.getKeyChar();
-        if (ch == '\n' || ch == '\r') {
-            if (canOpenSelection()) {
-                openSelection();
+        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+            char ch = event.getKeyChar();
+            if (ch == '\n' || ch == '\r') {
+                if (canOpenSelection()) {
+                    openSelection();
+                }
+                event.consume();
+            } else if (ch == '\b' || ch == KeyEvent.VK_DELETE) {
+                if (canDeleteSelection()) {
+                    deleteSelection();
+                }
+                event.consume();
             }
-            event.consume();
-        } else if (ch == '\b' || ch == KeyEvent.VK_DELETE) {
-            if (canDeleteSelection()) {
-                deleteSelection();
-            }
-            event.consume();
         }
     }
 

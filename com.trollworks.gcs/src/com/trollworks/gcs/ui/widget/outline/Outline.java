@@ -711,8 +711,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                     if (rowTop < y) {
                         return y - rowTop;
                     } else {
-                        List<Row> rows = mModel.getRows();
-                        int first = getFirstRowToDisplay();
+                        List<Row> rows  = mModel.getRows();
+                        int       first = getFirstRowToDisplay();
                         do {
                             if (--rowIndex <= first) {
                                 break;
@@ -1524,7 +1524,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public void keyPressed(KeyEvent event) {
-        if ((event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
             Selection selection = mModel.getSelection();
             boolean   shiftDown = event.isShiftDown();
             int       index;
@@ -1564,17 +1564,19 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public void keyTyped(KeyEvent event) {
-        char ch = event.getKeyChar();
-        if (ch == '\n' || ch == '\r') {
-            if (mModel.hasSelection()) {
-                notifyActionListeners();
+        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+            char ch = event.getKeyChar();
+            if (ch == '\n' || ch == '\r') {
+                if (mModel.hasSelection()) {
+                    notifyActionListeners();
+                }
+                event.consume();
+            } else if (ch == '\b' || ch == KeyEvent.VK_DELETE) {
+                if (canDeleteSelection()) {
+                    deleteSelection();
+                }
+                event.consume();
             }
-            event.consume();
-        } else if (ch == '\b' || ch == KeyEvent.VK_DELETE) {
-            if (canDeleteSelection()) {
-                deleteSelection();
-            }
-            event.consume();
         }
     }
 

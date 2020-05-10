@@ -227,7 +227,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 
     @Override
     public void keyTyped(KeyEvent event) {
-        if (!event.isConsumed()) {
+        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
             char ch = event.getKeyChar();
             switch (ch) {
             case '-':
@@ -248,7 +248,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 
     @Override
     public void keyPressed(KeyEvent event) {
-        if (!event.isConsumed()) {
+        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
             switch (event.getKeyCode()) {
             case KeyEvent.VK_UP:
                 previousPage();

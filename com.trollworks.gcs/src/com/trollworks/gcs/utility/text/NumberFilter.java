@@ -118,54 +118,54 @@ public class NumberFilter implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent event) {
-        char ch = event.getKeyChar();
-        if (ch != '\n' && ch != '\r' && ch != '\t' && ch != '\b' && ch != KeyEvent.VK_DELETE) {
-            if (mAllowGroup && ch == GROUP_CHAR || ch >= '0' && ch <= '9' || mAllowSign && (ch == '-' || ch == '+') || mAllowDecimal && ch == DECIMAL_CHAR || mIsHeightFilter && (ch == '\'' || ch == '"' || ch == ' ')) {
-                StringBuilder buffer = new StringBuilder(mField.getText());
-                int           start  = mField.getSelectionStart();
-                int           end    = mField.getSelectionEnd();
-
-                if (start != end) {
-                    buffer.delete(start, end);
-                }
-
-                if (ch >= '0' && ch <= '9') {
-                    int length = buffer.length();
-                    int count  = 0;
-                    for (int i = 0; i < length; i++) {
-                        char one = buffer.charAt(i);
-                        if (one >= '0' && one <= '9') {
-                            count++;
+        if (!event.isConsumed() && (event.getModifiersEx() & mField.getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+            char ch = event.getKeyChar();
+            if (ch != '\n' && ch != '\r' && ch != '\t' && ch != '\b' && ch != KeyEvent.VK_DELETE) {
+                if (mAllowGroup && ch == GROUP_CHAR || ch >= '0' && ch <= '9' || mAllowSign && (ch == '-' || ch == '+') || mAllowDecimal && ch == DECIMAL_CHAR || mIsHeightFilter && (ch == '\'' || ch == '"' || ch == ' ')) {
+                    StringBuilder buffer = new StringBuilder(mField.getText());
+                    int           start  = mField.getSelectionStart();
+                    int           end    = mField.getSelectionEnd();
+                    if (start != end) {
+                        buffer.delete(start, end);
+                    }
+                    if (ch >= '0' && ch <= '9') {
+                        int length = buffer.length();
+                        int count  = 0;
+                        for (int i = 0; i < length; i++) {
+                            char one = buffer.charAt(i);
+                            if (one >= '0' && one <= '9') {
+                                count++;
+                            }
+                        }
+                        if (count >= mMaxDigits) {
+                            filter(event);
+                            return;
                         }
                     }
-                    if (count >= mMaxDigits) {
-                        filter(event);
-                        return;
+                    if (ch == GROUP_CHAR || ch >= '0' && ch <= '9') {
+                        if (mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
+                            filter(event);
+                        }
+                    } else if (ch == '-' || ch == '+') {
+                        if (start != 0) {
+                            filter(event);
+                        }
+                    } else if (ch == DECIMAL_CHAR) {
+                        if (buffer.indexOf("" + DECIMAL_CHAR) != -1 || mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
+                            filter(event);
+                        }
+                    } else if (ch == '\'') {
+                        if (buffer.indexOf("'") != -1) {
+                            filter(event);
+                        }
+                    } else if (ch == '"') {
+                        if (buffer.indexOf("\"") != -1) {
+                            filter(event);
+                        }
                     }
+                } else {
+                    filter(event);
                 }
-                if (ch == GROUP_CHAR || ch >= '0' && ch <= '9') {
-                    if (mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
-                        filter(event);
-                    }
-                } else if (ch == '-' || ch == '+') {
-                    if (start != 0) {
-                        filter(event);
-                    }
-                } else if (ch == DECIMAL_CHAR) {
-                    if (buffer.indexOf("" + DECIMAL_CHAR) != -1 || mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
-                        filter(event);
-                    }
-                } else if (ch == '\'') {
-                    if (buffer.indexOf("'") != -1) {
-                        filter(event);
-                    }
-                } else if (ch == '"') {
-                    if (buffer.indexOf("\"") != -1) {
-                        filter(event);
-                    }
-                }
-            } else {
-                filter(event);
             }
         }
     }
