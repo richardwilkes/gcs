@@ -59,7 +59,9 @@ import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
+import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.notification.Notifier;
+import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
@@ -69,6 +71,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -76,14 +79,16 @@ import java.util.Objects;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /** A list of available library files. */
-public class LibraryExplorerDockable extends Dockable implements DocumentListener, SearchTarget, FieldAccessor, IconAccessor, Openable {
-    private Search    mSearch;
-    private TreePanel mTreePanel;
-    private Notifier  mNotifier;
+public class LibraryExplorerDockable extends Dockable implements SearchTarget, FieldAccessor, IconAccessor, Openable {
+    private static final String    EXPLORER_PREFERENCES         = "Explorer";
+    private static final int       EXPLORER_PREFERENCES_VERSION = 1;
+    private static final String    KEY_OPEN_ROWS                = "OpenRows";
+    private static final String    KEY_DIVIDER_POSITION         = "DividerPosition";
+    private              Search    mSearch;
+    private              TreePanel mTreePanel;
+    private              Notifier  mNotifier;
 
     public static LibraryExplorerDockable get() {
         for (Dockable dockable : Workspace.get().getDock().getDockables()) {
@@ -120,6 +125,29 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         toolbar.add(new IconButton(Images.REFRESH, I18n.Text("Refresh"), () -> refresh()));
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
+        Preferences prefs = Preferences.getInstance();
+        prefs.resetIfVersionMisMatch(EXPLORER_PREFERENCES, EXPLORER_PREFERENCES_VERSION);
+        String openRows = prefs.getStringValue(EXPLORER_PREFERENCES, KEY_OPEN_ROWS);
+        if (openRows != null) {
+            mTreePanel.setOpen(true, collectRowsToOpen(root, new HashSet<>(Arrays.asList(openRows.split("\n"))), null));
+        }
+    }
+
+    public int getDesiredDividerPosition() {
+        return Preferences.getInstance().getIntValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, 225);
+    }
+
+    public void savePreferences() {
+        Preferences  prefs = Preferences.getInstance();
+        List<String> list  = new ArrayList<>(collectOpenRowKeys());
+        list.sort(NumericComparator.CASELESS_COMPARATOR);
+        StringBuilder buffer = new StringBuilder();
+        for (String one : list) {
+            buffer.append(one);
+            buffer.append("\n");
+        }
+        prefs.setValue(EXPLORER_PREFERENCES, KEY_OPEN_ROWS, buffer.toString());
+        prefs.setValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, getDockContainer().getDock().getLayout().findLayout(getDockContainer()).getDividerPosition());
     }
 
     @Override
@@ -152,25 +180,6 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         return ((LibraryExplorerRow) row).getIcon();
     }
 
-    @Override
-    public void changedUpdate(DocumentEvent event) {
-        documentChanged();
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent event) {
-        documentChanged();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent event) {
-        documentChanged();
-    }
-
-    private void documentChanged() {
-        // mOutline.reapplyRowFilter();
-    }
-
     private void fillTree(List<?> lists, TreeContainerRow parent) {
         int count = lists.size();
         for (int i = 1; i < count; i++) {
@@ -192,12 +201,7 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
             selected.add(((LibraryExplorerRow) row).getSelectionKey());
         }
-        Set<String> open = new HashSet<>();
-        for (TreeRow row : new TreeRowViewIterator(mTreePanel, root)) {
-            if (row instanceof TreeContainerRow && mTreePanel.isOpen((TreeContainerRow) row) && row instanceof LibraryExplorerRow) {
-                open.add(((LibraryExplorerRow) row).getSelectionKey());
-            }
-        }
+        Set<String> open = collectOpenRowKeys();
         mNotifier.startBatch();
         root.removeRow(new ArrayList<>(root.getChildren()));
         fillTree(collectLibraryFiles(), root);
@@ -224,20 +228,35 @@ public class LibraryExplorerDockable extends Dockable implements DocumentListene
         return collector.getResult(name);
     }
 
-    private List<TreeContainerRow> collectRowsToOpen(TreeContainerRow parent, Set<String> selectors, List<TreeContainerRow> list) {
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        for (TreeRow row : parent.getChildren()) {
-            if (row instanceof TreeContainerRow && row instanceof LibraryExplorerRow) {
-                TreeContainerRow container = (TreeContainerRow) row;
-                if (selectors.contains(((LibraryExplorerRow) row).getSelectionKey())) {
-                    list.add(container);
-                }
-                collectRowsToOpen(container, selectors, list);
+    private Set<String> collectOpenRowKeys() {
+        Set<String> open = new HashSet<>();
+        for (TreeRow row : new TreeRowViewIterator(mTreePanel, mTreePanel.getRoot().getChildren())) {
+            if (row instanceof TreeContainerRow && mTreePanel.isOpen((TreeContainerRow) row) && row instanceof LibraryExplorerRow) {
+                open.add(((LibraryExplorerRow) row).getSelectionKey());
             }
         }
-        return list;
+        return open;
+    }
+
+    private Set<TreeContainerRow> collectRowsToOpen(TreeContainerRow parent, Set<String> selectors, Set<TreeContainerRow> set) {
+        if (set == null) {
+            set = new HashSet<>();
+        }
+        for (TreeRow row : parent.getChildren()) {
+            if (row instanceof LibraryExplorerRow) {
+                if (selectors.contains(((LibraryExplorerRow) row).getSelectionKey())) {
+                    if (row instanceof TreeContainerRow) {
+                        set.add((TreeContainerRow) row);
+                    } else {
+                        set.add(row.getParent());
+                    }
+                }
+                if (row instanceof TreeContainerRow) {
+                    collectRowsToOpen((TreeContainerRow) row, selectors, set);
+                }
+            }
+        }
+        return set;
     }
 
     private List<TreeRow> collectRows(TreeContainerRow parent, Set<String> selectors, List<TreeRow> list) {

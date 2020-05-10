@@ -50,21 +50,17 @@ import javax.swing.text.Document;
 public class DisplayPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
     private static final String            MODULE                             = "Display";
     private static final String            TOTAL_POINTS_DISPLAY_KEY           = "TotalPointsIncludesUnspentPoints";
-    /** The total points includes unspent points preference key. */
     public static final  String            TOTAL_POINTS_DISPLAY_PREF_KEY      = Preferences.getModuleKey(MODULE, TOTAL_POINTS_DISPLAY_KEY);
     private static final boolean           DEFAULT_TOTAL_POINTS_DISPLAY       = true;
     private static final String            BLOCK_LAYOUT_KEY                   = "BlockLayout";
-    /** The block layout preference key. */
     public static final  String            BLOCK_LAYOUT_PREF_KEY              = Preferences.getModuleKey(MODULE, BLOCK_LAYOUT_KEY);
     private static final String            DEFAULT_BLOCK_LAYOUT               = "melee\nranged\nadvantages skills\nspells\nequipment\nother_equipment\nnotes";
     private static final Scales            DEFAULT_SCALE                      = Scales.QUARTER_AGAIN_SIZE;
     private static final String            SCALE_KEY                          = "UIScale.v2";
     private static final String            LENGTH_UNITS_KEY                   = "LengthUnits";
-    /** The default length units preference key. */
     public static final  String            LENGTH_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, LENGTH_UNITS_KEY);
     private static final LengthUnits       DEFAULT_LENGTH_UNITS               = LengthUnits.FT_IN;
     private static final String            WEIGHT_UNITS_KEY                   = "WeightUnits";
-    /** The default weight units preference key. */
     public static final  String            WEIGHT_UNITS_PREF_KEY              = Preferences.getModuleKey(MODULE, WEIGHT_UNITS_KEY);
     private static final WeightUnits       DEFAULT_WEIGHT_UNITS               = WeightUnits.LB;
     private static final String            TOOLTIP_TIMEOUT_KEY                = "TooltipTimeout";

@@ -56,7 +56,7 @@ public class Workspace extends BaseWindow implements SignificantFrame, JumpToSea
         content.add(mDock, BorderLayout.CENTER);
         LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();
         mDock.dock(libraryExplorer, DockLocation.WEST);
-        mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(200);
+        mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(libraryExplorer.getDesiredDividerPosition());
         restoreBounds();
         setVisible(true);
         WindowUtils.forceAppToFront();
@@ -98,6 +98,15 @@ public class Workspace extends BaseWindow implements SignificantFrame, JumpToSea
             if (dockable instanceof JumpToSearchTarget) {
                 ((JumpToSearchTarget) dockable).jumpToSearchField();
             }
+        }
+    }
+
+    @Override
+    public void saveBounds() {
+        super.saveBounds();
+        LibraryExplorerDockable lib = LibraryExplorerDockable.get();
+        if (lib != null) {
+            lib.savePreferences();
         }
     }
 }
