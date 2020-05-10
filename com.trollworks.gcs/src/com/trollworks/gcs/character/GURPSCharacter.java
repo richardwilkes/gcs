@@ -74,17 +74,22 @@ import java.util.Set;
 
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
-    private static final int                                 CURRENT_VERSION                      = 4;
+    private static final int                                 CURRENT_VERSION                      = 5;
     /**
      * The version where equipment was separated out into different lists based on carried/not
      * carried status.
      */
     public static final  int                                 SEPARATED_EQUIPMENT_VERSION          = 4;
+    /**
+     * The version where HP and FP damage tracking was introduced, rather than a free-form text
+     * field.
+     */
+    public static final  int                                 HP_FP_DAMAGE_TRACKING                = 5;
     private static final String                              TAG_ROOT                             = "character";
     private static final String                              TAG_CREATED_DATE                     = "created_date";
     private static final String                              TAG_MODIFIED_DATE                    = "modified_date";
-    private static final String                              TAG_CURRENT_HP                       = "current_hp";
-    private static final String                              TAG_CURRENT_FP                       = "current_fp";
+    private static final String                              TAG_HP_DAMAGE                        = "hp_damage";
+    private static final String                              TAG_FP_DAMAGE                        = "fp_damage";
     private static final String                              TAG_UNSPENT_POINTS                   = "unspent_points";
     private static final String                              TAG_TOTAL_POINTS                     = "total_points";
     private static final String                              TAG_INCLUDE_PUNCH                    = "include_punch";
@@ -200,8 +205,10 @@ public class GURPSCharacter extends DataFile {
     private static final String                              HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";
     /** The field ID for hit point changes. */
     public static final  String                              ID_HIT_POINTS                        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
+    /** The field ID for hit point damage changes. */
+    public static final  String                              ID_HIT_POINTS_DAMAGE                 = HIT_POINTS_PREFIX + "Damage";
     /** The field ID for current hit point changes. */
-    public static final  String                              ID_CURRENT_HIT_POINTS                = HIT_POINTS_PREFIX + "Current";
+    public static final  String                              ID_CURRENT_HP                        = HIT_POINTS_PREFIX + "Current";
     /** The field ID for reeling hit point changes. */
     public static final  String                              ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";
     /** The field ID for unconscious check hit point changes. */
@@ -219,8 +226,10 @@ public class GURPSCharacter extends DataFile {
     private static final String                              FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";
     /** The field ID for fatigue point changes. */
     public static final  String                              ID_FATIGUE_POINTS                    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
+    /** The field ID for fatigue point damage changes. */
+    public static final  String                              ID_FATIGUE_POINTS_DAMAGE             = FATIGUE_POINTS_PREFIX + "Damage";
     /** The field ID for current fatigue point changes. */
-    public static final  String                              ID_CURRENT_FATIGUE_POINTS            = FATIGUE_POINTS_PREFIX + "Current";
+    public static final  String                              ID_CURRENT_FP                        = FATIGUE_POINTS_PREFIX + "Current";
     /** The field ID for tired fatigue point changes. */
     public static final  String                              ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";
     /** The field ID for unconscious check fatigue point changes. */
@@ -253,11 +262,11 @@ public class GURPSCharacter extends DataFile {
     private              int                                 mHearingBonus;
     private              int                                 mTasteAndSmellBonus;
     private              int                                 mTouchBonus;
-    private              String                              mCurrentHitPoints;
+    private              int                                 mHitPointsDamage;
     private              int                                 mHitPoints;
     private              int                                 mHitPointBonus;
     private              int                                 mFatiguePoints;
-    private              String                              mCurrentFatiguePoints;
+    private              int                                 mFatiguePointsDamage;
     private              int                                 mFatiguePointBonus;
     private              double                              mSpeed;
     private              double                              mSpeedBonus;
@@ -281,10 +290,10 @@ public class GURPSCharacter extends DataFile {
     private              boolean                             mNeedSkillPointCalculation;
     private              boolean                             mNeedSpellPointCalculation;
     private              boolean                             mNeedEquipmentCalculation;
-    private WeightValue mCachedWeightCarried;
-    private Fixed6      mCachedWealthCarried;
-    private Fixed6      mCachedWealthNotCarried;
-    private int         mCachedAttributePoints;
+    private              WeightValue                         mCachedWeightCarried;
+    private              Fixed6                              mCachedWealthCarried;
+    private              Fixed6                              mCachedWealthNotCarried;
+    private              int                                 mCachedAttributePoints;
     private              int                                 mCachedAdvantagePoints;
     private              int                                 mCachedDisadvantagePoints;
     private              int                                 mCachedQuirkPoints;
@@ -329,8 +338,8 @@ public class GURPSCharacter extends DataFile {
         mDexterity = 10;
         mIntelligence = 10;
         mHealth = 10;
-        mCurrentHitPoints = "";
-        mCurrentFatiguePoints = "";
+        mHitPointsDamage = 0;
+        mFatiguePointsDamage = 0;
         mDescription = new Profile(this, full);
         mArmor = new Armor(this);
         mIncludePunch = true;
@@ -363,7 +372,8 @@ public class GURPSCharacter extends DataFile {
     protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
         String marker        = reader.getMarker();
         int    unspentPoints = 0;
-
+        int    currentHP     = Integer.MIN_VALUE;
+        int    currentFP     = Integer.MIN_VALUE;
         characterInitialize(false);
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
@@ -371,6 +381,16 @@ public class GURPSCharacter extends DataFile {
 
                 if (state.mDataFileVersion == 0) {
                     if (mDescription.loadTag(reader, name)) {
+                        continue;
+                    }
+                }
+
+                if (state.mDataFileVersion < HP_FP_DAMAGE_TRACKING) {
+                    if ("current_hp".equals(name)) {
+                        currentHP = reader.readInteger(Integer.MIN_VALUE);
+                        continue;
+                    } else if ("current_fp".equals(name)) {
+                        currentFP = reader.readInteger(Integer.MIN_VALUE);
                         continue;
                     }
                 }
@@ -383,12 +403,12 @@ public class GURPSCharacter extends DataFile {
                     mLastModified = Numbers.extractDateTime(reader.readText());
                 } else if (BonusAttributeType.HP.getXMLTag().equals(name)) {
                     mHitPoints = reader.readInteger(0);
-                } else if (TAG_CURRENT_HP.equals(name)) {
-                    mCurrentHitPoints = reader.readText();
+                } else if (TAG_HP_DAMAGE.equals(name)) {
+                    mHitPointsDamage = reader.readInteger(0);
                 } else if (BonusAttributeType.FP.getXMLTag().equals(name)) {
                     mFatiguePoints = reader.readInteger(0);
-                } else if (TAG_CURRENT_FP.equals(name)) {
-                    mCurrentFatiguePoints = reader.readText();
+                } else if (TAG_FP_DAMAGE.equals(name)) {
+                    mFatiguePointsDamage = reader.readInteger(0);
                 } else if (TAG_UNSPENT_POINTS.equals(name)) {
                     unspentPoints = reader.readInteger(0);
                 } else if (TAG_TOTAL_POINTS.equals(name)) {
@@ -427,10 +447,8 @@ public class GURPSCharacter extends DataFile {
                     loadEquipmentList(reader, state, mOtherEquipment);
                 } else if (NoteList.TAG_ROOT.equals(name)) {
                     loadNoteList(reader, state);
-                } else if (PrintManager.TAG_ROOT.equals(name)) {
-                    if (mPageSettings != null) {
-                        mPageSettings.load(reader);
-                    }
+                } else if (mPageSettings != null && PrintManager.TAG_ROOT.equals(name)) {
+                    mPageSettings.load(reader);
                 } else {
                     reader.skipTag(name);
                 }
@@ -447,6 +465,15 @@ public class GURPSCharacter extends DataFile {
         calculateAll();
         if (unspentPoints != 0) {
             setUnspentPoints(unspentPoints);
+        }
+
+        if (state.mDataFileVersion < HP_FP_DAMAGE_TRACKING) {
+            if (currentHP != Integer.MIN_VALUE) {
+                mHitPointsDamage = -Math.min(currentHP - getHitPoints(), 0);
+            }
+            if (currentFP != Integer.MIN_VALUE) {
+                mFatiguePointsDamage = -Math.min(currentFP - getFatiguePoints(), 0);
+            }
         }
     }
 
@@ -573,9 +600,9 @@ public class GURPSCharacter extends DataFile {
         out.simpleTag(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mLastModified)));
         mDescription.save(out);
         out.simpleTag(BonusAttributeType.HP.getXMLTag(), mHitPoints);
-        out.simpleTagNotEmpty(TAG_CURRENT_HP, mCurrentHitPoints);
+        out.simpleTagNotZero(TAG_HP_DAMAGE, mHitPointsDamage);
         out.simpleTag(BonusAttributeType.FP.getXMLTag(), mFatiguePoints);
-        out.simpleTagNotEmpty(TAG_CURRENT_FP, mCurrentFatiguePoints);
+        out.simpleTagNotZero(TAG_FP_DAMAGE, mFatiguePointsDamage);
         out.simpleTag(TAG_TOTAL_POINTS, mTotalPoints);
         out.simpleTag(BonusAttributeType.ST.getXMLTag(), mStrength);
         out.simpleTag(BonusAttributeType.DX.getXMLTag(), mDexterity);
@@ -588,14 +615,12 @@ public class GURPSCharacter extends DataFile {
         out.simpleTag(TAG_INCLUDE_PUNCH, mIncludePunch);
         out.simpleTag(TAG_INCLUDE_KICK, mIncludeKick);
         out.simpleTag(TAG_INCLUDE_BOOTS, mIncludeKickBoots);
-
         saveList(AdvantageList.TAG_ROOT, mAdvantages, out);
         saveList(SkillList.TAG_ROOT, mSkills, out);
         saveList(SpellList.TAG_ROOT, mSpells, out);
         saveList(EquipmentList.TAG_CARRIED_ROOT, mEquipment, out);
         saveList(EquipmentList.TAG_OTHER_ROOT, mOtherEquipment, out);
         saveList(NoteList.TAG_ROOT, mNotes, out);
-
         if (mPageSettings != null) {
             mPageSettings.save(out, LengthUnits.IN);
         }
@@ -711,8 +736,10 @@ public class GURPSCharacter extends DataFile {
             return getSwing();
         } else if (ID_HIT_POINTS.equals(id)) {
             return Integer.valueOf(getHitPoints());
-        } else if (ID_CURRENT_HIT_POINTS.equals(id)) {
-            return getCurrentHitPoints();
+        } else if (ID_HIT_POINTS_DAMAGE.equals(id)) {
+            return Integer.valueOf(getHitPointsDamage());
+        } else if (ID_CURRENT_HP.equals(id)) {
+            return Integer.valueOf(getCurrentHitPoints());
         } else if (ID_REELING_HIT_POINTS.equals(id)) {
             return Integer.valueOf(getReelingHitPoints());
         } else if (ID_UNCONSCIOUS_CHECKS_HIT_POINTS.equals(id)) {
@@ -729,8 +756,10 @@ public class GURPSCharacter extends DataFile {
             return Integer.valueOf(getDeadHitPoints());
         } else if (ID_FATIGUE_POINTS.equals(id)) {
             return Integer.valueOf(getFatiguePoints());
-        } else if (ID_CURRENT_FATIGUE_POINTS.equals(id)) {
-            return getCurrentFatiguePoints();
+        } else if (ID_FATIGUE_POINTS_DAMAGE.equals(id)) {
+            return Integer.valueOf(getFatiguePointsDamage());
+        } else if (ID_CURRENT_FP.equals(id)) {
+            return Integer.valueOf(getCurrentFatiguePoints());
         } else if (ID_TIRED_FATIGUE_POINTS.equals(id)) {
             return Integer.valueOf(getTiredFatiguePoints());
         } else if (ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS.equals(id)) {
@@ -802,12 +831,16 @@ public class GURPSCharacter extends DataFile {
                 setUnspentPoints(((Integer) value).intValue());
             } else if (ID_HIT_POINTS.equals(id)) {
                 setHitPoints(((Integer) value).intValue());
-            } else if (ID_CURRENT_HIT_POINTS.equals(id)) {
-                setCurrentHitPoints((String) value);
+            } else if (ID_HIT_POINTS_DAMAGE.equals(id)) {
+                setHitPointsDamage(((Integer) value).intValue());
+            } else if (ID_CURRENT_HP.equals(id)) {
+                setHitPointsDamage(-Math.min(((Integer) value).intValue() - getHitPoints(), 0));
             } else if (ID_FATIGUE_POINTS.equals(id)) {
                 setFatiguePoints(((Integer) value).intValue());
-            } else if (ID_CURRENT_FATIGUE_POINTS.equals(id)) {
-                setCurrentFatiguePoints((String) value);
+            } else if (ID_FATIGUE_POINTS_DAMAGE.equals(id)) {
+                setFatiguePointsDamage(((Integer) value).intValue());
+            } else if (ID_CURRENT_FP.equals(id)) {
+                setFatiguePointsDamage(-Math.min(((Integer) value).intValue() - getFatiguePoints(), 0));
             } else if (id.startsWith(Profile.PROFILE_PREFIX)) {
                 mDescription.setValueForID(id, value);
             } else if (id.startsWith(Armor.DR_PREFIX)) {
@@ -950,7 +983,6 @@ public class GURPSCharacter extends DataFile {
      */
     public void setStrength(int strength) {
         int oldStrength = getStrength();
-
         if (oldStrength != strength) {
             postUndoEdit(I18n.Text("Strength Change"), ID_STRENGTH, Integer.valueOf(oldStrength), Integer.valueOf(strength));
             updateStrengthInfo(strength - mStrengthBonus, mStrengthBonus, mLiftingStrengthBonus, mStrikingStrengthBonus);
@@ -1189,7 +1221,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     private WeightValue getBasicLift(WeightUnits desiredUnits) {
-        Fixed6 ten = new Fixed6(10);
+        Fixed6      ten = new Fixed6(10);
         WeightUnits units;
         Fixed6      divisor;
         Fixed6      multiplier;
@@ -1221,7 +1253,7 @@ public class GURPSCharacter extends DataFile {
                 value = value.mul(new Fixed6(Math.pow(10, diff)));
             } else {
                 //noinspection UnnecessaryExplicitNumericCast
-                value = new Fixed6((long)strength * (long)strength).div(divisor);
+                value = new Fixed6((long) strength * (long) strength).div(divisor);
             }
             if (value.greaterThanOrEqual(roundAt)) {
                 value = value.round();
@@ -1297,7 +1329,6 @@ public class GURPSCharacter extends DataFile {
      */
     public void setBasicSpeed(double speed) {
         double oldBasicSpeed = getBasicSpeed();
-
         if (oldBasicSpeed != speed) {
             postUndoEdit(I18n.Text("Basic Speed Change"), ID_BASIC_SPEED, Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
             updateBasicSpeedInfo(speed - (mSpeedBonus + getRawBasicSpeed()), mSpeedBonus);
@@ -1400,7 +1431,10 @@ public class GURPSCharacter extends DataFile {
      */
     public int getMove(Encumbrance encumbrance) {
         int basicMove = getBasicMove();
-        int move      = basicMove * (10 + 2 * encumbrance.getEncumbrancePenalty()) / 10;
+        if (isReeling() || isTired()) {
+            basicMove /= 2;
+        }
+        int move = basicMove * (10 + 2 * encumbrance.getEncumbrancePenalty()) / 10;
         if (move < 1) {
             return basicMove > 0 ? 1 : 0;
         }
@@ -1412,7 +1446,11 @@ public class GURPSCharacter extends DataFile {
      * @return The character's dodge for the specified encumbrance level.
      */
     public int getDodge(Encumbrance encumbrance) {
-        return Math.max((int) Math.floor(getBasicSpeed()) + 3 + encumbrance.getEncumbrancePenalty() + mDodgeBonus, 1);
+        double basicSpeed = getBasicSpeed();
+        if (isReeling() || isTired()) {
+            basicSpeed /= 2;
+        }
+        return Math.max((int) Math.floor(basicSpeed) + 3 + encumbrance.getEncumbrancePenalty() + mDodgeBonus, 1);
     }
 
     /** @return The dodge bonus. */
@@ -1606,6 +1644,14 @@ public class GURPSCharacter extends DataFile {
             if (tmp != data[index]) {
                 notify(MOVE_PREFIX + index, Integer.valueOf(tmp));
             }
+        }
+    }
+
+    public void notifyMoveAndDodge() {
+        for (Encumbrance encumbrance : Encumbrance.values()) {
+            int index = encumbrance.ordinal();
+            notify(DODGE_PREFIX + index, Integer.valueOf(getDodge(encumbrance)));
+            notify(MOVE_PREFIX + index, Integer.valueOf(getMove(encumbrance)));
         }
     }
 
@@ -1894,7 +1940,6 @@ public class GURPSCharacter extends DataFile {
         mCachedDisadvantagePoints = 0;
         mCachedRacePoints = 0;
         mCachedQuirkPoints = 0;
-
         for (Advantage advantage : new FilteredIterator<>(mAdvantages.getTopLevelRows(), Advantage.class)) {
             calculateSingleAdvantagePoints(advantage);
         }
@@ -1994,6 +2039,10 @@ public class GURPSCharacter extends DataFile {
         }
     }
 
+    public int getCurrentHitPoints() {
+        return getHitPoints() - getHitPointsDamage();
+    }
+
     /** @return The hit points (HP). */
     public int getHitPoints() {
         return getStrength() + mHitPoints + mHitPointBonus;
@@ -2006,7 +2055,6 @@ public class GURPSCharacter extends DataFile {
      */
     public void setHitPoints(int hp) {
         int oldHP = getHitPoints();
-
         if (oldHP != hp) {
             postUndoEdit(I18n.Text("Hit Points Change"), ID_HIT_POINTS, Integer.valueOf(oldHP), Integer.valueOf(hp));
             startNotify();
@@ -2062,30 +2110,36 @@ public class GURPSCharacter extends DataFile {
         notify(ID_DEATH_CHECK_4_HIT_POINTS, Integer.valueOf(getDeathCheck4HitPoints()));
         notify(ID_DEAD_HIT_POINTS, Integer.valueOf(getDeadHitPoints()));
         notify(ID_REELING_HIT_POINTS, Integer.valueOf(getReelingHitPoints()));
+        notify(ID_CURRENT_HP, Integer.valueOf(getHitPoints() - mHitPointsDamage));
         endNotify();
     }
 
-    /** @return The current hit points. */
-    public String getCurrentHitPoints() {
-        return mCurrentHitPoints;
+    /** @return The hit points damage. */
+    public int getHitPointsDamage() {
+        return mHitPointsDamage;
     }
 
     /**
-     * Sets the current hit points.
+     * Sets the hit points damage.
      *
-     * @param hp The hit point amount.
+     * @param damage The damage amount.
      */
-    public void setCurrentHitPoints(String hp) {
-        if (!mCurrentHitPoints.equals(hp)) {
-            postUndoEdit(I18n.Text("Current Hit Points Change"), ID_CURRENT_HIT_POINTS, mCurrentHitPoints, hp);
-            mCurrentHitPoints = hp;
-            notifySingle(ID_CURRENT_HIT_POINTS, mCurrentHitPoints);
+    public void setHitPointsDamage(int damage) {
+        if (mHitPointsDamage != damage) {
+            postUndoEdit(I18n.Text("Current Hit Points Change"), ID_HIT_POINTS_DAMAGE, Integer.valueOf(mHitPointsDamage), Integer.valueOf(damage));
+            mHitPointsDamage = damage;
+            notifySingle(ID_HIT_POINTS_DAMAGE, Integer.valueOf(mHitPointsDamage));
+            notifySingle(ID_CURRENT_HP, Integer.valueOf(getHitPoints() - mHitPointsDamage));
         }
     }
 
     /** @return The number of hit points where "reeling" effects start. */
     public int getReelingHitPoints() {
         return Math.max((getHitPoints() - 1) / 3, 0);
+    }
+
+    public boolean isReeling() {
+        return getCurrentHitPoints() <= getReelingHitPoints();
     }
 
     /** @return The number of hit points where unconsciousness checks must start being made. */
@@ -2301,7 +2355,6 @@ public class GURPSCharacter extends DataFile {
     private void updatePerceptionInfo(int perception, int bonus) {
         mPerception = perception;
         mPerceptionBonus = bonus;
-
         startNotify();
         notify(ID_PERCEPTION, Integer.valueOf(getPerception()));
         notify(ID_VISION, Integer.valueOf(getVision()));
@@ -2318,6 +2371,10 @@ public class GURPSCharacter extends DataFile {
         return mPerception * 5;
     }
 
+    public int getCurrentFatiguePoints() {
+        return getFatiguePoints() - getFatiguePointsDamage();
+    }
+
     /** @return The fatigue points (FP). */
     public int getFatiguePoints() {
         return getHealth() + mFatiguePoints + mFatiguePointBonus;
@@ -2330,7 +2387,6 @@ public class GURPSCharacter extends DataFile {
      */
     public void setFatiguePoints(int fp) {
         int oldFP = getFatiguePoints();
-
         if (oldFP != fp) {
             postUndoEdit(I18n.Text("Fatigue Points Change"), ID_FATIGUE_POINTS, Integer.valueOf(oldFP), Integer.valueOf(fp));
             startNotify();
@@ -2365,30 +2421,36 @@ public class GURPSCharacter extends DataFile {
         notify(ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousChecksFatiguePoints()));
         notify(ID_UNCONSCIOUS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousFatiguePoints()));
         notify(ID_TIRED_FATIGUE_POINTS, Integer.valueOf(getTiredFatiguePoints()));
+        notify(ID_CURRENT_HP, Integer.valueOf(getHitPoints() - mHitPointsDamage));
         endNotify();
     }
 
-    /** @return The current fatigue points. */
-    public String getCurrentFatiguePoints() {
-        return mCurrentFatiguePoints;
+    /** @return The fatigue points damage. */
+    public int getFatiguePointsDamage() {
+        return mFatiguePointsDamage;
     }
 
     /**
-     * Sets the current fatigue points.
+     * Sets the fatigue points damage.
      *
-     * @param fp The fatigue point amount.
+     * @param damage The damage amount.
      */
-    public void setCurrentFatiguePoints(String fp) {
-        if (!mCurrentFatiguePoints.equals(fp)) {
-            postUndoEdit(I18n.Text("Current Fatigue Points Change"), ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints, fp);
-            mCurrentFatiguePoints = fp;
-            notifySingle(ID_CURRENT_FATIGUE_POINTS, mCurrentFatiguePoints);
+    public void setFatiguePointsDamage(int damage) {
+        if (mFatiguePointsDamage != damage) {
+            postUndoEdit(I18n.Text("Current Fatigue Points Change"), ID_FATIGUE_POINTS_DAMAGE, Integer.valueOf(mFatiguePointsDamage), Integer.valueOf(damage));
+            mFatiguePointsDamage = damage;
+            notifySingle(ID_FATIGUE_POINTS_DAMAGE, Integer.valueOf(mFatiguePointsDamage));
+            notifySingle(ID_CURRENT_HP, Integer.valueOf(getHitPoints() - mHitPointsDamage));
         }
     }
 
     /** @return The number of fatigue points where "tired" effects start. */
     public int getTiredFatiguePoints() {
         return Math.max((getFatiguePoints() - 1) / 3, 0);
+    }
+
+    public boolean isTired() {
+        return getCurrentFatiguePoints() <= getTiredFatiguePoints();
     }
 
     /** @return The number of fatigue points where unconsciousness checks must start being made. */

@@ -534,12 +534,8 @@ public class TextTemplate {
         case KEY_BEST_CURRENT_BLOCK:
             writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedBlock());
             break;
-        case KEY_FP:        // If current FP is null or blank (unused), then show MAX FP instead
-            if (gurpsCharacter.getCurrentFatiguePoints() == null || gurpsCharacter.getCurrentFatiguePoints().isEmpty()) {
-                writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePoints()));
-            } else {
-                writeEncodedText(out, gurpsCharacter.getCurrentFatiguePoints());
-            }
+        case KEY_FP:
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getCurrentFatiguePoints()));
             break;
         case KEY_BASIC_FP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getFatiguePoints()));
@@ -553,12 +549,8 @@ public class TextTemplate {
         case KEY_UNCONSCIOUS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getUnconsciousFatiguePoints()));
             break;
-        case KEY_HP:        // If current HP is null or blank (unused), then show MAX HP instead
-            if (gurpsCharacter.getCurrentHitPoints() == null || gurpsCharacter.getCurrentHitPoints().isEmpty()) {
-                writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPoints()));
-            } else {
-                writeEncodedText(out, gurpsCharacter.getCurrentHitPoints());
-            }
+        case KEY_HP:
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getCurrentHitPoints()));
             break;
         case KEY_BASIC_HP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPoints()));

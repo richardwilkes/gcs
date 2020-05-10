@@ -250,6 +250,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         FACTORY_MAP.put(GURPSCharacter.ID_SPELL_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_RACE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_UNSPENT_POINTS, factory);
+
+        factory = new DefaultFormatterFactory(new IntegerFormatter(-9999999, 9999999, false));
         FACTORY_MAP.put(GURPSCharacter.ID_TIRED_FATIGUE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, factory);
@@ -260,6 +262,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         FACTORY_MAP.put(GURPSCharacter.ID_DEATH_CHECK_3_HIT_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_DEATH_CHECK_4_HIT_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_DEAD_HIT_POINTS, factory);
+        FACTORY_MAP.put(GURPSCharacter.ID_CURRENT_HP, factory);
+        FACTORY_MAP.put(GURPSCharacter.ID_CURRENT_FP, factory);
 
         factory = new DefaultFormatterFactory(new IntegerFormatter(0, 999999, false));
         FACTORY_MAP.put(GURPSCharacter.ID_FATIGUE_POINTS, factory);

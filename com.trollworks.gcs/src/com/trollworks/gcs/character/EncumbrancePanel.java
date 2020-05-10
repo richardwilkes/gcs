@@ -69,7 +69,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
             createDivider();
             createDisabledField(this, mSheet, GURPSCharacter.DODGE_PREFIX + index, dodgeTooltip, SwingConstants.RIGHT);
         }
-        character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT);
+        character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT, GURPSCharacter.ID_CURRENT_HP, GURPSCharacter.ID_CURRENT_FP);
     }
 
     private static String getMarkerText(Encumbrance which, Encumbrance current) {
@@ -86,7 +86,10 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
     @Override
     public void handleNotification(Object producer, String type, Object data) {
         GURPSCharacter character = mSheet.getCharacter();
-        Encumbrance    current   = character.getEncumbranceLevel();
+        if (GURPSCharacter.ID_CURRENT_HP.equals(type) || GURPSCharacter.ID_CURRENT_FP.equals(type)) {
+            character.notifyMoveAndDodge();
+        }
+        Encumbrance current = character.getEncumbranceLevel();
         for (Encumbrance encumbrance : Encumbrance.values()) {
             int index = encumbrance.ordinal();
             if (encumbrance == current) {

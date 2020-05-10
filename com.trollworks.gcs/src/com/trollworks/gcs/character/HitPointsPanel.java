@@ -31,14 +31,14 @@ public class HitPointsPanel extends DropPanel {
      */
     public HitPointsPanel(CharacterSheet sheet) {
         super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), I18n.Text("Fatigue/Hit Points"));
-        createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_FATIGUE_POINTS, I18n.Text("Current FP:"), I18n.Text("Current fatigue points"), SwingConstants.RIGHT);
+        createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_FP, I18n.Text("Current FP:"), I18n.Text("Current fatigue points"), SwingConstants.RIGHT);
         createLabelAndField(this, sheet, GURPSCharacter.ID_FATIGUE_POINTS, I18n.Text("Basic FP:"), I18n.Text("<html><body>Normal (i.e. fully rested) fatigue points.<br><b>{0} points</b> have been spent to modify <b>FP</b></body></html>"), SwingConstants.RIGHT);
         createDivider();
         createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_TIRED_FATIGUE_POINTS, I18n.Text("Tired:"), I18n.Text("<html><body>Current fatigue points at or below this point indicate the<br>character is very tired, halving move, dodge and strength</body></html>"), SwingConstants.RIGHT);
         createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, I18n.Text("Collapse:"), I18n.Text("<html><body>Current fatigue points at or below this point indicate the<br>character is on the verge of collapse, causing the character<br>to roll vs. Will to do anything besides talk or rest</body></html>"), SwingConstants.RIGHT);
         createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, I18n.Text("Unconscious:"), I18n.Text("<html><body>Current fatigue points at or below this point<br>cause the character to fall unconscious</body></html>"), SwingConstants.RIGHT);
         createDivider();
-        createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_HIT_POINTS, I18n.Text("Current HP:"), I18n.Text("Current hit points"), SwingConstants.RIGHT);
+        createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_HP, I18n.Text("Current HP:"), I18n.Text("Current hit points"), SwingConstants.RIGHT);
         createLabelAndField(this, sheet, GURPSCharacter.ID_HIT_POINTS, I18n.Text("Basic HP:"), I18n.Text("<html><body>Normal (i.e. unharmed) hit points.<br><b>{0} points</b> have been spent to modify <b>HP</b></body></html>"), SwingConstants.RIGHT);
         createDivider();
         createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_REELING_HIT_POINTS, I18n.Text("Reeling:"), I18n.Text("<html><body>Current hit points at or below this point indicate the character<br>is reeling from the pain, halving move, speed and dodge</body></html>"), SwingConstants.RIGHT);
