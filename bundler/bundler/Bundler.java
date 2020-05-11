@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Bundler {
-    private static final String        GCS_VERSION       = "4.15.0";
+    private static final String        GCS_VERSION       = "4.15.1";
     private static final String        JDK_MAJOR_VERSION = "14";
     private static final String        ITEXT_VERSION     = "2.1.7";
     private static final String        LOGGING_VERSION   = "1.2.0";
