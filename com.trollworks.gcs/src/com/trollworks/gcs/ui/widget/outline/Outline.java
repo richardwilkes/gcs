@@ -2213,6 +2213,10 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         return DnDConstants.ACTION_MOVE;
     }
 
+    protected boolean isDropOnRow(Row[] dragRows) {
+        return false;
+    }
+
     /**
      * Called when a row drag is in progress.
      *
@@ -2220,7 +2224,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @return The value to return via {@link DropTargetDragEvent#acceptDrag(int)}.
      */
     protected int dragOverRow(DropTargetDragEvent dtde) {
-        Row[]     dragRows              = mModel.getDragRows();
+        Row[] dragRows = mModel.getDragRows();
+        if (isDropOnRow(dragRows)) {
+            Point pt = UIUtilities.convertDropTargetDragPointTo(dtde, this);
+            setDragTargetRow(overRow(pt.y));
+            return getDragTargetRow() != null ? DnDConstants.ACTION_MOVE : DnDConstants.ACTION_NONE;
+        }
         Scale     scale                 = Scale.get(this);
         int       one                   = scale.scale(1);
         Row       savedParentRow        = mDragParentRow;
@@ -2486,6 +2495,9 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dtde The drop target drop event.
      */
     protected void dropRow(DropTargetDropEvent dtde) {
+        if (dropOnRow(dtde)) {
+            return;
+        }
         removeDragHighlight(this);
         if (mDragChildInsertIndex != -1) {
             StateEdit edit         = new StateEdit(mModel, I18n.Text("Row Drag & Drop"));
@@ -2570,6 +2582,10 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             rowsWereDropped();
         }
         mModel.setDragRows(null);
+    }
+
+    protected boolean dropOnRow(DropTargetDropEvent dtde) {
+        return false;
     }
 
     /**

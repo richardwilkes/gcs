@@ -166,6 +166,16 @@ public class OutlineProxy extends Outline {
     }
 
     @Override
+    protected boolean isDropOnRow(Row[] dragRows) {
+        return mOutlineToProxy.isDropOnRow(dragRows);
+    }
+
+    @Override
+    protected boolean dropOnRow(DropTargetDropEvent dtde) {
+        return mOutlineToProxy.dropOnRow(dtde);
+    }
+
+    @Override
     protected void showContextMenu(MouseEvent event) {
         mOutlineToProxy.showContextMenu(event);
     }

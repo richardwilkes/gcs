@@ -19,7 +19,6 @@ import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
 import com.trollworks.gcs.menu.edit.UsesIncrementable;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
@@ -31,8 +30,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 
 import java.awt.EventQueue;
-import java.awt.Point;
-import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.util.ArrayList;
@@ -267,15 +264,8 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
         return !getModel().isLocked() && rows.length > 0 && (rows[0] instanceof Equipment || rows[0] instanceof EquipmentModifier);
     }
 
-    @Override
-    protected int dragOverRow(DropTargetDragEvent dtde) {
-        Row[] dragRows = getModel().getDragRows();
-        if (dragRows != null && dragRows.length > 0 && dragRows[0] instanceof EquipmentModifier) {
-            Point pt = UIUtilities.convertDropTargetDragPointTo(dtde, this);
-            setDragTargetRow(overRow(pt.y));
-            return getDragTargetRow() != null ? DnDConstants.ACTION_MOVE : DnDConstants.ACTION_NONE;
-        }
-        return super.dragOverRow(dtde);
+    protected boolean isDropOnRow(Row[] dragRows) {
+        return dragRows != null && dragRows.length > 0 && dragRows[0] instanceof EquipmentModifier;
     }
 
     @Override
@@ -336,44 +326,44 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
     }
 
     @Override
-    protected void dropRow(DropTargetDropEvent dtde) {
+    protected boolean dropOnRow(DropTargetDropEvent dtde) {
         Row target = getDragTargetRow();
-        if (target instanceof Equipment) {
-            Equipment               targetEquipment = (Equipment) target;
-            OutlineModel            model           = getModel();
-            ArrayList<RowUndo>      undoList        = new ArrayList<>();
-            RowUndo                 undo            = new RowUndo(targetEquipment);
-            List<EquipmentModifier> list            = new ArrayList<>(targetEquipment.getModifiers());
-            Object                  property        = model.getProperty(ListOutline.OWNING_LIST);
-            removeDragHighlight(this);
-            if (property instanceof ListOutline) {
-                List<EquipmentModifier> collection = new ArrayList<>();
-                for (Row row : model.getDragRows()) {
-                    collectEquipmentModifiers(row, collection);
-                }
-                DataFile dataFile = ((ListOutline) property).getDataFile();
-                for (EquipmentModifier eqpmod : collection) {
-                    EquipmentModifier modifier = new EquipmentModifier(dataFile, eqpmod, false);
-                    modifier.setEnabled(true);
-                    list.add(modifier);
-                }
-            }
-            targetEquipment.setModifiers(list);
-            setDragTargetRow(null);
-            undo.finish();
-            undoList.add(undo);
-            new MultipleRowUndo(undoList);
-            repaint();
-            contentSizeMayHaveChanged();
-            model.setDragRows(null);
-            if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {
-                ArrayList<ListRow> process = new ArrayList<>();
-                process.add(targetEquipment);
-                EventQueue.invokeLater(new RowPostProcessor(this, process, false));
-            }
-        } else {
-            super.dropRow(dtde);
+        if (!(target instanceof Equipment)) {
+            return false;
         }
+        Equipment               targetEquipment = (Equipment) target;
+        OutlineModel            model           = getModel();
+        ArrayList<RowUndo>      undoList        = new ArrayList<>();
+        RowUndo                 undo            = new RowUndo(targetEquipment);
+        List<EquipmentModifier> list            = new ArrayList<>(targetEquipment.getModifiers());
+        Object                  property        = model.getProperty(ListOutline.OWNING_LIST);
+        removeDragHighlight(this);
+        if (property instanceof ListOutline) {
+            List<EquipmentModifier> collection = new ArrayList<>();
+            for (Row row : model.getDragRows()) {
+                collectEquipmentModifiers(row, collection);
+            }
+            DataFile dataFile = ((ListOutline) property).getDataFile();
+            for (EquipmentModifier eqpmod : collection) {
+                EquipmentModifier modifier = new EquipmentModifier(dataFile, eqpmod, false);
+                modifier.setEnabled(true);
+                list.add(modifier);
+            }
+        }
+        targetEquipment.setModifiers(list);
+        setDragTargetRow(null);
+        undo.finish();
+        undoList.add(undo);
+        new MultipleRowUndo(undoList);
+        repaint();
+        contentSizeMayHaveChanged();
+        model.setDragRows(null);
+        if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {
+            ArrayList<ListRow> process = new ArrayList<>();
+            process.add(targetEquipment);
+            EventQueue.invokeLater(new RowPostProcessor(this, process, false));
+        }
+        return true;
     }
 
     private void collectEquipmentModifiers(Row row, List<EquipmentModifier> result) {
