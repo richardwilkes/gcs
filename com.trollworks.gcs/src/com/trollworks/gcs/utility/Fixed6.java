@@ -13,23 +13,29 @@ package com.trollworks.gcs.utility;
 
 import com.trollworks.gcs.utility.text.Numbers;
 
+import java.math.BigInteger;
+
 // Fixed6 holds a fixed-point value that contains up to 6 decimal places. Values are truncated, not
 // rounded.
 public class Fixed6 implements Comparable<Fixed6> {
-    public static final Fixed6 ZERO = new Fixed6(0);
-    public static final Fixed6 ONE  = new Fixed6(1);
-    private             long   mRawValue;
+    public static final  Fixed6     ZERO       = new Fixed6(0);
+    public static final  Fixed6     ONE        = new Fixed6(1);
+    public static final  Fixed6     MIN        = new Fixed6(Long.MAX_VALUE, true);
+    public static final  Fixed6     MAX        = new Fixed6(Long.MIN_VALUE, true);
+    private static final long       FACTOR     = 1000000;
+    public static final  BigInteger BIG_FACTOR = BigInteger.valueOf(FACTOR);
+    private              long       mRawValue;
 
     private Fixed6(long value, boolean unused) {
         mRawValue = value;
     }
 
     public Fixed6(double value) {
-        mRawValue = (long) (value * 1000000);
+        mRawValue = (long) (value * FACTOR);
     }
 
     public Fixed6(long value) {
-        mRawValue = value * 1000000;
+        mRawValue = value * FACTOR;
     }
 
     public Fixed6(String in, boolean localized) throws NumberFormatException {
@@ -46,7 +52,7 @@ public class Fixed6 implements Comparable<Fixed6> {
         if (in.contains("E") || in.contains("e")) {
             // Given a floating-point value with an exponent, which technically isn't valid input,
             // but we'll try to convert it anyway.
-            mRawValue = (long) (Double.parseDouble(in) * 1000000);
+            mRawValue = (long) (Double.parseDouble(in) * FACTOR);
         } else {
             boolean  neg   = false;
             String[] parts = in.split("\\.", 2);
@@ -54,7 +60,7 @@ public class Fixed6 implements Comparable<Fixed6> {
                 if ("-".equals(parts[0]) || "-0".equals(parts[0])) {
                     neg = true;
                 } else {
-                    mRawValue = Long.parseLong(parts[0]) * 1000000;
+                    mRawValue = Long.parseLong(parts[0]) * FACTOR;
                     if (mRawValue < 0) {
                         neg = true;
                         mRawValue = -mRawValue;
@@ -72,7 +78,7 @@ public class Fixed6 implements Comparable<Fixed6> {
                         buffer.append('0');
                     }
                 }
-                mRawValue += Long.parseLong(buffer.toString()) - 1000000;
+                mRawValue += Long.parseLong(buffer.toString()) - FACTOR;
             }
             if (neg) {
                 mRawValue = -mRawValue;
@@ -97,33 +103,37 @@ public class Fixed6 implements Comparable<Fixed6> {
     }
 
     public Fixed6 mul(Fixed6 other) {
-        return new Fixed6((mRawValue * other.mRawValue) / 1000000, true);
+        // Use BigInteger here to allow cases that would normally overflow in the intermediate
+        // stages to work
+        return new Fixed6(BigInteger.valueOf(mRawValue).multiply(BigInteger.valueOf(other.mRawValue)).divide(BIG_FACTOR).longValue(), true);
     }
 
     public Fixed6 div(Fixed6 other) {
-        return new Fixed6((mRawValue * 1000000) / other.mRawValue, true);
+        // Use BigInteger here to allow cases that would normally overflow in the intermediate
+        // stages to work
+        return new Fixed6(BigInteger.valueOf(mRawValue).multiply(BIG_FACTOR).divide(BigInteger.valueOf(other.mRawValue)).longValue(), true);
     }
 
     /** @return a new value which has everything to the right of the decimal place truncated */
     public Fixed6 trunc() {
-        return new Fixed6((mRawValue / 1000000) * 1000000, true);
+        return new Fixed6((mRawValue / FACTOR) * FACTOR, true);
     }
 
     public Fixed6 round() {
-        long whole    = mRawValue / 1000000;
-        long fraction = mRawValue % 1000000;
-        if (fraction > 499999) {
+        long whole    = mRawValue / FACTOR;
+        long fraction = mRawValue % FACTOR;
+        if (fraction > ((FACTOR / 2) - 1)) {
             whole++;
         }
-        return new Fixed6(whole * 1000000, true);
+        return new Fixed6(whole * FACTOR, true);
     }
 
     public long asLong() {
-        return mRawValue / 1000000;
+        return mRawValue / FACTOR;
     }
 
     public double asDouble() {
-        return ((double) mRawValue) / 1000000;
+        return ((double) mRawValue) / FACTOR;
     }
 
     public boolean lessThan(Fixed6 other) {
@@ -165,15 +175,15 @@ public class Fixed6 implements Comparable<Fixed6> {
 
     /** @return the same as toString(), but localized */
     public String toLocalizedString() {
-        long whole    = mRawValue / 1000000;
-        long fraction = mRawValue % 1000000;
+        long whole    = mRawValue / FACTOR;
+        long fraction = mRawValue % FACTOR;
         if (fraction == 0) {
             return Numbers.format(whole);
         }
         if (fraction < 0) {
             fraction = -fraction;
         }
-        fraction += 1000000;
+        fraction += FACTOR;
         String str = Long.toString(fraction);
         while (str.endsWith("0")) {
             str = str.substring(0, str.length() - 1);
@@ -189,15 +199,15 @@ public class Fixed6 implements Comparable<Fixed6> {
     }
 
     public String toString() {
-        long whole    = mRawValue / 1000000;
-        long fraction = mRawValue % 1000000;
+        long whole    = mRawValue / FACTOR;
+        long fraction = mRawValue % FACTOR;
         if (fraction == 0) {
             return Long.toString(whole);
         }
         if (fraction < 0) {
             fraction = -fraction;
         }
-        fraction += 1000000;
+        fraction += FACTOR;
         String str = Long.toString(fraction);
         while (str.endsWith("0")) {
             str = str.substring(0, str.length() - 1);

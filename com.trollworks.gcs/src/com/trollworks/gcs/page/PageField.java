@@ -212,7 +212,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
             FACTORY_MAP.put(GURPSCharacter.MAXIMUM_CARRY_PREFIX + encumbrance.ordinal(), factory);
         }
 
-        factory = new DefaultFormatterFactory(new IntegerFormatter(0, 9999, false));
+        factory = new DefaultFormatterFactory(new IntegerFormatter(0, 99999, false));
         FACTORY_MAP.put(GURPSCharacter.ID_STRENGTH, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_DEXTERITY, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_INTELLIGENCE, factory);
@@ -241,7 +241,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
             FACTORY_MAP.put(GURPSCharacter.DODGE_PREFIX + index, factory);
         }
 
-        factory = new DefaultFormatterFactory(new IntegerFormatter(-99999, 99999, false));
+        factory = new DefaultFormatterFactory(new IntegerFormatter(-999999, 999999, false));
         FACTORY_MAP.put(GURPSCharacter.ID_ATTRIBUTE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_ADVANTAGE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_DISADVANTAGE_POINTS, factory);
@@ -277,7 +277,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         FACTORY_MAP.put(Profile.ID_AGE, new DefaultFormatterFactory(new IntegerFormatter(0, Integer.MAX_VALUE, false, true)));
         FACTORY_MAP.put(Profile.ID_HEIGHT, new DefaultFormatterFactory(new HeightFormatter(true)));
         FACTORY_MAP.put(GURPSCharacter.ID_CREATED_ON, new DefaultFormatterFactory(new DateFormatter(DateFormat.MEDIUM)));
-        FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SPEED, new DefaultFormatterFactory(new DoubleFormatter(0, 9999, false)));
+        FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SPEED, new DefaultFormatterFactory(new DoubleFormatter(0, 99999, false)));
 
         DefaultFormatter formatter = new DefaultFormatter();
         formatter.setOverwriteMode(false);
