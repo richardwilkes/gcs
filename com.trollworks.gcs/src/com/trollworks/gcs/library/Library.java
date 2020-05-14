@@ -170,6 +170,7 @@ public class Library {
             Files.writeString(root.resolve(VERSION_FILE), sha + "\n");
             return true;
         } catch (IOException exception) {
+            Log.error(exception);
             return false;
         }
     }
