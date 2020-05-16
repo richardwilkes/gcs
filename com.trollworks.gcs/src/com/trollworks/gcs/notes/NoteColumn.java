@@ -44,11 +44,6 @@ public enum NoteColumn {
         }
 
         @Override
-        public boolean shouldDisplay(DataFile dataFile) {
-            return true;
-        }
-
-        @Override
         public Object getData(Note note) {
             return getDataAsText(note);
         }
@@ -63,6 +58,33 @@ public enum NoteColumn {
                 builder.append(notes);
             }
             return builder.toString();
+        }
+    },
+    /** The page reference. */
+    REFERENCE {
+        @Override
+        public String toString() {
+            return I18n.Text("Ref");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("A reference to the book and page this note applies to (e.g. B22 would refer to \"Basic Set\", page 22)");
+        }
+
+        @Override
+        public Cell getCell() {
+            return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public Object getData(Note note) {
+            return getDataAsText(note);
+        }
+
+        @Override
+        public String getDataAsText(Note note) {
+            return note.getReference();
         }
     };
 
@@ -94,12 +116,6 @@ public enum NoteColumn {
     public abstract Cell getCell();
 
     /**
-     * @param dataFile The {@link DataFile} to use.
-     * @return Whether this column should be displayed for the specified data file.
-     */
-    public abstract boolean shouldDisplay(DataFile dataFile);
-
-    /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
      * @param outline  The {@link Outline} to use.
@@ -110,11 +126,9 @@ public enum NoteColumn {
         boolean        sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
         OutlineModel   model           = outline.getModel();
         for (NoteColumn one : values()) {
-            if (one.shouldDisplay(dataFile)) {
-                Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());
-                column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
-                model.addColumn(column);
-            }
+            Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());
+            column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
+            model.addColumn(column);
         }
     }
 }

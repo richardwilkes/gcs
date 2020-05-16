@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -29,20 +30,24 @@ import java.util.Map;
 import java.util.Set;
 
 /** A note. */
-public class Note extends ListRow {
+public class Note extends ListRow implements HasSourceReference {
     private static final int    CURRENT_VERSION    = 1;
     /** The XML tag used for items. */
     public static final  String TAG_NOTE           = "note";
     /** The XML tag used for containers. */
     public static final  String TAG_NOTE_CONTAINER = "note_container";
     private static final String TAG_TEXT           = "text";
+    private static final String TAG_REFERENCE      = "reference";
     /** The prefix used in front of all IDs for the notes. */
     public static final  String PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note.";
     /** The field ID for text changes. */
     public static final  String ID_TEXT            = PREFIX + "Text";
+    /** The field ID for page reference changes. */
+    public static final  String ID_REFERENCE       = PREFIX + "Reference";
     /** The field ID for when the row hierarchy changes. */
     public static final  String ID_LIST_CHANGED    = PREFIX + "ListChanged";
     private              String mText;
+    private              String mReference;
 
     /**
      * Creates a new note.
@@ -53,6 +58,7 @@ public class Note extends ListRow {
     public Note(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
         mText = "";
+        mReference = "";
     }
 
     /**
@@ -65,6 +71,7 @@ public class Note extends ListRow {
     public Note(DataFile dataFile, Note note, boolean deep) {
         super(dataFile, note);
         mText = note.mText;
+        mReference = note.mReference;
         if (deep) {
             int count = note.getChildCount();
             for (int i = 0; i < count; i++) {
@@ -91,7 +98,8 @@ public class Note extends ListRow {
             return true;
         }
         if (obj instanceof Note && super.isEquivalentTo(obj)) {
-            return mText.equals(((Note) obj).mText);
+            Note row = (Note) obj;
+            return mText.equals(row.mText) && mReference.equals(row.mReference);
         }
         return false;
     }
@@ -125,6 +133,7 @@ public class Note extends ListRow {
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mText = "";
+        mReference = "";
     }
 
     @Override
@@ -132,6 +141,8 @@ public class Note extends ListRow {
         String name = reader.getName();
         if (TAG_TEXT.equals(name)) {
             mText = Text.standardizeLineEndings(reader.readText());
+        } else if (TAG_REFERENCE.equals(name)) {
+            mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_NOTE.equals(name) || TAG_NOTE_CONTAINER.equals(name))) {
             addChild(new Note(mDataFile, reader, state));
         } else {
@@ -142,6 +153,7 @@ public class Note extends ListRow {
     @Override
     protected void saveSelf(XMLWriter out, boolean forUndo) {
         out.simpleTagNotEmpty(TAG_TEXT, mText);
+        out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
     }
 
     /** @return The description. */
@@ -203,5 +215,25 @@ public class Note extends ListRow {
     @Override
     public void applyNameableKeys(Map<String, String> map) {
         // No nameables
+    }
+
+    @Override
+    public String getReference() {
+        return mReference;
+    }
+
+    @Override
+    public String getReferenceHighlight() {
+        return getDescription();
+    }
+
+    @Override
+    public boolean setReference(String reference) {
+        if (!mReference.equals(reference)) {
+            mReference = reference;
+            notifySingle(ID_REFERENCE);
+            return true;
+        }
+        return false;
     }
 }
