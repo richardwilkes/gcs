@@ -128,9 +128,19 @@ public class Library {
     }
 
     public static final boolean download() {
-        Path root = getMasterRootPath();
+        Path root     = getMasterRootPath();
+        Path saveRoot = root.resolveSibling(root.getFileName().toString() + ".save");
+        if (Files.exists(root)) {
+            try {
+                Files.move(root, saveRoot);
+            } catch (IOException exception) {
+                Log.error(exception);
+                return false;
+            }
+        }
+        getMasterRootPath(); // will recreate the dir
+        boolean success;
         try (ZipInputStream in = new ZipInputStream(new BufferedInputStream(UrlUtils.setupConnection("https://api.github.com/repos/richardwilkes/gcs_library/zipball/master").getInputStream()))) {
-            RecursiveDirectoryRemover.remove(root, false);
             byte[]   buffer = new byte[8192];
             ZipEntry entry;
             String   sha    = "unknown";
@@ -168,10 +178,27 @@ public class Library {
                 sha = sha.substring(0, 7);
             }
             Files.writeString(root.resolve(VERSION_FILE), sha + "\n");
-            return true;
+            success = true;
         } catch (IOException exception) {
             Log.error(exception);
-            return false;
+            success = false;
         }
+        if (success) {
+            if (Files.exists(saveRoot)) {
+                RecursiveDirectoryRemover.remove(saveRoot, true);
+            }
+        } else {
+            RecursiveDirectoryRemover.remove(root, true);
+            if (Files.exists(saveRoot)) {
+                try {
+                    Files.move(saveRoot, root);
+                } catch (IOException exception) {
+                    Log.error(exception);
+                }
+            } else {
+                getMasterRootPath(); // will recreate the dir
+            }
+        }
+        return success;
     }
 }
