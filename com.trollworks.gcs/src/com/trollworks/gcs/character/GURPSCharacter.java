@@ -2421,7 +2421,7 @@ public class GURPSCharacter extends DataFile {
         notify(ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousChecksFatiguePoints()));
         notify(ID_UNCONSCIOUS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousFatiguePoints()));
         notify(ID_TIRED_FATIGUE_POINTS, Integer.valueOf(getTiredFatiguePoints()));
-        notify(ID_CURRENT_HP, Integer.valueOf(getHitPoints() - mHitPointsDamage));
+        notify(ID_CURRENT_FP, Integer.valueOf(getFatiguePoints() - mFatiguePointsDamage));
         endNotify();
     }
 
@@ -2440,7 +2440,7 @@ public class GURPSCharacter extends DataFile {
             postUndoEdit(I18n.Text("Current Fatigue Points Change"), ID_FATIGUE_POINTS_DAMAGE, Integer.valueOf(mFatiguePointsDamage), Integer.valueOf(damage));
             mFatiguePointsDamage = damage;
             notifySingle(ID_FATIGUE_POINTS_DAMAGE, Integer.valueOf(mFatiguePointsDamage));
-            notifySingle(ID_CURRENT_HP, Integer.valueOf(getHitPoints() - mHitPointsDamage));
+            notifySingle(ID_CURRENT_FP, Integer.valueOf(getFatiguePoints() - mFatiguePointsDamage));
         }
     }
 
