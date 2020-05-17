@@ -88,6 +88,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         GURPSCharacter character = mSheet.getCharacter();
         if (GURPSCharacter.ID_CURRENT_HP.equals(type) || GURPSCharacter.ID_CURRENT_FP.equals(type)) {
             character.notifyMoveAndDodge();
+            character.notifyBasicLift();
         }
         Encumbrance current = character.getEncumbranceLevel();
         for (Encumbrance encumbrance : Encumbrance.values()) {

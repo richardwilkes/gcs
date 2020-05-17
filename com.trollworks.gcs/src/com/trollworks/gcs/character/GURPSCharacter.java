@@ -1052,16 +1052,7 @@ public class GURPSCharacter extends DataFile {
         }
         WeightValue newLift = getBasicLift();
         if (!newLift.equals(lift)) {
-            notify(ID_BASIC_LIFT, newLift);
-            notify(ID_ONE_HANDED_LIFT, getOneHandedLift());
-            notify(ID_TWO_HANDED_LIFT, getTwoHandedLift());
-            notify(ID_SHOVE_AND_KNOCK_OVER, getShoveAndKnockOver());
-            notify(ID_RUNNING_SHOVE_AND_KNOCK_OVER, getRunningShoveAndKnockOver());
-            notify(ID_CARRY_ON_BACK, getCarryOnBack());
-            notify(ID_SHIFT_SLIGHTLY, getShiftSlightly());
-            for (Encumbrance encumbrance : Encumbrance.values()) {
-                notify(MAXIMUM_CARRY_PREFIX + encumbrance.ordinal(), getMaximumCarry(encumbrance));
-            }
+            notifyBasicLift();
         }
 
         dice = getThrust();
@@ -1076,6 +1067,19 @@ public class GURPSCharacter extends DataFile {
         updateSkills();
         mNeedAttributePointCalculation = true;
         endNotify();
+    }
+
+    public void notifyBasicLift() {
+        notify(ID_BASIC_LIFT, getBasicLift());
+        notify(ID_ONE_HANDED_LIFT, getOneHandedLift());
+        notify(ID_TWO_HANDED_LIFT, getTwoHandedLift());
+        notify(ID_SHOVE_AND_KNOCK_OVER, getShoveAndKnockOver());
+        notify(ID_RUNNING_SHOVE_AND_KNOCK_OVER, getRunningShoveAndKnockOver());
+        notify(ID_CARRY_ON_BACK, getCarryOnBack());
+        notify(ID_SHIFT_SLIGHTLY, getShiftSlightly());
+        for (Encumbrance encumbrance : Encumbrance.values()) {
+            notify(MAXIMUM_CARRY_PREFIX + encumbrance.ordinal(), getMaximumCarry(encumbrance));
+        }
     }
 
     /** @return The number of points spent on strength. */
@@ -1238,6 +1242,13 @@ public class GURPSCharacter extends DataFile {
             roundAt = ten;
         }
         int    strength = getStrength() + mLiftingStrengthBonus;
+        if (isTired()) {
+            boolean plusOne = strength % 2 != 0;
+            strength /= 2;
+            if (plusOne) {
+                strength++;
+            }
+        }
         Fixed6 value;
         if (strength < 1) {
             value = Fixed6.ZERO;
@@ -1431,9 +1442,12 @@ public class GURPSCharacter extends DataFile {
      */
     public int getMove(Encumbrance encumbrance) {
         int initialMove = getBasicMove();
-        if (isReeling() || isTired()) {
-            boolean plusOne = initialMove % 2 != 0;
-            initialMove /= 2;
+        boolean reeling = isReeling();
+        boolean tired = isTired();
+        if (reeling || tired) {
+            int divisor = (reeling && tired) ? 4 : 2;
+            boolean plusOne = initialMove % divisor != 0;
+            initialMove /= divisor;
             if (plusOne) {
                 initialMove++;
             }
@@ -1451,9 +1465,12 @@ public class GURPSCharacter extends DataFile {
      */
     public int getDodge(Encumbrance encumbrance) {
         int dodge = 3 + mDodgeBonus + (int) Math.floor(getBasicSpeed());
-        if (isReeling() || isTired()) {
-            boolean plusOne = dodge % 2 != 0;
-            dodge /= 2;
+        boolean reeling = isReeling();
+        boolean tired = isTired();
+        if (reeling || tired) {
+            int divisor = (reeling && tired) ? 4 : 2;
+            boolean plusOne = dodge % divisor != 0;
+            dodge /= divisor;
             if (plusOne) {
                 dodge++;
             }
