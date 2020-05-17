@@ -1430,13 +1430,17 @@ public class GURPSCharacter extends DataFile {
      * @return The character's ground move for the specified encumbrance level.
      */
     public int getMove(Encumbrance encumbrance) {
-        int basicMove = getBasicMove();
+        int initialMove = getBasicMove();
         if (isReeling() || isTired()) {
-            basicMove /= 2;
+            boolean plusOne = initialMove % 2 != 0;
+            initialMove /= 2;
+            if (plusOne) {
+                initialMove++;
+            }
         }
-        int move = basicMove * (10 + 2 * encumbrance.getEncumbrancePenalty()) / 10;
+        int move = initialMove * (10 + 2 * encumbrance.getEncumbrancePenalty()) / 10;
         if (move < 1) {
-            return basicMove > 0 ? 1 : 0;
+            return initialMove > 0 ? 1 : 0;
         }
         return move;
     }
@@ -1446,11 +1450,15 @@ public class GURPSCharacter extends DataFile {
      * @return The character's dodge for the specified encumbrance level.
      */
     public int getDodge(Encumbrance encumbrance) {
-        double basicSpeed = getBasicSpeed();
+        int dodge = 3 + mDodgeBonus + (int) Math.floor(getBasicSpeed());
         if (isReeling() || isTired()) {
-            basicSpeed /= 2;
+            boolean plusOne = dodge % 2 != 0;
+            dodge /= 2;
+            if (plusOne) {
+                dodge++;
+            }
         }
-        return Math.max((int) Math.floor(basicSpeed) + 3 + encumbrance.getEncumbrancePenalty() + mDodgeBonus, 1);
+        return Math.max(dodge + encumbrance.getEncumbrancePenalty(), 1);
     }
 
     /** @return The dodge bonus. */
@@ -2135,7 +2143,12 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of hit points where "reeling" effects start. */
     public int getReelingHitPoints() {
-        return Math.max((getHitPoints() - 1) / 3, 0);
+        int hp = getHitPoints();
+        int threshold = hp / 3;
+        if (hp % 3 != 0) {
+            threshold++;
+        }
+        return Math.max(--threshold, 0);
     }
 
     public boolean isReeling() {
@@ -2446,7 +2459,12 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of fatigue points where "tired" effects start. */
     public int getTiredFatiguePoints() {
-        return Math.max((getFatiguePoints() - 1) / 3, 0);
+        int fp = getFatiguePoints();
+        int threshold = fp / 3;
+        if (fp % 3 != 0) {
+            threshold++;
+        }
+        return Math.max(--threshold, 0);
     }
 
     public boolean isTired() {
