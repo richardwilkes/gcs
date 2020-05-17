@@ -23,6 +23,8 @@ import javax.swing.JMenuBar;
 
 /** The standard menu bar. */
 public class StdMenuBar extends JMenuBar {
+    public static boolean SUPRESS_MENUS;
+
     /** @return The {@link Command}s that can have their accelerators modified. */
     public static final List<Command> getCommands() {
         List<Command> cmds = new ArrayList<>();

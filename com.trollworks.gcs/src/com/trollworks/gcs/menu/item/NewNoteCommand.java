@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NotesDockable;
 import com.trollworks.gcs.template.TemplateDockable;
@@ -43,6 +44,10 @@ public class NewNoteCommand extends Command {
 
     @Override
     public void adjust() {
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+            return;
+        }
         NotesDockable note = getTarget(NotesDockable.class);
         if (note != null) {
             setEnabled(!note.getOutline().getModel().isLocked());

@@ -58,75 +58,77 @@ public class CmdLineExport implements Runnable {
             GraphicsUtilities.setHeadlessPrintMode(true);
             for (Path path : mFiles) {
                 File file = path.toFile();
-                if (FileType.SHEET.matchExtension(PathUtils.getExtension(file.getName())) && file.canRead()) {
-                    System.out.printf(I18n.Text("Loading %s... "), file);
-                    System.out.flush();
-                    timing.reset();
-                    try {
-                        GURPSCharacter      character = new GURPSCharacter(file);
-                        CharacterSheet      sheet     = new CharacterSheet(character);
-                        PrerequisitesThread prereqs   = new PrerequisitesThread(sheet);
-                        PrintManager        settings  = character.getPageSettings();
-                        File                output;
-                        boolean             success;
+                if (!FileType.SHEET.matchExtension(PathUtils.getExtension(file.getName())) || !file.canRead()) {
+                    System.out.printf(I18n.Text("Unable to load %s\n"), file);
+                    continue;
+                }
+                System.out.printf(I18n.Text("Loading %s... "), file);
+                System.out.flush();
+                timing.reset();
+                try {
+                    GURPSCharacter      character = new GURPSCharacter(file);
+                    CharacterSheet      sheet     = new CharacterSheet(character);
+                    PrerequisitesThread prereqs   = new PrerequisitesThread(sheet);
+                    PrintManager        settings  = character.getPageSettings();
+                    File                output;
+                    boolean             success;
 
-                        sheet.addNotify(); // Required to allow layout to work
-                        sheet.rebuild();
-                        prereqs.start();
-                        PrerequisitesThread.waitForProcessingToFinish(character);
+                    sheet.addNotify(); // Required to allow layout to work
+                    sheet.rebuild();
+                    prereqs.start();
+                    PrerequisitesThread.waitForProcessingToFinish(character);
 
-                        if (paperSize != null && settings != null) {
-                            settings.setPageSize(paperSize, LengthUnits.IN);
-                        }
-                        if (marginsInfo != null && settings != null) {
-                            settings.setPageMargins(marginsInfo, LengthUnits.IN);
-                        }
-                        sheet.rebuild();
-                        sheet.setSize(sheet.getPreferredSize());
-
-                        System.out.println(timing);
-                        if (mGenerateText) {
-                            System.out.print(I18n.Text("  Creating from text template... "));
-                            System.out.flush();
-                            output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(mTemplate.getName())));
-                            timing.reset();
-                            success = new TextTemplate(sheet).export(output, mTemplate);
-                            System.out.println(timing);
-                            System.out.printf(I18n.Text("    Used text template file: %s\n"), PathUtils.getFullPath(mTemplate));
-                            if (success) {
-                                System.out.printf(I18n.Text("    Created: %s\n"), output);
-                            }
-                        }
-                        if (mGeneratePDF) {
-                            System.out.print(I18n.Text("  Creating PDF... "));
-                            System.out.flush();
-                            output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PDF.getExtension()));
-                            timing.reset();
-                            success = sheet.saveAsPDF(output);
-                            System.out.println(timing);
-                            if (success) {
-                                System.out.printf(I18n.Text("    Created: %s\n"), output);
-                            }
-                        }
-                        if (mGeneratePNG) {
-                            List<File> result = new ArrayList<>();
-                            System.out.print(I18n.Text("  Creating PNG... "));
-                            System.out.flush();
-                            output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PNG.getExtension()));
-                            timing.reset();
-                            success = sheet.saveAsPNG(output, result);
-                            System.out.println(timing);
-                            if (success) {
-                                for (File one : result) {
-                                    System.out.printf(I18n.Text("    Created: %s\n"), one);
-                                }
-                            }
-                        }
-                        sheet.dispose();
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                        System.out.println(I18n.Text("  ** ERROR ENCOUNTERED **"));
+                    if (paperSize != null && settings != null) {
+                        settings.setPageSize(paperSize, LengthUnits.IN);
                     }
+                    if (marginsInfo != null && settings != null) {
+                        settings.setPageMargins(marginsInfo, LengthUnits.IN);
+                    }
+                    sheet.rebuild();
+                    sheet.setSize(sheet.getPreferredSize());
+
+                    System.out.println(timing);
+                    if (mGenerateText) {
+                        System.out.print(I18n.Text("  Creating from text template... "));
+                        System.out.flush();
+                        output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(mTemplate.getName())));
+                        timing.reset();
+                        success = new TextTemplate(sheet).export(output, mTemplate);
+                        System.out.println(timing);
+                        System.out.printf(I18n.Text("    Used text template file: %s\n"), PathUtils.getFullPath(mTemplate));
+                        if (success) {
+                            System.out.printf(I18n.Text("    Created: %s\n"), output);
+                        }
+                    }
+                    if (mGeneratePDF) {
+                        System.out.print(I18n.Text("  Creating PDF... "));
+                        System.out.flush();
+                        output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PDF.getExtension()));
+                        timing.reset();
+                        success = sheet.saveAsPDF(output);
+                        System.out.println(timing);
+                        if (success) {
+                            System.out.printf(I18n.Text("    Created: %s\n"), output);
+                        }
+                    }
+                    if (mGeneratePNG) {
+                        List<File> result = new ArrayList<>();
+                        System.out.print(I18n.Text("  Creating PNG... "));
+                        System.out.flush();
+                        output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PNG.getExtension()));
+                        timing.reset();
+                        success = sheet.saveAsPNG(output, result);
+                        System.out.println(timing);
+                        if (success) {
+                            for (File one : result) {
+                                System.out.printf(I18n.Text("    Created: %s\n"), one);
+                            }
+                        }
+                    }
+                    sheet.dispose();
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                    System.out.println(I18n.Text("  ** ERROR ENCOUNTERED **"));
                 }
             }
             GraphicsUtilities.setHeadlessPrintMode(false);

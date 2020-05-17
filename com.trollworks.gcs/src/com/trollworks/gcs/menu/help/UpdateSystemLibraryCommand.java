@@ -12,12 +12,9 @@
 package com.trollworks.gcs.menu.help;
 
 import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.widget.WindowUtils;
-import com.trollworks.gcs.ui.widget.Workspace;
-import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -32,7 +29,7 @@ public class UpdateSystemLibraryCommand extends Command {
 
     @Override
     public void adjust() {
-        // Not used. Always enabled.
+        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override
@@ -43,24 +40,7 @@ public class UpdateSystemLibraryCommand extends Command {
     public static void askUserToUpdate() {
         String no = I18n.Text("No");
         if (WindowUtils.showConfirmDialog(null, I18n.Text("Update the GCS Master Library to the latest content?\n\nNote that any existing content will be removed and replaced.\nContent in the GCS User Library will not be modified."), I18n.Text("GCS Master Library Update"), JOptionPane.OK_CANCEL_OPTION, new String[]{I18n.Text("Update"), no}, no) == JOptionPane.OK_OPTION) {
-            for (Dockable dockable : Workspace.get().getDock().getDockables()) {
-                if (dockable instanceof CloseHandler) {
-                    CloseHandler handler = (CloseHandler) dockable;
-                    if (handler.mayAttemptClose()) {
-                        handler.attemptClose();
-                    }
-                }
-            }
-            boolean                 success         = Library.download();
-            LibraryExplorerDockable libraryDockable = LibraryExplorerDockable.get();
-            if (libraryDockable != null) {
-                libraryDockable.refresh();
-            }
-            if (success) {
-                JOptionPane.showMessageDialog(null, I18n.Text("GCS Master Library update was successful."), I18n.Text("Success!"), JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                WindowUtils.showError(null, I18n.Text("An error occurred while trying to update the GCS Master Library."));
-            }
+            Library.download();
         }
     }
 }

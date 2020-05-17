@@ -12,6 +12,7 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.utility.I18n;
 
@@ -30,6 +31,10 @@ public class SkillLevelDecrementCommand extends Command {
 
     @Override
     public void adjust() {
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+            return;
+        }
         Component focus = getFocusOwner();
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();

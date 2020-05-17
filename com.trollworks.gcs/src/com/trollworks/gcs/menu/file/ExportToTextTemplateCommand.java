@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -35,7 +36,7 @@ public class ExportToTextTemplateCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(getTarget(SheetDockable.class) != null);
+        setEnabled(!StdMenuBar.SUPRESS_MENUS && getTarget(SheetDockable.class) != null);
     }
 
     @Override

@@ -11,16 +11,28 @@
 
 package com.trollworks.gcs.library;
 
+import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.io.RecursiveDirectoryRemover;
 import com.trollworks.gcs.io.UrlUtils;
 import com.trollworks.gcs.io.json.Json;
 import com.trollworks.gcs.io.json.JsonArray;
 import com.trollworks.gcs.io.json.JsonMap;
+import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.Workspace;
+import com.trollworks.gcs.ui.widget.dock.Dockable;
+import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Version;
+import com.trollworks.gcs.utility.task.Tasks;
 
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -31,12 +43,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
 
-public class Library {
-    private static final String SHA_PREFIX   = "\"sha\": \"";
-    private static final String SHA_SUFFIX   = "\",";
-    private static final String ROOT_PREFIX  = "richardwilkes-gcs_library-";
-    private static final String VERSION_FILE = "version.txt";
+public class Library implements Runnable {
+    private static final String  SHA_PREFIX   = "\"sha\": \"";
+    private static final String  SHA_SUFFIX   = "\",";
+    private static final String  ROOT_PREFIX  = "richardwilkes-gcs_library-";
+    private static final String  VERSION_FILE = "version.txt";
+    private              String  mResult;
+    private              JDialog mDialog;
+    private              boolean mUpdateComplete;
 
     /** @return The path to the master GCS library files. */
     public static Path getMasterRootPath() {
@@ -127,78 +148,192 @@ public class Library {
         return Version.extract(version, 0);
     }
 
-    public static final boolean download() {
-        Path root     = getMasterRootPath();
-        Path saveRoot = root.resolveSibling(root.getFileName().toString() + ".save");
-        if (Files.exists(root)) {
-            try {
-                Files.move(root, saveRoot);
-            } catch (IOException exception) {
-                Log.error(exception);
-                return false;
-            }
+    public static final void downloadIfNotPresent() {
+        if (getRecordedCommit().isBlank()) {
+            download();
         }
-        getMasterRootPath(); // will recreate the dir
-        boolean success;
-        try (ZipInputStream in = new ZipInputStream(new BufferedInputStream(UrlUtils.setupConnection("https://api.github.com/repos/richardwilkes/gcs_library/zipball/master").getInputStream()))) {
-            byte[]   buffer = new byte[8192];
-            ZipEntry entry;
-            String   sha    = "unknown";
-            while ((entry = in.getNextEntry()) != null) {
-                if (entry.isDirectory()) {
-                    continue;
+    }
+
+    public static final void download() {
+        Library lib = new Library();
+        if (GraphicsEnvironment.isHeadless()) {
+            Tasks.callOnBackgroundThread(lib);
+            synchronized (lib) {
+                while (!lib.mUpdateComplete) {
+                    try {
+                        //noinspection WaitOrAwaitWithoutTimeout
+                        lib.wait();
+                    } catch (InterruptedException exception) {
+                        break;
+                    }
                 }
-                Path entryPath = Paths.get(entry.getName());
-                int  nameCount = entryPath.getNameCount();
-                if (nameCount < 3 || !entryPath.getName(0).toString().startsWith(ROOT_PREFIX) || !"Library".equals(entryPath.getName(1).toString())) {
-                    continue;
-                }
-                long size = entry.getSize();
-                if (size < 1) {
-                    continue;
-                }
-                sha = entryPath.getName(0).toString().substring(ROOT_PREFIX.length());
-                entryPath = entryPath.subpath(2, nameCount);
-                Path path = root.resolve(entryPath);
-                Files.createDirectories(path.getParent());
-                try (OutputStream out = Files.newOutputStream(path)) {
-                    while (size > 0) {
-                        int amt = in.read(buffer);
-                        if (amt < 0) {
-                            break;
-                        }
-                        if (amt > 0) {
-                            size -= amt;
-                            out.write(buffer, 0, amt);
+            }
+        } else {
+            // Close any open files that come from the master library
+            Workspace workspace = Workspace.get();
+            String    prefix    = getMasterRootPath().toAbsolutePath().toString();
+            for (Dockable dockable : workspace.getDock().getDockables()) {
+                if (dockable instanceof DataFileDockable) {
+                    DataFileDockable dfd  = (DataFileDockable) dockable;
+                    File             file = dfd.getBackingFile();
+                    if (file != null) {
+                        if (file.getAbsolutePath().startsWith(prefix)) {
+                            if (dfd.mayAttemptClose()) {
+                                if (!dfd.attemptClose()) {
+                                    JOptionPane.showMessageDialog(null, I18n.Text("GCS Master Library update was canceled."), I18n.Text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
+                                    return;
+                                }
+                            }
                         }
                     }
                 }
             }
-            if (sha.length() > 7) {
-                sha = sha.substring(0, 7);
-            }
-            Files.writeString(root.resolve(VERSION_FILE), sha + "\n");
-            success = true;
-        } catch (IOException exception) {
-            Log.error(exception);
-            success = false;
+
+            // Put up a progress dialog
+            JDialog dialog = new JDialog(workspace, I18n.Text("Update Master Library"), true);
+            dialog.setResizable(false);
+            dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            dialog.setUndecorated(true);
+            JComponent content = (JComponent) dialog.getContentPane();
+            content.setLayout(new BorderLayout());
+            content.setBorder(new EmptyBorder(10));
+            content.add(new JLabel(I18n.Text("Downloading and installing the Master Library…")), BorderLayout.NORTH);
+            JProgressBar bar = new JProgressBar();
+            bar.setIndeterminate(true);
+            content.add(bar);
+            dialog.pack();
+            dialog.setLocationRelativeTo(workspace);
+            StdMenuBar.SUPRESS_MENUS = true;
+            lib.mDialog = dialog;
+            Tasks.callOnBackgroundThread(lib);
+            dialog.setVisible(true);
         }
-        if (success) {
-            if (Files.exists(saveRoot)) {
-                RecursiveDirectoryRemover.remove(saveRoot, true);
-            }
+    }
+
+    private Library() {
+    }
+
+    @Override
+    public void run() {
+        if (mUpdateComplete) {
+            doCleanup();
         } else {
-            RecursiveDirectoryRemover.remove(root, true);
-            if (Files.exists(saveRoot)) {
+            doDownload();
+        }
+    }
+
+    private void doDownload() {
+        try {
+            Path    root           = getMasterRootPath();
+            boolean shouldContinue = true;
+            Path    saveRoot       = root.resolveSibling(root.getFileName().toString() + ".save");
+            if (Files.exists(root)) {
                 try {
-                    Files.move(saveRoot, root);
+                    Files.move(root, saveRoot);
+                } catch (IOException exception) {
+                    shouldContinue = false;
+                    Log.error(exception);
+                    mResult = exception.getMessage();
+                    if (mResult == null) {
+                        mResult = "exception";
+                    }
+                }
+            }
+            if (shouldContinue) {
+                getMasterRootPath(); // will recreate the dir
+                try (ZipInputStream in = new ZipInputStream(new BufferedInputStream(UrlUtils.setupConnection("https://api.github.com/repos/richardwilkes/gcs_library/zipball/master").getInputStream()))) {
+                    byte[]   buffer = new byte[8192];
+                    ZipEntry entry;
+                    String   sha    = "unknown";
+                    while ((entry = in.getNextEntry()) != null) {
+                        if (entry.isDirectory()) {
+                            continue;
+                        }
+                        Path entryPath = Paths.get(entry.getName());
+                        int  nameCount = entryPath.getNameCount();
+                        if (nameCount < 3 || !entryPath.getName(0).toString().startsWith(ROOT_PREFIX) || !"Library".equals(entryPath.getName(1).toString())) {
+                            continue;
+                        }
+                        long size = entry.getSize();
+                        if (size < 1) {
+                            continue;
+                        }
+                        sha = entryPath.getName(0).toString().substring(ROOT_PREFIX.length());
+                        entryPath = entryPath.subpath(2, nameCount);
+                        Path path = root.resolve(entryPath);
+                        Files.createDirectories(path.getParent());
+                        try (OutputStream out = Files.newOutputStream(path)) {
+                            while (size > 0) {
+                                int amt = in.read(buffer);
+                                if (amt < 0) {
+                                    break;
+                                }
+                                if (amt > 0) {
+                                    size -= amt;
+                                    out.write(buffer, 0, amt);
+                                }
+                            }
+                        }
+                    }
+                    if (sha.length() > 7) {
+                        sha = sha.substring(0, 7);
+                    }
+                    Files.writeString(root.resolve(VERSION_FILE), sha + "\n");
                 } catch (IOException exception) {
                     Log.error(exception);
+                    mResult = exception.getMessage();
+                    if (mResult == null) {
+                        mResult = "exception";
+                    }
                 }
-            } else {
-                getMasterRootPath(); // will recreate the dir
+                if (mResult == null) {
+                    if (Files.exists(saveRoot)) {
+                        RecursiveDirectoryRemover.remove(saveRoot, true);
+                    }
+                } else {
+                    RecursiveDirectoryRemover.remove(root, true);
+                    if (Files.exists(saveRoot)) {
+                        try {
+                            Files.move(saveRoot, root);
+                        } catch (IOException exception) {
+                            Log.error(exception);
+                        }
+                    } else {
+                        getMasterRootPath(); // will recreate the dir
+                    }
+                }
+            }
+        } catch (Throwable throwable) {
+            Log.error(throwable);
+            if (mResult == null) {
+                mResult = throwable.getMessage();
+                if (mResult == null) {
+                    mResult = "exception";
+                }
             }
         }
-        return success;
+
+        synchronized (this) {
+            mUpdateComplete = true;
+            notifyAll();
+        }
+        if (!GraphicsEnvironment.isHeadless()) {
+            EventQueue.invokeLater(this);
+        }
+    }
+
+    private void doCleanup() {
+        // Refresh the library view and let the user know what happened
+        LibraryExplorerDockable libraryDockable = LibraryExplorerDockable.get();
+        if (libraryDockable != null) {
+            libraryDockable.refresh();
+        }
+        mDialog.dispose();
+        StdMenuBar.SUPRESS_MENUS = false;
+        if (mResult == null) {
+            JOptionPane.showMessageDialog(null, I18n.Text("GCS Master Library update was successful."), I18n.Text("Success!"), JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            WindowUtils.showError(null, I18n.Text("An error occurred while trying to update the GCS Master Library:") + "\n\n" + mResult);
+        }
     }
 }

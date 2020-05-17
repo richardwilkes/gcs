@@ -29,6 +29,7 @@ import com.trollworks.gcs.utility.text.Text;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
@@ -59,7 +60,9 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
         mSheet = sheet;
         setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.Text("<html><body><b>Double-click</b> to set a character portrait.<br><br>The dimensions of the chosen picture should be in a ratio of<br><b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br><br>Dimensions of <b>{0}x{1}</b> are ideal.</body></html>"), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
         sheet.getCharacter().addTarget(this, Profile.ID_PORTRAIT);
-        setDropTarget(new DropTarget(this, DnDConstants.ACTION_COPY, this));
+        if (!GraphicsEnvironment.isHeadless()) {
+            setDropTarget(new DropTarget(this, DnDConstants.ACTION_COPY, this));
+        }
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent event) {

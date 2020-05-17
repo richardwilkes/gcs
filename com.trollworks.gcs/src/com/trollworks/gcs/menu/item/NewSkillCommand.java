@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.skill.Technique;
@@ -49,6 +50,10 @@ public class NewSkillCommand extends Command {
 
     @Override
     public void adjust() {
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+            return;
+        }
         SkillsDockable skills = getTarget(SkillsDockable.class);
         if (skills != null) {
             setEnabled(!skills.getOutline().getModel().isLocked());

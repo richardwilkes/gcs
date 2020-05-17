@@ -12,6 +12,7 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.I18n;
@@ -37,9 +38,13 @@ public class SaveCommand extends Command {
 
     @Override
     public void adjust() {
-        Saveable saveable = getTarget(Saveable.class);
-        Commitable.sendCommitToFocusOwner();
-        setEnabled(saveable != null && saveable.isModified());
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+        } else {
+            Saveable saveable = getTarget(Saveable.class);
+            Commitable.sendCommitToFocusOwner();
+            setEnabled(saveable != null && saveable.isModified());
+        }
     }
 
     @Override

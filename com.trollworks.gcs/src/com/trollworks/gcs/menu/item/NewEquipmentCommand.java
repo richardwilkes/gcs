@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
@@ -53,6 +54,10 @@ public class NewEquipmentCommand extends Command {
 
     @Override
     public void adjust() {
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+            return;
+        }
         if (mCarried) {
             EquipmentDockable equipment = getTarget(EquipmentDockable.class);
             if (equipment != null) {

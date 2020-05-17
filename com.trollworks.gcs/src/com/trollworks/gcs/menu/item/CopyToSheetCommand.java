@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.library.LibraryDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -49,6 +50,10 @@ public class CopyToSheetCommand extends Command {
 
     @Override
     public void adjust() {
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+            return;
+        }
         boolean     shouldEnable = false;
         ListOutline outline      = getOutline();
         if (outline != null && outline.getModel().hasSelection()) {

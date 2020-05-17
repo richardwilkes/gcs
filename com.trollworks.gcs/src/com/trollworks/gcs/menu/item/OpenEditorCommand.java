@@ -12,6 +12,7 @@
 package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.utility.I18n;
@@ -43,6 +44,10 @@ public class OpenEditorCommand extends Command {
 
     @Override
     public void adjust() {
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+            return;
+        }
         ListOutline outline = getOutline();
         if (outline != null) {
             setEnabled(outline.getModel().hasSelection());

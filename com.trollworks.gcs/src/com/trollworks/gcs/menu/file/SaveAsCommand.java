@@ -13,6 +13,7 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.I18n;
@@ -35,7 +36,7 @@ public class SaveAsCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(getTarget(Saveable.class) != null);
+        setEnabled(!StdMenuBar.SUPRESS_MENUS && getTarget(Saveable.class) != null);
     }
 
     @Override

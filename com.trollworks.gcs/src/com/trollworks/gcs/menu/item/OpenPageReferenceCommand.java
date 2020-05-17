@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.item;
 import com.trollworks.gcs.collections.ReverseListIterator;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.gcs.ui.Selection;
@@ -66,7 +67,7 @@ public class OpenPageReferenceCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!getReferences(getTarget()).isEmpty());
+        setEnabled(!StdMenuBar.SUPRESS_MENUS && !getReferences(getTarget()).isEmpty());
     }
 
     @Override

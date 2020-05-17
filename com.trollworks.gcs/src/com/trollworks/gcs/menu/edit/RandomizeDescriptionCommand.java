@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.edit;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DescriptionRandomizer;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -34,7 +35,7 @@ public class RandomizeDescriptionCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(getTarget(CharacterSheet.class) != null);
+        setEnabled(!StdMenuBar.SUPRESS_MENUS && getTarget(CharacterSheet.class) != null);
     }
 
     @Override

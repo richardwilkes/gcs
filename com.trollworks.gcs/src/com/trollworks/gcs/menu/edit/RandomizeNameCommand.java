@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.edit;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -37,7 +38,7 @@ public class RandomizeNameCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(getTarget(CharacterSheet.class) != null);
+        setEnabled(!StdMenuBar.SUPRESS_MENUS && getTarget(CharacterSheet.class) != null);
     }
 
     @Override

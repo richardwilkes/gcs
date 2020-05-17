@@ -13,6 +13,7 @@ package com.trollworks.gcs.menu.help;
 
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -34,7 +35,7 @@ public class ShowLibraryFolderCommand extends Command {
 
     @Override
     public void adjust() {
-        // Not used. Always enabled.
+        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override

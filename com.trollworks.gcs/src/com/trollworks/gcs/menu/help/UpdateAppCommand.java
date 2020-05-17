@@ -13,6 +13,7 @@ package com.trollworks.gcs.menu.help;
 
 import com.trollworks.gcs.app.UpdateChecker;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 
 import java.awt.event.ActionEvent;
 
@@ -29,6 +30,10 @@ public class UpdateAppCommand extends Command {
 
     @Override
     public void adjust() {
+        if (StdMenuBar.SUPRESS_MENUS) {
+            setEnabled(false);
+            return;
+        }
         setTitle(UpdateChecker.getAppResult());
         setEnabled(UpdateChecker.isNewAppVersionAvailable());
     }

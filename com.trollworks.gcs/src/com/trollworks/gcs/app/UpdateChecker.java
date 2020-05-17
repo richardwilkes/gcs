@@ -188,7 +188,7 @@ public class UpdateChecker implements Runnable {
     }
 
     private void tryNotify() {
-        if (UIApp.isNotificationAllowed()) {
+        if (GCS.isNotificationAllowed()) {
             String update = I18n.Text("Update");
             mMode = Mode.DONE;
             if (isNewAppVersionAvailable()) {

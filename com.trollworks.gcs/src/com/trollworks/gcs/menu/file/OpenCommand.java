@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.FileProxy;
@@ -41,7 +42,7 @@ public class OpenCommand extends Command implements OpenFilesHandler {
 
     @Override
     public void adjust() {
-        // Do nothing. Always enabled.
+        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override
