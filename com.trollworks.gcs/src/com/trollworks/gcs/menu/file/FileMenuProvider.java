@@ -30,23 +30,36 @@ import javax.swing.JMenu;
 
 /** Provides the standard "File" menu. */
 public class FileMenuProvider {
-    private static List<Command> LIBRARY_EXPORT_TEMPLATE_CMDS;
+    private static List<Command> MASTER_LIBRARY_EXPORT_TEMPLATE_CMDS;
+    private static List<Command> USER_LIBRARY_EXPORT_TEMPLATE_CMDS;
 
-    public static synchronized List<Command> getLibraryExportTemplateCommands() {
-        if (LIBRARY_EXPORT_TEMPLATE_CMDS == null) {
-            LIBRARY_EXPORT_TEMPLATE_CMDS = new ArrayList<>();
-            Path dir = Library.getMasterRootPath().resolve("Output Templates");
-            if (Files.isDirectory(dir)) {
-                try {
-                    Files.list(dir).
-                            sorted((Path p1, Path p2) -> NumericComparator.caselessCompareStrings(PathUtils.getLeafName(p1, true), PathUtils.getLeafName(p2, true))).
-                            forEachOrdered((path) -> LIBRARY_EXPORT_TEMPLATE_CMDS.add(new ExportToTextTemplateCommand(path)));
-                } catch (IOException exception) {
-                    Log.error(exception);
-                }
+    public static synchronized List<Command> getMasterLibraryExportTemplateCommands() {
+        if (MASTER_LIBRARY_EXPORT_TEMPLATE_CMDS == null) {
+            MASTER_LIBRARY_EXPORT_TEMPLATE_CMDS = generateLibraryExportTemplateCommands(true);
+        }
+        return MASTER_LIBRARY_EXPORT_TEMPLATE_CMDS;
+    }
+
+    public static synchronized List<Command> getUserLibraryExportTemplateCommands() {
+        if (USER_LIBRARY_EXPORT_TEMPLATE_CMDS == null) {
+            USER_LIBRARY_EXPORT_TEMPLATE_CMDS = generateLibraryExportTemplateCommands(false);
+        }
+        return USER_LIBRARY_EXPORT_TEMPLATE_CMDS;
+    }
+
+    private static List<Command> generateLibraryExportTemplateCommands(boolean master) {
+        ArrayList<Command> cmds = new ArrayList<>();
+        Path               dir  = (master ? Library.getMasterRootPath() : Library.getUserRootPath()).resolve("Output Templates");
+        if (Files.isDirectory(dir)) {
+            try {
+                Files.list(dir).
+                        sorted((Path p1, Path p2) -> NumericComparator.caselessCompareStrings(PathUtils.getLeafName(p1, true), PathUtils.getLeafName(p2, true))).
+                        forEachOrdered((path) -> cmds.add(new ExportToTextTemplateCommand(path, master)));
+            } catch (IOException exception) {
+                Log.error(exception);
             }
         }
-        return LIBRARY_EXPORT_TEMPLATE_CMDS;
+        return cmds;
     }
 
     public static List<Command> getModifiableCommands() {
@@ -67,7 +80,8 @@ public class FileMenuProvider {
         cmds.add(ExportToGurpsCalculatorCommand.INSTANCE);
         cmds.add(ExportToPDFCommand.INSTANCE);
         cmds.add(ExportToPNGCommand.INSTANCE);
-        cmds.addAll(getLibraryExportTemplateCommands());
+        cmds.addAll(getMasterLibraryExportTemplateCommands());
+        cmds.addAll(getUserLibraryExportTemplateCommands());
         cmds.add(PageSetupCommand.INSTANCE);
         cmds.add(PrintCommand.INSTANCE);
         if (!Platform.isMacintosh()) {
@@ -99,8 +113,20 @@ public class FileMenuProvider {
         exportMenu.add(new DynamicMenuItem(ExportToGurpsCalculatorCommand.INSTANCE));
         exportMenu.add(new DynamicMenuItem(ExportToPDFCommand.INSTANCE));
         exportMenu.add(new DynamicMenuItem(ExportToPNGCommand.INSTANCE));
-        exportMenu.addSeparator();
-        for (Command cmd : getLibraryExportTemplateCommands()) {
+        boolean needSep = true;
+        for (Command cmd : getMasterLibraryExportTemplateCommands()) {
+            if (needSep) {
+                exportMenu.addSeparator();
+                needSep = false;
+            }
+            exportMenu.add(new DynamicMenuItem(cmd));
+        }
+        needSep = true;
+        for (Command cmd : getUserLibraryExportTemplateCommands()) {
+            if (needSep) {
+                exportMenu.addSeparator();
+                needSep = false;
+            }
             exportMenu.add(new DynamicMenuItem(cmd));
         }
         menu.add(exportMenu);

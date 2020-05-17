@@ -28,8 +28,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class ExportToTextTemplateCommand extends Command {
     private Path mTemplatePath;
 
-    public ExportToTextTemplateCommand(Path templatePath) {
-        super(String.format(I18n.Text("Export to %s…"), PathUtils.getLeafName(templatePath, false)), "ExportTextTemplate-" + PathUtils.getLeafName(templatePath, true));
+    public ExportToTextTemplateCommand(Path templatePath, boolean master) {
+        super(String.format(I18n.Text("Export to %s…"), PathUtils.getLeafName(templatePath, false)), "ExportTextTemplate-" + (master ? "M-" : "U-") + PathUtils.getLeafName(templatePath, true));
         mTemplatePath = templatePath;
     }
 
