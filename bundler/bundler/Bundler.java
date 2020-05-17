@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.Set;
 
 public class Bundler {
-    private static final String        GCS_VERSION       = "4.15.1";
-    private static final String        JDK_MAJOR_VERSION = "14";
+    private static final String        GCS_VERSION       = "4.16.0";
+    private static final String        JDK_MAJOR_VERSION = "15";
     private static final String        ITEXT_VERSION     = "2.1.7";
     private static final String        LOGGING_VERSION   = "1.2.0";
     private static final String        FONTBOX_VERSION   = "2.0.17";
@@ -65,6 +65,7 @@ public class Bundler {
      * @param args Arguments to the program.
      */
     public static void main(String[] args) {
+        boolean sign = args.length > 0 && (args[0].equals("--sign") || args[0].equals("-s"));
         checkPlatform();
         checkJDK();
         prepareDirs();
@@ -72,7 +73,7 @@ public class Bundler {
         copyResources();
         createModules();
         extractLocalizationTemplate();
-        packageApp();
+        packageApp(sign);
         System.out.println("Finished!");
         System.out.println();
         System.out.println("Package can be found at:");
@@ -504,7 +505,7 @@ public class Bundler {
         return false;
     }
 
-    private static void packageApp() {
+    private static void packageApp(boolean sign) {
         System.out.print("Packaging the application... ");
         System.out.flush();
         long timing = System.nanoTime();
@@ -552,6 +553,13 @@ public class Bundler {
         case "macos":
             args.add("--mac-package-name");
             args.add("GCS");
+            args.add("--mac-package-identifier");
+            args.add("com.trollworks.gcs");
+            if (sign) {
+                args.add("--mac-sign");
+                args.add("--mac-signing-key-user-name");
+                args.add("Richard Wilkes");
+            }
             break;
         case "linux":
             args.add("--linux-package-name");
