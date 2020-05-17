@@ -65,7 +65,7 @@ public class Bundler {
      * @param args Arguments to the program.
      */
     public static void main(String[] args) {
-        boolean sign = args.length > 0 && (args[0].equals("--sign") || args[0].equals("-s"));
+        boolean sign = args.length > 0 && ("--sign".equals(args[0]) || "-s".equals(args[0]));
         checkPlatform();
         checkJDK();
         prepareDirs();
