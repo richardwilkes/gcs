@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.Version;
 import com.trollworks.gcs.utility.task.Tasks;
 
@@ -51,24 +52,28 @@ import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 
 public class Library implements Runnable {
-    private static final String  SHA_PREFIX   = "\"sha\": \"";
-    private static final String  SHA_SUFFIX   = "\",";
-    private static final String  ROOT_PREFIX  = "richardwilkes-gcs_library-";
-    private static final String  VERSION_FILE = "version.txt";
+    private static final String  MODULE          = "Libraries";
+    private static final String  MASTER_PATH_KEY = "MasterLibraryPath";
+    private static final String  USER_PATH_KEY   = "UserLibraryPath";
+    private static final String  SHA_PREFIX      = "\"sha\": \"";
+    private static final String  SHA_SUFFIX      = "\",";
+    private static final String  ROOT_PREFIX     = "richardwilkes-gcs_library-";
+    private static final String  VERSION_FILE    = "version.txt";
     private              String  mResult;
     private              JDialog mDialog;
     private              boolean mUpdateComplete;
 
+    public static Path getDefaultMasterRootPath() {
+        return Paths.get(System.getProperty("user.home", "."), "GCS", "Master Library").normalize();
+    }
+
+    public static Path getDefaultUserRootPath() {
+        return Paths.get(System.getProperty("user.home", "."), "GCS", "User Library").normalize();
+    }
+
     /** @return The path to the master GCS library files. */
     public static Path getMasterRootPath() {
-        Path   path;
-        String library = System.getenv("GCS_MASTER_LIBRARY");
-        if (library != null) {
-            path = Paths.get(library);
-        } else {
-            path = Paths.get(System.getProperty("user.home", "."), "GCS", "Master Library");
-        }
-        path = path.normalize();
+        Path path = Paths.get(Preferences.getInstance().getStringValue(MODULE, MASTER_PATH_KEY, getDefaultMasterRootPath().toString())).normalize();
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
@@ -79,16 +84,20 @@ public class Library implements Runnable {
         return path;
     }
 
+    public static void setMasterRootPath(Path path) {
+        Preferences prefs = Preferences.getInstance();
+        path = path.toAbsolutePath().normalize();
+        if (path.equals(getDefaultMasterRootPath())) {
+            prefs.removePreference(MODULE, MASTER_PATH_KEY);
+        } else {
+            prefs.setValue(MODULE, MASTER_PATH_KEY, path.toString());
+        }
+        prefs.save();
+    }
+
     /** @return The path to the user GCS library files. */
     public static Path getUserRootPath() {
-        Path   path;
-        String library = System.getenv("GCS_USER_LIBRARY");
-        if (library != null) {
-            path = Paths.get(library);
-        } else {
-            path = Paths.get(System.getProperty("user.home", "."), "GCS", "User Library");
-        }
-        path = path.normalize();
+        Path path = Paths.get(Preferences.getInstance().getStringValue(MODULE, USER_PATH_KEY, getDefaultUserRootPath().toString())).normalize();
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
@@ -97,6 +106,17 @@ public class Library implements Runnable {
             }
         }
         return path;
+    }
+
+    public static void setUserRootPath(Path path) {
+        Preferences prefs = Preferences.getInstance();
+        path = path.toAbsolutePath().normalize();
+        if (path.equals(getDefaultUserRootPath())) {
+            prefs.removePreference(MODULE, USER_PATH_KEY);
+        } else {
+            prefs.setValue(MODULE, USER_PATH_KEY, path.toString());
+        }
+        prefs.save();
     }
 
     public static final String getRecordedCommit() {

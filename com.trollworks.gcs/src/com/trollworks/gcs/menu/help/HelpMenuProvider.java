@@ -36,10 +36,13 @@ public class HelpMenuProvider {
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Mailing Lists"), "https://groups.io/g/gcs")));
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("License"), "https://github.com/richardwilkes/gcs/blob/master/LICENSE")));
         menu.addSeparator();
-        menu.add(new JMenuItem(UpdateLibraryCommand.INSTANCE));
+        menu.add(new JMenuItem(MasterLibraryStatusCommand.INSTANCE));
         menu.add(new JMenuItem(new UpdateSystemLibraryCommand()));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Master Library Change Log"), "https://github.com/richardwilkes/gcs_library/commits/master")));
         menu.add(new JMenuItem(new ShowLibraryFolderCommand(true)));
         menu.add(new JMenuItem(new ShowLibraryFolderCommand(false)));
+        menu.addSeparator();
+        menu.add(new JMenuItem(ChangeLibraryLocationsCommand.INSTANCE));
         DynamicMenuEnabler.add(menu);
         return menu;
     }

@@ -29,7 +29,7 @@ public class ShowLibraryFolderCommand extends Command {
 
     /** Creates a new {@link ShowLibraryFolderCommand}. */
     public ShowLibraryFolderCommand(boolean system) {
-        super(system ? I18n.Text("Show GCS Master Library on Disk") : I18n.Text("Show GCS User Library on Disk"), system ? "show_gcs_master_library" : "show_gcs_user_library");
+        super(system ? I18n.Text("Show Master Library on Disk") : I18n.Text("Show User Library on Disk"), system ? "show_master_library" : "show_user_library");
         mSystem = system;
     }
 

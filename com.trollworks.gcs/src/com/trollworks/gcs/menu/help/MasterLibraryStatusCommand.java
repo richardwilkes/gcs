@@ -17,15 +17,12 @@ import com.trollworks.gcs.menu.StdMenuBar;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "Update Library" command. */
-public class UpdateLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String               CMD_CHECK_FOR_UPDATE = "CheckForLibraryUpdate";
-    /** The singleton {@link UpdateLibraryCommand}. */
-    public static final UpdateLibraryCommand INSTANCE             = new UpdateLibraryCommand();
+public class MasterLibraryStatusCommand extends Command {
+    /** The singleton {@link MasterLibraryStatusCommand}. */
+    public static final MasterLibraryStatusCommand INSTANCE = new MasterLibraryStatusCommand();
 
-    private UpdateLibraryCommand() {
-        super(UpdateChecker.getDataResult(), CMD_CHECK_FOR_UPDATE);
+    private MasterLibraryStatusCommand() {
+        super(UpdateChecker.getDataResult(), "MasterLibraryStatus");
     }
 
     @Override

@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 public class UpdateSystemLibraryCommand extends Command {
     /** Creates a new {@link UpdateSystemLibraryCommand}. */
     public UpdateSystemLibraryCommand() {
-        super(I18n.Text("Update GCS Master Library"), "update_gcs_master_library");
+        super(I18n.Text("Update Master Library"), "update_master_library");
     }
 
     @Override
@@ -39,7 +39,7 @@ public class UpdateSystemLibraryCommand extends Command {
 
     public static void askUserToUpdate() {
         String no = I18n.Text("No");
-        if (WindowUtils.showConfirmDialog(null, I18n.Text("Update the GCS Master Library to the latest content?\n\nNote that any existing content will be removed and replaced.\nContent in the GCS User Library will not be modified."), I18n.Text("GCS Master Library Update"), JOptionPane.OK_CANCEL_OPTION, new String[]{I18n.Text("Update"), no}, no) == JOptionPane.OK_OPTION) {
+        if (WindowUtils.showConfirmDialog(null, I18n.Text("Update the Master Library to the latest content?\n\nNote that any existing content will be removed and replaced.\nContent in the User Library will not be modified."), I18n.Text("Master Library Update"), JOptionPane.OK_CANCEL_OPTION, new String[]{I18n.Text("Update"), no}, no) == JOptionPane.OK_OPTION) {
             Library.download();
         }
     }
