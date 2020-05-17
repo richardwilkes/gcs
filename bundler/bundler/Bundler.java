@@ -65,8 +65,30 @@ public class Bundler {
      * @param args Arguments to the program.
      */
     public static void main(String[] args) {
-        boolean sign = args.length > 0 && ("--sign".equals(args[0]) || "-s".equals(args[0]));
         checkPlatform();
+
+        boolean sign     = false;
+        boolean notarize = false;
+        for (String arg : args) {
+            if ("macos".equals(OS)) {
+                if ("-s".equals(arg) || "--sign".equals(arg)) {
+                    if (!sign) {
+                        sign = true;
+                        System.out.println("Signing enabled");
+                    }
+                    continue;
+                }
+                if ("-n".equals(arg) || "--notarize".equals(arg)) {
+                    if (!notarize) {
+                        notarize = true;
+                        System.out.println("Notarization enabled");
+                    }
+                    continue;
+                }
+            }
+            System.out.println("Ignoring argument: " + arg);
+        }
+
         checkJDK();
         prepareDirs();
         compile();
@@ -74,6 +96,11 @@ public class Bundler {
         createModules();
         extractLocalizationTemplate();
         packageApp(sign);
+
+        if (notarize) {
+            notarizeApp();
+        }
+
         System.out.println("Finished!");
         System.out.println();
         System.out.println("Package can be found at:");
@@ -508,8 +535,8 @@ public class Bundler {
     private static void packageApp(boolean sign) {
         System.out.print("Packaging the application... ");
         System.out.flush();
-        long timing = System.nanoTime();
-        List<String> args = new ArrayList<>();
+        long         timing = System.nanoTime();
+        List<String> args   = new ArrayList<>();
         args.add("jlink");
         args.add("--module-path");
         args.add(MODULE_DIR.toString());
@@ -599,11 +626,126 @@ public class Bundler {
                 System.exit(1);
             }
             args.add("--add-launcher");
-            args.add("GCScmdline="+propsFile.toString());
+            args.add("GCScmdline=" + propsFile.toString());
             break;
         }
         runNoOutputCmd(args);
         showTiming(timing);
+    }
+
+    private static void notarizeApp() {
+        System.out.print("Notarizing the application... ");
+        System.out.flush();
+        long         timing = System.nanoTime();
+        List<String> args   = new ArrayList<>();
+        args.add("xcrun");
+        args.add("altool");
+        args.add("--notarize-app");
+        args.add("--type");
+        args.add("osx");
+        args.add("--file");
+        args.add(PKG.toAbsolutePath().toString());
+        args.add("--primary-bundle-id");
+        args.add("com.trollworks.gcs");
+        args.add("--password");
+        args.add("@keychain:gcs_app_pw");
+        List<String> lines     = runCmd(args);
+        String       requestID = null;
+        boolean      noErrors  = false;
+        for (String line : lines) {
+            line = line.trim();
+            if (line.startsWith("No errors uploading ")) {
+                noErrors = true;
+            } else if (line.startsWith("RequestUUID = ")) {
+                String[] parts = line.split("=", 2);
+                if (parts.length == 2) {
+                    requestID = parts[1].trim();
+                }
+                if (noErrors) {
+                    break;
+                }
+            }
+        }
+        if (!noErrors || requestID == null) {
+            failWithLines("Unable to locate request ID from response. Response follows:", lines);
+        }
+
+        args.clear();
+        args.add("xcrun");
+        args.add("altool");
+        args.add("--notarization-info");
+        args.add(requestID);
+        args.add("--password");
+        args.add("@keychain:gcs_app_pw");
+        boolean success = false;
+        while (!success) {
+            try {
+                Thread.sleep(10000); // 10 seconds
+            } catch (InterruptedException exception) {
+                exception.printStackTrace();
+            }
+            lines = runCmd(args);
+            for (String line : lines) {
+                line = line.trim();
+                if ("Status: invalid".equals(line)) {
+                    failWithLines("Notarization failed. Response follows:", lines);
+                }
+                if ("Status: success".equals(line)) {
+                    success = true;
+                }
+            }
+            System.out.print(".");
+            System.out.flush();
+        }
+
+        args.clear();
+        args.add("xcrun");
+        args.add("stapler");
+        args.add("staple");
+        args.add(PKG.toAbsolutePath().toString());
+        success = false;
+        for (String line : runCmd(args)) {
+            line = line.trim();
+            if ("The staple and validate action worked!".equals(line)) {
+                success = true;
+            }
+        }
+        if (!success) {
+            failWithLines("Stapling failed. Response follows:", lines);
+        }
+        showTiming(timing);
+    }
+
+    private static void failWithLines(String msg, List<String> lines) {
+        System.out.println();
+        System.err.println(msg);
+        System.err.println();
+        for (String line : lines) {
+            System.err.println(line);
+        }
+        System.exit(1);
+    }
+
+    private static List<String> runCmd(List<String> args) {
+        List<String>   lines   = new ArrayList<>();
+        ProcessBuilder builder = new ProcessBuilder(args);
+        builder.redirectOutput(Redirect.PIPE).redirectErrorStream(true);
+        try {
+            boolean hadMsg  = false;
+            Process process = builder.start();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                String line = in.readLine();
+                while (line != null) {
+                    lines.add(line);
+                    line = in.readLine();
+                }
+            }
+        } catch (IOException exception) {
+            System.out.println();
+            exception.printStackTrace(System.err);
+            System.exit(1);
+        }
+        return lines;
     }
 
     private static void runNoOutputCmd(List<String> args) {
@@ -617,7 +759,7 @@ public class Bundler {
             boolean hadMsg  = false;
             Process process = builder.start();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                String line= in.readLine();
+                String line = in.readLine();
                 while (line != null) {
                     if (!line.startsWith("WARNING: Using incubator modules: jdk.incubator.jpackage")) {
                         if (!hadMsg) {
@@ -626,7 +768,8 @@ public class Bundler {
                         System.err.println(line);
                         hadMsg = true;
                     }
-                    line= in.readLine();                }
+                    line = in.readLine();
+                }
             }
             if (hadMsg) {
                 System.exit(1);
