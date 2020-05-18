@@ -516,7 +516,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      */
     public static Fixed6 getValueAdjustedForModifiers(Fixed6 value, List<EquipmentModifier> modifiers) {
         // Apply all EquipmentModifierCostType.TO_ORIGINAL_COST
-        Fixed6 cost = processAdditiveValueStep(EquipmentModifierCostType.TO_ORIGINAL_COST, value, modifiers);
+        Fixed6 cost = processNonCFStep(EquipmentModifierCostType.TO_ORIGINAL_COST, value, modifiers);
 
         // Apply all EquipmentModifierCostType.TO_BASE_COST
         Fixed6 cf    = Fixed6.ZERO;
@@ -541,28 +541,36 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
 
         // Apply all EquipmentModifierCostType.TO_FINAL_BASE_COST
-        cost = processAdditiveValueStep(EquipmentModifierCostType.TO_FINAL_BASE_COST, cost, modifiers);
+        cost = processNonCFStep(EquipmentModifierCostType.TO_FINAL_BASE_COST, cost, modifiers);
 
         // Apply all EquipmentModifierCostType.TO_FINAL_COST
-        cost = processAdditiveValueStep(EquipmentModifierCostType.TO_FINAL_COST, cost, modifiers);
+        cost = processNonCFStep(EquipmentModifierCostType.TO_FINAL_COST, cost, modifiers);
         return cost.greaterThanOrEqual(Fixed6.ZERO) ? cost : Fixed6.ZERO;
     }
 
-    private static Fixed6 processAdditiveValueStep(EquipmentModifierCostType costType, Fixed6 value, List<EquipmentModifier> modifiers) {
+    private static Fixed6 processNonCFStep(EquipmentModifierCostType costType, Fixed6 value, List<EquipmentModifier> modifiers) {
         Fixed6 percentages = Fixed6.ZERO;
+        Fixed6 additions   = Fixed6.ZERO;
         Fixed6 cost        = value;
         for (EquipmentModifier modifier : modifiers) {
             if (modifier.isEnabled() && modifier.getCostAdjType() == costType) {
                 String                adj = modifier.getCostAdjAmount();
                 ModifierCostValueType mvt = costType.determineType(adj);
                 Fixed6                amt = mvt.extractValue(adj, false);
-                if (mvt == ModifierCostValueType.ADDITION) {
-                    cost = cost.add(amt);
-                } else {
+                switch (mvt) {
+                case ADDITION:
+                    additions = additions.add(amt);
+                    break;
+                case PERCENTAGE:
                     percentages = percentages.add(amt);
+                    break;
+                case MULTIPLIER:
+                    cost = cost.mul(amt);
+                    break;
                 }
             }
         }
+        cost = cost.add(additions);
         if (!percentages.equals(Fixed6.ZERO)) {
             cost = cost.add(value.mul(percentages.div(new Fixed6(100))));
         }

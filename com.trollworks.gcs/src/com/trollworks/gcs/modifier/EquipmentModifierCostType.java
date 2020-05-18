@@ -17,10 +17,10 @@ import com.trollworks.gcs.utility.I18n;
 /** Describes how an {@link EquipmentModifier}'s cost is applied. */
 public enum EquipmentModifierCostType {
     /**
-     * Modifies the original value stored in the equipment. Can be a ±value or a ±% value. Examples:
-     * '+5', '-5', '+10%', '-10%'
+     * Modifies the original value stored in the equipment. Can be a ±value, ±% value, or a
+     * multiplier. Examples: '+5', '-5', '+10%', '-10%', 'x3.2'
      */
-    TO_ORIGINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE) {
+    TO_ORIGINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
             return I18n.Text("to original cost");
@@ -28,7 +28,7 @@ public enum EquipmentModifierCostType {
 
         @Override
         public String toString() {
-            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%')");
+            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
         }
     },
     /**
@@ -47,10 +47,10 @@ public enum EquipmentModifierCostType {
         }
     },
     /**
-     * Modifies the final base cost. Can be a ±value or a ±% value. Examples: '+5', '-5', '+10%',
-     * '-10%'
+     * Modifies the final base cost. Can be a ±value, ±% value, or a multiplier. Examples: '+5',
+     * '-5', '+10%', '-10%', 'x3.2'
      */
-    TO_FINAL_BASE_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE) {
+    TO_FINAL_BASE_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
             return I18n.Text("to final base cost");
@@ -58,13 +58,14 @@ public enum EquipmentModifierCostType {
 
         @Override
         public String toString() {
-            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%')");
+            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
         }
     },
     /**
-     * Modifies the final cost. Can be a ±value or a ±% value. Examples: '+5', '-5', '+10%', '-10%'
+     * Modifies the final cost. Can be a ±value, ±% value, or a multiplier. Examples: '+5', '-5',
+     * '+10%', '-10%', 'x3.2'
      */
-    TO_FINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE) {
+    TO_FINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
             return I18n.Text("to final cost");
@@ -72,7 +73,7 @@ public enum EquipmentModifierCostType {
 
         @Override
         public String toString() {
-            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%')");
+            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
         }
     };
 
