@@ -86,6 +86,12 @@ public class Bundler {
                     continue;
                 }
             }
+            if ("-h".equals(arg) || "--help".equals(arg)) {
+                System.out.println("-h, --help      This help");
+                System.out.println("-n, --notarize  Enable notarization of the application (macOS only)");
+                System.out.println("-s, --sign      Enable signing of the application (macOS only)");
+                System.exit(0);
+            }
             System.out.println("Ignoring argument: " + arg);
         }
 
