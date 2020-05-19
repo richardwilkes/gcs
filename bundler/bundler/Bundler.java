@@ -41,11 +41,14 @@ import java.util.Set;
 
 public class Bundler {
     private static final String        GCS_VERSION       = "4.16.0";
-    private static final String        JDK_MAJOR_VERSION = "15";
+    private static       String        JDK_MAJOR_VERSION = "15";
     private static final String        ITEXT_VERSION     = "2.1.7";
     private static final String        LOGGING_VERSION   = "1.2.0";
     private static final String        FONTBOX_VERSION   = "2.0.17";
     private static final String        PDFBOX_VERSION    = "2.0.17";
+    private static final String        LINUX             = "linux";
+    private static final String        MACOS             = "macos";
+    private static final String        WINDOWS           = "windows";
     private static final Path          DIST_DIR          = Paths.get("out", "dist");
     private static final Path          BUILD_DIR         = DIST_DIR.resolve("build");
     private static final Path          MODULE_DIR        = DIST_DIR.resolve("modules");
@@ -66,11 +69,16 @@ public class Bundler {
      */
     public static void main(String[] args) {
         checkPlatform();
+        if (LINUX.equals(OS)) {
+            // We only want JDK 15 for its updated jpackage tool, which isn't currently functioning
+            // on Linux, so use JDK 14 on that platform.
+            JDK_MAJOR_VERSION = "14";
+        }
 
         boolean sign     = false;
         boolean notarize = false;
         for (String arg : args) {
-            if ("macos".equals(OS)) {
+            if (MACOS.equals(OS)) {
                 if ("-s".equals(arg) || "--sign".equals(arg)) {
                     if (!sign) {
                         sign = true;
@@ -116,15 +124,15 @@ public class Bundler {
     private static void checkPlatform() {
         String osName = System.getProperty("os.name");
         if (osName.startsWith("Mac")) {
-            OS = "macos";
+            OS = MACOS;
             PKG = Paths.get("GCS-" + GCS_VERSION + ".dmg");
             ICON_TYPE = "icns";
         } else if (osName.startsWith("Win")) {
-            OS = "windows";
+            OS = WINDOWS;
             PKG = Paths.get("GCS-" + GCS_VERSION + ".msi");
             ICON_TYPE = "ico";
         } else if (osName.startsWith("Linux")) {
-            OS = "linux";
+            OS = LINUX;
             PKG = Paths.get("gcs-" + GCS_VERSION + "-1_amd64.deb");
             ICON_TYPE = "png";
         } else {
@@ -583,7 +591,7 @@ public class Bundler {
         args.add("--java-options");
         args.add("-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1");
         switch (OS) {
-        case "macos":
+        case MACOS:
             args.add("--mac-package-name");
             args.add("GCS");
             args.add("--mac-package-identifier");
@@ -594,7 +602,7 @@ public class Bundler {
                 args.add("Richard Wilkes");
             }
             break;
-        case "linux":
+        case LINUX:
             args.add("--linux-package-name");
             args.add("gcs");
             args.add("--linux-deb-maintainer");
@@ -611,7 +619,7 @@ public class Bundler {
             args.add("--linux-package-deps");
             args.add("");
             break;
-        case "windows":
+        case WINDOWS:
             args.add("--java-options");
             args.add("-Dsun.java2d.dpiaware=false");
             args.add("--win-menu");
