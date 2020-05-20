@@ -277,6 +277,7 @@ public class Library implements Runnable {
 
     private void doDownload() {
         try {
+            LibraryWatcher.INSTANCE.watchDirs(new HashSet<>());
             Path    root           = getMasterRootPath();
             boolean shouldContinue = true;
             Path    saveRoot       = root.resolveSibling(root.getFileName().toString() + ".save");
