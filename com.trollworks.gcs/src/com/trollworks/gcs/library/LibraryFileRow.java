@@ -39,7 +39,7 @@ public class LibraryFileRow extends TreeRow implements LibraryExplorerRow {
 
     @Override
     public RetinaIcon getIcon() {
-        return FileType.getIconForFile(mPath.toFile());
+        return FileType.getIconForFileName(mPath.getFileName().toString());
     }
 
     @Override

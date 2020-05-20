@@ -14,7 +14,6 @@ package com.trollworks.gcs.utility;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -105,14 +104,11 @@ public class FileType {
     }
 
     /**
-     * @param file The file to return an icon for.
+     * @param name The name to return an icon for.
      * @return The icon for the specified file.
      */
-    public static RetinaIcon getIconForFile(File file) {
-        if (file == null || !file.isFile()) {
-            return Images.FOLDER;
-        }
-        String extension = PathUtils.getExtension(file.getName());
+    public static RetinaIcon getIconForFileName(String name) {
+        String extension = PathUtils.getExtension(name);
         for (FileType one : OPENABLE) {
             if (one.matchExtension(extension)) {
                 return one.getIcon();
