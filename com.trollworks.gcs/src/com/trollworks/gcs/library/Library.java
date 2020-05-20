@@ -26,7 +26,6 @@ import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.Version;
-import com.trollworks.gcs.utility.task.Tasks;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -42,6 +41,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
@@ -52,16 +58,17 @@ import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 
 public class Library implements Runnable {
-    private static final String  MODULE          = "Libraries";
-    private static final String  MASTER_PATH_KEY = "MasterLibraryPath";
-    private static final String  USER_PATH_KEY   = "UserLibraryPath";
-    private static final String  SHA_PREFIX      = "\"sha\": \"";
-    private static final String  SHA_SUFFIX      = "\",";
-    private static final String  ROOT_PREFIX     = "richardwilkes-gcs_library-";
-    private static final String  VERSION_FILE    = "version.txt";
-    private              String  mResult;
-    private              JDialog mDialog;
-    private              boolean mUpdateComplete;
+    private static final String          MODULE          = "Libraries";
+    private static final String          MASTER_PATH_KEY = "MasterLibraryPath";
+    private static final String          USER_PATH_KEY   = "UserLibraryPath";
+    private static final String          SHA_PREFIX      = "\"sha\": \"";
+    private static final String          SHA_SUFFIX      = "\",";
+    private static final String          ROOT_PREFIX     = "richardwilkes-gcs_library-";
+    private static final String          VERSION_FILE    = "version.txt";
+    private static final ExecutorService QUEUE           = Executors.newSingleThreadExecutor();
+    private              String          mResult;
+    private              JDialog         mDialog;
+    private              boolean         mUpdateComplete;
 
     public static Path getDefaultMasterRootPath() {
         return Paths.get(System.getProperty("user.home", "."), "GCS", "Master Library").normalize();
@@ -168,6 +175,34 @@ public class Library implements Runnable {
         return Version.extract(version, 0);
     }
 
+    public static List<Object> collectFiles() {
+        String masterText = I18n.Text("Master Library");
+        String userText   = I18n.Text("User Library");
+        FutureTask<List<Object>> task = new FutureTask<>(() -> {
+            Set<Path>    dirs = new HashSet<>();
+            List<Object> list = new ArrayList<>();
+            list.add("GCS");
+            list.add(LibraryCollector.list(masterText, getMasterRootPath(), dirs));
+            list.add(LibraryCollector.list(userText, getUserRootPath(), dirs));
+            LibraryWatcher.INSTANCE.watchDirs(dirs);
+            return list;
+        });
+        QUEUE.submit(task);
+        try {
+            return task.get();
+        } catch (Exception exception) {
+            Log.error(exception);
+            List<Object> list   = new ArrayList<>();
+            List<Object> master = new ArrayList<>();
+            List<Object> user   = new ArrayList<>();
+            master.add(masterText);
+            list.add(master);
+            user.add(userText);
+            list.add(user);
+            return list;
+        }
+    }
+
     public static final void downloadIfNotPresent() {
         if (getRecordedCommit().isBlank()) {
             download();
@@ -177,16 +212,12 @@ public class Library implements Runnable {
     public static final void download() {
         Library lib = new Library();
         if (GraphicsEnvironment.isHeadless()) {
-            Tasks.callOnBackgroundThread(lib);
-            synchronized (lib) {
-                while (!lib.mUpdateComplete) {
-                    try {
-                        //noinspection WaitOrAwaitWithoutTimeout
-                        lib.wait();
-                    } catch (InterruptedException exception) {
-                        break;
-                    }
-                }
+            FutureTask<Object> task = new FutureTask<>(lib, null);
+            QUEUE.submit(task);
+            try {
+                task.get();
+            } catch (Exception exception) {
+                Log.error(exception);
             }
         } else {
             // Close any open files that come from the master library
@@ -225,7 +256,7 @@ public class Library implements Runnable {
             dialog.setLocationRelativeTo(workspace);
             StdMenuBar.SUPRESS_MENUS = true;
             lib.mDialog = dialog;
-            Tasks.callOnBackgroundThread(lib);
+            QUEUE.submit(lib);
             dialog.setVisible(true);
         }
     }
@@ -332,11 +363,7 @@ public class Library implements Runnable {
                 }
             }
         }
-
-        synchronized (this) {
-            mUpdateComplete = true;
-            notifyAll();
-        }
+        mUpdateComplete = true;
         if (!GraphicsEnvironment.isHeadless()) {
             EventQueue.invokeLater(this);
         }

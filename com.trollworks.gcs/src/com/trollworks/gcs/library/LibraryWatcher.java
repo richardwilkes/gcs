@@ -25,13 +25,17 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 public class LibraryWatcher implements Runnable {
-    private WatchService        mWatcher;
-    private Map<Path, WatchKey> mPathKeyMap;
+    public static final LibraryWatcher      INSTANCE = new LibraryWatcher();
+    private             WatchService        mWatcher;
+    private             Map<Path, WatchKey> mPathKeyMap;
 
-    public LibraryWatcher() {
+    private LibraryWatcher() {
         mPathKeyMap = new HashMap<>();
         try {
             mWatcher = FileSystems.getDefault().newWatchService();
+            Thread thread = new Thread(this, "Library Watcher");
+            thread.setDaemon(true);
+            thread.start();
         } catch (IOException exception) {
             Log.error(exception);
         }
@@ -68,6 +72,9 @@ public class LibraryWatcher implements Runnable {
     }
 
     public void watchDirs(Set<Path> dirs) {
+        if (mWatcher == null) {
+            return;
+        }
         Map<Path, WatchKey> keep = new HashMap<>();
         for (Path p : dirs) {
             WatchKey key = mPathKeyMap.get(p);

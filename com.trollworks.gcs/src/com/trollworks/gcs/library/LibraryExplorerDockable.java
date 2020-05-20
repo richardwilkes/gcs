@@ -69,12 +69,10 @@ import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -92,7 +90,6 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     private              Search         mSearch;
     private              TreePanel      mTreePanel;
     private              Notifier       mNotifier;
-    private              LibraryWatcher mWatcher;
 
     public static LibraryExplorerDockable get() {
         for (Dockable dockable : Workspace.get().getDock().getDockables()) {
@@ -107,9 +104,8 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public LibraryExplorerDockable() {
         super(new BorderLayout());
         mNotifier = new Notifier();
-        mWatcher = new LibraryWatcher();
         TreeRoot root = new TreeRoot(mNotifier);
-        fillTree(collectLibraryFiles(), root);
+        fillTree(Library.collectFiles(), root);
         mTreePanel = new TreePanel(root);
         mTreePanel.setShowHeader(false);
         mTreePanel.addColumn(new TextTreeColumn(I18n.Text("Library Explorer"), this, this));
@@ -137,9 +133,6 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         if (openRows != null) {
             mTreePanel.setOpen(true, collectRowsToOpen(root, new HashSet<>(Arrays.asList(openRows.split("\n"))), null));
         }
-        Thread thread = new Thread(mWatcher, "Library Watcher");
-        thread.setDaemon(true);
-        thread.start();
     }
 
     public int getDesiredDividerPosition() {
@@ -213,31 +206,10 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         Set<String> open = collectOpenRowKeys();
         mNotifier.startBatch();
         root.removeRow(new ArrayList<>(root.getChildren()));
-        fillTree(collectLibraryFiles(), root);
+        fillTree(Library.collectFiles(), root);
         mNotifier.endBatch();
         mTreePanel.setOpen(true, collectRowsToOpen(root, open, null));
         mTreePanel.select(collectRows(root, selected, null));
-    }
-
-    public List<Object> collectLibraryFiles() {
-        Set<Path>    dirs = new HashSet<>();
-        List<Object> list = new ArrayList<>();
-        list.add("GCS");
-        list.add(collectLibraryFileLists(I18n.Text("Master Library"), Library.getMasterRootPath(), dirs));
-        list.add(collectLibraryFileLists(I18n.Text("User Library"), Library.getUserRootPath(), dirs));
-        mWatcher.watchDirs(dirs);
-        return list;
-    }
-
-    private List<Object> collectLibraryFileLists(String name, Path root, Set<Path> dirs) {
-        LibraryCollector collector = new LibraryCollector();
-        try {
-            Files.walkFileTree(root, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, collector);
-        } catch (Exception exception) {
-            Log.error(exception);
-        }
-        dirs.addAll(collector.getDirs());
-        return collector.getResult(name);
     }
 
     private Set<String> collectOpenRowKeys() {

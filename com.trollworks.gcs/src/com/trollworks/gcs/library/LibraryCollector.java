@@ -18,86 +18,74 @@ import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LibraryCollector implements FileVisitor<Path>, Comparator<Object> {
+public class LibraryCollector implements Comparator<Object> {
     private List<Object>        mCurrent;
     private Stack<List<Object>> mStack;
     private Set<Path>           mDirs;
 
-    public LibraryCollector() {
+    public static List<Object> list(String name, Path root, Set<Path> dirs) {
+        LibraryCollector collector = new LibraryCollector();
+        try {
+            collector.traverse(root);
+        } catch (Exception exception) {
+            Log.error(exception);
+        }
+        dirs.addAll(collector.mDirs);
+        List<Object> current = collector.mCurrent;
+        if (current.isEmpty()) {
+            current.add(name);
+        } else {
+            //noinspection unchecked
+            current = (List<Object>) current.get(0);
+            current.set(0, name);
+        }
+        return current;
+    }
+
+    private LibraryCollector() {
         mDirs = new HashSet<>();
         mCurrent = new ArrayList<>();
         mStack = new Stack<>();
     }
 
-    @SuppressWarnings("unchecked")
-    public List<Object> getResult(String name) {
-        if (mCurrent.isEmpty()) {
-            mCurrent.add(name);
-        } else {
-            mCurrent = (List<Object>) mCurrent.get(0);
-            mCurrent.set(0, name);
-        }
-        return mCurrent;
-    }
-
-    public Set<Path> getDirs() {
-        return mDirs;
-    }
-
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (shouldSkip(dir)) {
-            return FileVisitResult.SKIP_SUBTREE;
-        }
-        mDirs.add(dir);
-        mStack.push(mCurrent);
-        mCurrent = new ArrayList<>();
-        mCurrent.add(dir.getFileName().toString());
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if (!shouldSkip(file)) {
-            String ext = PathUtils.getExtension(file.getFileName());
-            for (FileType one : FileType.OPENABLE) {
-                if (one.matchExtension(ext)) {
-                    mCurrent.add(file);
-                    break;
+    private void traverse(Path dir) throws IOException {
+        if (!shouldSkip(dir)) {
+            mDirs.add(dir.normalize().toAbsolutePath());
+            mStack.push(mCurrent);
+            mCurrent = new ArrayList<>();
+            mCurrent.add(dir.getFileName().toString());
+            String[] list = dir.toFile().list();
+            if (list != null) {
+                for (String file : list) {
+                    Path path = dir.resolve(file);
+                    if (Files.isDirectory(path)) {
+                        traverse(path);
+                    } else if (!shouldSkip(path)) {
+                        String ext = PathUtils.getExtension(path.getFileName());
+                        for (FileType one : FileType.OPENABLE) {
+                            if (one.matchExtension(ext)) {
+                                mCurrent.add(path);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
+            mCurrent.sort(this);
+            List<Object> restoring = mStack.pop();
+            if (mCurrent.size() > 1) {
+                restoring.add(mCurrent);
+            }
+            mCurrent = restoring;
         }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException {
-        Log.error(exception);
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exception) throws IOException {
-        if (exception != null) {
-            Log.error(exception);
-        }
-        mCurrent.sort(this);
-        List<Object> restoring = mStack.pop();
-        if (mCurrent.size() > 1) {
-            restoring.add(mCurrent);
-        }
-        mCurrent = restoring;
-        return FileVisitResult.CONTINUE;
     }
 
     @Override
