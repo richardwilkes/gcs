@@ -22,6 +22,7 @@ import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -48,16 +49,20 @@ public class FileMenuProvider {
     }
 
     private static List<Command> generateLibraryExportTemplateCommands(boolean master) {
-        ArrayList<Command> cmds = new ArrayList<>();
-        Path               dir  = (master ? Library.getMasterRootPath() : Library.getUserRootPath()).resolve("Output Templates");
+        List<Command> cmds = new ArrayList<>();
+        Path          dir  = (master ? Library.getMasterRootPath() : Library.getUserRootPath()).resolve("Output Templates");
         if (Files.isDirectory(dir)) {
-            try {
-                Files.list(dir).
-                        sorted((Path p1, Path p2) -> NumericComparator.caselessCompareStrings(PathUtils.getLeafName(p1, true), PathUtils.getLeafName(p2, true))).
-                        forEachOrdered((path) -> cmds.add(new ExportToTextTemplateCommand(path, master)));
+            // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
+            // directory results in leaving state around that prevents future move & delete
+            // operations. Only use this style of access for directory listings to avoid that.
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+                for (Path path : stream) {
+                    cmds.add(new ExportToTextTemplateCommand(path, master));
+                }
             } catch (IOException exception) {
                 Log.error(exception);
             }
+            cmds.sort((c1, c2) -> NumericComparator.caselessCompareStrings(PathUtils.getLeafName(c1.getTitle(), true), PathUtils.getLeafName(c2.getTitle(), true)));
         }
         return cmds;
     }
