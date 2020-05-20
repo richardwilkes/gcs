@@ -83,13 +83,13 @@ import javax.swing.ListCellRenderer;
 
 /** A list of available library files. */
 public class LibraryExplorerDockable extends Dockable implements SearchTarget, FieldAccessor, IconAccessor, Openable, Deletable {
-    private static final String         EXPLORER_PREFERENCES         = "Explorer";
-    private static final int            EXPLORER_PREFERENCES_VERSION = 1;
-    private static final String         KEY_OPEN_ROWS                = "OpenRows";
-    private static final String         KEY_DIVIDER_POSITION         = "DividerPosition";
-    private              Search         mSearch;
-    private              TreePanel      mTreePanel;
-    private              Notifier       mNotifier;
+    private static final String    EXPLORER_PREFERENCES         = "Explorer";
+    private static final int       EXPLORER_PREFERENCES_VERSION = 1;
+    private static final String    KEY_OPEN_ROWS                = "OpenRows";
+    private static final String    KEY_DIVIDER_POSITION         = "DividerPosition";
+    private              Search    mSearch;
+    private              TreePanel mTreePanel;
+    private              Notifier  mNotifier;
 
     public static LibraryExplorerDockable get() {
         for (Dockable dockable : Workspace.get().getDock().getDockables()) {
