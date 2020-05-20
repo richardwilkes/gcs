@@ -249,18 +249,12 @@ public class Log {
             buffer.append(context.getLogContext());
             buffer.append(SEPARATOR);
         }
-        if (msg == null && throwable != null) {
-            msg = throwable.getMessage();
-        }
         if (msg != null && !msg.isEmpty()) {
             buffer.append(msg);
         }
-        if (throwable != null) {
-            if (msg != null) {
-                buffer.append(' ');
-            }
-            Debug.stackTrace(throwable, buffer);
-        }
         OUT.println(buffer);
+        if (throwable != null) {
+            throwable.printStackTrace(OUT);
+        }
     }
 }
