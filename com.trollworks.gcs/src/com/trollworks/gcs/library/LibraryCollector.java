@@ -32,6 +32,7 @@ public class LibraryCollector implements Comparator<Object> {
     private Stack<List<Object>> mStack;
     private Set<Path>           mDirs;
 
+    @SuppressWarnings("unchecked")
     public static List<Object> list(String name, Path root, Set<Path> dirs) {
         LibraryCollector collector = new LibraryCollector();
         try {
@@ -44,7 +45,6 @@ public class LibraryCollector implements Comparator<Object> {
         if (current.isEmpty()) {
             current.add(name);
         } else {
-            //noinspection unchecked
             current = (List<Object>) current.get(0);
             current.set(0, name);
         }
