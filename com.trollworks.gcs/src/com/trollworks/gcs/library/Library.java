@@ -20,6 +20,7 @@ import com.trollworks.gcs.io.json.JsonArray;
 import com.trollworks.gcs.io.json.JsonMap;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
@@ -56,6 +57,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
+import javax.swing.border.CompoundBorder;
 
 public class Library implements Runnable {
     private static final String          MODULE          = "Libraries";
@@ -247,7 +249,7 @@ public class Library implements Runnable {
             dialog.setUndecorated(true);
             JComponent content = (JComponent) dialog.getContentPane();
             content.setLayout(new BorderLayout());
-            content.setBorder(new EmptyBorder(10));
+            content.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(10)));
             content.add(new JLabel(I18n.Text("Downloading and installing the Master Library…")), BorderLayout.NORTH);
             JProgressBar bar = new JProgressBar();
             bar.setIndeterminate(true);
