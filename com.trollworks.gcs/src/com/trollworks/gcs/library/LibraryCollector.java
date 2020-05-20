@@ -18,6 +18,7 @@ import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -62,10 +63,11 @@ public class LibraryCollector implements Comparator<Object> {
             mStack.push(mCurrent);
             mCurrent = new ArrayList<>();
             mCurrent.add(dir.getFileName().toString());
-            String[] list = dir.toFile().list();
-            if (list != null) {
-                for (String file : list) {
-                    Path path = dir.resolve(file);
+            // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
+            // directory results in leaving state around that prevents future move & delete
+            // operations. Only use this style of access for directory listings to avoid that.
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+                for (Path path : stream) {
                     if (Files.isDirectory(path)) {
                         traverse(path);
                     } else if (!shouldSkip(path)) {
