@@ -41,7 +41,7 @@ import java.util.Set;
 
 public class Bundler {
     private static final String        GCS_VERSION       = "4.16.0";
-    private static       String        JDK_MAJOR_VERSION = "15";
+    private static       String        JDK_MAJOR_VERSION = "14";
     private static final String        ITEXT_VERSION     = "2.1.7";
     private static final String        LOGGING_VERSION   = "1.2.0";
     private static final String        FONTBOX_VERSION   = "2.0.17";
@@ -69,10 +69,10 @@ public class Bundler {
      */
     public static void main(String[] args) {
         checkPlatform();
-        if (LINUX.equals(OS)) {
-            // We only want JDK 15 for its updated jpackage tool, which isn't currently functioning
-            // on Linux, so use JDK 14 on that platform.
-            JDK_MAJOR_VERSION = "14";
+        if (MACOS.equals(OS)) {
+            // We only want JDK 15 for its updated jpackage tool, which otherwise is incapable of
+            // signing a macOS application.
+            JDK_MAJOR_VERSION = "15";
         }
 
         boolean sign     = false;
