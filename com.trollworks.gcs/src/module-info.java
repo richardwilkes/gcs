@@ -45,7 +45,6 @@ open module com.trollworks.gcs {
     exports com.trollworks.gcs.pdfview;
     exports com.trollworks.gcs.preferences;
     exports com.trollworks.gcs.prereq;
-    exports com.trollworks.gcs.services;
     exports com.trollworks.gcs.skill;
     exports com.trollworks.gcs.spell;
     exports com.trollworks.gcs.template;

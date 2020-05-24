@@ -82,7 +82,7 @@ public class FileMenuProvider {
         cmds.add(CloseCommand.INSTANCE);
         cmds.add(SaveCommand.INSTANCE);
         cmds.add(SaveAsCommand.INSTANCE);
-        cmds.add(ExportToGurpsCalculatorCommand.INSTANCE);
+        cmds.add(ExportToGURPSCalculatorCommand.INSTANCE);
         cmds.add(ExportToPDFCommand.INSTANCE);
         cmds.add(ExportToPNGCommand.INSTANCE);
         cmds.addAll(getMasterLibraryExportTemplateCommands());
@@ -115,7 +115,7 @@ public class FileMenuProvider {
         menu.add(new DynamicMenuItem(SaveCommand.INSTANCE));
         menu.add(new DynamicMenuItem(SaveAsCommand.INSTANCE));
         JMenu exportMenu = new JMenu(I18n.Text("Export To…"));
-        exportMenu.add(new DynamicMenuItem(ExportToGurpsCalculatorCommand.INSTANCE));
+        exportMenu.add(new DynamicMenuItem(ExportToGURPSCalculatorCommand.INSTANCE));
         exportMenu.add(new DynamicMenuItem(ExportToPDFCommand.INSTANCE));
         exportMenu.add(new DynamicMenuItem(ExportToPNGCommand.INSTANCE));
         boolean needSep = true;
