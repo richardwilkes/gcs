@@ -284,12 +284,6 @@ public class GURPSCharacter extends DataFile {
     private              OutlineModel                        mEquipment;
     private              OutlineModel                        mOtherEquipment;
     private              OutlineModel                        mNotes;
-    private              boolean                             mDidModify;
-    private              boolean                             mNeedAttributePointCalculation;
-    private              boolean                             mNeedAdvantagesPointCalculation;
-    private              boolean                             mNeedSkillPointCalculation;
-    private              boolean                             mNeedSpellPointCalculation;
-    private              boolean                             mNeedEquipmentCalculation;
     private              WeightValue                         mCachedWeightCarried;
     private              Fixed6                              mCachedWealthCarried;
     private              Fixed6                              mCachedWealthNotCarried;
@@ -300,12 +294,18 @@ public class GURPSCharacter extends DataFile {
     private              int                                 mCachedSkillPoints;
     private              int                                 mCachedSpellPoints;
     private              int                                 mCachedRacePoints;
+    private              PrintManager                        mPageSettings;
     private              boolean                             mSkillsUpdated;
     private              boolean                             mSpellsUpdated;
-    private              PrintManager                        mPageSettings;
     private              boolean                             mIncludePunch;
     private              boolean                             mIncludeKick;
     private              boolean                             mIncludeKickBoots;
+    private              boolean                             mDidModify;
+    private              boolean                             mNeedAttributePointCalculation;
+    private              boolean                             mNeedAdvantagesPointCalculation;
+    private              boolean                             mNeedSkillPointCalculation;
+    private              boolean                             mNeedSpellPointCalculation;
+    private              boolean                             mNeedEquipmentCalculation;
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
@@ -1241,7 +1241,7 @@ public class GURPSCharacter extends DataFile {
             multiplier = new Fixed6(2);
             roundAt = ten;
         }
-        int    strength = getStrength() + mLiftingStrengthBonus;
+        int strength = getStrength() + mLiftingStrengthBonus;
         if (isTired()) {
             boolean plusOne = strength % 2 != 0;
             strength /= 2;
@@ -1441,11 +1441,11 @@ public class GURPSCharacter extends DataFile {
      * @return The character's ground move for the specified encumbrance level.
      */
     public int getMove(Encumbrance encumbrance) {
-        int initialMove = getBasicMove();
-        boolean reeling = isReeling();
-        boolean tired = isTired();
+        int     initialMove = getBasicMove();
+        boolean reeling     = isReeling();
+        boolean tired       = isTired();
         if (reeling || tired) {
-            int divisor = (reeling && tired) ? 4 : 2;
+            int     divisor = (reeling && tired) ? 4 : 2;
             boolean plusOne = initialMove % divisor != 0;
             initialMove /= divisor;
             if (plusOne) {
@@ -1464,11 +1464,11 @@ public class GURPSCharacter extends DataFile {
      * @return The character's dodge for the specified encumbrance level.
      */
     public int getDodge(Encumbrance encumbrance) {
-        int dodge = 3 + mDodgeBonus + (int) Math.floor(getBasicSpeed());
+        int     dodge   = 3 + mDodgeBonus + (int) Math.floor(getBasicSpeed());
         boolean reeling = isReeling();
-        boolean tired = isTired();
+        boolean tired   = isTired();
         if (reeling || tired) {
-            int divisor = (reeling && tired) ? 4 : 2;
+            int     divisor = (reeling && tired) ? 4 : 2;
             boolean plusOne = dodge % divisor != 0;
             dodge /= divisor;
             if (plusOne) {
@@ -2160,7 +2160,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of hit points where "reeling" effects start. */
     public int getReelingHitPoints() {
-        int hp = getHitPoints();
+        int hp        = getHitPoints();
         int threshold = hp / 3;
         if (hp % 3 != 0) {
             threshold++;
@@ -2476,7 +2476,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The number of fatigue points where "tired" effects start. */
     public int getTiredFatiguePoints() {
-        int fp = getFatiguePoints();
+        int fp        = getFatiguePoints();
         int threshold = fp / 3;
         if (fp % 3 != 0) {
             threshold++;
