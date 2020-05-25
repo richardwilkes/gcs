@@ -102,8 +102,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         setDropTarget(new DropTarget(mOutline, mOutline));
     }
 
-    public abstract void applyScale(Scale scale);
-
     @Override
     public boolean attemptClose() {
         boolean closed = super.attemptClose();

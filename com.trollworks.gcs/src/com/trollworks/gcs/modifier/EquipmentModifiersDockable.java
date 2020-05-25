@@ -12,7 +12,6 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
 
@@ -37,10 +36,5 @@ public class EquipmentModifiersDockable extends LibraryDockable {
         EquipmentModifierList list = getDataFile();
         list.addTarget(this, EquipmentModifier.ID_CATEGORY);
         return new EquipmentModifiersOutline(list, list.getModel());
-    }
-
-    @Override
-    public void applyScale(Scale scale) {
-        // RAW: Implement me
     }
 }

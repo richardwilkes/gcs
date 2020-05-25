@@ -12,7 +12,6 @@
 package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
 
@@ -38,10 +37,5 @@ public class SpellsDockable extends LibraryDockable {
         SpellList list = getDataFile();
         list.addTarget(this, Spell.ID_CATEGORY);
         return new SpellOutline(list, list.getModel());
-    }
-
-    @Override
-    public void applyScale(Scale scale) {
-        // RAW: Implement me
     }
 }

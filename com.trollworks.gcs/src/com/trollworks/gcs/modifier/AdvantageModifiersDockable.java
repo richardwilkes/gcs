@@ -12,7 +12,6 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.library.LibraryDockable;
-import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
 
@@ -37,10 +36,5 @@ public class AdvantageModifiersDockable extends LibraryDockable {
         AdvantageModifierList list = getDataFile();
         list.addTarget(this, AdvantageModifier.ID_CATEGORY);
         return new AdvantageModifiersOutline(list);
-    }
-
-    @Override
-    public void applyScale(Scale scale) {
-        // RAW: Implement me
     }
 }
