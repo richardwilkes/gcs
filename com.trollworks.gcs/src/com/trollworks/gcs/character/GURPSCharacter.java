@@ -24,6 +24,7 @@ import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
@@ -69,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -2653,6 +2655,121 @@ public class GURPSCharacter extends DataFile {
     /** @return A recursive iterator over the character's notes. */
     public RowIterator<Note> getNoteIterator() {
         return new RowIterator<>(mNotes);
+    }
+
+    public boolean processFeaturesAndPrereqs() {
+        boolean needRepaint = processFeatures();
+        needRepaint |= processPrerequisites(getAdvantagesIterator(false));
+        needRepaint |= processPrerequisites(getSkillsIterator());
+        needRepaint |= processPrerequisites(getSpellsIterator());
+        needRepaint |= processPrerequisites(getEquipmentIterator());
+        return needRepaint;
+    }
+
+    private boolean processFeatures() {
+        HashMap<String, ArrayList<Feature>> map         = new HashMap<>();
+        boolean                             needRepaint = buildFeatureMap(map, getAdvantagesIterator(false));
+        needRepaint |= buildFeatureMap(map, getSkillsIterator());
+        needRepaint |= buildFeatureMap(map, getSpellsIterator());
+        needRepaint |= buildFeatureMap(map, getEquipmentIterator());
+        setFeatureMap(map);
+        return needRepaint;
+    }
+
+    private boolean buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) {
+        boolean needRepaint = false;
+        while (iterator.hasNext()) {
+            ListRow row = iterator.next();
+            if (row instanceof Equipment) {
+                Equipment equipment = (Equipment) row;
+                if (!equipment.isEquipped() || equipment.getQuantity() < 1) {
+                    // Don't allow unequipped equipment to affect the character
+                    continue;
+                }
+            }
+            for (Feature feature : row.getFeatures()) {
+                needRepaint |= processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
+                if (feature instanceof Bonus) {
+                    ((Bonus) feature).setParent(row);
+                }
+            }
+            if (row instanceof Advantage) {
+                Advantage advantage = (Advantage) row;
+                for (Bonus bonus : advantage.getCRAdj().getBonuses(advantage.getCR())) {
+                    needRepaint |= processFeature(map, 0, bonus);
+                    bonus.setParent(row);
+                }
+                for (AdvantageModifier modifier : advantage.getModifiers()) {
+                    if (modifier.isEnabled()) {
+                        for (Feature feature : modifier.getFeatures()) {
+                            needRepaint |= processFeature(map, modifier.getLevels(), feature);
+                            if (feature instanceof Bonus) {
+                                ((Bonus) feature).setParent(row);
+                            }
+                        }
+                    }
+                }
+            }
+            if (row instanceof Equipment) {
+                Equipment equipment = (Equipment) row;
+                for (EquipmentModifier modifier : equipment.getModifiers()) {
+                    if (modifier.isEnabled()) {
+                        for (Feature feature : modifier.getFeatures()) {
+                            needRepaint |= processFeature(map, 0, feature);
+                            if (feature instanceof Bonus) {
+                                ((Bonus) feature).setParent(row);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return needRepaint;
+    }
+
+    private boolean processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
+        String             key         = feature.getKey().toLowerCase();
+        ArrayList<Feature> list        = map.get(key);
+        boolean            needRepaint = false;
+        if (list == null) {
+            list = new ArrayList<>(1);
+            map.put(key, list);
+        }
+        if (feature instanceof Bonus) {
+            LeveledAmount amount = ((Bonus) feature).getAmount();
+            if (amount.getLevel() != levels) {
+                amount.setLevel(levels);
+                needRepaint = true;
+            }
+        }
+        list.add(feature);
+        return needRepaint;
+    }
+
+    private boolean processPrerequisites(Iterator<? extends ListRow> iterator) {
+        boolean       needRepaint = false;
+        StringBuilder builder     = new StringBuilder();
+        while (iterator.hasNext()) {
+            ListRow row = iterator.next();
+            builder.setLength(0);
+            boolean satisfied = row.getPrereqs().satisfied(this, row, builder, "<li>");
+            if (satisfied && row instanceof Technique) {
+                satisfied = ((Technique) row).satisfied(builder, "<li>");
+            }
+            if (satisfied && row instanceof RitualMagicSpell) {
+                satisfied = ((RitualMagicSpell) row).satisfied(builder, "<li>");
+            }
+            if (row.isSatisfied() != satisfied) {
+                row.setSatisfied(satisfied);
+                needRepaint = true;
+            }
+            if (!satisfied) {
+                builder.insert(0, "<html><body>" + I18n.Text("Reason:") + "<ul>");
+                builder.append("</ul></body></html>");
+                row.setReasonForUnsatisfied(builder.toString().replaceAll("<ul>", "<ul style='margin-top: 0; margin-bottom: 0;'>"));
+            }
+        }
+        return needRepaint;
     }
 
     /** @param map The new feature map. */

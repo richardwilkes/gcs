@@ -26,11 +26,13 @@ public class OutlineSyncer implements Runnable {
      *                synchronized.
      */
     public static final void add(Outline outline) {
-        synchronized (OUTLINES) {
-            OUTLINES.add(outline);
-            if (!PENDING) {
-                PENDING = true;
-                EventQueue.invokeLater(INSTANCE);
+        if (outline != null) {
+            synchronized (OUTLINES) {
+                OUTLINES.add(outline);
+                if (!PENDING) {
+                    PENDING = true;
+                    EventQueue.invokeLater(INSTANCE);
+                }
             }
         }
     }

@@ -62,7 +62,6 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     private        JComboBox<Scales>           mScaleCombo;
     private        Search                      mSearch;
     private        JComboBox<HitLocationTable> mHitLocationTableCombo;
-    private        PrerequisitesThread         mPrereqThread;
 
     /** Creates a new {@link SheetDockable}. */
     public SheetDockable(GURPSCharacter character) {
@@ -77,9 +76,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
         viewport.addChangeListener(mSheet);
         add(scroller, BorderLayout.CENTER);
         mSheet.rebuild();
-        mPrereqThread = new PrerequisitesThread(mSheet);
-        mPrereqThread.start();
-        PrerequisitesThread.waitForProcessingToFinish(dataFile);
+        mSheet.getCharacter().processFeaturesAndPrereqs();
         dataFile.setModified(false);
         StdUndoManager undoManager = getUndoManager();
         undoManager.discardAllEdits();
@@ -380,7 +377,9 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
 
     /** Notify background threads of prereq or feature modifications. */
     public void notifyOfPrereqOrFeatureModification() {
-        mPrereqThread.markForUpdate();
+        if (mSheet.getCharacter().processFeaturesAndPrereqs()) {
+            mSheet.repaint();
+        }
     }
 
     @Override

@@ -13,7 +13,6 @@ package com.trollworks.gcs.app;
 
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.PrerequisitesThread;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.print.PrintManager;
@@ -68,15 +67,13 @@ public class CmdLineExport implements Runnable {
                 try {
                     GURPSCharacter      character = new GURPSCharacter(file);
                     CharacterSheet      sheet     = new CharacterSheet(character);
-                    PrerequisitesThread prereqs   = new PrerequisitesThread(sheet);
                     PrintManager        settings  = character.getPageSettings();
                     File                output;
                     boolean             success;
 
                     sheet.addNotify(); // Required to allow layout to work
                     sheet.rebuild();
-                    prereqs.start();
-                    PrerequisitesThread.waitForProcessingToFinish(character);
+                    sheet.getCharacter().processFeaturesAndPrereqs();
 
                     if (paperSize != null && settings != null) {
                         settings.setPageSize(paperSize, LengthUnits.IN);
