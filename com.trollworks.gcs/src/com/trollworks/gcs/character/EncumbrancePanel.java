@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
@@ -22,6 +23,7 @@ import com.trollworks.gcs.utility.text.Numbers;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.text.MessageFormat;
 import javax.swing.SwingConstants;
 
@@ -38,12 +40,16 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
      * @param sheet The sheet to display the data for.
      */
     public EncumbrancePanel(CharacterSheet sheet) {
-        super(new ColumnLayout(7, 2, 0), I18n.Text("Encumbrance, Move & Dodge"), true);
+        super(new ColumnLayout(8, 2, 0), I18n.Text("Encumbrance, Move & Dodge"), true);
         mSheet = sheet;
         Encumbrance[] encumbranceValues = Encumbrance.values();
+        Dimension     prefSize          = new PageLabel("•", null).getPreferredSize();
         mMarkers = new PageLabel[encumbranceValues.length];
-        PageHeader header = createHeader(this, I18n.Text("Level"), I18n.Text("The encumbrance level"));
-        addHorizontalBackground(header, Color.black);
+        String     encLevelTooltip = I18n.Text("The encumbrance level");
+        PageHeader bulletHeader    = createHeader(this, "", encLevelTooltip);
+        UIUtilities.setOnlySize(bulletHeader, prefSize);
+        addHorizontalBackground(bulletHeader, Color.black);
+        PageHeader header = createHeader(this, I18n.Text("Level"), encLevelTooltip);
         addVerticalBackground(createDivider(), Color.black);
         String maxLoadTooltip = I18n.Text("The maximum load a character can carry and still remain within a specific encumbrance level");
         createHeader(this, I18n.Text("Max Load"), maxLoadTooltip);
@@ -57,11 +63,13 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         Encumbrance    current   = character.getEncumbranceLevel();
         for (Encumbrance encumbrance : encumbranceValues) {
             int index = encumbrance.ordinal();
-            mMarkers[index] = new PageLabel(getMarkerText(encumbrance, current), header);
+            mMarkers[index] = new PageLabel(encumbrance == current ? "•" : "", header);
+            UIUtilities.setOnlySize(mMarkers[index], prefSize);
             add(mMarkers[index]);
             if (current == encumbrance) {
                 addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad() ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
             }
+            add(new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), header));
             createDivider();
             createDisabledField(this, mSheet, GURPSCharacter.MAXIMUM_CARRY_PREFIX + index, maxLoadTooltip, SwingConstants.RIGHT);
             createDivider();
@@ -70,10 +78,6 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
             createDisabledField(this, mSheet, GURPSCharacter.DODGE_PREFIX + index, dodgeTooltip, SwingConstants.RIGHT);
         }
         character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT, GURPSCharacter.ID_CURRENT_HP, GURPSCharacter.ID_CURRENT_FP);
-    }
-
-    private static String getMarkerText(Encumbrance which, Encumbrance current) {
-        return MessageFormat.format(which == current ? "• {0} ({1})" : "{0} ({1})", which, Numbers.format(-which.getEncumbrancePenalty()));
     }
 
     private Container createDivider() {
@@ -98,7 +102,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
             } else {
                 removeHorizontalBackground(mMarkers[index]);
             }
-            mMarkers[index].setText(getMarkerText(encumbrance, current));
+            mMarkers[index].setText(encumbrance == current ? "•" : "");
         }
         revalidate();
         repaint();
