@@ -82,6 +82,31 @@ public enum EquipmentModifierColumnID {
             return builder.toString();
         }
     },
+    /** The tech level. */
+    TECH_LEVEL {
+        @Override
+        public String toString() {
+            return I18n.Text("TL");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The tech level of this equipment modifier");
+        }
+
+        @Override
+        public Cell getCell(boolean forEditor) {
+            if (forEditor) {
+                return new TextCell(SwingConstants.RIGHT, false);
+            }
+            return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public String getDataAsText(EquipmentModifier modifier) {
+            return modifier.getTechLevel();
+        }
+    },
     /** The cost adjustment. */
     COST_ADJUSTMENT {
         @Override
