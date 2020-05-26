@@ -37,6 +37,7 @@ public class EquipmentModifier extends Modifier {
     public static final  String                      TAG_MODIFIER_CONTAINER = "eqp_modifier_container";
     /** The attribute for the cost. */
     public static final  String                      TAG_COST_ADJ           = "cost";
+    private static final String                      TAG_TECH_LEVEL         = "tech_level";
     /** The attribute for the cost type. */
     public static final  String                      ATTRIBUTE_COST_TYPE    = "cost_type";
     /** The attribute for the weight. */
@@ -55,11 +56,14 @@ public class EquipmentModifier extends Modifier {
     public static final  String                      ID_COST_ADJ            = PREFIX + TAG_COST_ADJ;
     /** The notification ID for weight adjustment changes. */
     public static final  String                      ID_WEIGHT_ADJ          = PREFIX + TAG_WEIGHT_ADJ;
+    /** The field ID for tech level changes. */
+    public static final  String                      ID_TECH_LEVEL          = PREFIX + "TechLevel";
     private static final String                      DEFAULT_COST_AMOUNT    = "+0";
     private              EquipmentModifierCostType   mCostType;
     private              String                      mCostAmount;
     private              EquipmentModifierWeightType mWeightType;
     private              String                      mWeightAmount;
+    private              String                      mTechLevel;
 
     /**
      * Creates a new {@link EquipmentModifier}.
@@ -74,6 +78,7 @@ public class EquipmentModifier extends Modifier {
         mCostAmount = other.mCostAmount;
         mWeightType = other.mWeightType;
         mWeightAmount = other.mWeightAmount;
+        mTechLevel = other.mTechLevel;
         if (deep) {
             int count = other.getChildCount();
             for (int i = 0; i < count; i++) {
@@ -106,6 +111,7 @@ public class EquipmentModifier extends Modifier {
         mCostAmount = DEFAULT_COST_AMOUNT;
         mWeightType = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
         mWeightAmount = getDefaultWeightAmount();
+        mTechLevel = "";
     }
 
     private static String getDefaultWeightAmount() {
@@ -134,7 +140,7 @@ public class EquipmentModifier extends Modifier {
         }
         if (obj instanceof EquipmentModifier && super.isEquivalentTo(obj)) {
             EquipmentModifier row = (EquipmentModifier) obj;
-            return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount) && mWeightType == row.mWeightType && mWeightAmount.equals(row.mWeightAmount);
+            return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount) && mWeightType == row.mWeightType && mWeightAmount.equals(row.mWeightAmount) && mTechLevel.equals(row.mTechLevel);
         }
         return false;
     }
@@ -245,6 +251,7 @@ public class EquipmentModifier extends Modifier {
         mCostAmount = DEFAULT_COST_AMOUNT;
         mWeightType = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
         mWeightAmount = getDefaultWeightAmount();
+        mTechLevel = "";
     }
 
     @Override
@@ -259,6 +266,8 @@ public class EquipmentModifier extends Modifier {
             } else if (TAG_WEIGHT_ADJ.equals(name)) {
                 mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
                 mWeightAmount = mWeightType.format(reader.readText(), false);
+            } else if (TAG_TECH_LEVEL.equals(name)) {
+                mTechLevel = reader.readText().replace("\n", " ");
             } else {
                 super.loadSubElement(reader, state);
             }
@@ -277,6 +286,7 @@ public class EquipmentModifier extends Modifier {
             if (mWeightType != EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT || !mWeightAmount.equals(getDefaultWeightAmount())) {
                 out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAmount, ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
             }
+            out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
         }
     }
 
@@ -312,5 +322,23 @@ public class EquipmentModifier extends Modifier {
     @Override
     protected String getCategoryID() {
         return ID_CATEGORY;
+    }
+
+    /** @return The tech level. */
+    public String getTechLevel() {
+        return mTechLevel;
+    }
+
+    /**
+     * @param techLevel The tech level to set.
+     * @return Whether it was modified.
+     */
+    public boolean setTechLevel(String techLevel) {
+        if (!mTechLevel.equals(techLevel)) {
+            mTechLevel = techLevel;
+            notifySingle(ID_TECH_LEVEL);
+            return true;
+        }
+        return false;
     }
 }

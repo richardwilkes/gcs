@@ -41,6 +41,7 @@ import javax.swing.event.DocumentListener;
 /** Editor for {@link EquipmentModifier}s. */
 public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements ActionListener, DocumentListener, FocusListener {
     private JTextField        mNameField;
+    private JTextField        mTechLevelField;
     private JCheckBox         mEnabledField;
     private JTextField        mNotesField;
     private JTextField        mReferenceField;
@@ -70,8 +71,9 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             mNotesField = createField(fields, fields, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
             mReferenceField = createField(fields, fields, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
         } else {
-            JPanel wrapper = new JPanel(new ColumnLayout(2));
+            JPanel wrapper = new JPanel(new ColumnLayout(4));
             mNameField = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
+            mTechLevelField = createField(wrapper, wrapper, I18n.Text("Tech Level"), mRow.getTechLevel(), I18n.Text("The first Tech Level this equipment is available at"), 3);
             mEnabledField = new JCheckBox(I18n.Text("Enabled"), modifier.isEnabled());
             mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
             mEnabledField.setEnabled(mIsEditable);
@@ -109,6 +111,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
         if (!mRow.canHaveChildren()) {
+            modified |= mRow.setTechLevel(mTechLevelField.getText());
             modified |= mRow.setEnabled(mEnabledField.isSelected());
             if (mFeatures != null) {
                 modified |= mRow.setFeatures(mFeatures.getFeatures());
