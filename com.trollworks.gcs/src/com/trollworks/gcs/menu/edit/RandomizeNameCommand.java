@@ -45,7 +45,7 @@ public class RandomizeNameCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         CharacterSheet target = getTarget(CharacterSheet.class);
         if (target != null) {
-            target.getCharacter().getDescription().setName(USCensusNames.INSTANCE.getFullName(this == MALE_INSTANCE));
+            target.getCharacter().getProfile().setName(USCensusNames.INSTANCE.getFullName(this == MALE_INSTANCE));
         }
     }
 }

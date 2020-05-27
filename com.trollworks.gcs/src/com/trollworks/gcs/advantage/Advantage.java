@@ -21,8 +21,6 @@ import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.Modifier;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
@@ -625,7 +623,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
      *                       normal for most GURPS rules.
      * @return The total points, taking levels and modifiers into account.
      */
-    public static int getAdjustedPoints(int basePoints, int levels, boolean halfLevel, int pointsPerLevel, SelfControlRoll cr, Collection<AdvantageModifier> modifiers, boolean roundCostDown) {
+    public int getAdjustedPoints(int basePoints, int levels, boolean halfLevel, int pointsPerLevel, SelfControlRoll cr, Collection<AdvantageModifier> modifiers, boolean roundCostDown) {
         int    baseEnh    = 0;
         int    levelEnh   = 0;
         int    baseLim    = 0;
@@ -687,7 +685,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         double modifiedBasePoints = basePoints;
         double leveledPoints      = pointsPerLevel * (levels + (halfLevel ? 0.5 : 0));
         if (baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0) {
-            if (SheetPreferences.areOptionalModifierRulesUsed()) {
+            if (getDataFile().useMultiplicativeModifiers()) {
                 if (baseEnh == levelEnh && baseLim == levelLim) {
                     modifiedBasePoints = modifyPoints(modifiedBasePoints + leveledPoints, baseEnh);
                     modifiedBasePoints = modifyPoints(modifiedBasePoints, Math.max(baseLim, -80));
@@ -1043,7 +1041,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     protected String getSecondaryText() {
         StringBuilder builder = new StringBuilder();
-        if (DisplayPreferences.showUserDescInDisplay()) {
+        if (getDataFile().userDescriptionDisplay().inline()) {
             String txt = getUserDesc();
             if (!txt.isBlank()) {
                 builder.append(txt);

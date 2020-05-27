@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightUnits;
@@ -63,7 +62,7 @@ public enum ModifierWeightValueType {
         return adjustFraction(new Fraction(in, localized));
     }
 
-    public static WeightUnits extractUnits(String in) {
+    public static WeightUnits extractUnits(String in, WeightUnits def) {
         in = in.trim();
         for (WeightUnits units : WeightUnits.values()) {
             String text = Enums.toId(units);
@@ -71,7 +70,7 @@ public enum ModifierWeightValueType {
                 return units;
             }
         }
-        return DisplayPreferences.getWeightUnits();
+        return def;
     }
 
     public static ModifierWeightValueType determineType(String in) {

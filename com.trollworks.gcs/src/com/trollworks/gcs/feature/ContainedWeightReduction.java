@@ -14,9 +14,9 @@ package com.trollworks.gcs.feature;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.io.IOException;
@@ -123,9 +123,9 @@ public class ContainedWeightReduction implements Feature {
      * @return The absolute weight reduction. Will return a weight value of 0 if {@link
      *         #isPercentage()} returns true.
      */
-    public WeightValue getAbsoluteReduction() {
+    public WeightValue getAbsoluteReduction(WeightUnits defUnits) {
         if (isPercentage()) {
-            return new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
+            return new WeightValue(Fixed6.ZERO, defUnits);
         }
         return (WeightValue) mValue;
     }

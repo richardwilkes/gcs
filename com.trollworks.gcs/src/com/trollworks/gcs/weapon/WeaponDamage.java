@@ -394,10 +394,10 @@ public class WeaponDamage {
                 }
                 switch (mST) {
                 case SW:
-                    base = addDice(base, GURPSCharacter.getSwing(st));
+                    base = addDice(base, character.getSwing(st));
                     break;
                 case SW_LEVELED:
-                    Dice swing = GURPSCharacter.getSwing(st);
+                    Dice swing = character.getSwing(st);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;
                         if (advantage.isLeveled()) {
@@ -407,10 +407,10 @@ public class WeaponDamage {
                     base = addDice(base, swing);
                     break;
                 case THR:
-                    base = addDice(base, GURPSCharacter.getThrust(st));
+                    base = addDice(base, character.getThrust(st));
                     break;
                 case THR_LEVELED:
-                    Dice thrust = GURPSCharacter.getThrust(st);
+                    Dice thrust = character.getThrust(st);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;
                         if (advantage.isLeveled()) {
@@ -434,8 +434,9 @@ public class WeaponDamage {
                 if (mModifierPerDie != 0) {
                     base.add(mModifierPerDie * base.getDieCount());
                 }
+                boolean convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
                 StringBuilder buffer = new StringBuilder();
-                buffer.append(base.toString());
+                buffer.append(base.toString(convertModifiersToExtraDice));
                 if (mArmorDivisor != 1) {
                     buffer.append("(");
                     buffer.append(Numbers.format(mArmorDivisor));
@@ -446,7 +447,7 @@ public class WeaponDamage {
                     buffer.append(mType);
                 }
                 if (mFragmentation != null) {
-                    String frag = mFragmentation.toString();
+                    String frag = mFragmentation.toString(convertModifiersToExtraDice);
                     if (!"0".equals(frag)) {
                         buffer.append(" [");
                         buffer.append(frag);
@@ -472,12 +473,13 @@ public class WeaponDamage {
 
     @Override
     public String toString() {
+        boolean convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
         StringBuilder buffer = new StringBuilder();
         if (mST != WeaponSTDamage.NONE) {
             buffer.append(mST);
         }
         if (mBase != null) {
-            String base = mBase.toString();
+            String base = mBase.toString(convertModifiersToExtraDice);
             if (!"0".equals(base)) {
                 if (buffer.length() > 0) {
                     char ch = base.charAt(0);
@@ -506,7 +508,7 @@ public class WeaponDamage {
             buffer.append(mType);
         }
         if (mFragmentation != null) {
-            String frag = mFragmentation.toString();
+            String frag = mFragmentation.toString(convertModifiersToExtraDice);
             if (!"0".equals(frag)) {
                 buffer.append(" [");
                 buffer.append(frag);

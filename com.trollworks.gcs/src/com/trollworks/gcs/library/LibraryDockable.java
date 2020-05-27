@@ -71,7 +71,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         mToolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(DisplayPreferences.getInitialUIScale());
+        mScaleCombo.setSelectedItem(DisplayPreferences.initialUIScale());
         mScaleCombo.addActionListener((event) -> {
             Scales scales = (Scales) mScaleCombo.getSelectedItem();
             if (scales == null) {
@@ -125,11 +125,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     public PrintProxy getPrintProxy() {
         // Don't want to allow printing of the library files
         return null;
-    }
-
-    @Override
-    public String getDescriptor() {
-        return getDataFile().getFile().getAbsolutePath();
     }
 
     /** @return The {@link Toolbar}. */

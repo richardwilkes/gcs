@@ -83,7 +83,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         setBackground(Color.WHITE);
         setBorder(NORMAL_BORDER);
 
-        mScale = DisplayPreferences.getInitialUIScale().getScale();
+        mScale = DisplayPreferences.initialUIScale().getScale();
 
         // Make sure our primary outlines exist
         mAdvantageOutline = new AdvantageOutline(template);

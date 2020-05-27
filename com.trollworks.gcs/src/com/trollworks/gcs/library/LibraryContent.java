@@ -32,7 +32,7 @@ public class LibraryContent extends JPanel implements ScaleRoot, Scrollable {
         mOutline.setBorder(new LineBorder(mOutline.getDividerColor(), 0, 0, 0, 1));
         setLayout(new BorderLayout());
         add(mOutline);
-        mScale = DisplayPreferences.getInitialUIScale().getScale();
+        mScale = DisplayPreferences.initialUIScale().getScale();
     }
 
     @Override

@@ -109,7 +109,7 @@ public enum WeightUnits implements Units {
     }
 
     @Override
-    public String getDescription() {
+    public String toString() {
         return String.format("%s (%s)", getLocalizedName(), getAbbreviation());
     }
 

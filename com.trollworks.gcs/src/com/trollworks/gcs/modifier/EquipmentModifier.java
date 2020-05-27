@@ -16,7 +16,6 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -114,8 +113,8 @@ public class EquipmentModifier extends Modifier {
         mTechLevel = "";
     }
 
-    private static String getDefaultWeightAmount() {
-        return "+" + new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits()).toString();
+    private String getDefaultWeightAmount() {
+        return "+" + new WeightValue(Fixed6.ZERO, getDataFile().defaultWeightUnits()).toString();
     }
 
     @Override
@@ -215,7 +214,7 @@ public class EquipmentModifier extends Modifier {
      * @return {@code true} if a change was made.
      */
     public boolean setWeightAdjAmount(String amount) {
-        amount = mWeightType.format(amount, false);
+        amount = mWeightType.format(amount, getDataFile().defaultWeightUnits(), false);
         if (!mWeightAmount.equals(amount)) {
             mWeightAmount = amount;
             notifySingle(ID_WEIGHT_ADJ);
@@ -265,7 +264,7 @@ public class EquipmentModifier extends Modifier {
                 mCostAmount = mCostType.format(reader.readText(), false);
             } else if (TAG_WEIGHT_ADJ.equals(name)) {
                 mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
-                mWeightAmount = mWeightType.format(reader.readText(), false);
+                mWeightAmount = mWeightType.format(reader.readText(), getDataFile().defaultWeightUnits(), false);
             } else if (TAG_TECH_LEVEL.equals(name)) {
                 mTechLevel = reader.readText().replace("\n", " ");
             } else {
@@ -316,7 +315,7 @@ public class EquipmentModifier extends Modifier {
         if (canHaveChildren() || (mWeightType == EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT && getDefaultWeightAmount().equals(mWeightAmount))) {
             return "";
         }
-        return mWeightType.format(mWeightAmount, true) + " " + mWeightType.toShortString();
+        return mWeightType.format(mWeightAmount, getDataFile().defaultWeightUnits(), true) + " " + mWeightType.toShortString();
     }
 
     @Override

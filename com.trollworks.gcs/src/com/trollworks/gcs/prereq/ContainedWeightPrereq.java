@@ -17,11 +17,11 @@ import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Enums;
+import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.io.IOException;
@@ -39,9 +39,9 @@ public class ContainedWeightPrereq extends HasPrereq {
      *
      * @param parent The owning prerequisite list, if any.
      */
-    public ContainedWeightPrereq(PrereqList parent) {
+    public ContainedWeightPrereq(PrereqList parent, WeightUnits defUnits) {
         super(parent);
-        mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(new Fixed6(5), DisplayPreferences.getWeightUnits()));
+        mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(new Fixed6(5), defUnits));
     }
 
     /**
@@ -50,8 +50,8 @@ public class ContainedWeightPrereq extends HasPrereq {
      * @param parent The owning prerequisite list, if any.
      * @param reader The XML reader to load from.
      */
-    public ContainedWeightPrereq(PrereqList parent, XMLReader reader) throws IOException {
-        this(parent);
+    public ContainedWeightPrereq(PrereqList parent, WeightUnits defUnits, XMLReader reader) throws IOException {
+        this(parent, defUnits);
         loadHasAttribute(reader);
         mWeightCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
         mWeightCompare.setQualifier(WeightValue.extract(reader.readText(), false));

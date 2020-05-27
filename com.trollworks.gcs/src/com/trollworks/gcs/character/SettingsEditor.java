@@ -1,0 +1,305 @@
+/*
+ * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
+ */
+
+package com.trollworks.gcs.character;
+
+import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.LineBorder;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.BaseWindow;
+import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Preferences;
+import com.trollworks.gcs.utility.notification.NotifierTarget;
+import com.trollworks.gcs.utility.text.Text;
+import com.trollworks.gcs.utility.units.LengthUnits;
+import com.trollworks.gcs.utility.units.WeightUnits;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.WindowEvent;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, NotifierTarget {
+    private static final String                   PREFIX = "SettingsEditor.";
+    private              GURPSCharacter           mCharacter;
+    private              Settings                 mSettings;
+    private              JCheckBox                mBaseWillAndPerOn10;
+    private              JCheckBox                mUseMultiplicativeModifiers;
+    private              JCheckBox                mUseModifyingDicePlusAdds;
+    private              JCheckBox                mUseKnowYourOwnStrength;
+    private              JCheckBox                mUseReducedSwing;
+    private              JCheckBox                mUseThrustEqualsSwingMinus2;
+    private              JCheckBox                mUseSimpleMetricConversions;
+    private              JComboBox<LengthUnits>   mLengthUnitsCombo;
+    private              JComboBox<WeightUnits>   mWeightUnitsCombo;
+    private              JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
+    private              JComboBox<DisplayOption> mModifiersDisplayCombo;
+    private              JComboBox<DisplayOption> mNotesDisplayCombo;
+    private              JTextArea                mBlockLayoutField;
+    private              JButton                  mResetButton;
+
+    public static SettingsEditor find(GURPSCharacter character) {
+        for (Window window : Window.getWindows()) {
+            if (window.isShowing() && window instanceof SettingsEditor) {
+                SettingsEditor wnd = (SettingsEditor) window;
+                if (wnd.mCharacter == character) {
+                    return wnd;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void display(GURPSCharacter character) {
+        if (!UIUtilities.inModalState()) {
+            SettingsEditor wnd = find(character);
+            if (wnd == null) {
+                wnd = new SettingsEditor(character);
+            }
+            wnd.setVisible(true);
+        }
+    }
+
+    private static String createTitle(GURPSCharacter character) {
+        return String.format(I18n.Text("Sheet Settings: %s"), character.getProfile().getName());
+    }
+
+    private SettingsEditor(GURPSCharacter character) {
+        super(createTitle(character));
+        mCharacter = character;
+        mSettings = character.getSettings();
+        Container content = getContentPane();
+        content.add(createTopPanel());
+        content.add(createResetPanel(), BorderLayout.SOUTH);
+        adjustResetButton();
+        restoreBounds();
+        character.addTarget(this, Profile.ID_NAME);
+        Preferences.getInstance().getNotifier().add(this, SheetPreferences.MODULE + ".");
+    }
+
+    private JPanel createTopPanel() {
+        JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
+        mBaseWillAndPerOn10 = createCheckBox(panel, I18n.Text("Base Will and Perception on 10 and not IQ"), null, mSettings.baseWillAndPerOn10());
+        mUseMultiplicativeModifiers = createCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
+        mUseModifyingDicePlusAdds = createCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
+        mUseKnowYourOwnStrength = createCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
+        mUseReducedSwing = createCheckBox(panel, I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
+        mUseThrustEqualsSwingMinus2 = createCheckBox(panel, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
+        mUseSimpleMetricConversions = createCheckBox(panel, I18n.Text("Use the simple metric conversion rules from B9"), null, mSettings.useSimpleMetricConversions());
+        JPanel wrapper = new JPanel();
+        wrapper.add(createLabel(I18n.Text("Use"), null, SwingConstants.LEFT));
+        mLengthUnitsCombo = createCombo(wrapper, LengthUnits.values(), mSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
+        wrapper.add(createLabel(I18n.Text("and"), null, SwingConstants.LEFT));
+        mWeightUnitsCombo = createCombo(wrapper, WeightUnits.values(), mSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
+        wrapper.add(createLabel(I18n.Text("for display of generated units"), null, SwingConstants.LEFT));
+        panel.add(wrapper, new PrecisionLayoutData().setHorizontalSpan(2));
+        panel.add(createLabel(I18n.Text("Show User Description"), null, SwingConstants.RIGHT), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setLeftMargin(5).setRightMargin(5));
+        mUserDescriptionDisplayCombo = createCombo(panel, DisplayOption.values(), mSettings.userDescriptionDisplay(), I18n.Text("Where to display this information"));
+        panel.add(createLabel(I18n.Text("Show Modifiers"), null, SwingConstants.RIGHT), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setLeftMargin(5).setRightMargin(5));
+        mModifiersDisplayCombo = createCombo(panel, DisplayOption.values(), mSettings.modifiersDisplay(), I18n.Text("Where to display this information"));
+        panel.add(createLabel(I18n.Text("Show Notes"), null, SwingConstants.RIGHT), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setLeftMargin(5).setRightMargin(5));
+        mNotesDisplayCombo = createCombo(panel, DisplayOption.values(), mSettings.notesDisplay(), I18n.Text("Where to display this information"));
+        String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
+        panel.add(createLabel(I18n.Text("Block Layout"), blockLayoutTooltip, SwingConstants.LEFT), new PrecisionLayoutData().setHorizontalSpan(2).setLeftMargin(5).setRightMargin(5));
+        mBlockLayoutField = new JTextArea(mSettings.blockLayout());
+        mBlockLayoutField.setToolTipText(blockLayoutTooltip);
+        mBlockLayoutField.getDocument().addDocumentListener(this);
+        mBlockLayoutField.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
+        panel.add(mBlockLayoutField, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true).setLeftMargin(5).setRightMargin(5));
+        return panel;
+    }
+
+    private JPanel createResetPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        mResetButton = new JButton(I18n.Text("Reset to Current Preference Values"));
+        mResetButton.addActionListener(this);
+        panel.add(mResetButton);
+        return panel;
+    }
+
+    private JLabel createLabel(String title, String tooltip, int alignment) {
+        JLabel label = new JLabel(title, alignment);
+        label.setOpaque(false);
+        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        UIUtilities.setToPreferredSizeOnly(label);
+        add(label);
+        return label;
+    }
+
+    private JCheckBox createCheckBox(JPanel panel, String title, String tooltip, boolean checked) {
+        JCheckBox checkbox = new JCheckBox(title, checked);
+        checkbox.setOpaque(false);
+        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        checkbox.addItemListener(this);
+        panel.add(checkbox, new PrecisionLayoutData().setHorizontalSpan(2));
+        return checkbox;
+    }
+
+    private JComboBox<DisplayOption> createDisplayOptionCombo(JPanel panel, DisplayOption choice) {
+        return createCombo(panel, DisplayOption.values(), choice, I18n.Text("Where to display this information"));
+    }
+
+    private <E> JComboBox<E> createCombo(JPanel panel, E[] values, E choice, String tooltip) {
+        JComboBox<E> combo = new JComboBox<>(values);
+        combo.setOpaque(false);
+        combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        combo.setSelectedItem(choice);
+        combo.addActionListener(this);
+        combo.setMaximumRowCount(combo.getItemCount());
+        UIUtilities.setToPreferredSizeOnly(combo);
+        panel.add(combo);
+        return combo;
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent event) {
+        Object source = event.getSource();
+        if (source == mBaseWillAndPerOn10) {
+            mSettings.setBaseWillAndPerOn10(mBaseWillAndPerOn10.isSelected());
+        } else if (source == mUseMultiplicativeModifiers) {
+            mSettings.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
+        } else if (source == mUseModifyingDicePlusAdds) {
+            mSettings.setUseModifyingDicePlusAdds(mUseModifyingDicePlusAdds.isSelected());
+        } else if (source == mUseKnowYourOwnStrength) {
+            mSettings.setUseKnowYourOwnStrength(mUseKnowYourOwnStrength.isSelected());
+        } else if (source == mUseReducedSwing) {
+            mSettings.setUseReducedSwing(mUseReducedSwing.isSelected());
+        } else if (source == mUseThrustEqualsSwingMinus2) {
+            mSettings.setUseThrustEqualsSwingMinus2(mUseThrustEqualsSwingMinus2.isSelected());
+        } else if (source == mUseSimpleMetricConversions) {
+            mSettings.setUseSimpleMetricConversions(mUseSimpleMetricConversions.isSelected());
+        }
+        adjustResetButton();
+    }
+
+    private void adjustResetButton() {
+        mResetButton.setEnabled(!isSetToDefaults());
+    }
+
+    private boolean isSetToDefaults() {
+        boolean atDefaults = mUseModifyingDicePlusAdds.isSelected() == SheetPreferences.useModifyingDicePlusAdds();
+        atDefaults = atDefaults && mBaseWillAndPerOn10.isSelected() == SheetPreferences.baseWillAndPerOn10();
+        atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == SheetPreferences.useMultiplicativeModifiers();
+        atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == SheetPreferences.useKnowYourOwnStrength();
+        atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == SheetPreferences.useThrustEqualsSwingMinus2();
+        atDefaults = atDefaults && mUseReducedSwing.isSelected() == SheetPreferences.useReducedSwing();
+        atDefaults = atDefaults && mUseSimpleMetricConversions.isSelected() == SheetPreferences.useSimpleMetricConversions();
+        atDefaults = atDefaults && mLengthUnitsCombo.getSelectedItem() == DisplayPreferences.defaultLengthUnits();
+        atDefaults = atDefaults && mWeightUnitsCombo.getSelectedItem() == DisplayPreferences.defaultWeightUnits();
+        atDefaults = atDefaults && mUserDescriptionDisplayCombo.getSelectedItem() == DisplayPreferences.userDescriptionDisplay();
+        atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == DisplayPreferences.modifiersDisplay();
+        atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == DisplayPreferences.notesDisplay();
+        atDefaults = atDefaults && mBlockLayoutField.getText().equals(DisplayPreferences.blockLayout());
+        return atDefaults;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        Object source = event.getSource();
+        if (source == mLengthUnitsCombo) {
+            mSettings.setDefaultLengthUnits((LengthUnits) mLengthUnitsCombo.getSelectedItem());
+        } else if (source == mWeightUnitsCombo) {
+            mSettings.setDefaultWeightUnits((WeightUnits) mWeightUnitsCombo.getSelectedItem());
+        } else if (source == mUserDescriptionDisplayCombo) {
+            mSettings.setUserDescriptionDisplay((DisplayOption) mUserDescriptionDisplayCombo.getSelectedItem());
+        } else if (source == mModifiersDisplayCombo) {
+            mSettings.setModifiersDisplay((DisplayOption) mModifiersDisplayCombo.getSelectedItem());
+        } else if (source == mNotesDisplayCombo) {
+            mSettings.setNotesDisplay((DisplayOption) mNotesDisplayCombo.getSelectedItem());
+        } else if (source == mResetButton) {
+            mUseModifyingDicePlusAdds.setSelected(SheetPreferences.useModifyingDicePlusAdds());
+            mBaseWillAndPerOn10.setSelected(SheetPreferences.baseWillAndPerOn10());
+            mUseMultiplicativeModifiers.setSelected(SheetPreferences.useMultiplicativeModifiers());
+            mUseKnowYourOwnStrength.setSelected(SheetPreferences.useKnowYourOwnStrength());
+            mUseThrustEqualsSwingMinus2.setSelected(SheetPreferences.useThrustEqualsSwingMinus2());
+            mUseReducedSwing.setSelected(SheetPreferences.useReducedSwing());
+            mUseSimpleMetricConversions.setSelected(SheetPreferences.useSimpleMetricConversions());
+            mLengthUnitsCombo.setSelectedItem(DisplayPreferences.defaultLengthUnits());
+            mWeightUnitsCombo.setSelectedItem(DisplayPreferences.defaultWeightUnits());
+            mUserDescriptionDisplayCombo.setSelectedItem(DisplayPreferences.userDescriptionDisplay());
+            mModifiersDisplayCombo.setSelectedItem(DisplayPreferences.modifiersDisplay());
+            mNotesDisplayCombo.setSelectedItem(DisplayPreferences.notesDisplay());
+            mBlockLayoutField.setText(DisplayPreferences.blockLayout());
+        }
+        adjustResetButton();
+    }
+
+    @Override
+    public String getWindowPrefsPrefix() {
+        return PREFIX;
+    }
+
+    @Override
+    public boolean mayAttemptClose() {
+        return true;
+    }
+
+    @Override
+    public boolean attemptClose() {
+        windowClosing(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        return true;
+    }
+
+    @Override
+    public void dispose() {
+        mCharacter.removeTarget(this);
+        Preferences.getInstance().getNotifier().remove(this);
+        super.dispose();
+    }
+
+    @Override
+    public int getNotificationPriority() {
+        return 0;
+    }
+
+    @Override
+    public void handleNotification(Object producer, String name, Object data) {
+        setTitle(createTitle(mCharacter));
+        adjustResetButton();
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent event) {
+        changedUpdate(event);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent event) {
+        changedUpdate(event);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent event) {
+        mSettings.setBlockLayout(mBlockLayoutField.getText());
+        adjustResetButton();
+    }
+}

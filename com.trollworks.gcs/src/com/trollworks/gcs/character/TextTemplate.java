@@ -97,7 +97,6 @@ public class TextTemplate {
     private static final String         KEY_BIRTHDAY                          = "BIRTHDAY";
     private static final String         KEY_BLOCK                             = "BLOCK";
     private static final String         KEY_BULK                              = "BULK";
-    private static final String         KEY_CAMPAIGN                          = "CAMPAIGN";
     private static final String         KEY_CARRIED_STATUS                    = "CARRIED_STATUS";
     private static final String         KEY_CARRIED_VALUE                     = "CARRIED_VALUE";
     private static final String         KEY_CARRIED_WEIGHT                    = "CARRIED_WEIGHT";
@@ -276,6 +275,7 @@ public class TextTemplate {
     private static final String         KEY_WILL_POINTS                       = "WILL_POINTS";
     private static final String         KEY_AMMO_TYPE                         = "AmmoType:";
     private static final String         KEY_USES_AMMO_TYPE                    = "UsesAmmoType:";
+    private static final String         KEY_OPTIONS_CODE                      = "OPTIONS_CODE";
     private              CharacterSheet mSheet;
     private              boolean        mEncodeText                           = true;
     private              boolean        mEnhancedKeyParsing;
@@ -336,10 +336,10 @@ public class TextTemplate {
 
     private void emitKey(BufferedReader in, BufferedWriter out, String key, File base) throws IOException {
         GURPSCharacter gurpsCharacter = mSheet.getCharacter();
-        Profile        description    = gurpsCharacter.getDescription();
+        Profile        description    = gurpsCharacter.getProfile();
         switch (key) {
         case KEY_GRID_TEMPLATE:
-            out.write(CharacterSheet.getHTMLGridTemplate());
+            out.write(mSheet.getHTMLGridTemplate());
             break;
         case KEY_ENCODING_OFF:
             mEncodeText = false;
@@ -370,8 +370,8 @@ public class TextTemplate {
         case KEY_PLAYER:
             writeEncodedText(out, description.getPlayerName());
             break;
-        case KEY_CAMPAIGN:
-            writeEncodedText(out, description.getCampaign());
+        case KEY_OPTIONS_CODE:
+            writeEncodedText(out, gurpsCharacter.getSettings().optionsCode());
             break;
         case KEY_CREATED_ON:
             Date date = new Date(gurpsCharacter.getCreatedOn());
@@ -451,7 +451,7 @@ public class TextTemplate {
             writeEncodedText(out, description.getGender());
             break;
         case KEY_WEIGHT:
-            writeEncodedText(out, EquipmentColumn.getDisplayWeight(description.getWeight()));
+            writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, description.getWeight()));
             break;
         case KEY_EYES:
             writeEncodedText(out, description.getEyeColor());
@@ -598,7 +598,7 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getShiftSlightly().toString());
             break;
         case KEY_CARRIED_WEIGHT:
-            writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter.getWeightCarried()));
+            writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, gurpsCharacter.getWeightCarried()));
             break;
         case KEY_CARRIED_VALUE:
             writeEncodedText(out, "$" + gurpsCharacter.getWealthCarried().toLocalizedString());
@@ -810,7 +810,7 @@ public class TextTemplate {
         StringBuilder  keyBuffer        = new StringBuilder();
         boolean        lookForKeyMarker = true;
         mCurrentId = mStartId;
-        HitLocationTable table = gurpsCharacter.getDescription().getHitLocationTable();
+        HitLocationTable table = gurpsCharacter.getProfile().getHitLocationTable();
         for (HitLocationTableEntry entry : table.getEntries()) {
             mCurrentId++;
             for (int i = 0; i < length; i++) {
@@ -1327,7 +1327,7 @@ public class TextTemplate {
                 break;
             case KEY_WEIGHT:
                 if (equipment != null) {
-                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getAdjustedWeight()));
+                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight()));
                 }
                 break;
             case KEY_AMMO:
@@ -1664,13 +1664,13 @@ public class TextTemplate {
                                     writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
                                     break;
                                 case KEY_WEIGHT:
-                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getAdjustedWeight()));
+                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight()));
                                     break;
                                 case KEY_COST_SUMMARY:
                                     writeEncodedText(out, equipment.getExtendedValue().toLocalizedString());
                                     break;
                                 case KEY_WEIGHT_SUMMARY:
-                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getExtendedWeight()));
+                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight()));
                                     break;
                                 case KEY_WEIGHT_RAW:
                                     writeEncodedText(out, equipment.getAdjustedWeight().getNormalizedValue().toLocalizedString());

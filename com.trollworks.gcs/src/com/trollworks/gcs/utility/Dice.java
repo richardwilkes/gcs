@@ -11,34 +11,19 @@
 
 package com.trollworks.gcs.utility;
 
+import com.trollworks.gcs.preferences.SheetPreferences;
+
 import java.util.Random;
 
 /** Simulates dice. */
 public class Dice implements Cloneable {
-    private static final Random  RANDOM = new Random();
-    private static       boolean EXTRA_DICE_FROM_MODIFIERS;
-    private              int     mCount;
-    private              int     mSides;
-    private              int     mModifier;
-    private              int     mMultiplier;
-    private              int     mAltCount;
-    private              int     mAltModifier;
-
-    /**
-     * By default, this is set to {@code false}.
-     *
-     * @param convert {@code true} if modifiers greater than or equal to the average result of the
-     *                base die should be converted to extra dice. For example, {@code 1d6+8} will
-     *                become {@code 3d6+1}.
-     */
-    public static final void setConvertModifiersToExtraDice(boolean convert) {
-        EXTRA_DICE_FROM_MODIFIERS = convert;
-    }
-
-    public static final int roll(String text) {
-        Dice dice = new Dice(text);
-        return dice.roll();
-    }
+    private static final Random RANDOM = new Random();
+    private              int    mCount;
+    private              int    mSides;
+    private              int    mModifier;
+    private              int    mMultiplier;
+    private              int    mAltCount;
+    private              int    mAltModifier;
 
     /** Creates a new 1d6 dice object. */
     public Dice() {
@@ -274,17 +259,17 @@ public class Dice implements Cloneable {
     }
 
     /** @return The result of rolling the dice. */
-    public int roll() {
-        return roll(RANDOM);
+    public int roll(boolean convertModifiersToExtraDice) {
+        return roll(RANDOM, convertModifiersToExtraDice);
     }
 
     /**
      * @param randomizer A {@link Random} object to use.
      * @return The result of rolling the dice.
      */
-    public int roll(Random randomizer) {
+    public int roll(Random randomizer, boolean convertModifiersToExtraDice) {
         int result = 0;
-        updateAlt();
+        updateAlt(convertModifiersToExtraDice);
         if (mSides > 0) {
             for (int i = 0; i < mAltCount; i++) {
                 result += 1 + randomizer.nextInt(mSides);
@@ -293,10 +278,13 @@ public class Dice implements Cloneable {
         return (result + mAltModifier) * mMultiplier;
     }
 
-    @Override
     public String toString() {
+        return toString(SheetPreferences.useModifyingDicePlusAdds());
+    }
+
+    public String toString(boolean convertModifiersToExtraDice) {
         StringBuilder buffer = new StringBuilder();
-        updateAlt();
+        updateAlt(convertModifiersToExtraDice);
         if (mAltCount > 0 && mSides > 0) {
             buffer.append(mAltCount);
             buffer.append('d');
@@ -320,10 +308,10 @@ public class Dice implements Cloneable {
         return buffer.toString();
     }
 
-    private void updateAlt() {
+    private void updateAlt(boolean convertModifiersToExtraDice) {
         mAltCount = mCount;
         mAltModifier = mModifier;
-        if (EXTRA_DICE_FROM_MODIFIERS && mSides > 0) {
+        if (convertModifiersToExtraDice && mSides > 0) {
             int average = (mSides + 1) / 2;
             if ((mSides & 1) == 1) {
                 // Odd number of sides, so average is a whole number

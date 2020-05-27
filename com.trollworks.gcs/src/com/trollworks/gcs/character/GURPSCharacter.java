@@ -36,7 +36,6 @@ import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
@@ -278,7 +277,8 @@ public class GURPSCharacter extends DataFile {
     private              int                                 mParryBonus;
     private              int                                 mBlockBonus;
     private              int                                 mTotalPoints;
-    private              Profile                             mDescription;
+    private              Settings                            mSettings;
+    private              Profile                             mProfile;
     private              Armor                               mArmor;
     private              OutlineModel                        mAdvantages;
     private              OutlineModel                        mSkills;
@@ -327,6 +327,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     private void characterInitialize(boolean full) {
+        mSettings = new Settings(this);
         mFeatureMap = new HashMap<>();
         mAdvantages = new OutlineModel();
         mSkills = new OutlineModel();
@@ -342,12 +343,12 @@ public class GURPSCharacter extends DataFile {
         mHealth = 10;
         mHitPointsDamage = 0;
         mFatiguePointsDamage = 0;
-        mDescription = new Profile(this, full);
+        mProfile = new Profile(this, full);
         mArmor = new Armor(this);
         mIncludePunch = true;
         mIncludeKick = true;
         mIncludeKickBoots = true;
-        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
+        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mPageSettings = OutputPreferences.getDefaultPageSettings();
         mLastModified = System.currentTimeMillis();
         mCreatedOn = mLastModified;
@@ -382,7 +383,7 @@ public class GURPSCharacter extends DataFile {
                 String name = reader.getName();
 
                 if (state.mDataFileVersion == 0) {
-                    if (mDescription.loadTag(reader, name)) {
+                    if (mProfile.loadTag(reader, name)) {
                         continue;
                     }
                 }
@@ -397,8 +398,10 @@ public class GURPSCharacter extends DataFile {
                     }
                 }
 
-                if (Profile.TAG_ROOT.equals(name)) {
-                    mDescription.load(reader);
+                if (Settings.TAG_ROOT.equals(name)) {
+                    mSettings.load(reader);
+                } else if (Profile.TAG_ROOT.equals(name)) {
+                    mProfile.load(reader);
                 } else if (TAG_CREATED_DATE.equals(name)) {
                     mCreatedOn = Numbers.extractDate(reader.readText());
                 } else if (TAG_MODIFIED_DATE.equals(name)) {
@@ -598,9 +601,10 @@ public class GURPSCharacter extends DataFile {
 
     @Override
     protected void saveSelf(XMLWriter out) {
+        mSettings.save(out);
         out.simpleTag(TAG_CREATED_DATE, DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date(mCreatedOn)));
         out.simpleTag(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mLastModified)));
-        mDescription.save(out);
+        mProfile.save(out);
         out.simpleTag(BonusAttributeType.HP.getXMLTag(), mHitPoints);
         out.simpleTagNotZero(TAG_HP_DAMAGE, mHitPointsDamage);
         out.simpleTag(BonusAttributeType.FP.getXMLTag(), mFatiguePoints);
@@ -646,7 +650,9 @@ public class GURPSCharacter extends DataFile {
         if (id == null) {
             return null;
         }
-        if (id.startsWith(POINTS_PREFIX)) {
+        if (Settings.PREFIX.equals(id)) { // Special to retrieve options code
+            return mSettings.optionsCode();
+        } else if (id.startsWith(POINTS_PREFIX)) {
             id = id.substring(POINTS_PREFIX.length());
             if (ID_STRENGTH.equals(id)) {
                 return Integer.valueOf(getStrengthPoints());
@@ -775,7 +781,7 @@ public class GURPSCharacter extends DataFile {
         } else if (ID_DODGE_BONUS.equals(id)) {
             return Integer.valueOf(getDodgeBonus());
         } else if (id.startsWith(Profile.PROFILE_PREFIX)) {
-            return mDescription.getValueForID(id);
+            return mProfile.getValueForID(id);
         } else if (id.startsWith(Armor.DR_PREFIX)) {
             return mArmor.getValueForID(id);
         } else {
@@ -844,7 +850,7 @@ public class GURPSCharacter extends DataFile {
             } else if (ID_CURRENT_FP.equals(id)) {
                 setFatiguePointsDamage(-Math.min(((Integer) value).intValue() - getFatiguePoints(), 0));
             } else if (id.startsWith(Profile.PROFILE_PREFIX)) {
-                mDescription.setValueForID(id, value);
+                mProfile.setValueForID(id, value);
             } else if (id.startsWith(Armor.DR_PREFIX)) {
                 mArmor.setValueForID(id, value);
             } else {
@@ -878,7 +884,7 @@ public class GURPSCharacter extends DataFile {
         if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type) || EquipmentModifier.ID_WEIGHT_ADJ.equals(type) || EquipmentModifier.ID_COST_ADJ.equals(type) || EquipmentModifier.ID_ENABLED.equals(type)) {
             mNeedEquipmentCalculation = true;
         }
-        if (Profile.ID_SIZE_MODIFIER.equals(type) || SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type)) {
+        if (Profile.ID_SIZE_MODIFIER.equals(type) || Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH.equals(type)) {
             mNeedAttributePointCalculation = true;
         }
     }
@@ -1087,8 +1093,8 @@ public class GURPSCharacter extends DataFile {
     /** @return The number of points spent on strength. */
     public int getStrengthPoints() {
         int reduction = mStrengthCostReduction;
-        if (!SheetPreferences.areOptionalStrengthRulesUsed()) {
-            reduction += mDescription.getSizeModifier() * 10;
+        if (!mSettings.useKnowYourOwnStrength()) {
+            reduction += mProfile.getSizeModifier() * 10;
         }
         return getPointsForAttribute(mStrength - 10, 10, reduction);
     }
@@ -1113,13 +1119,13 @@ public class GURPSCharacter extends DataFile {
      * @param strength The strength to return basic thrusting damage for.
      * @return The basic thrusting damage.
      */
-    public static Dice getThrust(int strength) {
-        if (SheetPreferences.areOptionalThrustDamageUsed()) {
+    public Dice getThrust(int strength) {
+        if (mSettings.useThrustEqualsSwingMinus2()) {
             Dice dice = getSwing(strength);
             dice.add(-2);
             return dice;
         }
-        if (SheetPreferences.areOptionalReducedSwingUsed()) {
+        if (mSettings.useReducedSwing()) {
             if (strength < 19) {
                 return new Dice(1, -(6 - (strength - 1) / 2));
             }
@@ -1140,7 +1146,7 @@ public class GURPSCharacter extends DataFile {
             return new Dice(dice, adds);
         }
 
-        if (SheetPreferences.areOptionalStrengthRulesUsed()) {
+        if (mSettings.useKnowYourOwnStrength()) {
             if (strength < 12) {
                 return new Dice(1, strength - 12);
             }
@@ -1172,8 +1178,8 @@ public class GURPSCharacter extends DataFile {
      * @param strength The strength to return basic swinging damage for.
      * @return The basic thrusting damage.
      */
-    public static Dice getSwing(int strength) {
-        if (SheetPreferences.areOptionalReducedSwingUsed()) {
+    public Dice getSwing(int strength) {
+        if (mSettings.useReducedSwing()) {
             if (strength < 10) {
                 return new Dice(1, -(5 - (strength - 1) / 2));
             }
@@ -1192,7 +1198,7 @@ public class GURPSCharacter extends DataFile {
             return new Dice(dice, adds);
         }
 
-        if (SheetPreferences.areOptionalStrengthRulesUsed()) {
+        if (mSettings.useKnowYourOwnStrength()) {
             if (strength < 10) {
                 return new Dice(1, strength - 10);
             }
@@ -1223,7 +1229,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return Basic lift. */
     public WeightValue getBasicLift() {
-        return getBasicLift(DisplayPreferences.getWeightUnits());
+        return getBasicLift(defaultWeightUnits());
     }
 
     private WeightValue getBasicLift(WeightUnits desiredUnits) {
@@ -1232,7 +1238,7 @@ public class GURPSCharacter extends DataFile {
         Fixed6      divisor;
         Fixed6      multiplier;
         Fixed6      roundAt;
-        if (SheetPreferences.areGurpsMetricRulesUsed() && DisplayPreferences.getWeightUnits().isMetric()) {
+        if (useSimpleMetricConversions() && defaultWeightUnits().isMetric()) {
             units = WeightUnits.KG;
             divisor = ten;
             multiplier = Fixed6.ONE;
@@ -1255,7 +1261,7 @@ public class GURPSCharacter extends DataFile {
         if (strength < 1) {
             value = Fixed6.ZERO;
         } else {
-            if (SheetPreferences.areOptionalStrengthRulesUsed()) {
+            if (mSettings.useKnowYourOwnStrength()) {
                 int diff = 0;
                 if (strength > 19) {
                     diff = strength / 10 - 1;
@@ -1317,10 +1323,10 @@ public class GURPSCharacter extends DataFile {
      * @return The maximum amount the character can carry for the specified encumbrance level.
      */
     public WeightValue getMaximumCarry(Encumbrance encumbrance) {
-        WeightUnits calcUnits = SheetPreferences.areGurpsMetricRulesUsed() && DisplayPreferences.getWeightUnits().isMetric() ? WeightUnits.KG : WeightUnits.LB;
-        WeightValue lift      = getBasicLift(calcUnits);
+        WeightUnits desiredUnits = defaultWeightUnits();
+        WeightUnits calcUnits    = useSimpleMetricConversions() && desiredUnits.isMetric() ? WeightUnits.KG : WeightUnits.LB;
+        WeightValue lift         = getBasicLift(calcUnits);
         lift.setValue(lift.getValue().mul(new Fixed6(encumbrance.getWeightMultiplier())));
-        WeightUnits desiredUnits = DisplayPreferences.getWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, lift.getValue()), desiredUnits);
     }
 
@@ -1608,13 +1614,13 @@ public class GURPSCharacter extends DataFile {
     public void calculateWeightAndWealthCarried(boolean notify) {
         WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
         Fixed6      savedWealth = mCachedWealthCarried;
-        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
+        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, defaultWeightUnits());
         mCachedWealthCarried = Fixed6.ZERO;
         for (Row one : mEquipment.getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
             WeightValue weight    = new WeightValue(equipment.getExtendedWeight());
-            if (SheetPreferences.areGurpsMetricRulesUsed()) {
-                weight = DisplayPreferences.getWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
+            if (useSimpleMetricConversions()) {
+                weight = defaultWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
             }
             mCachedWeightCarried.add(weight);
             mCachedWealthCarried = mCachedWealthCarried.add(equipment.getExtendedValue());
@@ -2095,8 +2101,8 @@ public class GURPSCharacter extends DataFile {
     /** @return The number of points spent on hit points. */
     public int getHitPointPoints() {
         int pts = 2 * mHitPoints;
-        if (!SheetPreferences.areOptionalStrengthRulesUsed()) {
-            int sizeModifier = mDescription.getSizeModifier();
+        if (!mSettings.useKnowYourOwnStrength()) {
+            int sizeModifier = mProfile.getSizeModifier();
             if (sizeModifier > 0) {
                 int rem;
                 if (sizeModifier > 8) {
@@ -2207,7 +2213,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The will. */
     public int getWill() {
-        return mWill + mWillBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence());
+        return mWill + mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
     }
 
     /** @param will The new will. */
@@ -2215,7 +2221,7 @@ public class GURPSCharacter extends DataFile {
         int oldWill = getWill();
         if (oldWill != will) {
             postUndoEdit(I18n.Text("Will Change"), ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(will));
-            updateWillInfo(will - (mWillBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mWillBonus);
+            updateWillInfo(will - (mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mWillBonus);
         }
     }
 
@@ -2356,7 +2362,7 @@ public class GURPSCharacter extends DataFile {
 
     /** @return The perception (Per). */
     public int getPerception() {
-        return mPerception + mPerceptionBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence());
+        return mPerception + mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
     }
 
     /**
@@ -2368,7 +2374,7 @@ public class GURPSCharacter extends DataFile {
         int oldPerception = getPerception();
         if (oldPerception != perception) {
             postUndoEdit(I18n.Text("Perception Change"), ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perception));
-            updatePerceptionInfo(perception - (mPerceptionBonus + (SheetPreferences.areOptionalIQRulesUsed() ? 10 : getIntelligence())), mPerceptionBonus);
+            updatePerceptionInfo(perception - (mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
         }
     }
 
@@ -2502,8 +2508,12 @@ public class GURPSCharacter extends DataFile {
     }
 
     /** @return The {@link Profile} data. */
-    public Profile getDescription() {
-        return mDescription;
+    public Profile getProfile() {
+        return mProfile;
+    }
+
+    public Settings getSettings() {
+        return mSettings;
     }
 
     /** @return The {@link Armor} stats. */
@@ -2798,7 +2808,7 @@ public class GURPSCharacter extends DataFile {
         setTouchBonus(getIntegerBonusFor(ID_TOUCH));
         setHitPointBonus(getIntegerBonusFor(ID_HIT_POINTS));
         setFatiguePointBonus(getIntegerBonusFor(ID_FATIGUE_POINTS));
-        mDescription.update();
+        mProfile.update();
         setDodgeBonus(getIntegerBonusFor(ID_DODGE_BONUS));
         setParryBonus(getIntegerBonusFor(ID_PARRY_BONUS));
         setBlockBonus(getIntegerBonusFor(ID_BLOCK_BONUS));
@@ -2990,5 +3000,40 @@ public class GURPSCharacter extends DataFile {
                 addEdit(new CharacterFieldUndo(this, name, id, before, after));
             }
         }
+    }
+
+    @Override
+    public WeightUnits defaultWeightUnits() {
+        return mSettings.defaultWeightUnits();
+    }
+
+    @Override
+    public boolean useSimpleMetricConversions() {
+        return mSettings.useSimpleMetricConversions();
+    }
+
+    @Override
+    public boolean useMultiplicativeModifiers() {
+        return mSettings.useMultiplicativeModifiers();
+    }
+
+    @Override
+    public boolean useModifyingDicePlusAdds() {
+        return mSettings.useModifyingDicePlusAdds();
+    }
+
+    @Override
+    public DisplayOption userDescriptionDisplay() {
+        return mSettings.userDescriptionDisplay();
+    }
+
+    @Override
+    public DisplayOption modifiersDisplay() {
+        return mSettings.modifiersDisplay();
+    }
+
+    @Override
+    public DisplayOption notesDisplay() {
+        return mSettings.notesDisplay();
     }
 }

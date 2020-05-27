@@ -57,7 +57,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
         mFields = new JTextField[COUNT];
         JPanel wrapper = new JPanel(new ColumnLayout(2));
         wrapper.setBorder(new EmptyBorder(10));
-        Profile description = mCharacter.getDescription();
+        Profile description = mCharacter.getProfile();
         addField(wrapper, I18n.Text("Gender:"), null, GENDER_INDEX, description.getGender());
         addField(wrapper, I18n.Text("Age:"), null, AGE_INDEX, Numbers.format(description.getAge()));
         addField(wrapper, I18n.Text("Birthday:"), null, BIRTHDAY_INDEX, description.getBirthday());
@@ -86,7 +86,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        Profile description = mCharacter.getDescription();
+        Profile description = mCharacter.getProfile();
         if (mCheckBoxes[GENDER_INDEX].isSelected()) {
             mFields[GENDER_INDEX].setText(Profile.getRandomGender());
         }
@@ -97,10 +97,10 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
             mFields[BIRTHDAY_INDEX].setText(Profile.getRandomMonthAndDay());
         }
         if (mCheckBoxes[HEIGHT_INDEX].isSelected()) {
-            mFields[HEIGHT_INDEX].setText(Profile.getRandomHeight(mCharacter.getStrength(), description.getSizeModifier()).toString());
+            mFields[HEIGHT_INDEX].setText(description.getRandomHeight(mCharacter.getStrength(), description.getSizeModifier()).toString());
         }
         if (mCheckBoxes[WEIGHT_INDEX].isSelected()) {
-            mFields[WEIGHT_INDEX].setText(Profile.getRandomWeight(mCharacter.getStrength(), description.getSizeModifier(), description.getWeightMultiplier()).toString());
+            mFields[WEIGHT_INDEX].setText(description.getRandomWeight(mCharacter.getStrength(), description.getSizeModifier(), description.getWeightMultiplier()).toString());
         }
         if (mCheckBoxes[HAIR_INDEX].isSelected()) {
             mFields[HAIR_INDEX].setText(Profile.getRandomHair());
@@ -119,7 +119,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
     /** Apply the changes. */
     public void applyChanges() {
         MultipleUndo edit        = new MultipleUndo(I18n.Text("Description Randomization"));
-        Profile      description = mCharacter.getDescription();
+        Profile      description = mCharacter.getProfile();
         mCharacter.addEdit(edit);
         mCharacter.startNotify();
         description.setGender(mFields[GENDER_INDEX].getText());

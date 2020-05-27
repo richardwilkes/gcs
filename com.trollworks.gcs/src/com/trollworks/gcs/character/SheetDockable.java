@@ -22,7 +22,9 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scales;
+import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
@@ -87,7 +89,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     private void createToolbar() {
         Toolbar toolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(DisplayPreferences.getInitialUIScale());
+        mScaleCombo.setSelectedItem(DisplayPreferences.initialUIScale());
         mScaleCombo.addActionListener((event) -> {
             Scales scale = (Scales) mScaleCombo.getSelectedItem();
             if (scale == null) {
@@ -99,9 +101,10 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
         mSearch = new Search(this);
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         mHitLocationTableCombo = new JComboBox<>(HitLocationTable.ALL);
-        mHitLocationTableCombo.setSelectedItem(getDataFile().getDescription().getHitLocationTable());
-        mHitLocationTableCombo.addActionListener((event) -> getDataFile().getDescription().setHitLocationTable((HitLocationTable) mHitLocationTableCombo.getSelectedItem()));
+        mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
+        mHitLocationTableCombo.addActionListener((event) -> getDataFile().getProfile().setHitLocationTable((HitLocationTable) mHitLocationTableCombo.getSelectedItem()));
         toolbar.add(mHitLocationTableCombo);
+        toolbar.add(new IconButton(Images.GEAR, I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())));
         add(toolbar, BorderLayout.NORTH);
     }
 
@@ -109,6 +112,10 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     public boolean attemptClose() {
         boolean closed = super.attemptClose();
         if (closed) {
+            SettingsEditor editor = SettingsEditor.find(getDataFile());
+            if (editor != null) {
+                editor.attemptClose();
+            }
             mSheet.dispose();
         }
         return closed;
@@ -148,7 +155,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
 
     @Override
     protected String getUntitledName() {
-        String name = mSheet.getCharacter().getDescription().getName().trim();
+        String name = mSheet.getCharacter().getProfile().getName().trim();
         return (name.isBlank()) ? super.getUntitledName() : name;
     }
 
@@ -160,12 +167,6 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     @Override
     public PrintProxy getPrintProxy() {
         return mSheet;
-    }
-
-    @Override
-    public String getDescriptor() {
-        // RAW: Implement
-        return null;
     }
 
     @Override
@@ -390,7 +391,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
     @Override
     public void handleNotification(Object producer, String name, Object data) {
         if (Profile.ID_BODY_TYPE.equals(name)) {
-            mHitLocationTableCombo.setSelectedItem(getDataFile().getDescription().getHitLocationTable());
+            mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
         }
     }
 }

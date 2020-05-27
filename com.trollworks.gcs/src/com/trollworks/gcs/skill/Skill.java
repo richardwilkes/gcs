@@ -152,7 +152,7 @@ public class Skill extends ListRow implements HasSourceReference {
         mEncumbrancePenaltyMultiplier = skill.mEncumbrancePenaltyMultiplier;
         if (forSheet && dataFile instanceof GURPSCharacter) {
             if (mTechLevel != null) {
-                mTechLevel = ((GURPSCharacter) dataFile).getDescription().getTechLevel();
+                mTechLevel = ((GURPSCharacter) dataFile).getProfile().getTechLevel();
             }
         } else {
             if (mTechLevel != null && !mTechLevel.trim().isEmpty()) {

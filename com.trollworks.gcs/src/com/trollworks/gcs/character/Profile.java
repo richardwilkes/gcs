@@ -18,7 +18,6 @@ import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
@@ -84,8 +83,6 @@ public class Profile {
     public static final  String           ID_RELIGION        = PROFILE_PREFIX + "Religion";
     /** The field ID for player name changes. */
     public static final  String           ID_PLAYER_NAME     = PROFILE_PREFIX + "PlayerName";
-    /** The field ID for campaign changes. */
-    public static final  String           ID_CAMPAIGN        = PROFILE_PREFIX + "Campaign";
     /** The field ID for tech level changes. */
     public static final  String           ID_TECH_LEVEL      = PROFILE_PREFIX + "TechLevel";
     /** The field ID for size modifier changes. */
@@ -101,7 +98,6 @@ public class Profile {
     /** The width, in 1/72nds of an inch, of the portrait. */
     public static final  int              PORTRAIT_WIDTH     = 3 * PORTRAIT_HEIGHT / 4;
     private static final String           TAG_PLAYER_NAME    = "player_name";
-    private static final String           TAG_CAMPAIGN       = "campaign";
     private static final String           TAG_NAME           = "name";
     private static final String           TAG_TITLE          = "title";
     private static final String           TAG_AGE            = "age";
@@ -139,7 +135,6 @@ public class Profile {
     private              String           mRace;
     private              String           mReligion;
     private              String           mPlayerName;
-    private              String           mCampaign;
     private              String           mTechLevel;
     private              HitLocationTable mHitLocationTable;
 
@@ -154,15 +149,15 @@ public class Profile {
         mHair = full ? getRandomHair() : "";
         mSkinColor = full ? getRandomSkinColor() : "";
         mHandedness = full ? getRandomHandedness() : "";
-        mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(Fixed6.ZERO, DisplayPreferences.getLengthUnits());
-        mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE) : new WeightValue(Fixed6.ZERO, DisplayPreferences.getWeightUnits());
+        Settings settings = mCharacter.getSettings();
+        mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(Fixed6.ZERO, settings.defaultLengthUnits());
+        mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE) : new WeightValue(Fixed6.ZERO, settings.defaultWeightUnits());
         mGender = full ? getRandomGender() : "";
-        mName = full && SheetPreferences.isNewCharacterAutoNamed() ? USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender)) : "";
+        mName = full && SheetPreferences.autoNameNewCharacters() ? USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender)) : "";
         mRace = full ? I18n.Text("Human") : "";
         mTechLevel = full ? getDefaultTechLevel() : "";
         mReligion = "";
         mPlayerName = full ? getDefaultPlayerName() : "";
-        mCampaign = full ? getDefaultCampaign() : "";
         mPortrait = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
         mHitLocationTable = HitLocationTable.HUMANOID;
     }
@@ -182,8 +177,6 @@ public class Profile {
     boolean loadTag(XMLReader reader, String tag) throws IOException {
         if (TAG_PLAYER_NAME.equals(tag)) {
             mPlayerName = reader.readText();
-        } else if (TAG_CAMPAIGN.equals(tag)) {
-            mCampaign = reader.readText();
         } else if (TAG_NAME.equals(tag)) {
             mName = reader.readText();
         } else if (TAG_OLD_NOTES.equals(tag)) {
@@ -239,7 +232,6 @@ public class Profile {
     void save(XMLWriter out) {
         out.startSimpleTagEOL(TAG_ROOT);
         out.simpleTagNotEmpty(TAG_PLAYER_NAME, mPlayerName);
-        out.simpleTagNotEmpty(TAG_CAMPAIGN, mCampaign);
         out.simpleTagNotEmpty(TAG_NAME, mName);
         out.simpleTagNotEmpty(TAG_TITLE, mTitle);
         out.simpleTag(TAG_AGE, mAge);
@@ -415,24 +407,6 @@ public class Profile {
             mCharacter.postUndoEdit(I18n.Text("Player Name Change"), ID_PLAYER_NAME, mPlayerName, player);
             mPlayerName = player;
             mCharacter.notifySingle(ID_PLAYER_NAME, mPlayerName);
-        }
-    }
-
-    /** @return The campaign. */
-    public String getCampaign() {
-        return mCampaign;
-    }
-
-    /**
-     * Sets the campaign.
-     *
-     * @param campaign The new campaign.
-     */
-    public void setCampaign(String campaign) {
-        if (!mCampaign.equals(campaign)) {
-            mCharacter.postUndoEdit(I18n.Text("Campaign Change"), ID_CAMPAIGN, mCampaign, campaign);
-            mCampaign = campaign;
-            mCharacter.notifySingle(ID_CAMPAIGN, mCampaign);
         }
     }
 
@@ -737,8 +711,6 @@ public class Profile {
                 return getReligion();
             } else if (ID_PLAYER_NAME.equals(id)) {
                 return getPlayerName();
-            } else if (ID_CAMPAIGN.equals(id)) {
-                return getCampaign();
             } else if (ID_TECH_LEVEL.equals(id)) {
                 return getTechLevel();
             } else if (ID_SIZE_MODIFIER.equals(id)) {
@@ -784,8 +756,6 @@ public class Profile {
                 setReligion((String) value);
             } else if (ID_PLAYER_NAME.equals(id)) {
                 setPlayerName((String) value);
-            } else if (ID_CAMPAIGN.equals(id)) {
-                setCampaign((String) value);
             } else if (ID_TECH_LEVEL.equals(id)) {
                 setTechLevel((String) value);
             } else if (ID_PORTRAIT.equals(id)) {
@@ -920,7 +890,7 @@ public class Profile {
      * @param sm       The size modifier to use.
      * @return A random height.
      */
-    public static LengthValue getRandomHeight(int strength, int sm) {
+    public LengthValue getRandomHeight(int strength, int sm) {
         Fixed6 base;
         if (strength < 7) {
             base = new Fixed6(52);
@@ -933,7 +903,8 @@ public class Profile {
         } else {
             base = new Fixed6(74);
         }
-        boolean useMetric = DisplayPreferences.getWeightUnits().isMetric();
+        Settings settings = mCharacter.getSettings();
+        boolean useMetric = settings.defaultWeightUnits().isMetric();
         if (useMetric) {
             base = LengthUnits.CM.convert(LengthUnits.FT_IN, base).round().add(new Fixed6(RANDOM.nextInt(16)));
         } else {
@@ -946,7 +917,7 @@ public class Profile {
             }
         }
         LengthUnits calcUnits    = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
-        LengthUnits desiredUnits = DisplayPreferences.getLengthUnits();
+        LengthUnits desiredUnits = settings.defaultLengthUnits();
         return new LengthValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 
@@ -956,7 +927,7 @@ public class Profile {
      * @param multiplier The weight multiplier for being under- or overweight.
      * @return A random weight.
      */
-    public static WeightValue getRandomWeight(int strength, int sm, Fixed6 multiplier) {
+    public WeightValue getRandomWeight(int strength, int sm, Fixed6 multiplier) {
         Fixed6 base;
         Fixed6 range;
         if (strength < 7) {
@@ -975,7 +946,8 @@ public class Profile {
             base = new Fixed6(170);
             range = new Fixed6(101);
         }
-        boolean useMetric = DisplayPreferences.getWeightUnits().isMetric();
+        Settings settings = mCharacter.getSettings();
+        boolean useMetric = settings.defaultWeightUnits().isMetric();
         if (useMetric) {
             base = WeightUnits.KG.convert(WeightUnits.LB, base).round();
             range = WeightUnits.KG.convert(WeightUnits.LB, range.sub(Fixed6.ONE)).round().add(Fixed6.ONE);
@@ -989,7 +961,7 @@ public class Profile {
             base = Fixed6.ONE;
         }
         WeightUnits calcUnits    = useMetric ? WeightUnits.KG : WeightUnits.LB;
-        WeightUnits desiredUnits = DisplayPreferences.getWeightUnits();
+        WeightUnits desiredUnits = settings.defaultWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 
@@ -1001,16 +973,6 @@ public class Profile {
     /** @param name The default player name. */
     public static void setDefaultPlayerName(String name) {
         Preferences.getInstance().setValue(MODULE, ID_NAME, name);
-    }
-
-    /** @return The default campaign value. */
-    public static String getDefaultCampaign() {
-        return Preferences.getInstance().getStringValue(MODULE, ID_CAMPAIGN, "");
-    }
-
-    /** @param campaign The default campaign value. */
-    public static void setDefaultCampaign(String campaign) {
-        Preferences.getInstance().setValue(MODULE, ID_CAMPAIGN, campaign);
     }
 
     /** @return The default tech level. */

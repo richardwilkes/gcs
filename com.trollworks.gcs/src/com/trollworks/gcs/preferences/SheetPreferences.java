@@ -12,6 +12,7 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.gcs.character.Settings;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.Alignment;
 import com.trollworks.gcs.ui.layout.FlexColumn;
@@ -19,7 +20,6 @@ import com.trollworks.gcs.ui.layout.FlexComponent;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
@@ -41,108 +41,119 @@ import javax.swing.text.Document;
 
 /** The sheet preferences panel. */
 public class SheetPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    static final         String                  MODULE                           = "Sheet";
-    private static final String                  OPTIONAL_DICE_RULES_KEY          = "UseOptionDiceRules";
-    /** The optional dice rules preference key. */
-    public static final  String                  OPTIONAL_DICE_RULES_PREF_KEY     = Preferences.getModuleKey(MODULE, OPTIONAL_DICE_RULES_KEY);
-    private static final boolean                 DEFAULT_OPTIONAL_DICE_RULES      = false;
-    private static final String                  OPTIONAL_IQ_RULES_KEY            = "UseOptionIQRules";
-    /** The optional IQ rules preference key. */
-    public static final  String                  OPTIONAL_IQ_RULES_PREF_KEY       = Preferences.getModuleKey(MODULE, OPTIONAL_IQ_RULES_KEY);
-    private static final boolean                 DEFAULT_OPTIONAL_IQ_RULES        = false;
-    private static final String                  OPTIONAL_MODIFIER_RULES_KEY      = "UseOptionModifierRules";
-    /** The optional modifier rules preference key. */
-    public static final  String                  OPTIONAL_MODIFIER_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_MODIFIER_RULES_KEY);
-    private static final boolean                 DEFAULT_OPTIONAL_MODIFIER_RULES  = false;
-    private static final String                  OPTIONAL_STRENGTH_RULES_KEY      = "UseOptionalStrengthRules";
-    /** The optional Strength rules preference key. */
-    public static final  String                  OPTIONAL_STRENGTH_RULES_PREF_KEY = Preferences.getModuleKey(MODULE, OPTIONAL_STRENGTH_RULES_KEY);
-    private static final boolean                 DEFAULT_OPTIONAL_STRENGTH_RULES  = false;
-    private static final String                  OPTIONAL_REDUCED_SWING_KEY       = "UseOptionalReducedSwing";
-    /** The optional Reduced Swing rules preference key. */
-    public static final  String                  OPTIONAL_REDUCED_SWING_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_REDUCED_SWING_KEY);
-    private static final boolean                 DEFAULT_OPTIONAL_REDUCED_SWING   = false;
-    private static final String                  AUTO_NAME_KEY                    = "AutoNameNewCharacters";
-    /** The auto-naming preference key. */
-    public static final  String                  AUTO_NAME_PREF_KEY               = Preferences.getModuleKey(MODULE, AUTO_NAME_KEY);
-    private static final boolean                 DEFAULT_AUTO_NAME                = true;
-    /** The optional Thrust Damage rules preference key. */
-    private static final String                  OPTIONAL_THRUST_DAMAGE_KEY       = "UseOptionalThrustDamage";
-    public static final  String                  OPTIONAL_THRUST_DAMAGE_PREF_KEY  = Preferences.getModuleKey(MODULE, OPTIONAL_THRUST_DAMAGE_KEY);
-    private static final boolean                 DEFAULT_OPTIONAL_THRUST_DAMAGE   = false;
-    private static final String                  GURPS_METRIC_RULES_KEY           = "UseGurpsMetricRules";
-    /** The GURPS Metric preference key. */
-    public static final  String                  GURPS_METRIC_RULES_PREF_KEY      = Preferences.getModuleKey(MODULE, GURPS_METRIC_RULES_KEY);
-    private static final boolean                 DEFAULT_GURPS_METRIC_RULES       = true;
-    private static final String                  INITIAL_POINTS_KEY               = "InitialPoints";
-    private static final int                     DEFAULT_INITIAL_POINTS           = 100;
-    private              JTextField              mPlayerName;
-    private              JTextField              mCampaign;
-    private              JTextField              mTechLevel;
-    private              JTextField              mInitialPoints;
-    private              PortraitPreferencePanel mPortrait;
-    private              JCheckBox               mUseOptionalDiceRules;
-    private              JCheckBox               mUseOptionalIQRules;
-    private              JCheckBox               mUseOptionalModifierRules;
-    private              JCheckBox               mUseOptionalStrengthRules;
-    private              JCheckBox               mUseOptionalReducedSwing;
-    private              JCheckBox               mUseGurpsMetricRules;
-    private              JCheckBox               mAutoName;
-    private              JCheckBox               mUseOptionalThrustDamage;
+    public static final  String  MODULE                                  = "Sheet";
+    private static final boolean DEFAULT_BASE_WILL_AND_PER_ON_10         = false;
+    private static final boolean DEFAULT_USE_MULTIPLICATIVE_MODIFIERS    = false;
+    private static final boolean DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS    = false;
+    private static final boolean DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH      = false;
+    private static final boolean DEFAULT_USE_REDUCED_SWING               = false;
+    private static final boolean DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2 = false;
+    private static final boolean DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS   = true;
+    private static final String  AUTO_NAME_NEW_CHARACTERS_KEY            = "auto_name_new_characters";
+    private static final boolean DEFAULT_AUTO_NAME_NEW_CHARACTERS        = true;
+    private static final String  INITIAL_POINTS_KEY                      = "initial_points";
+    private static final int     DEFAULT_INITIAL_POINTS                  = 100;
+
+    // Eliminate these after a suitable time period. Added May 25, 2020 after the 4.16 release.
+    private static final String OLD_USE_OPTIONAL_IQ_RULES_KEY   = "UseOptionIQRules";
+    private static final String OLD_OPTIONAL_MODIFIER_RULES_KEY = "UseOptionModifierRules";
+    private static final String OLD_OPTIONAL_DICE_RULES_KEY     = "UseOptionDiceRules";
+    private static final String OLD_OPTIONAL_STRENGTH_RULES_KEY = "UseOptionalStrengthRules";
+    private static final String OLD_OPTIONAL_REDUCED_SWING_KEY  = "UseOptionalReducedSwing";
+    private static final String OLD_OPTIONAL_THRUST_DAMAGE_KEY  = "UseOptionalThrustDamage";
+    private static final String OLD_GURPS_METRIC_RULES_KEY      = "UseGurpsMetricRules";
+    private static final String OLD_AUTO_NAME_KEY               = "AutoNameNewCharacters";
+    private static final String OLD_INITIAL_POINTS_KEY          = "InitialPoints";
+
+    private JTextField              mPlayerName;
+    private JTextField              mTechLevel;
+    private JTextField              mInitialPoints;
+    private PortraitPreferencePanel mPortrait;
+    private JCheckBox               mBaseWillAndPerOn10;
+    private JCheckBox               mUseMultiplicativeModifiers;
+    private JCheckBox               mUseModifyingDicePlusAdds;
+    private JCheckBox               mUseKnowYourOwnStrength;
+    private JCheckBox               mUseReducedSwing;
+    private JCheckBox               mUseThrustEqualsSwingMinus2;
+    private JCheckBox               mUseSimpleMetricConversions;
+    private JCheckBox               mAutoNameNewCharacters;
 
     /** Initializes the services controlled by these preferences. */
     public static void initialize() {
-        adjustOptionalDiceRulesProperty(areOptionalDiceRulesUsed());
+        Preferences prefs = Preferences.getInstance();
+        for (String key : prefs.getModuleKeys(MODULE)) {
+            if (OLD_USE_OPTIONAL_IQ_RULES_KEY.equals(key)) {
+                prefs.setValue(MODULE, Settings.TAG_BASE_WILL_AND_PER_ON_10, prefs.getBooleanValue(MODULE, OLD_USE_OPTIONAL_IQ_RULES_KEY, DEFAULT_BASE_WILL_AND_PER_ON_10));
+                prefs.removePreference(MODULE, OLD_USE_OPTIONAL_IQ_RULES_KEY);
+            } else if (OLD_OPTIONAL_MODIFIER_RULES_KEY.equals(key)) {
+                prefs.setValue(MODULE, Settings.TAG_USE_MULTIPLICATIVE_MODIFIERS, prefs.getBooleanValue(MODULE, OLD_OPTIONAL_MODIFIER_RULES_KEY, DEFAULT_USE_MULTIPLICATIVE_MODIFIERS));
+                prefs.removePreference(MODULE, OLD_OPTIONAL_MODIFIER_RULES_KEY);
+            } else if (OLD_OPTIONAL_DICE_RULES_KEY.equals(key)) {
+                prefs.setValue(MODULE, Settings.TAG_USE_MODIFYING_DICE_PLUS_ADDS, prefs.getBooleanValue(MODULE, OLD_OPTIONAL_DICE_RULES_KEY, DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS));
+                prefs.removePreference(MODULE, OLD_OPTIONAL_DICE_RULES_KEY);
+            } else if (OLD_OPTIONAL_STRENGTH_RULES_KEY.equals(key)) {
+                prefs.setValue(MODULE, Settings.TAG_USE_KNOW_YOUR_OWN_STRENGTH, prefs.getBooleanValue(MODULE, OLD_OPTIONAL_STRENGTH_RULES_KEY, DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH));
+                prefs.removePreference(MODULE, OLD_OPTIONAL_STRENGTH_RULES_KEY);
+            } else if (OLD_OPTIONAL_REDUCED_SWING_KEY.equals(key)) {
+                prefs.setValue(MODULE, Settings.TAG_USE_REDUCED_SWING, prefs.getBooleanValue(MODULE, OLD_OPTIONAL_REDUCED_SWING_KEY, DEFAULT_USE_REDUCED_SWING));
+                prefs.removePreference(MODULE, OLD_OPTIONAL_REDUCED_SWING_KEY);
+            } else if (OLD_OPTIONAL_THRUST_DAMAGE_KEY.equals(key)) {
+                prefs.setValue(MODULE, Settings.TAG_USE_THRUST_EQUALS_SWING_MINUS_2, prefs.getBooleanValue(MODULE, OLD_OPTIONAL_THRUST_DAMAGE_KEY, DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2));
+                prefs.removePreference(MODULE, OLD_OPTIONAL_THRUST_DAMAGE_KEY);
+            } else if (OLD_GURPS_METRIC_RULES_KEY.equals(key)) {
+                prefs.setValue(MODULE, Settings.TAG_USE_SIMPLE_METRIC_CONVERSIONS, prefs.getBooleanValue(MODULE, OLD_GURPS_METRIC_RULES_KEY, DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS));
+                prefs.removePreference(MODULE, OLD_GURPS_METRIC_RULES_KEY);
+            } else if (OLD_AUTO_NAME_KEY.equals(key)) {
+                prefs.setValue(MODULE, AUTO_NAME_NEW_CHARACTERS_KEY, prefs.getBooleanValue(MODULE, OLD_AUTO_NAME_KEY, DEFAULT_AUTO_NAME_NEW_CHARACTERS));
+                prefs.removePreference(MODULE, OLD_AUTO_NAME_KEY);
+            } else if (OLD_INITIAL_POINTS_KEY.equals(key)) {
+                prefs.setValue(MODULE, INITIAL_POINTS_KEY, prefs.getIntValue(MODULE, OLD_INITIAL_POINTS_KEY, DEFAULT_INITIAL_POINTS));
+                prefs.removePreference(MODULE, OLD_INITIAL_POINTS_KEY);
+            }
+        }
     }
 
-    private static void adjustOptionalDiceRulesProperty(boolean use) {
-        Dice.setConvertModifiersToExtraDice(use);
+    /** @return Whether Will and Perception should be based on 10 rather than IQ. */
+    public static boolean baseWillAndPerOn10() {
+        return Preferences.getInstance().getBooleanValue(MODULE, Settings.TAG_BASE_WILL_AND_PER_ON_10, DEFAULT_BASE_WILL_AND_PER_ON_10);
     }
 
-    /** @return Whether the optional dice rules from B269 are in use. */
-    public static boolean areOptionalDiceRulesUsed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_DICE_RULES_KEY, DEFAULT_OPTIONAL_DICE_RULES);
+    /** @return Whether to use the multiplicative modifier rules from PW102. */
+    public static boolean useMultiplicativeModifiers() {
+        return Preferences.getInstance().getBooleanValue(MODULE, Settings.TAG_USE_MULTIPLICATIVE_MODIFIERS, DEFAULT_USE_MULTIPLICATIVE_MODIFIERS);
+    }
+
+    /** @return Whether to use the dice modification rules from B269. */
+    public static boolean useModifyingDicePlusAdds() {
+        return Preferences.getInstance().getBooleanValue(MODULE, Settings.TAG_USE_MODIFYING_DICE_PLUS_ADDS, DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS);
+    }
+
+    /** @return Whether to use the Know Your Own Strength rules from PY83. */
+    public static boolean useKnowYourOwnStrength() {
+        return Preferences.getInstance().getBooleanValue(MODULE, Settings.TAG_USE_KNOW_YOUR_OWN_STRENGTH, DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH);
     }
 
     /**
-     * @return Whether the optional IQ rules (Will &amp; Perception are not based on IQ) are in
-     *         use.
+     * @return Whether to use the Adjusting Swing Damage rules from noschoolgrognard.blogspot.com.
+     *         Reduces KYOS damages if used together.
      */
-    public static boolean areOptionalIQRulesUsed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_IQ_RULES_KEY, DEFAULT_OPTIONAL_IQ_RULES);
+    public static boolean useReducedSwing() {
+        return Preferences.getInstance().getBooleanValue(MODULE, Settings.TAG_USE_REDUCED_SWING, DEFAULT_USE_REDUCED_SWING);
     }
 
-    /** @return Whether the optional modifier rules from PW102 are in use. */
-    public static boolean areOptionalModifierRulesUsed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, DEFAULT_OPTIONAL_MODIFIER_RULES);
+    /** @return Whether to set thrust damage to swing-2. */
+    public static boolean useThrustEqualsSwingMinus2() {
+        return Preferences.getInstance().getBooleanValue(MODULE, Settings.TAG_USE_THRUST_EQUALS_SWING_MINUS_2, DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
     }
 
-    /** @return Whether the optional strength rules (KYOS) are in use. */
-    public static boolean areOptionalStrengthRulesUsed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_STRENGTH_RULES_KEY, DEFAULT_OPTIONAL_STRENGTH_RULES);
-    }
-
-    /** @return Whether the optional thrust damage (sw-2) rules are in use. */
-    public static boolean areOptionalThrustDamageUsed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_THRUST_DAMAGE_KEY, DEFAULT_OPTIONAL_THRUST_DAMAGE);
-    }
-
-    /**
-     * @return Whether the optional reduced swing rules are in use. Reduces KYOS damages if used
-     *         together.
-     */
-    public static boolean areOptionalReducedSwingUsed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, OPTIONAL_REDUCED_SWING_KEY, DEFAULT_OPTIONAL_REDUCED_SWING);
-    }
-
-    /** @return Whether the GURPS Metrics rules are used for weight and height conversion. */
-    public static boolean areGurpsMetricRulesUsed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, GURPS_METRIC_RULES_KEY, DEFAULT_GURPS_METRIC_RULES);
+    /** @return Whether to use the simple metric conversion rules from B9. */
+    public static boolean useSimpleMetricConversions() {
+        return Preferences.getInstance().getBooleanValue(MODULE, Settings.TAG_USE_SIMPLE_METRIC_CONVERSIONS, DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
     }
 
     /** @return Whether a new character should be automatically named. */
-    public static boolean isNewCharacterAutoNamed() {
-        return Preferences.getInstance().getBooleanValue(MODULE, AUTO_NAME_KEY, DEFAULT_AUTO_NAME);
+    public static boolean autoNameNewCharacters() {
+        return Preferences.getInstance().getBooleanValue(MODULE, AUTO_NAME_NEW_CHARACTERS_KEY, DEFAULT_AUTO_NAME_NEW_CHARACTERS);
     }
 
     /** @return The initial points to start a new character with. */
@@ -172,11 +183,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mPlayerName = createTextField(playerTooltip, Profile.getDefaultPlayerName());
         grid.add(mPlayerName, rowIndex++, 2);
 
-        String campaignTooltiop = I18n.Text("The campaign to use when a new character sheet is created");
-        grid.add(createFlexLabel(I18n.Text("Campaign"), campaignTooltiop), rowIndex, 1);
-        mCampaign = createTextField(campaignTooltiop, Profile.getDefaultCampaign());
-        grid.add(mCampaign, rowIndex++, 2);
-
         String techLevelTooltip = I18n.Text("<html><body>TL0: Stone Age (Prehistory and later)<br>TL1: Bronze Age (3500 B.C.+)<br>TL2: Iron Age (1200 B.C.+)<br>TL3: Medieval (600 A.D.+)<br>TL4: Age of Sail (1450+)<br>TL5: Industrial Revolution (1730+)<br>TL6: Mechanized Age (1880+)<br>TL7: Nuclear Age (1940+)<br>TL8: Digital Age (1980+)<br>TL9: Microtech Age (2025+?)<br>TL10: Robotic Age (2070+?)<br>TL11: Age of Exotic Matter<br>TL12: Anything Goes</body></html>");
         grid.add(createFlexLabel(I18n.Text("Tech Level"), techLevelTooltip), rowIndex, 1);
         mTechLevel = createTextField(techLevelTooltip, Profile.getDefaultTechLevel());
@@ -190,29 +196,29 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         grid.add(new FlexSpacer(0, 0, false, false), rowIndex, 1);
         grid.add(new FlexSpacer(0, 0, true, false), rowIndex, 2);
 
-        mAutoName = createCheckBox(I18n.Text("Automatically name new characters"), null, isNewCharacterAutoNamed());
-        column.add(mAutoName);
+        mAutoNameNewCharacters = createCheckBox(I18n.Text("Automatically name new characters"), null, autoNameNewCharacters());
+        column.add(mAutoNameNewCharacters);
 
-        mUseOptionalIQRules = createCheckBox(I18n.Text("Base Will and Perception on 10 and not IQ"), null, areOptionalIQRulesUsed());
-        column.add(mUseOptionalIQRules);
+        mBaseWillAndPerOn10 = createCheckBox(I18n.Text("Base Will and Perception on 10 and not IQ"), null, baseWillAndPerOn10());
+        column.add(mBaseWillAndPerOn10);
 
-        mUseOptionalModifierRules = createCheckBox(I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), "From Powers, page 102", areOptionalModifierRulesUsed());
-        column.add(mUseOptionalModifierRules);
+        mUseMultiplicativeModifiers = createCheckBox(I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, useMultiplicativeModifiers());
+        column.add(mUseMultiplicativeModifiers);
 
-        mUseOptionalDiceRules = createCheckBox(I18n.Text("Use Modifying Dice + Adds"), "From Basic Set, page 269", areOptionalDiceRulesUsed());
-        column.add(mUseOptionalDiceRules);
+        mUseModifyingDicePlusAdds = createCheckBox(I18n.Text("Use Modifying Dice + Adds from B269"), null, useModifyingDicePlusAdds());
+        column.add(mUseModifyingDicePlusAdds);
 
-        mUseOptionalStrengthRules = createCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength"), "From Pyramid issue #3-83", areOptionalStrengthRulesUsed());
-        column.add(mUseOptionalStrengthRules);
+        mUseKnowYourOwnStrength = createCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, useKnowYourOwnStrength());
+        column.add(mUseKnowYourOwnStrength);
 
-        mUseOptionalReducedSwing = createCheckBox(I18n.Text("Use reduced swing rules from the Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", areOptionalReducedSwingUsed());
-        column.add(mUseOptionalReducedSwing);
+        mUseReducedSwing = createCheckBox(I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", useReducedSwing());
+        column.add(mUseReducedSwing);
 
-        mUseOptionalThrustDamage = createCheckBox(I18n.Text("Use Thrust = Swing - 2"), null, areOptionalThrustDamageUsed());
-        column.add(mUseOptionalThrustDamage);
+        mUseThrustEqualsSwingMinus2 = createCheckBox(I18n.Text("Use Thrust = Swing - 2"), null, useThrustEqualsSwingMinus2());
+        column.add(mUseThrustEqualsSwingMinus2);
 
-        mUseGurpsMetricRules = createCheckBox(I18n.Text("Use GURPS Metric rules for metric height, weight, encumbrance and lifting things"), "From Basic Set, page 9", areGurpsMetricRulesUsed());
-        column.add(mUseGurpsMetricRules);
+        mUseSimpleMetricConversions = createCheckBox(I18n.Text("Use the simple metric conversion rules from B9"), null, useSimpleMetricConversions());
+        column.add(mUseSimpleMetricConversions);
 
         column.add(new FlexSpacer(0, 0, false, true));
 
@@ -261,23 +267,22 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Override
     public void reset() {
         mPlayerName.setText(System.getProperty("user.name"));
-        mCampaign.setText("");
         mTechLevel.setText(Profile.DEFAULT_TECH_LEVEL);
         mInitialPoints.setText(Integer.toString(DEFAULT_INITIAL_POINTS));
         setPortrait(Profile.DEFAULT_PORTRAIT);
-        mAutoName.setSelected(DEFAULT_AUTO_NAME);
-        mUseOptionalDiceRules.setSelected(DEFAULT_OPTIONAL_DICE_RULES);
-        mUseOptionalIQRules.setSelected(DEFAULT_OPTIONAL_IQ_RULES);
-        mUseOptionalModifierRules.setSelected(DEFAULT_OPTIONAL_MODIFIER_RULES);
-        mUseOptionalStrengthRules.setSelected(DEFAULT_OPTIONAL_STRENGTH_RULES);
-        mUseOptionalThrustDamage.setSelected(DEFAULT_OPTIONAL_THRUST_DAMAGE);
-        mUseOptionalReducedSwing.setSelected(DEFAULT_OPTIONAL_REDUCED_SWING);
-        mUseGurpsMetricRules.setSelected(DEFAULT_GURPS_METRIC_RULES);
+        mAutoNameNewCharacters.setSelected(DEFAULT_AUTO_NAME_NEW_CHARACTERS);
+        mUseModifyingDicePlusAdds.setSelected(DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS);
+        mBaseWillAndPerOn10.setSelected(DEFAULT_BASE_WILL_AND_PER_ON_10);
+        mUseMultiplicativeModifiers.setSelected(DEFAULT_USE_MULTIPLICATIVE_MODIFIERS);
+        mUseKnowYourOwnStrength.setSelected(DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH);
+        mUseThrustEqualsSwingMinus2.setSelected(DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
+        mUseReducedSwing.setSelected(DEFAULT_USE_REDUCED_SWING);
+        mUseSimpleMetricConversions.setSelected(DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
     }
 
     @Override
     public boolean isSetToDefaults() {
-        return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultCampaign() != null && Profile.getDefaultCampaign().isEmpty() && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && areOptionalDiceRulesUsed() == DEFAULT_OPTIONAL_DICE_RULES && areOptionalIQRulesUsed() == DEFAULT_OPTIONAL_IQ_RULES && areOptionalModifierRulesUsed() == DEFAULT_OPTIONAL_MODIFIER_RULES && areOptionalStrengthRulesUsed() == DEFAULT_OPTIONAL_STRENGTH_RULES && areOptionalReducedSwingUsed() == DEFAULT_OPTIONAL_REDUCED_SWING && isNewCharacterAutoNamed() == DEFAULT_AUTO_NAME;
+        return Profile.getDefaultPlayerName().equals(System.getProperty("user.name")) && Profile.getDefaultPortraitPath().equals(Profile.DEFAULT_PORTRAIT) && Profile.getDefaultTechLevel().equals(Profile.DEFAULT_TECH_LEVEL) && getInitialPoints() == DEFAULT_INITIAL_POINTS && useModifyingDicePlusAdds() == DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS && baseWillAndPerOn10() == DEFAULT_BASE_WILL_AND_PER_ON_10 && useMultiplicativeModifiers() == DEFAULT_USE_MULTIPLICATIVE_MODIFIERS && useKnowYourOwnStrength() == DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH && useReducedSwing() == DEFAULT_USE_REDUCED_SWING && autoNameNewCharacters() == DEFAULT_AUTO_NAME_NEW_CHARACTERS;
     }
 
     private void setPortrait(String path) {
@@ -291,8 +296,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         Document document = event.getDocument();
         if (mPlayerName.getDocument() == document) {
             Profile.setDefaultPlayerName(mPlayerName.getText());
-        } else if (mCampaign.getDocument() == document) {
-            Profile.setDefaultCampaign(mCampaign.getText());
         } else if (mTechLevel.getDocument() == document) {
             Profile.setDefaultTechLevel(mTechLevel.getText());
         } else if (mInitialPoints.getDocument() == document) {
@@ -314,24 +317,22 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     @Override
     public void itemStateChanged(ItemEvent event) {
         Object source = event.getSource();
-        if (source == mUseOptionalDiceRules) {
-            boolean checked = mUseOptionalDiceRules.isSelected();
-            adjustOptionalDiceRulesProperty(checked);
-            Preferences.getInstance().setValue(MODULE, OPTIONAL_DICE_RULES_KEY, checked);
-        } else if (source == mUseOptionalIQRules) {
-            Preferences.getInstance().setValue(MODULE, OPTIONAL_IQ_RULES_KEY, mUseOptionalIQRules.isSelected());
-        } else if (source == mUseOptionalModifierRules) {
-            Preferences.getInstance().setValue(MODULE, OPTIONAL_MODIFIER_RULES_KEY, mUseOptionalModifierRules.isSelected());
-        } else if (source == mUseOptionalStrengthRules) {
-            Preferences.getInstance().setValue(MODULE, OPTIONAL_STRENGTH_RULES_KEY, mUseOptionalStrengthRules.isSelected());
-        } else if (source == mUseOptionalThrustDamage) {
-            Preferences.getInstance().setValue(MODULE, OPTIONAL_THRUST_DAMAGE_KEY, mUseOptionalThrustDamage.isSelected());
-        } else if (source == mUseOptionalReducedSwing) {
-            Preferences.getInstance().setValue(MODULE, OPTIONAL_REDUCED_SWING_KEY, mUseOptionalReducedSwing.isSelected());
-        } else if (source == mUseGurpsMetricRules) {
-            Preferences.getInstance().setValue(MODULE, GURPS_METRIC_RULES_KEY, mUseGurpsMetricRules.isSelected());
-        } else if (source == mAutoName) {
-            Preferences.getInstance().setValue(MODULE, AUTO_NAME_KEY, mAutoName.isSelected());
+        if (source == mBaseWillAndPerOn10) {
+            Preferences.getInstance().setValue(MODULE, Settings.TAG_BASE_WILL_AND_PER_ON_10, mBaseWillAndPerOn10.isSelected());
+        } else if (source == mUseMultiplicativeModifiers) {
+            Preferences.getInstance().setValue(MODULE, Settings.TAG_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers.isSelected());
+        } else if (source == mUseModifyingDicePlusAdds) {
+            Preferences.getInstance().setValue(MODULE, Settings.TAG_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds.isSelected());
+        } else if (source == mUseKnowYourOwnStrength) {
+            Preferences.getInstance().setValue(MODULE, Settings.TAG_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength.isSelected());
+        } else if (source == mUseReducedSwing) {
+            Preferences.getInstance().setValue(MODULE, Settings.TAG_USE_REDUCED_SWING, mUseReducedSwing.isSelected());
+        } else if (source == mUseThrustEqualsSwingMinus2) {
+            Preferences.getInstance().setValue(MODULE, Settings.TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2.isSelected());
+        } else if (source == mUseSimpleMetricConversions) {
+            Preferences.getInstance().setValue(MODULE, Settings.TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions.isSelected());
+        } else if (source == mAutoNameNewCharacters) {
+            Preferences.getInstance().setValue(MODULE, AUTO_NAME_NEW_CHARACTERS_KEY, mAutoNameNewCharacters.isSelected());
         }
         adjustResetButton();
     }

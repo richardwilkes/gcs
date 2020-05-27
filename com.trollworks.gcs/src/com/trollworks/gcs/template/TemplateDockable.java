@@ -12,6 +12,7 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.character.Settings;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.menu.RetargetableFocus;
@@ -69,7 +70,7 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
         mTemplate = new TemplateSheet(dataFile);
         Toolbar toolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(DisplayPreferences.getInitialUIScale());
+        mScaleCombo.setSelectedItem(DisplayPreferences.initialUIScale());
         mScaleCombo.addActionListener((event) -> {
             Scales scale = (Scales) mScaleCombo.getSelectedItem();
             if (scale == null) {
@@ -89,7 +90,7 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
         StdUndoManager undoManager = getUndoManager();
         undoManager.discardAllEdits();
         dataFile.setUndoManager(undoManager);
-        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY);
+        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, Preferences.getModuleKey(SheetPreferences.MODULE, Settings.TAG_USE_MULTIPLICATIVE_MODIFIERS));
     }
 
     @Override
@@ -135,12 +136,6 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
 
     @Override
     public PrintProxy getPrintProxy() {
-        return null;
-    }
-
-    @Override
-    public String getDescriptor() {
-        // RAW: Implement
         return null;
     }
 

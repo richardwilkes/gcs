@@ -39,7 +39,7 @@ public class ExportToPDFCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         SheetDockable sheet = getTarget(SheetDockable.class);
         if (sheet != null) {
-            String name = sheet.getSheet().getCharacter().getDescription().getName();
+            String name = sheet.getSheet().getCharacter().getProfile().getName();
             if (name.isBlank()) {
                 name = "untitled";
             }

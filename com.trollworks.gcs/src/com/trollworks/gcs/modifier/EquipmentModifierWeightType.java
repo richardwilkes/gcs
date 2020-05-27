@@ -12,6 +12,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.units.WeightUnits;
 
 /** Describes how a {@link EquipmentModifier}'s weight is applied. */
 public enum EquipmentModifierWeightType {
@@ -93,11 +94,11 @@ public enum EquipmentModifierWeightType {
         return determineType(text).extractFraction(text, localized);
     }
 
-    public String format(String text, boolean localized) {
+    public String format(String text, WeightUnits defUnits, boolean localized) {
         ModifierWeightValueType mvt = determineType(text);
         String str = mvt.format(mvt.extractFraction(text, localized), localized);
         if (mvt == ModifierWeightValueType.ADDITION) {
-            str += " " + ModifierWeightValueType.extractUnits(text).getAbbreviation();
+            str += " " + ModifierWeightValueType.extractUnits(text, defUnits).getAbbreviation();
         }
         return str;
     }

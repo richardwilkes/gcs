@@ -14,8 +14,6 @@ package com.trollworks.gcs.equipment;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -27,7 +25,6 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.text.MessageFormat;
@@ -114,14 +111,15 @@ public enum EquipmentColumn {
         @Override
         public String getToolTip(Equipment equipment) {
             StringBuilder builder = new StringBuilder();
-            if (DisplayPreferences.showModifiersAsTooltip()) {
+            DataFile      df      = equipment.getDataFile();
+            if (df.modifiersDisplay().tooltip()) {
                 String desc = equipment.getModifierNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
-            if (DisplayPreferences.showNotesAsTooltip()) {
+            if (df.notesDisplay().tooltip()) {
                 String desc = equipment.getNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
@@ -168,14 +166,15 @@ public enum EquipmentColumn {
         public String getDataAsText(Equipment equipment) {
             StringBuilder builder = new StringBuilder();
             builder.append(equipment);
-            if (DisplayPreferences.showModifiersInDisplay()) {
+            DataFile df = equipment.getDataFile();
+            if (df.modifiersDisplay().inline()) {
                 String desc = equipment.getModifierNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
-            if (DisplayPreferences.showNotesInDisplay()) {
+            if (df.notesDisplay().inline()) {
                 String desc = equipment.getNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
@@ -327,7 +326,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return getDisplayWeight(equipment.getAdjustedWeight());
+            return getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight());
         }
     },
     /** The value. */
@@ -391,7 +390,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return getDisplayWeight(equipment.getExtendedWeight());
+            return getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight());
         }
     },
     /** The category. */
@@ -532,20 +531,19 @@ public enum EquipmentColumn {
         }
     }
 
-    public static String getDisplayWeight(WeightValue weight) {
-        return getConvertedWeight(weight).toString();
+    public static String getDisplayWeight(DataFile df, WeightValue weight) {
+        return getConvertedWeight(df, weight).toString();
     }
 
-    public static Fixed6 getNormalizedDisplayWeight(WeightValue weight) {
-        return getConvertedWeight(weight).getNormalizedValue();
+    public static Fixed6 getNormalizedDisplayWeight(DataFile df, WeightValue weight) {
+        return getConvertedWeight(df, weight).getNormalizedValue();
     }
 
-    public static WeightValue getConvertedWeight(WeightValue weight) {
-        WeightUnits defaultWeightUnits = DisplayPreferences.getWeightUnits();
-        if (SheetPreferences.areGurpsMetricRulesUsed()) {
-            weight = defaultWeightUnits.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
+    public static WeightValue getConvertedWeight(DataFile df, WeightValue weight) {
+        if (df.useSimpleMetricConversions()) {
+            weight = df.defaultWeightUnits().isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
         } else {
-            weight = new WeightValue(weight, defaultWeightUnits);
+            weight = new WeightValue(weight, df.defaultWeightUnits());
         }
         return weight;
     }

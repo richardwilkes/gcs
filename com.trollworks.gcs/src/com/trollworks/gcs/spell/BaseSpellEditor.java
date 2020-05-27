@@ -241,7 +241,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             parent.add(wrapper);
 
             if (!hasTL) {
-                mSavedTechLevel = character.getDescription().getTechLevel();
+                mSavedTechLevel = character.getProfile().getTechLevel();
             }
         } else {
             mTechLevel = new JTextField(mSavedTechLevel);

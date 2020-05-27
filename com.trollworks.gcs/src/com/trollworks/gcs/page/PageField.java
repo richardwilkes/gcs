@@ -16,6 +16,7 @@ import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Encumbrance;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.Profile;
+import com.trollworks.gcs.character.Settings;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
@@ -99,7 +100,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
      * @param tooltip      The tooltip to set.
      */
     public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip) {
-        super(getFormatterFactoryForType(consumedType), sheet.getCharacter().getValueForID(consumedType));
+        super(getFormatterFactoryForType(sheet.getCharacter(), consumedType), sheet.getCharacter().getValueForID(consumedType));
         if (Platform.isLinux()) {
             // I override the UI here since the GTK UI on Linux has no way to turn off the border
             // around text fields.
@@ -156,7 +157,11 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 
     @Override
     public void handleNotification(Object producer, String name, Object data) {
-        setValue(data);
+        if (name.startsWith(Settings.PREFIX)) {
+            setValue(mSheet.getCharacter().getSettings().optionsCode());
+        } else {
+            setValue(data);
+        }
         invalidate();
         repaint();
     }
@@ -269,10 +274,6 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         FACTORY_MAP.put(GURPSCharacter.ID_FATIGUE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_HIT_POINTS, factory);
 
-        factory = new DefaultFormatterFactory(new DiceFormatter());
-        FACTORY_MAP.put(GURPSCharacter.ID_BASIC_THRUST, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SWING, factory);
-
         FACTORY_MAP.put(Profile.ID_SIZE_MODIFIER, new DefaultFormatterFactory(new IntegerFormatter(-99, 9999, true)));
         FACTORY_MAP.put(Profile.ID_AGE, new DefaultFormatterFactory(new IntegerFormatter(0, Integer.MAX_VALUE, false, true)));
         FACTORY_MAP.put(Profile.ID_HEIGHT, new DefaultFormatterFactory(new HeightFormatter(true)));
@@ -284,7 +285,10 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         DEFAULT_FACTORY = new DefaultFormatterFactory(formatter);
     }
 
-    private static AbstractFormatterFactory getFormatterFactoryForType(String type) {
+    private static AbstractFormatterFactory getFormatterFactoryForType(GURPSCharacter character, String type) {
+        if (GURPSCharacter.ID_BASIC_THRUST.equals(type) || GURPSCharacter.ID_BASIC_SWING.equals(type)) {
+            return new DefaultFormatterFactory(new DiceFormatter(character));
+        }
         AbstractFormatterFactory factory = FACTORY_MAP.get(type);
         return factory != null ? factory : DEFAULT_FACTORY;
     }

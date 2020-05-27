@@ -27,7 +27,7 @@ public class LibraryHeader extends JPanel implements ScaleRoot {
         header.setBorder(new LineBorder(header.getOwner().getDividerColor(), 0, 0, 0, 1));
         setLayout(new BorderLayout());
         add(header);
-        mScale = DisplayPreferences.getInitialUIScale().getScale();
+        mScale = DisplayPreferences.initialUIScale().getScale();
     }
 
     @Override

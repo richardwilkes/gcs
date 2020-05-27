@@ -30,7 +30,6 @@ import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.OutputPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
@@ -163,15 +162,16 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     public CharacterSheet(GURPSCharacter character) {
         setLayout(new CharacterSheetLayout(this));
         setOpaque(false);
-        mScale = DisplayPreferences.getInitialUIScale().getScale();
+        mScale = DisplayPreferences.initialUIScale().getScale();
         mCharacter = character;
         mLastPage = -1;
         mRootsToSync = new HashSet<>();
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
         }
-        mCharacter.addTarget(this, featuresAndPrereqsNotifications.toArray(new String[0]));
-        Preferences.getInstance().getNotifier().add(this, DisplayPreferences.BLOCK_LAYOUT_PREF_KEY, DisplayPreferences.SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY, DisplayPreferences.SHOW_NOTES_IN_DISPLAY_PREF_KEY, DisplayPreferences.SHOW_USER_DESC_IN_DISPLAY_PREF_KEY, DisplayPreferences.WEIGHT_UNITS_PREF_KEY, Fonts.FONT_NOTIFICATION_KEY, SheetPreferences.GURPS_METRIC_RULES_PREF_KEY, SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY, SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY, SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY, SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY, SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY, SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY);
+        mCharacter.addTarget(this, FEATURES_AND_PREREQS_NOTIFICATIONS.toArray(new String[0]));
+        mCharacter.addTarget(this, Settings.PREFIX);
+        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
     }
 
     /** Call when the sheet is no longer in use. */
@@ -259,7 +259,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         // Add the various outline blocks, based on the layout preference.
         Set<String> remaining   = prepBlockLayoutRemaining();
-        String      blockLayout = DisplayPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
+        String      blockLayout = mCharacter.getSettings().blockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
         for (String line : blockLayout.split("\n")) {
             String[] parts = line.trim().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
@@ -332,9 +332,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         return remaining;
     }
 
-    public static String getHTMLGridTemplate() {
+    public String getHTMLGridTemplate() {
         Set<String>   remaining   = prepBlockLayoutRemaining();
-        String        blockLayout = DisplayPreferences.getBlockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
+        String        blockLayout = mCharacter.getSettings().blockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
         StringBuilder buffer      = new StringBuilder();
         for (String line : blockLayout.split("\n")) {
             String[] parts = line.trim().split(" ");
@@ -811,71 +811,75 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         validate();
     }
 
-    private static Set<String> markForRebuildNotifications       = new HashSet<>();
-    private static Set<String> markForWeaponRebuildNotifications = new HashSet<>();
-    private static Set<String> featuresAndPrereqsNotifications   = new HashSet<>();
+    private static Set<String> MARK_FOR_REBUILD_NOTIFICATIONS        = new HashSet<>();
+    private static Set<String> MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS = new HashSet<>();
+    private static Set<String> FEATURES_AND_PREREQS_NOTIFICATIONS    = new HashSet<>();
 
     static {
-        markForRebuildNotifications.add(DisplayPreferences.BLOCK_LAYOUT_PREF_KEY);
-        markForRebuildNotifications.add(DisplayPreferences.WEIGHT_UNITS_PREF_KEY);
-        markForRebuildNotifications.add(Fonts.FONT_NOTIFICATION_KEY);
-        markForRebuildNotifications.add(Profile.ID_BODY_TYPE);
-        markForRebuildNotifications.add(SheetPreferences.GURPS_METRIC_RULES_PREF_KEY);
-        markForRebuildNotifications.add(SheetPreferences.OPTIONAL_DICE_RULES_PREF_KEY);
-        markForRebuildNotifications.add(SheetPreferences.OPTIONAL_REDUCED_SWING_PREF_KEY);
-        markForRebuildNotifications.add(SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY);
-        markForRebuildNotifications.add(SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_BLOCK_LAYOUT);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_DEFAULT_WEIGHT_UNITS);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Fonts.FONT_NOTIFICATION_KEY);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Profile.ID_BODY_TYPE);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_SIMPLE_METRIC_CONVERSIONS);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_MODIFYING_DICE_PLUS_ADDS);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_REDUCED_SWING);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2);
 
-        markForWeaponRebuildNotifications.add(Advantage.ID_DISABLED);
-        markForWeaponRebuildNotifications.add(Advantage.ID_WEAPON_STATUS_CHANGED);
-        markForWeaponRebuildNotifications.add(Equipment.ID_EQUIPPED);
-        markForWeaponRebuildNotifications.add(Equipment.ID_QUANTITY);
-        markForWeaponRebuildNotifications.add(Equipment.ID_WEAPON_STATUS_CHANGED);
-        markForWeaponRebuildNotifications.add(GURPSCharacter.ID_INCLUDE_BOOTS);
-        markForWeaponRebuildNotifications.add(GURPSCharacter.ID_INCLUDE_KICK);
-        markForWeaponRebuildNotifications.add(GURPSCharacter.ID_INCLUDE_PUNCH);
-        markForWeaponRebuildNotifications.add(Skill.ID_WEAPON_STATUS_CHANGED);
-        markForWeaponRebuildNotifications.add(Spell.ID_WEAPON_STATUS_CHANGED);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_DISABLED);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_WEAPON_STATUS_CHANGED);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_EQUIPPED);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_QUANTITY);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_WEAPON_STATUS_CHANGED);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(GURPSCharacter.ID_INCLUDE_BOOTS);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(GURPSCharacter.ID_INCLUDE_KICK);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(GURPSCharacter.ID_INCLUDE_PUNCH);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Skill.ID_WEAPON_STATUS_CHANGED);
+        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Spell.ID_WEAPON_STATUS_CHANGED);
 
-        featuresAndPrereqsNotifications.add(Advantage.ID_LEVELS);
-        featuresAndPrereqsNotifications.add(Advantage.ID_LIST_CHANGED);
-        featuresAndPrereqsNotifications.add(Advantage.ID_NAME);
-        featuresAndPrereqsNotifications.add(Equipment.ID_EQUIPPED);
-        featuresAndPrereqsNotifications.add(Equipment.ID_EXTENDED_WEIGHT);
-        featuresAndPrereqsNotifications.add(Equipment.ID_LIST_CHANGED);
-        featuresAndPrereqsNotifications.add(Equipment.ID_QUANTITY);
-        featuresAndPrereqsNotifications.add(EquipmentModifier.ID_COST_ADJ);
-        featuresAndPrereqsNotifications.add(EquipmentModifier.ID_WEIGHT_ADJ);
-        featuresAndPrereqsNotifications.add(GURPSCharacter.ID_DEXTERITY);
-        featuresAndPrereqsNotifications.add(GURPSCharacter.ID_HEALTH);
-        featuresAndPrereqsNotifications.add(GURPSCharacter.ID_INTELLIGENCE);
-        featuresAndPrereqsNotifications.add(GURPSCharacter.ID_PERCEPTION);
-        featuresAndPrereqsNotifications.add(GURPSCharacter.ID_STRENGTH);
-        featuresAndPrereqsNotifications.add(GURPSCharacter.ID_WILL);
-        featuresAndPrereqsNotifications.add(Profile.ID_TECH_LEVEL);
-        featuresAndPrereqsNotifications.add(Skill.ID_ENCUMBRANCE_PENALTY);
-        featuresAndPrereqsNotifications.add(Skill.ID_LEVEL);
-        featuresAndPrereqsNotifications.add(Skill.ID_LIST_CHANGED);
-        featuresAndPrereqsNotifications.add(Skill.ID_NAME);
-        featuresAndPrereqsNotifications.add(Skill.ID_POINTS);
-        featuresAndPrereqsNotifications.add(Skill.ID_RELATIVE_LEVEL);
-        featuresAndPrereqsNotifications.add(Skill.ID_SPECIALIZATION);
-        featuresAndPrereqsNotifications.add(Skill.ID_TECH_LEVEL);
-        featuresAndPrereqsNotifications.add(Spell.ID_COLLEGE);
-        featuresAndPrereqsNotifications.add(Spell.ID_LIST_CHANGED);
-        featuresAndPrereqsNotifications.add(Spell.ID_NAME);
-        featuresAndPrereqsNotifications.add(Spell.ID_POINTS);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Advantage.ID_LEVELS);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Advantage.ID_LIST_CHANGED);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Advantage.ID_NAME);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Equipment.ID_EQUIPPED);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Equipment.ID_EXTENDED_WEIGHT);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Equipment.ID_LIST_CHANGED);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Equipment.ID_QUANTITY);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(EquipmentModifier.ID_COST_ADJ);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(EquipmentModifier.ID_WEIGHT_ADJ);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(GURPSCharacter.ID_DEXTERITY);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(GURPSCharacter.ID_HEALTH);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(GURPSCharacter.ID_INTELLIGENCE);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(GURPSCharacter.ID_PERCEPTION);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(GURPSCharacter.ID_STRENGTH);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(GURPSCharacter.ID_WILL);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Profile.ID_TECH_LEVEL);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_ENCUMBRANCE_PENALTY);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_LEVEL);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_LIST_CHANGED);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_NAME);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_POINTS);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_RELATIVE_LEVEL);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_SPECIALIZATION);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Skill.ID_TECH_LEVEL);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Spell.ID_COLLEGE);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Spell.ID_LIST_CHANGED);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Spell.ID_NAME);
+        FEATURES_AND_PREREQS_NOTIFICATIONS.add(Spell.ID_POINTS);
     }
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
-        if (markForRebuildNotifications.contains(type)) {
+        if (MARK_FOR_REBUILD_NOTIFICATIONS.contains(type)) {
             markForRebuild();
         } else {
             if (type.startsWith(Advantage.PREFIX)) {
                 OutlineSyncer.add(mAdvantageOutline);
-            } else if (DisplayPreferences.SHOW_USER_DESC_IN_DISPLAY_PREF_KEY.equals(type) || DisplayPreferences.SHOW_MODIFIERS_IN_DISPLAY_PREF_KEY.equals(type) || DisplayPreferences.SHOW_NOTES_IN_DISPLAY_PREF_KEY.equals(type)) {
+            } else if (Settings.ID_USER_DESCRIPTION_DISPLAY.equals(type) || Settings.ID_MODIFIERS_DISPLAY.equals(type) || Settings.ID_NOTES_DISPLAY.equals(type)) {
                 OutlineSyncer.add(mAdvantageOutline);
+                OutlineSyncer.add(mSkillOutline);
+                OutlineSyncer.add(mSpellOutline);
+                OutlineSyncer.add(mEquipmentOutline);
+                OutlineSyncer.add(mOtherEquipmentOutline);
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (type.startsWith(Skill.PREFIX)) {
@@ -891,7 +895,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 OutlineSyncer.add(mNoteOutline);
             }
 
-            if (markForWeaponRebuildNotifications.contains(type)) {
+            if (MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.contains(type)) {
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (GURPSCharacter.ID_PARRY_BONUS.equals(type) || Skill.ID_LEVEL.equals(type)) {
@@ -903,13 +907,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             } else if (GURPSCharacter.ID_NOT_CARRIED_WEALTH.equals(type)) {
                 Column column = mOtherEquipmentOutline.getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
                 column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
-            } else if (SheetPreferences.OPTIONAL_IQ_RULES_PREF_KEY.equals(type)) {
+            } else if (Settings.ID_BASE_WILL_AND_PER_ON_10.equals(type)) {
                 mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
-            } else if (SheetPreferences.OPTIONAL_MODIFIER_RULES_PREF_KEY.equals(type)) {
+            } else if (Settings.ID_USE_MULTIPLICATIVE_MODIFIERS.equals(type)) {
                 mCharacter.notifySingle(Advantage.ID_LIST_CHANGED, null);
-            } else if (SheetPreferences.OPTIONAL_STRENGTH_RULES_PREF_KEY.equals(type)) {
+            } else if (Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH.equals(type)) {
                 mCharacter.notifySingle(type, data);
-            } else if (SheetPreferences.OPTIONAL_THRUST_DAMAGE_PREF_KEY.equals(type)) {
+            } else if (Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2.equals(type)) {
                 mCharacter.notifySingle(type, data);
             } else if (GURPSCharacter.ID_LAST_MODIFIED.equals(type)) {
                 int count = getComponentCount();
@@ -923,7 +927,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 }
             }
         }
-        if (featuresAndPrereqsNotifications.contains(type)) {
+        if (FEATURES_AND_PREREQS_NOTIFICATIONS.contains(type)) {
             if (mCharacter.processFeaturesAndPrereqs()) {
                 repaint();
             }
@@ -952,11 +956,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         String      right;
 
         if ((pageNumber & 1) == 1) {
-            left = GCS.COPYRIGHT;
+            left = GCS.COPYRIGHT_FOOTER;
             right = mCharacter.getLastModified();
         } else {
             left = mCharacter.getLastModified();
-            right = GCS.COPYRIGHT;
+            right = GCS.COPYRIGHT_FOOTER;
         }
 
         Font savedFont = gc.getFont();
@@ -965,7 +969,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         gc.drawString(left, bounds.x, y);
         gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
         gc.setFont(font2);
-        String center = mCharacter.getDescription().getName();
+        String center = mCharacter.getProfile().getName();
         gc.drawString(center, bounds.x + (bounds.width - (int) fm2.getStringBounds(center, gc).getWidth()) / 2, y);
 
         String allRightsReserved = I18n.Text("All rights reserved");
@@ -1324,7 +1328,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (frame != null) {
             return frame.getTitle();
         }
-        return mCharacter.getDescription().getName();
+        return mCharacter.getProfile().getName();
     }
 
     @Override

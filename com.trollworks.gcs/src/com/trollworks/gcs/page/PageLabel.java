@@ -12,6 +12,7 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Label;
 
 import javax.swing.JComponent;
@@ -29,18 +30,6 @@ public class PageLabel extends Label {
         super(title);
         setFont(UIManager.getFont(Fonts.KEY_LABEL));
         setRefersTo(field);
-    }
-
-    /**
-     * Creates a new label for the specified field.
-     *
-     * @param title     The title of the field.
-     * @param field     The field.
-     * @param alignment The horizontal alignment to use.
-     */
-    public PageLabel(String title, JComponent field, int alignment) {
-        super(title, alignment);
-        setFont(UIManager.getFont(Fonts.KEY_LABEL));
-        setRefersTo(field);
+        UIUtilities.setToPreferredSizeOnly(this);
     }
 }

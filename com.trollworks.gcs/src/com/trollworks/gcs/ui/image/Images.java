@@ -49,6 +49,7 @@ public class Images {
     public static final RetinaIcon GCS_MARKER            = getRetina("gcs_marker");
     public static final RetinaIcon GCT_FILE              = getRetina("gct_file");
     public static final RetinaIcon GCT_MARKER            = getRetina("gct_marker");
+    public static final RetinaIcon GEAR                  = getRetina("gear");
     public static final RetinaIcon LOCKED                = getRetina("locked");
     public static final RetinaIcon MENTAL_TYPE           = getRetina("mental_type");
     public static final RetinaIcon MORE                  = getRetina("more");

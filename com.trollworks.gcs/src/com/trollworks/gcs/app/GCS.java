@@ -55,6 +55,7 @@ public class GCS {
     public static final String  WEB_SITE = "https://gurpscharactersheet.com";
     public static final long    VERSION;
     public static final String  COPYRIGHT;
+    public static final String  COPYRIGHT_FOOTER;
     public static final String  COPYRIGHT_BANNER;
     public static final String  APP_BANNER;
     private static      boolean NOTIFICATION_ALLOWED;
@@ -89,6 +90,7 @@ public class GCS {
 
         // Setup the copyright notices and such that rely on the version and year info
         COPYRIGHT = String.format(I18n.Text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
+        COPYRIGHT_FOOTER = String.format("GCS " + I18n.Text(" is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
         COPYRIGHT_BANNER = String.format("%s. All rights reserved.", COPYRIGHT);
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");

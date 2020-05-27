@@ -36,7 +36,7 @@ public class HitLocationPanel extends DropPanel {
         super(new ColumnLayout(7, 2, 0), I18n.Text("Hit Location"));
 
         GURPSCharacter   character = sheet.getCharacter();
-        HitLocationTable table     = character.getDescription().getHitLocationTable();
+        HitLocationTable table     = character.getProfile().getHitLocationTable();
 
         Wrapper wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
         addHorizontalBackground(createHeader(wrapper, I18n.Text("Roll"), null), Color.black);

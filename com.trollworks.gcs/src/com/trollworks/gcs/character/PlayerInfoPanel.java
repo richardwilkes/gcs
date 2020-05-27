@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.text.Text;
 
 import javax.swing.SwingConstants;
 
@@ -27,7 +28,7 @@ public class PlayerInfoPanel extends DropPanel {
     public PlayerInfoPanel(CharacterSheet sheet) {
         super(new ColumnLayout(2, 2, 0), I18n.Text("Player Information"));
         createLabelAndField(this, sheet, Profile.ID_PLAYER_NAME, I18n.Text("Player:"), null, SwingConstants.LEFT);
-        createLabelAndField(this, sheet, Profile.ID_CAMPAIGN, I18n.Text("Campaign:"), null, SwingConstants.LEFT);
         createLabelAndField(this, sheet, GURPSCharacter.ID_CREATED_ON, I18n.Text("Created On:"), null, SwingConstants.LEFT);
+        createLabelAndDisabledField(this, sheet, Settings.PREFIX, I18n.Text("Options:"), Text.wrapPlainTextForToolTip(I18n.Text("Each letter represents an optional rule. A uppercase letter indicates the rule is in use while a lowercase letter indicates the rule is not in use.")), SwingConstants.LEFT);
     }
 }

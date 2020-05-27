@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Provides the "Duplicate" command. */
-// RAW: This should be reimplemented in terms of the Duplicatable interface
+// TODO: This should be reimplemented in terms of the Duplicatable interface
 public class DuplicateCommand extends Command {
     /** The action command this command will issue. */
     public static final String           CMD_DUPLICATE = "Duplicate";

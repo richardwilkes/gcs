@@ -550,7 +550,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             return 0;
         }
         List<AdvantageModifier> modifiers = new FilteredList<>(mModifiers.getAllModifiers(), AdvantageModifier.class);
-        return Advantage.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, allowHalfLevels() && getHalfLevel(), getPointsPerLevel(), getCR(), modifiers, shouldRoundCostDown());
+        return mRow.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, allowHalfLevels() && getHalfLevel(), getPointsPerLevel(), getCR(), modifiers, shouldRoundCostDown());
     }
 
     private void updatePoints() {

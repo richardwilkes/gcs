@@ -25,7 +25,6 @@ import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
@@ -275,7 +274,7 @@ public abstract class ListRow extends Row {
                 } else if (ContainedWeightReduction.TAG_ROOT.equals(name)) {
                     mFeatures.add(new ContainedWeightReduction(reader));
                 } else if (PrereqList.TAG_ROOT.equals(name)) {
-                    mPrereqList = new PrereqList(null, reader);
+                    mPrereqList = new PrereqList(null, mDataFile.defaultWeightUnits(), reader);
                 } else if (!(this instanceof Technique) && SkillDefault.TAG_ROOT.equals(name)) {
                     mDefaults.add(new SkillDefault(reader));
                 } else if (TAG_NOTES.equals(name)) {
@@ -470,13 +469,14 @@ public abstract class ListRow extends Row {
     /** @return The "secondary" text, the text display below an Advantage. */
     protected String getSecondaryText() {
         StringBuilder builder = new StringBuilder();
-        if (DisplayPreferences.showModifiersInDisplay()) {
+        DataFile      df      = getDataFile();
+        if (df.modifiersDisplay().inline()) {
             String txt = getModifierNotes();
             if (!txt.isBlank()) {
                 builder.append(txt);
             }
         }
-        if (DisplayPreferences.showNotesInDisplay()) {
+        if (df.notesDisplay().inline()) {
             String txt = getNotes();
             if (!txt.isBlank()) {
                 if (builder.length() > 0) {

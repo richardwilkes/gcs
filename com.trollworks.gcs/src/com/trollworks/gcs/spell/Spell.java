@@ -163,7 +163,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mDifficulty = spell.mDifficulty;
         if (forSheet && dataFile instanceof GURPSCharacter) {
             if (mTechLevel != null) {
-                mTechLevel = ((GURPSCharacter) dataFile).getDescription().getTechLevel();
+                mTechLevel = ((GURPSCharacter) dataFile).getProfile().getTechLevel();
             }
         } else {
             if (mTechLevel != null && !mTechLevel.trim().isEmpty()) {

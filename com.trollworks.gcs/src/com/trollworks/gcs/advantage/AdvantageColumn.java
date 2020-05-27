@@ -14,7 +14,6 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
-import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
@@ -50,21 +49,22 @@ public enum AdvantageColumn {
         @Override
         public String getToolTip(Advantage advantage) {
             StringBuilder builder = new StringBuilder();
-            if (DisplayPreferences.showUserDescAsTooltip()) {
+            DataFile      df      = advantage.getDataFile();
+            if (df.userDescriptionDisplay().tooltip()) {
                 String desc = advantage.getUserDesc();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
-            if (DisplayPreferences.showModifiersAsTooltip()) {
+            if (df.modifiersDisplay().tooltip()) {
                 String desc = advantage.getModifierNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
-            if (DisplayPreferences.showNotesAsTooltip()) {
+            if (df.notesDisplay().tooltip()) {
                 String desc = advantage.getNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
@@ -96,21 +96,22 @@ public enum AdvantageColumn {
         public String getDataAsText(Advantage advantage) {
             StringBuilder builder = new StringBuilder();
             builder.append(advantage);
-            if (DisplayPreferences.showUserDescInDisplay()) {
+            DataFile df = advantage.getDataFile();
+            if (df.userDescriptionDisplay().inline()) {
                 String desc = advantage.getUserDesc();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
-            if (DisplayPreferences.showModifiersInDisplay()) {
+            if (df.modifiersDisplay().inline()) {
                 String desc = advantage.getModifierNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
-            if (DisplayPreferences.showNotesInDisplay()) {
+            if (df.notesDisplay().inline()) {
                 String desc = advantage.getNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");

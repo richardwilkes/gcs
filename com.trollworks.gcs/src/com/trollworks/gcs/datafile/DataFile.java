@@ -11,12 +11,15 @@
 
 package com.trollworks.gcs.datafile;
 
+import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.io.SafeFileUpdater;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.menu.edit.Undoable;
+import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileType;
@@ -25,6 +28,7 @@ import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
+import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -361,5 +365,33 @@ public abstract class DataFile implements Undoable {
      */
     public final void setSortingMarksDirty(boolean markDirty) {
         mSortingMarksDirty = markDirty;
+    }
+
+    public WeightUnits defaultWeightUnits() {
+        return DisplayPreferences.defaultWeightUnits();
+    }
+
+    public boolean useSimpleMetricConversions() {
+        return SheetPreferences.useSimpleMetricConversions();
+    }
+
+    public boolean useMultiplicativeModifiers() {
+        return SheetPreferences.useMultiplicativeModifiers();
+    }
+
+    public boolean useModifyingDicePlusAdds() {
+        return SheetPreferences.useModifyingDicePlusAdds();
+    }
+
+    public DisplayOption userDescriptionDisplay() {
+        return DisplayPreferences.userDescriptionDisplay();
+    }
+
+    public DisplayOption modifiersDisplay() {
+        return DisplayPreferences.modifiersDisplay();
+    }
+
+    public DisplayOption notesDisplay() {
+        return DisplayPreferences.notesDisplay();
     }
 }

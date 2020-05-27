@@ -170,11 +170,6 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
     }
 
     @Override
-    public String getDescriptor() {
-        return null;
-    }
-
-    @Override
     public Icon getTitleIcon() {
         return FileType.PDF.getIcon();
     }

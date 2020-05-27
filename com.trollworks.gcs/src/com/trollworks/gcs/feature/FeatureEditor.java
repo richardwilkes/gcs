@@ -71,6 +71,10 @@ public abstract class FeatureEditor extends EditorPanel {
         rebuild();
     }
 
+    public ListRow getRow() {
+        return mRow;
+    }
+
     /** Rebuilds the contents of this panel with the current feature settings. */
     protected void rebuild() {
         removeAll();

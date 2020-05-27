@@ -20,6 +20,7 @@ import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -59,7 +60,7 @@ public class PrereqList extends Prereq {
      * @param parent The owning prerequisite list, if any.
      * @param reader The XML reader to load from.
      */
-    public PrereqList(PrereqList parent, XMLReader reader) throws IOException {
+    public PrereqList(PrereqList parent, WeightUnits defWeightUnits, XMLReader reader) throws IOException {
         this(parent, true);
         String marker = reader.getMarker();
         mAll = reader.isAttributeSet(ATTRIBUTE_ALL);
@@ -69,13 +70,13 @@ public class PrereqList extends Prereq {
                 if (TAG_WHEN_TL.equals(name)) {
                     mWhenTLCriteria.load(reader);
                 } else if (TAG_ROOT.equals(name)) {
-                    mPrereqs.add(new PrereqList(this, reader));
+                    mPrereqs.add(new PrereqList(this, defWeightUnits, reader));
                 } else if (AdvantagePrereq.TAG_ROOT.equals(name)) {
                     mPrereqs.add(new AdvantagePrereq(this, reader));
                 } else if (AttributePrereq.TAG_ROOT.equals(name)) {
                     mPrereqs.add(new AttributePrereq(this, reader));
                 } else if (ContainedWeightPrereq.TAG_ROOT.equals(name)) {
-                    mPrereqs.add(new ContainedWeightPrereq(this, reader));
+                    mPrereqs.add(new ContainedWeightPrereq(this, defWeightUnits, reader));
                 } else if (ContainedQuantityPrereq.TAG_ROOT.equals(name)) {
                     mPrereqs.add(new ContainedQuantityPrereq(this, reader));
                 } else if (SkillPrereq.TAG_ROOT.equals(name)) {
@@ -223,7 +224,7 @@ public class PrereqList extends Prereq {
     @Override
     public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
         if (isWhenTLEnabled(mWhenTLCriteria)) {
-            if (!mWhenTLCriteria.matches(Numbers.extractInteger(character.getDescription().getTechLevel(), 0, false))) {
+            if (!mWhenTLCriteria.matches(Numbers.extractInteger(character.getProfile().getTechLevel(), 0, false))) {
                 return true;
             }
         }

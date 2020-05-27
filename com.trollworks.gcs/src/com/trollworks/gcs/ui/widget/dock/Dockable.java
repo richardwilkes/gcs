@@ -31,12 +31,6 @@ public abstract class Dockable extends JPanel {
         super(layout, true);
     }
 
-    /**
-     * @return A unique descriptor that can be used by a {@link DockableFactory} to recreate the
-     *         contents of the {@link Dockable}.
-     */
-    public abstract String getDescriptor();
-
     /** @return An {@link Icon} to represent this {@link Dockable}. */
     public abstract Icon getTitleIcon();
 

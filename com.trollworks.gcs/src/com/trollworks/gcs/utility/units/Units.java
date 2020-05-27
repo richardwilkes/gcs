@@ -42,9 +42,6 @@ public interface Units {
     /** @return The factor used. */
     Fixed6 getFactor();
 
-    /** @return The description, which includes the localized name and the abbreviation. */
-    String getDescription();
-
     /** @return The localized name. */
     String getLocalizedName();
 

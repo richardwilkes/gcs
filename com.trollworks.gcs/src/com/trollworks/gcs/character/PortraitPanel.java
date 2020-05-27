@@ -78,7 +78,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
         File file = SheetPreferences.choosePortrait();
         if (file != null) {
             try {
-                mSheet.getCharacter().getDescription().setPortrait(Img.create(file));
+                mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
             } catch (Exception exception) {
                 WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
             }
@@ -89,7 +89,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
     protected void paintComponent(Graphics g) {
         Graphics2D gc = GraphicsUtilities.prepare(g);
         super.paintComponent(gc);
-        RetinaIcon portrait = mSheet.getCharacter().getDescription().getPortrait();
+        RetinaIcon portrait = mSheet.getCharacter().getProfile().getPortrait();
         if (portrait != null) {
             Insets insets = getInsets();
             portrait.paintIcon(this, gc, insets.left, insets.top);
@@ -152,7 +152,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
                     @SuppressWarnings("unchecked") List<File> transferData = (List<File>) dtde.getTransferable().getTransferData(dataFlavor);
                     for (File file : transferData) {
                         try {
-                            mSheet.getCharacter().getDescription().setPortrait(Img.create(file));
+                            mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
                             break;
                         } catch (Exception exception) {
                             WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), PathUtils.getFullPath(file)));

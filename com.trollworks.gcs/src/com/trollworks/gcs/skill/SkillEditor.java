@@ -213,7 +213,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             parent.add(wrapper);
 
             if (!hasTL) {
-                mSavedTechLevel = character.getDescription().getTechLevel();
+                mSavedTechLevel = character.getProfile().getTechLevel();
             }
         } else {
             mTechLevel = new JTextField(mSavedTechLevel);

@@ -47,7 +47,7 @@ public enum LengthUnits implements Units {
         }
 
         @Override
-        public String getDescription() {
+        public String toString() {
             return I18n.Text("Feet (') & Inches (\")");
         }
 
@@ -152,7 +152,7 @@ public enum LengthUnits implements Units {
     }
 
     @Override
-    public String getDescription() {
+    public String toString() {
         return String.format("%s (%s)", getLocalizedName(), getAbbreviation());
     }
 

@@ -153,11 +153,6 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     }
 
     @Override
-    public String getDescriptor() {
-        return "library_explorer";
-    }
-
-    @Override
     public Icon getTitleIcon() {
         return Images.FOLDER;
     }
