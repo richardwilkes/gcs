@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Bundler {
-    private static final String        GCS_VERSION       = "4.16.0";
+    private static final String        GCS_VERSION       = "4.17.0";
     private static       String        JDK_MAJOR_VERSION = "14";
     private static final String        ITEXT_VERSION     = "2.1.7";
     private static final String        LOGGING_VERSION   = "1.2.0";
@@ -273,7 +273,7 @@ public class Bundler {
         args.add("--manifest");
         args.add(MANIFEST.toString());
         args.add("--main-class");
-        args.add("com.trollworks.gcs.app.GCS");
+        args.add("com.trollworks.gcs.GCS");
         args.add("-C");
         args.add(BUILD_DIR.resolve("com.trollworks.gcs").toString());
         args.add(".");
@@ -567,7 +567,7 @@ public class Bundler {
         args.clear();
         args.add("jpackage");
         args.add("--module");
-        args.add("com.trollworks.gcs/com.trollworks.gcs.app.GCS");
+        args.add("com.trollworks.gcs/com.trollworks.gcs.GCS");
         args.add("--app-version");
         args.add(GCS_VERSION);
         args.add("--copyright");

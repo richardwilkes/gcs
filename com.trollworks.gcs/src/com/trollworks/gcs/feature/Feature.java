@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.util.Map;
 import java.util.Set;

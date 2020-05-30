@@ -11,10 +11,6 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.io.Log;
-import com.trollworks.gcs.io.xml.XMLNodeType;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexColumn;
@@ -25,9 +21,13 @@ import com.trollworks.gcs.ui.print.PageOrientation;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
+import com.trollworks.gcs.utility.xml.XMLNodeType;
+import com.trollworks.gcs.utility.xml.XMLReader;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.awt.Color;
 import java.awt.Desktop;

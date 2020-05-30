@@ -32,6 +32,6 @@ public class DiceFormatter extends JFormattedTextField.AbstractFormatter {
 
     @Override
     public String valueToString(Object value) throws ParseException {
-        return value instanceof Dice ? ((Dice)value).toString(mCharacter.getSettings().useModifyingDicePlusAdds()) : "";
+        return value instanceof Dice ? ((Dice) value).toString(mCharacter.getSettings().useModifyingDicePlusAdds()) : "";
     }
 }

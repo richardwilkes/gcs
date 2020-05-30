@@ -54,7 +54,7 @@ public enum LengthUnits implements Units {
         @Override
         public String format(Fixed6 value, boolean localize) {
             Fixed6 twelve = new Fixed6(12);
-            Fixed6 feet = value.div(twelve).trunc();
+            Fixed6 feet   = value.div(twelve).trunc();
             Fixed6 inches = value.sub(twelve.mul(feet));
             if (feet.greaterThan(Fixed6.ZERO)) {
                 String buffer = formatNumber(feet, localize) + "'";

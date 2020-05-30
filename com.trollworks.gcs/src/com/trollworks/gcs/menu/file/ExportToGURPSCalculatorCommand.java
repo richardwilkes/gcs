@@ -14,13 +14,13 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.TextTemplate;
-import com.trollworks.gcs.io.Log;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.awt.Color;
 import java.awt.Desktop;

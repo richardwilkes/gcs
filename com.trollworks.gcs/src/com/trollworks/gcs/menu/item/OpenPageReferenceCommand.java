@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.collections.ReverseListIterator;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
@@ -25,6 +24,7 @@ import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.ReverseListIterator;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;

@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.menu.file.QuitCommand;
@@ -22,6 +21,7 @@ import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.utility.FileProxy;
+import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.undo.StdUndoManager;

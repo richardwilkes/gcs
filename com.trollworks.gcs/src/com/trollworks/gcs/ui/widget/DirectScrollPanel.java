@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.Geometry;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.Adjustable;
 import java.awt.AlphaComposite;

@@ -12,12 +12,8 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.collections.FilteredIterator;
-import com.trollworks.gcs.collections.FilteredList;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.Modifier;
@@ -29,10 +25,14 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.ui.widget.outline.Switchable;
+import com.trollworks.gcs.utility.FilteredIterator;
+import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Text;
+import com.trollworks.gcs.utility.xml.XMLReader;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;

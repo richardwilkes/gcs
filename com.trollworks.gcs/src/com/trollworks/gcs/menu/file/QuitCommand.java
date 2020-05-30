@@ -11,13 +11,13 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.Preferences;
 

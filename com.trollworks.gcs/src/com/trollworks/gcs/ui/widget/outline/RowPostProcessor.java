@@ -14,11 +14,11 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
-import com.trollworks.gcs.collections.FilteredList;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.modifier.AdvantageModifierEnabler;
 import com.trollworks.gcs.modifier.EquipmentModifierEnabler;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.utility.FilteredList;
 
 import java.util.HashMap;
 import java.util.List;

@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.advantage;
 
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 /** The possible self-control rolls, from page B121. */
 public enum SelfControlRoll {

@@ -12,23 +12,23 @@
 package com.trollworks.gcs.datafile;
 
 import com.trollworks.gcs.character.DisplayOption;
-import com.trollworks.gcs.io.Log;
-import com.trollworks.gcs.io.SafeFileUpdater;
-import com.trollworks.gcs.io.xml.XMLNodeType;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.preferences.DisplayPreferences;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileType;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
+import com.trollworks.gcs.utility.SafeFileUpdater;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 import com.trollworks.gcs.utility.units.WeightUnits;
+import com.trollworks.gcs.utility.xml.XMLNodeType;
+import com.trollworks.gcs.utility.xml.XMLReader;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

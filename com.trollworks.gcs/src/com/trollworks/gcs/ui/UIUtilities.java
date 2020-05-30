@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.ui;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
 import java.awt.Component;

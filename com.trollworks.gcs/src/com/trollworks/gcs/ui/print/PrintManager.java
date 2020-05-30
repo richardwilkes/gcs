@@ -11,9 +11,6 @@
 
 package com.trollworks.gcs.ui.print;
 
-import com.trollworks.gcs.io.xml.XMLNodeType;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.Fixed6;
@@ -23,6 +20,9 @@ import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.LengthUnits;
+import com.trollworks.gcs.utility.xml.XMLNodeType;
+import com.trollworks.gcs.utility.xml.XMLReader;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;

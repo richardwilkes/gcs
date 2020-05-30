@@ -12,7 +12,6 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
@@ -25,6 +24,7 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
 import com.trollworks.gcs.ui.widget.outline.RowUndo;
+import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.EventQueue;

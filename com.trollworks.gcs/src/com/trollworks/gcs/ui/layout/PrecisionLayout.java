@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.layout;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.Component;
 import java.awt.Container;

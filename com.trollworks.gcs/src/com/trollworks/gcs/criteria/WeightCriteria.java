@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.criteria;
 
-import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.utility.units.WeightValue;
+import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 

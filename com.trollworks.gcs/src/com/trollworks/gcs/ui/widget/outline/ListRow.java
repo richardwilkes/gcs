@@ -22,15 +22,15 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
-import com.trollworks.gcs.io.xml.XMLNodeType;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.utility.VersionException;
+import com.trollworks.gcs.utility.xml.XMLNodeType;
+import com.trollworks.gcs.utility.xml.XMLReader;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;

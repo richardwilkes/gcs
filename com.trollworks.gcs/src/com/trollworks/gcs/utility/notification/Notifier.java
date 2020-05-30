@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.utility.notification;
 
-import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.utility.Log;
 
 import java.util.Arrays;
 import java.util.Comparator;

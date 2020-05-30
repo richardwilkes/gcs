@@ -12,12 +12,6 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.datafile.DataFileDockable;
-import com.trollworks.gcs.io.Log;
-import com.trollworks.gcs.io.RecursiveDirectoryRemover;
-import com.trollworks.gcs.io.UrlUtils;
-import com.trollworks.gcs.io.json.Json;
-import com.trollworks.gcs.io.json.JsonArray;
-import com.trollworks.gcs.io.json.JsonMap;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -25,8 +19,14 @@ import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Preferences;
+import com.trollworks.gcs.utility.RecursiveDirectoryRemover;
+import com.trollworks.gcs.utility.UrlUtils;
 import com.trollworks.gcs.utility.Version;
+import com.trollworks.gcs.utility.json.Json;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;

@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.image;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.Transparency;
 import java.io.InputStream;

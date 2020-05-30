@@ -13,14 +13,10 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
-import com.trollworks.gcs.collections.FilteredIterator;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
-import com.trollworks.gcs.io.xml.XMLNodeType;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.Skill;
@@ -34,7 +30,11 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
+import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.text.Text;
+import com.trollworks.gcs.utility.xml.XMLNodeType;
+import com.trollworks.gcs.utility.xml.XMLReader;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.File;
 import java.io.IOException;

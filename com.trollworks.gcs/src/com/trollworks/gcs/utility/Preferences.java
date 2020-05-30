@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.utility;
 
-import com.trollworks.gcs.io.SafeFileUpdater;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Conversion;

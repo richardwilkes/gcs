@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.menu.file.RecentFilesMenu;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.NewerDataFileVersionException;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Preferences;

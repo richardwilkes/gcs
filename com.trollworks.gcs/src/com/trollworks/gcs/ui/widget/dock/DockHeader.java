@@ -11,13 +11,13 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Component;

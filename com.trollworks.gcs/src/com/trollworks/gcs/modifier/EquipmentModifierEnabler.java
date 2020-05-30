@@ -125,7 +125,7 @@ public class EquipmentModifierEnabler extends JPanel {
     }
 
     private void applyChanges() {
-        int length = mModifiers.length;
+        int     length   = mModifiers.length;
         boolean modified = false;
         for (int i = 0; i < length; i++) {
             modified |= mModifiers[i].setEnabled(mEnabled[i].isSelected());

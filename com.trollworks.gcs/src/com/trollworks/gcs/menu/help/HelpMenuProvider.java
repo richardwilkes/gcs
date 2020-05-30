@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.menu.help;
 
-import com.trollworks.gcs.app.GCS;
+import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.menu.DynamicMenuEnabler;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;

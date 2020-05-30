@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.menu.help;
 
-import com.trollworks.gcs.app.AboutPanel;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.ui.AboutPanel;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.WindowUtils;

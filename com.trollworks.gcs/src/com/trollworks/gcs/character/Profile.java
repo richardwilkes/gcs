@@ -14,9 +14,6 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
-import com.trollworks.gcs.io.xml.XMLNodeType;
-import com.trollworks.gcs.io.xml.XMLReader;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -31,6 +28,9 @@ import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
+import com.trollworks.gcs.utility.xml.XMLNodeType;
+import com.trollworks.gcs.utility.xml.XMLReader;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.awt.Graphics2D;
 import java.awt.Transparency;
@@ -903,8 +903,8 @@ public class Profile {
         } else {
             base = new Fixed6(74);
         }
-        Settings settings = mCharacter.getSettings();
-        boolean useMetric = settings.defaultWeightUnits().isMetric();
+        Settings settings  = mCharacter.getSettings();
+        boolean  useMetric = settings.defaultWeightUnits().isMetric();
         if (useMetric) {
             base = LengthUnits.CM.convert(LengthUnits.FT_IN, base).round().add(new Fixed6(RANDOM.nextInt(16)));
         } else {
@@ -946,8 +946,8 @@ public class Profile {
             base = new Fixed6(170);
             range = new Fixed6(101);
         }
-        Settings settings = mCharacter.getSettings();
-        boolean useMetric = settings.defaultWeightUnits().isMetric();
+        Settings settings  = mCharacter.getSettings();
+        boolean  useMetric = settings.defaultWeightUnits().isMetric();
         if (useMetric) {
             base = WeightUnits.KG.convert(WeightUnits.LB, base).round();
             range = WeightUnits.KG.convert(WeightUnits.LB, range.sub(Fixed6.ONE)).round().add(Fixed6.ONE);

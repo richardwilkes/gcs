@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.utility;
 
-import com.trollworks.gcs.app.GCS;
+import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.io.BufferedReader;

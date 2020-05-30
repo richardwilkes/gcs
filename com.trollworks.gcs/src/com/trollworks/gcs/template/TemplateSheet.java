@@ -16,7 +16,6 @@ import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.preferences.DisplayPreferences;
@@ -36,6 +35,7 @@ import com.trollworks.gcs.ui.widget.outline.OutlineSyncer;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowSelection;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
 
 import java.awt.Color;

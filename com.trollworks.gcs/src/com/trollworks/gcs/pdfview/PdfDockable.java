@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.pdfview;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
@@ -24,6 +23,7 @@ import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.text.IntegerFormatter;

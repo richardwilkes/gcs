@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.utility.Log;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;

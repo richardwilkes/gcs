@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.Fonts;
@@ -22,6 +21,7 @@ import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Text;

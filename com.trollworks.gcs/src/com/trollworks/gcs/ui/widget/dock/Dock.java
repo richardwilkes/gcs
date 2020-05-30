@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Cursors;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.AWTEvent;
 import java.awt.Component;

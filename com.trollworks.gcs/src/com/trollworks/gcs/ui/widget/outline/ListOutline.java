@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.names.Namer;
-import com.trollworks.gcs.collections.FilteredList;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -31,6 +30,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
+import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.EventQueue;

@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.dock.DockColors;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.Component;
 import java.awt.Container;

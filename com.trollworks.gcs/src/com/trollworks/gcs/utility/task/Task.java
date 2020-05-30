@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.utility.task;
 
-import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.utility.Log;
 
 import java.util.HashSet;
 import java.util.Set;

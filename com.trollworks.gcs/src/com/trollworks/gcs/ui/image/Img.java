@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.image;
 
-import com.trollworks.gcs.io.UrlUtils;
 import com.trollworks.gcs.ui.GraphicsUtilities;
+import com.trollworks.gcs.utility.UrlUtils;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;

@@ -35,7 +35,7 @@ class HashedWeapon {
 
     @Override
     public int hashCode() {
-        StringBuilder buffer = new StringBuilder();
+        StringBuilder                buffer      = new StringBuilder();
         Class<? extends WeaponStats> weaponClass = mWeapon.getClass();
         for (WeaponColumn one : WeaponColumn.values()) {
             if (one.isValidFor(weaponClass, false)) {

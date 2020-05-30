@@ -96,7 +96,7 @@ public enum EquipmentModifierWeightType {
 
     public String format(String text, WeightUnits defUnits, boolean localized) {
         ModifierWeightValueType mvt = determineType(text);
-        String str = mvt.format(mvt.extractFraction(text, localized), localized);
+        String                  str = mvt.format(mvt.extractFraction(text, localized), localized);
         if (mvt == ModifierWeightValueType.ADDITION) {
             str += " " + ModifierWeightValueType.extractUnits(text, defUnits).getAbbreviation();
         }

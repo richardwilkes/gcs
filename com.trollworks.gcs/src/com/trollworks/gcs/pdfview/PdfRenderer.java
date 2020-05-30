@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.pdfview;
 
-import com.trollworks.gcs.io.DummyWriter;
-import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.utility.DummyWriter;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

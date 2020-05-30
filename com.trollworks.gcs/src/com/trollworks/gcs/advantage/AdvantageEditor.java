@@ -12,7 +12,6 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.collections.FilteredList;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.AdvantageModifierListEditor;
@@ -30,6 +29,7 @@ import com.trollworks.gcs.ui.layout.RowDistribution;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Text;

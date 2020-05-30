@@ -12,8 +12,8 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.io.xml.XMLWriter;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.util.Map;
 import java.util.Set;

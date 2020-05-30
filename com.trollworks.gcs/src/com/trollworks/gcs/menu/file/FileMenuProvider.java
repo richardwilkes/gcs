@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.DynamicMenuEnabler;
 import com.trollworks.gcs.menu.DynamicMenuItem;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.text.NumericComparator;

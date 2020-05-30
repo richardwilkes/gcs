@@ -11,9 +11,8 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.collections.Stack;
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.utility.FileType;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
@@ -28,9 +27,9 @@ import java.util.List;
 import java.util.Set;
 
 public class LibraryCollector implements Comparator<Object> {
-    private List<Object>        mCurrent;
-    private Stack<List<Object>> mStack;
-    private Set<Path>           mDirs;
+    private List<Object>       mCurrent;
+    private List<List<Object>> mStack;
+    private Set<Path>          mDirs;
 
     @SuppressWarnings("unchecked")
     public static List<Object> list(String name, Path root, Set<Path> dirs) {
@@ -54,13 +53,13 @@ public class LibraryCollector implements Comparator<Object> {
     private LibraryCollector() {
         mDirs = new HashSet<>();
         mCurrent = new ArrayList<>();
-        mStack = new Stack<>();
+        mStack = new ArrayList<>();
     }
 
     private void traverse(Path dir) throws IOException {
         if (!shouldSkip(dir)) {
             mDirs.add(dir.normalize().toAbsolutePath());
-            mStack.push(mCurrent);
+            mStack.add(mCurrent);
             mCurrent = new ArrayList<>();
             mCurrent.add(dir.getFileName().toString());
             // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
@@ -82,7 +81,7 @@ public class LibraryCollector implements Comparator<Object> {
                 }
             }
             mCurrent.sort(this);
-            List<Object> restoring = mStack.pop();
+            List<Object> restoring = mStack.remove(mStack.size() - 1);
             if (mCurrent.size() > 1) {
                 restoring.add(mCurrent);
             }

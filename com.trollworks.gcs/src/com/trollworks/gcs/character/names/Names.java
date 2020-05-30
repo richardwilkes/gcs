@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.character.names;
 
-import com.trollworks.gcs.io.Log;
+import com.trollworks.gcs.utility.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

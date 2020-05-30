@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
-import com.trollworks.gcs.io.Log;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.Openable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
@@ -27,6 +26,7 @@ import com.trollworks.gcs.ui.widget.DirectScrollPanel;
 import com.trollworks.gcs.ui.widget.DirectScrollPanelArea;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.task.Tasks;
 
