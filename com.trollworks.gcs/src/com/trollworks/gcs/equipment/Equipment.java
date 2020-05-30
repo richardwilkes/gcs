@@ -51,7 +51,7 @@ import java.util.Set;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
-    private static final int                     CURRENT_VERSION            = 6;
+    private static final int                     CURRENT_VERSION            = 7;
     private static final int                     EQUIPMENT_SPLIT_VERSION    = 6;
     private static final String                  DEFAULT_LEGALITY_CLASS     = "4";
     /** The XML tag used for items. */

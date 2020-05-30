@@ -29,17 +29,18 @@ public class SkillBonus extends Bonus {
     private static final String         TAG_NAME           = "name";
     private static final String         TAG_SPECIALIZATION = "specialization";
     private static final String         TAG_CATEGORY       = "category";
-    private static final String         EMPTY              = "";
+    private static final String         TAG_PARENT_ONLY    = "parent_only";
     private              StringCriteria mNameCriteria;
     private              StringCriteria mSpecializationCriteria;
     private              StringCriteria mCategoryCriteria;
+    private              boolean        mApplyToParentOnly;
 
     /** Creates a new skill bonus. */
     public SkillBonus() {
         super(1);
-        mNameCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
-        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
+        mNameCriteria = new StringCriteria(StringCompareType.IS, "");
+        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     /**
@@ -62,6 +63,7 @@ public class SkillBonus extends Bonus {
         mNameCriteria = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
         mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
+        mApplyToParentOnly = other.mApplyToParentOnly;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class SkillBonus extends Bonus {
         if (obj instanceof SkillBonus && super.equals(obj)) {
             SkillBonus sb = (SkillBonus) obj;
             if (mNameCriteria.equals(sb.mNameCriteria)) {
-                return mNameCriteria.equals(sb.mNameCriteria) && mSpecializationCriteria.equals(sb.mSpecializationCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
+                return mApplyToParentOnly == sb.mApplyToParentOnly && mNameCriteria.equals(sb.mNameCriteria) && mSpecializationCriteria.equals(sb.mSpecializationCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
             }
         }
         return false;
@@ -92,7 +94,9 @@ public class SkillBonus extends Bonus {
     public String getKey() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(Skill.ID_NAME);
-        if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
+        if (mApplyToParentOnly) {
+            buffer.append("\u0001");
+        } else if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
@@ -114,6 +118,8 @@ public class SkillBonus extends Bonus {
             mSpecializationCriteria.load(reader);
         } else if (TAG_CATEGORY.equals(name)) {
             mCategoryCriteria.load(reader);
+        } else if (TAG_PARENT_ONLY.equals(reader.getName())) {
+            mApplyToParentOnly = reader.readBoolean();
         } else {
             super.loadSelf(reader);
         }
@@ -127,11 +133,27 @@ public class SkillBonus extends Bonus {
     @Override
     public void save(XMLWriter out) {
         out.startSimpleTagEOL(TAG_ROOT);
-        mNameCriteria.save(out, TAG_NAME);
-        mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
-        mCategoryCriteria.save(out, TAG_CATEGORY);
+        if (mApplyToParentOnly) {
+            out.simpleTag(TAG_PARENT_ONLY, true);
+        } else {
+            mNameCriteria.save(out, TAG_NAME);
+            mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
+            mCategoryCriteria.save(out, TAG_CATEGORY);
+        }
         saveBase(out);
         out.endTagEOL(TAG_ROOT, true);
+    }
+
+    public boolean applyToParentOnly() {
+        return mApplyToParentOnly;
+    }
+
+    public boolean setApplyToParentOnly(boolean apply) {
+        if (mApplyToParentOnly != apply) {
+            mApplyToParentOnly = apply;
+            return true;
+        }
+        return false;
     }
 
     /** @return The name criteria. */
@@ -151,15 +173,19 @@ public class SkillBonus extends Bonus {
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {
-        ListRow.extractNameables(set, mNameCriteria.getQualifier());
-        ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
-        ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
+        if (!mApplyToParentOnly) {
+            ListRow.extractNameables(set, mNameCriteria.getQualifier());
+            ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
+            ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
+        }
     }
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
-        mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
-        mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
-        mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
+        if (!mApplyToParentOnly) {
+            mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
+            mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
+            mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
+        }
     }
 }

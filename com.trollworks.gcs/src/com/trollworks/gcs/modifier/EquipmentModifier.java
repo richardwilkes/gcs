@@ -29,7 +29,7 @@ import com.trollworks.gcs.utility.units.WeightValue;
 import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
-    private static final int                         CURRENT_VERSION        = 1;
+    private static final int                         CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                      TAG_MODIFIER           = "eqp_modifier";
     /** The root tag for containers. */

@@ -43,7 +43,6 @@ public class SpellPrereq extends HasPrereq {
     /** The tag/type for college count comparison. */
     public static final  String          TAG_COLLEGE_COUNT = "college_count";
     private static final String          TAG_QUANTITY      = "quantity";
-    private static final String          EMPTY             = "";
     private              String          mType;
     private              StringCriteria  mStringCriteria;
     private              IntegerCriteria mQuantityCriteria;
@@ -56,7 +55,7 @@ public class SpellPrereq extends HasPrereq {
     public SpellPrereq(PrereqList parent) {
         super(parent);
         mType = TAG_NAME;
-        mStringCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
+        mStringCriteria = new StringCriteria(StringCompareType.IS, "");
         mQuantityCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 1);
     }
 
@@ -237,11 +236,11 @@ public class SpellPrereq extends HasPrereq {
             String oneSpell       = I18n.Text("spell");
             String multipleSpells = I18n.Text("spells");
             if (Objects.equals(mType, TAG_NAME)) {
-                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose name {4}\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose name {4}\n"), prefix, hasText(), mQuantityCriteria.toString(""), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
             } else if (Objects.equals(mType, TAG_ANY)) {
-                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} of any kind\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells));
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} of any kind\n"), prefix, hasText(), mQuantityCriteria.toString(""), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells));
             } else if (Objects.equals(mType, TAG_COLLEGE)) {
-                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose college {4}\n"), prefix, hasText(), mQuantityCriteria.toString(EMPTY), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose college {4}\n"), prefix, hasText(), mQuantityCriteria.toString(""), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
             } else if (Objects.equals(mType, TAG_COLLEGE_COUNT)) {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} college count which {2}\n"), prefix, hasText(), mQuantityCriteria.toString()));
             }

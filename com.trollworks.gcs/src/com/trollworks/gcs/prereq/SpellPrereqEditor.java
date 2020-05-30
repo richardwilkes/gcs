@@ -24,7 +24,6 @@ import javax.swing.JComboBox;
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
     private static final String   CHANGE_TYPE = "ChangeSpellType";
-    private static final String   EMPTY       = "";
     private static final String[] TYPES       = {SpellPrereq.TAG_NAME, SpellPrereq.TAG_ANY, SpellPrereq.TAG_COLLEGE, SpellPrereq.TAG_COLLEGE_COUNT};
 
     /**
@@ -54,10 +53,10 @@ public class SpellPrereqEditor extends PrereqEditor {
         row = new FlexRow();
         row.add(addChangeTypePopup());
         if (SpellPrereq.TAG_NAME.equals(type)) {
-            row.add(addStringCompareCombo(prereq.getStringCriteria(), EMPTY));
+            row.add(addStringCompareCombo(prereq.getStringCriteria(), ""));
             row.add(addStringCompareField(prereq.getStringCriteria()));
         } else if (SpellPrereq.TAG_COLLEGE.equals(type)) {
-            row.add(addStringCompareCombo(prereq.getStringCriteria(), EMPTY));
+            row.add(addStringCompareCombo(prereq.getStringCriteria(), ""));
             row.add(addStringCompareField(prereq.getStringCriteria()));
         } else {
             row.add(new FlexSpacer(0, 0, true, false));

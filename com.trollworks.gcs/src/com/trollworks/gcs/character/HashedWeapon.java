@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.weapon.WeaponColumn;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.util.HashMap;
@@ -34,7 +35,15 @@ class HashedWeapon {
 
     @Override
     public int hashCode() {
-        return mWeapon.getDescription().hashCode();
+        StringBuilder buffer = new StringBuilder();
+        Class<? extends WeaponStats> weaponClass = mWeapon.getClass();
+        for (WeaponColumn one : WeaponColumn.values()) {
+            if (one.isValidFor(weaponClass, false)) {
+                buffer.append(one.getDataAsText(mWeapon));
+                buffer.append("|");
+            }
+        }
+        return buffer.toString().hashCode();
     }
 
     @Override

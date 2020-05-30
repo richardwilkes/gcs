@@ -12,6 +12,7 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.IntegerCriteria;
+import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
@@ -20,9 +21,15 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JComboBox;
 
 /** A weapon bonus editor. */
 public class WeaponBonusEditor extends FeatureEditor {
+    private static final String WEAPON_BONUS_COMPARISON = "WeaponBonusComparison";
+
     /**
      * Create a new weapon skill bonus editor.
      *
@@ -47,32 +54,71 @@ public class WeaponBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        StringCriteria criteria = bonus.getNameCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.Text("to weapons whose required skill name ")));
-        row.add(addStringCompareField(criteria));
-        grid.add(row, 1, 0);
+        String       extra = I18n.Text("to weapons whose required skill name ");
+        List<String> list  = new ArrayList<>();
+        list.add(I18n.Text("to this weapon"));
+        StringCriteria criteria  = bonus.getNameCriteria();
+        Object         selection = null;
+        for (StringCompareType type : StringCompareType.values()) {
+            String title = extra + type;
+            list.add(title);
+            if (type == criteria.getType()) {
+                selection = title;
+            }
+        }
+        if (bonus.applyToParentOnly()) {
+            selection = list.get(0);
+        }
+        row.add(addComboBox(WEAPON_BONUS_COMPARISON, list.toArray(), selection));
+        if (bonus.applyToParentOnly()) {
+            row.add(new FlexSpacer(0, 0, true, false));
+            grid.add(row, 1, 0);
+        } else {
+            row.add(addStringCompareField(criteria));
+            grid.add(row, 1, 0);
 
-        row = new FlexRow();
-        row.setInsets(new Insets(0, 20, 0, 0));
-        criteria = bonus.getSpecializationCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.Text("and specialization ")));
-        row.add(addStringCompareField(criteria));
-        grid.add(row, 2, 0);
+            row = new FlexRow();
+            row.setInsets(new Insets(0, 20, 0, 0));
+            criteria = bonus.getSpecializationCriteria();
+            row.add(addStringCompareCombo(criteria, I18n.Text("and specialization ")));
+            row.add(addStringCompareField(criteria));
+            grid.add(row, 2, 0);
 
-        row = new FlexRow();
-        row.setInsets(new Insets(0, 20, 0, 0));
-        IntegerCriteria levelCriteria = bonus.getLevelCriteria();
-        row.add(addNumericCompareCombo(levelCriteria, I18n.Text("and relative skill level ")));
-        row.add(addNumericCompareField(levelCriteria, -999, 999, true));
-        row.add(new FlexSpacer(0, 0, true, false));
-        grid.add(row, 3, 0);
+            row = new FlexRow();
+            row.setInsets(new Insets(0, 20, 0, 0));
+            IntegerCriteria levelCriteria = bonus.getLevelCriteria();
+            row.add(addNumericCompareCombo(levelCriteria, I18n.Text("and relative skill level ")));
+            row.add(addNumericCompareField(levelCriteria, -999, 999, true));
+            row.add(new FlexSpacer(0, 0, true, false));
+            grid.add(row, 3, 0);
 
-        row = new FlexRow();
-        row.setInsets(new Insets(0, 20, 0, 0));
-        criteria = bonus.getCategoryCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.Text("and category ")));
-        row.add(addStringCompareField(criteria));
-        row.add(new FlexSpacer(0, 0, true, false));
-        grid.add(row, 4, 0);
+            row = new FlexRow();
+            row.setInsets(new Insets(0, 20, 0, 0));
+            criteria = bonus.getCategoryCriteria();
+            row.add(addStringCompareCombo(criteria, I18n.Text("and category ")));
+            row.add(addStringCompareField(criteria));
+            row.add(new FlexSpacer(0, 0, true, false));
+            grid.add(row, 4, 0);
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        String command = event.getActionCommand();
+        if (WEAPON_BONUS_COMPARISON.equals(command)) {
+            WeaponBonus  bonus         = (WeaponBonus) getFeature();
+            JComboBox<?> combo         = (JComboBox<?>) event.getSource();
+            int          selectedIndex = combo.getSelectedIndex();
+            boolean      wantRebuild   = bonus.setApplyToParentOnly(selectedIndex == 0);
+            if (selectedIndex != 0) {
+                bonus.getNameCriteria().setType(StringCompareType.values()[selectedIndex]);
+            }
+            notifyActionListeners();
+            if (wantRebuild) {
+                rebuild();
+            }
+        } else {
+            super.actionPerformed(event);
+        }
     }
 }

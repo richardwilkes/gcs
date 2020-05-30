@@ -15,9 +15,13 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.io.xml.XMLNodeType;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
@@ -242,7 +246,6 @@ public abstract class WeaponStats {
     /** @return The skill level. */
     public int getSkillLevel() {
         DataFile df = mOwner.getDataFile();
-
         if (df instanceof GURPSCharacter) {
             return getSkillLevel((GURPSCharacter) df);
         }
@@ -272,9 +275,44 @@ public abstract class WeaponStats {
             }
             if (best < 0) {
                 best = 0;
+            } else {
+                for (Feature feature : mOwner.getFeatures()) {
+                    best += extractSkillBonus(feature);
+                }
+                if (mOwner instanceof Advantage) {
+                    for (AdvantageModifier modifier : ((Advantage) mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                best += extractSkillBonus(feature);
+                            }
+                        }
+                    }
+                }
+                if (mOwner instanceof Equipment) {
+                    for (EquipmentModifier modifier : ((Equipment) mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                best += extractSkillBonus(feature);
+                            }
+                        }
+                    }
+                }
+                if (best < 0) {
+                    best = 0;
+                }
             }
         }
         return best;
+    }
+
+    private int extractSkillBonus(Feature feature) {
+        if (feature instanceof SkillBonus) {
+            SkillBonus sb = (SkillBonus) feature;
+            if (sb.applyToParentOnly()) {
+                return sb.getAmount().getIntegerAdjustedAmount();
+            }
+        }
+        return 0;
     }
 
     /** @return The minimum ST to use this weapon, or -1 if there is none. */

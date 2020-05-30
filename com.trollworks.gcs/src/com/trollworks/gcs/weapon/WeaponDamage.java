@@ -14,10 +14,14 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.io.xml.XMLReader;
 import com.trollworks.gcs.io.xml.XMLWriter;
+import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.utility.Dice;
@@ -26,7 +30,9 @@ import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -369,15 +375,37 @@ public class WeaponDamage {
             DataFile df = mOwner.mOwner.getDataFile();
             if (df instanceof GURPSCharacter) {
                 GURPSCharacter   character  = (GURPSCharacter) df;
-                Set<WeaponBonus> bonuses    = new HashSet<>();
+                Set<WeaponBonus> bonusSet   = new HashSet<>();
                 Set<String>      categories = mOwner.getCategories();
                 int              maxST      = mOwner.getMinStrengthValue() * 3;
                 int              st         = character.getStrength() + character.getStrikingStrengthBonus();
                 Dice             base       = new Dice(0, 0);
                 for (SkillDefault one : mOwner.getDefaults()) {
                     if (one.getType().isSkillBased()) {
-                        bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), categories, toolTip));
-                        bonuses.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), categories, toolTip));
+                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), categories, toolTip));
+                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), categories, toolTip));
+                    }
+                }
+                List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
+                for (Feature feature : mOwner.mOwner.getFeatures()) {
+                    extractWeaponBonus(feature, bonuses);
+                }
+                if (mOwner.mOwner instanceof Advantage) {
+                    for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                extractWeaponBonus(feature, bonuses);
+                            }
+                        }
+                    }
+                }
+                if (mOwner.mOwner instanceof Equipment) {
+                    for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                extractWeaponBonus(feature, bonuses);
+                            }
+                        }
                     }
                 }
                 if (maxST > 0 && maxST < st) {
@@ -434,8 +462,8 @@ public class WeaponDamage {
                 if (mModifierPerDie != 0) {
                     base.add(mModifierPerDie * base.getDieCount());
                 }
-                boolean convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
-                StringBuilder buffer = new StringBuilder();
+                boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
+                StringBuilder buffer                      = new StringBuilder();
                 buffer.append(base.toString(convertModifiersToExtraDice));
                 if (mArmorDivisor != 1) {
                     buffer.append("(");
@@ -467,14 +495,23 @@ public class WeaponDamage {
         return toString();
     }
 
+    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list) {
+        if (feature instanceof WeaponBonus) {
+            WeaponBonus wb = (WeaponBonus) feature;
+            if (wb.applyToParentOnly()) {
+                list.add(wb);
+            }
+        }
+    }
+
     private static Dice addDice(Dice left, Dice right) {
         return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
     }
 
     @Override
     public String toString() {
-        boolean convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
-        StringBuilder buffer = new StringBuilder();
+        boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
+        StringBuilder buffer                      = new StringBuilder();
         if (mST != WeaponSTDamage.NONE) {
             buffer.append(mST);
         }

@@ -32,10 +32,12 @@ public class WeaponBonus extends Bonus {
     private static final String          TAG_SPECIALIZATION = "specialization";
     private static final String          TAG_LEVEL          = "level";
     private static final String          TAG_CATEGORY       = "category";
+    private static final String          TAG_PARENT_ONLY    = "parent_only";
     private              StringCriteria  mNameCriteria;
     private              StringCriteria  mSpecializationCriteria;
     private              IntegerCriteria mLevelCriteria;
     private              StringCriteria  mCategoryCriteria;
+    private              boolean         mApplyToParentOnly;
 
     /** Creates a new skill bonus. */
     public WeaponBonus() {
@@ -67,6 +69,7 @@ public class WeaponBonus extends Bonus {
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
         mLevelCriteria = new IntegerCriteria(other.mLevelCriteria);
         mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
+        mApplyToParentOnly = other.mApplyToParentOnly;
     }
 
     @Override
@@ -76,7 +79,7 @@ public class WeaponBonus extends Bonus {
         }
         if (obj instanceof WeaponBonus && super.equals(obj)) {
             WeaponBonus wb = (WeaponBonus) obj;
-            return mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria);
+            return mApplyToParentOnly == wb.mApplyToParentOnly && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria);
         }
         return false;
     }
@@ -95,7 +98,9 @@ public class WeaponBonus extends Bonus {
     public String getKey() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(Skill.ID_NAME);
-        if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
+        if (mApplyToParentOnly) {
+            buffer.append("\u0001");
+        } else if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
@@ -118,6 +123,8 @@ public class WeaponBonus extends Bonus {
             mLevelCriteria.load(reader);
         } else if (TAG_CATEGORY.equals(reader.getName())) {
             mCategoryCriteria.load(reader);
+        } else if (TAG_PARENT_ONLY.equals(reader.getName())) {
+            mApplyToParentOnly = reader.readBoolean();
         } else {
             super.loadSelf(reader);
         }
@@ -131,12 +138,28 @@ public class WeaponBonus extends Bonus {
     @Override
     public void save(XMLWriter out) {
         out.startSimpleTagEOL(TAG_ROOT);
-        mNameCriteria.save(out, TAG_NAME);
-        mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
-        mLevelCriteria.save(out, TAG_LEVEL);
-        mCategoryCriteria.save(out, TAG_CATEGORY);
+        if (mApplyToParentOnly) {
+            out.simpleTag(TAG_PARENT_ONLY, true);
+        } else {
+            mNameCriteria.save(out, TAG_NAME);
+            mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
+            mLevelCriteria.save(out, TAG_LEVEL);
+            mCategoryCriteria.save(out, TAG_CATEGORY);
+        }
         saveBase(out);
         out.endTagEOL(TAG_ROOT, true);
+    }
+
+    public boolean applyToParentOnly() {
+        return mApplyToParentOnly;
+    }
+
+    public boolean setApplyToParentOnly(boolean apply) {
+        if (mApplyToParentOnly != apply) {
+            mApplyToParentOnly = apply;
+            return true;
+        }
+        return false;
     }
 
     /** @return The name criteria. */
@@ -161,21 +184,24 @@ public class WeaponBonus extends Bonus {
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {
-        ListRow.extractNameables(set, mNameCriteria.getQualifier());
-        ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
-        ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
+        if (!mApplyToParentOnly) {
+            ListRow.extractNameables(set, mNameCriteria.getQualifier());
+            ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
+            ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
+        }
     }
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
-        mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
-        mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
-        mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
+        if (!mApplyToParentOnly) {
+            mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
+            mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
+            mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
+        }
     }
 
     @Override
     public String getToolTipAmount() {
         return getAmount().getAmountAsWeaponBonus();
     }
-
 }

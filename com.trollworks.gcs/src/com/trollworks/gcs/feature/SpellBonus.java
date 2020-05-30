@@ -36,7 +36,6 @@ public class SpellBonus extends Bonus {
     /** The XML attribute name for the "all colleges" flag. */
     public static final  String         ATTRIBUTE_ALL_COLLEGES = "all_colleges";
     private static final String         TAG_CATEGORY           = "category";
-    private static final String         EMPTY                  = "";
     private              boolean        mAllColleges;
     private              String         mMatchType;
     private              StringCriteria mNameCriteria;
@@ -47,8 +46,8 @@ public class SpellBonus extends Bonus {
         super(1);
         mAllColleges = true;
         mMatchType = TAG_COLLEGE_NAME;
-        mNameCriteria = new StringCriteria(StringCompareType.IS, EMPTY);
-        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
+        mNameCriteria = new StringCriteria(StringCompareType.IS, "");
+        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     /**

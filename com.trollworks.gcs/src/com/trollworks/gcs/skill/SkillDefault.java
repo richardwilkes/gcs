@@ -24,29 +24,28 @@ import java.util.Set;
 /** Describes a skill default. */
 public class SkillDefault {
     /** The XML tag. */
-    public static final  String           TAG_ROOT           = "default";
+    public static final String           TAG_ROOT           = "default";
     /** The tag used for the type. */
-    public static final  String           TAG_TYPE           = "type";
+    public static final String           TAG_TYPE           = "type";
     /** The tag used for the skill name. */
-    public static final  String           TAG_NAME           = "name";
+    public static final String           TAG_NAME           = "name";
     /** The tag used for the skill specialization. */
-    public static final  String           TAG_SPECIALIZATION = "specialization";
+    public static final String           TAG_SPECIALIZATION = "specialization";
     /** The tag used for the modifier. */
-    public static final  String           TAG_MODIFIER       = "modifier";
+    public static final String           TAG_MODIFIER       = "modifier";
     /** The tag used for the level. */
-    public static final  String           TAG_LEVEL          = "level";
+    public static final String           TAG_LEVEL          = "level";
     /** The tag used for the adjusted level. */
-    public static final  String           TAG_ADJ_LEVEL      = "adjusted_level";
+    public static final String           TAG_ADJ_LEVEL      = "adjusted_level";
     /** The tag used for the points. */
-    public static final  String           TAG_POINTS         = "points";
-    private static final String           EMPTY              = "";
-    private              SkillDefaultType mType;
-    private              String           mName;
-    private              String           mSpecialization;
-    private              int              mModifier;
-    private              int              mLevel;
-    private              int              mAdjLevel;
-    private              int              mPoints;
+    public static final String           TAG_POINTS         = "points";
+    private             SkillDefaultType mType;
+    private             String           mName;
+    private             String           mSpecialization;
+    private             int              mModifier;
+    private             int              mLevel;
+    private             int              mAdjLevel;
+    private             int              mPoints;
 
     /**
      * Creates a new skill default.
@@ -96,8 +95,8 @@ public class SkillDefault {
         String marker = reader.getMarker();
 
         mType = SkillDefaultType.Skill;
-        mName = EMPTY;
-        mSpecialization = EMPTY;
+        mName = "";
+        mSpecialization = "";
         mModifier = 0;
 
         do {
@@ -236,7 +235,7 @@ public class SkillDefault {
 
     /** @param name The new name. */
     public void setName(String name) {
-        mName = name != null ? name : EMPTY;
+        mName = name != null ? name : "";
     }
 
     /**
@@ -250,7 +249,7 @@ public class SkillDefault {
 
     /** @param specialization The new specialization. */
     public void setSpecialization(String specialization) {
-        mSpecialization = specialization != null ? specialization : EMPTY;
+        mSpecialization = specialization != null ? specialization : "";
     }
 
     /** @return The modifier. */

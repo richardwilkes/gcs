@@ -31,7 +31,6 @@ public class AdvantagePrereq extends NameLevelPrereq {
     /** The XML tag for this class. */
     public static final  String         TAG_ROOT  = "advantage_prereq";
     private static final String         TAG_NOTES = "notes";
-    private static final String         EMPTY     = "";
     private              StringCriteria mNotesCriteria;
 
     /**
@@ -41,7 +40,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
      */
     public AdvantagePrereq(PrereqList parent) {
         super(TAG_ROOT, parent);
-        mNotesCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
+        mNotesCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     /**
@@ -61,7 +60,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
 
     @Override
     protected void initializeForLoad() {
-        mNotesCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, EMPTY);
+        mNotesCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
     }
 
     @Override

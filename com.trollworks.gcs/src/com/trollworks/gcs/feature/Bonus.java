@@ -76,7 +76,6 @@ public abstract class Bonus implements Feature {
     /** @param reader The XML reader to use. */
     protected final void load(XMLReader reader) throws IOException {
         String marker = reader.getMarker();
-
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 loadSelf(reader);

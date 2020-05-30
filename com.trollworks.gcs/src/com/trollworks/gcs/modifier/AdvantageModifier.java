@@ -28,7 +28,7 @@ import java.io.IOException;
 
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
-    private static final int                       CURRENT_VERSION        = 1;
+    private static final int                       CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                    TAG_MODIFIER           = "modifier";
     /** The root tag for containers. */
