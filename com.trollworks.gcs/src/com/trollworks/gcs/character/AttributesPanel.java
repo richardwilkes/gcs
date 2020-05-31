@@ -44,7 +44,7 @@ public class AttributesPanel extends DropPanel {
         addLabelAndField(sheet, GURPSCharacter.ID_BASIC_SPEED, I18n.Text("Basic Speed"), true);
         addLabelAndField(sheet, GURPSCharacter.ID_BASIC_MOVE, I18n.Text("Basic Move"), true);
         addDivider();
-        addLabelAndField(sheet, GURPSCharacter.ID_PERCEPTION, I18n.Text("Perception"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_PERCEPTION, I18n.Text("Perception (Per)"), true);
         addLabelAndField(sheet, GURPSCharacter.ID_VISION, I18n.Text("Vision"), false);
         addLabelAndField(sheet, GURPSCharacter.ID_HEARING, I18n.Text("Hearing"), false);
         addLabelAndField(sheet, GURPSCharacter.ID_TASTE_AND_SMELL, I18n.Text("Taste & Smell"), false);
