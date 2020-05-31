@@ -48,11 +48,6 @@ public enum SpellColumn {
         }
 
         @Override
-        public boolean shouldDisplay(DataFile dataFile) {
-            return true;
-        }
-
-        @Override
         public Object getData(Spell spell) {
             return getDataAsText(spell);
         }
@@ -70,7 +65,7 @@ public enum SpellColumn {
             return builder.toString();
         }
     },
-    /** The spell class/college. */
+    /** The spell class. */
     CLASS {
         @Override
         public String toString() {
@@ -79,17 +74,7 @@ public enum SpellColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The class and college of the spell");
-        }
-
-        @Override
-        public Cell getCell() {
-            return new SpellClassCell();
-        }
-
-        @Override
-        public boolean shouldDisplay(DataFile dataFile) {
-            return true;
+            return I18n.Text("The class of the spell");
         }
 
         @Override
@@ -100,12 +85,87 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             if (!spell.canHaveChildren()) {
-                return spell.getSpellClass() + "; " + spell.getCollege();
+                return spell.getSpellClass();
             }
             return "";
         }
     },
-    /** The casting time &amp; duration. */
+    /** The spell college. */
+    COLLEGE {
+        @Override
+        public String toString() {
+            return I18n.Text("College");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The college of the spell");
+        }
+
+        @Override
+        public Object getData(Spell spell) {
+            return getDataAsText(spell);
+        }
+
+        @Override
+        public String getDataAsText(Spell spell) {
+            if (!spell.canHaveChildren()) {
+                return spell.getCollege();
+            }
+            return "";
+        }
+    },
+    /** The casting cost. */
+    MANA_COST {
+        @Override
+        public String toString() {
+            return I18n.Text("Cost");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The mana cost to cast the spell");
+        }
+
+        @Override
+        public Object getData(Spell spell) {
+            return getDataAsText(spell);
+        }
+
+        @Override
+        public String getDataAsText(Spell spell) {
+            if (!spell.canHaveChildren()) {
+                return spell.getCastingCost();
+            }
+            return "";
+        }
+    },
+    /** The maintenance cost. */
+    MAINTAIN {
+        @Override
+        public String toString() {
+            return I18n.Text("Maintain");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The mana cost to maintain the spell");
+        }
+
+        @Override
+        public Object getData(Spell spell) {
+            return getDataAsText(spell);
+        }
+
+        @Override
+        public String getDataAsText(Spell spell) {
+            if (!spell.canHaveChildren()) {
+                return spell.getMaintenance();
+            }
+            return "";
+        }
+    },
+    /** The casting time. */
     TIME {
         @Override
         public String toString() {
@@ -114,17 +174,7 @@ public enum SpellColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The time required to cast the spell and its duration");
-        }
-
-        @Override
-        public Cell getCell() {
-            return new SpellTimeCell();
-        }
-
-        @Override
-        public boolean shouldDisplay(DataFile dataFile) {
-            return true;
+            return I18n.Text("The time required to cast the spell");
         }
 
         @Override
@@ -135,31 +185,21 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             if (!spell.canHaveChildren()) {
-                return spell.getCastingTime() + "; " + spell.getDuration();
+                return spell.getCastingTime();
             }
             return "";
         }
     },
-    /** The casting &amp; maintenance cost. */
-    MANA_COST {
+    /** The spell duration. */
+    DURATION {
         @Override
         public String toString() {
-            return I18n.Text("Mana Cost");
+            return I18n.Text("Duration");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The mana cost to cast and maintain the spell");
-        }
-
-        @Override
-        public Cell getCell() {
-            return new SpellManaCostCell();
-        }
-
-        @Override
-        public boolean shouldDisplay(DataFile dataFile) {
-            return true;
+            return I18n.Text("The spell duration");
         }
 
         @Override
@@ -170,7 +210,7 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             if (!spell.canHaveChildren()) {
-                return spell.getCastingCost() + "; " + spell.getMaintenance();
+                return spell.getDuration();
             }
             return "";
         }
@@ -329,11 +369,6 @@ public enum SpellColumn {
         }
 
         @Override
-        public Cell getCell() {
-            return new ListTextCell(SwingConstants.LEFT, true);
-        }
-
-        @Override
         public boolean shouldDisplay(DataFile dataFile) {
             return dataFile instanceof ListFile;
         }
@@ -363,11 +398,6 @@ public enum SpellColumn {
         @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.RIGHT, false);
-        }
-
-        @Override
-        public boolean shouldDisplay(DataFile dataFile) {
-            return true;
         }
 
         @Override
@@ -406,13 +436,17 @@ public enum SpellColumn {
     }
 
     /** @return The {@link Cell} used to display the data. */
-    public abstract Cell getCell();
+    public Cell getCell() {
+        return new ListTextCell(SwingConstants.LEFT, true);
+    }
 
     /**
      * @param dataFile The {@link DataFile} to use.
      * @return Whether this column should be displayed for the specified data file.
      */
-    public abstract boolean shouldDisplay(DataFile dataFile);
+    public boolean shouldDisplay(DataFile dataFile) {
+        return true;
+    }
 
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
