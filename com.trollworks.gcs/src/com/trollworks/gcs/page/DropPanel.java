@@ -105,12 +105,32 @@ public class DropPanel extends JPanel {
 
     @Override
     public Dimension getMinimumSize() {
-        return mOnlyReportPreferredSize ? getPreferredSize() : super.getMinimumSize();
+        Dimension size     = mOnlyReportPreferredSize ? getPreferredSize() : super.getMinimumSize();
+        int       minWidth = mTitledBorder.getMinimumWidth(this);
+        if (size.width < minWidth) {
+            size.width = minWidth;
+        }
+        return size;
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension size     = super.getPreferredSize();
+        int       minWidth = mTitledBorder.getMinimumWidth(this);
+        if (size.width < minWidth) {
+            size.width = minWidth;
+        }
+        return size;
     }
 
     @Override
     public Dimension getMaximumSize() {
-        return mOnlyReportPreferredSize ? getPreferredSize() : super.getMaximumSize();
+        Dimension size     = mOnlyReportPreferredSize ? getPreferredSize() : super.getMaximumSize();
+        int       minWidth = mTitledBorder.getMinimumWidth(this);
+        if (size.width < minWidth) {
+            size.width = minWidth;
+        }
+        return size;
     }
 
     /**

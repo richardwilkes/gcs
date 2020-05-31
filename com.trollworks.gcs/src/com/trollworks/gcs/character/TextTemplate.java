@@ -31,6 +31,7 @@ import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.PathUtils;
+import com.trollworks.gcs.utility.text.DateTimeFormatter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -47,12 +48,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -138,7 +137,6 @@ public class TextTemplate {
     private static final String         KEY_DURATION                          = "DURATION";
     private static final String         KEY_DX                                = "DX";
     private static final String         KEY_DX_POINTS                         = "DX_POINTS";
-    private static final String         KEY_EARNED_POINTS_DEPRECATED          = "EARNED_POINTS";
     private static final String         KEY_UNSPENT_POINTS                    = "UNSPENT_POINTS";
     private static final String         KEY_ENCODING_OFF                      = "ENCODING_OFF";
     private static final String         KEY_ENCUMBRANCE_LOOP_END              = "ENCUMBRANCE_LOOP_END";
@@ -217,7 +215,6 @@ public class TextTemplate {
     private static final String         KEY_QUIRK_POINTS                      = "QUIRK_POINTS";
     private static final String         KEY_QUIRKS_LOOP_END                   = "QUIRKS_LOOP_END";
     private static final String         KEY_QUIRKS_LOOP_START                 = "QUIRKS_LOOP_START";
-    private static final String         KEY_RACE                              = "RACE";
     private static final String         KEY_RACE_POINTS                       = "RACE_POINTS";
     private static final String         KEY_RANGE                             = "RANGE";
     private static final String         KEY_RANGED_LOOP_END                   = "RANGED_LOOP_END";
@@ -276,6 +273,10 @@ public class TextTemplate {
     private static final String         KEY_AMMO_TYPE                         = "AmmoType:";
     private static final String         KEY_USES_AMMO_TYPE                    = "UsesAmmoType:";
     private static final String         KEY_OPTIONS_CODE                      = "OPTIONS_CODE";
+    // TODO: Eliminate these deprecated keys after a suitable waiting period; last added to May 30, 2020
+    private static final String         KEY_EARNED_POINTS_DEPRECATED          = "EARNED_POINTS";
+    private static final String         KEY_CAMPAIGN_DEPRECATED               = "CAMPAIGN";
+    private static final String         KEY_RACE_DEPRECATED                   = "RACE";
     private              CharacterSheet mSheet;
     private              boolean        mEncodeText                           = true;
     private              boolean        mEnhancedKeyParsing;
@@ -374,11 +375,10 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSettings().optionsCode());
             break;
         case KEY_CREATED_ON:
-            Date date = new Date(gurpsCharacter.getCreatedOn());
-            writeEncodedText(out, DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
+            writeEncodedText(out, DateTimeFormatter.getFormattedDateTime(gurpsCharacter.getCreatedOn()));
             break;
         case KEY_MODIFIED_ON:
-            writeEncodedText(out, gurpsCharacter.getLastModified());
+            writeEncodedText(out, DateTimeFormatter.getFormattedDateTime(gurpsCharacter.getModifiedOn()));
             break;
         case KEY_TOTAL_POINTS:
             writeEncodedText(out, Numbers.format(DisplayPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
@@ -437,9 +437,6 @@ public class TextTemplate {
         case KEY_UNSPENT_POINTS:
         case KEY_EARNED_POINTS_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getUnspentPoints()));
-            break;
-        case KEY_RACE:
-            writeEncodedText(out, description.getRace());
             break;
         case KEY_HEIGHT:
             writeEncodedText(out, description.getHeight().toString());
@@ -618,6 +615,9 @@ public class TextTemplate {
             break;
         case KEY_CONTINUE_ID:
             mStartId = mCurrentId;
+            break;
+        case KEY_RACE_DEPRECATED:
+        case KEY_CAMPAIGN_DEPRECATED:
             break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {

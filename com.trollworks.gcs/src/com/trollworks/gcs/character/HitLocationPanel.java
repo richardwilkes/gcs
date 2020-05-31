@@ -33,7 +33,7 @@ public class HitLocationPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(7, 2, 0), I18n.Text("Hit Location"));
+        super(new ColumnLayout(7, 2, 0), String.format(I18n.Text("%s Hit Locations"), sheet.getCharacter().getProfile().getHitLocationTable().getName()));
 
         GURPSCharacter   character = sheet.getCharacter();
         HitLocationTable table     = character.getProfile().getHitLocationTable();

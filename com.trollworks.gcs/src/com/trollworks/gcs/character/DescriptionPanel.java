@@ -30,10 +30,10 @@ public class DescriptionPanel extends DropPanel {
         super(new ColumnLayout(5, 2, 0), I18n.Text("Description"));
 
         Wrapper wrapper = new Wrapper(new ColumnLayout(2, 2, 0));
-        createLabelAndField(wrapper, sheet, Profile.ID_RACE, I18n.Text("Race:"), null, SwingConstants.LEFT);
         createLabelAndField(wrapper, sheet, Profile.ID_GENDER, I18n.Text("Gender:"), null, SwingConstants.LEFT);
         createLabelAndField(wrapper, sheet, Profile.ID_AGE, I18n.Text("Age:"), null, SwingConstants.LEFT);
         createLabelAndField(wrapper, sheet, Profile.ID_BIRTHDAY, I18n.Text("Birthday:"), null, SwingConstants.LEFT);
+        createLabelAndField(wrapper, sheet, Profile.ID_RELIGION, I18n.Text("Religion:"), null, SwingConstants.LEFT);
         add(wrapper);
 
         createDivider();

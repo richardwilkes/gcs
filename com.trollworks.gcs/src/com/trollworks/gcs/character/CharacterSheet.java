@@ -66,6 +66,7 @@ import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
+import com.trollworks.gcs.utility.text.DateTimeFormatter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -254,7 +255,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         // Create the first page, which holds stuff that has a fixed vertical size.
         pageAssembler = new PageAssembler(this);
-        pageAssembler.addToContent(hwrap(new PortraitPanel(this), vwrap(hwrap(new IdentityPanel(this), new PlayerInfoPanel(this)), new DescriptionPanel(this)), new PointsPanel(this)), null, null);
+        pageAssembler.addToContent(hwrap(new PortraitPanel(this), vwrap(hwrap(new IdentityPanel(this), new MiscPanel(this)), new DescriptionPanel(this)), new PointsPanel(this)), null, null);
         pageAssembler.addToContent(hwrap(new AttributesPanel(this), vwrap(new EncumbrancePanel(this), new LiftPanel(this)), new HitLocationPanel(this), new HitPointsPanel(this)), null, null);
 
         // Add the various outline blocks, based on the layout preference.
@@ -611,6 +612,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private void addBuiltInWeapons(Class<? extends WeaponStats> weaponClass, Map<HashedWeapon, WeaponDisplayRow> map) {
         if (weaponClass == MeleeWeaponStats.class) {
             boolean            savedModified = mCharacter.isModified();
+            long savedModifiedOn = mCharacter.getModifiedOn();
             List<SkillDefault> defaults      = new ArrayList<>();
             Advantage          phantom;
             MeleeWeaponStats   weapon;
@@ -672,6 +674,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             }
 
             mCharacter.setUndoManager(mgr);
+            mCharacter.setModifiedOn(savedModifiedOn);
             mCharacter.setModified(savedModified);
         }
     }
@@ -915,7 +918,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 mCharacter.notifySingle(type, data);
             } else if (Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2.equals(type)) {
                 mCharacter.notifySingle(type, data);
-            } else if (GURPSCharacter.ID_LAST_MODIFIED.equals(type)) {
+            } else if (GURPSCharacter.ID_MODIFIED.equals(type)) {
                 int count = getComponentCount();
                 for (int i = 0; i < count; i++) {
                     Page      page   = (Page) getComponent(i);
@@ -952,14 +955,15 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         FontMetrics fm1        = gc.getFontMetrics(font1);
         FontMetrics fm2        = gc.getFontMetrics(font2);
         int         y          = bounds.y + bounds.height + fm2.getAscent();
+        String      modified   = String.format("Modified %s", DateTimeFormatter.getFormattedDateTime(mCharacter.getModifiedOn()));
         String      left;
         String      right;
 
         if ((pageNumber & 1) == 1) {
             left = GCS.COPYRIGHT_FOOTER;
-            right = mCharacter.getLastModified();
+            right = modified;
         } else {
-            left = mCharacter.getLastModified();
+            left = modified;
             right = GCS.COPYRIGHT_FOOTER;
         }
 

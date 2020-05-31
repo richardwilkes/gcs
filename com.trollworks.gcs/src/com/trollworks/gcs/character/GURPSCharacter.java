@@ -64,7 +64,6 @@ import com.trollworks.gcs.utility.xml.XMLWriter;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -99,9 +98,9 @@ public class GURPSCharacter extends DataFile {
     /** The prefix for all character IDs. */
     public static final  String                              CHARACTER_PREFIX                     = "gcs.";
     /** The field ID for last modified date changes. */
-    public static final  String                              ID_LAST_MODIFIED                     = CHARACTER_PREFIX + "LastModifiedDate";
+    public static final  String                              ID_MODIFIED                          = CHARACTER_PREFIX + "Modified";
     /** The field ID for created on date changes. */
-    public static final  String                              ID_CREATED_ON                        = CHARACTER_PREFIX + "CreatedOn";
+    public static final  String                              ID_CREATED                           = CHARACTER_PREFIX + "Created";
     /** The field ID for include punch changes. */
     public static final  String                              ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";
     /** The field ID for include kick changes. */
@@ -237,7 +236,7 @@ public class GURPSCharacter extends DataFile {
     public static final  String                              ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";
     /** The field ID for unconscious fatigue point changes. */
     public static final  String                              ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";
-    private              long                                mLastModified;
+    private              long                                mModifiedOn;
     private              long                                mCreatedOn;
     private              HashMap<String, ArrayList<Feature>> mFeatureMap;
     private              int                                 mStrength;
@@ -350,10 +349,8 @@ public class GURPSCharacter extends DataFile {
         mIncludeKickBoots = true;
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mPageSettings = OutputPreferences.getDefaultPageSettings();
-        mLastModified = System.currentTimeMillis();
-        mCreatedOn = mLastModified;
-        // This will force the long value to match the string value.
-        setCreatedOn(getCreatedOn());
+        mModifiedOn = System.currentTimeMillis();
+        mCreatedOn = mModifiedOn;
     }
 
     /** @return The page settings. May return {@code null} if no printer has been defined. */
@@ -378,6 +375,7 @@ public class GURPSCharacter extends DataFile {
         int    currentHP     = Integer.MIN_VALUE;
         int    currentFP     = Integer.MIN_VALUE;
         characterInitialize(false);
+        long modifiedOn = mModifiedOn;
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
@@ -403,9 +401,9 @@ public class GURPSCharacter extends DataFile {
                 } else if (Profile.TAG_ROOT.equals(name)) {
                     mProfile.load(reader);
                 } else if (TAG_CREATED_DATE.equals(name)) {
-                    mCreatedOn = Numbers.extractDate(reader.readText());
+                    mCreatedOn = Numbers.extractDateTime(reader.readText());
                 } else if (TAG_MODIFIED_DATE.equals(name)) {
-                    mLastModified = Numbers.extractDateTime(reader.readText());
+                    modifiedOn = Numbers.extractDateTime(reader.readText());
                 } else if (BonusAttributeType.HP.getXMLTag().equals(name)) {
                     mHitPoints = reader.readInteger(0);
                 } else if (TAG_HP_DAMAGE.equals(name)) {
@@ -480,6 +478,7 @@ public class GURPSCharacter extends DataFile {
                 mFatiguePointsDamage = -Math.min(currentFP - getFatiguePoints(), 0);
             }
         }
+        mModifiedOn = modifiedOn;
     }
 
     private void loadAdvantageList(XMLReader reader, LoadState state) throws IOException {
@@ -602,8 +601,8 @@ public class GURPSCharacter extends DataFile {
     @Override
     protected void saveSelf(XMLWriter out) {
         mSettings.save(out);
-        out.simpleTag(TAG_CREATED_DATE, DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date(mCreatedOn)));
-        out.simpleTag(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mLastModified)));
+        out.simpleTag(TAG_CREATED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mCreatedOn)));
+        out.simpleTag(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mModifiedOn)));
         mProfile.save(out);
         out.simpleTag(BonusAttributeType.HP.getXMLTag(), mHitPoints);
         out.simpleTagNotZero(TAG_HP_DAMAGE, mHitPointsDamage);
@@ -676,9 +675,9 @@ public class GURPSCharacter extends DataFile {
                 return Integer.valueOf(getHitPointPoints());
             }
             return null;
-        } else if (ID_LAST_MODIFIED.equals(id)) {
-            return getLastModified();
-        } else if (ID_CREATED_ON.equals(id)) {
+        } else if (ID_MODIFIED.equals(id)) {
+            return Long.valueOf(getModifiedOn());
+        } else if (ID_CREATED.equals(id)) {
             return Long.valueOf(getCreatedOn());
         } else if (ID_STRENGTH.equals(id)) {
             return Integer.valueOf(getStrength());
@@ -807,13 +806,7 @@ public class GURPSCharacter extends DataFile {
      */
     public void setValueForID(String id, Object value) {
         if (id != null) {
-            if (ID_CREATED_ON.equals(id)) {
-                if (value instanceof Long) {
-                    setCreatedOn(((Long) value).longValue());
-                } else {
-                    setCreatedOn((String) value);
-                }
-            } else if (ID_INCLUDE_PUNCH.equals(id)) {
+            if (ID_INCLUDE_PUNCH.equals(id)) {
                 setIncludePunch(((Boolean) value).booleanValue());
             } else if (ID_INCLUDE_KICK.equals(id)) {
                 setIncludeKick(((Boolean) value).booleanValue());
@@ -923,18 +916,8 @@ public class GURPSCharacter extends DataFile {
             calculateWealthNotCarried(true);
         }
         if (mDidModify) {
-            long now = System.currentTimeMillis();
-            if (mLastModified != now) {
-                mLastModified = now;
-                notify(ID_LAST_MODIFIED, Long.valueOf(mLastModified));
-            }
+            setModifiedOn(System.currentTimeMillis());
         }
-    }
-
-    /** @return The last modified date and time. */
-    public String getLastModified() {
-        Date date = new Date(mLastModified);
-        return MessageFormat.format(I18n.Text("Modified at {0} on {1}"), DateFormat.getTimeInstance(DateFormat.SHORT).format(date), DateFormat.getDateInstance(DateFormat.MEDIUM).format(date));
     }
 
     /** @return The created on date. */
@@ -942,27 +925,16 @@ public class GURPSCharacter extends DataFile {
         return mCreatedOn;
     }
 
-    /**
-     * Sets the created on date.
-     *
-     * @param date The new created on date.
-     */
-    public void setCreatedOn(long date) {
-        if (mCreatedOn != date) {
-            Long value = Long.valueOf(date);
-            postUndoEdit(I18n.Text("Created On Change"), ID_CREATED_ON, Long.valueOf(mCreatedOn), value);
-            mCreatedOn = date;
-            notifySingle(ID_CREATED_ON, value);
-        }
+    /** @return The modified date. */
+    public long getModifiedOn() {
+        return mModifiedOn;
     }
 
-    /**
-     * Sets the created on date.
-     *
-     * @param date The new created on date.
-     */
-    public void setCreatedOn(String date) {
-        setCreatedOn(Numbers.extractDate(date));
+    public void setModifiedOn(long when) {
+        if (mModifiedOn != when) {
+            mModifiedOn = when;
+            notify(ID_MODIFIED, Long.valueOf(mModifiedOn));
+        }
     }
 
     private void updateSkills() {

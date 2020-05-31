@@ -77,8 +77,6 @@ public class Profile {
     public static final  String           ID_WEIGHT          = PROFILE_PREFIX + "Weight";
     /** The field ID for gender changes. */
     public static final  String           ID_GENDER          = PROFILE_PREFIX + "Gender";
-    /** The field ID for race changes. */
-    public static final  String           ID_RACE            = PROFILE_PREFIX + "Race";
     /** The field ID for religion changes. */
     public static final  String           ID_RELIGION        = PROFILE_PREFIX + "Religion";
     /** The field ID for player name changes. */
@@ -109,7 +107,6 @@ public class Profile {
     private static final String           TAG_HEIGHT         = "height";
     private static final String           TAG_WEIGHT         = "weight";
     private static final String           TAG_GENDER         = "gender";
-    private static final String           TAG_RACE           = "race";
     private static final String           TAG_TECH_LEVEL     = "tech_level";
     private static final String           TAG_RELIGION       = "religion";
     private static final String           TAG_PORTRAIT       = "portrait";
@@ -132,7 +129,6 @@ public class Profile {
     private              int              mSizeModifier;
     private              int              mSizeModifierBonus;
     private              String           mGender;
-    private              String           mRace;
     private              String           mReligion;
     private              String           mPlayerName;
     private              String           mTechLevel;
@@ -154,7 +150,6 @@ public class Profile {
         mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE) : new WeightValue(Fixed6.ZERO, settings.defaultWeightUnits());
         mGender = full ? getRandomGender() : "";
         mName = full && SheetPreferences.autoNameNewCharacters() ? USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender)) : "";
-        mRace = full ? I18n.Text("Human") : "";
         mTechLevel = full ? getDefaultTechLevel() : "";
         mReligion = "";
         mPlayerName = full ? getDefaultPlayerName() : "";
@@ -205,8 +200,6 @@ public class Profile {
             mSizeModifier = reader.readInteger(0);
         } else if (TAG_GENDER.equals(tag)) {
             mGender = reader.readText();
-        } else if (TAG_RACE.equals(tag)) {
-            mRace = reader.readText();
         } else if (TAG_BODY_TYPE.equals(tag)) {
             mHitLocationTable = HitLocationTable.MAP.get(reader.readText());
             if (mHitLocationTable == null) {
@@ -248,7 +241,6 @@ public class Profile {
         }
         out.simpleTag(BonusAttributeType.SM.getXMLTag(), mSizeModifier);
         out.simpleTagNotEmpty(TAG_GENDER, mGender);
-        out.simpleTagNotEmpty(TAG_RACE, mRace);
         out.simpleTag(TAG_BODY_TYPE, mHitLocationTable.getKey());
         out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
         out.simpleTagNotEmpty(TAG_RELIGION, mReligion);
@@ -353,24 +345,6 @@ public class Profile {
             mCharacter.postUndoEdit(I18n.Text("Gender Change"), ID_GENDER, mGender, gender);
             mGender = gender;
             mCharacter.notifySingle(ID_GENDER, mGender);
-        }
-    }
-
-    /** @return The race. */
-    public String getRace() {
-        return mRace;
-    }
-
-    /**
-     * Sets the race.
-     *
-     * @param race The new race.
-     */
-    public void setRace(String race) {
-        if (!mRace.equals(race)) {
-            mCharacter.postUndoEdit(I18n.Text("Race Change"), ID_RACE, mRace, race);
-            mRace = race;
-            mCharacter.notifySingle(ID_RACE, mRace);
         }
     }
 
@@ -705,8 +679,6 @@ public class Profile {
                 return new WeightValue(getWeight());
             } else if (ID_GENDER.equals(id)) {
                 return getGender();
-            } else if (ID_RACE.equals(id)) {
-                return getRace();
             } else if (ID_RELIGION.equals(id)) {
                 return getReligion();
             } else if (ID_PLAYER_NAME.equals(id)) {
@@ -750,8 +722,6 @@ public class Profile {
                 setWeight((WeightValue) value);
             } else if (ID_GENDER.equals(id)) {
                 setGender((String) value);
-            } else if (ID_RACE.equals(id)) {
-                setRace((String) value);
             } else if (ID_RELIGION.equals(id)) {
                 setReligion((String) value);
             } else if (ID_PLAYER_NAME.equals(id)) {

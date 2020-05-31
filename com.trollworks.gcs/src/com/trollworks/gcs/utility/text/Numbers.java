@@ -277,6 +277,7 @@ public class Numbers {
                     }
                 }
             }
+            return extractDate(buffer);
         }
         return System.currentTimeMillis();
     }

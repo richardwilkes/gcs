@@ -90,11 +90,19 @@ public class TitledBorder extends LineBorder {
             Scale scale     = Scale.get(component);
             Font  savedFont = graphics.getFont();
             Font  font      = scale.scale(mFont);
+            int   one       = scale.scale(1);
             graphics.setFont(font);
-            int one = scale.scale(1);
             graphics.setColor(mTextColor);
             TextDrawing.draw(graphics, new Rectangle(x + one, y, width - (one + one), TextDrawing.getPreferredSize(font, mTitle).height), mTitle, SwingConstants.CENTER, SwingConstants.TOP);
             graphics.setFont(savedFont);
         }
+    }
+
+    public int getMinimumWidth(Component component) {
+        Scale scale = Scale.get(component);
+        if (mTitle != null) {
+            return TextDrawing.getPreferredSize(scale.scale(mFont), mTitle).width + scale.scale(1) * 4;
+        }
+        return scale.scale(1) * 4;
     }
 }

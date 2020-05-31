@@ -22,7 +22,7 @@ import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
-import com.trollworks.gcs.utility.text.DateFormatter;
+import com.trollworks.gcs.utility.text.DateTimeFormatter;
 import com.trollworks.gcs.utility.text.DiceFormatter;
 import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.text.HeightFormatter;
@@ -40,7 +40,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -274,10 +273,13 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         FACTORY_MAP.put(GURPSCharacter.ID_FATIGUE_POINTS, factory);
         FACTORY_MAP.put(GURPSCharacter.ID_HIT_POINTS, factory);
 
+        factory = new DefaultFormatterFactory(new DateTimeFormatter());
+        FACTORY_MAP.put(GURPSCharacter.ID_CREATED, factory);
+        FACTORY_MAP.put(GURPSCharacter.ID_MODIFIED, factory);
+
         FACTORY_MAP.put(Profile.ID_SIZE_MODIFIER, new DefaultFormatterFactory(new IntegerFormatter(-99, 9999, true)));
         FACTORY_MAP.put(Profile.ID_AGE, new DefaultFormatterFactory(new IntegerFormatter(0, Integer.MAX_VALUE, false, true)));
         FACTORY_MAP.put(Profile.ID_HEIGHT, new DefaultFormatterFactory(new HeightFormatter(true)));
-        FACTORY_MAP.put(GURPSCharacter.ID_CREATED_ON, new DefaultFormatterFactory(new DateFormatter(DateFormat.MEDIUM)));
         FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SPEED, new DefaultFormatterFactory(new DoubleFormatter(0, 99999, false)));
 
         DefaultFormatter formatter = new DefaultFormatter();

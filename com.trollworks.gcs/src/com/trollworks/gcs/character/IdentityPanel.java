@@ -28,6 +28,6 @@ public class IdentityPanel extends DropPanel {
         super(new ColumnLayout(2, 2, 0), I18n.Text("Identity"));
         createLabelAndField(this, sheet, Profile.ID_NAME, I18n.Text("Name:"), null, SwingConstants.LEFT);
         createLabelAndField(this, sheet, Profile.ID_TITLE, I18n.Text("Title:"), null, SwingConstants.LEFT);
-        createLabelAndField(this, sheet, Profile.ID_RELIGION, I18n.Text("Religion:"), null, SwingConstants.LEFT);
+        createLabelAndField(this, sheet, Profile.ID_PLAYER_NAME, I18n.Text("Player:"), null, SwingConstants.LEFT);
     }
 }
