@@ -27,7 +27,6 @@ import com.trollworks.gcs.utility.text.DiceFormatter;
 import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.text.HeightFormatter;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.text.WeightFormatter;
 
@@ -40,7 +39,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.HashMap;
 import javax.swing.JFormattedTextField;
@@ -54,7 +52,6 @@ import javax.swing.text.DefaultFormatterFactory;
 public class PageField extends JFormattedTextField implements NotifierTarget, PropertyChangeListener, ActionListener, Commitable {
     private CharacterSheet mSheet;
     private String         mConsumedType;
-    private String         mCustomToolTip;
 
     /**
      * Creates a new, left-aligned, text input field.
@@ -121,12 +118,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         } else {
             setDisabledTextColor(Color.BLACK);
         }
-        if (tooltip != null) {
-            setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-            if (tooltip.indexOf('{') != -1) {
-                mCustomToolTip = tooltip;
-            }
-        }
+        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         mSheet.getCharacter().addTarget(this, mConsumedType);
         addPropertyChangeListener("value", this);
         addActionListener(this);
@@ -140,14 +132,6 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         // about 2 pixels.
         size.width += mSheet.getScale().scale(2);
         return size;
-    }
-
-    @Override
-    public String getToolTipText() {
-        if (mCustomToolTip != null) {
-            return Text.wrapPlainTextForToolTip(MessageFormat.format(mCustomToolTip, Numbers.format(((Integer) mSheet.getCharacter().getValueForID(GURPSCharacter.POINTS_PREFIX + mConsumedType)).intValue())));
-        }
-        return super.getToolTipText();
     }
 
     @Override
