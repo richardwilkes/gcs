@@ -79,7 +79,7 @@ public class WeaponBonus extends Bonus {
         }
         if (obj instanceof WeaponBonus && super.equals(obj)) {
             WeaponBonus wb = (WeaponBonus) obj;
-            return mApplyToParentOnly == wb.mApplyToParentOnly && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria);
+            return mApplyToParentOnly == wb.mApplyToParentOnly && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria) && mCategoryCriteria.equals(wb.mCategoryCriteria);
         }
         return false;
     }
