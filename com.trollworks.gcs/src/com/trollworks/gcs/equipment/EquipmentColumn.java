@@ -36,7 +36,7 @@ public enum EquipmentColumn {
     EQUIPPED {
         @Override
         public String toString() {
-            return I18n.Text("E");
+            return I18n.Text("✓");
         }
 
         @Override
@@ -68,7 +68,7 @@ public enum EquipmentColumn {
     QUANTITY {
         @Override
         public String toString() {
-            return I18n.Text("#");
+            return I18n.Text("Qty");
         }
 
         @Override
@@ -306,7 +306,7 @@ public enum EquipmentColumn {
     WEIGHT {
         @Override
         public String toString() {
-            return I18n.Text("W");
+            return I18n.Text("Weight");
         }
 
         @Override
@@ -365,7 +365,7 @@ public enum EquipmentColumn {
     EXT_WEIGHT {
         @Override
         public String toString() {
-            return I18n.Text("∑ W");
+            return I18n.Text("∑ Weight");
         }
 
         @Override
