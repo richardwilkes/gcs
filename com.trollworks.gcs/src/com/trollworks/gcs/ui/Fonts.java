@@ -18,9 +18,10 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
@@ -37,12 +38,11 @@ public class Fonts {
     public static final  String                 KEY_PRIMARY_FOOTER    = "trollworks.v2.footer.primary";
     /** The secondary footer font. */
     public static final  String                 KEY_SECONDARY_FOOTER  = "trollworks.v2.footer.secondary";
-    /** The notes font. */
-    public static final  String                 KEY_NOTES             = "trollworks.v2.notes";
     /** The notification key used when font change notifications are broadcast. */
     public static final  String                 FONT_NOTIFICATION_KEY = "FontsChanged";
     private static final String                 MODULE                = "Font";
-    private static final TreeMap<String, Fonts> DEFAULTS              = new TreeMap<>();
+    private static final List<String>           KEYS                  = new ArrayList<>();
+    private static final HashMap<String, Fonts> DEFAULTS              = new HashMap<>();
     private              String                 mDescription;
     private              Font                   mDefaultFont;
 
@@ -59,9 +59,8 @@ public class Fonts {
         register(KEY_FIELD_NOTES, I18n.Text("Field Notes"), new Font(name, Font.PLAIN, 8));
         register(KEY_PRIMARY_FOOTER, I18n.Text("Primary Footer"), new Font(name, Font.BOLD, 8));
         register(KEY_SECONDARY_FOOTER, I18n.Text("Secondary Footer"), new Font(name, Font.PLAIN, 6));
-        register(KEY_NOTES, I18n.Text("Notes"), new Font(name, Font.PLAIN, 9));
         Preferences prefs = Preferences.getInstance();
-        for (String key : DEFAULTS.keySet()) {
+        for (String key : KEYS) {
             Font font = prefs.getFontValue(MODULE, key);
             if (font != null) {
                 UIManager.put(key, font);
@@ -73,7 +72,7 @@ public class Fonts {
     public static void saveToPreferences() {
         Preferences prefs = Preferences.getInstance();
         prefs.removePreferences(MODULE);
-        for (String key : DEFAULTS.keySet()) {
+        for (String key : KEYS) {
             Font font = UIManager.getFont(key);
             if (font != null) {
                 prefs.setValue(MODULE, key, font);
@@ -82,21 +81,22 @@ public class Fonts {
     }
 
     private static void register(String key, String description, Font defaultFont) {
+        KEYS.add(key);
         UIManager.put(key, defaultFont);
         DEFAULTS.put(key, new Fonts(description, defaultFont));
     }
 
     /** Restores the default fonts. */
     public static void restoreDefaults() {
-        for (Entry<String, Fonts> entry : DEFAULTS.entrySet()) {
-            UIManager.put(entry.getKey(), entry.getValue().mDefaultFont);
+        for (String key : KEYS) {
+            UIManager.put(key, DEFAULTS.get(key).mDefaultFont);
         }
     }
 
     /** @return Whether the fonts are currently at their default values or not. */
     public static boolean isSetToDefaults() {
-        for (Entry<String, Fonts> entry : DEFAULTS.entrySet()) {
-            if (!entry.getValue().mDefaultFont.equals(UIManager.getFont(entry.getKey()))) {
+        for (String key : KEYS) {
+            if (!DEFAULTS.get(key).mDefaultFont.equals(UIManager.getFont(key))) {
                 return false;
             }
         }
@@ -110,7 +110,7 @@ public class Fonts {
 
     /** @return The available font keys. */
     public static String[] getKeys() {
-        return DEFAULTS.keySet().toArray(new String[0]);
+        return KEYS.toArray(new String[0]);
     }
 
     /**
