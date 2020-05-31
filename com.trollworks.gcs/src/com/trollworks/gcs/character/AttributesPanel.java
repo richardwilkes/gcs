@@ -14,11 +14,10 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.layout.Alignment;
-import com.trollworks.gcs.ui.layout.FlexComponent;
-import com.trollworks.gcs.ui.layout.FlexGrid;
-import com.trollworks.gcs.ui.layout.FlexRow;
-import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.page.PagePoints;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 
@@ -27,78 +26,50 @@ import javax.swing.SwingConstants;
 
 /** The character attributes panel. */
 public class AttributesPanel extends DropPanel {
-    private CharacterSheet mSheet;
-
     /**
      * Creates a new attributes panel.
      *
      * @param sheet The sheet to display the data for.
      */
     public AttributesPanel(CharacterSheet sheet) {
-        super(null, I18n.Text("Attributes"), true);
-        mSheet = sheet;
-        FlexGrid grid = new FlexGrid();
-        grid.setVerticalGap(0);
-        int row = 0;
-        createLabelAndField(grid, row++, GURPSCharacter.ID_STRENGTH, I18n.Text("Strength (ST):"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Strength</b></body></html>"), SwingConstants.RIGHT, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_DEXTERITY, I18n.Text("Dexterity (DX):"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Dexterity</b></body></html>"), SwingConstants.RIGHT, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_INTELLIGENCE, I18n.Text("Intelligence (IQ):"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Intelligence</b></body></html>"), SwingConstants.RIGHT, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_HEALTH, I18n.Text("Health (HT):"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Health</b></body></html>"), SwingConstants.RIGHT, true);
-        createDivider(grid, row++, false);
-        createDivider(grid, row++, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_WILL, I18n.Text("Will:"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Will</b></body></html>"), SwingConstants.RIGHT, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_FRIGHT_CHECK, I18n.Text("Fright Check:"), null, SwingConstants.RIGHT, false);
-        createDivider(grid, row++, false);
-        createDivider(grid, row++, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_BASIC_SPEED, I18n.Text("Basic Speed:"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Basic Speed</b></body></html>"), SwingConstants.RIGHT, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_BASIC_MOVE, I18n.Text("Basic Move:"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Basic Move</b></body></html>"), SwingConstants.RIGHT, true);
-        createDivider(grid, row++, false);
-        createDivider(grid, row++, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_PERCEPTION, I18n.Text("Perception:"), I18n.Text("<html><body><b>{0} points</b> have been spent to modify <b>Perception</b></body></html>"), SwingConstants.RIGHT, true);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_VISION, I18n.Text("Vision:"), null, SwingConstants.RIGHT, false);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_HEARING, I18n.Text("Hearing:"), null, SwingConstants.RIGHT, false);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_TASTE_AND_SMELL, I18n.Text("Taste & Smell:"), null, SwingConstants.RIGHT, false);
-        createLabelAndField(grid, row++, GURPSCharacter.ID_TOUCH, I18n.Text("Touch:"), null, SwingConstants.RIGHT, false);
-        createDivider(grid, row++, false);
-        createDivider(grid, row++, true);
-        createDamageFields(grid, row);
-        grid.apply(this);
+        super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), I18n.Text("Attributes"));
+        addLabelAndField(sheet, GURPSCharacter.ID_STRENGTH, I18n.Text("Strength (ST)"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_DEXTERITY, I18n.Text("Dexterity (DX)"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_INTELLIGENCE, I18n.Text("Intelligence (IQ)"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_HEALTH, I18n.Text("Health (HT)"), true);
+        addDivider();
+        addLabelAndField(sheet, GURPSCharacter.ID_WILL, I18n.Text("Will"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_FRIGHT_CHECK, I18n.Text("Fright Check"), false);
+        addDivider();
+        addLabelAndField(sheet, GURPSCharacter.ID_BASIC_SPEED, I18n.Text("Basic Speed"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_BASIC_MOVE, I18n.Text("Basic Move"), true);
+        addDivider();
+        addLabelAndField(sheet, GURPSCharacter.ID_PERCEPTION, I18n.Text("Perception"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_VISION, I18n.Text("Vision"), false);
+        addLabelAndField(sheet, GURPSCharacter.ID_HEARING, I18n.Text("Hearing"), false);
+        addLabelAndField(sheet, GURPSCharacter.ID_TASTE_AND_SMELL, I18n.Text("Taste & Smell"), false);
+        addLabelAndField(sheet, GURPSCharacter.ID_TOUCH, I18n.Text("Touch"), false);
+        addDivider();
+        addLabelAndDamageField(sheet, GURPSCharacter.ID_BASIC_THRUST, I18n.Text("Basic Thrust"));
+        addLabelAndDamageField(sheet, GURPSCharacter.ID_BASIC_SWING, I18n.Text("Basic Swing"));
     }
 
-    private void createLabelAndField(FlexGrid grid, int row, String key, String title, String tooltip, int alignment, boolean enabled) {
-        PageField field = new PageField(mSheet, key, alignment, enabled, tooltip);
-        PageLabel label = new PageLabel(title, field);
-        add(label);
-        add(field);
-        grid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, Alignment.CENTER), row, 0);
-        grid.add(field, row, 1);
+    private void addLabelAndField(CharacterSheet sheet, String key, String title, boolean enabled) {
+        add(new PagePoints(sheet, key), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        PageField field = new PageField(sheet, key, SwingConstants.RIGHT, enabled, null);
+        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(new PageLabel(title, field));
     }
 
-    private void createDamageFields(FlexGrid grid, int rowIndex) {
-        FlexRow row = new FlexRow();
-        row.setHorizontalAlignment(Alignment.CENTER);
-        createDamageLabelAndField(row, GURPSCharacter.ID_BASIC_THRUST, I18n.Text("thr:"), I18n.Text("The basic damage value for thrust attacks"));
-        row.add(new FlexSpacer(0, 0, false, false));
-        createDamageLabelAndField(row, GURPSCharacter.ID_BASIC_SWING, I18n.Text("sw:"), I18n.Text("The basic damage value for swing attacks"));
-        grid.add(row, rowIndex, 0, 1, 2);
+    private void addLabelAndDamageField(CharacterSheet sheet, String key, String title) {
+        PageField field = new PageField(sheet, key, SwingConstants.RIGHT, false, null);
+        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setHorizontalSpan(2));
+        add(new PageLabel(title, field));
     }
 
-    private void createDamageLabelAndField(FlexRow row, String key, String title, String tooltip) {
-        PageField field = new PageField(mSheet, key, SwingConstants.RIGHT, false, tooltip);
-        PageLabel label = new PageLabel(title, field);
-        add(label);
-        add(field);
-        row.add(new FlexComponent(label, true));
-        row.add(new FlexComponent(field, true));
-    }
-
-    private void createDivider(FlexGrid grid, int row, boolean black) {
+    private void addDivider() {
         Wrapper panel = new Wrapper();
-        panel.setOnlySize(1, 1);
-        add(panel);
-        if (black) {
-            addHorizontalBackground(panel, Color.black);
-        }
-        grid.add(panel, row, 0, 1, 2);
+        add(panel, new PrecisionLayoutData().setHorizontalSpan(3).setHeightHint(1));
+        addHorizontalBackground(panel, Color.black);
     }
 }

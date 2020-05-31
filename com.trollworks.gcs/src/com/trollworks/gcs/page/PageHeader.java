@@ -29,7 +29,7 @@ public class PageHeader extends Label {
      */
     public PageHeader(String title, String tooltip) {
         super(title, SwingConstants.CENTER);
-        setFont(UIManager.getFont(Fonts.KEY_LABEL));
+        setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
         setForeground(Color.white);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
     }

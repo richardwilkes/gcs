@@ -29,18 +29,20 @@ public class Fonts {
     /** The standard text field font. */
     public static final  String                 KEY_STD_TEXT_FIELD    = "TextField.font";
     /** The label font. */
-    public static final  String                 KEY_LABEL             = "trollworks.v2.label";
+    public static final  String                 KEY_LABEL_PRIMARY     = "label.primary";
+    /** The small label font. */
+    public static final  String                 KEY_LABEL_SECONDARY   = "label.secondary";
     /** The field font. */
-    public static final  String                 KEY_FIELD             = "trollworks.v2.field";
+    public static final  String                 KEY_FIELD_PRIMARY     = "field.primary";
     /** The field notes font. */
-    public static final  String                 KEY_FIELD_NOTES       = "trollworks.v2.field.notes";
+    public static final  String                 KEY_FIELD_SECONDARY   = "field.secondary";
     /** The primary footer font. */
-    public static final  String                 KEY_PRIMARY_FOOTER    = "trollworks.v2.footer.primary";
+    public static final  String                 KEY_FOOTER_PRIMARY    = "footer.primary";
     /** The secondary footer font. */
-    public static final  String                 KEY_SECONDARY_FOOTER  = "trollworks.v2.footer.secondary";
+    public static final  String                 KEY_FOOTER_SECONDARY  = "footer.secondary";
     /** The notification key used when font change notifications are broadcast. */
     public static final  String                 FONT_NOTIFICATION_KEY = "FontsChanged";
-    private static final String                 MODULE                = "Font";
+    private static final String                 MODULE                = "fonts";
     private static final List<String>           KEYS                  = new ArrayList<>();
     private static final HashMap<String, Fonts> DEFAULTS              = new HashMap<>();
     private              String                 mDescription;
@@ -54,11 +56,12 @@ public class Fonts {
     /** Loads the current font settings from the preferences file. */
     public static void loadFromPreferences() {
         String name = getDefaultFont().getName();
-        register(KEY_LABEL, I18n.Text("Labels"), new Font(name, Font.PLAIN, 9));
-        register(KEY_FIELD, I18n.Text("Fields"), new Font(name, Font.BOLD, 9));
-        register(KEY_FIELD_NOTES, I18n.Text("Field Notes"), new Font(name, Font.PLAIN, 8));
-        register(KEY_PRIMARY_FOOTER, I18n.Text("Primary Footer"), new Font(name, Font.BOLD, 8));
-        register(KEY_SECONDARY_FOOTER, I18n.Text("Secondary Footer"), new Font(name, Font.PLAIN, 6));
+        register(KEY_LABEL_PRIMARY, I18n.Text("Primary Labels"), new Font(name, Font.PLAIN, 9));
+        register(KEY_LABEL_SECONDARY, I18n.Text("Secondary Labels"), new Font(name, Font.PLAIN, 8));
+        register(KEY_FIELD_PRIMARY, I18n.Text("Primary Fields"), new Font(name, Font.PLAIN, 9));
+        register(KEY_FIELD_SECONDARY, I18n.Text("Secondary Fields"), new Font(name, Font.PLAIN, 8));
+        register(KEY_FOOTER_PRIMARY, I18n.Text("Primary Footer"), new Font(name, Font.BOLD, 8));
+        register(KEY_FOOTER_SECONDARY, I18n.Text("Secondary Footer"), new Font(name, Font.PLAIN, 6));
         Preferences prefs = Preferences.getInstance();
         for (String key : KEYS) {
             Font font = prefs.getFontValue(MODULE, key);

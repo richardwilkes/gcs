@@ -33,7 +33,7 @@ public class ListTextCell extends TextCell {
 
     @Override
     public Font getFont(Row row, Column column) {
-        return UIManager.getFont(Fonts.KEY_FIELD);
+        return UIManager.getFont(Fonts.KEY_FIELD_PRIMARY);
     }
 
     @Override

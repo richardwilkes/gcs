@@ -12,63 +12,134 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.layout.RowDistribution;
-import com.trollworks.gcs.ui.widget.Wrapper;
+import com.trollworks.gcs.page.PageField;
+import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.page.PagePoints;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.notification.NotifierTarget;
 
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
+import java.awt.Component;
 import javax.swing.SwingConstants;
 
 /** The character hit points panel. */
-public class HitPointsPanel extends DropPanel {
+public class HitPointsPanel extends DropPanel implements NotifierTarget {
+    private static final Color          CURRENT_THRESHOLD_COLOR = new Color(255, 224, 224);
+    private              CharacterSheet mSheet;
+    private              PageField      mReelingField;
+    private              PageField      mCollapsedField;
+    private              PageField      mCheck1Field;
+    private              PageField      mCheck2Field;
+    private              PageField      mCheck3Field;
+    private              PageField      mCheck4Field;
+    private              PageField      mDeadField;
+    private              State          mState;
+
+    enum State {
+        UNAFFECTED, REELING, COLLAPSED, CHECK1, CHECK2, CHECK3, CHECK4, DEAD
+    }
+
     /**
      * Creates a new hit points panel.
      *
      * @param sheet The sheet to display the data for.
      */
     public HitPointsPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), I18n.Text("Fatigue/Hit Points"));
-        createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_FP, I18n.Text("Current FP:"), I18n.Text("Current fatigue points"), SwingConstants.RIGHT);
-        createLabelAndField(this, sheet, GURPSCharacter.ID_FATIGUE_POINTS, I18n.Text("Basic FP:"), I18n.Text("<html><body>Normal (i.e. fully rested) fatigue points.<br><b>{0} points</b> have been spent to modify <b>FP</b></body></html>"), SwingConstants.RIGHT);
-        createDivider();
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_TIRED_FATIGUE_POINTS, I18n.Text("Tired:"), I18n.Text("<html><body>Current fatigue points at or below this point indicate the<br>character is very tired, halving move, dodge and strength</body></html>"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, I18n.Text("Collapse:"), I18n.Text("<html><body>Current fatigue points at or below this point indicate the<br>character is on the verge of collapse, causing the character<br>to roll vs. Will to do anything besides talk or rest</body></html>"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, I18n.Text("Unconscious:"), I18n.Text("<html><body>Current fatigue points at or below this point<br>cause the character to fall unconscious</body></html>"), SwingConstants.RIGHT);
-        createDivider();
-        createLabelAndField(this, sheet, GURPSCharacter.ID_CURRENT_HP, I18n.Text("Current HP:"), I18n.Text("Current hit points"), SwingConstants.RIGHT);
-        createLabelAndField(this, sheet, GURPSCharacter.ID_HIT_POINTS, I18n.Text("Basic HP:"), I18n.Text("<html><body>Normal (i.e. unharmed) hit points.<br><b>{0} points</b> have been spent to modify <b>HP</b></body></html>"), SwingConstants.RIGHT);
-        createDivider();
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_REELING_HIT_POINTS, I18n.Text("Reeling:"), I18n.Text("<html><body>Current hit points at or below this point indicate the character<br>is reeling from the pain, halving move, speed and dodge</body></html>"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_HIT_POINTS, I18n.Text("Collapse:"), I18n.Text("<html><body>Current hit points at or below this point indicate the character<br>is on the verge of collapse, causing the character to <b>roll vs. HT</b><br>(at -1 per full multiple of HP below zero) every second to avoid<br>falling unconscious</body></html>"), SwingConstants.RIGHT);
+        super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), I18n.Text("Hit Points"));
+        mSheet = sheet;
+        mState = State.UNAFFECTED;
+        addLabelAndField(sheet, GURPSCharacter.ID_CURRENT_HP, I18n.Text("Current"), I18n.Text("Current hit points"), true);
+        addLabelAndField(sheet, GURPSCharacter.ID_HIT_POINTS, I18n.Text("Basic"), I18n.Text("Normal (i.e. unharmed) hit points"), true);
+        mReelingField = addLabelAndField(sheet, GURPSCharacter.ID_REELING_HIT_POINTS, I18n.Text("Reeling"), I18n.Text("Current hit points at or below this point indicate the character is reeling from the pain, halving move, speed and dodge"), false);
+        mCollapsedField = addLabelAndField(sheet, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_HIT_POINTS, I18n.Text("Collapse"), I18n.Text("<html><body>Current hit points at or below this point indicate the character<br>is on the verge of collapse, causing the character to <b>roll vs. HT</b><br>(at -1 per full multiple of HP below zero) every second to avoid<br>falling unconscious</body></html>"), false);
         String deathCheckTooltip = I18n.Text("<html><body>Current hit points at or below this point cause<br>the character to <b>roll vs. HT</b> to avoid death</body></html>");
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_1_HIT_POINTS, I18n.Text("Check #1:"), deathCheckTooltip, SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_2_HIT_POINTS, I18n.Text("Check #2:"), deathCheckTooltip, SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_3_HIT_POINTS, I18n.Text("Check #3:"), deathCheckTooltip, SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEATH_CHECK_4_HIT_POINTS, I18n.Text("Check #4:"), deathCheckTooltip, SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DEAD_HIT_POINTS, I18n.Text("Dead:"), I18n.Text("<html><body>Current hit points at or below this<br>point cause the character to die</body></html>"), SwingConstants.RIGHT);
+        mCheck1Field = addLabelAndField(sheet, GURPSCharacter.ID_DEATH_CHECK_1_HIT_POINTS, I18n.Text("Check #1"), deathCheckTooltip, false);
+        mCheck2Field = addLabelAndField(sheet, GURPSCharacter.ID_DEATH_CHECK_2_HIT_POINTS, I18n.Text("Check #2"), deathCheckTooltip, false);
+        mCheck3Field = addLabelAndField(sheet, GURPSCharacter.ID_DEATH_CHECK_3_HIT_POINTS, I18n.Text("Check #3"), deathCheckTooltip, false);
+        mCheck4Field = addLabelAndField(sheet, GURPSCharacter.ID_DEATH_CHECK_4_HIT_POINTS, I18n.Text("Check #4"), deathCheckTooltip, false);
+        mDeadField = addLabelAndField(sheet, GURPSCharacter.ID_DEAD_HIT_POINTS, I18n.Text("Dead"), I18n.Text("Current hit points at or below this point cause the character to die"), false);
+        adjustBackgrounds();
+        sheet.getCharacter().addTarget(this, GURPSCharacter.ID_CURRENT_HP);
+    }
+
+    private PageField addLabelAndField(CharacterSheet sheet, String key, String title, String tooltip, boolean enabled) {
+        add(new PagePoints(sheet, key), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        PageField field = new PageField(sheet, key, SwingConstants.RIGHT, enabled, tooltip);
+        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(new PageLabel(title, field));
+        return field;
+    }
+
+    private void adjustBackgrounds() {
+        GURPSCharacter character = mSheet.getCharacter();
+        if (character.isDead()) {
+            if (mState == State.DEAD) {
+                return;
+            }
+            mState = State.DEAD;
+        } else if (character.isDeathCheck4()) {
+            if (mState == State.CHECK4) {
+                return;
+            }
+            mState = State.CHECK4;
+        } else if (character.isDeathCheck3()) {
+            if (mState == State.CHECK3) {
+                return;
+            }
+            mState = State.CHECK3;
+        } else if (character.isDeathCheck2()) {
+            if (mState == State.CHECK2) {
+                return;
+            }
+            mState = State.CHECK2;
+        } else if (character.isDeathCheck1()) {
+            if (mState == State.CHECK1) {
+                return;
+            }
+            mState = State.CHECK1;
+        } else if (character.isCollapsedFromHP()) {
+            if (mState == State.COLLAPSED) {
+                return;
+            }
+            mState = State.COLLAPSED;
+        } else if (character.isReeling()) {
+            if (mState == State.REELING) {
+                return;
+            }
+            mState = State.REELING;
+        } else if (mState == State.UNAFFECTED) {
+            return;
+        } else {
+            mState = State.UNAFFECTED;
+        }
+        applyBackground(mReelingField, mState == State.REELING);
+        applyBackground(mCollapsedField, mState == State.COLLAPSED);
+        applyBackground(mCheck1Field, mState == State.CHECK1);
+        applyBackground(mCheck2Field, mState == State.CHECK2);
+        applyBackground(mCheck3Field, mState == State.CHECK3);
+        applyBackground(mCheck4Field, mState == State.CHECK4);
+        applyBackground(mDeadField, mState == State.DEAD);
+        repaint();
+    }
+
+    private void applyBackground(Component field, boolean add) {
+        if (add) {
+            addHorizontalBackground(field, CURRENT_THRESHOLD_COLOR);
+        } else {
+            removeHorizontalBackground(field);
+        }
     }
 
     @Override
-    public Dimension getMaximumSize() {
-        Dimension size = super.getMaximumSize();
-        size.width = getPreferredSize().width;
-        return size;
+    public int getNotificationPriority() {
+        return 0;
     }
 
-    private void createDivider() {
-        createOneByOnePanel();
-        createOneByOnePanel();
-        addHorizontalBackground(createOneByOnePanel(), Color.black);
-        createOneByOnePanel();
-    }
-
-    private Container createOneByOnePanel() {
-        Wrapper panel = new Wrapper();
-        panel.setOnlySize(1, 1);
-        add(panel);
-        return panel;
+    @Override
+    public void handleNotification(Object producer, String name, Object data) {
+        adjustBackgrounds();
     }
 }

@@ -33,7 +33,7 @@ public class HitLocationPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(7, 2, 0), String.format(I18n.Text("%s Hit Locations"), sheet.getCharacter().getProfile().getHitLocationTable().getName()));
+        super(new ColumnLayout(7, 2, 0), I18n.Text("Hit Locations"));
 
         GURPSCharacter   character = sheet.getCharacter();
         HitLocationTable table     = character.getProfile().getHitLocationTable();
@@ -59,7 +59,7 @@ public class HitLocationPanel extends DropPanel {
         createDivider();
 
         wrapper = new Wrapper(new ColumnLayout(1, 2, 0));
-        createHeader(wrapper, "-", I18n.Text("The hit penalty for targeting a specific hit location"));
+        createHeader(wrapper, "Penalty", I18n.Text("The hit penalty for targeting a specific hit location"));
         for (HitLocationTableEntry entry : table.getEntries()) {
             createLabel(wrapper, Integer.toString(entry.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), entry.getName()), SwingConstants.RIGHT);
         }

@@ -61,14 +61,14 @@ public class WeaponDescriptionCell implements Cell {
         WeaponDisplayRow theRow      = (WeaponDisplayRow) row;
         Rectangle        insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
         String           notes       = getSecondaryText(theRow);
-        Font             font        = scale.scale(UIManager.getFont(Fonts.KEY_FIELD));
+        Font             font        = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY));
         gc.setColor(Colors.getListForeground(selected, active));
         gc.setFont(font);
         int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
         if (!notes.trim().isEmpty()) {
             insetBounds.height -= pos - insetBounds.y;
             insetBounds.y = pos;
-            gc.setFont(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_NOTES)));
+            gc.setFont(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_SECONDARY)));
             TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
         }
     }
@@ -77,10 +77,10 @@ public class WeaponDescriptionCell implements Cell {
     public int getPreferredWidth(Outline outline, Row row, Column column) {
         Scale            scale  = Scale.get(outline);
         WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-        int              width  = TextDrawing.getWidth(scale.scale(UIManager.getFont(Fonts.KEY_FIELD)), getPrimaryText(theRow));
+        int              width  = TextDrawing.getWidth(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)), getPrimaryText(theRow));
         String           notes  = getSecondaryText(theRow);
         if (!notes.trim().isEmpty()) {
-            int notesWidth = TextDrawing.getWidth(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_NOTES)), notes);
+            int notesWidth = TextDrawing.getWidth(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_SECONDARY)), notes);
             if (notesWidth > width) {
                 width = notesWidth;
             }
@@ -92,11 +92,11 @@ public class WeaponDescriptionCell implements Cell {
     public int getPreferredHeight(Outline outline, Row row, Column column) {
         Scale            scale  = Scale.get(outline);
         WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-        Font             font   = scale.scale(UIManager.getFont(Fonts.KEY_FIELD));
+        Font             font   = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY));
         int              height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font, scale)).height;
         String           notes  = getSecondaryText(theRow);
         if (!notes.trim().isEmpty()) {
-            font = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_NOTES));
+            font = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_SECONDARY));
             height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font, scale)).height;
         }
         return height;

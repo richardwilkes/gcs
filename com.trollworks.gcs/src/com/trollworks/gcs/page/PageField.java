@@ -107,7 +107,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         }
         mSheet = sheet;
         mConsumedType = consumedType;
-        setFont(sheet.getScale().scale(UIManager.getFont(Fonts.KEY_FIELD)));
+        setFont(sheet.getScale().scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)));
         setBorder(null);
         setOpaque(false);
         // Just setting opaque to false isn't enough for some reason, so I'm also setting the
@@ -116,7 +116,11 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         setHorizontalAlignment(alignment);
         setEditable(editable);
         setEnabled(editable);
-        setForeground(editable ? Color.BLACK : Color.GRAY);
+        if (editable) {
+            setForeground(new Color(0, 0, 192));
+        } else {
+            setDisabledTextColor(Color.BLACK);
+        }
         if (tooltip != null) {
             setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
             if (tooltip.indexOf('{') != -1) {
@@ -127,14 +131,6 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         addPropertyChangeListener("value", this);
         addActionListener(this);
         setFocusLostBehavior(COMMIT_OR_REVERT);
-
-        // Reset the selection colors back to what is standard for text fields.
-        // This is necessary, since (at least on the Mac) JFormattedTextField
-        // has the wrong values by default.
-        setCaretColor(UIManager.getColor("TextField.caretForeground"));
-        setSelectionColor(UIManager.getColor("TextField.selectionBackground"));
-        setSelectedTextColor(UIManager.getColor("TextField.selectionForeground"));
-        setDisabledTextColor(UIManager.getColor("TextField.inactiveForeground"));
     }
 
     @Override

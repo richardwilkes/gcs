@@ -35,7 +35,7 @@ public class ListHeaderCell extends HeaderCell {
 
     @Override
     public Font getFont(Row row, Column column) {
-        return UIManager.getFont(Fonts.KEY_LABEL);
+        return UIManager.getFont(Fonts.KEY_LABEL_PRIMARY);
     }
 
     @Override

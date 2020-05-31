@@ -30,7 +30,7 @@ import javax.swing.SwingConstants;
 /** The character encumbrance panel. */
 public class EncumbrancePanel extends DropPanel implements NotifierTarget {
     private static final Color          CURRENT_ENCUMBRANCE_COLOR            = new Color(252, 242, 196);
-    private static final Color          CURRENT_ENCUMBRANCE_OVERLOADED_COLOR = new Color(255, 192, 192);
+    private static final Color          CURRENT_ENCUMBRANCE_OVERLOADED_COLOR = new Color(255, 224, 224);
     private              CharacterSheet mSheet;
     private              PageLabel[]    mMarkers;
 

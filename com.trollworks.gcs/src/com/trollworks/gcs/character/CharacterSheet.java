@@ -40,8 +40,9 @@ import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.layout.RowDistribution;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
@@ -255,8 +256,24 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         // Create the first page, which holds stuff that has a fixed vertical size.
         pageAssembler = new PageAssembler(this);
-        pageAssembler.addToContent(hwrap(new PortraitPanel(this), vwrap(hwrap(new IdentityPanel(this), new MiscPanel(this)), new DescriptionPanel(this)), new PointsPanel(this)), null, null);
-        pageAssembler.addToContent(hwrap(new AttributesPanel(this), vwrap(new EncumbrancePanel(this), new LiftPanel(this)), new HitLocationPanel(this), new HitPointsPanel(this)), null, null);
+        Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
+        wrapper.add(new PortraitPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
+        wrapper.add(new IdentityPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
+        wrapper.add(new MiscPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
+        wrapper.add(new PointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
+        wrapper.add(new DescriptionPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setHorizontalSpan(2));
+        pageAssembler.addToContent(wrapper, null, null);
+
+        wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
+        wrapper.add(new AttributesPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
+        Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
+        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
+        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2).setGrabHorizontalSpace(true));
+        wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
+        wrapper.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
+        wrapper.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
+        pageAssembler.addToContent(wrapper, null, null);
 
         // Add the various outline blocks, based on the layout preference.
         Set<String> remaining   = prepBlockLayoutRemaining();
@@ -611,9 +628,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private void addBuiltInWeapons(Class<? extends WeaponStats> weaponClass, Map<HashedWeapon, WeaponDisplayRow> map) {
         if (weaponClass == MeleeWeaponStats.class) {
-            boolean            savedModified = mCharacter.isModified();
-            long savedModifiedOn = mCharacter.getModifiedOn();
-            List<SkillDefault> defaults      = new ArrayList<>();
+            boolean            savedModified   = mCharacter.isModified();
+            long               savedModifiedOn = mCharacter.getModifiedOn();
+            List<SkillDefault> defaults        = new ArrayList<>();
             Advantage          phantom;
             MeleeWeaponStats   weapon;
 
@@ -729,41 +746,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private static void resetOutline(Outline outline) {
         outline.clearProxies();
-    }
-
-    private static Container hwrap(Component left, Component right) {
-        Wrapper wrapper = new Wrapper(new ColumnLayout(2, GAP, GAP));
-        wrapper.add(left);
-        wrapper.add(right);
-        wrapper.setAlignmentY(-1.0f);
-        return wrapper;
-    }
-
-    private static Container hwrap(Component left, Component center, Component right) {
-        Wrapper wrapper = new Wrapper(new ColumnLayout(3, GAP, GAP));
-        wrapper.add(left);
-        wrapper.add(center);
-        wrapper.add(right);
-        wrapper.setAlignmentY(-1.0f);
-        return wrapper;
-    }
-
-    private static Container hwrap(Component left, Component center, Component center2, Component right) {
-        Wrapper wrapper = new Wrapper(new ColumnLayout(4, GAP, GAP));
-        wrapper.add(left);
-        wrapper.add(center);
-        wrapper.add(center2);
-        wrapper.add(right);
-        wrapper.setAlignmentY(-1.0f);
-        return wrapper;
-    }
-
-    private static Container vwrap(Component top, Component bottom) {
-        Wrapper wrapper = new Wrapper(new ColumnLayout(1, GAP, GAP, RowDistribution.GIVE_EXCESS_TO_LAST));
-        wrapper.add(top);
-        wrapper.add(bottom);
-        wrapper.setAlignmentY(-1.0f);
-        return wrapper;
     }
 
     /** @return The number of pages in this character sheet. */
@@ -950,8 +932,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         bounds.y = insets.top;
         int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
         String      pageString = MessageFormat.format(I18n.Text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
-        Font        font1      = mScale.scale(UIManager.getFont(Fonts.KEY_SECONDARY_FOOTER));
-        Font        font2      = mScale.scale(UIManager.getFont(Fonts.KEY_PRIMARY_FOOTER));
+        Font        font1      = mScale.scale(UIManager.getFont(Fonts.KEY_FOOTER_SECONDARY));
+        Font        font2      = mScale.scale(UIManager.getFont(Fonts.KEY_FOOTER_PRIMARY));
         FontMetrics fm1        = gc.getFontMetrics(font1);
         FontMetrics fm2        = gc.getFontMetrics(font2);
         int         y          = bounds.y + bounds.height + fm2.getAscent();
@@ -999,8 +981,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public Insets getPageAdornmentsInsets(Page page) {
-        FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_SECONDARY_FOOTER));
-        FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_PRIMARY_FOOTER));
+        FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_FOOTER_SECONDARY));
+        FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_FOOTER_PRIMARY));
         return new Insets(0, 0, fm1.getAscent() + fm1.getDescent() + fm2.getAscent() + fm2.getDescent(), 0);
     }
 

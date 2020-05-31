@@ -2152,6 +2152,30 @@ public class GURPSCharacter extends DataFile {
         return getCurrentHitPoints() <= getReelingHitPoints();
     }
 
+    public boolean isCollapsedFromHP() {
+        return getCurrentHitPoints() <= getUnconsciousChecksHitPoints();
+    }
+
+    public boolean isDeathCheck1() {
+        return getCurrentHitPoints() <= getDeathCheck1HitPoints();
+    }
+
+    public boolean isDeathCheck2() {
+        return getCurrentHitPoints() <= getDeathCheck2HitPoints();
+    }
+
+    public boolean isDeathCheck3() {
+        return getCurrentHitPoints() <= getDeathCheck3HitPoints();
+    }
+
+    public boolean isDeathCheck4() {
+        return getCurrentHitPoints() <= getDeathCheck4HitPoints();
+    }
+
+    public boolean isDead() {
+        return getCurrentHitPoints() <= getDeadHitPoints();
+    }
+
     /** @return The number of hit points where unconsciousness checks must start being made. */
     @SuppressWarnings("static-method")
     public int getUnconsciousChecksHitPoints() {
@@ -2466,6 +2490,14 @@ public class GURPSCharacter extends DataFile {
 
     public boolean isTired() {
         return getCurrentFatiguePoints() <= getTiredFatiguePoints();
+    }
+
+    public boolean isCollapsedFromFP() {
+        return getCurrentFatiguePoints() <= getUnconsciousChecksFatiguePoints();
+    }
+
+    public boolean isUnconscious() {
+        return getCurrentFatiguePoints() <= getUnconsciousFatiguePoints();
     }
 
     /** @return The number of fatigue points where unconsciousness checks must start being made. */

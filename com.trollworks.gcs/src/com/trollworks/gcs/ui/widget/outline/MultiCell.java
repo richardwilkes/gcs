@@ -62,7 +62,7 @@ public class MultiCell implements Cell {
 
     /** @return The primary font. */
     public Font getPrimaryFont() {
-        return UIManager.getFont(mForEditor ? "TextField.font" : Fonts.KEY_FIELD);
+        return UIManager.getFont(mForEditor ? "TextField.font" : Fonts.KEY_FIELD_PRIMARY);
     }
 
     /** @return The secondary font, for notes. */
@@ -71,7 +71,7 @@ public class MultiCell implements Cell {
             Font font = getPrimaryFont();
             return font.deriveFont(font.getSize() * 7.0f / 8.0f);
         }
-        return UIManager.getFont(Fonts.KEY_FIELD_NOTES);
+        return UIManager.getFont(Fonts.KEY_FIELD_SECONDARY);
     }
 
     /**

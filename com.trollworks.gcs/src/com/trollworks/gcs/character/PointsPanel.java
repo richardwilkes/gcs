@@ -12,17 +12,18 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.page.PageField;
+import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.layout.RowDistribution;
-import com.trollworks.gcs.ui.widget.Wrapper;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.text.MessageFormat;
 import javax.swing.SwingConstants;
 
@@ -36,36 +37,24 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
      * @param sheet The sheet to display the data for.
      */
     public PointsPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(2, 2, 0, RowDistribution.DISTRIBUTE_HEIGHT), getTitle(sheet.getCharacter()));
+        super(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), getTitle(sheet.getCharacter()));
         mSheet = sheet;
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_RACE_POINTS, I18n.Text("Race:"), I18n.Text("A summary of all points spent on a racial package for this character"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_ATTRIBUTE_POINTS, I18n.Text("Attributes:"), I18n.Text("A summary of all points spent on attributes for this character"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_ADVANTAGE_POINTS, I18n.Text("Advantages:"), I18n.Text("A summary of all points spent on advantages for this character"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_DISADVANTAGE_POINTS, I18n.Text("Disadvantages:"), I18n.Text("A summary of all points spent on disadvantages for this character"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_QUIRK_POINTS, I18n.Text("Quirks:"), I18n.Text("A summary of all points spent on quirks for this character"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_SKILL_POINTS, I18n.Text("Skills:"), I18n.Text("A summary of all points spent on skills for this character"), SwingConstants.RIGHT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_SPELL_POINTS, I18n.Text("Spells:"), I18n.Text("A summary of all points spent on spells for this character"), SwingConstants.RIGHT);
-        createDivider();
-        createLabelAndField(this, sheet, GURPSCharacter.ID_UNSPENT_POINTS, I18n.Text("Unspent:"), I18n.Text("Points that have been earned but have not yet been spent"), SwingConstants.RIGHT);
+        createLabelAndField(sheet, GURPSCharacter.ID_UNSPENT_POINTS, I18n.Text("Unspent"), I18n.Text("Points that have been earned but have not yet been spent"), true);
+        createLabelAndField(sheet, GURPSCharacter.ID_RACE_POINTS, I18n.Text("Race"), I18n.Text("A summary of all points spent on a racial package for this character"), false);
+        createLabelAndField(sheet, GURPSCharacter.ID_ATTRIBUTE_POINTS, I18n.Text("Attributes"), I18n.Text("A summary of all points spent on attributes for this character"), false);
+        createLabelAndField(sheet, GURPSCharacter.ID_ADVANTAGE_POINTS, I18n.Text("Advantages"), I18n.Text("A summary of all points spent on advantages for this character"), false);
+        createLabelAndField(sheet, GURPSCharacter.ID_DISADVANTAGE_POINTS, I18n.Text("Disadvantages"), I18n.Text("A summary of all points spent on disadvantages for this character"), false);
+        createLabelAndField(sheet, GURPSCharacter.ID_QUIRK_POINTS, I18n.Text("Quirks"), I18n.Text("A summary of all points spent on quirks for this character"), false);
+        createLabelAndField(sheet, GURPSCharacter.ID_SKILL_POINTS, I18n.Text("Skills"), I18n.Text("A summary of all points spent on skills for this character"), false);
+        createLabelAndField(sheet, GURPSCharacter.ID_SPELL_POINTS, I18n.Text("Spells"), I18n.Text("A summary of all points spent on spells for this character"), false);
         sheet.getCharacter().addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
         Preferences.getInstance().getNotifier().add(this, DisplayPreferences.TOTAL_POINTS_DISPLAY_PREF_KEY);
     }
 
-    @Override
-    public Dimension getMaximumSize() {
-        Dimension size = super.getMaximumSize();
-        size.width = getPreferredSize().width;
-        return size;
-    }
-
-    private void createDivider() {
-        Wrapper panel = new Wrapper();
-        panel.setOnlySize(1, 1);
-        add(panel);
-        addHorizontalBackground(panel, Color.black);
-        panel = new Wrapper();
-        panel.setOnlySize(1, 1);
-        add(panel);
+    private void createLabelAndField(CharacterSheet sheet, String key, String title, String tooltip, boolean enabled) {
+        PageField field = new PageField(sheet, key, SwingConstants.RIGHT, enabled, Text.wrapPlainTextForToolTip(tooltip));
+        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(new PageLabel(title, field));
     }
 
     @Override

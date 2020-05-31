@@ -101,7 +101,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
     @Override
     public Dimension minimumLayoutSize(Container parent) {
         Dimension size      = mOutline.getMinimumSize();
-        int       minHeight = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_FIELD), "Mg").height;
+        int       minHeight = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY), "Mg").height;
         if (size.height < minHeight) {
             size.height = minHeight;
         }

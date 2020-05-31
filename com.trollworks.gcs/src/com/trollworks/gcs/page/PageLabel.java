@@ -28,7 +28,7 @@ public class PageLabel extends Label {
      */
     public PageLabel(String title, JComponent field) {
         super(title);
-        setFont(UIManager.getFont(Fonts.KEY_LABEL));
+        setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
         setRefersTo(field);
         UIUtilities.setToPreferredSizeOnly(this);
     }

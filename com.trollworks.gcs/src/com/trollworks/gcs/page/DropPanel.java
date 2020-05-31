@@ -69,7 +69,7 @@ public class DropPanel extends JPanel {
      * @param title  The title to use.
      */
     public DropPanel(LayoutManager layout, String title) {
-        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL), false);
+        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), false);
     }
 
     /**
@@ -81,7 +81,7 @@ public class DropPanel extends JPanel {
      *                                preferred size or not.
      */
     public DropPanel(LayoutManager layout, String title, boolean onlyReportPreferredSize) {
-        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL), onlyReportPreferredSize);
+        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), onlyReportPreferredSize);
     }
 
     /**
