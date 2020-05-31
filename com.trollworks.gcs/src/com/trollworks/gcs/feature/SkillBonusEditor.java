@@ -101,7 +101,7 @@ public class SkillBonusEditor extends FeatureEditor {
             int          selectedIndex = combo.getSelectedIndex();
             boolean      wantRebuild   = bonus.setApplyToParentOnly(selectedIndex == 0);
             if (selectedIndex != 0) {
-                bonus.getNameCriteria().setType(StringCompareType.values()[selectedIndex]);
+                bonus.getNameCriteria().setType(StringCompareType.values()[selectedIndex-1]);
             }
             notifyActionListeners();
             if (wantRebuild) {
