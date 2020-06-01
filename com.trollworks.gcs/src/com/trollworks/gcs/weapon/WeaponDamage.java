@@ -386,15 +386,18 @@ public class WeaponDamage {
                         bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), categories, toolTip));
                     }
                 }
+                String nameQualifier = mOwner.toString();
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, toolTip));
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, toolTip));
                 List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
                 for (Feature feature : mOwner.mOwner.getFeatures()) {
-                    extractWeaponBonus(feature, bonuses);
+                    extractWeaponBonus(feature, bonuses, toolTip);
                 }
                 if (mOwner.mOwner instanceof Advantage) {
                     for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses);
+                                extractWeaponBonus(feature, bonuses, toolTip);
                             }
                         }
                     }
@@ -403,7 +406,7 @@ public class WeaponDamage {
                     for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses);
+                                extractWeaponBonus(feature, bonuses, toolTip);
                             }
                         }
                     }
@@ -495,11 +498,24 @@ public class WeaponDamage {
         return toString();
     }
 
-    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list) {
+    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list, StringBuilder toolTip) {
         if (feature instanceof WeaponBonus) {
             WeaponBonus wb = (WeaponBonus) feature;
-            if (wb.applyToParentOnly()) {
+            switch (wb.getWeaponSelectionType()) {
+            case THIS_WEAPON:
+            default:
                 list.add(wb);
+                wb.addToToolTip(toolTip);
+                break;
+            case WEAPONS_WITH_NAME:
+                if (wb.getNameCriteria().matches(mOwner.toString())) {
+                    list.add(wb);
+                    wb.addToToolTip(toolTip);
+                }
+                break;
+            case WEAPONS_WITH_REQUIRED_SKILL:
+                // Already handled
+                break;
             }
         }
     }

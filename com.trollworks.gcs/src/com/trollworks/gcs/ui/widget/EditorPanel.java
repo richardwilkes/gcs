@@ -64,8 +64,8 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
      * @param selection The item to select initially.
      * @return The new {@link JComboBox}.
      */
-    protected JComboBox<Object> addComboBox(String command, Object[] items, Object selection) {
-        JComboBox<Object> combo = new JComboBox<>(items);
+    protected <T> JComboBox<T> addComboBox(String command, T[] items, T selection) {
+        JComboBox<T> combo = new JComboBox<>(items);
         combo.setOpaque(false);
         combo.setSelectedItem(selection);
         combo.setActionCommand(command);

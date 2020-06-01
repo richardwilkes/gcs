@@ -17,6 +17,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.SkillBonus;
+import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.skill.Skill;
@@ -24,6 +25,7 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
@@ -243,16 +245,25 @@ public abstract class WeaponStats {
         }
     }
 
+    public String getSkillLevelToolTip() {
+        StringBuilder toolTip = new StringBuilder();
+        DataFile      df      = mOwner.getDataFile();
+        if (df instanceof GURPSCharacter) {
+            getSkillLevel((GURPSCharacter) df, toolTip);
+        }
+        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip : I18n.Text("No additional modifiers");
+    }
+
     /** @return The skill level. */
     public int getSkillLevel() {
         DataFile df = mOwner.getDataFile();
         if (df instanceof GURPSCharacter) {
-            return getSkillLevel((GURPSCharacter) df);
+            return getSkillLevel((GURPSCharacter) df, null);
         }
         return 0;
     }
 
-    private int getSkillLevel(GURPSCharacter character) {
+    private int getSkillLevel(GURPSCharacter character, StringBuilder toolTip) {
         int best = Integer.MIN_VALUE;
         for (SkillDefault skillDefault : getDefaults()) {
             SkillDefaultType type  = skillDefault.getType();
@@ -276,14 +287,21 @@ public abstract class WeaponStats {
             if (best < 0) {
                 best = 0;
             } else {
+                String nameQualifier = toString();
+                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, toolTip)) {
+                    best += bonus.getAmount().getIntegerAdjustedAmount();
+                }
+                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, toolTip)) {
+                    best += bonus.getAmount().getIntegerAdjustedAmount();
+                }
                 for (Feature feature : mOwner.getFeatures()) {
-                    best += extractSkillBonus(feature);
+                    best += extractSkillBonus(feature, toolTip);
                 }
                 if (mOwner instanceof Advantage) {
                     for (AdvantageModifier modifier : ((Advantage) mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                best += extractSkillBonus(feature);
+                                best += extractSkillBonus(feature, toolTip);
                             }
                         }
                     }
@@ -292,7 +310,7 @@ public abstract class WeaponStats {
                     for (EquipmentModifier modifier : ((Equipment) mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                best += extractSkillBonus(feature);
+                                best += extractSkillBonus(feature, toolTip);
                             }
                         }
                     }
@@ -305,11 +323,23 @@ public abstract class WeaponStats {
         return best;
     }
 
-    private int extractSkillBonus(Feature feature) {
+    private int extractSkillBonus(Feature feature, StringBuilder toolTip) {
         if (feature instanceof SkillBonus) {
             SkillBonus sb = (SkillBonus) feature;
-            if (sb.applyToParentOnly()) {
+            switch (sb.getSkillSelectionType()) {
+            case THIS_WEAPON:
+            default:
+                sb.addToToolTip(toolTip);
                 return sb.getAmount().getIntegerAdjustedAmount();
+            case WEAPONS_WITH_NAME:
+                if (sb.getNameCriteria().matches(mOwner.toString())) {
+                    sb.addToToolTip(toolTip);
+                    return sb.getAmount().getIntegerAdjustedAmount();
+                }
+                break;
+            case SKILLS_WITH_NAME:
+                // Already handled
+                break;
             }
         }
         return 0;

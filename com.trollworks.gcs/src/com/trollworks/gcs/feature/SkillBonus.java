@@ -15,6 +15,7 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 
@@ -25,19 +26,20 @@ import java.util.Set;
 /** A skill bonus. */
 public class SkillBonus extends Bonus {
     /** The XML tag. */
-    public static final  String         TAG_ROOT           = "skill_bonus";
-    private static final String         TAG_NAME           = "name";
-    private static final String         TAG_SPECIALIZATION = "specialization";
-    private static final String         TAG_CATEGORY       = "category";
-    private static final String         TAG_PARENT_ONLY    = "parent_only";
-    private              StringCriteria mNameCriteria;
-    private              StringCriteria mSpecializationCriteria;
-    private              StringCriteria mCategoryCriteria;
-    private              boolean        mApplyToParentOnly;
+    public static final  String             TAG_ROOT           = "skill_bonus";
+    private static final String             TAG_SELECTION_TYPE = "selection_type";
+    private static final String             TAG_NAME           = "name";
+    private static final String             TAG_SPECIALIZATION = "specialization";
+    private static final String             TAG_CATEGORY       = "category";
+    private              SkillSelectionType mSkillSelectionType;
+    private              StringCriteria     mNameCriteria;
+    private              StringCriteria     mSpecializationCriteria;
+    private              StringCriteria     mCategoryCriteria;
 
     /** Creates a new skill bonus. */
     public SkillBonus() {
         super(1);
+        mSkillSelectionType = SkillSelectionType.SKILLS_WITH_NAME;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
         mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
         mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
@@ -60,10 +62,10 @@ public class SkillBonus extends Bonus {
      */
     public SkillBonus(SkillBonus other) {
         super(other);
+        mSkillSelectionType = other.mSkillSelectionType;
         mNameCriteria = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
         mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
-        mApplyToParentOnly = other.mApplyToParentOnly;
     }
 
     @Override
@@ -74,7 +76,7 @@ public class SkillBonus extends Bonus {
         if (obj instanceof SkillBonus && super.equals(obj)) {
             SkillBonus sb = (SkillBonus) obj;
             if (mNameCriteria.equals(sb.mNameCriteria)) {
-                return mApplyToParentOnly == sb.mApplyToParentOnly && mNameCriteria.equals(sb.mNameCriteria) && mSpecializationCriteria.equals(sb.mSpecializationCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
+                return mSkillSelectionType == sb.mSkillSelectionType && mNameCriteria.equals(sb.mNameCriteria) && mSpecializationCriteria.equals(sb.mSpecializationCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
             }
         }
         return false;
@@ -92,11 +94,21 @@ public class SkillBonus extends Bonus {
 
     @Override
     public String getKey() {
+        switch (mSkillSelectionType) {
+        case THIS_WEAPON:
+        default:
+            return WeaponBonus.THIS_WEAPON_ID;
+        case WEAPONS_WITH_NAME:
+            return buildKey(WeaponBonus.WEAPON_NAMED_ID_PREFIX);
+        case SKILLS_WITH_NAME:
+            return buildKey(Skill.ID_NAME);
+        }
+    }
+
+    private String buildKey(String prefix) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(Skill.ID_NAME);
-        if (mApplyToParentOnly) {
-            buffer.append("\u0001");
-        } else if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
+        buffer.append(prefix);
+        if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
@@ -112,14 +124,14 @@ public class SkillBonus extends Bonus {
     @Override
     protected void loadSelf(XMLReader reader) throws IOException {
         String name = reader.getName();
-        if (TAG_NAME.equals(name)) {
+        if (TAG_SELECTION_TYPE.equals(name)) {
+            mSkillSelectionType = Enums.extract(reader.readText(), SkillSelectionType.values(), SkillSelectionType.SKILLS_WITH_NAME);
+        } else if (TAG_NAME.equals(name)) {
             mNameCriteria.load(reader);
         } else if (TAG_SPECIALIZATION.equals(name)) {
             mSpecializationCriteria.load(reader);
         } else if (TAG_CATEGORY.equals(name)) {
             mCategoryCriteria.load(reader);
-        } else if (TAG_PARENT_ONLY.equals(reader.getName())) {
-            mApplyToParentOnly = reader.readBoolean();
         } else {
             super.loadSelf(reader);
         }
@@ -133,24 +145,31 @@ public class SkillBonus extends Bonus {
     @Override
     public void save(XMLWriter out) {
         out.startSimpleTagEOL(TAG_ROOT);
-        if (mApplyToParentOnly) {
-            out.simpleTag(TAG_PARENT_ONLY, true);
-        } else {
+        out.simpleTag(TAG_SELECTION_TYPE, Enums.toId(mSkillSelectionType));
+        switch (mSkillSelectionType) {
+        case THIS_WEAPON:
+        default:
+            break;
+        case WEAPONS_WITH_NAME:
+            mNameCriteria.save(out, TAG_NAME);
+            break;
+        case SKILLS_WITH_NAME:
             mNameCriteria.save(out, TAG_NAME);
             mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
             mCategoryCriteria.save(out, TAG_CATEGORY);
+            break;
         }
         saveBase(out);
         out.endTagEOL(TAG_ROOT, true);
     }
 
-    public boolean applyToParentOnly() {
-        return mApplyToParentOnly;
+    public SkillSelectionType getSkillSelectionType() {
+        return mSkillSelectionType;
     }
 
-    public boolean setApplyToParentOnly(boolean apply) {
-        if (mApplyToParentOnly != apply) {
-            mApplyToParentOnly = apply;
+    public boolean setSkillSelectionType(SkillSelectionType type) {
+        if (mSkillSelectionType != type) {
+            mSkillSelectionType = type;
             return true;
         }
         return false;
@@ -173,19 +192,35 @@ public class SkillBonus extends Bonus {
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {
-        if (!mApplyToParentOnly) {
+        switch (mSkillSelectionType) {
+        case THIS_WEAPON:
+        default:
+            break;
+        case WEAPONS_WITH_NAME:
+            ListRow.extractNameables(set, mNameCriteria.getQualifier());
+            break;
+        case SKILLS_WITH_NAME:
             ListRow.extractNameables(set, mNameCriteria.getQualifier());
             ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
             ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
+            break;
         }
     }
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
-        if (!mApplyToParentOnly) {
+        switch (mSkillSelectionType) {
+        case THIS_WEAPON:
+        default:
+            break;
+        case WEAPONS_WITH_NAME:
+            mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
+            break;
+        case SKILLS_WITH_NAME:
             mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
             mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
             mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
+            break;
         }
     }
 }

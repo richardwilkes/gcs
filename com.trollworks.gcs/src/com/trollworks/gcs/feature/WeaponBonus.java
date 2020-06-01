@@ -17,6 +17,7 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 
@@ -26,22 +27,26 @@ import java.util.Set;
 
 /** A weapon bonus. */
 public class WeaponBonus extends Bonus {
+    public static final  String              THIS_WEAPON_ID         = "\u0001";
+    public static final  String              WEAPON_NAMED_ID_PREFIX = "weapon_named.";
     /** The XML tag. */
-    public static final  String          TAG_ROOT           = "weapon_bonus";
-    private static final String          TAG_NAME           = "name";
-    private static final String          TAG_SPECIALIZATION = "specialization";
-    private static final String          TAG_LEVEL          = "level";
-    private static final String          TAG_CATEGORY       = "category";
-    private static final String          TAG_PARENT_ONLY    = "parent_only";
-    private              StringCriteria  mNameCriteria;
-    private              StringCriteria  mSpecializationCriteria;
-    private              IntegerCriteria mLevelCriteria;
-    private              StringCriteria  mCategoryCriteria;
-    private              boolean         mApplyToParentOnly;
+    public static final  String              TAG_ROOT               = "weapon_bonus";
+    private static final String              TAG_SELECTION_TYPE     = "selection_type";
+    private static final String              TAG_NAME               = "name";
+    private static final String              TAG_SPECIALIZATION     = "specialization";
+    private static final String              TAG_LEVEL              = "level";
+    private static final String              TAG_CATEGORY           = "category";
+    private static final String              TAG_PARENT_ONLY        = "parent_only";
+    private              WeaponSelectionType mWeaponSelectionType;
+    private              StringCriteria      mNameCriteria;
+    private              StringCriteria      mSpecializationCriteria;
+    private              IntegerCriteria     mLevelCriteria;
+    private              StringCriteria      mCategoryCriteria;
 
     /** Creates a new skill bonus. */
     public WeaponBonus() {
         super(1);
+        mWeaponSelectionType = WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
         mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
         mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
@@ -65,11 +70,11 @@ public class WeaponBonus extends Bonus {
      */
     public WeaponBonus(WeaponBonus other) {
         super(other);
+        mWeaponSelectionType = other.mWeaponSelectionType;
         mNameCriteria = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
         mLevelCriteria = new IntegerCriteria(other.mLevelCriteria);
         mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
-        mApplyToParentOnly = other.mApplyToParentOnly;
     }
 
     @Override
@@ -79,7 +84,7 @@ public class WeaponBonus extends Bonus {
         }
         if (obj instanceof WeaponBonus && super.equals(obj)) {
             WeaponBonus wb = (WeaponBonus) obj;
-            return mApplyToParentOnly == wb.mApplyToParentOnly && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria) && mCategoryCriteria.equals(wb.mCategoryCriteria);
+            return mWeaponSelectionType == wb.mWeaponSelectionType && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria) && mCategoryCriteria.equals(wb.mCategoryCriteria);
         }
         return false;
     }
@@ -96,11 +101,21 @@ public class WeaponBonus extends Bonus {
 
     @Override
     public String getKey() {
+        switch (mWeaponSelectionType) {
+        case THIS_WEAPON:
+        default:
+            return THIS_WEAPON_ID;
+        case WEAPONS_WITH_NAME:
+            return buildKey(WEAPON_NAMED_ID_PREFIX);
+        case WEAPONS_WITH_REQUIRED_SKILL:
+            return buildKey(Skill.ID_NAME);
+        }
+    }
+
+    private String buildKey(String prefix) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(Skill.ID_NAME);
-        if (mApplyToParentOnly) {
-            buffer.append("\u0001");
-        } else if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
+        buffer.append(prefix);
+        if (mNameCriteria.isTypeIs() && mSpecializationCriteria.isTypeAnything() && mCategoryCriteria.isTypeAnything()) {
             buffer.append('/');
             buffer.append(mNameCriteria.getQualifier());
         } else {
@@ -115,16 +130,17 @@ public class WeaponBonus extends Bonus {
 
     @Override
     protected void loadSelf(XMLReader reader) throws IOException {
-        if (TAG_NAME.equals(reader.getName())) {
+        String name = reader.getName();
+        if (TAG_SELECTION_TYPE.equals(name)) {
+            mWeaponSelectionType = Enums.extract(reader.readText(), WeaponSelectionType.values(), WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL);
+        } else if (TAG_NAME.equals(name)) {
             mNameCriteria.load(reader);
-        } else if (TAG_SPECIALIZATION.equals(reader.getName())) {
+        } else if (TAG_SPECIALIZATION.equals(name)) {
             mSpecializationCriteria.load(reader);
-        } else if (TAG_LEVEL.equals(reader.getName())) {
+        } else if (TAG_LEVEL.equals(name)) {
             mLevelCriteria.load(reader);
-        } else if (TAG_CATEGORY.equals(reader.getName())) {
+        } else if (TAG_CATEGORY.equals(name)) {
             mCategoryCriteria.load(reader);
-        } else if (TAG_PARENT_ONLY.equals(reader.getName())) {
-            mApplyToParentOnly = reader.readBoolean();
         } else {
             super.loadSelf(reader);
         }
@@ -138,25 +154,32 @@ public class WeaponBonus extends Bonus {
     @Override
     public void save(XMLWriter out) {
         out.startSimpleTagEOL(TAG_ROOT);
-        if (mApplyToParentOnly) {
-            out.simpleTag(TAG_PARENT_ONLY, true);
-        } else {
+        out.simpleTag(TAG_SELECTION_TYPE, Enums.toId(mWeaponSelectionType));
+        switch (mWeaponSelectionType) {
+        case THIS_WEAPON:
+        default:
+            break;
+        case WEAPONS_WITH_NAME:
+            mNameCriteria.save(out, TAG_NAME);
+            break;
+        case WEAPONS_WITH_REQUIRED_SKILL:
             mNameCriteria.save(out, TAG_NAME);
             mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
             mLevelCriteria.save(out, TAG_LEVEL);
             mCategoryCriteria.save(out, TAG_CATEGORY);
+            break;
         }
         saveBase(out);
         out.endTagEOL(TAG_ROOT, true);
     }
 
-    public boolean applyToParentOnly() {
-        return mApplyToParentOnly;
+    public WeaponSelectionType getWeaponSelectionType() {
+        return mWeaponSelectionType;
     }
 
-    public boolean setApplyToParentOnly(boolean apply) {
-        if (mApplyToParentOnly != apply) {
-            mApplyToParentOnly = apply;
+    public boolean setWeaponSelectionType(WeaponSelectionType type) {
+        if (mWeaponSelectionType != type) {
+            mWeaponSelectionType = type;
             return true;
         }
         return false;
@@ -184,19 +207,35 @@ public class WeaponBonus extends Bonus {
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {
-        if (!mApplyToParentOnly) {
+        switch (mWeaponSelectionType) {
+        case THIS_WEAPON:
+        default:
+            break;
+        case WEAPONS_WITH_NAME:
+            ListRow.extractNameables(set, mNameCriteria.getQualifier());
+            break;
+        case WEAPONS_WITH_REQUIRED_SKILL:
             ListRow.extractNameables(set, mNameCriteria.getQualifier());
             ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
             ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
+            break;
         }
     }
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
-        if (!mApplyToParentOnly) {
+        switch (mWeaponSelectionType) {
+        case THIS_WEAPON:
+        default:
+            break;
+        case WEAPONS_WITH_NAME:
+            mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
+            break;
+        case WEAPONS_WITH_REQUIRED_SKILL:
             mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
             mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
             mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
+            break;
         }
     }
 

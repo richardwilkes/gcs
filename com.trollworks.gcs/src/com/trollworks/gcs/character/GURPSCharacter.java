@@ -25,8 +25,10 @@ import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
+import com.trollworks.gcs.feature.SkillSelectionType;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
@@ -2906,6 +2908,50 @@ public class GURPSCharacter extends DataFile {
                             bonuses.add(bonus);
                             bonus.addToToolTip(toolTip);
                         }
+                    }
+                }
+            }
+        }
+        return bonuses;
+    }
+
+    /**
+     * @param id            The feature ID to search for.
+     * @param nameQualifier The name qualifier.
+     * @return The bonuses.
+     */
+    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, StringBuilder toolTip) {
+        List<WeaponBonus> bonuses = new ArrayList<>();
+        List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
+        if (list != null) {
+            for (Feature feature : list) {
+                if (feature instanceof WeaponBonus) {
+                    WeaponBonus bonus = (WeaponBonus) feature;
+                    if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier)) {
+                        bonuses.add(bonus);
+                        bonus.addToToolTip(toolTip);
+                    }
+                }
+            }
+        }
+        return bonuses;
+    }
+
+    /**
+     * @param id            The feature ID to search for.
+     * @param nameQualifier The name qualifier.
+     * @return The bonuses.
+     */
+    public List<SkillBonus> getNamedWeaponSkillBonusesFor(String id, String nameQualifier, StringBuilder toolTip) {
+        List<SkillBonus> bonuses = new ArrayList<>();
+        List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
+        if (list != null) {
+            for (Feature feature : list) {
+                if (feature instanceof SkillBonus) {
+                    SkillBonus bonus = (SkillBonus) feature;
+                    if (bonus.getSkillSelectionType() == SkillSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier)) {
+                        bonuses.add(bonus);
+                        bonus.addToToolTip(toolTip);
                     }
                 }
             }
