@@ -109,9 +109,13 @@ public enum WeaponColumn {
         }
 
         @Override
+        public String getToolTip(WeaponDisplayRow weapon) {
+            return weapon.getSkillLevelToolTip();
+        }
+
+        @Override
         public String getDataAsText(WeaponStats weapon) {
             int level = weapon.getSkillLevel();
-
             if (level < 0) {
                 return "-";
             }

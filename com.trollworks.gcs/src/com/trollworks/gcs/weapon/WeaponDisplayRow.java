@@ -67,6 +67,10 @@ public class WeaponDisplayRow extends Row {
         return WeaponColumn.values()[column.getID()].getToolTip(this);
     }
 
+    public String getSkillLevelToolTip() {
+        return mWeapon.getSkillLevelToolTip();
+    }
+
     public String getDamageToolTip() {
         return mWeapon.getDamage().getDamageToolTip();
     }
