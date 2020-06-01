@@ -31,17 +31,13 @@ public class Log {
             } catch (Throwable throwable) {
                 error("Unable to redirect log to " + property, throwable);
             }
-        }
-        else if (Platform.isWindows()) {
-            File directory = new File(System.getenv("LOCALAPPDATA") + "\\GCS");
-            File logFile = new File(System.getenv("LOCALAPPDATA") + "\\GCS\\error.log");
-            if (!directory.exists()) {
-                directory.mkdir();
-            }
+        } else if (Platform.isWindows() && System.getenv() != null) {
+            File logDirectory = new File(System.getenv("LOCALAPPDATA") + "\\GCS");
             try {
-                OUT = new PrintStream(logFile);
+                logDirectory.mkdirs();
+                OUT = new PrintStream(logDirectory+"\\error.log");
             } catch (Throwable throwable) {
-                error("Unable to redirect log to " + logFile, throwable);
+                error("Unable to redirect log to " + logDirectory+"\\error.log", throwable);
             }
         }
     }
