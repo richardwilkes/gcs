@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.utility;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,6 +30,18 @@ public class Log {
                 OUT = new PrintStream(property);
             } catch (Throwable throwable) {
                 error("Unable to redirect log to " + property, throwable);
+            }
+        }
+        else if (Platform.isWindows()) {
+            File directory = new File(System.getenv("LOCALAPPDATA") + "\\GCS");
+            File logFile = new File(System.getenv("LOCALAPPDATA") + "\\GCS\\error.log");
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+            try {
+                OUT = new PrintStream(logFile);
+            } catch (Throwable throwable) {
+                error("Unable to redirect log to " + logFile, throwable);
             }
         }
     }
