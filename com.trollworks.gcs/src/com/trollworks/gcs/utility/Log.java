@@ -34,7 +34,7 @@ public class Log {
         } else if (Platform.isWindows()) {
             String localAppData = System.getenv("LOCALAPPDATA");
             if (localAppData != null) {
-                File logDirectory = new File(localAppData);
+                File logDirectory = new File(localAppData + "\\GCS");
                 try {
                     logDirectory.mkdirs();
                     OUT = new PrintStream(logDirectory + "\\error.log");
