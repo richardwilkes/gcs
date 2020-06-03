@@ -60,6 +60,7 @@ public class Bundler {
     private static final char[]        HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     private static       String        OS;
     private static       Path          PKG;
+    private static       Path          JPACKAGE_15;
     private static       String        ICON_TYPE;
 
     /**
@@ -69,11 +70,6 @@ public class Bundler {
      */
     public static void main(String[] args) {
         checkPlatform();
-        if (MACOS.equals(OS)) {
-            // We only want JDK 15 for its updated jpackage tool, which otherwise is incapable of
-            // signing a macOS application.
-            JDK_MAJOR_VERSION = "15";
-        }
 
         boolean sign     = false;
         boolean notarize = false;
@@ -142,7 +138,7 @@ public class Bundler {
     }
 
     private static void checkJDK() {
-        ProcessBuilder builder = new ProcessBuilder("javac", "-version");
+        ProcessBuilder builder = new ProcessBuilder("javac", "--version");
         builder.redirectOutput(Redirect.PIPE).redirectErrorStream(true);
         try {
             String  versionLine = "";
@@ -163,6 +159,37 @@ public class Bundler {
         } catch (IOException exception) {
             System.err.println("JDK " + JDK_MAJOR_VERSION + " is not installed!");
             emitInstallJDKMessageAndExit();
+        }
+
+        if (OS.equals(MACOS)) {
+            boolean failed = false;
+            Path dir = Paths.get(System.getProperty("user.home", "."), "jdk-15.jdk").toAbsolutePath();
+            JPACKAGE_15 = dir.resolve(Paths.get("Contents", "Home", "bin", "jpackage"));
+            builder = new ProcessBuilder(JPACKAGE_15.toString(), "--version");
+            builder.redirectOutput(Redirect.PIPE).redirectErrorStream(true);
+            try {
+                String  versionLine = "";
+                Process process     = builder.start();
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                    String prefix = "15";
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        if (line.startsWith(prefix)) {
+                            versionLine = line;
+                        }
+                    }
+                }
+                if (!versionLine.startsWith("15")) {
+                    failed = true;
+                }
+            } catch (IOException exception) {
+                failed = true;
+            }
+            if (failed) {
+                System.err.println("jpackage 15 is not available!");
+                System.err.println("Unpack JDK 15 from http://jdk.java.net/15/ into " + " and try again.");
+                System.exit(1);
+            }
         }
     }
 
@@ -565,7 +592,11 @@ public class Bundler {
         args.add("com.trollworks.gcs");
         runNoOutputCmd("jlink", "--module-path", MODULE_DIR.toString(), "--output", JRE.toString(), "--compress=2", "--no-header-files", "--no-man-pages", "--strip-debug", "--strip-native-commands", "--add-modules", "com.trollworks.gcs");
         args.clear();
-        args.add("jpackage");
+        if (OS.equals(MACOS)) {
+            args.add(JPACKAGE_15.toString());
+        } else {
+            args.add("jpackage");
+        }
         args.add("--module");
         args.add("com.trollworks.gcs/com.trollworks.gcs.GCS");
         args.add("--app-version");

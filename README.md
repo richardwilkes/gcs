@@ -12,14 +12,16 @@ tag. These directions are for the latest source, which may have experimental cod
 are incompatible with the current data files. These build instructions may have also changed since
 a given release, so be sure to review them again with the version you plan to build.*
 
-1. Make sure you have JDK 14 (JDK 15 for macOS) installed and set to be used as your default Java
-   compiler. You can download it for your platform here: http://jdk.java.net/14/
-   (http://jdk.java.net/15/ for macOS)
+1. Make sure you have JDK 14 installed and set to be used as your default Java compiler. You can
+   download it for your platform here: http://jdk.java.net/14/
 
-2. If you are building on Windows, you'll need to install the WiX Toolset from here:
+2. If you are building on macOS, you will also need to download and extract a copy of JDK 15 into
+   `~/jdk-15.jdk`. You can download it from here: http://jdk.java.net/15/
+
+3. If you are building on Windows, you'll need to install the WiX Toolset from here:
    https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm
 
-3. Clone the source repositories:
+4. Clone the source repositories:
    ```
    % git clone https://github.com/richardwilkes/gcs
    ```
@@ -28,7 +30,7 @@ a given release, so be sure to review them again with the version you plan to bu
    % git clone https://github.com/richardwilkes/gcs_library
    ```
 
-4. Build and bundle the code for your platform:
+5. Build and bundle the code for your platform:
 
    macOS and Linux:
    ```
