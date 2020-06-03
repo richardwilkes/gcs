@@ -47,9 +47,6 @@ public class EditMenuProvider {
         cmds.add(RandomizeDescriptionCommand.INSTANCE);
         cmds.add(RandomizeNameCommand.FEMALE_INSTANCE);
         cmds.add(RandomizeNameCommand.MALE_INSTANCE);
-        cmds.add(AddNaturalPunchCommand.INSTANCE);
-        cmds.add(AddNaturalKickCommand.INSTANCE);
-        cmds.add(AddNaturalKickWithBootsCommand.INSTANCE);
         cmds.add(SwapDefaultsCommand.INSTANCE);
         cmds.add(ConvertToContainer.INSTANCE);
         if (!Platform.isMacintosh()) {
@@ -95,10 +92,6 @@ public class EditMenuProvider {
         menu.add(new DynamicMenuItem(RandomizeDescriptionCommand.INSTANCE));
         menu.add(new DynamicMenuItem(RandomizeNameCommand.FEMALE_INSTANCE));
         menu.add(new DynamicMenuItem(RandomizeNameCommand.MALE_INSTANCE));
-        menu.addSeparator();
-        menu.add(new DynamicCheckBoxMenuItem(AddNaturalPunchCommand.INSTANCE));
-        menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickCommand.INSTANCE));
-        menu.add(new DynamicCheckBoxMenuItem(AddNaturalKickWithBootsCommand.INSTANCE));
         if (!Platform.isMacintosh()) {
             menu.addSeparator();
             menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));

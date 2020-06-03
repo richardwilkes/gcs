@@ -626,82 +626,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
     }
 
-    private void addBuiltInWeapons(Class<? extends WeaponStats> weaponClass, Map<HashedWeapon, WeaponDisplayRow> map) {
-        if (weaponClass == MeleeWeaponStats.class) {
-            boolean            savedModified   = mCharacter.isModified();
-            long               savedModifiedOn = mCharacter.getModifiedOn();
-            List<SkillDefault> defaults        = new ArrayList<>();
-            Advantage          phantom;
-            MeleeWeaponStats   weapon;
-
-            StdUndoManager mgr = mCharacter.getUndoManager();
-            mCharacter.setUndoManager(new StdUndoManager());
-
-            phantom = new Advantage(mCharacter, false);
-            phantom.setName(I18n.Text("Natural"));
-
-            if (mCharacter.includePunch()) {
-                defaults.add(new SkillDefault(SkillDefaultType.DX, null, null, 0));
-                defaults.add(new SkillDefault(SkillDefaultType.Skill, BOXING_SKILL_NAME, null, 0));
-                defaults.add(new SkillDefault(SkillDefaultType.Skill, BRAWLING_SKILL_NAME, null, 0));
-                defaults.add(new SkillDefault(SkillDefaultType.Skill, KARATE_SKILL_NAME, null, 0));
-                weapon = new MeleeWeaponStats(phantom);
-                weapon.setUsage(I18n.Text("Punch"));
-                weapon.setDefaults(defaults);
-                WeaponDamage damage = new WeaponDamage(weapon);
-                damage.setWeaponSTDamage(WeaponSTDamage.THR);
-                damage.setBase(new Dice(0, -1));
-                damage.setType("cr");
-                weapon.setDamage(damage); // thr-1 cr
-                weapon.setReach("C");
-                weapon.setParry("0");
-                map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
-                defaults.clear();
-            }
-
-            defaults.add(new SkillDefault(SkillDefaultType.DX, null, null, -2));
-            defaults.add(new SkillDefault(SkillDefaultType.Skill, BRAWLING_SKILL_NAME, null, -2));
-            defaults.add(new SkillDefault(SkillDefaultType.Skill, KARATE_SKILL_NAME, null, -2));
-
-            if (mCharacter.includeKick()) {
-                weapon = new MeleeWeaponStats(phantom);
-                weapon.setUsage(I18n.Text("Kick"));
-                weapon.setDefaults(defaults);
-                WeaponDamage damage = new WeaponDamage(weapon);
-                damage.setWeaponSTDamage(WeaponSTDamage.THR);
-                damage.setType("cr");
-                weapon.setDamage(damage); // thr cr
-                weapon.setReach("C,1");
-                weapon.setParry("No");
-                map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
-            }
-
-            if (mCharacter.includeKickBoots()) {
-                weapon = new MeleeWeaponStats(phantom);
-                weapon.setUsage(I18n.Text("Kick w/Boots"));
-                weapon.setDefaults(defaults);
-                WeaponDamage damage = new WeaponDamage(weapon);
-                damage.setWeaponSTDamage(WeaponSTDamage.THR);
-                damage.setBase(new Dice(0, 1));
-                damage.setType("cr");
-                weapon.setDamage(damage); // thr+1 cr
-                weapon.setReach("C,1");
-                weapon.setParry("No");
-                map.put(new HashedWeapon(weapon), new WeaponDisplayRow(weapon));
-            }
-
-            mCharacter.setUndoManager(mgr);
-            mCharacter.setModifiedOn(savedModifiedOn);
-            mCharacter.setModified(savedModified);
-        }
-    }
-
     private List<WeaponDisplayRow> collectWeapons(Class<? extends WeaponStats> weaponClass) {
         Map<HashedWeapon, WeaponDisplayRow> weaponMap = new HashMap<>();
-        List<WeaponDisplayRow>              weaponList;
-
-        addBuiltInWeapons(weaponClass, weaponMap);
-
         for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
             for (WeaponStats weapon : advantage.getWeapons()) {
                 if (weaponClass.isInstance(weapon)) {
@@ -709,7 +635,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 }
             }
         }
-
         for (Equipment equipment : mCharacter.getEquipmentIterator()) {
             if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
                 for (WeaponStats weapon : equipment.getWeapons()) {
@@ -719,7 +644,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 }
             }
         }
-
         for (Spell spell : mCharacter.getSpellsIterator()) {
             for (WeaponStats weapon : spell.getWeapons()) {
                 if (weaponClass.isInstance(weapon)) {
@@ -727,7 +651,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 }
             }
         }
-
         for (Skill skill : mCharacter.getSkillsIterator()) {
             for (WeaponStats weapon : skill.getWeapons()) {
                 if (weaponClass.isInstance(weapon)) {
@@ -735,9 +658,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 }
             }
         }
-
-        weaponList = new ArrayList<>(weaponMap.values());
-        return weaponList;
+        return new ArrayList<>(weaponMap.values());
     }
 
     private void initOutline(Outline outline) {
@@ -816,9 +737,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_EQUIPPED);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_QUANTITY);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_WEAPON_STATUS_CHANGED);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(GURPSCharacter.ID_INCLUDE_BOOTS);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(GURPSCharacter.ID_INCLUDE_KICK);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(GURPSCharacter.ID_INCLUDE_PUNCH);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Skill.ID_WEAPON_STATUS_CHANGED);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Spell.ID_WEAPON_STATUS_CHANGED);
 

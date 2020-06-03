@@ -103,12 +103,6 @@ public class GURPSCharacter extends DataFile {
     public static final  String                              ID_MODIFIED                          = CHARACTER_PREFIX + "Modified";
     /** The field ID for created on date changes. */
     public static final  String                              ID_CREATED                           = CHARACTER_PREFIX + "Created";
-    /** The field ID for include punch changes. */
-    public static final  String                              ID_INCLUDE_PUNCH                     = CHARACTER_PREFIX + "IncludePunch";
-    /** The field ID for include kick changes. */
-    public static final  String                              ID_INCLUDE_KICK                      = CHARACTER_PREFIX + "IncludeKickFeet";
-    /** The field ID for include kick with boots changes. */
-    public static final  String                              ID_INCLUDE_BOOTS                     = CHARACTER_PREFIX + "IncludeKickBoots";
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
@@ -300,9 +294,6 @@ public class GURPSCharacter extends DataFile {
     private              PrintManager                        mPageSettings;
     private              boolean                             mSkillsUpdated;
     private              boolean                             mSpellsUpdated;
-    private              boolean                             mIncludePunch;
-    private              boolean                             mIncludeKick;
-    private              boolean                             mIncludeKickBoots;
     private              boolean                             mDidModify;
     private              boolean                             mNeedAttributePointCalculation;
     private              boolean                             mNeedAdvantagesPointCalculation;
@@ -346,9 +337,6 @@ public class GURPSCharacter extends DataFile {
         mFatiguePointsDamage = 0;
         mProfile = new Profile(this, full);
         mArmor = new Armor(this);
-        mIncludePunch = true;
-        mIncludeKick = true;
-        mIncludeKickBoots = true;
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mPageSettings = OutputPreferences.getDefaultPageSettings();
         mModifiedOn = System.currentTimeMillis();
@@ -434,12 +422,6 @@ public class GURPSCharacter extends DataFile {
                     mSpeed = reader.readDouble(0.0);
                 } else if (BonusAttributeType.MOVE.getXMLTag().equals(name)) {
                     mMove = reader.readInteger(0);
-                } else if (TAG_INCLUDE_PUNCH.equals(name)) {
-                    mIncludePunch = reader.readBoolean();
-                } else if (TAG_INCLUDE_KICK.equals(name)) {
-                    mIncludeKick = reader.readBoolean();
-                } else if (TAG_INCLUDE_BOOTS.equals(name)) {
-                    mIncludeKickBoots = reader.readBoolean();
                 } else if (AdvantageList.TAG_ROOT.equals(name)) {
                     loadAdvantageList(reader, state);
                 } else if (SkillList.TAG_ROOT.equals(name)) {
@@ -619,9 +601,6 @@ public class GURPSCharacter extends DataFile {
         out.simpleTag(BonusAttributeType.PERCEPTION.getXMLTag(), mPerception);
         out.simpleTag(BonusAttributeType.SPEED.getXMLTag(), mSpeed);
         out.simpleTag(BonusAttributeType.MOVE.getXMLTag(), mMove);
-        out.simpleTag(TAG_INCLUDE_PUNCH, mIncludePunch);
-        out.simpleTag(TAG_INCLUDE_KICK, mIncludeKick);
-        out.simpleTag(TAG_INCLUDE_BOOTS, mIncludeKickBoots);
         saveList(AdvantageList.TAG_ROOT, mAdvantages, out);
         saveList(SkillList.TAG_ROOT, mSkills, out);
         saveList(SpellList.TAG_ROOT, mSpells, out);
@@ -808,13 +787,7 @@ public class GURPSCharacter extends DataFile {
      */
     public void setValueForID(String id, Object value) {
         if (id != null) {
-            if (ID_INCLUDE_PUNCH.equals(id)) {
-                setIncludePunch(((Boolean) value).booleanValue());
-            } else if (ID_INCLUDE_KICK.equals(id)) {
-                setIncludeKick(((Boolean) value).booleanValue());
-            } else if (ID_INCLUDE_BOOTS.equals(id)) {
-                setIncludeKickBoots(((Boolean) value).booleanValue());
-            } else if (ID_STRENGTH.equals(id)) {
+            if (ID_STRENGTH.equals(id)) {
                 setStrength(((Integer) value).intValue());
             } else if (ID_DEXTERITY.equals(id)) {
                 setDexterity(((Integer) value).intValue());
@@ -2001,48 +1974,6 @@ public class GURPSCharacter extends DataFile {
             if (!spell.canHaveChildren()) {
                 mCachedSpellPoints += spell.getPoints();
             }
-        }
-    }
-
-    /** @return Whether to include the punch natural weapon or not. */
-    public boolean includePunch() {
-        return mIncludePunch;
-    }
-
-    /** @param include Whether to include the punch natural weapon or not. */
-    public void setIncludePunch(boolean include) {
-        if (mIncludePunch != include) {
-            postUndoEdit(I18n.Text("Include Punch In Weapons"), ID_INCLUDE_PUNCH, Boolean.valueOf(mIncludePunch), Boolean.valueOf(include));
-            mIncludePunch = include;
-            notifySingle(ID_INCLUDE_PUNCH, Boolean.valueOf(mIncludePunch));
-        }
-    }
-
-    /** @return Whether to include the kick natural weapon or not. */
-    public boolean includeKick() {
-        return mIncludeKick;
-    }
-
-    /** @param include Whether to include the kick natural weapon or not. */
-    public void setIncludeKick(boolean include) {
-        if (mIncludeKick != include) {
-            postUndoEdit(I18n.Text("Include Kick In Weapons"), ID_INCLUDE_KICK, Boolean.valueOf(mIncludeKick), Boolean.valueOf(include));
-            mIncludeKick = include;
-            notifySingle(ID_INCLUDE_KICK, Boolean.valueOf(mIncludeKick));
-        }
-    }
-
-    /** @return Whether to include the kick w/boots natural weapon or not. */
-    public boolean includeKickBoots() {
-        return mIncludeKickBoots;
-    }
-
-    /** @param include Whether to include the kick w/boots natural weapon or not. */
-    public void setIncludeKickBoots(boolean include) {
-        if (mIncludeKickBoots != include) {
-            postUndoEdit(I18n.Text("Include Kick w/Boots In Weapons"), ID_INCLUDE_BOOTS, Boolean.valueOf(mIncludeKickBoots), Boolean.valueOf(include));
-            mIncludeKickBoots = include;
-            notifySingle(ID_INCLUDE_BOOTS, Boolean.valueOf(mIncludeKickBoots));
         }
     }
 
