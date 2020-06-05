@@ -121,9 +121,6 @@ import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, ScaleRoot {
-    private static final String           BOXING_SKILL_NAME   = "Boxing";
-    private static final String           KARATE_SKILL_NAME   = "Karate";
-    private static final String           BRAWLING_SKILL_NAME = "Brawling";
     private static final int              GAP                 = 2;
     private static final String           MELEE_KEY           = "melee";
     private static final String           RANGED_KEY          = "ranged";
@@ -505,9 +502,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mAdvantageOutline == null) {
             mAdvantageOutline = new AdvantageOutline(mCharacter);
             initOutline(mAdvantageOutline);
-        } else {
-            resetOutline(mAdvantageOutline);
         }
+        resetOutline(mAdvantageOutline);
     }
 
     /** @return The outline containing the skills. */
@@ -519,9 +515,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mSkillOutline == null) {
             mSkillOutline = new SkillOutline(mCharacter);
             initOutline(mSkillOutline);
-        } else {
-            resetOutline(mSkillOutline);
         }
+        resetOutline(mSkillOutline);
     }
 
     /** @return The outline containing the spells. */
@@ -533,9 +528,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mSpellOutline == null) {
             mSpellOutline = new SpellOutline(mCharacter);
             initOutline(mSpellOutline);
-        } else {
-            resetOutline(mSpellOutline);
         }
+        resetOutline(mSpellOutline);
     }
 
     /** @return The outline containing the notes. */
@@ -547,9 +541,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mNoteOutline == null) {
             mNoteOutline = new NoteOutline(mCharacter);
             initOutline(mNoteOutline);
-        } else {
-            resetOutline(mNoteOutline);
         }
+        resetOutline(mNoteOutline);
     }
 
     /** @return The outline containing the equipment. */
@@ -561,9 +554,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mEquipmentOutline == null) {
             mEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getEquipmentRoot());
             initOutline(mEquipmentOutline);
-        } else {
-            resetOutline(mEquipmentOutline);
         }
+        resetOutline(mEquipmentOutline);
     }
 
     /** @return The outline containing the other equipment. */
@@ -575,9 +567,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mOtherEquipmentOutline == null) {
             mOtherEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getOtherEquipmentRoot());
             initOutline(mOtherEquipmentOutline);
-        } else {
-            resetOutline(mOtherEquipmentOutline);
         }
+        resetOutline(mOtherEquipmentOutline);
     }
 
     /** @return The outline containing the melee weapons. */
@@ -598,9 +589,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             }
             outlineModel.applySortConfig(sortConfig);
             initOutline(mMeleeWeaponOutline);
-        } else {
-            resetOutline(mMeleeWeaponOutline);
         }
+        resetOutline(mMeleeWeaponOutline);
     }
 
     /** @return The outline containing the ranged weapons. */
@@ -621,9 +611,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             }
             outlineModel.applySortConfig(sortConfig);
             initOutline(mRangedWeaponOutline);
-        } else {
-            resetOutline(mRangedWeaponOutline);
         }
+        resetOutline(mRangedWeaponOutline);
     }
 
     private List<WeaponDisplayRow> collectWeapons(Class<? extends WeaponStats> weaponClass) {
@@ -667,6 +656,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private static void resetOutline(Outline outline) {
         outline.clearProxies();
+        for (Column column : outline.getModel().getColumns()) {
+            column.setWidth(outline, -1);
+        }
     }
 
     /** @return The number of pages in this character sheet. */
