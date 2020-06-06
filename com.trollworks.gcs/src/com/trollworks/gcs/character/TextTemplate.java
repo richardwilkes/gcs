@@ -112,6 +112,7 @@ public class TextTemplate {
     private static final String         KEY_CURRENT_DODGE                     = "CURRENT_DODGE";
     private static final String         KEY_CURRENT_MARKER                    = "CURRENT_MARKER";
     private static final String         KEY_CURRENT_MARKER_1                  = "CURRENT_MARKER_1";
+    private static final String         KEY_CURRENT_MARKER_BULLET             = "CURRENT_MARKER_BULLET";
     private static final String         KEY_CURRENT_MOVE                      = "CURRENT_MOVE";
     private static final String         KEY_DAMAGE                            = "DAMAGE";
     private static final String         KEY_UNMODIFIED_DAMAGE                 = "UNMODIFIED_DAMAGE";
@@ -180,6 +181,7 @@ public class TextTemplate {
     private static final String         KEY_LEGALITY_CLASS                    = "LEGALITY_CLASS";
     private static final String         KEY_LEVEL                             = "LEVEL";
     private static final String         KEY_LEVEL_ONLY                        = "LEVEL_ONLY";
+    private static final String         KEY_LEVEL_NO_MARKER                   = "LEVEL_NO_MARKER";
     private static final String         KEY_LOCATION                          = "LOCATION";
     private static final String         KEY_MANA_CAST                         = "MANA_CAST";
     private static final String         KEY_MANA_MAINTAIN                     = "MANA_MAINTAIN";
@@ -779,8 +781,16 @@ public class TextTemplate {
                                 out.write(ONE);
                             }
                             break;
+                        case KEY_CURRENT_MARKER_BULLET:
+                            if (encumbrance == gurpsCharacter.getEncumbranceLevel()) {
+                                out.write("•");
+                            }
+                            break;
                         case KEY_LEVEL:
                             writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? "• {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                            break;
+                        case KEY_LEVEL_NO_MARKER:
+                            writeEncodedText(out, MessageFormat.format("{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
                             break;
                         case KEY_LEVEL_ONLY:
                             writeEncodedText(out, Numbers.format(-encumbrance.getEncumbrancePenalty()));
