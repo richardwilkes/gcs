@@ -313,6 +313,12 @@ public final class PrecisionLayout implements LayoutManager2 {
         return this;
     }
 
+    public PrecisionLayout setFillAlignment() {
+        mHAlign = PrecisionLayoutAlignment.FILL;
+        mVAlign = PrecisionLayoutAlignment.FILL;
+        return this;
+    }
+
     /**
      * @param horizontal Specifies how components will be positioned horizontally within the
      *                   container. The default value is {@link PrecisionLayoutAlignment#BEGINNING}.

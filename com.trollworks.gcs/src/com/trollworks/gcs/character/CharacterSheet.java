@@ -39,7 +39,6 @@ import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -247,28 +246,31 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         // Create the first page, which holds stuff that has a fixed vertical size.
         pageAssembler = new PageAssembler(this);
-        Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
-        wrapper.add(new PortraitPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
-        wrapper.add(new IdentityPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
-        wrapper.add(new MiscPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
-        wrapper.add(new PointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
-        wrapper.add(new DescriptionPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setHorizontalSpan(2));
+        Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
+        wrapper.add(new PortraitPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setVerticalSpan(2));
+        wrapper.add(new IdentityPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
+        wrapper.add(new MiscPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
+        wrapper.add(new PointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setVerticalSpan(2));
+        wrapper.add(new DescriptionPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setHorizontalSpan(2));
         pageAssembler.addToContent(wrapper, null, null);
 
-        wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
-        wrapper.add(new AttributesPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
-        Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
-        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
-        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
-        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2).setGrabHorizontalSpace(true));
-        wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL).setVerticalSpan(2));
-        wrapper.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
-        wrapper.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL));
+        wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
+        wrapper.add(new AttributesPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
+        Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
+        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(true));
+        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
+        wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
+        wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
+        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
+        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
+        wrapper.add(wrapper2, new PrecisionLayoutData().setFillAlignment());
         pageAssembler.addToContent(wrapper, null, null);
 
         // Add the various outline blocks, based on the layout preference.
-        Set<String> remaining   = prepBlockLayoutRemaining();
-        String      blockLayout = mCharacter.getSettings().blockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
+        boolean     addedAtLeastOneOutline = false;
+        Set<String> remaining              = prepBlockLayoutRemaining();
+        String      blockLayout            = mCharacter.getSettings().blockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
         for (String line : blockLayout.split("\n")) {
             String[] parts = line.trim().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
@@ -282,15 +284,16 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                             String t2 = getOutlineTitleForKey(parts[1]);
                             remaining.remove(parts[1]);
                             if (o1.getModel().getRowCount() > 0 && o2.getModel().getRowCount() > 0) {
+                                addedAtLeastOneOutline = true;
                                 addOutline(pageAssembler, o1, t1, o2, t2);
                             } else {
-                                addOutline(pageAssembler, o1, t1);
-                                addOutline(pageAssembler, o2, t2);
+                                addedAtLeastOneOutline |= addOutline(pageAssembler, o1, t1);
+                                addedAtLeastOneOutline |= addOutline(pageAssembler, o2, t2);
                             }
                             continue;
                         }
                     }
-                    addOutline(pageAssembler, o1, t1);
+                    addedAtLeastOneOutline |= addOutline(pageAssembler, o1, t1);
                 }
             }
         }
@@ -298,9 +301,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             if (remaining.contains(one)) {
                 Outline outline = getOutlineForKey(one);
                 if (outline != null) {
-                    addOutline(pageAssembler, outline, getOutlineTitleForKey(one));
+                    addedAtLeastOneOutline |= addOutline(pageAssembler, outline, getOutlineTitleForKey(one));
                 }
             }
+        }
+        if (!addedAtLeastOneOutline) {
+            pageAssembler.addToContent(new Wrapper(), null, null);
         }
         pageAssembler.finish();
 
@@ -442,18 +448,19 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         return false;
     }
 
-    private void addOutline(PageAssembler pageAssembler, Outline outline, String title) {
+    private boolean addOutline(PageAssembler pageAssembler, Outline outline, String title) {
         if (outline.getModel().getRowCount() > 0) {
             OutlineInfo info     = new OutlineInfo(outline, pageAssembler.getContentWidth());
             boolean     useProxy = false;
-
             while (pageAssembler.addToContent(new SingleOutlinePanel(mScale, outline, title, useProxy), info, null)) {
                 if (!useProxy) {
                     title = MessageFormat.format(I18n.Text("{0} (continued)"), title);
                     useProxy = true;
                 }
             }
+            return true;
         }
+        return false;
     }
 
     private void addOutline(PageAssembler pageAssembler, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle) {
@@ -461,7 +468,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         OutlineInfo infoLeft  = new OutlineInfo(leftOutline, width);
         OutlineInfo infoRight = new OutlineInfo(rightOutline, width);
         boolean     useProxy  = false;
-
         while (pageAssembler.addToContent(new DoubleOutlinePanel(mScale, leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
             if (!useProxy) {
                 leftTitle = MessageFormat.format(I18n.Text("{0} (continued)"), leftTitle);
