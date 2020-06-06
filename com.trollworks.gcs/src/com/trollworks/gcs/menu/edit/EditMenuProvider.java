@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.DynamicCheckBoxMenuItem;
 import com.trollworks.gcs.menu.DynamicMenuEnabler;
 import com.trollworks.gcs.menu.DynamicMenuItem;
 import com.trollworks.gcs.utility.I18n;
