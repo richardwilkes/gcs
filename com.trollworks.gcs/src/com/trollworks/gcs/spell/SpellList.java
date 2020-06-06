@@ -58,6 +58,8 @@ public class SpellList extends ListFile {
                 String name = reader.getName();
                 if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
                     model.addRow(new Spell(this, reader, state), true);
+                } else if (RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(name)) {
+                    model.addRow(new RitualMagicSpell(this, reader, state), true);
                 } else {
                     reader.skipTag(name);
                 }
