@@ -103,7 +103,13 @@ public class ListPrereqEditor extends PrereqEditor {
 
     private void addPrereq() {
         try {
-            addItem((Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance((PrereqList) mPrereq));
+            Prereq prereq;
+            if (LAST_ITEM_TYPE == ContainedWeightPrereq.class) {
+                prereq = new ContainedWeightPrereq((PrereqList) mPrereq, mRow.getDataFile().defaultWeightUnits());
+            } else {
+                prereq = (Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance((PrereqList) mPrereq);
+            }
+            addItem(prereq);
         } catch (Exception exception) {
             // Shouldn't have a failure...
             exception.printStackTrace(System.err);

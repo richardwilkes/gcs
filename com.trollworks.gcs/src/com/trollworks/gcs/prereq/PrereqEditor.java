@@ -171,16 +171,20 @@ public abstract class PrereqEditor extends EditorPanel {
         if (CHANGE_BASE_TYPE.equals(command)) {
             Class<?> type = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];
             if (!mPrereq.getClass().equals(type)) {
-                JComponent parent = (JComponent) getParent();
-                PrereqList list   = mPrereq.getParent();
-                int        lIndex = list.getIndexOf(mPrereq);
-
+                JComponent parent    = (JComponent) getParent();
+                PrereqList list      = mPrereq.getParent();
+                int        listIndex = list.getIndexOf(mPrereq);
                 try {
-                    Prereq prereq = (Prereq) type.getConstructor(PrereqList.class).newInstance(list);
+                    Prereq prereq;
+                    if (type == ContainedWeightPrereq.class) {
+                        prereq = new ContainedWeightPrereq(list, mRow.getDataFile().defaultWeightUnits());
+                    } else {
+                        prereq = (Prereq) type.getConstructor(PrereqList.class).newInstance(list);
+                    }
                     if (prereq instanceof HasPrereq && mPrereq instanceof HasPrereq) {
                         ((HasPrereq) prereq).has(((HasPrereq) mPrereq).has());
                     }
-                    list.add(lIndex, prereq);
+                    list.add(listIndex, prereq);
                     list.remove(mPrereq);
                     parent.add(create(mRow, prereq, mDepth), UIUtilities.getIndexOf(parent, this));
                 } catch (Exception exception) {
@@ -201,7 +205,6 @@ public abstract class PrereqEditor extends EditorPanel {
 
     private int countSelfAndDescendents(Prereq prereq) {
         int count = 1;
-
         if (prereq instanceof PrereqList) {
             for (Prereq one : ((PrereqList) prereq).getChildren()) {
                 count += countSelfAndDescendents(one);
