@@ -13,6 +13,7 @@ package com.trollworks.gcs.utility.xml;
 
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.text.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -312,7 +313,6 @@ public class XMLReader implements AutoCloseable {
 
     private String pop(int pos) {
         String result = new String(mTextBuffer, pos, mTextPos - pos);
-
         mTextPos = pos;
         return result;
     }
@@ -320,11 +320,9 @@ public class XMLReader implements AutoCloseable {
     private String readName() throws IOException {
         int pos = mTextPos;
         int ch  = mPeek0;
-
         if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z') && ch != '_' && ch != ':') {
             fail("name expected");
         }
-
         do {
             push(read());
             ch = mPeek0;
@@ -336,10 +334,8 @@ public class XMLReader implements AutoCloseable {
     private void parseLegacy(boolean push) throws IOException {
         String req = "";
         int    term;
-        int    ch;
-
         read(); // <
-        ch = read();
+        int ch = read();
         if (ch == '?') {
             term = '?';
         } else if (ch == '!') {
@@ -613,7 +609,7 @@ public class XMLReader implements AutoCloseable {
     /** @return The text at the current position. */
     public String getText() {
         if (mText == null) {
-            mText = pop(0);
+            mText = Text.standardizeLineEndings(pop(0));
         }
         return mText;
     }
