@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FilteredIterator;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
@@ -32,6 +33,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -378,6 +380,17 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
             }
         }
         return false;
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        // This is just here to try and capture a log message if something goes wrong in the
+        // drawing code.
+        try {
+            super.paint(g);
+        } catch(Throwable throwable) {
+            Log.error(throwable);
+        }
     }
 
     /** Forces a full repaint and invalidate on all windows, disposing of any window buffers. */
