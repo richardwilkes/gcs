@@ -669,7 +669,7 @@ public class Preferences {
     }
 
     public boolean setBlockLayout(List<String> blockLayout) {
-        if (mBlockLayout.equals(blockLayout)) {
+        if (!mBlockLayout.equals(blockLayout)) {
             mBlockLayout = new ArrayList<>(blockLayout);
             mNotifier.notify(this, KEY_BLOCK_LAYOUT);
             return true;
