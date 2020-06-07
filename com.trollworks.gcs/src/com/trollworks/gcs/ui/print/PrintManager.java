@@ -558,7 +558,8 @@ public class PrintManager {
 
     /** @return The number up. */
     public NumberUp getNumberUp() {
-        return PrintUtilities.getNumberUp(getPrintService(), mSet);
+        NumberUp numUp = PrintUtilities.getNumberUp(getPrintService(), mSet);
+        return numUp != null ? numUp : new NumberUp(1);
     }
 
     /** @param numberUp The new number up. */
