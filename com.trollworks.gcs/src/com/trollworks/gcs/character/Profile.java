@@ -15,14 +15,13 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
@@ -48,71 +47,65 @@ import javax.imageio.ImageIO;
 /** Holds the character profile. */
 public class Profile {
     /** The root XML tag. */
-    public static final  String           TAG_ROOT           = "profile";
-    /** The preferences module name. */
-    public static final  String           MODULE             = "GURPSCharacter";
+    public static final  String           TAG_ROOT         = "profile";
     /** The prefix used in front of all IDs for profile. */
-    public static final  String           PROFILE_PREFIX     = GURPSCharacter.CHARACTER_PREFIX + "pi.";
+    public static final  String           PROFILE_PREFIX   = GURPSCharacter.CHARACTER_PREFIX + "pi.";
     /** The field ID for portrait changes. */
-    public static final  String           ID_PORTRAIT        = PROFILE_PREFIX + "Portrait";
+    public static final  String           ID_PORTRAIT      = PROFILE_PREFIX + "Portrait";
     /** The field ID for name changes. */
-    public static final  String           ID_NAME            = PROFILE_PREFIX + "Name";
+    public static final  String           ID_NAME          = PROFILE_PREFIX + "Name";
     /** The field ID for title changes. */
-    public static final  String           ID_TITLE           = PROFILE_PREFIX + "Title";
+    public static final  String           ID_TITLE         = PROFILE_PREFIX + "Title";
     /** The field ID for age changes. */
-    public static final  String           ID_AGE             = PROFILE_PREFIX + "Age";
+    public static final  String           ID_AGE           = PROFILE_PREFIX + "Age";
     /** The field ID for birthday changes. */
-    public static final  String           ID_BIRTHDAY        = PROFILE_PREFIX + "Birthday";
+    public static final  String           ID_BIRTHDAY      = PROFILE_PREFIX + "Birthday";
     /** The field ID for eye color changes. */
-    public static final  String           ID_EYE_COLOR       = PROFILE_PREFIX + "EyeColor";
+    public static final  String           ID_EYE_COLOR     = PROFILE_PREFIX + "EyeColor";
     /** The field ID for hair color changes. */
-    public static final  String           ID_HAIR            = PROFILE_PREFIX + "Hair";
+    public static final  String           ID_HAIR          = PROFILE_PREFIX + "Hair";
     /** The field ID for skin color changes. */
-    public static final  String           ID_SKIN_COLOR      = PROFILE_PREFIX + "SkinColor";
+    public static final  String           ID_SKIN_COLOR    = PROFILE_PREFIX + "SkinColor";
     /** The field ID for handedness changes. */
-    public static final  String           ID_HANDEDNESS      = PROFILE_PREFIX + "Handedness";
+    public static final  String           ID_HANDEDNESS    = PROFILE_PREFIX + "Handedness";
     /** The field ID for height changes. */
-    public static final  String           ID_HEIGHT          = PROFILE_PREFIX + "Height";
+    public static final  String           ID_HEIGHT        = PROFILE_PREFIX + "Height";
     /** The field ID for weight changes. */
-    public static final  String           ID_WEIGHT          = PROFILE_PREFIX + "Weight";
+    public static final  String           ID_WEIGHT        = PROFILE_PREFIX + "Weight";
     /** The field ID for gender changes. */
-    public static final  String           ID_GENDER          = PROFILE_PREFIX + "Gender";
+    public static final  String           ID_GENDER        = PROFILE_PREFIX + "Gender";
     /** The field ID for religion changes. */
-    public static final  String           ID_RELIGION        = PROFILE_PREFIX + "Religion";
+    public static final  String           ID_RELIGION      = PROFILE_PREFIX + "Religion";
     /** The field ID for player name changes. */
-    public static final  String           ID_PLAYER_NAME     = PROFILE_PREFIX + "PlayerName";
+    public static final  String           ID_PLAYER_NAME   = PROFILE_PREFIX + "PlayerName";
     /** The field ID for tech level changes. */
-    public static final  String           ID_TECH_LEVEL      = PROFILE_PREFIX + "TechLevel";
+    public static final  String           ID_TECH_LEVEL    = PROFILE_PREFIX + "TechLevel";
     /** The field ID for size modifier changes. */
-    public static final  String           ID_SIZE_MODIFIER   = PROFILE_PREFIX + BonusAttributeType.SM.name();
+    public static final  String           ID_SIZE_MODIFIER = PROFILE_PREFIX + BonusAttributeType.SM.name();
     /** The field ID for body type changes. */
-    public static final  String           ID_BODY_TYPE       = PROFILE_PREFIX + "BodyType";
-    /** The default portrait marker. */
-    public static final  String           DEFAULT_PORTRAIT   = "!\000";
-    /** The default Tech Level. */
-    public static final  String           DEFAULT_TECH_LEVEL = "3";
+    public static final  String           ID_BODY_TYPE     = PROFILE_PREFIX + "BodyType";
     /** The height, in 1/72nds of an inch, of the portrait. */
-    public static final  int              PORTRAIT_HEIGHT    = 96;
+    public static final  int              PORTRAIT_HEIGHT  = 96;
     /** The width, in 1/72nds of an inch, of the portrait. */
-    public static final  int              PORTRAIT_WIDTH     = 3 * PORTRAIT_HEIGHT / 4;
-    private static final String           TAG_PLAYER_NAME    = "player_name";
-    private static final String           TAG_NAME           = "name";
-    private static final String           TAG_TITLE          = "title";
-    private static final String           TAG_AGE            = "age";
-    private static final String           TAG_BIRTHDAY       = "birthday";
-    private static final String           TAG_EYES           = "eyes";
-    private static final String           TAG_HAIR           = "hair";
-    private static final String           TAG_SKIN           = "skin";
-    private static final String           TAG_HANDEDNESS     = "handedness";
-    private static final String           TAG_HEIGHT         = "height";
-    private static final String           TAG_WEIGHT         = "weight";
-    private static final String           TAG_GENDER         = "gender";
-    private static final String           TAG_TECH_LEVEL     = "tech_level";
-    private static final String           TAG_RELIGION       = "religion";
-    private static final String           TAG_PORTRAIT       = "portrait";
-    private static final String           TAG_OLD_NOTES      = "notes";
-    private static final String           TAG_BODY_TYPE      = "body_type";
-    private static final Random           RANDOM             = new Random();
+    public static final  int              PORTRAIT_WIDTH   = 3 * PORTRAIT_HEIGHT / 4;
+    private static final String           TAG_PLAYER_NAME  = "player_name";
+    private static final String           TAG_NAME         = "name";
+    private static final String           TAG_TITLE        = "title";
+    private static final String           TAG_AGE          = "age";
+    private static final String           TAG_BIRTHDAY     = "birthday";
+    private static final String           TAG_EYES         = "eyes";
+    private static final String           TAG_HAIR         = "hair";
+    private static final String           TAG_SKIN         = "skin";
+    private static final String           TAG_HANDEDNESS   = "handedness";
+    private static final String           TAG_HEIGHT       = "height";
+    private static final String           TAG_WEIGHT       = "weight";
+    private static final String           TAG_GENDER       = "gender";
+    private static final String           TAG_TECH_LEVEL   = "tech_level";
+    private static final String           TAG_RELIGION     = "religion";
+    private static final String           TAG_PORTRAIT     = "portrait";
+    private static final String           TAG_OLD_NOTES    = "notes";
+    private static final String           TAG_BODY_TYPE    = "body_type";
+    private static final Random           RANDOM           = new Random();
     private              GURPSCharacter   mCharacter;
     private              boolean          mCustomPortrait;
     private              RetinaIcon       mPortrait;
@@ -149,11 +142,12 @@ public class Profile {
         mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(Fixed6.ZERO, settings.defaultLengthUnits());
         mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE) : new WeightValue(Fixed6.ZERO, settings.defaultWeightUnits());
         mGender = full ? getRandomGender() : "";
-        mName = full && SheetPreferences.autoNameNewCharacters() ? USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender)) : "";
-        mTechLevel = full ? getDefaultTechLevel() : "";
+        Preferences prefs = Preferences.getInstance();
+        mName = full && prefs.autoNameNewCharacters() ? USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender)) : "";
+        mTechLevel = full ? prefs.getDefaultTechLevel() : "";
         mReligion = "";
-        mPlayerName = full ? getDefaultPlayerName() : "";
-        mPortrait = createPortrait(getPortraitFromPortraitPath(getDefaultPortraitPath()));
+        mPlayerName = full ? prefs.getDefaultPlayerName() : "";
+        mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         mHitLocationTable = HitLocationTable.HUMANOID;
     }
 
@@ -935,32 +929,12 @@ public class Profile {
         return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 
-    /** @return The default player name. */
-    public static String getDefaultPlayerName() {
-        return Preferences.getInstance().getStringValue(MODULE, ID_NAME, System.getProperty("user.name"));
-    }
-
-    /** @param name The default player name. */
-    public static void setDefaultPlayerName(String name) {
-        Preferences.getInstance().setValue(MODULE, ID_NAME, name);
-    }
-
-    /** @return The default tech level. */
-    public static String getDefaultTechLevel() {
-        return Preferences.getInstance().getStringValue(MODULE, ID_TECH_LEVEL, DEFAULT_TECH_LEVEL);
-    }
-
-    /** @param techLevel The default tech level. */
-    public static void setDefaultTechLevel(String techLevel) {
-        Preferences.getInstance().setValue(MODULE, ID_TECH_LEVEL, techLevel);
-    }
-
     /**
      * @param path The path to load.
      * @return The portrait.
      */
     public static Img getPortraitFromPortraitPath(String path) {
-        if (DEFAULT_PORTRAIT.equals(path)) {
+        if (Preferences.DEFAULT_DEFAULT_PORTRAIT_PATH.equals(path)) {
             return Images.DEFAULT_PORTRAIT;
         }
         try {
@@ -968,16 +942,6 @@ public class Profile {
         } catch (IOException exception) {
             return null;
         }
-    }
-
-    /** @return The default portrait path. */
-    public static String getDefaultPortraitPath() {
-        return Preferences.getInstance().getStringValue(MODULE, ID_PORTRAIT, DEFAULT_PORTRAIT);
-    }
-
-    /** @param path The default portrait path. */
-    public static void setDefaultPortraitPath(String path) {
-        Preferences.getInstance().setValue(MODULE, ID_PORTRAIT, path);
     }
 
     /** @return The hit location table. */

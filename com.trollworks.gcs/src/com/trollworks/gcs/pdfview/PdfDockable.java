@@ -32,7 +32,7 @@ import java.awt.BorderLayout;
 import java.awt.DefaultFocusTraversalPolicy;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
-import java.io.File;
+import java.nio.file.Path;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -45,7 +45,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 /** Provides the ability to view a PDF. */
 public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
-    private File        mFile;
+    private Path        mPath;
     private PDDocument  mPdf;
     private Toolbar     mToolbar;
     private PdfPanel    mPanel;
@@ -60,10 +60,10 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 
     public PdfDockable(PdfRef pdfRef, int page, String highlight) {
         super(new BorderLayout());
-        mFile = pdfRef.getFile();
+        mPath = pdfRef.getPath();
         int pageCount = 9999;
         try {
-            mPdf = PDDocument.load(pdfRef.getFile(), MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
+            mPdf = PDDocument.load(pdfRef.getPath().toFile(), MemoryUsageSetting.setupMixed(50 * 1024 * 1024));
             pageCount = mPdf.getNumberOfPages();
         } catch (Exception exception) {
             Log.error(exception);
@@ -176,7 +176,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
 
     @Override
     public String getTitle() {
-        return PathUtils.getLeafName(mFile.getName(), false);
+        return PathUtils.getLeafName(mPath, false);
     }
 
     @Override
@@ -185,8 +185,8 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
     }
 
     @Override
-    public File getBackingFile() {
-        return mFile;
+    public Path getBackingFile() {
+        return mPath;
     }
 
     @Override

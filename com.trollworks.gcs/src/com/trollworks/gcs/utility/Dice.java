@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.utility;
 
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 
 import java.util.Random;
 
@@ -279,7 +279,7 @@ public class Dice implements Cloneable {
     }
 
     public String toString() {
-        return toString(SheetPreferences.useModifyingDicePlusAdds());
+        return toString(Preferences.getInstance().useModifyingDicePlusAdds());
     }
 
     public String toString(boolean convertModifiersToExtraDice) {

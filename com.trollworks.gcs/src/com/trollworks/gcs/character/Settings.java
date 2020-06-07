@@ -11,8 +11,7 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
@@ -21,6 +20,8 @@ import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Settings {
     public static final String         TAG_ROOT                            = "settings";
@@ -54,7 +55,7 @@ public class Settings {
     private             GURPSCharacter mCharacter;
     private             LengthUnits    mDefaultLengthUnits;
     private             WeightUnits    mDefaultWeightUnits;
-    private             String         mBlockLayout;
+    private             List<String>   mBlockLayout;
     private             DisplayOption  mUserDescriptionDisplay;
     private             DisplayOption  mModifiersDisplay;
     private             DisplayOption  mNotesDisplay;
@@ -67,22 +68,22 @@ public class Settings {
     private             boolean        mUseSimpleMetricConversions; // B9
 
     public Settings(GURPSCharacter character) {
+        Preferences prefs = Preferences.getInstance();
         mCharacter = character;
-        mDefaultLengthUnits = DisplayPreferences.defaultLengthUnits();
-        mDefaultWeightUnits = DisplayPreferences.defaultWeightUnits();
-        mBlockLayout = DisplayPreferences.blockLayout();
-        mUserDescriptionDisplay = DisplayPreferences.userDescriptionDisplay();
-        mModifiersDisplay = DisplayPreferences.modifiersDisplay();
-        mNotesDisplay = DisplayPreferences.notesDisplay();
-        mBaseWillAndPerOn10 = SheetPreferences.baseWillAndPerOn10();
-        mUseMultiplicativeModifiers = SheetPreferences.useMultiplicativeModifiers();
-        mUseModifyingDicePlusAdds = SheetPreferences.useModifyingDicePlusAdds();
-        mUseKnowYourOwnStrength = SheetPreferences.useKnowYourOwnStrength();
-        mUseReducedSwing = SheetPreferences.useReducedSwing();
-        mUseThrustEqualsSwingMinus2 = SheetPreferences.useThrustEqualsSwingMinus2();
-        mUseSimpleMetricConversions = SheetPreferences.useSimpleMetricConversions();
+        mDefaultLengthUnits = prefs.getDefaultLengthUnits();
+        mDefaultWeightUnits = prefs.getDefaultWeightUnits();
+        mBlockLayout = new ArrayList<>(prefs.getBlockLayout());
+        mUserDescriptionDisplay = prefs.getUserDescriptionDisplay();
+        mModifiersDisplay = prefs.getModifiersDisplay();
+        mNotesDisplay = prefs.getNotesDisplay();
+        mBaseWillAndPerOn10 = prefs.baseWillAndPerOn10();
+        mUseMultiplicativeModifiers = prefs.useMultiplicativeModifiers();
+        mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
+        mUseKnowYourOwnStrength = prefs.useKnowYourOwnStrength();
+        mUseReducedSwing = prefs.useReducedSwing();
+        mUseThrustEqualsSwingMinus2 = prefs.useThrustEqualsSwingMinus2();
+        mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
     }
-
 
     void load(XMLReader reader) throws IOException {
         String marker = reader.getMarker();
@@ -96,17 +97,17 @@ public class Settings {
     private void loadTag(XMLReader reader) throws IOException {
         String tag = reader.getName();
         if (TAG_DEFAULT_LENGTH_UNITS.equals(tag)) {
-            mDefaultLengthUnits = Enums.extract(reader.readText(), LengthUnits.values(), DisplayPreferences.DEFAULT_LENGTH_UNITS);
+            mDefaultLengthUnits = Enums.extract(reader.readText(), LengthUnits.values(), Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
         } else if (TAG_DEFAULT_WEIGHT_UNITS.equals(tag)) {
-            mDefaultWeightUnits = Enums.extract(reader.readText(), WeightUnits.values(), DisplayPreferences.DEFAULT_WEIGHT_UNITS);
+            mDefaultWeightUnits = Enums.extract(reader.readText(), WeightUnits.values(), Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
         } else if (TAG_BLOCK_LAYOUT.equals(tag)) {
-            mBlockLayout = reader.readText();
+            mBlockLayout = List.of(reader.readText().split("\n"));
         } else if (TAG_USER_DESCRIPTION_DISPLAY.equals(tag)) {
-            mUserDescriptionDisplay = Enums.extract(reader.readText(), DisplayOption.values(), DisplayPreferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
+            mUserDescriptionDisplay = Enums.extract(reader.readText(), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
         } else if (TAG_MODIFIERS_DISPLAY.equals(tag)) {
-            mModifiersDisplay = Enums.extract(reader.readText(), DisplayOption.values(), DisplayPreferences.DEFAULT_MODIFIERS_DISPLAY);
+            mModifiersDisplay = Enums.extract(reader.readText(), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
         } else if (TAG_NOTES_DISPLAY.equals(tag)) {
-            mNotesDisplay = Enums.extract(reader.readText(), DisplayOption.values(), DisplayPreferences.DEFAULT_NOTES_DISPLAY);
+            mNotesDisplay = Enums.extract(reader.readText(), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
         } else if (TAG_BASE_WILL_AND_PER_ON_10.equals(tag)) {
             mBaseWillAndPerOn10 = reader.readBoolean();
         } else if (TAG_USE_MULTIPLICATIVE_MODIFIERS.equals(tag)) {
@@ -130,7 +131,7 @@ public class Settings {
         out.startSimpleTagEOL(TAG_ROOT);
         out.simpleTag(TAG_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
         out.simpleTag(TAG_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
-        out.simpleTag(TAG_BLOCK_LAYOUT, mBlockLayout);
+        out.simpleTag(TAG_BLOCK_LAYOUT, Preferences.linesToString(mBlockLayout));
         out.simpleTag(TAG_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
         out.simpleTag(TAG_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
         out.simpleTag(TAG_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
@@ -179,13 +180,13 @@ public class Settings {
         }
     }
 
-    public String blockLayout() {
+    public List<String> blockLayout() {
         return mBlockLayout;
     }
 
-    public void setBlockLayout(String blockLayout) {
+    public void setBlockLayout(List<String> blockLayout) {
         if (!mBlockLayout.equals(blockLayout)) {
-            mBlockLayout = blockLayout;
+            mBlockLayout = new ArrayList<>(blockLayout);
             mCharacter.notifySingle(ID_BLOCK_LAYOUT, mBlockLayout);
         }
     }

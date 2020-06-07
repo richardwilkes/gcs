@@ -27,6 +27,7 @@ import java.awt.desktop.PrintFilesHandler;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 /** Provides the "Print..." command. */
@@ -69,23 +70,23 @@ public class PrintCommand extends Command implements PrintFilesHandler {
     @Override
     public void printFiles(PrintFilesEvent event) {
         for (File file : event.getFiles()) {
-            EventQueue.invokeLater(new DeferredPrint(file));
+            EventQueue.invokeLater(new DeferredPrint(file.toPath()));
         }
     }
 
     static class DeferredPrint implements Runnable {
         private long mStart;
-        private File mFile;
+        private Path mPath;
 
-        DeferredPrint(File file) {
-            mFile = file;
-            OpenDataFileCommand.open(file);
+        DeferredPrint(Path path) {
+            mPath = path;
+            OpenDataFileCommand.open(path);
             mStart = System.currentTimeMillis();
         }
 
         @Override
         public void run() {
-            FileProxy proxy = BaseWindow.findFileProxy(mFile);
+            FileProxy proxy = BaseWindow.findFileProxy(mPath);
             if (proxy != null) {
                 print(proxy.getPrintProxy());
             } else if (System.currentTimeMillis() - mStart < TimeUnit.MILLISECONDS.convert(2, TimeUnit.MINUTES)) {

@@ -27,8 +27,7 @@ import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.OutputPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
@@ -59,7 +58,6 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
@@ -95,7 +93,9 @@ import java.awt.event.ActionListener;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,7 +154,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     public CharacterSheet(GURPSCharacter character) {
         setLayout(new CharacterSheetLayout(this));
         setOpaque(false);
-        mScale = DisplayPreferences.initialUIScale().getScale();
+        Preferences prefs = Preferences.getInstance();
+        mScale = prefs.getInitialUIScale().getScale();
         mCharacter = character;
         mLastPage = -1;
         mRootsToSync = new HashSet<>();
@@ -163,7 +164,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
         mCharacter.addTarget(this, FEATURES_AND_PREREQS_NOTIFICATIONS.toArray(new String[0]));
         mCharacter.addTarget(this, Settings.PREFIX);
-        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
+        prefs.getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
     }
 
     /** Call when the sheet is no longer in use. */
@@ -270,9 +271,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         // Add the various outline blocks, based on the layout preference.
         boolean     addedAtLeastOneOutline = false;
         Set<String> remaining              = prepBlockLayoutRemaining();
-        String      blockLayout            = mCharacter.getSettings().blockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
-        for (String line : blockLayout.split("\n")) {
-            String[] parts = line.trim().split(" ");
+        for (String line : mCharacter.getSettings().blockLayout()) {
+            String[] parts = line.trim().toLowerCase().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
                 Outline o1 = getOutlineForKey(parts[0]);
                 if (o1 != null) {
@@ -349,10 +349,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     public String getHTMLGridTemplate() {
         Set<String>   remaining   = prepBlockLayoutRemaining();
-        String        blockLayout = mCharacter.getSettings().blockLayout().toLowerCase().trim().replaceAll("\n+", "\n").replaceAll(" +", " ");
         StringBuilder buffer      = new StringBuilder();
-        for (String line : blockLayout.split("\n")) {
-            String[] parts = line.trim().split(" ");
+        for (String line : mCharacter.getSettings().blockLayout()) {
+            String[] parts = line.trim().toLowerCase().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
                 remaining.remove(parts[0]);
                 if (parts.length > 1 && remaining.contains(parts[1])) {
@@ -1095,10 +1094,10 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     /**
-     * @param file The file to save to.
+     * @param path The path to save to.
      * @return {@code true} on success.
      */
-    public boolean saveAsPDF(File file) {
+    public boolean saveAsPDF(Path path) {
         Set<Row> changed = expandAllContainers();
         try {
             PrintManager settings = mCharacter.getPageSettings();
@@ -1111,7 +1110,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             setPrinting(true);
 
             com.lowagie.text.Document pdfDoc = new com.lowagie.text.Document(new com.lowagie.text.Rectangle(width, height));
-            try (FileOutputStream out = new FileOutputStream(file)) {
+            try (OutputStream out = Files.newOutputStream(path)) {
                 PdfWriter      writer  = PdfWriter.getInstance(pdfDoc, out);
                 int            pageNum = 0;
                 PdfContentByte cb;
@@ -1147,14 +1146,14 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     /**
-     * @param file         The file to save to.
-     * @param createdFiles The files that were created.
+     * @param path         The path to save to.
+     * @param createdPaths The paths that were created.
      * @return {@code true} on success.
      */
-    public boolean saveAsPNG(File file, List<File> createdFiles) {
+    public boolean saveAsPNG(Path path, List<Path> createdPaths) {
         Set<Row> changed = expandAllContainers();
         try {
-            int          dpi      = OutputPreferences.getPNGResolution();
+            int          dpi      = Preferences.getInstance().getPNGResolution();
             PrintManager settings = mCharacter.getPageSettings();
             PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
             Paper        paper    = format.getPaper();
@@ -1162,9 +1161,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             int          height   = (int) (paper.getHeight() / 72.0 * dpi);
             Img          buffer   = Img.create(width, height, Transparency.OPAQUE);
             int          pageNum  = 0;
-            String       name     = PathUtils.getLeafName(file.getName(), false);
+            String       name     = PathUtils.getLeafName(path, false);
 
-            file = file.getParentFile();
+            path = path.getParent();
 
             adjustToPageSetupChanges(true);
             setPrinting(true);
@@ -1183,9 +1182,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 gc.scale(dpi / 72.0, dpi / 72.0);
                 print(gc, format, pageNum++);
                 gc.dispose();
-                pngFile = new File(file, PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG.getExtension()));
-                ImageIO.write(buffer, "png", pngFile);
-                createdFiles.add(pngFile);
+                Path pngPath = path.resolve(PathUtils.enforceExtension(name + (pageNum > 1 ? " " + pageNum : ""), FileType.PNG.getExtension()));
+                ImageIO.write(buffer, "png", pngPath.toFile());
+                createdPaths.add(pngPath);
             }
             return true;
         } catch (Exception exception) {
@@ -1229,7 +1228,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void adjustToPageSetupChanges(boolean willPrint) {
-        OutputPreferences.setDefaultPageSettings(getPrintManager());
+        Preferences.getInstance().setDefaultPageSettings(getPrintManager());
         if (willPrint) {
             mSavedScale = mScale;
             mScale = Scales.ACTUAL_SIZE.getScale();

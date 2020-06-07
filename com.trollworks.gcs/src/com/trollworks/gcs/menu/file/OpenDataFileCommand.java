@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.FileType;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -27,38 +27,38 @@ public class OpenDataFileCommand extends Command implements Runnable {
     private static final String     CMD_PREFIX  = "OpenDataFile[";
     private static final String     CMD_POSTFIX = "]";
     private static       boolean    PASS_THROUGH;
-    private static       List<File> PENDING_FILES;
-    private              File       mFile;
+    private static       List<Path> PENDING;
+    private              Path       mPath;
     private              boolean    mVerify;
 
-    /** @param file The file to open. */
-    public static synchronized void open(File file) {
+    /** @param path The file to open. */
+    public static synchronized void open(Path path) {
         if (PASS_THROUGH) {
-            OpenDataFileCommand opener = new OpenDataFileCommand(file);
+            OpenDataFileCommand opener = new OpenDataFileCommand(path);
             if (SwingUtilities.isEventDispatchThread()) {
                 opener.run();
             } else {
                 EventQueue.invokeLater(opener);
             }
         } else {
-            if (PENDING_FILES == null) {
-                PENDING_FILES = new ArrayList<>();
+            if (PENDING == null) {
+                PENDING = new ArrayList<>();
             }
-            PENDING_FILES.add(file);
+            PENDING.add(path);
         }
     }
 
     /**
-     * Enables the pass-through mode so that future calls to {@link #open(File)} will no longer
+     * Enables the pass-through mode so that future calls to {@link #open(Path)} will no longer
      * queue files for later opening. All queued files will now be opened.
      */
     public static synchronized void enablePassThrough() {
         PASS_THROUGH = true;
-        if (PENDING_FILES != null) {
-            for (File file : PENDING_FILES) {
-                open(file);
+        if (PENDING != null) {
+            for (Path path : PENDING) {
+                open(path);
             }
-            PENDING_FILES = null;
+            PENDING = null;
         }
     }
 
@@ -66,22 +66,22 @@ public class OpenDataFileCommand extends Command implements Runnable {
      * Creates a new {@link OpenDataFileCommand}.
      *
      * @param title The title to use.
-     * @param file  The file to open.
+     * @param path  The file to open.
      */
-    public OpenDataFileCommand(String title, File file) {
-        super(title, CMD_PREFIX + file.getName() + CMD_POSTFIX, FileType.getIconForFileName(file.getName()));
-        mFile = file;
+    public OpenDataFileCommand(String title, Path path) {
+        super(title, CMD_PREFIX + path.toString() + CMD_POSTFIX, FileType.getIconForFileName(path.getFileName().toString()));
+        mPath = path;
     }
 
     /**
      * Creates a new {@link OpenDataFileCommand} that can only be invoked successfully if {@link
      * OpenCommand} is enabled.
      *
-     * @param file The file to open.
+     * @param path The file to open.
      */
-    public OpenDataFileCommand(File file) {
-        super(file.getName(), CMD_PREFIX + file.getName() + CMD_POSTFIX);
-        mFile = file;
+    public OpenDataFileCommand(Path path) {
+        super(path.getFileName().toString(), CMD_PREFIX + path.toString() + CMD_POSTFIX);
+        mPath = path;
         mVerify = true;
     }
 
@@ -103,6 +103,6 @@ public class OpenDataFileCommand extends Command implements Runnable {
                 return;
             }
         }
-        OpenCommand.open(mFile);
+        OpenCommand.open(mPath);
     }
 }

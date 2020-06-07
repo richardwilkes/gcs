@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.menu.file.SignificantFrame;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.DockLocation;
@@ -56,7 +57,7 @@ public class Workspace extends BaseWindow implements SignificantFrame, JumpToSea
         content.add(mDock, BorderLayout.CENTER);
         LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();
         mDock.dock(libraryExplorer, DockLocation.WEST);
-        mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(libraryExplorer.getDesiredDividerPosition());
+        mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(Preferences.getInstance().getLibraryExplorerDividerPosition());
         restoreBounds();
         setVisible(true);
         WindowUtils.forceAppToFront();
@@ -69,8 +70,8 @@ public class Workspace extends BaseWindow implements SignificantFrame, JumpToSea
     }
 
     @Override
-    public String getWindowPrefsPrefix() {
-        return "workspace.";
+    public String getWindowPrefsKey() {
+        return "workspace";
     }
 
     /** @return The {@link Dock}. */

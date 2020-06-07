@@ -41,6 +41,7 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.UIManager;
@@ -75,12 +76,12 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
 
     /** Allows the user to choose a portrait for their character. */
     public void choosePortrait() {
-        File file = SheetPreferences.choosePortrait();
-        if (file != null) {
+        Path path = SheetPreferences.choosePortrait();
+        if (path != null) {
             try {
-                mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
+                mSheet.getCharacter().getProfile().setPortrait(Img.create(path));
             } catch (Exception exception) {
-                WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
+                WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), path.normalize().toAbsolutePath()));
             }
         }
     }

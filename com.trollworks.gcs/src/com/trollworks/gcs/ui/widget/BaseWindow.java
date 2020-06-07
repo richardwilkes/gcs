@@ -17,28 +17,29 @@ import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.file.SaveCommand;
 import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.preferences.MenuKeyPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FilteredIterator;
-import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.Preferences;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Insets;
-import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
@@ -48,12 +49,7 @@ import javax.swing.WindowConstants;
 
 /** Provides a base OS-level window. */
 public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindow>, WindowListener, WindowFocusListener {
-    private static final String                WINDOW_PREFERENCES         = "WindowPrefs";
-    private static final int                   WINDOW_PREFERENCES_VERSION = 3;
-    private static final String                KEY_LOCATION               = "Location";
-    private static final String                KEY_SIZE                   = "Size";
-    private static final String                KEY_LAST_UPDATED           = "LastUpdated";
-    private static final ArrayList<BaseWindow> WINDOW_LIST                = new ArrayList<>();
+    private static final ArrayList<BaseWindow> WINDOW_LIST = new ArrayList<>();
     private              StdUndoManager        mUndoManager;
     private              boolean               mIsClosed;
     boolean mWasAlive;
@@ -262,22 +258,12 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
     }
 
     /**
-     * @return The prefix for keys in the {@link #WINDOW_PREFERENCES}module for this window. If
-     *         {@code null} is returned from this method, then no standard window preferences will
-     *         be saved. Returns {@code null} by default.
+     * @return The key for the window preferences. If {@code null} is returned from this method,
+     *         then no standard window preferences will be saved. Returns {@code null} by default.
      */
     @SuppressWarnings("static-method")
-    public String getWindowPrefsPrefix() {
+    public String getWindowPrefsKey() {
         return null;
-    }
-
-    /**
-     * @return The preference object to use for saving and restoring standard window preferences.
-     *         Returns the result of calling {@link Preferences#getInstance()} by default.
-     */
-    @SuppressWarnings("static-method")
-    public Preferences getWindowPreferences() {
-        return Preferences.getInstance();
     }
 
     /**
@@ -285,36 +271,24 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
      * effect.
      */
     public void saveBounds() {
-        String keyPrefix = getWindowPrefsPrefix();
-        if (keyPrefix != null) {
-            Preferences prefs        = getWindowPreferences();
-            boolean     wasMaximized = (getExtendedState() & MAXIMIZED_BOTH) != 0;
+        String key = getWindowPrefsKey();
+        if (key != null) {
+            boolean wasMaximized = (getExtendedState() & MAXIMIZED_BOTH) != 0;
             if (wasMaximized || getExtendedState() == ICONIFIED) {
                 setExtendedState(NORMAL);
             }
-            prefs.startBatch();
-            prefs.setValue(WINDOW_PREFERENCES, keyPrefix + KEY_LOCATION, getLocation());
-            prefs.setValue(WINDOW_PREFERENCES, keyPrefix + KEY_SIZE, getSize());
-            prefs.setValue(WINDOW_PREFERENCES, keyPrefix + KEY_LAST_UPDATED, System.currentTimeMillis());
-            prefs.endBatch();
+            Preferences.getInstance().putBaseWindowPosition(key, new Position(this));
         }
     }
 
     /** Restores the window to its saved location and size. */
     public void restoreBounds() {
-        Preferences prefs = getWindowPreferences();
-        prefs.resetIfVersionMisMatch(WINDOW_PREFERENCES, WINDOW_PREFERENCES_VERSION);
-        pruneOldWindowPreferences(prefs);
-        boolean needPack  = true;
-        String  keyPrefix = getWindowPrefsPrefix();
-        if (keyPrefix != null) {
-            Point location = prefs.getPointValue(WINDOW_PREFERENCES, keyPrefix + KEY_LOCATION);
-            if (location != null) {
-                setLocation(location);
-            }
-            Dimension size = prefs.getDimensionValue(WINDOW_PREFERENCES, keyPrefix + KEY_SIZE);
-            if (size != null) {
-                setSize(size);
+        boolean needPack = true;
+        String  key      = getWindowPrefsKey();
+        if (key != null) {
+            Position info = Preferences.getInstance().getBaseWindowPosition(key);
+            if (info != null) {
+                info.apply(this);
                 needPack = false;
             }
         }
@@ -322,30 +296,6 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
             pack();
         }
         WindowUtils.forceOnScreen(this);
-    }
-
-    private static void pruneOldWindowPreferences(Preferences prefs) {
-        // 45 days ago, in milliseconds
-        long         cutoff = System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 45L;
-        List<String> keys   = prefs.getModuleKeys(WINDOW_PREFERENCES);
-        List<String> list   = new ArrayList<>();
-        for (String key : keys) {
-            if (key.endsWith(KEY_LAST_UPDATED)) {
-                if (prefs.getLongValue(WINDOW_PREFERENCES, key, 0) < cutoff) {
-                    list.add(key.substring(0, key.length() - KEY_LAST_UPDATED.length()));
-                }
-            }
-        }
-        if (!list.isEmpty()) {
-            for (String key : keys) {
-                for (String prefix : list) {
-                    if (key.startsWith(prefix)) {
-                        prefs.removePreference(WINDOW_PREFERENCES, key);
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     /** @return The top-most window. */
@@ -364,9 +314,9 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
     public static <T extends BaseWindow> List<T> getWindows(Class<T> type) {
         List<T> windows = new ArrayList<>();
         Frame[] frames  = Frame.getFrames();
-        for (Frame element : frames) {
-            if (type.isInstance(element)) {
-                T window = type.cast(element);
+        for (Frame frame : frames) {
+            if (type.isInstance(frame)) {
+                T window = type.cast(frame);
                 if (window.mWasAlive && !window.isClosed()) {
                     windows.add(window);
                 }
@@ -396,17 +346,17 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
     }
 
     /**
-     * @param file The backing file to look for.
+     * @param path The backing file to look for.
      * @return The {@link FileProxy} associated with the specified backing file.
      */
-    public static FileProxy findFileProxy(File file) {
-        String fullPath = PathUtils.getFullPath(file);
+    public static FileProxy findFileProxy(Path path) {
+        path = path.normalize().toAbsolutePath();
         for (BaseWindow window : getAllAppWindows()) {
             if (window instanceof FileProxy) {
                 FileProxy proxy = (FileProxy) window;
-                File      wFile = proxy.getBackingFile();
-                if (wFile != null) {
-                    if (PathUtils.getFullPath(wFile).equals(fullPath)) {
+                Path      wPath = proxy.getBackingFile();
+                if (wPath != null) {
+                    if (wPath.normalize().toAbsolutePath().equals(path)) {
                         return proxy;
                     }
                 }
@@ -434,6 +384,40 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
     public static void forceRepaintAndInvalidate() {
         for (BaseWindow window : getAllAppWindows()) {
             window.invalidate(window.getRootPane());
+        }
+    }
+
+    public static class Position {
+        private static final String    X            = "x";
+        private static final String    Y            = "y";
+        private static final String    WIDTH        = "width";
+        private static final String    HEIGHT       = "height";
+        private static final String    LAST_UPDATED = "last_updated";
+        public               Rectangle mBounds;
+        public               long      mLastUpdated;
+
+        public Position(BaseWindow wnd) {
+            mBounds = wnd.getBounds();
+            mLastUpdated = System.currentTimeMillis();
+        }
+
+        public Position(JsonMap m) {
+            mBounds = new Rectangle(m.getIntWithDefault(X, 0), m.getIntWithDefault(Y, 0), m.getIntWithDefault(WIDTH, 1), m.getIntWithDefault(HEIGHT, 1));
+            mLastUpdated = m.getLong(LAST_UPDATED);
+        }
+
+        void apply(BaseWindow wnd) {
+            wnd.setBounds(mBounds);
+        }
+
+        public void toJSON(JsonWriter w) throws IOException {
+            w.startObject();
+            w.keyValue(X, mBounds.x);
+            w.keyValue(Y, mBounds.y);
+            w.keyValue(WIDTH, mBounds.width);
+            w.keyValue(HEIGHT, mBounds.height);
+            w.keyValue(LAST_UPDATED, mLastUpdated);
+            w.endObject();
         }
     }
 }

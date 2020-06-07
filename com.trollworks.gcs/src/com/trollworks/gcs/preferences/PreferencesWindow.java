@@ -30,10 +30,9 @@ import javax.swing.event.ChangeListener;
 
 /** A window for editing application preferences. */
 public class PreferencesWindow extends BaseWindow implements ActionListener, ChangeListener, CloseHandler {
-    private static final String            PREFIX = "PreferencesWindow.";
-    private static       PreferencesWindow INSTANCE;
-    private              JTabbedPane       mTabPanel;
-    private              JButton           mResetButton;
+    private static PreferencesWindow INSTANCE;
+    private        JTabbedPane       mTabPanel;
+    private        JButton           mResetButton;
 
     /** Displays the preferences window. */
     public static void display() {
@@ -98,8 +97,8 @@ public class PreferencesWindow extends BaseWindow implements ActionListener, Cha
     }
 
     @Override
-    public String getWindowPrefsPrefix() {
-        return PREFIX;
+    public String getWindowPrefsKey() {
+        return "preferences";
     }
 
     @Override

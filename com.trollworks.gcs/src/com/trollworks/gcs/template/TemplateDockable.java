@@ -12,12 +12,10 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.character.Settings;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.menu.RetargetableFocus;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.Spell;
@@ -37,7 +35,6 @@ import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
 import com.trollworks.gcs.ui.widget.search.Search;
 import com.trollworks.gcs.ui.widget.search.SearchTarget;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
@@ -70,7 +67,8 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
         mTemplate = new TemplateSheet(dataFile);
         Toolbar toolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(DisplayPreferences.initialUIScale());
+        Preferences prefs = Preferences.getInstance();
+        mScaleCombo.setSelectedItem(prefs.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
             Scales scale = (Scales) mScaleCombo.getSelectedItem();
             if (scale == null) {
@@ -90,7 +88,7 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
         StdUndoManager undoManager = getUndoManager();
         undoManager.discardAllEdits();
         dataFile.setUndoManager(undoManager);
-        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, Preferences.getModuleKey(SheetPreferences.MODULE, Settings.TAG_USE_MULTIPLICATIVE_MODIFIERS));
+        prefs.getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, Preferences.KEY_USE_MULTIPLICATIVE_MODIFIERS);
     }
 
     @Override

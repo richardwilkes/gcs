@@ -21,7 +21,7 @@ import com.trollworks.gcs.utility.Timing;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.LengthUnits;
 
-import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class CmdLineExport implements Runnable {
     boolean    mGeneratePDF;
     boolean    mGeneratePNG;
     boolean    mGenerateText;
-    File       mTemplate;
+    Path       mTemplate;
     String     mMargins;
     String     mPaper;
 
@@ -41,7 +41,7 @@ public class CmdLineExport implements Runnable {
         mGeneratePDF = generatePDF;
         mGeneratePNG = generatePNG;
         mGenerateText = generateText;
-        mTemplate = mGenerateText ? template.toFile() : null;
+        mTemplate = mGenerateText ? template : null;
         mMargins = margins;
         mPaper = paper;
     }
@@ -53,19 +53,18 @@ public class CmdLineExport implements Runnable {
             Timing   timing      = new Timing();
             GraphicsUtilities.setHeadlessPrintMode(true);
             for (Path path : mFiles) {
-                File file = path.toFile();
-                if (!FileType.SHEET.matchExtension(PathUtils.getExtension(file.getName())) || !file.canRead()) {
-                    System.out.printf(I18n.Text("Unable to load %s\n"), file);
+                if (!FileType.SHEET.matchExtension(PathUtils.getExtension(path)) || !Files.isReadable(path)) {
+                    System.out.printf(I18n.Text("Unable to load %s\n"), path);
                     continue;
                 }
-                System.out.printf(I18n.Text("Loading %s... "), file);
+                System.out.printf(I18n.Text("Loading %s... "), path);
                 System.out.flush();
                 timing.reset();
                 try {
-                    GURPSCharacter character = new GURPSCharacter(file);
+                    GURPSCharacter character = new GURPSCharacter(path);
                     CharacterSheet sheet     = new CharacterSheet(character);
                     PrintManager   settings  = character.getPageSettings();
-                    File           output;
+                    Path           output;
                     boolean        success;
 
                     sheet.addNotify(); // Required to allow layout to work
@@ -85,11 +84,11 @@ public class CmdLineExport implements Runnable {
                     if (mGenerateText) {
                         System.out.print(I18n.Text("  Creating from text template... "));
                         System.out.flush();
-                        output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), PathUtils.getExtension(mTemplate.getName())));
+                        output = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, false), PathUtils.getExtension(mTemplate)));
                         timing.reset();
                         success = new TextTemplate(sheet).export(output, mTemplate);
                         System.out.println(timing);
-                        System.out.printf(I18n.Text("    Used text template file: %s\n"), PathUtils.getFullPath(mTemplate));
+                        System.out.printf(I18n.Text("    Used text template file: %s\n"), mTemplate.normalize().toAbsolutePath());
                         if (success) {
                             System.out.printf(I18n.Text("    Created: %s\n"), output);
                         }
@@ -97,7 +96,7 @@ public class CmdLineExport implements Runnable {
                     if (mGeneratePDF) {
                         System.out.print(I18n.Text("  Creating PDF... "));
                         System.out.flush();
-                        output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PDF.getExtension()));
+                        output = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, false), FileType.PDF.getExtension()));
                         timing.reset();
                         success = sheet.saveAsPDF(output);
                         System.out.println(timing);
@@ -106,15 +105,15 @@ public class CmdLineExport implements Runnable {
                         }
                     }
                     if (mGeneratePNG) {
-                        List<File> result = new ArrayList<>();
+                        List<Path> result = new ArrayList<>();
                         System.out.print(I18n.Text("  Creating PNG... "));
                         System.out.flush();
-                        output = new File(file.getParentFile(), PathUtils.enforceExtension(PathUtils.getLeafName(file.getName(), false), FileType.PNG.getExtension()));
+                        output = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, false), FileType.PNG.getExtension()));
                         timing.reset();
                         success = sheet.saveAsPNG(output, result);
                         System.out.println(timing);
                         if (success) {
-                            for (File one : result) {
+                            for (Path one : result) {
                                 System.out.printf(I18n.Text("    Created: %s\n"), one);
                             }
                         }

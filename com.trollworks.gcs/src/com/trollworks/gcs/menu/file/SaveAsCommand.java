@@ -14,13 +14,14 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.File;
+import java.nio.file.Path;
 
 /** Provides the "Save As..." command. */
 public class SaveAsCommand extends Command {
@@ -48,27 +49,27 @@ public class SaveAsCommand extends Command {
      * Allows the user to save the file under another name.
      *
      * @param saveable The {@link Saveable} to work on.
-     * @return The file(s) actually written to. May be empty.
+     * @return The path(s) actually written to. May be empty.
      */
-    public static File[] saveAs(Saveable saveable) {
+    public static Path[] saveAs(Saveable saveable) {
         if (saveable == null) {
-            return new File[0];
+            return new Path[0];
         }
         String name = saveable.getSaveTitle();
         if (name.isBlank()) {
             name = "untitled";
         }
-        File   result = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable), I18n.Text("Save As…"), new File(StdFileDialog.getLastDir(), name), saveable.getFileType().getFilter());
-        File[] files  = result != null ? saveable.saveTo(result) : new File[0];
-        if (files != null) {
-            for (File file : files) {
-                RecentFilesMenu.addRecent(file);
+        Path   result = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable), I18n.Text("Save As…"), Preferences.getInstance().getLastDir().resolve(name), saveable.getFileType().getFilter());
+        Path[] paths  = result != null ? saveable.saveTo(result) : new Path[0];
+        if (paths != null) {
+            for (Path path : paths) {
+                Preferences.getInstance().addRecentFile(path);
             }
             LibraryExplorerDockable explorer = LibraryExplorerDockable.get();
             if (explorer != null) {
                 explorer.refresh();
             }
         }
-        return files;
+        return paths;
     }
 }

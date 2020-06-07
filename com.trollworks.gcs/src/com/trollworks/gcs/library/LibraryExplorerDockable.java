@@ -19,7 +19,6 @@ import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.Openable;
-import com.trollworks.gcs.menu.file.RecentFilesMenu;
 import com.trollworks.gcs.modifier.AdvantageModifierList;
 import com.trollworks.gcs.modifier.AdvantageModifiersDockable;
 import com.trollworks.gcs.modifier.EquipmentModifierList;
@@ -28,6 +27,7 @@ import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
 import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.pdfview.PdfRef;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.spell.SpellList;
@@ -61,18 +61,15 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -83,13 +80,9 @@ import javax.swing.ListCellRenderer;
 
 /** A list of available library files. */
 public class LibraryExplorerDockable extends Dockable implements SearchTarget, FieldAccessor, IconAccessor, Openable, Deletable {
-    private static final String    EXPLORER_PREFERENCES         = "Explorer";
-    private static final int       EXPLORER_PREFERENCES_VERSION = 1;
-    private static final String    KEY_OPEN_ROWS                = "OpenRows";
-    private static final String    KEY_DIVIDER_POSITION         = "DividerPosition";
-    private              Search    mSearch;
-    private              TreePanel mTreePanel;
-    private              Notifier  mNotifier;
+    private Search    mSearch;
+    private TreePanel mTreePanel;
+    private Notifier  mNotifier;
 
     public static LibraryExplorerDockable get() {
         for (Dockable dockable : Workspace.get().getDock().getDockables()) {
@@ -127,29 +120,18 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         toolbar.add(new IconButton(Images.REFRESH, I18n.Text("Refresh"), () -> refresh()));
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
-        Preferences prefs = Preferences.getInstance();
-        prefs.resetIfVersionMisMatch(EXPLORER_PREFERENCES, EXPLORER_PREFERENCES_VERSION);
-        String openRows = prefs.getStringValue(EXPLORER_PREFERENCES, KEY_OPEN_ROWS);
-        if (openRows != null) {
-            mTreePanel.setOpen(true, collectRowsToOpen(root, new HashSet<>(Arrays.asList(openRows.split("\n"))), null));
+        List<String> openRowKeys = Preferences.getInstance().getLibraryExplorerOpenRowKeys();
+        if (!openRowKeys.isEmpty()) {
+            mTreePanel.setOpen(true, collectRowsToOpen(root, new HashSet<>(openRowKeys), null));
         }
-    }
-
-    public int getDesiredDividerPosition() {
-        return Preferences.getInstance().getIntValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, 300);
     }
 
     public void savePreferences() {
-        Preferences  prefs = Preferences.getInstance();
-        List<String> list  = new ArrayList<>(collectOpenRowKeys());
+        List<String> list = new ArrayList<>(collectOpenRowKeys());
         list.sort(NumericComparator.CASELESS_COMPARATOR);
-        StringBuilder buffer = new StringBuilder();
-        for (String one : list) {
-            buffer.append(one);
-            buffer.append("\n");
-        }
-        prefs.setValue(EXPLORER_PREFERENCES, KEY_OPEN_ROWS, buffer.toString());
-        prefs.setValue(EXPLORER_PREFERENCES, KEY_DIVIDER_POSITION, getDockContainer().getDock().getLayout().findLayout(getDockContainer()).getRawDividerPosition());
+        Preferences prefs = Preferences.getInstance();
+        prefs.setLibraryExplorerOpenRowKeys(list);
+        prefs.setLibraryExplorerDividerPosition(getDockContainer().getDock().getLayout().findLayout(getDockContainer()).getRawDividerPosition());
     }
 
     @Override
@@ -280,10 +262,10 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public Dockable getDockableFor(Path path) {
         for (Dockable dockable : getDockContainer().getDock().getDockables()) {
             if (dockable instanceof FileProxy) {
-                File file = ((FileProxy) dockable).getBackingFile();
-                if (file != null) {
+                Path backing = ((FileProxy) dockable).getBackingFile();
+                if (backing != null) {
                     try {
-                        if (Files.isSameFile(path, file.toPath())) {
+                        if (Files.isSameFile(path, backing)) {
                             return dockable;
                         }
                     } catch (IOException ioe) {
@@ -317,11 +299,11 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                 } else if (FileType.NOTE.matchExtension(ext)) {
                     proxy = openNoteList(path);
                 } else if (FileType.SHEET.matchExtension(ext)) {
-                    proxy = dockSheet(new SheetDockable(new GURPSCharacter(path.toFile())));
+                    proxy = dockSheet(new SheetDockable(new GURPSCharacter(path)));
                 } else if (FileType.TEMPLATE.matchExtension(ext)) {
-                    proxy = dockTemplate(new TemplateDockable(new Template(path.toFile())));
+                    proxy = dockTemplate(new TemplateDockable(new Template(path)));
                 } else if (FileType.PDF.matchExtension(ext)) {
-                    proxy = dockPdf(new PdfDockable(new PdfRef(null, path.toFile(), 0), -1, null));
+                    proxy = dockPdf(new PdfDockable(new PdfRef(null, path, 0), -1, null));
                 }
             } catch (Throwable throwable) {
                 StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
@@ -332,9 +314,9 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
             dockable.getDockContainer().setCurrentDockable(dockable);
         }
         if (proxy != null) {
-            File file = proxy.getBackingFile();
-            if (file != null) {
-                RecentFilesMenu.addRecent(file);
+            Path backing = proxy.getBackingFile();
+            if (backing != null) {
+                Preferences.getInstance().addRecentFile(backing);
             }
         }
         return proxy;
@@ -342,49 +324,49 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     private FileProxy openAdvantageList(Path path) throws IOException {
         AdvantageList list = new AdvantageList();
-        list.load(path.toFile());
+        list.load(path);
         list.getModel().setLocked(true);
         return dockLibrary(new AdvantagesDockable(list));
     }
 
     private FileProxy openAdvantageModifierList(Path path) throws IOException {
         AdvantageModifierList list = new AdvantageModifierList();
-        list.load(path.toFile());
+        list.load(path);
         list.getModel().setLocked(true);
         return dockLibrary(new AdvantageModifiersDockable(list));
     }
 
     private FileProxy openEquipmentList(Path path) throws IOException {
         EquipmentList list = new EquipmentList();
-        list.load(path.toFile());
+        list.load(path);
         list.getModel().setLocked(true);
         return dockLibrary(new EquipmentDockable(list));
     }
 
     private FileProxy openEquipmentModifierList(Path path) throws IOException {
         EquipmentModifierList list = new EquipmentModifierList();
-        list.load(path.toFile());
+        list.load(path);
         list.getModel().setLocked(true);
         return dockLibrary(new EquipmentModifiersDockable(list));
     }
 
     private FileProxy openSkillList(Path path) throws IOException {
         SkillList list = new SkillList();
-        list.load(path.toFile());
+        list.load(path);
         list.getModel().setLocked(true);
         return dockLibrary(new SkillsDockable(list));
     }
 
     private FileProxy openSpellList(Path path) throws IOException {
         SpellList list = new SpellList();
-        list.load(path.toFile());
+        list.load(path);
         list.getModel().setLocked(true);
         return dockLibrary(new SpellsDockable(list));
     }
 
     private FileProxy openNoteList(Path path) throws IOException {
         NoteList list = new NoteList();
-        list.load(path.toFile());
+        list.load(path);
         list.getModel().setLocked(true);
         return dockLibrary(new NotesDockable(list));
     }

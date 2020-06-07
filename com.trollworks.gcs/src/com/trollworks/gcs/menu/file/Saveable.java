@@ -15,7 +15,7 @@ import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FileType;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Windows that want to participate in the standard {@link SaveCommand} and {@link SaveAsCommand}
@@ -38,10 +38,10 @@ public interface Saveable extends FileProxy {
     String getSaveTitle();
 
     /**
-     * Called to actually save the contents to a file.
+     * Called to actually save the contents to a path.
      *
-     * @param file The file to save to.
-     * @return The file(s) actually written to.
+     * @param path The path to save to.
+     * @return The path(s) actually written to.
      */
-    File[] saveTo(File file);
+    Path[] saveTo(Path path);
 }

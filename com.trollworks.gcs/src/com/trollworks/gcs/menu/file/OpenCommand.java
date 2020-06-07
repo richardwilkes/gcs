@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.FileProxy;
@@ -27,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /** Provides the "Open..." command. */
 public class OpenCommand extends Command implements OpenFilesHandler {
@@ -52,29 +54,32 @@ public class OpenCommand extends Command implements OpenFilesHandler {
 
     /** Ask the user to open a file. */
     public static void open() {
-        open(StdFileDialog.showOpenDialog(getFocusOwner(), I18n.Text("Open…"), FileType.createFileFilters(I18n.Text("All Readable Files"), FileType.OPENABLE)));
+        Path path = StdFileDialog.showOpenDialog(getFocusOwner(), I18n.Text("Open…"), FileType.createFileFilters(I18n.Text("All Readable Files"), FileType.OPENABLE));
+        if (path != null) {
+            open(path);
+        }
     }
 
-    /** @param file The file to open. */
-    public static void open(File file) {
-        if (file != null) {
+    /** @param path The file to open. */
+    public static void open(Path path) {
+        if (path != null) {
             try {
-                FileProxy proxy = BaseWindow.findFileProxy(file);
+                FileProxy proxy = BaseWindow.findFileProxy(path);
                 if (proxy == null) {
                     LibraryExplorerDockable library = LibraryExplorerDockable.get();
                     if (library != null) {
-                        proxy = library.open(file.toPath());
+                        proxy = library.open(path);
                     }
                 }
                 if (proxy != null) {
                     proxy.toFrontAndFocus();
-                    RecentFilesMenu.addRecent(file);
+                    Preferences.getInstance().addRecentFile(path);
                 } else {
                     throw new IOException(I18n.Text("unknown file extension"));
                 }
             } catch (Exception exception) {
                 Log.error(exception);
-                StdFileDialog.showCannotOpenMsg(getFocusOwner(), file.getName(), exception);
+                StdFileDialog.showCannotOpenMsg(getFocusOwner(), path.toString(), exception);
             }
         }
     }
@@ -82,9 +87,9 @@ public class OpenCommand extends Command implements OpenFilesHandler {
     @Override
     public void openFiles(OpenFilesEvent event) {
         for (File file : event.getFiles()) {
-            // We call this rather than directly to open(File) above to allow the file opening to be
+            // We call this rather than directly to open(Path) above to allow the file opening to be
             // deferred until startup has finished
-            OpenDataFileCommand.open(file);
+            OpenDataFileCommand.open(file.toPath());
         }
     }
 }

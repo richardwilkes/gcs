@@ -11,12 +11,14 @@
 
 package com.trollworks.gcs.ui.print;
 
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.LengthUnits;
@@ -41,31 +43,24 @@ import javax.swing.JOptionPane;
 
 /** Manages printing. */
 public class PrintManager {
-    private static final String                       MODULE                     = "PrintManager";
-    private static final int                          MODULE_VERSION             = 1;
-    private static final String                       NATIVE_DIALOGS_ENABLED_KEY = "UseNativeDialogs";
     /** The XML root tag for {@link PrintManager}. */
-    public static final  String                       TAG_ROOT                   = "print_settings";
-    private static final String                       ATTRIBUTE_UNITS            = "units";
-    private static final String                       ATTRIBUTE_PRINTER          = "printer";
-    private static final String                       TAG_ORIENTATION            = "orientation";
-    private static final String                       TAG_WIDTH                  = "width";
-    private static final String                       TAG_HEIGHT                 = "height";
-    private static final String                       TAG_TOP_MARGIN             = "top_margin";
-    private static final String                       TAG_BOTTOM_MARGIN          = "bottom_margin";
-    private static final String                       TAG_LEFT_MARGIN            = "left_margin";
-    private static final String                       TAG_RIGHT_MARGIN           = "right_margin";
-    private static final String                       TAG_CHROMATICITY           = "ink_chromaticity";
-    private static final String                       TAG_SIDES                  = "sides";
-    private static final String                       TAG_NUMBER_UP              = "number_up";
-    private static final String                       TAG_QUALITY                = "quality";
-    private static final String                       TAG_RESOLUTION             = "resolution";
+    public static final  String                       TAG_ROOT          = "print_settings";
+    private static final String                       ATTRIBUTE_UNITS   = "units";
+    private static final String                       ATTRIBUTE_PRINTER = "printer";
+    private static final String                       TAG_ORIENTATION   = "orientation";
+    private static final String                       TAG_WIDTH         = "width";
+    private static final String                       TAG_HEIGHT        = "height";
+    private static final String                       TAG_TOP_MARGIN    = "top_margin";
+    private static final String                       TAG_BOTTOM_MARGIN = "bottom_margin";
+    private static final String                       TAG_LEFT_MARGIN   = "left_margin";
+    private static final String                       TAG_RIGHT_MARGIN  = "right_margin";
+    private static final String                       TAG_CHROMATICITY  = "ink_chromaticity";
+    private static final String                       TAG_SIDES         = "sides";
+    private static final String                       TAG_NUMBER_UP     = "number_up";
+    private static final String                       TAG_QUALITY       = "quality";
+    private static final String                       TAG_RESOLUTION    = "resolution";
     private              PrinterJob                   mJob;
     private              HashPrintRequestAttributeSet mSet;
-
-    static {
-        Preferences.getInstance().resetIfVersionMisMatch(MODULE, MODULE_VERSION);
-    }
 
     /** Creates a new {@link PrintManager} object. */
     public PrintManager() {
@@ -129,6 +124,44 @@ public class PrintManager {
     public PrintManager(XMLReader reader) throws IOException {
         this();
         load(reader);
+    }
+
+    public PrintManager(JsonMap m) {
+        this();
+        double[]    size    = {8.5, 11.0};
+        double[]    margins = {0, 0, 0, 0};
+        LengthUnits units   = Enums.extract(m.getString(ATTRIBUTE_UNITS, false), LengthUnits.values(), LengthUnits.IN);
+        String      printer = m.getString(ATTRIBUTE_PRINTER, true);
+        if (printer != null && !printer.isEmpty()) {
+            try {
+                for (PrintService one : PrinterJob.lookupPrintServices()) {
+                    if (one.getName().equalsIgnoreCase(printer)) {
+                        mJob.setPrintService(one);
+                        break;
+                    }
+                }
+            } catch (Exception exception) {
+                // Ignore...
+            }
+        }
+        setPageOrientation(Enums.extract(m.getString(TAG_ORIENTATION, false), PageOrientation.values(), PageOrientation.PORTRAIT));
+        size[0] = getNumberForJSON(m, TAG_WIDTH, units, 8.5);
+        size[1] = getNumberForJSON(m, TAG_HEIGHT, units, 11.0);
+        margins[0] = getNumberForJSON(m, TAG_TOP_MARGIN, units, 0.0);
+        margins[1] = getNumberForJSON(m, TAG_LEFT_MARGIN, units, 0.0);
+        margins[2] = getNumberForJSON(m, TAG_BOTTOM_MARGIN, units, 0.0);
+        margins[3] = getNumberForJSON(m, TAG_RIGHT_MARGIN, units, 0.0);
+        setChromaticity(Enums.extract(m.getString(TAG_CHROMATICITY, false), InkChromaticity.values(), InkChromaticity.COLOR));
+        setSides(Enums.extract(m.getString(TAG_SIDES, false), PageSides.values(), PageSides.SINGLE));
+        setNumberUp(m.getIntWithDefault(TAG_NUMBER_UP, 1));
+        setPrintQuality(Enums.extract(m.getString(TAG_QUALITY, false), Quality.values(), Quality.NORMAL));
+        setResolution(extractFromResolutionString(m.getString(TAG_RESOLUTION, false)));
+        setPaperSize(size, units);
+        setPaperMargins(margins, units);
+    }
+
+    private static double getNumberForJSON(JsonMap m, String key, LengthUnits units, double defInches) {
+        return m.getDoubleWithDefault(key, units.convert(LengthUnits.IN, new Fixed6(defInches)).asDouble());
     }
 
     /**
@@ -206,7 +239,7 @@ public class PrintManager {
      * @return Whether the user canceled (or an error occurred).
      */
     public boolean pageSetup(PrintProxy proxy) {
-        if (useNativeDialogs()) {
+        if (Preferences.getInstance().useNativePrintDialogs()) {
             PageFormat format = mJob.pageDialog(createPageFormat());
             if (format != null) {
                 adjustSettingsToPageFormat(format);
@@ -240,7 +273,7 @@ public class PrintManager {
         if (proxy != null) {
             PrintService service = getPrintService();
             if (service != null) {
-                if (useNativeDialogs()) {
+                if (Preferences.getInstance().useNativePrintDialogs()) {
                     mJob.setJobName(proxy.getPrintJobTitle());
                     if (mJob.printDialog()) {
                         try {
@@ -311,6 +344,30 @@ public class PrintManager {
         setPageOrientation(PageOrientation.get(format));
         setPaperSize(new double[]{paper.getWidth(), paper.getHeight()}, LengthUnits.PT);
         setPaperMargins(new double[]{paper.getImageableY(), paper.getImageableX(), paper.getHeight() - (paper.getImageableY() + paper.getImageableHeight()), paper.getWidth() - (paper.getImageableX() + paper.getImageableWidth())}, LengthUnits.PT);
+    }
+
+    public void toJSON(JsonWriter w, LengthUnits units) throws IOException {
+        double[]     size    = getPaperSize(units);
+        double[]     margins = getPaperMargins(units);
+        PrintService service = getPrintService();
+        w.startObject();
+        if (service != null) {
+            w.keyValue(ATTRIBUTE_PRINTER, service.getName());
+        }
+        w.keyValue(ATTRIBUTE_UNITS, Enums.toId(units));
+        w.keyValue(TAG_ORIENTATION, Enums.toId(getPageOrientation()));
+        w.keyValue(TAG_WIDTH, size[0]);
+        w.keyValue(TAG_HEIGHT, size[1]);
+        w.keyValue(TAG_TOP_MARGIN, margins[0]);
+        w.keyValue(TAG_LEFT_MARGIN, margins[1]);
+        w.keyValue(TAG_BOTTOM_MARGIN, margins[2]);
+        w.keyValue(TAG_RIGHT_MARGIN, margins[3]);
+        w.keyValue(TAG_CHROMATICITY, Enums.toId(getChromaticity(false)));
+        w.keyValue(TAG_SIDES, Enums.toId(getSides()));
+        w.keyValue(TAG_NUMBER_UP, getNumberUp().toString());
+        w.keyValue(TAG_QUALITY, Enums.toId(getPrintQuality(false)));
+        w.keyValueNot(TAG_RESOLUTION, createResolutionString(getResolution(false)), null);
+        w.endObject();
     }
 
     /**
@@ -569,15 +626,5 @@ public class PrintManager {
     /** @param resolution The new print resolution. */
     public void setResolution(PrinterResolution resolution) {
         PrintUtilities.setResolution(mSet, resolution);
-    }
-
-    /** @return Whether native print dialogs will be used. */
-    public static boolean useNativeDialogs() {
-        return Preferences.getInstance().getBooleanValue(MODULE, NATIVE_DIALOGS_ENABLED_KEY, false);
-    }
-
-    /** @param useNative Whether native print dialogs will be used. */
-    public static void useNativeDialogs(boolean useNative) {
-        Preferences.getInstance().setValue(MODULE, NATIVE_DIALOGS_ENABLED_KEY, useNative);
     }
 }

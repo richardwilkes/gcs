@@ -16,6 +16,7 @@ import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.pdfview.PdfDockable;
 import com.trollworks.gcs.pdfview.PdfRef;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
@@ -29,7 +30,6 @@ import com.trollworks.gcs.utility.ReverseListIterator;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,17 +102,17 @@ public class OpenPageReferenceCommand extends Command {
         if (i > 0) {
             String id = reference.substring(0, i);
             try {
-                int    page = Integer.parseInt(reference.substring(i));
-                PdfRef ref  = PdfRef.lookup(id, true);
+                int         page  = Integer.parseInt(reference.substring(i));
+                Preferences prefs = Preferences.getInstance();
+                PdfRef      ref   = prefs.lookupPdfRef(id, true);
                 if (ref == null) {
-                    File file = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.Text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
-                    if (file != null) {
-                        ref = new PdfRef(id, file, 0);
-                        ref.save();
+                    Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.Text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
+                    if (path != null) {
+                        prefs.putPdfRef(new PdfRef(id, path, 0));
                     }
                 }
                 if (ref != null) {
-                    Path                    path    = ref.getFile().toPath();
+                    Path                    path    = ref.getPath();
                     LibraryExplorerDockable library = LibraryExplorerDockable.get();
                     if (library != null) {
                         PdfDockable dockable = (PdfDockable) library.getDockableFor(path);

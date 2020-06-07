@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -22,7 +23,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.nio.file.Path;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -48,9 +48,9 @@ public class ExportToTextTemplateCommand extends Command {
                 name = "untitled";
             }
             String ext  = PathUtils.getExtension(mTemplatePath);
-            File   file = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), new File(StdFileDialog.getLastDir(), name), new FileNameExtensionFilter(ext + I18n.Text(" Files"), ext));
-            if (file != null) {
-                if (!new TextTemplate(sheet.getSheet()).export(file, mTemplatePath.toFile())) {
+            Path   path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), Preferences.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.Text(" Files"), ext));
+            if (path != null) {
+                if (!new TextTemplate(sheet.getSheet()).export(path, mTemplatePath)) {
                     WindowUtils.showError(sheet, String.format(I18n.Text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(mTemplatePath, false)));
                 }
             }

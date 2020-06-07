@@ -36,8 +36,8 @@ import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /** A template. */
 public class Template extends DataFile {
@@ -91,13 +91,13 @@ public class Template extends DataFile {
     /**
      * Creates a new character from the specified file.
      *
-     * @param file The file to load the data from.
+     * @param path The path to load the data from.
      * @throws IOException if the data cannot be read or the file doesn't contain a valid character
      *                     sheet.
      */
-    public Template(File file) throws IOException {
+    public Template(Path path) throws IOException {
         this();
-        load(file);
+        load(path);
     }
 
     @Override

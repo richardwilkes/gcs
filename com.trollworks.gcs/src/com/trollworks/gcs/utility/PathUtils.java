@@ -232,7 +232,7 @@ public class PathUtils {
      *         separator).
      */
     public static final String getLeafName(Path path, boolean includeExtension) {
-        return getLeafName(path.toString(), includeExtension);
+        return getLeafName(path.getFileName().toString(), includeExtension);
     }
 
     /**

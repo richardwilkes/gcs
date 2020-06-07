@@ -14,12 +14,11 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
@@ -48,7 +47,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
         createLabelAndField(sheet, GURPSCharacter.ID_SKILL_POINTS, I18n.Text("Skills"), I18n.Text("A summary of all points spent on skills for this character"), false);
         createLabelAndField(sheet, GURPSCharacter.ID_SPELL_POINTS, I18n.Text("Spells"), I18n.Text("A summary of all points spent on spells for this character"), false);
         sheet.getCharacter().addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
-        Preferences.getInstance().getNotifier().add(this, DisplayPreferences.TOTAL_POINTS_DISPLAY_PREF_KEY);
+        Preferences.getInstance().getNotifier().add(this, Preferences.KEY_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
     }
 
     private void createLabelAndField(CharacterSheet sheet, String key, String title, String tooltip, boolean enabled) {
@@ -65,7 +64,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
     }
 
     private static String getTitle(GURPSCharacter character) {
-        return MessageFormat.format(I18n.Text("{0} Points"), Numbers.format(DisplayPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? character.getTotalPoints() : character.getSpentPoints()));
+        return MessageFormat.format(I18n.Text("{0} Points"), Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? character.getTotalPoints() : character.getSpentPoints()));
     }
 
     @Override

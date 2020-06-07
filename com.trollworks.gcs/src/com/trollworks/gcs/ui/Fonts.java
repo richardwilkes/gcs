@@ -11,42 +11,46 @@
 
 package com.trollworks.gcs.ui;
 
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
+import com.trollworks.gcs.utility.text.Enums;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
 public class Fonts {
     /** The standard text field font. */
-    public static final  String                 KEY_STD_TEXT_FIELD    = "TextField.font";
+    public static final  String             KEY_STD_TEXT_FIELD    = "TextField.font";
     /** The label font. */
-    public static final  String                 KEY_LABEL_PRIMARY     = "label.primary";
+    public static final  String             KEY_LABEL_PRIMARY     = "label.primary";
     /** The small label font. */
-    public static final  String                 KEY_LABEL_SECONDARY   = "label.secondary";
+    public static final  String             KEY_LABEL_SECONDARY   = "label.secondary";
     /** The field font. */
-    public static final  String                 KEY_FIELD_PRIMARY     = "field.primary";
+    public static final  String             KEY_FIELD_PRIMARY     = "field.primary";
     /** The field notes font. */
-    public static final  String                 KEY_FIELD_SECONDARY   = "field.secondary";
+    public static final  String             KEY_FIELD_SECONDARY   = "field.secondary";
     /** The primary footer font. */
-    public static final  String                 KEY_FOOTER_PRIMARY    = "footer.primary";
+    public static final  String             KEY_FOOTER_PRIMARY    = "footer.primary";
     /** The secondary footer font. */
-    public static final  String                 KEY_FOOTER_SECONDARY  = "footer.secondary";
+    public static final  String             KEY_FOOTER_SECONDARY  = "footer.secondary";
     /** The notification key used when font change notifications are broadcast. */
-    public static final  String                 FONT_NOTIFICATION_KEY = "FontsChanged";
-    private static final String                 MODULE                = "fonts";
-    private static final List<String>           KEYS                  = new ArrayList<>();
-    private static final HashMap<String, Fonts> DEFAULTS              = new HashMap<>();
-    private              String                 mDescription;
-    private              Font                   mDefaultFont;
+    public static final  String             FONT_NOTIFICATION_KEY = "FontsChanged";
+    private static final List<String>       KEYS                  = new ArrayList<>();
+    private static final Map<String, Fonts> DEFAULTS              = new HashMap<>();
+    private              String             mDescription;
+    private              Font               mDefaultFont;
 
     private Fonts(String description, Font defaultFont) {
         mDescription = description;
@@ -64,9 +68,9 @@ public class Fonts {
         register(KEY_FOOTER_SECONDARY, I18n.Text("Secondary Footer"), new Font(name, Font.PLAIN, 6));
         Preferences prefs = Preferences.getInstance();
         for (String key : KEYS) {
-            Font font = prefs.getFontValue(MODULE, key);
-            if (font != null) {
-                UIManager.put(key, font);
+            Info info = prefs.getFontInfo(key);
+            if (info != null) {
+                UIManager.put(key, info.create());
             }
         }
     }
@@ -74,11 +78,10 @@ public class Fonts {
     /** Saves the current font settings to the preferences file. */
     public static void saveToPreferences() {
         Preferences prefs = Preferences.getInstance();
-        prefs.removePreferences(MODULE);
         for (String key : KEYS) {
             Font font = UIManager.getFont(key);
             if (font != null) {
-                prefs.setValue(MODULE, key, font);
+                prefs.setFontInfo(key, new Info(font));
             }
         }
     }
@@ -208,5 +211,71 @@ public class Fonts {
     /** Cause font change listeners to be notified. */
     public static void notifyOfFontChanges() {
         Preferences.getInstance().getNotifier().notify(null, FONT_NOTIFICATION_KEY, null);
+    }
+
+    public enum FontStyle {
+        PLAIN {
+            @Override
+            public String toString() {
+                return I18n.Text("Plain");
+            }
+        }, BOLD {
+            @Override
+            public String toString() {
+                return I18n.Text("Bold");
+            }
+        }, ITALIC {
+            @Override
+            public String toString() {
+                return I18n.Text("Italic");
+            }
+        }, BOLD_ITALIC {
+            @Override
+            public String toString() {
+                return I18n.Text("Bold Italic");
+            }
+        };
+
+        public static FontStyle from(Font font) {
+            Fonts.FontStyle[] styles = values();
+            return styles[font.getStyle() % styles.length];
+        }
+    }
+
+    public static class Info {
+        private static final String    NAME   = "name";
+        private static final String    STYLE  = "style";
+        private static final String    SIZE   = "size";
+        public static final  String[]  STYLES = {"plain", "bold", "italic", "Bold Italic"};
+        public               String    mName;
+        public               FontStyle mStyle;
+        public               int       mSize;
+
+        public Info(Font font) {
+            mName = font.getName();
+            mStyle = FontStyle.from(font);
+            mSize = font.getSize();
+        }
+
+        public Info(JsonMap m) {
+            mName = m.getStringWithDefault(NAME, "SansSerif");
+            mStyle = Enums.extract(m.getString(STYLE, false), FontStyle.values(), FontStyle.PLAIN);
+            mSize = m.getIntWithDefault(SIZE, 9);
+            if (mSize < 1) {
+                mSize = 1;
+            }
+        }
+
+        public Font create() {
+            return new Font(mName, mStyle.ordinal(), mSize);
+        }
+
+        public void toJSON(JsonWriter w) throws IOException {
+            w.startObject();
+            w.keyValue(NAME, mName);
+            w.keyValue(STYLE, Enums.toId(mStyle));
+            w.keyValue(SIZE, mSize);
+            w.endObject();
+        }
     }
 }

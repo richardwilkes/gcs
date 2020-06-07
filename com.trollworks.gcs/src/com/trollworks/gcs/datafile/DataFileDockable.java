@@ -27,7 +27,7 @@ import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Window;
-import java.io.File;
+import java.nio.file.Path;
 import javax.swing.Icon;
 
 /** Provides a common base for library and sheet files. */
@@ -57,8 +57,8 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     }
 
     @Override
-    public File getBackingFile() {
-        return mDataFile.getFile();
+    public Path getBackingFile() {
+        return mDataFile.getPath();
     }
 
     @Override
@@ -99,14 +99,14 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     }
 
     @Override
-    public File[] saveTo(File file) {
-        if (mDataFile.save(file)) {
-            mDataFile.setFile(file);
+    public Path[] saveTo(Path path) {
+        if (mDataFile.save(path)) {
+            mDataFile.setPath(path);
             getDockContainer().updateTitle(this);
-            return new File[]{file};
+            return new Path[]{path};
         }
         WindowUtils.showError(this, I18n.Text("An error occurred while trying to save the file."));
-        return new File[0];
+        return new Path[0];
     }
 
     @Override
@@ -132,14 +132,8 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
 
     @Override
     public String getTitle() {
-        File   file = getBackingFile();
-        String title;
-        if (file == null) {
-            title = getUntitledName();
-        } else {
-            title = PathUtils.getLeafName(file.getName(), false);
-        }
-        return title;
+        Path path = getBackingFile();
+        return path != null ? PathUtils.getLeafName(path, false) : getUntitledName();
     }
 
     protected abstract String getUntitledBaseName();
@@ -155,10 +149,10 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
         buffer.append("<html><body><b>");
         buffer.append(getTitle());
         buffer.append("</b>");
-        File file = getBackingFile();
-        if (file != null) {
+        Path path = getBackingFile();
+        if (path != null) {
             buffer.append("<br><font size='-2'>");
-            buffer.append(file.getAbsolutePath());
+            buffer.append(path.normalize().toAbsolutePath());
             buffer.append("</font>");
         }
         buffer.append("</body></html>");

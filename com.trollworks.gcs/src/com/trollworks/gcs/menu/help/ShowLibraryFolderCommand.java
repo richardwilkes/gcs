@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.menu.help;
 
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -41,8 +41,9 @@ public class ShowLibraryFolderCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            File    dir     = (mSystem ? Library.getMasterRootPath() : Library.getUserRootPath()).toFile();
-            Desktop desktop = Desktop.getDesktop();
+            Preferences prefs   = Preferences.getInstance();
+            File        dir     = (mSystem ? prefs.getMasterLibraryPath() : prefs.getUserLibraryPath()).toFile();
+            Desktop     desktop = Desktop.getDesktop();
             if (desktop.isSupported(Action.BROWSE_FILE_DIR)) {
                 File[] contents = dir.listFiles();
                 if (contents != null && contents.length > 0) {

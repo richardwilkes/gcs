@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -24,11 +25,11 @@ import javax.swing.JComboBox;
 
 /** A standard font selection panel. */
 public class FontPanel extends ActionPanel implements ActionListener {
-    private static final String[]           STD_STYLES = {I18n.Text("Plain"), I18n.Text("Bold"), I18n.Text("Italic"), I18n.Text("Bold Italic")};
-    private              JComboBox<Integer> mFontSizeMenu;
-    private              JComboBox<String>  mFontNameMenu;
-    private              JComboBox<String>  mFontStyleMenu;
-    private              boolean            mNoNotify;
+    public static final String[]                   STYLES = {I18n.Text("Plain"), I18n.Text("Bold"), I18n.Text("Italic"), I18n.Text("Bold Italic")};
+    private             JComboBox<Integer>         mFontSizeMenu;
+    private             JComboBox<String>          mFontNameMenu;
+    private             JComboBox<Fonts.FontStyle> mFontStyleMenu;
+    private             boolean                    mNoNotify;
 
     /**
      * Creates a new font panel.
@@ -62,7 +63,7 @@ public class FontPanel extends ActionPanel implements ActionListener {
         UIUtilities.setToPreferredSizeOnly(mFontSizeMenu);
         add(mFontSizeMenu);
 
-        mFontStyleMenu = new JComboBox<>(STD_STYLES);
+        mFontStyleMenu = new JComboBox<>(Fonts.FontStyle.values());
         mFontStyleMenu.setOpaque(false);
         mFontStyleMenu.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Changes the font style")));
         mFontStyleMenu.addActionListener(this);
@@ -86,11 +87,19 @@ public class FontPanel extends ActionPanel implements ActionListener {
 
     /** @return The font this panel has been set to. */
     public Font getCurrentFont() {
+        String name = (String) mFontNameMenu.getSelectedItem();
+        if (name == null) {
+            name = "SansSerif";
+        }
+        Fonts.FontStyle style = (Fonts.FontStyle) mFontStyleMenu.getSelectedItem();
+        if (style == null) {
+            style = Fonts.FontStyle.PLAIN;
+        }
         Integer size = (Integer) mFontSizeMenu.getSelectedItem();
         if (size == null) {
             size = Integer.valueOf(12);
         }
-        return new Font((String) mFontNameMenu.getSelectedItem(), mFontStyleMenu.getSelectedIndex(), size.intValue());
+        return new Font(name, style.ordinal(), size.intValue());
     }
 
     /** @param font The new font. */
@@ -104,7 +113,7 @@ public class FontPanel extends ActionPanel implements ActionListener {
         if (mFontSizeMenu.getSelectedItem() == null) {
             mFontSizeMenu.setSelectedIndex(3);
         }
-        mFontStyleMenu.setSelectedIndex(font.getStyle());
+        mFontStyleMenu.setSelectedItem(Fonts.FontStyle.from(font));
         if (mFontStyleMenu.getSelectedItem() == null) {
             mFontStyleMenu.setSelectedIndex(0);
         }

@@ -11,17 +11,17 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.menu.file.RecentFilesMenu;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.NewerDataFileVersionException;
 import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.Preferences;
 
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.io.File;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.JComponent;
@@ -31,25 +31,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Provides standard file dialog handling. */
 public class StdFileDialog {
-    private static final String MODULE   = "StdFileDialog";
-    private static final String LAST_DIR = "LastDir";
-
-    /** @return The last directory used by the StdFileDialog. May return {@code null}. */
-    public static final String getLastDir() {
-        String last = Preferences.getInstance().getStringValue(MODULE, LAST_DIR);
-        if (last != null) {
-            if (!new File(last).isDirectory()) {
-                last = null;
-            }
-        }
-        return last;
-    }
-
-    /** @param path The path to use as the last directory. */
-    public static final void setLastDir(String path) {
-        Preferences.getInstance().setValue(MODULE, LAST_DIR, path);
-    }
-
     /**
      * Creates a new {@link StdFileDialog}.
      *
@@ -57,9 +38,9 @@ public class StdFileDialog {
      * @param title   The title to use. May be {@code null}.
      * @param filters The file filters to make available. If there are none, then the {@code
      *                showAllFilter} flag will be forced to {@code true}.
-     * @return The chosen {@link File} or {@code null}.
+     * @return The chosen {@link Path} or {@code null}.
      */
-    public static File showOpenDialog(Component comp, String title, List<FileNameExtensionFilter> filters) {
+    public static Path showOpenDialog(Component comp, String title, List<FileNameExtensionFilter> filters) {
         return showOpenDialog(comp, title, filters != null ? filters.toArray(new FileNameExtensionFilter[0]) : null);
     }
 
@@ -70,9 +51,9 @@ public class StdFileDialog {
      * @param title   The title to use. May be {@code null}.
      * @param filters The file filters to make available. If there are none, then the {@code
      *                showAllFilter} flag will be forced to {@code true}.
-     * @return The chosen {@link File} or {@code null}.
+     * @return The chosen {@link Path} or {@code null}.
      */
-    public static File showOpenDialog(Component comp, String title, FileNameExtensionFilter... filters) {
+    public static Path showOpenDialog(Component comp, String title, FileNameExtensionFilter... filters) {
         return showOpenDialog(comp, title, null, filters);
     }
 
@@ -84,10 +65,11 @@ public class StdFileDialog {
      * @param accessoryPanel An extra panel to show. May be {@code null}.
      * @param filters        The file filters to make available. If there are none, then the {@code
      *                       showAllFilter} flag will be forced to {@code true}.
-     * @return The chosen {@link File} or {@code null}.
+     * @return The chosen {@link Path} or {@code null}.
      */
-    public static File showOpenDialog(Component comp, String title, JComponent accessoryPanel, FileNameExtensionFilter... filters) {
-        JFileChooser dialog = new JFileChooser(getLastDir());
+    public static Path showOpenDialog(Component comp, String title, JComponent accessoryPanel, FileNameExtensionFilter... filters) {
+        Preferences  prefs  = Preferences.getInstance();
+        JFileChooser dialog = new JFileChooser(prefs.getLastDir().toFile());
         dialog.setDialogTitle(title);
         if (filters != null && filters.length > 0) {
             dialog.setAcceptAllFileFilterUsed(false);
@@ -104,13 +86,13 @@ public class StdFileDialog {
         if (result != JFileChooser.ERROR_OPTION) {
             File current = dialog.getCurrentDirectory();
             if (current != null) {
-                setLastDir(current.getAbsolutePath());
+                prefs.setLastDir(current.toPath());
             }
         }
         if (result == JFileChooser.APPROVE_OPTION) {
-            File file = dialog.getSelectedFile();
-            RecentFilesMenu.addRecent(file);
-            return file;
+            Path path = dialog.getSelectedFile().toPath().normalize().toAbsolutePath();
+            prefs.addRecentFile(path);
+            return path;
         }
         return null;
     }
@@ -123,9 +105,9 @@ public class StdFileDialog {
      * @param suggestedFile The suggested file to save as. May be {@code null}.
      * @param filters       The file filters to make available. If there are none, then the {@code
      *                      showAllFilter} flag will be forced to {@code true}.
-     * @return The chosen {@link File} or {@code null}.
+     * @return The chosen {@link Path} or {@code null}.
      */
-    public static File showSaveDialog(Component comp, String title, File suggestedFile, List<FileNameExtensionFilter> filters) {
+    public static Path showSaveDialog(Component comp, String title, Path suggestedFile, List<FileNameExtensionFilter> filters) {
         return showSaveDialog(comp, title, suggestedFile, filters != null ? filters.toArray(new FileNameExtensionFilter[0]) : null);
     }
 
@@ -137,9 +119,9 @@ public class StdFileDialog {
      * @param suggestedFile The suggested file to save as. May be {@code null}.
      * @param filters       The file filters to make available. If there are none, then the {@code
      *                      showAllFilter} flag will be forced to {@code true}.
-     * @return The chosen {@link File} or {@code null}.
+     * @return The chosen {@link Path} or {@code null}.
      */
-    public static File showSaveDialog(Component comp, String title, File suggestedFile, FileNameExtensionFilter... filters) {
+    public static Path showSaveDialog(Component comp, String title, Path suggestedFile, FileNameExtensionFilter... filters) {
         return showSaveDialog(comp, title, suggestedFile, null, filters);
     }
 
@@ -152,10 +134,15 @@ public class StdFileDialog {
      * @param accessoryPanel An extra panel to show. May be {@code null}.
      * @param filters        The file filters to make available. If there are none, then the {@code
      *                       showAllFilter} flag will be forced to {@code true}.
-     * @return The chosen {@link File} or {@code null}.
+     * @return The chosen {@link Path} or {@code null}.
      */
-    public static File showSaveDialog(Component comp, String title, File suggestedFile, JComponent accessoryPanel, FileNameExtensionFilter... filters) {
-        JFileChooser dialog = new JFileChooser(suggestedFile != null ? suggestedFile.getParent() : getLastDir());
+    public static Path showSaveDialog(Component comp, String title, Path suggestedFile, JComponent accessoryPanel, FileNameExtensionFilter... filters) {
+        Preferences prefs = Preferences.getInstance();
+        Path        path  = suggestedFile != null ? suggestedFile.getParent() : null;
+        if (path == null) {
+            path = prefs.getLastDir();
+        }
+        JFileChooser dialog = new JFileChooser(path.toFile());
         dialog.setDialogTitle(title);
         if (filters != null && filters.length > 0) {
             dialog.setAcceptAllFileFilterUsed(false);
@@ -166,7 +153,7 @@ public class StdFileDialog {
             dialog.setAcceptAllFileFilterUsed(true);
         }
         if (suggestedFile != null) {
-            dialog.setSelectedFile(suggestedFile);
+            dialog.setSelectedFile(suggestedFile.toFile());
         }
         if (accessoryPanel != null) {
             dialog.setAccessory(accessoryPanel);
@@ -175,7 +162,7 @@ public class StdFileDialog {
         if (result != JFileChooser.ERROR_OPTION) {
             File current = dialog.getCurrentDirectory();
             if (current != null) {
-                setLastDir(current.getAbsolutePath());
+                prefs.setLastDir(current.toPath().normalize().toAbsolutePath());
             }
         }
         if (result == JFileChooser.APPROVE_OPTION) {
@@ -191,8 +178,9 @@ public class StdFileDialog {
                     }
                 }
             }
-            RecentFilesMenu.addRecent(file);
-            return file;
+            path = file.toPath().normalize().toAbsolutePath();
+            prefs.addRecentFile(path);
+            return path;
         }
         return null;
     }

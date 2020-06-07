@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -21,7 +22,7 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
+import java.nio.file.Path;
 
 public class ExportToPDFCommand extends Command {
     public static final ExportToPDFCommand INSTANCE = new ExportToPDFCommand();
@@ -43,9 +44,9 @@ public class ExportToPDFCommand extends Command {
             if (name.isBlank()) {
                 name = "untitled";
             }
-            File file = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), new File(StdFileDialog.getLastDir(), name), FileType.PDF.getFilter());
-            if (file != null) {
-                if (!sheet.getSheet().saveAsPDF(file)) {
+            Path path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), Preferences.getInstance().getLastDir().resolve(name), FileType.PDF.getFilter());
+            if (path != null) {
+                if (!sheet.getSheet().saveAsPDF(path)) {
                     WindowUtils.showError(sheet, I18n.Text("An error occurred while trying to export the sheet as PDF."));
                 }
             }

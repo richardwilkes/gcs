@@ -13,9 +13,11 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 /** Provides the "Clear" command in the {@link RecentFilesMenu}. */
 public class ClearRecentFilesMenuCommand extends Command {
@@ -32,11 +34,11 @@ public class ClearRecentFilesMenuCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS && RecentFilesMenu.getRecentCount() > 0);
+        setEnabled(!StdMenuBar.SUPRESS_MENUS && !Preferences.getInstance().getRecentFiles().isEmpty());
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        RecentFilesMenu.clearRecents();
+        Preferences.getInstance().setRecentFiles(new ArrayList<>());
     }
 }

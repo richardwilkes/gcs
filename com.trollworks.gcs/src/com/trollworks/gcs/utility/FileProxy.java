@@ -11,19 +11,19 @@
 
 package com.trollworks.gcs.utility;
 
-import java.io.File;
+import java.nio.file.Path;
 
-/** Objects that provide a backing {@link File} should implement this interface. */
+/** Objects that provide a backing file should implement this interface. */
 public interface FileProxy {
-    /** @return The backing file object. May be {@code null}. */
-    File getBackingFile();
+    /** @return The backing file path. May be {@code null}. */
+    Path getBackingFile();
 
     /**
-     * Called to request the UI that displays the {@link File} associated with this {@link
+     * Called to request the UI that displays the file associated with this {@link
      * FileProxy} be brought to the foreground and given focus.
      */
     void toFrontAndFocus();
 
-    /** @return A {@link PrintProxy} for this {@link File}, or {@code null}. */
+    /** @return A {@link PrintProxy} for this file, or {@code null}. */
     PrintProxy getPrintProxy();
 }

@@ -33,8 +33,7 @@ import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
-import com.trollworks.gcs.preferences.OutputPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
@@ -63,8 +62,8 @@ import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -310,12 +309,12 @@ public class GURPSCharacter extends DataFile {
     /**
      * Creates a new character from the specified file.
      *
-     * @param file The file to load the data from.
+     * @param path The path to load the data from.
      * @throws IOException if the data cannot be read or the file doesn't contain a valid character
      *                     sheet.
      */
-    public GURPSCharacter(File file) throws IOException {
-        load(file);
+    public GURPSCharacter(Path path) throws IOException {
+        load(path);
     }
 
     private void characterInitialize(boolean full) {
@@ -328,7 +327,7 @@ public class GURPSCharacter extends DataFile {
         mOtherEquipment = new OutlineModel();
         mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
         mNotes = new OutlineModel();
-        mTotalPoints = SheetPreferences.getInitialPoints();
+        mTotalPoints = Preferences.getInstance().getInitialPoints();
         mStrength = 10;
         mDexterity = 10;
         mIntelligence = 10;
@@ -338,7 +337,7 @@ public class GURPSCharacter extends DataFile {
         mProfile = new Profile(this, full);
         mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
-        mPageSettings = OutputPreferences.getDefaultPageSettings();
+        mPageSettings = Preferences.getInstance().getDefaultPageSettings();
         mModifiedOn = System.currentTimeMillis();
         mCreatedOn = mModifiedOn;
     }
@@ -2875,7 +2874,7 @@ public class GURPSCharacter extends DataFile {
      */
     public List<SkillBonus> getNamedWeaponSkillBonusesFor(String id, String nameQualifier, StringBuilder toolTip) {
         List<SkillBonus> bonuses = new ArrayList<>();
-        List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
+        List<Feature>    list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SkillBonus) {

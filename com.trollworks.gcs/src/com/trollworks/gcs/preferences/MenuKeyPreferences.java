@@ -20,7 +20,6 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -38,10 +37,9 @@ import javax.swing.KeyStroke;
 
 /** The menu keys preferences panel. */
 public class MenuKeyPreferences extends PreferencePanel implements ActionListener {
-    private static final String                    NONE   = "NONE";
-    private static final String                    MODULE = "MenuKeys";
+    private static final String                    NONE = "NONE";
     private static       boolean                   LOADED;
-    private              HashMap<JButton, Command> mMap   = new HashMap<>();
+    private              HashMap<JButton, Command> mMap = new HashMap<>();
     private              BandedPanel               mPanel;
 
     /**
@@ -129,13 +127,13 @@ public class MenuKeyPreferences extends PreferencePanel implements ActionListene
         cmd.setAccelerator(ks);
         button.setText(getAcceleratorText(cmd));
         button.invalidate();
-        Preferences prefs = Preferences.getInstance();
-        String      key   = cmd.getCommand();
-        if (cmd.hasOriginalAccelerator()) {
-            prefs.removePreference(MODULE, key);
-        } else {
-            prefs.setValue(MODULE, key, ks != null ? ks.toString() : NONE);
+        Preferences prefs    = Preferences.getInstance();
+        String      key      = cmd.getCommand();
+        String      override = null;
+        if (!cmd.hasOriginalAccelerator()) {
+            override = ks != null ? ks.toString() : NONE;
         }
+        prefs.setKeyBindingOverride(key, override);
     }
 
     /** Loads the current menu key settings from the preferences file. */
@@ -143,7 +141,7 @@ public class MenuKeyPreferences extends PreferencePanel implements ActionListene
         if (!LOADED) {
             Preferences prefs = Preferences.getInstance();
             for (Command cmd : StdMenuBar.getCommands()) {
-                String value = prefs.getStringValue(MODULE, cmd.getCommand());
+                String value = prefs.getKeyBindingOverride(cmd.getCommand());
                 if (value != null) {
                     if (NONE.equals(value)) {
                         cmd.setAccelerator(null);

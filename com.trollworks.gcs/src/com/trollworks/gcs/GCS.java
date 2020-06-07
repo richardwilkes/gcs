@@ -19,16 +19,12 @@ import com.trollworks.gcs.menu.file.OpenDataFileCommand;
 import com.trollworks.gcs.menu.file.PrintCommand;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.help.AboutCommand;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.OutputPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.WiderToolTipUI;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.UpdateChecker;
 import com.trollworks.gcs.utility.Version;
 import com.trollworks.gcs.utility.launchproxy.LaunchProxy;
@@ -50,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 /** The main entry point for the character sheet. */
@@ -265,9 +260,6 @@ public class GCS {
         LaunchProxy launchProxy = new LaunchProxy(files);
         initialize();
 
-        // Increase ToolTip time so the user has time to read the skill modifiers
-        ToolTipManager.sharedInstance().setDismissDelay(DisplayPreferences.getToolTipTimeout() * 1000);
-
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Action.APP_ABOUT)) {
@@ -294,15 +286,13 @@ public class GCS {
         }
 
         UpdateChecker.check();
-        OutputPreferences.initialize(); // Must come before SheetPreferences.initialize()
-        SheetPreferences.initialize();
         launchProxy.setReady(true);
 
         EventQueue.invokeLater(() -> {
             Workspace.get();
             OpenDataFileCommand.enablePassThrough();
             for (Path file : files) {
-                OpenDataFileCommand.open(file.toFile());
+                OpenDataFileCommand.open(file);
             }
             if (Platform.isMacintosh() && System.getProperty("java.home").toLowerCase().contains("/apptranslocation/")) {
                 WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.Text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + "xattr -d com.apple.quarantine \"/Applications/GCS.app\"");
@@ -322,7 +312,6 @@ public class GCS {
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }
-        Preferences.setPreferenceFile("gcs.pref");
         Fonts.loadFromPreferences();
     }
 

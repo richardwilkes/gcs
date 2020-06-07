@@ -13,13 +13,11 @@ package com.trollworks.gcs.datafile;
 
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.menu.edit.Undoable;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.SafeFileUpdater;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.notification.Notifier;
@@ -31,11 +29,13 @@ import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +45,7 @@ import javax.swing.undo.UndoableEdit;
 public abstract class DataFile implements Undoable {
     /** The 'id' attribute. */
     public static final String                     ATTRIBUTE_ID           = "id";
-    private             File                       mFile;
+    private             Path                       mPath;
     private             UUID                       mId                    = UUID.randomUUID();
     private             Notifier                   mNotifier              = new Notifier();
     private             boolean                    mModified;
@@ -53,10 +53,10 @@ public abstract class DataFile implements Undoable {
     private             List<DataModifiedListener> mDataModifiedListeners = new ArrayList<>();
     private             boolean                    mSortingMarksDirty     = true;
 
-    /** @param file The file to load. */
-    public void load(File file) throws IOException {
-        setFile(file);
-        try (FileReader fileReader = new FileReader(file, StandardCharsets.UTF_8)) {
+    /** @param path The path to load. */
+    public void load(Path path) throws IOException {
+        setPath(path);
+        try (BufferedReader fileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             try (XMLReader reader = new XMLReader(fileReader)) {
                 XMLNodeType type  = reader.next();
                 boolean     found = false;
@@ -108,17 +108,17 @@ public abstract class DataFile implements Undoable {
     protected abstract void loadSelf(XMLReader reader, LoadState state) throws IOException;
 
     /**
-     * Saves the data out to the specified file. Does not affect the result of {@link #getFile()}.
+     * Saves the data out to the specified path. Does not affect the result of {@link #getPath()}.
      *
-     * @param file The file to write to.
+     * @param path The path to write to.
      * @return {@code true} on success.
      */
-    public boolean save(File file) {
+    public boolean save(Path path) {
         SafeFileUpdater transaction = new SafeFileUpdater();
         boolean         success     = false;
         transaction.begin();
         try {
-            File transactionFile = transaction.getTransactionFile(file);
+            File transactionFile = transaction.getTransactionFile(path.toFile());
             try (XMLWriter out = new XMLWriter(new BufferedOutputStream(new FileOutputStream(transactionFile)))) {
                 out.writeHeader();
                 save(out, true, false);
@@ -194,17 +194,17 @@ public abstract class DataFile implements Undoable {
     /** @return The icons representing this file. */
     public abstract RetinaIcon getFileIcons();
 
-    /** @return The file associated with this data file. */
-    public File getFile() {
-        return mFile;
+    /** @return The path associated with this data file. */
+    public Path getPath() {
+        return mPath;
     }
 
-    /** @param file The file associated with this data file. */
-    public void setFile(File file) {
-        if (file != null) {
-            file = PathUtils.getFile(PathUtils.getFullPath(file));
+    /** @param path The path associated with this data file. */
+    public void setPath(Path path) {
+        if (path != null) {
+            path = path.normalize().toAbsolutePath();
         }
-        mFile = file;
+        mPath = path;
     }
 
     /** @return The ID for this data file. */
@@ -368,30 +368,30 @@ public abstract class DataFile implements Undoable {
     }
 
     public WeightUnits defaultWeightUnits() {
-        return DisplayPreferences.defaultWeightUnits();
+        return Preferences.getInstance().getDefaultWeightUnits();
     }
 
     public boolean useSimpleMetricConversions() {
-        return SheetPreferences.useSimpleMetricConversions();
+        return Preferences.getInstance().useSimpleMetricConversions();
     }
 
     public boolean useMultiplicativeModifiers() {
-        return SheetPreferences.useMultiplicativeModifiers();
+        return Preferences.getInstance().useMultiplicativeModifiers();
     }
 
     public boolean useModifyingDicePlusAdds() {
-        return SheetPreferences.useModifyingDicePlusAdds();
+        return Preferences.getInstance().useModifyingDicePlusAdds();
     }
 
     public DisplayOption userDescriptionDisplay() {
-        return DisplayPreferences.userDescriptionDisplay();
+        return Preferences.getInstance().getUserDescriptionDisplay();
     }
 
     public DisplayOption modifiersDisplay() {
-        return DisplayPreferences.modifiersDisplay();
+        return Preferences.getInstance().getModifiersDisplay();
     }
 
     public DisplayOption notesDisplay() {
-        return DisplayPreferences.notesDisplay();
+        return Preferences.getInstance().getNotesDisplay();
     }
 }

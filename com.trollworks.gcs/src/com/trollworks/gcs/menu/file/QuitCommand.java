@@ -13,13 +13,13 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.Preferences;
 
 import java.awt.Frame;
 import java.awt.desktop.QuitEvent;
@@ -81,7 +81,6 @@ public class QuitCommand extends Command implements QuitHandler {
 
     private static void saveState() {
         try {
-            RecentFilesMenu.saveToPreferences();
             Fonts.saveToPreferences();
             Preferences.getInstance().save();
         } catch (Exception exception) {

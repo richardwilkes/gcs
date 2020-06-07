@@ -16,7 +16,7 @@ import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
-import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -30,7 +30,6 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowFilter;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
@@ -69,9 +68,10 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         outlineModel.setRowFilter(this);
         LibraryContent content = new LibraryContent(mOutline);
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
+        Preferences    prefs   = Preferences.getInstance();
         mToolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(DisplayPreferences.initialUIScale());
+        mScaleCombo.setSelectedItem(prefs.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
             Scales scales = (Scales) mScaleCombo.getSelectedItem();
             if (scales == null) {
@@ -97,8 +97,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mScroller.setBorder(null);
         mScroller.setColumnHeaderView(header);
         add(mScroller, BorderLayout.CENTER);
-        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
-
+        prefs.getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
         setDropTarget(new DropTarget(mOutline, mOutline));
     }
 

@@ -12,8 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.preferences.DisplayPreferences;
-import com.trollworks.gcs.preferences.SheetPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -21,7 +20,6 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
@@ -36,6 +34,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -49,23 +48,22 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, NotifierTarget {
-    private static final String                   PREFIX = "SettingsEditor.";
-    private              GURPSCharacter           mCharacter;
-    private              Settings                 mSettings;
-    private              JCheckBox                mBaseWillAndPerOn10;
-    private              JCheckBox                mUseMultiplicativeModifiers;
-    private              JCheckBox                mUseModifyingDicePlusAdds;
-    private              JCheckBox                mUseKnowYourOwnStrength;
-    private              JCheckBox                mUseReducedSwing;
-    private              JCheckBox                mUseThrustEqualsSwingMinus2;
-    private              JCheckBox                mUseSimpleMetricConversions;
-    private              JComboBox<LengthUnits>   mLengthUnitsCombo;
-    private              JComboBox<WeightUnits>   mWeightUnitsCombo;
-    private              JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
-    private              JComboBox<DisplayOption> mModifiersDisplayCombo;
-    private              JComboBox<DisplayOption> mNotesDisplayCombo;
-    private              JTextArea                mBlockLayoutField;
-    private              JButton                  mResetButton;
+    private GURPSCharacter           mCharacter;
+    private Settings                 mSettings;
+    private JCheckBox                mBaseWillAndPerOn10;
+    private JCheckBox                mUseMultiplicativeModifiers;
+    private JCheckBox                mUseModifyingDicePlusAdds;
+    private JCheckBox                mUseKnowYourOwnStrength;
+    private JCheckBox                mUseReducedSwing;
+    private JCheckBox                mUseThrustEqualsSwingMinus2;
+    private JCheckBox                mUseSimpleMetricConversions;
+    private JComboBox<LengthUnits>   mLengthUnitsCombo;
+    private JComboBox<WeightUnits>   mWeightUnitsCombo;
+    private JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
+    private JComboBox<DisplayOption> mModifiersDisplayCombo;
+    private JComboBox<DisplayOption> mNotesDisplayCombo;
+    private JTextArea                mBlockLayoutField;
+    private JButton                  mResetButton;
 
     public static SettingsEditor find(GURPSCharacter character) {
         for (Window window : Window.getWindows()) {
@@ -103,7 +101,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         adjustResetButton();
         restoreBounds();
         character.addTarget(this, Profile.ID_NAME);
-        Preferences.getInstance().getNotifier().add(this, SheetPreferences.MODULE + ".");
+        Preferences.getInstance().getNotifier().add(this, Preferences.KEY_PER_SHEET_PREFIX);
     }
 
     private JPanel createTopPanel() {
@@ -130,7 +128,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mNotesDisplayCombo = createCombo(panel, DisplayOption.values(), mSettings.notesDisplay(), I18n.Text("Where to display this information"));
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
         panel.add(createLabel(I18n.Text("Block Layout"), blockLayoutTooltip, SwingConstants.LEFT), new PrecisionLayoutData().setHorizontalSpan(2).setLeftMargin(5).setRightMargin(5));
-        mBlockLayoutField = new JTextArea(mSettings.blockLayout());
+        mBlockLayoutField = new JTextArea(Preferences.linesToString(mSettings.blockLayout()));
         mBlockLayoutField.setToolTipText(blockLayoutTooltip);
         mBlockLayoutField.getDocument().addDocumentListener(this);
         mBlockLayoutField.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
@@ -206,19 +204,20 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     }
 
     private boolean isSetToDefaults() {
-        boolean atDefaults = mUseModifyingDicePlusAdds.isSelected() == SheetPreferences.useModifyingDicePlusAdds();
-        atDefaults = atDefaults && mBaseWillAndPerOn10.isSelected() == SheetPreferences.baseWillAndPerOn10();
-        atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == SheetPreferences.useMultiplicativeModifiers();
-        atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == SheetPreferences.useKnowYourOwnStrength();
-        atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == SheetPreferences.useThrustEqualsSwingMinus2();
-        atDefaults = atDefaults && mUseReducedSwing.isSelected() == SheetPreferences.useReducedSwing();
-        atDefaults = atDefaults && mUseSimpleMetricConversions.isSelected() == SheetPreferences.useSimpleMetricConversions();
-        atDefaults = atDefaults && mLengthUnitsCombo.getSelectedItem() == DisplayPreferences.defaultLengthUnits();
-        atDefaults = atDefaults && mWeightUnitsCombo.getSelectedItem() == DisplayPreferences.defaultWeightUnits();
-        atDefaults = atDefaults && mUserDescriptionDisplayCombo.getSelectedItem() == DisplayPreferences.userDescriptionDisplay();
-        atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == DisplayPreferences.modifiersDisplay();
-        atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == DisplayPreferences.notesDisplay();
-        atDefaults = atDefaults && mBlockLayoutField.getText().equals(DisplayPreferences.blockLayout());
+        Preferences prefs      = Preferences.getInstance();
+        boolean     atDefaults = mUseModifyingDicePlusAdds.isSelected() == prefs.useModifyingDicePlusAdds();
+        atDefaults = atDefaults && mBaseWillAndPerOn10.isSelected() == prefs.baseWillAndPerOn10();
+        atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
+        atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == prefs.useKnowYourOwnStrength();
+        atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == prefs.useThrustEqualsSwingMinus2();
+        atDefaults = atDefaults && mUseReducedSwing.isSelected() == prefs.useReducedSwing();
+        atDefaults = atDefaults && mUseSimpleMetricConversions.isSelected() == prefs.useSimpleMetricConversions();
+        atDefaults = atDefaults && mLengthUnitsCombo.getSelectedItem() == prefs.getDefaultLengthUnits();
+        atDefaults = atDefaults && mWeightUnitsCombo.getSelectedItem() == prefs.getDefaultWeightUnits();
+        atDefaults = atDefaults && mUserDescriptionDisplayCombo.getSelectedItem() == prefs.getUserDescriptionDisplay();
+        atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == prefs.getModifiersDisplay();
+        atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == prefs.getNotesDisplay();
+        atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(prefs.getBlockLayout()));
         return atDefaults;
     }
 
@@ -236,26 +235,27 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         } else if (source == mNotesDisplayCombo) {
             mSettings.setNotesDisplay((DisplayOption) mNotesDisplayCombo.getSelectedItem());
         } else if (source == mResetButton) {
-            mUseModifyingDicePlusAdds.setSelected(SheetPreferences.useModifyingDicePlusAdds());
-            mBaseWillAndPerOn10.setSelected(SheetPreferences.baseWillAndPerOn10());
-            mUseMultiplicativeModifiers.setSelected(SheetPreferences.useMultiplicativeModifiers());
-            mUseKnowYourOwnStrength.setSelected(SheetPreferences.useKnowYourOwnStrength());
-            mUseThrustEqualsSwingMinus2.setSelected(SheetPreferences.useThrustEqualsSwingMinus2());
-            mUseReducedSwing.setSelected(SheetPreferences.useReducedSwing());
-            mUseSimpleMetricConversions.setSelected(SheetPreferences.useSimpleMetricConversions());
-            mLengthUnitsCombo.setSelectedItem(DisplayPreferences.defaultLengthUnits());
-            mWeightUnitsCombo.setSelectedItem(DisplayPreferences.defaultWeightUnits());
-            mUserDescriptionDisplayCombo.setSelectedItem(DisplayPreferences.userDescriptionDisplay());
-            mModifiersDisplayCombo.setSelectedItem(DisplayPreferences.modifiersDisplay());
-            mNotesDisplayCombo.setSelectedItem(DisplayPreferences.notesDisplay());
-            mBlockLayoutField.setText(DisplayPreferences.blockLayout());
+            Preferences prefs = Preferences.getInstance();
+            mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
+            mBaseWillAndPerOn10.setSelected(prefs.baseWillAndPerOn10());
+            mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
+            mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
+            mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());
+            mUseReducedSwing.setSelected(prefs.useReducedSwing());
+            mUseSimpleMetricConversions.setSelected(prefs.useSimpleMetricConversions());
+            mLengthUnitsCombo.setSelectedItem(prefs.getDefaultLengthUnits());
+            mWeightUnitsCombo.setSelectedItem(prefs.getDefaultWeightUnits());
+            mUserDescriptionDisplayCombo.setSelectedItem(prefs.getUserDescriptionDisplay());
+            mModifiersDisplayCombo.setSelectedItem(prefs.getModifiersDisplay());
+            mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
+            mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
         }
         adjustResetButton();
     }
 
     @Override
-    public String getWindowPrefsPrefix() {
-        return PREFIX;
+    public String getWindowPrefsKey() {
+        return "settings_editor";
     }
 
     @Override
@@ -299,7 +299,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
     @Override
     public void changedUpdate(DocumentEvent event) {
-        mSettings.setBlockLayout(mBlockLayoutField.getText());
+        mSettings.setBlockLayout(List.of(mBlockLayoutField.getText().split("\n")));
         adjustResetButton();
     }
 }

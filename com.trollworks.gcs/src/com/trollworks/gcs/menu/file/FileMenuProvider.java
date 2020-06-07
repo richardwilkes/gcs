@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.DynamicMenuEnabler;
 import com.trollworks.gcs.menu.DynamicMenuItem;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
@@ -50,7 +50,8 @@ public class FileMenuProvider {
 
     private static List<Command> generateLibraryExportTemplateCommands(boolean master) {
         List<Command> cmds = new ArrayList<>();
-        Path          dir  = (master ? Library.getMasterRootPath() : Library.getUserRootPath()).resolve("Output Templates");
+        Preferences prefs = Preferences.getInstance();
+        Path          dir  = (master ? prefs.getMasterLibraryPath() : prefs.getUserLibraryPath()).resolve("Output Templates");
         if (Files.isDirectory(dir)) {
             // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
             // directory results in leaving state around that prevents future move & delete

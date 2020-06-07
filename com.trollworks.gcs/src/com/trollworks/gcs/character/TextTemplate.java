@@ -20,7 +20,7 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.preferences.DisplayPreferences;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
 import com.trollworks.gcs.spell.Spell;
@@ -42,12 +42,10 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -292,17 +290,17 @@ public class TextTemplate {
     }
 
     /**
-     * @param exportTo The file to save to.
-     * @param template The template file to use.
+     * @param exportTo The path to save to.
+     * @param template The template to use.
      * @return {@code true} on success.
      */
-    public boolean export(File exportTo, File template) {
+    public boolean export(Path exportTo, Path template) {
         try {
             char[]        buffer           = new char[1];
             boolean       lookForKeyMarker = true;
             StringBuilder keyBuffer        = new StringBuilder();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(template), StandardCharsets.UTF_8))) {
-                try (BufferedWriter out = new BufferedWriter(new FileWriter(exportTo, StandardCharsets.UTF_8))) {
+            try (BufferedReader in = Files.newBufferedReader(template, StandardCharsets.UTF_8)) {
+                try (BufferedWriter out = Files.newBufferedWriter(exportTo, StandardCharsets.UTF_8)) {
                     while (in.read(buffer) != -1) {
                         char ch = buffer[0];
                         if (lookForKeyMarker) {
@@ -337,7 +335,7 @@ public class TextTemplate {
         }
     }
 
-    private void emitKey(BufferedReader in, BufferedWriter out, String key, File base) throws IOException {
+    private void emitKey(BufferedReader in, BufferedWriter out, String key, Path base) throws IOException {
         GURPSCharacter gurpsCharacter = mSheet.getCharacter();
         Profile        description    = gurpsCharacter.getProfile();
         switch (key) {
@@ -351,8 +349,8 @@ public class TextTemplate {
             mEnhancedKeyParsing = true;     // ex: @KEY@. Useful for when output needs to
             break;                          // be embedded. ex: "<HTML@KEY@TAG>"
         case KEY_PORTRAIT:
-            String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base.getName(), false), FileType.PNG.getExtension());
-            ImageIO.write(description.getPortrait().getRetina(), "png", new File(base.getParentFile(), fileName));
+            String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base, false), FileType.PNG.getExtension());
+            ImageIO.write(description.getPortrait().getRetina(), "png", base.resolveSibling(fileName).toFile());
             writeEncodedData(out, fileName);
             break;
         case KEY_PORTRAIT_EMBEDDED:
@@ -383,7 +381,7 @@ public class TextTemplate {
             writeEncodedText(out, DateTimeFormatter.getFormattedDateTime(gurpsCharacter.getModifiedOn()));
             break;
         case KEY_TOTAL_POINTS:
-            writeEncodedText(out, Numbers.format(DisplayPreferences.shouldIncludeUnspentPointsInTotalPointDisplay() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
+            writeEncodedText(out, Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
             break;
         case KEY_ATTRIBUTE_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));

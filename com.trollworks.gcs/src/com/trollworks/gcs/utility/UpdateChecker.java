@@ -14,6 +14,7 @@ package com.trollworks.gcs.utility;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.help.UpdateSystemLibraryCommand;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.task.Tasks;
 
@@ -30,14 +31,11 @@ import javax.swing.JOptionPane;
 
 /** Provides a background check for updates. */
 public class UpdateChecker implements Runnable {
-    private static final String  MODULE                  = "Updates";
-    private static final String  LAST_VERSION_KEY        = "LastVersion";
-    private static final String  LAST_LIBRARY_COMMIT_KEY = "LastLibraryCommit";
-    private static       String  APP_RESULT;
-    private static       String  DATA_RESULT;
-    private static       boolean NEW_APP_VERSION_AVAILABLE;
-    private static       boolean NEW_DATA_VERSION_AVAILABLE;
-    private              Mode    mMode;
+    private static String  APP_RESULT;
+    private static String  DATA_RESULT;
+    private static boolean NEW_APP_VERSION_AVAILABLE;
+    private static boolean NEW_DATA_VERSION_AVAILABLE;
+    private        Mode    mMode;
 
     private enum Mode {CHECK, NOTIFY, DONE}
 
@@ -147,8 +145,8 @@ public class UpdateChecker implements Runnable {
             if (versionAvailable > GCS.VERSION) {
                 Preferences prefs = Preferences.getInstance();
                 setAppResult(I18n.Text("A new version of GCS is available"), true);
-                if (versionAvailable > prefs.getLongValue(MODULE, LAST_VERSION_KEY, GCS.VERSION)) {
-                    prefs.setValue(MODULE, LAST_VERSION_KEY, versionAvailable);
+                if (versionAvailable > prefs.getLastGCSVersion()) {
+                    prefs.setLastGCSVersion(versionAvailable);
                     prefs.save();
                     mMode = Mode.NOTIFY;
                 }
@@ -169,8 +167,8 @@ public class UpdateChecker implements Runnable {
             } else if (GCS.VERSION == 0 || GCS.VERSION >= Library.getMinimumGCSVersion()) {
                 Preferences prefs = Preferences.getInstance();
                 setDataResult(I18n.Text("A new version of the Master Library is available"), true);
-                if (!latest.equals(prefs.getStringValue(MODULE, LAST_LIBRARY_COMMIT_KEY, ""))) {
-                    prefs.setValue(MODULE, LAST_LIBRARY_COMMIT_KEY, latest);
+                if (!latest.equals(prefs.getLatestLibraryCommit())) {
+                    prefs.setLatestLibraryCommit(latest);
                     prefs.save();
                     mMode = Mode.NOTIFY;
                 }

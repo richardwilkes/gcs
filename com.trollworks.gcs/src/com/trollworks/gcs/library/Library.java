@@ -13,6 +13,7 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -20,7 +21,6 @@ import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.Preferences;
 import com.trollworks.gcs.utility.RecursiveDirectoryRemover;
 import com.trollworks.gcs.utility.UrlUtils;
 import com.trollworks.gcs.utility.Version;
@@ -33,7 +33,6 @@ import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -60,76 +59,17 @@ import javax.swing.WindowConstants;
 import javax.swing.border.CompoundBorder;
 
 public class Library implements Runnable {
-    private static final String          MODULE          = "Libraries";
-    private static final String          MASTER_PATH_KEY = "MasterLibraryPath";
-    private static final String          USER_PATH_KEY   = "UserLibraryPath";
-    private static final String          SHA_PREFIX      = "\"sha\": \"";
-    private static final String          SHA_SUFFIX      = "\",";
-    private static final String          ROOT_PREFIX     = "richardwilkes-gcs_library-";
-    private static final String          VERSION_FILE    = "version.txt";
-    private static final ExecutorService QUEUE           = Executors.newSingleThreadExecutor();
+    private static final String          SHA_PREFIX   = "\"sha\": \"";
+    private static final String          SHA_SUFFIX   = "\",";
+    private static final String          ROOT_PREFIX  = "richardwilkes-gcs_library-";
+    private static final String          VERSION_FILE = "version.txt";
+    private static final ExecutorService QUEUE        = Executors.newSingleThreadExecutor();
     private              String          mResult;
     private              JDialog         mDialog;
     private              boolean         mUpdateComplete;
 
-    public static Path getDefaultMasterRootPath() {
-        return Paths.get(System.getProperty("user.home", "."), "GCS", "Master Library").normalize();
-    }
-
-    public static Path getDefaultUserRootPath() {
-        return Paths.get(System.getProperty("user.home", "."), "GCS", "User Library").normalize();
-    }
-
-    /** @return The path to the master GCS library files. */
-    public static Path getMasterRootPath() {
-        Path path = Paths.get(Preferences.getInstance().getStringValue(MODULE, MASTER_PATH_KEY, getDefaultMasterRootPath().toString())).normalize();
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            } catch (IOException exception) {
-                Log.error(exception);
-            }
-        }
-        return path;
-    }
-
-    public static void setMasterRootPath(Path path) {
-        Preferences prefs = Preferences.getInstance();
-        path = path.toAbsolutePath().normalize();
-        if (path.equals(getDefaultMasterRootPath())) {
-            prefs.removePreference(MODULE, MASTER_PATH_KEY);
-        } else {
-            prefs.setValue(MODULE, MASTER_PATH_KEY, path.toString());
-        }
-        prefs.save();
-    }
-
-    /** @return The path to the user GCS library files. */
-    public static Path getUserRootPath() {
-        Path path = Paths.get(Preferences.getInstance().getStringValue(MODULE, USER_PATH_KEY, getDefaultUserRootPath().toString())).normalize();
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            } catch (IOException exception) {
-                Log.error(exception);
-            }
-        }
-        return path;
-    }
-
-    public static void setUserRootPath(Path path) {
-        Preferences prefs = Preferences.getInstance();
-        path = path.toAbsolutePath().normalize();
-        if (path.equals(getDefaultUserRootPath())) {
-            prefs.removePreference(MODULE, USER_PATH_KEY);
-        } else {
-            prefs.setValue(MODULE, USER_PATH_KEY, path.toString());
-        }
-        prefs.save();
-    }
-
     public static final String getRecordedCommit() {
-        try (BufferedReader in = Files.newBufferedReader(getMasterRootPath().resolve(VERSION_FILE))) {
+        try (BufferedReader in = Files.newBufferedReader(Preferences.getInstance().getMasterLibraryPath().resolve(VERSION_FILE))) {
             String line = in.readLine();
             while (line != null) {
                 line = line.trim();
@@ -184,8 +124,9 @@ public class Library implements Runnable {
             Set<Path>    dirs = new HashSet<>();
             List<Object> list = new ArrayList<>();
             list.add("GCS");
-            list.add(LibraryCollector.list(masterText, getMasterRootPath(), dirs));
-            list.add(LibraryCollector.list(userText, getUserRootPath(), dirs));
+            Preferences prefs = Preferences.getInstance();
+            list.add(LibraryCollector.list(masterText, prefs.getMasterLibraryPath(), dirs));
+            list.add(LibraryCollector.list(userText, prefs.getUserLibraryPath(), dirs));
             LibraryWatcher.INSTANCE.watchDirs(dirs);
             return list;
         });
@@ -224,18 +165,16 @@ public class Library implements Runnable {
         } else {
             // Close any open files that come from the master library
             Workspace workspace = Workspace.get();
-            String    prefix    = getMasterRootPath().toAbsolutePath().toString();
+            Path      prefix    = Preferences.getInstance().getMasterLibraryPath();
             for (Dockable dockable : workspace.getDock().getDockables()) {
                 if (dockable instanceof DataFileDockable) {
                     DataFileDockable dfd  = (DataFileDockable) dockable;
-                    File             file = dfd.getBackingFile();
-                    if (file != null) {
-                        if (file.getAbsolutePath().startsWith(prefix)) {
-                            if (dfd.mayAttemptClose()) {
-                                if (!dfd.attemptClose()) {
-                                    JOptionPane.showMessageDialog(null, I18n.Text("GCS Master Library update was canceled."), I18n.Text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
-                                    return;
-                                }
+                    Path             path = dfd.getBackingFile();
+                    if (path != null && path.toAbsolutePath().startsWith(prefix)) {
+                        if (dfd.mayAttemptClose()) {
+                            if (!dfd.attemptClose()) {
+                                JOptionPane.showMessageDialog(null, I18n.Text("GCS Master Library update was canceled."), I18n.Text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
+                                return;
                             }
                         }
                     }
@@ -277,8 +216,9 @@ public class Library implements Runnable {
 
     private void doDownload() {
         try {
+            Preferences prefs = Preferences.getInstance();
             LibraryWatcher.INSTANCE.watchDirs(new HashSet<>());
-            Path    root           = getMasterRootPath();
+            Path    root           = prefs.getMasterLibraryPath();
             boolean shouldContinue = true;
             Path    saveRoot       = root.resolveSibling(root.getFileName().toString() + ".save");
             if (Files.exists(root)) {
@@ -294,7 +234,7 @@ public class Library implements Runnable {
                 }
             }
             if (shouldContinue) {
-                getMasterRootPath(); // will recreate the dir
+                prefs.getMasterLibraryPath(); // will recreate the dir
                 try (ZipInputStream in = new ZipInputStream(new BufferedInputStream(UrlUtils.setupConnection("https://api.github.com/repos/richardwilkes/gcs_library/zipball/master").getInputStream()))) {
                     byte[]   buffer = new byte[8192];
                     ZipEntry entry;
@@ -353,7 +293,7 @@ public class Library implements Runnable {
                             Log.error(exception);
                         }
                     } else {
-                        getMasterRootPath(); // will recreate the dir
+                        prefs.getMasterLibraryPath(); // will recreate the dir
                     }
                 }
             }

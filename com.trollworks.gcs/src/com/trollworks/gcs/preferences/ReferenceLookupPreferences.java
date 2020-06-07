@@ -49,11 +49,12 @@ public class ReferenceLookupPreferences extends PreferencePanel {
         mPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
         mPanel.setOpaque(true);
         mPanel.setBackground(Color.WHITE);
-        for (PdfRef ref : PdfRef.getKnown(false)) {
+        Preferences prefs = Preferences.getInstance();
+        for (PdfRef ref : prefs.allPdfRefs(false)) {
             JButton button = new JButton(I18n.Text("Remove"));
             UIUtilities.setToPreferredSizeOnly(button);
             button.addActionListener(event -> {
-                ref.remove();
+                prefs.removePdfRef(ref);
                 Component[] children = mPanel.getComponents();
                 int         length   = children.length;
                 for (int i = 0; i < length; i++) {
@@ -74,7 +75,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
             mPanel.add(idLabel);
             EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue()), SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), I18n.Text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
             mPanel.add(field);
-            mPanel.add(new JLabel(ref.getFile().getAbsolutePath()));
+            mPanel.add(new JLabel(ref.getPath().normalize().toAbsolutePath().toString()));
         }
         mPanel.setSize(mPanel.getPreferredSize());
         JScrollPane scroller      = new JScrollPane(mPanel);
@@ -88,12 +89,12 @@ public class ReferenceLookupPreferences extends PreferencePanel {
 
     @Override
     public boolean isSetToDefaults() {
-        return PdfRef.isSetToDefaults();
+        return Preferences.getInstance().arePdfRefsSetToDefault();
     }
 
     @Override
     public void reset() {
-        PdfRef.reset();
+        Preferences.getInstance().clearPdfRefs();
         mPanel.removeAll();
         mPanel.setSize(mPanel.getPreferredSize());
     }

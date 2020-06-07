@@ -13,13 +13,14 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.File;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Collection;
 import javax.swing.JOptionPane;
@@ -101,19 +102,19 @@ public class SaveCommand extends Command {
      * Allows the user to save the file.
      *
      * @param saveable The {@link Saveable} to work on.
-     * @return The file(s) actually written to. May be empty.
+     * @return The path(s) actually written to. May be empty.
      */
-    public static File[] save(Saveable saveable) {
+    public static Path[] save(Saveable saveable) {
         if (saveable == null) {
-            return new File[0];
+            return new Path[0];
         }
-        File file = saveable.getBackingFile();
-        if (file != null) {
-            File[] files = saveable.saveTo(file);
-            for (File one : files) {
-                RecentFilesMenu.addRecent(one);
+        Path path = saveable.getBackingFile();
+        if (path != null) {
+            Path[] paths = saveable.saveTo(path);
+            for (Path one : paths) {
+                Preferences.getInstance().addRecentFile(one);
             }
-            return files;
+            return paths;
         }
         return SaveAsCommand.saveAs(saveable);
     }
