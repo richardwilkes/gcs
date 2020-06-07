@@ -15,23 +15,26 @@ import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.help.UpdateSystemLibraryCommand;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.json.Json;
+import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.task.Tasks;
 
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 
 /** Provides a background check for updates. */
 public class UpdateChecker implements Runnable {
     private static String  APP_RESULT;
+    private static String  APP_RELEASE_NOTES;
     private static String  DATA_RESULT;
     private static boolean NEW_APP_VERSION_AVAILABLE;
     private static boolean NEW_DATA_VERSION_AVAILABLE;
@@ -59,8 +62,13 @@ public class UpdateChecker implements Runnable {
         return APP_RESULT != null ? APP_RESULT : I18n.Text("Checking for GCS updates…");
     }
 
-    private static synchronized void setAppResult(String result, boolean available) {
+    public static synchronized String getAppReleaseNotes() {
+        return APP_RELEASE_NOTES;
+    }
+
+    private static synchronized void setAppResult(String result, String releaseNotes, boolean available) {
         APP_RESULT = result;
+        APP_RELEASE_NOTES = releaseNotes;
         NEW_APP_VERSION_AVAILABLE = available;
     }
 
@@ -98,7 +106,7 @@ public class UpdateChecker implements Runnable {
     public void run() {
         switch (mMode) {
         case CHECK:
-            setAppResult(null, false);
+            setAppResult(null, null, false);
             setDataResult(null, false);
             checkForAppUpdates();
             checkForLibraryUpdates();
@@ -119,39 +127,33 @@ public class UpdateChecker implements Runnable {
     private void checkForAppUpdates() {
         if (GCS.VERSION == 0) {
             // Development version. Bail.
-            setAppResult(I18n.Text("Development versions don't look for GCS updates"), false);
+            setAppResult(I18n.Text("Development versions don't look for GCS updates"), null, false);
         } else {
-            long versionAvailable = GCS.VERSION;
+            long   versionAvailable = GCS.VERSION;
+            String releaseNotes     = "";
             try {
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(UrlUtils.setupConnection(new URL(GCS.WEB_SITE + "/versions.txt")).getInputStream(), StandardCharsets.UTF_8))) {
-                    String line = in.readLine();
-                    while (line != null) {
-                        StringTokenizer tokenizer = new StringTokenizer(line, "\t");
-                        if (tokenizer.hasMoreTokens()) {
-                            if ("gcs".equalsIgnoreCase(tokenizer.nextToken()) && tokenizer.hasMoreTokens()) {
-                                String token   = tokenizer.nextToken();
-                                long   version = Version.extract(token, 0);
-                                if (version > versionAvailable) {
-                                    versionAvailable = version;
-                                }
-                            }
-                        }
-                        line = in.readLine();
+                JsonMap m   = Json.asMap(Json.parse(new URL("https://api.github.com/repos/richardwilkes/gcs/releases/latest")), false);
+                String  tag = m.getString("tag_name", false);
+                if (tag.startsWith("v")) {
+                    long version = Version.extract(tag.substring(1), 0);
+                    if (version > versionAvailable) {
+                        versionAvailable = version;
+                        releaseNotes = m.getString("body", false);
                     }
                 }
             } catch (Exception exception) {
-                // Don't care
+                Log.error(exception);
             }
             if (versionAvailable > GCS.VERSION) {
                 Preferences prefs = Preferences.getInstance();
-                setAppResult(I18n.Text("A new version of GCS is available"), true);
+                setAppResult(String.format(I18n.Text("GCS v%s is available!"), Version.toString(versionAvailable, false)), releaseNotes, true);
                 if (versionAvailable > prefs.getLastGCSVersion()) {
                     prefs.setLastGCSVersion(versionAvailable);
                     prefs.save();
                     mMode = Mode.NOTIFY;
                 }
             } else {
-                setAppResult(I18n.Text("You have the most recent version of GCS"), false);
+                setAppResult(I18n.Text("You have the most recent version of GCS"), null, false);
             }
         }
     }
@@ -183,7 +185,17 @@ public class UpdateChecker implements Runnable {
             String update = I18n.Text("Update");
             mMode = Mode.DONE;
             if (isNewAppVersionAvailable()) {
-                if (WindowUtils.showConfirmDialog(null, getAppResult(), update, JOptionPane.OK_CANCEL_OPTION, new String[]{update, I18n.Text("Ignore")}, update) == JOptionPane.OK_OPTION) {
+                JTextPane markdown = new JTextPane(new MarkdownDocument(getAppReleaseNotes()));
+                Dimension size = markdown.getPreferredSize();
+                JScrollPane scroller = new JScrollPane(markdown);
+                int maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
+                if (size.width > maxWidth) {
+                    markdown.setSize(new Dimension(maxWidth, Short.MAX_VALUE));
+                    size = markdown.getPreferredSize();
+                    size.width = maxWidth;
+                    markdown.setPreferredSize(size);
+                }
+                if (WindowUtils.showOptionDialog(null, scroller, getAppResult(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.Text("Ignore")}, update) == JOptionPane.OK_OPTION) {
                     goToUpdate();
                 }
             } else if (isNewDataVersionAvailable()) {
