@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.RecursiveDirectoryRemover;
+import com.trollworks.gcs.utility.UpdateChecker;
 import com.trollworks.gcs.utility.UrlUtils;
 import com.trollworks.gcs.utility.Version;
 import com.trollworks.gcs.utility.json.Json;
@@ -273,6 +274,7 @@ public class Library implements Runnable {
                         sha = sha.substring(0, 7);
                     }
                     Files.writeString(root.resolve(VERSION_FILE), sha + "\n");
+                    UpdateChecker.setDataResult(I18n.Text("You have the most recent version of the Master Library"), false);
                 } catch (IOException exception) {
                     Log.error(exception);
                     mResult = exception.getMessage();

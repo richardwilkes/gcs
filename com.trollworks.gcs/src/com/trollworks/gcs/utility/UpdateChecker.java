@@ -13,7 +13,7 @@ package com.trollworks.gcs.utility;
 
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.menu.help.UpdateSystemLibraryCommand;
+import com.trollworks.gcs.menu.help.UpdateMasterLibraryCommand;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -82,7 +82,7 @@ public class UpdateChecker implements Runnable {
         return DATA_RESULT != null ? DATA_RESULT : I18n.Text("Checking for Master Library updates…");
     }
 
-    private static synchronized void setDataResult(String result, boolean available) {
+    public static synchronized void setDataResult(String result, boolean available) {
         DATA_RESULT = result;
         NEW_DATA_VERSION_AVAILABLE = available;
     }
@@ -199,7 +199,7 @@ public class UpdateChecker implements Runnable {
                     goToUpdate();
                 }
             } else if (isNewDataVersionAvailable()) {
-                UpdateSystemLibraryCommand.askUserToUpdate();
+                UpdateMasterLibraryCommand.askUserToUpdate();
             }
         } else {
             Tasks.scheduleOnUIThread(this, 250, TimeUnit.MILLISECONDS, this);

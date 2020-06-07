@@ -21,9 +21,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 
 /** Update the system Library folder. */
-public class UpdateSystemLibraryCommand extends Command {
-    /** Creates a new {@link UpdateSystemLibraryCommand}. */
-    public UpdateSystemLibraryCommand() {
+public class UpdateMasterLibraryCommand extends Command {
+    /** Creates a new {@link UpdateMasterLibraryCommand}. */
+    public UpdateMasterLibraryCommand() {
         super(I18n.Text("Update Master Library"), "update_master_library");
     }
 
