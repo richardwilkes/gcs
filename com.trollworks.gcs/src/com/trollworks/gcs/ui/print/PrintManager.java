@@ -350,7 +350,7 @@ public class PrintManager {
         double[]     size    = getPaperSize(units);
         double[]     margins = getPaperMargins(units);
         PrintService service = getPrintService();
-        w.startObject();
+        w.startMap();
         if (service != null) {
             w.keyValue(ATTRIBUTE_PRINTER, service.getName());
         }
@@ -367,7 +367,7 @@ public class PrintManager {
         w.keyValue(TAG_NUMBER_UP, getNumberUp().toString());
         w.keyValue(TAG_QUALITY, Enums.toId(getPrintQuality(false)));
         w.keyValueNot(TAG_RESOLUTION, createResolutionString(getResolution(false)), null);
-        w.endObject();
+        w.endMap();
     }
 
     /**

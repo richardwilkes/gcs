@@ -391,8 +391,8 @@ public class Preferences {
                 Path path = getPreferencesPath();
                 Files.createDirectories(path.getParent());
                 File file = trans.getTransactionFile(path.toFile());
-                try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)))) {
-                    w.startObject();
+                try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)), "\t")) {
+                    w.startMap();
                     w.keyValue(VERSION, CURRENT_VERSION);
                     w.keyValue(ID, mID.toString());
                     w.keyValue(LAST_GCS_VERSION, mLastGCSVersion);
@@ -402,7 +402,7 @@ public class Preferences {
                     w.keyValue(INITIAL_POINTS, mInitialPoints);
                     w.keyValue(TOOLTIP_TIMEOUT, mToolTipTimeout);
                     w.key(LIBRARY_EXPLORER);
-                    w.startObject();
+                    w.startMap();
                     w.keyValue(DIVIDER_POSITION, mLibraryExplorerDividerPosition);
                     w.key(OPEN_ROW_KEYS);
                     w.startArray();
@@ -410,7 +410,7 @@ public class Preferences {
                         w.value(key);
                     }
                     w.endArray();
-                    w.endObject();
+                    w.endMap();
                     w.keyValue(USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
                     w.keyValue(MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
                     w.keyValue(NOTES_DISPLAY, Enums.toId(mNotesDisplay));
@@ -431,42 +431,42 @@ public class Preferences {
                     w.endArray();
                     w.keyValue(LAST_DIR, mLastDir.toString());
                     w.key(PDF_REFS);
-                    w.startObject();
+                    w.startMap();
                     for (Map.Entry<String, PdfRef> entry : mPdfRefs.entrySet()) {
                         w.key(entry.getKey());
                         entry.getValue().toJSON(w);
                     }
-                    w.endObject();
+                    w.endMap();
                     w.key(KEY_BINDINGS);
-                    w.startObject();
+                    w.startMap();
                     for (Map.Entry<String, String> entry : mKeyBindingOverrides.entrySet()) {
                         w.keyValue(entry.getKey(), entry.getValue());
                     }
-                    w.endObject();
+                    w.endMap();
                     w.key(FONTS);
-                    w.startObject();
+                    w.startMap();
                     for (Map.Entry<String, Fonts.Info> entry : mFontInfo.entrySet()) {
                         w.key(entry.getKey());
                         entry.getValue().toJSON(w);
                     }
-                    w.endObject();
+                    w.endMap();
                     w.key(WINDOW_POSITIONS);
-                    w.startObject();
+                    w.startMap();
                     long cutoff = System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 45L;
                     for (Map.Entry<String, BaseWindow.Position> entry : mBaseWindowPositions.entrySet()) {
                         BaseWindow.Position info = entry.getValue();
                         if (info.mLastUpdated > cutoff) {
                             w.key(entry.getKey());
-                            w.startObject();
+                            w.startMap();
                             w.keyValue("x", info.mBounds.x);
                             w.keyValue("y", info.mBounds.y);
                             w.keyValue("width", info.mBounds.width);
                             w.keyValue("height", info.mBounds.height);
                             w.keyValue("last_updated", info.mLastUpdated);
-                            w.endObject();
+                            w.endMap();
                         }
                     }
-                    w.endObject();
+                    w.endMap();
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                     w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                     w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
@@ -486,7 +486,7 @@ public class Preferences {
                         w.key(DEFAULT_PAGE_SETTINGS);
                         mDefaultPageSettings.toJSON(w, LengthUnits.IN);
                     }
-                    w.endObject();
+                    w.endMap();
                 }
             } catch (IOException ioe) {
                 trans.abort();

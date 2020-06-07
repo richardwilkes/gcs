@@ -411,13 +411,13 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         }
 
         public void toJSON(JsonWriter w) throws IOException {
-            w.startObject();
+            w.startMap();
             w.keyValue(X, mBounds.x);
             w.keyValue(Y, mBounds.y);
             w.keyValue(WIDTH, mBounds.width);
             w.keyValue(HEIGHT, mBounds.height);
             w.keyValue(LAST_UPDATED, mLastUpdated);
-            w.endObject();
+            w.endMap();
         }
     }
 }

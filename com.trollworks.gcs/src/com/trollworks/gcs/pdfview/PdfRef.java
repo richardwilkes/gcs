@@ -74,10 +74,10 @@ public class PdfRef implements Comparable<PdfRef> {
     }
 
     public void toJSON(JsonWriter w) throws IOException {
-        w.startObject();
+        w.startMap();
         w.keyValue(ID, mId);
         w.keyValue(PATH, mPath.toString());
         w.keyValue(OFFSET, mPageToIndexOffset);
-        w.endObject();
+        w.endMap();
     }
 }

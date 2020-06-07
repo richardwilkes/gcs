@@ -17,45 +17,91 @@ import java.io.Writer;
 import java.util.Objects;
 
 public class JsonWriter extends FilterWriter {
+    private String  mIndent;
+    private int     mDepth;
+    private boolean mCompact;
     private boolean mNeedComma;
 
-    public JsonWriter(Writer writer) {
+    public JsonWriter(Writer writer, String indent) {
         super(writer);
+        mIndent = indent;
+        mCompact = indent.isEmpty();
     }
 
-    public void key(String key) throws IOException {
-        if (mNeedComma) {
-            write(',');
-            mNeedComma = false;
+    private void indent() throws IOException {
+        for (int i = 0; i < mDepth; i++) {
+            write(mIndent);
         }
-        write(Json.quote(key));
-        write(':');
     }
 
-    public void startObject() throws IOException {
+    public void startMap() throws IOException {
         if (mNeedComma) {
-            write(',');
             mNeedComma = false;
+            write(',');
+            if (!mCompact) {
+                write('\n');
+                indent();
+            }
         }
         write('{');
+        if (!mCompact) {
+            write('\n');
+            mDepth++;
+        }
     }
 
-    public void endObject() throws IOException {
+    public void endMap() throws IOException {
+        if (!mCompact) {
+            write('\n');
+            mDepth--;
+            indent();
+        }
         write('}');
         mNeedComma = true;
     }
 
     public void startArray() throws IOException {
         if (mNeedComma) {
-            write(',');
             mNeedComma = false;
+            write(',');
+            if (!mCompact) {
+                write('\n');
+                indent();
+            }
         }
         write('[');
+        if (!mCompact) {
+            write('\n');
+            mDepth++;
+        }
     }
 
     public void endArray() throws IOException {
+        if (!mCompact) {
+            write('\n');
+            mDepth--;
+            indent();
+        }
         write(']');
         mNeedComma = true;
+    }
+
+    public void key(String key) throws IOException {
+        if (mNeedComma) {
+            mNeedComma = false;
+            write(',');
+            if (!mCompact) {
+                write('\n');
+                indent();
+            }
+        } else if (!mCompact) {
+            indent();
+        }
+        write(Json.quote(key));
+        write(':');
+        if (!mCompact) {
+            write(' ');
+        }
     }
 
     public void value(String value) throws IOException {
@@ -203,8 +249,23 @@ public class JsonWriter extends FilterWriter {
     private void commaIfNeeded() throws IOException {
         if (mNeedComma) {
             write(',');
+            if (!mCompact) {
+                write('\n');
+                indent();
+            }
         } else {
+            if (!mCompact) {
+                indent();
+            }
             mNeedComma = true;
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (!mCompact) {
+            write('\n');
+        }
+        super.close();
     }
 }

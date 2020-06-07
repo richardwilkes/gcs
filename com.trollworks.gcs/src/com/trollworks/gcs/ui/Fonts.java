@@ -271,11 +271,11 @@ public class Fonts {
         }
 
         public void toJSON(JsonWriter w) throws IOException {
-            w.startObject();
+            w.startMap();
             w.keyValue(NAME, mName);
             w.keyValue(STYLE, Enums.toId(mStyle));
             w.keyValue(SIZE, mSize);
-            w.endObject();
+            w.endMap();
         }
     }
 }
