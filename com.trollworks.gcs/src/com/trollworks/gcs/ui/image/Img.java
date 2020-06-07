@@ -20,6 +20,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
+import java.awt.Image;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -76,10 +77,17 @@ public class Img extends BufferedImage implements Icon {
      * @return The image.
      */
     public static Img create(InputStream in) throws IOException {
-        BufferedImage buffer = ImageIO.read(in);
-        Img           img    = create(buffer.getWidth(), buffer.getHeight(), buffer.getTransparency());
-        Graphics2D    gc     = img.getGraphics();
-        gc.drawImage(buffer, 0, 0, null);
+        return create(ImageIO.read(in));
+    }
+
+    /**
+     * @param in The input image.
+     * @return A new image.
+     */
+    public static Img create(Image in) {
+        Img        img = create(in.getWidth(null), in.getHeight(null), Transparency.TRANSLUCENT);
+        Graphics2D gc  = img.getGraphics();
+        gc.drawImage(in, 0, 0, null);
         gc.dispose();
         return img;
     }

@@ -30,6 +30,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
@@ -146,32 +147,45 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
 
     @Override
     public void drop(DropTargetDropEvent dtde) {
-        for (DataFlavor dataFlavor : dtde.getCurrentDataFlavors()) {
-            if (dataFlavor.isFlavorJavaFileListType()) {
+        if (dtde.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+            try {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                Image img = (Image) dtde.getTransferable().getTransferData(DataFlavor.imageFlavor);
                 try {
-                    dtde.acceptDrop(DnDConstants.ACTION_COPY);
-                    @SuppressWarnings("unchecked") List<File> transferData = (List<File>) dtde.getTransferable().getTransferData(dataFlavor);
-                    for (File file : transferData) {
-                        try {
-                            mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
-                            break;
-                        } catch (Exception exception) {
-                            WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
-                        }
-                    }
-                    dtde.dropComplete(true);
-                    dtde.getDropTargetContext().getComponent().requestFocusInWindow();
+                    mSheet.getCharacter().getProfile().setPortrait(Img.create(img));
                 } catch (Exception exception) {
-                    Log.error(exception);
+                    WindowUtils.showError(this, I18n.Text("Unable to load image."));
                 }
-                return;
+                dtde.dropComplete(true);
+                dtde.getDropTargetContext().getComponent().requestFocusInWindow();
+            } catch (Exception exception) {
+                Log.error(exception);
             }
+            return;
+        } else if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+            try {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                @SuppressWarnings("unchecked") List<File> transferData = (List<File>) dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                for (File file : transferData) {
+                    try {
+                        mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
+                        break;
+                    } catch (Exception exception) {
+                        WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
+                    }
+                }
+                dtde.dropComplete(true);
+                dtde.getDropTargetContext().getComponent().requestFocusInWindow();
+            } catch (Exception exception) {
+                Log.error(exception);
+            }
+            return;
         }
         dtde.dropComplete(false);
     }
 
     private static void acceptOrRejectDrag(DropTargetDragEvent dtde) {
-        if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+        if (dtde.isDataFlavorSupported(DataFlavor.imageFlavor) || dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
             dtde.acceptDrag(DnDConstants.ACTION_COPY);
         } else {
             dtde.rejectDrag();
