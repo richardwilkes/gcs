@@ -11,36 +11,51 @@
 
 package com.trollworks.gcs.utility;
 
-import java.io.File;
+import com.trollworks.gcs.GCS;
+
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /** Provides standardized logging. */
 public class Log {
-    private static final String           SEPARATOR = " | ";
-    private static final SimpleDateFormat FORMAT    = new SimpleDateFormat("yyyy.MM.dd" + SEPARATOR + "HH:mm:ss.SSS");
+    private static final String           GCS_LOG_FILE = "gcs.log";
+    private static final String           SEPARATOR    = " | ";
+    private static final SimpleDateFormat FORMAT       = new SimpleDateFormat("yyyy.MM.dd" + SEPARATOR + "HH:mm:ss.SSS");
     private static       PrintStream      OUT;
 
     static {
         OUT = System.out;
+        Path   path     = null;
         String property = Debug.getPropertyOrEnvironmentSetting("GCS_LOG");
         if (property != null && !property.isBlank()) {
-            try {
-                OUT = new PrintStream(property);
-            } catch (Throwable throwable) {
-                error("Unable to redirect log to " + property, throwable);
+            path = Paths.get(property);
+        } else if (GCS.VERSION != 0) { // When running a dev version, assume the console is always appropriate, since you're likely running from an IDE
+            String home = System.getProperty("user.home", ".");
+            switch (Platform.getPlatform()) {
+            case MAC:
+                path = Paths.get(home, "Library", "Logs", GCS_LOG_FILE);
+                break;
+            case WINDOWS:
+                String localAppData = System.getenv("LOCALAPPDATA");
+                path = Paths.get(localAppData != null ? localAppData : home, "logs", GCS_LOG_FILE);
+                break;
+            default:
+                path = Paths.get(home, ".local", "logs", GCS_LOG_FILE);
+                break;
             }
-        } else if (Platform.isWindows()) {
-            String localAppData = System.getenv("LOCALAPPDATA");
-            if (localAppData != null) {
-                File logDirectory = new File(localAppData + "\\GCS");
-                try {
-                    logDirectory.mkdirs();
-                    OUT = new PrintStream(logDirectory + "\\error.log");
-                } catch (Throwable throwable) {
-                    error("Unable to redirect log to " + logDirectory + "\\error.log", throwable);
-                }
+        }
+        if (path != null) {
+            try {
+                path = path.normalize().toAbsolutePath();
+                Files.createDirectories(path.getParent());
+                OUT = new PrintStream(path.toFile(), StandardCharsets.UTF_8);
+            } catch (Throwable throwable) {
+                error("Unable to redirect log to " + path, throwable);
             }
         }
     }
