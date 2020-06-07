@@ -35,17 +35,14 @@ public class Workspace extends BaseWindow implements SignificantFrame, JumpToSea
     /** @return The {@link Workspace}. */
     public static Workspace get() {
         Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-        if (!(window instanceof Workspace)) {
-            List<Workspace> windows = BaseWindow.getWindows(Workspace.class);
-            if (!windows.isEmpty()) {
-                window = windows.get(0);
-            }
+        if (window instanceof Workspace) {
+            return (Workspace) window;
         }
-        if (window == null) {
-            window = new Workspace();
+        List<Workspace> windows = BaseWindow.getWindows(Workspace.class);
+        if (!windows.isEmpty()) {
+            return windows.get(0);
         }
-        //noinspection ConstantConditions
-        return (Workspace) window;
+        return new Workspace();
     }
 
     private Workspace() {
