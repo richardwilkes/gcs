@@ -61,8 +61,10 @@ public class FontPreferences extends PreferencePanel implements ActionListener {
                 for (FontPanel panel : mFontPanels) {
                     if (panel == source) {
                         Font font = panel.getCurrentFont();
-                        if (!font.equals(UIManager.getFont(panel.getActionCommand()))) {
-                            UIManager.put(panel.getActionCommand(), font);
+                        String key = panel.getActionCommand();
+                        if (!font.equals(UIManager.getFont(key))) {
+                            UIManager.put(key, font);
+                            Preferences.getInstance().setFontInfo(key, new Fonts.Info(font));
                             adjusted = true;
                         }
                         break;
@@ -73,7 +75,6 @@ public class FontPreferences extends PreferencePanel implements ActionListener {
                     Fonts.notifyOfFontChanges();
                 }
             }
-
             adjustResetButton();
         }
     }
