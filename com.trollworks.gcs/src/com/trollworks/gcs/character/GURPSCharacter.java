@@ -2846,18 +2846,20 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id            The feature ID to search for.
-     * @param nameQualifier The name qualifier.
+     * @param id                  The feature ID to search for.
+     * @param nameQualifier       The name qualifier.
+     * @param usageQualifier      The usage qualifier.
+     * @param categoriesQualifier The categories qualifier.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, StringBuilder toolTip) {
+    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof WeaponBonus) {
                     WeaponBonus bonus = (WeaponBonus) feature;
-                    if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier)) {
+                    if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
                         bonus.addToToolTip(toolTip);
                     }
@@ -2868,18 +2870,20 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * @param id            The feature ID to search for.
-     * @param nameQualifier The name qualifier.
+     * @param id                  The feature ID to search for.
+     * @param nameQualifier       The name qualifier.
+     * @param usageQualifier      The usage qualifier.
+     * @param categoriesQualifier The categories qualifier.
      * @return The bonuses.
      */
-    public List<SkillBonus> getNamedWeaponSkillBonusesFor(String id, String nameQualifier, StringBuilder toolTip) {
+    public List<SkillBonus> getNamedWeaponSkillBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
         List<SkillBonus> bonuses = new ArrayList<>();
         List<Feature>    list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof SkillBonus) {
                     SkillBonus bonus = (SkillBonus) feature;
-                    if (bonus.getSkillSelectionType() == SkillSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier)) {
+                    if (bonus.getSkillSelectionType() == SkillSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
                         bonus.addToToolTip(toolTip);
                     }

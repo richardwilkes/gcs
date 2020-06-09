@@ -287,11 +287,13 @@ public abstract class WeaponStats {
             if (best < 0) {
                 best = 0;
             } else {
-                String nameQualifier = toString();
-                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, toolTip)) {
+                String      nameQualifier  = toString();
+                String      usageQualifier = getUsage();
+                Set<String> categories     = getCategories();
+                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip)) {
                     best += bonus.getAmount().getIntegerAdjustedAmount();
                 }
-                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, toolTip)) {
+                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip)) {
                     best += bonus.getAmount().getIntegerAdjustedAmount();
                 }
                 for (Feature feature : mOwner.getFeatures()) {
@@ -332,7 +334,7 @@ public abstract class WeaponStats {
                 sb.addToToolTip(toolTip);
                 return sb.getAmount().getIntegerAdjustedAmount();
             case WEAPONS_WITH_NAME:
-                if (sb.getNameCriteria().matches(mOwner.toString())) {
+                if (sb.getNameCriteria().matches(mOwner.toString()) && sb.getSpecializationCriteria().matches(getUsage()) && sb.matchesCategories(getCategories())) {
                     sb.addToToolTip(toolTip);
                     return sb.getAmount().getIntegerAdjustedAmount();
                 }

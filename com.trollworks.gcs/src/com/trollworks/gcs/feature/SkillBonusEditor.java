@@ -67,14 +67,29 @@ public class SkillBonusEditor extends FeatureEditor {
     }
 
     private void rebuildWeaponsWithName(FlexGrid grid, FlexRow row) {
-        StringCriteria criteria = ((SkillBonus) getFeature()).getNameCriteria();
+        SkillBonus bonus = (SkillBonus) getFeature();
+        StringCriteria criteria = bonus.getNameCriteria();
         row.add(addStringCompareCombo(criteria, null));
         row.add(addStringCompareField(criteria));
+
+        int i = 2;
+        row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        criteria = bonus.getSpecializationCriteria();
+        row.add(addStringCompareCombo(criteria, I18n.Text("and usage ")));
+        row.add(addStringCompareField(criteria));
+        grid.add(row, i++, 0);
+
+        row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        criteria = bonus.getCategoryCriteria();
+        row.add(addStringCompareCombo(criteria, I18n.Text("and category ")));
+        row.add(addStringCompareField(criteria));
+        grid.add(row, i, 0);
     }
 
     private void rebuildSkillsWithName(FlexGrid grid, FlexRow row) {
         SkillBonus bonus = (SkillBonus) getFeature();
-
         StringCriteria criteria = bonus.getNameCriteria();
         row.add(addStringCompareCombo(criteria, null));
         row.add(addStringCompareField(criteria));

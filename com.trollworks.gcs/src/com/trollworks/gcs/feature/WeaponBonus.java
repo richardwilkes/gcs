@@ -161,6 +161,8 @@ public class WeaponBonus extends Bonus {
             break;
         case WEAPONS_WITH_NAME:
             mNameCriteria.save(out, TAG_NAME);
+            mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
+            mCategoryCriteria.save(out, TAG_CATEGORY);
             break;
         case WEAPONS_WITH_REQUIRED_SKILL:
             mNameCriteria.save(out, TAG_NAME);
@@ -212,8 +214,6 @@ public class WeaponBonus extends Bonus {
         default:
             break;
         case WEAPONS_WITH_NAME:
-            ListRow.extractNameables(set, mNameCriteria.getQualifier());
-            break;
         case WEAPONS_WITH_REQUIRED_SKILL:
             ListRow.extractNameables(set, mNameCriteria.getQualifier());
             ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
@@ -229,8 +229,6 @@ public class WeaponBonus extends Bonus {
         default:
             break;
         case WEAPONS_WITH_NAME:
-            mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
-            break;
         case WEAPONS_WITH_REQUIRED_SKILL:
             mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
             mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));

@@ -382,13 +382,16 @@ public class WeaponDamage {
                 Dice             base       = new Dice(0, 0);
                 for (SkillDefault one : mOwner.getDefaults()) {
                     if (one.getType().isSkillBased()) {
-                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", one.getName(), one.getSpecialization(), categories, toolTip));
-                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + one.getName(), one.getName(), one.getSpecialization(), categories, toolTip));
+                        String name           = one.getName();
+                        String specialization = one.getSpecialization();
+                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, toolTip));
+                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, toolTip));
                     }
                 }
-                String nameQualifier = mOwner.toString();
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, toolTip));
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, toolTip));
+                String nameQualifier  = mOwner.toString();
+                String usageQualifier = mOwner.getUsage();
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip));
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip));
                 List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
                 for (Feature feature : mOwner.mOwner.getFeatures()) {
                     extractWeaponBonus(feature, bonuses, toolTip);
@@ -508,7 +511,7 @@ public class WeaponDamage {
                 wb.addToToolTip(toolTip);
                 break;
             case WEAPONS_WITH_NAME:
-                if (wb.getNameCriteria().matches(mOwner.toString())) {
+                if (wb.getNameCriteria().matches(mOwner.toString()) && wb.getSpecializationCriteria().matches(mOwner.getUsage()) && wb.matchesCategories(mOwner.getCategories())) {
                     list.add(wb);
                     wb.addToToolTip(toolTip);
                 }
