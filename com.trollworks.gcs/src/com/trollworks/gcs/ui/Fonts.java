@@ -75,17 +75,6 @@ public class Fonts {
         }
     }
 
-    /** Saves the current font settings to the preferences file. */
-    public static void saveToPreferences() {
-        Preferences prefs = Preferences.getInstance();
-        for (String key : KEYS) {
-            Font font = UIManager.getFont(key);
-            if (font != null) {
-                prefs.setFontInfo(key, new Info(font));
-            }
-        }
-    }
-
     private static void register(String key, String description, Font defaultFont) {
         KEYS.add(key);
         UIManager.put(key, defaultFont);

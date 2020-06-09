@@ -321,7 +321,7 @@ public class Preferences {
                                 }
                             }
                         }
-                        m2 = m.getMap(KEY_BINDINGS, true);
+                        m2 = m.getMap(FONTS, true);
                         if (m2 != null) {
                             mFontInfo = new HashMap<>();
                             for (String key : m2.keySet()) {
