@@ -83,8 +83,11 @@ public class Fonts {
 
     /** Restores the default fonts. */
     public static void restoreDefaults() {
+        Preferences prefs = Preferences.getInstance();
         for (String key : KEYS) {
-            UIManager.put(key, DEFAULTS.get(key).mDefaultFont);
+            Font font = DEFAULTS.get(key).mDefaultFont;
+            UIManager.put(key, font);
+            prefs.setFontInfo(key, new Fonts.Info(font));
         }
     }
 
