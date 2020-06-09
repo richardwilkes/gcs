@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -131,19 +132,7 @@ public class PrintManager {
         double[]    size    = {8.5, 11.0};
         double[]    margins = {0, 0, 0, 0};
         LengthUnits units   = Enums.extract(m.getString(ATTRIBUTE_UNITS, false), LengthUnits.values(), LengthUnits.IN);
-        String      printer = m.getString(ATTRIBUTE_PRINTER, true);
-        if (printer != null && !printer.isEmpty()) {
-            try {
-                for (PrintService one : PrinterJob.lookupPrintServices()) {
-                    if (one.getName().equalsIgnoreCase(printer)) {
-                        mJob.setPrintService(one);
-                        break;
-                    }
-                }
-            } catch (Exception exception) {
-                // Ignore...
-            }
-        }
+        setPrintServiceForPrinter(m.getString(ATTRIBUTE_PRINTER, true));
         setPageOrientation(Enums.extract(m.getString(TAG_ORIENTATION, false), PageOrientation.values(), PageOrientation.PORTRAIT));
         size[0] = getNumberForJSON(m, TAG_WIDTH, units, 8.5);
         size[1] = getNumberForJSON(m, TAG_HEIGHT, units, 11.0);
@@ -160,6 +149,21 @@ public class PrintManager {
         setPaperMargins(margins, units);
     }
 
+    private void setPrintServiceForPrinter(String printer) {
+        if (printer != null && !printer.isEmpty()) {
+            try {
+                for (PrintService one : PrinterJob.lookupPrintServices()) {
+                    if (one.getName().equalsIgnoreCase(printer)) {
+                        mJob.setPrintService(one);
+                        break;
+                    }
+                }
+            } catch (Exception exception) {
+                Log.warn(exception);
+            }
+        }
+    }
+
     private static double getNumberForJSON(JsonMap m, String key, LengthUnits units, double defInches) {
         return m.getDoubleWithDefault(key, units.convert(LengthUnits.IN, new Fixed6(defInches)).asDouble());
     }
@@ -170,27 +174,12 @@ public class PrintManager {
     public void load(XMLReader reader) throws IOException {
         String      marker  = reader.getMarker();
         LengthUnits units   = Enums.extract(reader.getAttribute(ATTRIBUTE_UNITS), LengthUnits.values(), LengthUnits.IN);
-        String      printer = reader.getAttribute(ATTRIBUTE_PRINTER);
         double[]    size    = {8.5, 11.0};
         double[]    margins = {0, 0, 0, 0};
-
-        if (printer != null && !printer.isEmpty()) {
-            try {
-                for (PrintService one : PrinterJob.lookupPrintServices()) {
-                    if (one.getName().equalsIgnoreCase(printer)) {
-                        mJob.setPrintService(one);
-                        break;
-                    }
-                }
-            } catch (Exception exception) {
-                // Ignore...
-            }
-        }
-
+        setPrintServiceForPrinter(reader.getAttribute(ATTRIBUTE_PRINTER));
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 String name = reader.getName();
-
                 try {
                     if (TAG_ORIENTATION.equals(name)) {
                         setPageOrientation(Enums.extract(reader.readText(), PageOrientation.values(), PageOrientation.PORTRAIT));
@@ -220,7 +209,7 @@ public class PrintManager {
                         reader.skipTag(name);
                     }
                 } catch (Exception exception) {
-                    // Ignore, since we can't really do anything about it.
+                    Log.warn(exception);
                 }
             }
         } while (reader.withinMarker(marker));

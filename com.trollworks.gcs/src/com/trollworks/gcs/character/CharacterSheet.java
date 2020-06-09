@@ -348,8 +348,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     public String getHTMLGridTemplate() {
-        Set<String>   remaining   = prepBlockLayoutRemaining();
-        StringBuilder buffer      = new StringBuilder();
+        Set<String>   remaining = prepBlockLayoutRemaining();
+        StringBuilder buffer    = new StringBuilder();
         for (String line : mCharacter.getSettings().blockLayout()) {
             String[] parts = line.trim().toLowerCase().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
@@ -1204,11 +1204,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     @Override
     public PrintManager getPrintManager() {
         if (mPrintManager == null) {
-            try {
-                mPrintManager = mCharacter.getPageSettings();
-            } catch (Exception exception) {
-                // Ignore
-            }
+            mPrintManager = mCharacter.getPageSettings();
         }
         return mPrintManager;
     }

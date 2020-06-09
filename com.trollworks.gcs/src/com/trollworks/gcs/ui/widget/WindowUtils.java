@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
 import java.awt.Component;
@@ -405,7 +406,7 @@ public class WindowUtils {
                     robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
                     robot.mouseMove(savedMouse.x, savedMouse.y);
                 } catch (Exception ex) {
-                    // Ignore
+                    Log.warn(ex);
                 } finally {
                     topWindow.setAlwaysOnTop(alwaysOnTop);
                 }

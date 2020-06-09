@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
@@ -208,7 +209,7 @@ public class Profile {
                 mPortrait = createPortrait(Img.create(new ByteArrayInputStream(Base64.getMimeDecoder().decode(reader.readText()))));
                 mCustomPortrait = true;
             } catch (Exception imageException) {
-                // Ignore
+                Log.warn(imageException);
             }
         } else {
             return false;

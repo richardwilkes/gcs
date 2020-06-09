@@ -70,17 +70,20 @@ public class Library implements Runnable {
     private              boolean         mUpdateComplete;
 
     public static final String getRecordedCommit() {
-        try (BufferedReader in = Files.newBufferedReader(Preferences.getInstance().getMasterLibraryPath().resolve(VERSION_FILE))) {
-            String line = in.readLine();
-            while (line != null) {
-                line = line.trim();
-                if (!line.isEmpty()) {
-                    return line;
+        Path path = Preferences.getInstance().getMasterLibraryPath().resolve(VERSION_FILE);
+        if (Files.exists(path)) {
+            try (BufferedReader in = Files.newBufferedReader(path)) {
+                String line = in.readLine();
+                while (line != null) {
+                    line = line.trim();
+                    if (!line.isEmpty()) {
+                        return line;
+                    }
+                    line = in.readLine();
                 }
-                line = in.readLine();
+            } catch (IOException exception) {
+                Log.warn(exception);
             }
-        } catch (IOException exception) {
-            // Ignore
         }
         return "";
     }

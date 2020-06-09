@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.edit;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
@@ -47,7 +48,7 @@ public class PasteCommand extends Command {
                 try {
                     enable = comp.getToolkit().getSystemClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);
                 } catch (Exception exception) {
-                    // Ignore.
+                    Log.warn(exception);
                 }
             }
         } else {

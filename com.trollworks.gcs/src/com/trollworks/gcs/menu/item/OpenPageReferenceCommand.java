@@ -100,34 +100,35 @@ public class OpenPageReferenceCommand extends Command {
             }
         }
         if (i > 0) {
+            int    page;
             String id = reference.substring(0, i);
             try {
-                int         page  = Integer.parseInt(reference.substring(i));
-                Preferences prefs = Preferences.getInstance();
-                PdfRef      ref   = prefs.lookupPdfRef(id, true);
-                if (ref == null) {
-                    Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.Text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
-                    if (path != null) {
-                        prefs.putPdfRef(new PdfRef(id, path, 0));
-                    }
-                }
-                if (ref != null) {
-                    Path                    path    = ref.getPath();
-                    LibraryExplorerDockable library = LibraryExplorerDockable.get();
-                    if (library != null) {
-                        PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
-                        if (dockable != null) {
-                            dockable.goToPage(ref, page, highlight);
-                            dockable.getDockContainer().setCurrentDockable(dockable);
-                        } else {
-                            dockable = new PdfDockable(ref, page, highlight);
-                            library.dockPdf(dockable);
-                            library.open(path);
-                        }
-                    }
-                }
+                page = Integer.parseInt(reference.substring(i));
             } catch (NumberFormatException nfex) {
-                // Ignore
+                return; // Has no page number, so bail
+            }
+            Preferences prefs = Preferences.getInstance();
+            PdfRef      ref   = prefs.lookupPdfRef(id, true);
+            if (ref == null) {
+                Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.Text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
+                if (path != null) {
+                    prefs.putPdfRef(new PdfRef(id, path, 0));
+                }
+            }
+            if (ref != null) {
+                Path                    path    = ref.getPath();
+                LibraryExplorerDockable library = LibraryExplorerDockable.get();
+                if (library != null) {
+                    PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
+                    if (dockable != null) {
+                        dockable.goToPage(ref, page, highlight);
+                        dockable.getDockContainer().setCurrentDockable(dockable);
+                    } else {
+                        dockable = new PdfDockable(ref, page, highlight);
+                        library.dockPdf(dockable);
+                        library.open(path);
+                    }
+                }
             }
         }
     }
