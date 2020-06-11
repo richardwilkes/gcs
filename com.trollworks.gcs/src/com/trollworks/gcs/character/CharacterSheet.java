@@ -138,7 +138,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private              Outline          mRangedWeaponOutline;
     private              boolean          mRebuildPending;
     private              Set<Outline>     mRootsToSync;
-    private              PrintManager     mPrintManager;
     private              Scale            mSavedScale;
     private              boolean          mOkToPaint          = true;
     private              boolean          mIsPrinting;
@@ -1055,7 +1054,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         PageFormat format = new PageFormat();
         format.setOrientation(PageFormat.PORTRAIT);
         paper.setSize(8.5 * 72.0, 11.0 * 72.0);
-        paper.setImageableArea(0.5 * 72.0, 0.5 * 72.0, 7.5 * 72.0, 10 * 72.0);
+        paper.setImageableArea(0.25 * 72.0, 0.25 * 72.0, 8 * 72.0, 10.5 * 72.0);
         format.setPaper(paper);
         return format;
     }
@@ -1203,10 +1202,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public PrintManager getPrintManager() {
-        if (mPrintManager == null) {
-            mPrintManager = mCharacter.getPageSettings();
-        }
-        return mPrintManager;
+        return mCharacter.getPageSettings();
     }
 
     @Override
