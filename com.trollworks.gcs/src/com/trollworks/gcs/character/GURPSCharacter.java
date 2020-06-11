@@ -338,6 +338,9 @@ public class GURPSCharacter extends DataFile {
         mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mPageSettings = Preferences.getInstance().getDefaultPageSettings();
+        if (mPageSettings != null) {
+            mPageSettings = new PrintManager(mPageSettings);
+        }
         mModifiedOn = System.currentTimeMillis();
         mCreatedOn = mModifiedOn;
     }
