@@ -584,12 +584,14 @@ public class PrintManager {
     /** @param numberUp The new number up. */
     public void setNumberUp(int numberUp) {
         PrintService service = getPrintService();
-
         if (service != null) {
-            for (NumberUp one : (NumberUp[]) service.getSupportedAttributeValues(NumberUp.class, DocFlavor.SERVICE_FORMATTED.PRINTABLE, null)) {
-                if (one.getValue() == numberUp) {
-                    setNumberUp(one);
-                    return;
+            NumberUp[] values = (NumberUp[]) service.getSupportedAttributeValues(NumberUp.class, DocFlavor.SERVICE_FORMATTED.PRINTABLE, null);
+            if (values != null) {
+                for (NumberUp one : values) {
+                    if (one.getValue() == numberUp) {
+                        setNumberUp(one);
+                        return;
+                    }
                 }
             }
         }
