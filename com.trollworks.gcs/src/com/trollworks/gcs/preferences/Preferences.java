@@ -848,7 +848,7 @@ public class Preferences {
     }
 
     public void setDefaultPageSettings(PrintManager defaultPageSettings) {
-        mDefaultPageSettings = defaultPageSettings;
+        mDefaultPageSettings = defaultPageSettings != null ? new PrintManager(defaultPageSettings) : null;
     }
 
     public boolean includeUnspentPointsInTotal() {
