@@ -1101,9 +1101,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         try {
             PrintManager settings = mCharacter.getPageSettings();
             PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
-            Paper        paper    = format.getPaper();
-            float        width    = (float) paper.getWidth();
-            float        height   = (float) paper.getHeight();
+            float        width    = (float) format.getWidth();
+            float        height   = (float) format.getHeight();
 
             adjustToPageSetupChanges(true);
             setPrinting(true);
@@ -1155,9 +1154,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             int          dpi      = Preferences.getInstance().getPNGResolution();
             PrintManager settings = mCharacter.getPageSettings();
             PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
-            Paper        paper    = format.getPaper();
-            int          width    = (int) (paper.getWidth() / 72.0 * dpi);
-            int          height   = (int) (paper.getHeight() / 72.0 * dpi);
+            int          width    = (int) (format.getWidth() / 72.0 * dpi);
+            int          height   = (int) (format.getHeight() / 72.0 * dpi);
             Img          buffer   = Img.create(width, height, Transparency.OPAQUE);
             int          pageNum  = 0;
             String       name     = PathUtils.getLeafName(path, false);
