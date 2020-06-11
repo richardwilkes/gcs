@@ -291,6 +291,7 @@ public class GURPSCharacter extends DataFile {
     private              int                                 mCachedSpellPoints;
     private              int                                 mCachedRacePoints;
     private              PrintManager                        mPageSettings;
+    private              String                              mPageSettingsString;
     private              boolean                             mSkillsUpdated;
     private              boolean                             mSpellsUpdated;
     private              boolean                             mDidModify;
@@ -338,8 +339,10 @@ public class GURPSCharacter extends DataFile {
         mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mPageSettings = Preferences.getInstance().getDefaultPageSettings();
+        mPageSettingsString = "{}";
         if (mPageSettings != null) {
             mPageSettings = new PrintManager(mPageSettings);
+            mPageSettingsString = mPageSettings.toString();
         }
         mModifiedOn = System.currentTimeMillis();
         mCreatedOn = mModifiedOn;
@@ -348,6 +351,10 @@ public class GURPSCharacter extends DataFile {
     /** @return The page settings. May return {@code null} if no printer has been defined. */
     public PrintManager getPageSettings() {
         return mPageSettings;
+    }
+
+    public String getLastPageSettingsAsString() {
+        return mPageSettingsString;
     }
 
     @Override
@@ -438,6 +445,7 @@ public class GURPSCharacter extends DataFile {
                     loadNoteList(reader, state);
                 } else if (mPageSettings != null && PrintManager.TAG_ROOT.equals(name)) {
                     mPageSettings.load(reader);
+                    mPageSettingsString = mPageSettings.toString();
                 } else {
                     reader.skipTag(name);
                 }
@@ -611,6 +619,7 @@ public class GURPSCharacter extends DataFile {
         saveList(NoteList.TAG_ROOT, mNotes, out);
         if (mPageSettings != null) {
             mPageSettings.save(out, LengthUnits.IN);
+            mPageSettingsString = mPageSettings.toString();
         }
     }
 

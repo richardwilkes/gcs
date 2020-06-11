@@ -344,6 +344,10 @@ public class PrintManager {
         setPaperMargins(new double[]{paper.getImageableY(), paper.getImageableX(), paper.getHeight() - (paper.getImageableY() + paper.getImageableHeight()), paper.getWidth() - (paper.getImageableX() + paper.getImageableWidth())}, LengthUnits.PT);
     }
 
+    public String toString() {
+        return toJSONMap(LengthUnits.IN).toString(true);
+    }
+
     public void toJSON(JsonWriter w, LengthUnits units) throws IOException {
         double[]     size    = getPaperSize(units);
         double[]     margins = getPaperMargins(units);

@@ -1218,7 +1218,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void adjustToPageSetupChanges(boolean willPrint) {
-        Preferences.getInstance().setDefaultPageSettings(getPrintManager());
+        PrintManager pm = getPrintManager();
+        Preferences.getInstance().setDefaultPageSettings(pm);
+        if (!mCharacter.getLastPageSettingsAsString().equals(pm.toString())) {
+            mCharacter.setModified(true);
+        }
         if (willPrint) {
             mSavedScale = mScale;
             mScale = Scales.ACTUAL_SIZE.getScale();
