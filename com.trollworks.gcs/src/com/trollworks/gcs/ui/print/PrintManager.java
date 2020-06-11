@@ -18,6 +18,7 @@ import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PrintProxy;
+import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
@@ -31,7 +32,11 @@ import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import javax.print.DocFlavor;
 import javax.print.PrintService;
 import javax.print.attribute.Attribute;
@@ -147,6 +152,10 @@ public class PrintManager {
         setResolution(extractFromResolutionString(m.getString(TAG_RESOLUTION, false)));
         setPaperSize(size, units);
         setPaperMargins(margins, units);
+    }
+
+    public PrintManager(PrintManager other) {
+        this(other.toJSONMap(LengthUnits.IN));
     }
 
     private void setPrintServiceForPrinter(String printer) {
@@ -357,6 +366,18 @@ public class PrintManager {
         w.keyValue(TAG_QUALITY, Enums.toId(getPrintQuality(false)));
         w.keyValueNot(TAG_RESOLUTION, createResolutionString(getResolution(false)), null);
         w.endMap();
+    }
+
+    public JsonMap toJSONMap(LengthUnits units) {
+        try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            try (JsonWriter w = new JsonWriter(new OutputStreamWriter(buffer, StandardCharsets.UTF_8), "\t")) {
+                toJSON(w, LengthUnits.IN);
+            }
+            return Json.asMap(Json.parse(new ByteArrayInputStream(buffer.toByteArray())), false);
+        } catch (Exception exception) {
+            Log.error(exception);
+            return new JsonMap();
+        }
     }
 
     /**
