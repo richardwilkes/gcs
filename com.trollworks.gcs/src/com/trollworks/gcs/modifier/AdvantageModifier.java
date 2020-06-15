@@ -314,8 +314,6 @@ public class AdvantageModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        builder.append(", ");
-        builder.append(getCostDescription());
         return builder.toString();
     }
 
