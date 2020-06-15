@@ -311,12 +311,11 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
         ArrayList<ListRow> process            = new ArrayList<>();
 
-        for (Row element : rows) {
-            Spell spell = new Spell(mDataFile, (Spell) element, true, forSheetOrTemplate);
-
-            model.collectRowsAndSetOwner(list, spell, false);
+        for (Row one : rows) {
+            ListRow row = one instanceof RitualMagicSpell ? new RitualMagicSpell(mDataFile, (RitualMagicSpell) one, true, forSheetOrTemplate) : new Spell(mDataFile, (Spell) one, true, forSheetOrTemplate);
+            model.collectRowsAndSetOwner(list, row, false);
             if (forSheetOrTemplate) {
-                addRowsToBeProcessed(process, spell);
+                addRowsToBeProcessed(process, row);
             }
         }
 

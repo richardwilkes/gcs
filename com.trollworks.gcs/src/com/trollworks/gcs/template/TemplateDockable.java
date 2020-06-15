@@ -15,9 +15,11 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.menu.RetargetableFocus;
+import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
+import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -281,6 +283,13 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
                 }
                 row = new Skill(getDataFile(), (Skill) row, true, true);
                 addCompleteRow(outline, row, selMap);
+            } else if (row instanceof RitualMagicSpell) {
+                outline = mTemplate.getSpellOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
+                }
+                row = new RitualMagicSpell(getDataFile(), (RitualMagicSpell) row, true, true);
+                addCompleteRow(outline, row, selMap);
             } else if (row instanceof Spell) {
                 outline = mTemplate.getSpellOutline();
                 if (!map.containsKey(outline)) {
@@ -294,6 +303,13 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Equipment(getDataFile(), (Equipment) row, true);
+                addCompleteRow(outline, row, selMap);
+            } else if (row instanceof Note) {
+                outline = mTemplate.getNoteOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
+                }
+                row = new Note(getDataFile(), (Note) row, true);
                 addCompleteRow(outline, row, selMap);
             } else {
                 row = null;
@@ -311,7 +327,6 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
         for (Map.Entry<ListOutline, StateEdit> entry : map.entrySet()) {
             ListOutline  anOutline = entry.getKey();
             OutlineModel model     = anOutline.getModel();
-
             model.select(selMap.get(anOutline), false);
             StateEdit edit = entry.getValue();
             edit.end();

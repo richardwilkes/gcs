@@ -20,6 +20,7 @@ import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
+import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
@@ -298,6 +299,13 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
                     map.put(outline, new StateEdit(outline.getModel(), addRows));
                 }
                 row = new Skill(getDataFile(), (Skill) row, true, true);
+                addCompleteRow(outline, row, selMap);
+            } else if (row instanceof RitualMagicSpell) {
+                outline = mSheet.getSpellOutline();
+                if (!map.containsKey(outline)) {
+                    map.put(outline, new StateEdit(outline.getModel(), addRows));
+                }
+                row = new RitualMagicSpell(getDataFile(), (RitualMagicSpell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Spell) {
                 outline = mSheet.getSpellOutline();

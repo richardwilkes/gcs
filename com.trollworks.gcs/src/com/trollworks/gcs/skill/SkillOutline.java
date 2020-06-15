@@ -385,20 +385,17 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         OutlineModel       model              = getModel();
         Row[]              rows               = model.getDragRows();
         boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
-        ArrayList<ListRow> process            = forSheetOrTemplate ? new ArrayList<>() : null;
+        ArrayList<ListRow> process            = new ArrayList<>();
 
-        for (Row element : rows) {
-            ListRow row;
-
-            row = element instanceof Technique ? new Technique(mDataFile, (Technique) element, forSheetOrTemplate) : new Skill(mDataFile, (Skill) element, true, forSheetOrTemplate);
-
+        for (Row one : rows) {
+            ListRow row = one instanceof Technique ? new Technique(mDataFile, (Technique) one, forSheetOrTemplate) : new Skill(mDataFile, (Skill) one, true, forSheetOrTemplate);
             model.collectRowsAndSetOwner(list, row, false);
             if (forSheetOrTemplate) {
                 addRowsToBeProcessed(process, row);
             }
         }
 
-        if (forSheetOrTemplate) {
+        if (forSheetOrTemplate && !process.isEmpty()) {
             EventQueue.invokeLater(new RowPostProcessor(this, process));
         }
     }
