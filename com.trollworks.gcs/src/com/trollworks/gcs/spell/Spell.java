@@ -44,74 +44,74 @@ import java.util.Set;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
-    private static final int               CURRENT_VERSION          = 5;
+    private static final   int               CURRENT_VERSION          = 5;
     /** The XML tag used for items. */
-    public static final  String            TAG_SPELL                = "spell";
+    public static final    String            TAG_SPELL                = "spell";
     /** The XML tag used for containers. */
-    public static final  String            TAG_SPELL_CONTAINER      = "spell_container";
-    private static final String            TAG_NAME                 = "name";
-    private static final String            TAG_TECH_LEVEL           = "tech_level";
-    private static final String            TAG_COLLEGE              = "college";
-    private static final String            TAG_POWER_SOURCE         = "power_source";
-    private static final String            TAG_SPELL_CLASS          = "spell_class";
-    private static final String            TAG_CASTING_COST         = "casting_cost";
-    private static final String            TAG_MAINTENANCE_COST     = "maintenance_cost";
-    private static final String            TAG_CASTING_TIME         = "casting_time";
-    private static final String            TAG_DURATION             = "duration";
-    private static final String            TAG_POINTS               = "points";
-    private static final String            TAG_REFERENCE            = "reference";
-    private static final String            TAG_ATTRIBUTE            = "attribute";
-    private static final String            TAG_DIFFICULTY           = "difficulty";
-    private static final String            ATTRIBUTE_VERY_HARD      = "very_hard";
+    public static final    String            TAG_SPELL_CONTAINER      = "spell_container";
+    private static final   String            TAG_NAME                 = "name";
+    private static final   String            TAG_TECH_LEVEL           = "tech_level";
+    private static final   String            TAG_COLLEGE              = "college";
+    private static final   String            TAG_POWER_SOURCE         = "power_source";
+    private static final   String            TAG_SPELL_CLASS          = "spell_class";
+    private static final   String            TAG_CASTING_COST         = "casting_cost";
+    private static final   String            TAG_MAINTENANCE_COST     = "maintenance_cost";
+    private static final   String            TAG_CASTING_TIME         = "casting_time";
+    private static final   String            TAG_DURATION             = "duration";
+    protected static final String            TAG_POINTS               = "points";
+    private static final   String            TAG_REFERENCE            = "reference";
+    private static final   String            TAG_ATTRIBUTE            = "attribute";
+    private static final   String            TAG_DIFFICULTY           = "difficulty";
+    private static final   String            ATTRIBUTE_VERY_HARD      = "very_hard";
     /** The prefix used in front of all IDs for the spells. */
-    public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
+    public static final    String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
     /** The field ID for name changes. */
-    public static final  String            ID_NAME                  = PREFIX + "Name";
+    public static final    String            ID_NAME                  = PREFIX + "Name";
     /** The field ID for tech level changes. */
-    public static final  String            ID_TECH_LEVEL            = PREFIX + "TechLevel";
+    public static final    String            ID_TECH_LEVEL            = PREFIX + "TechLevel";
     /** The field ID for college changes. */
-    public static final  String            ID_COLLEGE               = PREFIX + "College";
+    public static final    String            ID_COLLEGE               = PREFIX + "College";
     /** The field ID for power source changes. */
-    public static final  String            ID_POWER_SOURCE          = PREFIX + "PowerSource";
+    public static final    String            ID_POWER_SOURCE          = PREFIX + "PowerSource";
     /** The field ID for spell class changes. */
-    public static final  String            ID_SPELL_CLASS           = PREFIX + "Class";
+    public static final    String            ID_SPELL_CLASS           = PREFIX + "Class";
     /** The field ID for casting cost changes */
-    public static final  String            ID_CASTING_COST          = PREFIX + "CastingCost";
+    public static final    String            ID_CASTING_COST          = PREFIX + "CastingCost";
     /** The field ID for maintainance cost changes */
-    public static final  String            ID_MAINTENANCE_COST      = PREFIX + "MaintenanceCost";
+    public static final    String            ID_MAINTENANCE_COST      = PREFIX + "MaintenanceCost";
     /** The field ID for casting time changes */
-    public static final  String            ID_CASTING_TIME          = PREFIX + "CastingTime";
+    public static final    String            ID_CASTING_TIME          = PREFIX + "CastingTime";
     /** The field ID for duration changes */
-    public static final  String            ID_DURATION              = PREFIX + "Duration";
+    public static final    String            ID_DURATION              = PREFIX + "Duration";
     /** The field ID for point changes. */
-    public static final  String            ID_POINTS                = PREFIX + "Points";
+    public static final    String            ID_POINTS                = PREFIX + "Points";
     /** The field ID for level changes. */
-    public static final  String            ID_LEVEL                 = PREFIX + "Level";
+    public static final    String            ID_LEVEL                 = PREFIX + "Level";
     /** The field ID for page reference changes. */
-    public static final  String            ID_REFERENCE             = PREFIX + "Reference";
+    public static final    String            ID_REFERENCE             = PREFIX + "Reference";
     /** The field ID for difficulty changes. */
-    public static final  String            ID_DIFFICULTY            = PREFIX + "Difficulty";
+    public static final    String            ID_DIFFICULTY            = PREFIX + "Difficulty";
     /** The field ID for when the categories change. */
-    public static final  String            ID_CATEGORY              = PREFIX + "Category";
+    public static final    String            ID_CATEGORY              = PREFIX + "Category";
     /** The field ID for when the row hierarchy changes. */
-    public static final  String            ID_LIST_CHANGED          = PREFIX + "ListChanged";
+    public static final    String            ID_LIST_CHANGED          = PREFIX + "ListChanged";
     /** The field ID for when the spell becomes or stops being a weapon. */
-    public static final  String            ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
-    private              String            mName;
-    private              String            mTechLevel;
-    private              String            mCollege;
-    private              String            mPowerSource;
-    private              String            mSpellClass;
-    private              String            mCastingCost;
-    private              String            mMaintenance;
-    private              String            mCastingTime;
-    private              String            mDuration;
-    protected            int               mPoints;
-    protected            SkillLevel        mLevel;
-    private              SkillAttribute    mAttribute;
-    private              String            mReference;
-    private              SkillDifficulty   mDifficulty;
-    private              List<WeaponStats> mWeapons;
+    public static final    String            ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
+    private                String            mName;
+    private                String            mTechLevel;
+    private                String            mCollege;
+    private                String            mPowerSource;
+    private                String            mSpellClass;
+    private                String            mCastingCost;
+    private                String            mMaintenance;
+    private                String            mCastingTime;
+    private                String            mDuration;
+    protected              int               mPoints;
+    protected              SkillLevel        mLevel;
+    private                SkillAttribute    mAttribute;
+    private                String            mReference;
+    private                SkillDifficulty   mDifficulty;
+    private                List<WeaponStats> mWeapons;
 
     /**
      * Creates a new spell.

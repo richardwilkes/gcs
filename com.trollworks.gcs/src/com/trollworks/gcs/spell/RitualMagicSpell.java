@@ -79,6 +79,7 @@ public class RitualMagicSpell extends Spell {
         super(dataFile, ritualMagicSpell, deep, forSheet);
         mBaseSkillName = ritualMagicSpell.mBaseSkillName;
         mPoints = forSheet ? ritualMagicSpell.mPoints : 0;
+        mPrerequisiteSpellsCount = ritualMagicSpell.mPrerequisiteSpellsCount;
         updateLevel(false);
     }
 
@@ -218,6 +219,11 @@ public class RitualMagicSpell extends Spell {
         super.saveSelf(out, forUndo);
         out.simpleTag(TAG_BASE_SKILL_NAME, mBaseSkillName);
         out.simpleTagNotZero(TAG_PREREQ_COUNT, mPrerequisiteSpellsCount);
+        // Spells assume a default of 1 point, while RM assumes a default of 0, so we have to make
+        // sure it gets written
+        if (mPoints == 1) {
+            out.simpleTag(TAG_POINTS, mPoints);
+        }
     }
 
     @Override
