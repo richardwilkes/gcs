@@ -28,33 +28,38 @@ public class MarkdownDocument extends DefaultStyledDocument {
         Style  body        = addStyle("body", null);
         body.addAttribute(StyleConstants.FontFamily, family);
         body.addAttribute(StyleConstants.FontSize, Integer.valueOf(size));
-        Style header = addStyle("header", null);
-        header.addAttribute(StyleConstants.FontFamily, family);
-        header.addAttribute(StyleConstants.FontSize, Integer.valueOf(size + size / 5));
-        header.addAttribute(StyleConstants.Bold, Boolean.TRUE);
-        Style headerParagraph = addStyle("header_p", null);
-        int spacing = size * 2 / 3;
-        headerParagraph.addAttribute(StyleConstants.SpaceAbove, Float.valueOf(spacing));
-        headerParagraph.addAttribute(StyleConstants.SpaceBelow, Float.valueOf(spacing));
-        Style firstHeaderParagraph = addStyle("first_header_p", null);
-        firstHeaderParagraph.addAttribute(StyleConstants.SpaceBelow, Float.valueOf(spacing));
+        Style h2 = addStyle("h2", null);
+        h2.addAttribute(StyleConstants.FontFamily, family);
+        h2.addAttribute(StyleConstants.FontSize, Integer.valueOf(size + size / 3));
+        h2.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+        Style h3 = addStyle("h3", null);
+        h3.addAttribute(StyleConstants.FontFamily, family);
+        h3.addAttribute(StyleConstants.FontSize, Integer.valueOf(size + size / 5));
+        h3.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+        Style h3Paragraph = addStyle("h3P", null);
+        int   spacing     = size * 2 / 3;
+        h3Paragraph.addAttribute(StyleConstants.SpaceAbove, Float.valueOf(spacing));
+        h3Paragraph.addAttribute(StyleConstants.SpaceBelow, Float.valueOf(spacing));
         Style bullet = addStyle("bullet", null);
         bullet.addAttribute(StyleConstants.FontFamily, family);
         bullet.addAttribute(StyleConstants.FontSize, Integer.valueOf(size));
-        Style bulletParagraph = addStyle("bullet_p", null);
-        int indent = TextDrawing.getSimpleWidth(defaultFont, "• ");
+        Style bulletParagraph = addStyle("bulletP", null);
+        int   indent          = TextDrawing.getSimpleWidth(defaultFont, "• ");
         bulletParagraph.addAttribute(StyleConstants.FirstLineIndent, Float.valueOf(-indent));
         bulletParagraph.addAttribute(StyleConstants.LeftIndent, Float.valueOf(indent));
-        boolean first = true;
         Iterator<String> iterator = markdown.lines().iterator();
         while (iterator.hasNext()) {
             String line = iterator.next();
-            Style charStyle;
-            Style paraStyle;
-            if (line.startsWith("### ")) {
+            Style  charStyle;
+            Style  paraStyle;
+            if (line.startsWith("## ")) {
+                line = line.substring(3);
+                charStyle = h2;
+                paraStyle = null;
+            } else if (line.startsWith("### ")) {
                 line = line.substring(4);
-                charStyle = header;
-                paraStyle = first ? firstHeaderParagraph : headerParagraph;
+                charStyle = h3;
+                paraStyle = h3Paragraph;
             } else if (line.startsWith("- ")) {
                 line = "•" + line.substring(1);
                 charStyle = bullet;
@@ -63,7 +68,6 @@ public class MarkdownDocument extends DefaultStyledDocument {
                 charStyle = body;
                 paraStyle = null;
             }
-            first = false;
             line += "\n";
             try {
                 int start = getLength();

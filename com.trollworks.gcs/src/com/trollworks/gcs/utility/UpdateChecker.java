@@ -18,6 +18,7 @@ import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.json.Json;
+import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.task.Tasks;
 
@@ -26,6 +27,11 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -129,24 +135,43 @@ public class UpdateChecker implements Runnable {
             // Development version. Bail.
             setAppResult(I18n.Text("Development versions don't look for GCS updates"), null, false);
         } else {
-            long   versionAvailable = GCS.VERSION;
-            String releaseNotes     = "";
+            List<Long> versions = new ArrayList<>();
+            Map<Long, String> releases = new HashMap<>();
             try {
-                JsonMap m   = Json.asMap(Json.parse(new URL("https://api.github.com/repos/richardwilkes/gcs/releases/latest")), false);
-                String  tag = m.getString("tag_name", false);
-                if (tag.startsWith("v")) {
-                    long version = Version.extract(tag.substring(1), 0);
-                    if (version > versionAvailable) {
-                        versionAvailable = version;
-                        releaseNotes = m.getString("body", false);
+                JsonArray list = Json.asArray(Json.parse(new URL("https://api.github.com/repos/richardwilkes/gcs/releases")), false);
+                int count = list.size();
+                for (int i = 0; i < count; i++) {
+                    JsonMap m = list.getMap(i, false);
+                    String  tag = m.getString("tag_name", false);
+                    if (tag.startsWith("v")) {
+                        long version = Version.extract(tag.substring(1), 0);
+                        if (version > 0) {
+                            Long v = Long.valueOf(version);
+                            versions.add(v);
+                            releases.put(Long.valueOf(version), m.getString("body", false));
+                        }
                     }
                 }
+                versions.sort(Collections.reverseOrder());
             } catch (Exception exception) {
                 Log.error(exception);
             }
+            long versionAvailable = versions.isEmpty() ? 0 : versions.get(0).longValue();
             if (versionAvailable > GCS.VERSION) {
+                long ignoreOlderThan = Version.extract("4.17", 0);
+                StringBuilder buffer = new StringBuilder();
+                for (Long v : versions) {
+                    long version = v.longValue();
+                    if (version >= ignoreOlderThan && version > GCS.VERSION) {
+                        if (version != versionAvailable) {
+                            buffer.append("\n\n");
+                        }
+                        buffer.append(String.format("## Version %s\n", Version.toString(version, false)));
+                        buffer.append(releases.get(v));
+                    }
+                }
                 Preferences prefs = Preferences.getInstance();
-                setAppResult(String.format(I18n.Text("GCS v%s is available!"), Version.toString(versionAvailable, false)), releaseNotes, true);
+                setAppResult(String.format(I18n.Text("GCS v%s is available!"), Version.toString(versionAvailable, false)), buffer.toString(), true);
                 if (versionAvailable > prefs.getLastGCSVersion()) {
                     prefs.setLastGCSVersion(versionAvailable);
                     prefs.save();
