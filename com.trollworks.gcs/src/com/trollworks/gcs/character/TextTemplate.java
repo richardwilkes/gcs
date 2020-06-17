@@ -43,6 +43,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -356,7 +357,9 @@ public class TextTemplate {
         case KEY_PORTRAIT_EMBEDDED:
             out.write("data:image/png;base64,");
             ByteArrayOutputStream imgBuffer = new ByteArrayOutputStream();
-            ImageIO.write(description.getPortrait().getRetina(), "png", Base64.getUrlEncoder().wrap(imgBuffer));
+            OutputStream wrapped = Base64.getUrlEncoder().wrap(imgBuffer);
+            ImageIO.write(description.getPortrait().getRetina(), "png", wrapped);
+            wrapped.close();
             out.write(imgBuffer.toString(StandardCharsets.UTF_8));
             break;
         case KEY_NAME:
