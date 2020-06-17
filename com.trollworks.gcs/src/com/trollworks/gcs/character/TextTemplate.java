@@ -357,7 +357,7 @@ public class TextTemplate {
         case KEY_PORTRAIT_EMBEDDED:
             out.write("data:image/png;base64,");
             ByteArrayOutputStream imgBuffer = new ByteArrayOutputStream();
-            OutputStream wrapped = Base64.getUrlEncoder().wrap(imgBuffer);
+            OutputStream wrapped = Base64.getEncoder().wrap(imgBuffer);
             ImageIO.write(description.getPortrait().getRetina(), "png", wrapped);
             wrapped.close();
             out.write(imgBuffer.toString(StandardCharsets.UTF_8));
