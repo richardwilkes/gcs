@@ -19,6 +19,7 @@ import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.feature.ReactionBonus;
 import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
@@ -263,6 +264,8 @@ public abstract class ListRow extends Row {
                     mFeatures.add(new AttributeBonus(reader));
                 } else if (DRBonus.TAG_ROOT.equals(name)) {
                     mFeatures.add(new DRBonus(reader));
+                } else if (ReactionBonus.TAG_ROOT.equals(name)) {
+                    mFeatures.add(new ReactionBonus(reader));
                 } else if (SkillBonus.TAG_ROOT.equals(name)) {
                     mFeatures.add(new SkillBonus(reader));
                 } else if (SpellBonus.TAG_ROOT.equals(name)) {

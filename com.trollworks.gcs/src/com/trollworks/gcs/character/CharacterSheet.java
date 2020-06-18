@@ -21,6 +21,8 @@ import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
+import com.trollworks.gcs.feature.Feature;
+import com.trollworks.gcs.feature.ReactionBonus;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteOutline;
@@ -115,15 +117,16 @@ import javax.swing.event.ChangeListener;
 /** The character sheet. */
 public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, ScaleRoot {
     private static final int              GAP                 = 2;
-    private static final String           MELEE_KEY           = "melee";
-    private static final String           RANGED_KEY          = "ranged";
-    private static final String           ADVANTAGES_KEY      = "advantages";
-    private static final String           SKILLS_KEY          = "skills";
-    private static final String           SPELLS_KEY          = "spells";
-    private static final String           EQUIPMENT_KEY       = "equipment";
-    private static final String           OTHER_EQUIPMENT_KEY = "other_equipment";
-    private static final String           NOTES_KEY           = "notes";
-    private static final String[]         ALL_KEYS            = {MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY};
+    public static final  String           REACTIONS_KEY       = "reactions";
+    public static final  String           MELEE_KEY           = "melee";
+    public static final  String           RANGED_KEY          = "ranged";
+    public static final  String           ADVANTAGES_KEY      = "advantages";
+    public static final  String           SKILLS_KEY          = "skills";
+    public static final  String           SPELLS_KEY          = "spells";
+    public static final  String           EQUIPMENT_KEY       = "equipment";
+    public static final  String           OTHER_EQUIPMENT_KEY = "other_equipment";
+    public static final  String           NOTES_KEY           = "notes";
+    private static final String[]         ALL_KEYS            = {REACTIONS_KEY, MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY};
     private              Scale            mScale;
     private              GURPSCharacter   mCharacter;
     private              int              mLastPage;
@@ -134,8 +137,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private              EquipmentOutline mEquipmentOutline;
     private              EquipmentOutline mOtherEquipmentOutline;
     private              NoteOutline      mNoteOutline;
-    private              Outline          mMeleeWeaponOutline;
-    private              Outline          mRangedWeaponOutline;
+    private              WeaponOutline    mMeleeWeaponOutline;
+    private              WeaponOutline    mRangedWeaponOutline;
+    private              ReactionsOutline mReactionsOutline;
     private              boolean          mRebuildPending;
     private              Set<Outline>     mRootsToSync;
     private              Scale            mSavedScale;
@@ -233,6 +237,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         createEquipmentOutline();
         createOtherEquipmentOutline();
         createNoteOutline();
+        createReactionsOutline();
 
         // Clear out the old pages
         removeAll();
@@ -311,6 +316,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
         // Ensure everything is laid out and register for notification
         validate();
+        OutlineSyncer.remove(mReactionsOutline);
         OutlineSyncer.remove(mMeleeWeaponOutline);
         OutlineSyncer.remove(mRangedWeaponOutline);
         OutlineSyncer.remove(mAdvantageOutline);
@@ -335,6 +341,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private static Set<String> prepBlockLayoutRemaining() {
         Set<String> remaining = new HashSet<>();
+        remaining.add(REACTIONS_KEY);
         remaining.add(MELEE_KEY);
         remaining.add(RANGED_KEY);
         remaining.add(ADVANTAGES_KEY);
@@ -380,6 +387,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private static String getOutlineTitleForKey(String key) {
         switch (key) {
+        case REACTIONS_KEY:
+            return I18n.Text("Reactions");
         case MELEE_KEY:
             return I18n.Text("Melee Weapons");
         case RANGED_KEY:
@@ -403,6 +412,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private Outline getOutlineForKey(String key) {
         switch (key) {
+        case REACTIONS_KEY:
+            return mReactionsOutline;
         case MELEE_KEY:
             return mMeleeWeaponOutline;
         case RANGED_KEY:
@@ -569,8 +580,57 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         resetOutline(mOtherEquipmentOutline);
     }
 
+    public ReactionsOutline getReactionsOutline() {
+        return mReactionsOutline;
+    }
+
+    private void createReactionsOutline() {
+        if (mReactionsOutline == null) {
+            OutlineModel outlineModel;
+            String       sortConfig;
+            mReactionsOutline = new ReactionsOutline();
+            outlineModel = mReactionsOutline.getModel();
+            sortConfig = outlineModel.getSortConfig();
+            for (ReactionRow row : collectReactions()) {
+                outlineModel.addRow(row);
+            }
+            outlineModel.applySortConfig(sortConfig);
+            initOutline(mReactionsOutline);
+        }
+        resetOutline(mReactionsOutline);
+    }
+
+    private List<ReactionRow> collectReactions() {
+        Map<String, ReactionRow> reactionMap = new HashMap<>();
+        for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
+            collectReactionsFromFeatureList(String.format(I18n.Text("from advantage %s"), advantage.getName()), advantage.getFeatures(), reactionMap);
+        }
+        for (Equipment equipment : mCharacter.getEquipmentIterator()) {
+            if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
+                collectReactionsFromFeatureList(String.format(I18n.Text("from equipment %s"), equipment.getDescription()), equipment.getFeatures(), reactionMap);
+            }
+        }
+        return new ArrayList<>(reactionMap.values());
+    }
+
+    private void collectReactionsFromFeatureList(String source, List<Feature> features, Map<String, ReactionRow> reactionMap) {
+        for (Feature feature : features) {
+            if (feature instanceof ReactionBonus) {
+                ReactionBonus bonus     = (ReactionBonus) feature;
+                int           amount    = bonus.getAmount().getIntegerAdjustedAmount();
+                String        situation = bonus.getSituation();
+                ReactionRow   existing  = reactionMap.get(situation);
+                if (existing == null) {
+                    reactionMap.put(situation, new ReactionRow(amount, situation, source));
+                } else {
+                    existing.addAmount(amount, source);
+                }
+            }
+        }
+    }
+
     /** @return The outline containing the melee weapons. */
-    public Outline getMeleeWeaponOutline() {
+    public WeaponOutline getMeleeWeaponOutline() {
         return mMeleeWeaponOutline;
     }
 
@@ -578,7 +638,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (mMeleeWeaponOutline == null) {
             OutlineModel outlineModel;
             String       sortConfig;
-
             mMeleeWeaponOutline = new WeaponOutline(MeleeWeaponStats.class);
             outlineModel = mMeleeWeaponOutline.getModel();
             sortConfig = outlineModel.getSortConfig();
@@ -592,7 +651,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     /** @return The outline containing the ranged weapons. */
-    public Outline getRangedWeaponOutline() {
+    public WeaponOutline getRangedWeaponOutline() {
         return mRangedWeaponOutline;
     }
 
@@ -767,6 +826,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         } else {
             if (type.startsWith(Advantage.PREFIX)) {
                 OutlineSyncer.add(mAdvantageOutline);
+                OutlineSyncer.add(mReactionsOutline);
             } else if (Settings.ID_USER_DESCRIPTION_DISPLAY.equals(type) || Settings.ID_MODIFIERS_DISPLAY.equals(type) || Settings.ID_NOTES_DISPLAY.equals(type)) {
                 OutlineSyncer.add(mAdvantageOutline);
                 OutlineSyncer.add(mSkillOutline);
@@ -782,6 +842,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             } else if (type.startsWith(Equipment.PREFIX)) {
                 OutlineSyncer.add(mEquipmentOutline);
                 OutlineSyncer.add(mOtherEquipmentOutline);
+                OutlineSyncer.add(mReactionsOutline);
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (type.startsWith(Note.PREFIX)) {
@@ -929,6 +990,15 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     private void syncRoots() {
+        if (mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(mEquipmentOutline) || mRootsToSync.contains(mAdvantageOutline)) {
+            OutlineModel outlineModel = mReactionsOutline.getModel();
+            String       sortConfig   = outlineModel.getSortConfig();
+            outlineModel.removeAllRows();
+            for (ReactionRow row : collectReactions()) {
+                outlineModel.addRow(row);
+            }
+            outlineModel.applySortConfig(sortConfig);
+        }
         if (mSyncWeapons || mRootsToSync.contains(mEquipmentOutline) || mRootsToSync.contains(mAdvantageOutline) || mRootsToSync.contains(mSpellOutline) || mRootsToSync.contains(mSkillOutline)) {
             OutlineModel outlineModel = mMeleeWeaponOutline.getModel();
             String       sortConfig   = outlineModel.getSortConfig();

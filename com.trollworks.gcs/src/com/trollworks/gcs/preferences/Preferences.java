@@ -12,6 +12,7 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.GCS;
+import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.gcs.ui.Fonts;
@@ -53,8 +54,9 @@ import javax.swing.ToolTipManager;
 
 /** Provides the implementation of preferences. Note: not all preferences emit notifications. */
 public class Preferences {
-    private static final int CURRENT_VERSION = 1;
-    private static final int MINIMUM_VERSION = 1;
+    private static final int CURRENT_VERSION   = 2;
+    private static final int VERSION_REACTIONS = 2;
+    private static final int MINIMUM_VERSION   = 1;
 
     private static final String AUTO_NAME_NEW_CHARACTERS        = "auto_name_new_characters";
     private static final String BASE_WILL_AND_PER_ON_10         = "base_will_and_per_on_10";
@@ -133,7 +135,7 @@ public class Preferences {
     public static final int           DEFAULT_PNG_RESOLUTION                    = 200;
     public static final int           DEFAULT_TOOLTIP_TIMEOUT                   = 60;
     public static final LengthUnits   DEFAULT_DEFAULT_LENGTH_UNITS              = LengthUnits.FT_IN;
-    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of("melee", "ranged", "advantages skills", "spells", "equipment", "other_equipment", "notes");
+    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of(CharacterSheet.REACTIONS_KEY, CharacterSheet.MELEE_KEY, CharacterSheet.RANGED_KEY, CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY, CharacterSheet.SPELLS_KEY, CharacterSheet.EQUIPMENT_KEY, CharacterSheet.OTHER_EQUIPMENT_KEY, CharacterSheet.NOTES_KEY);
     public static final Scales        DEFAULT_INITIAL_UI_SCALE                  = Scales.QUARTER_AGAIN_SIZE;
     public static final String        DEFAULT_DEFAULT_PLAYER_NAME               = System.getProperty("user.name", "");
     public static final String        DEFAULT_DEFAULT_PORTRAIT_PATH             = "!\000";
@@ -287,6 +289,9 @@ public class Preferences {
                             mBlockLayout = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
                                 mBlockLayout.add(a.getString(i, false));
+                            }
+                            if (version < VERSION_REACTIONS) {
+                                mBlockLayout.add(0, CharacterSheet.REACTIONS_KEY);
                             }
                         }
                         a = m.getArray(RECENT_FILES, true);

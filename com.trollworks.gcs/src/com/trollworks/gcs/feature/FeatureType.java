@@ -64,6 +64,29 @@ public enum FeatureType {
         public Feature createFeature() {
             return new DRBonus();
         }
+    }, REACTION_BONUS {
+        @Override
+        public String toString() {
+            return I18n.Text("Gives a reaction modifier of");
+        }
+
+        @Override
+        public boolean matches(Feature feature) {
+            return feature instanceof ReactionBonus;
+        }
+
+        @Override
+        public FeatureEditor createFeatureEditor(ListRow row, Feature feature) {
+            if (matches(feature)) {
+                return new ReactionBonusEditor(row, (ReactionBonus) feature);
+            }
+            return null;
+        }
+
+        @Override
+        public Feature createFeature() {
+            return new ReactionBonus();
+        }
     }, SKILL_LEVEL_BONUS {
         @Override
         public String toString() {
