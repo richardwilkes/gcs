@@ -137,7 +137,7 @@ public class AdvantageModifierEnabler extends JPanel {
         int length = mModifiers.length;
         mEnabled = new JCheckBox[length];
         for (int i = 0; i < length; i++) {
-            mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription(), mModifiers[i].isEnabled());
+            mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription() + ", " + mModifiers[i].getCostDescription(), mModifiers[i].isEnabled());
             wrapper.add(mEnabled[i]);
         }
         return wrapper;
