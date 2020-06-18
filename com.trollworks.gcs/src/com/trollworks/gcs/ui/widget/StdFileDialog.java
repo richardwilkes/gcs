@@ -167,6 +167,10 @@ public class StdFileDialog {
         }
         if (result == JFileChooser.APPROVE_OPTION) {
             File file = dialog.getSelectedFile();
+            if (!PathUtils.isNameValidForFile(file.getName())) {
+                WindowUtils.showError(comp, I18n.Text("Invalid file name"));
+                return null;
+            }
             if (filters != null) {
                 FileFilter fileFilter = dialog.getFileFilter();
                 if (!fileFilter.accept(file)) {

@@ -18,6 +18,7 @@ import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.PathUtils;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -56,7 +57,7 @@ public class SaveAsCommand extends Command {
             return new Path[0];
         }
         String name = saveable.getSaveTitle();
-        if (name.isBlank()) {
+        if (name.isBlank() || !PathUtils.isNameValidForFile(name)) {
             name = "untitled";
         }
         Path   result = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable), I18n.Text("Save As…"), Preferences.getInstance().getLastDir().resolve(name), saveable.getFileType().getFilter());
