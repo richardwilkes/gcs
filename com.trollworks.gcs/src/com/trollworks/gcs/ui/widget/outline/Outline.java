@@ -1281,19 +1281,19 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     /** @param scrollTo The row index to scroll to. */
     protected void keyScroll(int scrollTo) {
         Outline real = getRealOutline();
-        if (!keyScrollInternal(real, scrollTo)) {
+        if (!real.keyScrollInternal(scrollTo)) {
             for (OutlineProxy proxy : real.mProxies) {
-                if (keyScrollInternal(proxy, scrollTo)) {
+                if (proxy.keyScrollInternal(scrollTo)) {
                     break;
                 }
             }
         }
     }
 
-    private static boolean keyScrollInternal(Outline outline, int scrollTo) {
-        if (scrollTo >= outline.mFirstRow && scrollTo <= outline.mLastRow) {
-            outline.requestFocus();
-            outline.scrollRectToVisible(outline.getRowIndexBounds(scrollTo));
+    protected boolean keyScrollInternal(int scrollTo) {
+        if (scrollTo >= getFirstRowToDisplay() && scrollTo <= getLastRowToDisplay()) {
+            requestFocus();
+            scrollRectToVisible(getRowIndexBounds(scrollTo));
             return true;
         }
         return false;
@@ -2824,11 +2824,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public void selectionDidChange(OutlineModel model) {
-        Rectangle bounds = repaintSelectionInternal();
-
-        if (!bounds.isEmpty() && isFocusOwner()) {
-            scrollRectToVisible(bounds);
-        }
+        repaintSelectionInternal();
         if (!(this instanceof OutlineProxy)) {
             notifyOfSelectionChange();
         }
