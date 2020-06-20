@@ -64,7 +64,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
     public void goToPage(PdfRef pdfRef, int page, String highlight) {
         if (!mIgnorePageChange && mPdf != null) {
             int lastPageIndex = mPageIndex;
-            mPageIndex = page;
+            mPageIndex = page - 1;
             try {
                 PDPageLabels pageLabels = mPdf.getDocumentCatalog().getPageLabels();
                 if (pageLabels != null) {
