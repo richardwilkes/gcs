@@ -1545,21 +1545,113 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 }
                 break;
             case KeyEvent.VK_UP:
-                keyScroll(selection.selectUp(shiftDown));
+                index = selection.selectUp(shiftDown);
+                if (index != -1) {
+                    OutlineModel model  = getModel();
+                    RowFilter    filter = model.getRowFilter();
+                    if (filter != null) {
+                        while (filter.isRowFiltered(model.getRowAtIndex(index))) {
+                            int last = index;
+                            index = selection.selectUp(shiftDown);
+                            if (index == last || index == -1) {
+                                break;
+                            }
+                        }
+                        model.reapplyRowFilter();
+                    }
+                    keyScroll(index);
+                }
                 break;
             case KeyEvent.VK_DOWN:
-                keyScroll(selection.selectDown(shiftDown));
+                index = selection.selectDown(shiftDown);
+                if (index != -1) {
+                    OutlineModel model  = getModel();
+                    RowFilter    filter = model.getRowFilter();
+                    if (filter != null) {
+                        while (filter.isRowFiltered(model.getRowAtIndex(index))) {
+                            int last = index;
+                            index = selection.selectDown(shiftDown);
+                            if (index == last || index == -1) {
+                                break;
+                            }
+                        }
+                        model.reapplyRowFilter();
+                    }
+                    keyScroll(index);
+                }
                 break;
             case KeyEvent.VK_HOME:
-                keyScroll(selection.selectToHome(shiftDown));
+                selectToHome(selection, shiftDown);
                 break;
             case KeyEvent.VK_END:
-                keyScroll(selection.selectToEnd(shiftDown));
+                selectToEnd(selection, shiftDown);
                 break;
             default:
                 return;
             }
             event.consume();
+        }
+    }
+
+    private void selectToHome(Selection selection, boolean shiftDown) {
+        OutlineModel model = getModel();
+        int          count = model.getRowCount();
+        if (count > 0) {
+            RowFilter filter = model.getRowFilter();
+            if (filter != null) {
+                int i = 0;
+                while (i < count && filter.isRowFiltered(model.getRowAtIndex(i))) {
+                    i++;
+                }
+                if (i == count) {
+                    return;
+                }
+                if (shiftDown && !selection.isEmpty()) {
+                    int anchor = selection.getAnchor();
+                    if (anchor < 0) {
+                        anchor = selection.lastSelectedIndex();
+                    }
+                    selection.select(i, anchor, true);
+                } else {
+                    selection.select(i, false);
+                }
+                model.reapplyRowFilter();
+                keyScroll(i);
+            } else {
+                selection.select(0, shiftDown);
+                keyScroll(0);
+            }
+        }
+    }
+
+    private void selectToEnd(Selection selection, boolean shiftDown) {
+        OutlineModel model = getModel();
+        int          count = model.getRowCount();
+        if (count > 0) {
+            RowFilter filter = model.getRowFilter();
+            if (filter != null) {
+                int i = count - 1;
+                while (i >= 0 && filter.isRowFiltered(model.getRowAtIndex(i))) {
+                    i--;
+                }
+                if (i < 0) {
+                    return;
+                }
+                if (shiftDown && !selection.isEmpty()) {
+                    int anchor = selection.getAnchor();
+                    if (anchor < 0) {
+                        anchor = selection.firstSelectedIndex();
+                    }
+                    selection.select(anchor, i, true);
+                } else {
+                    selection.select(i, false);
+                }
+                model.reapplyRowFilter();
+                keyScroll(i);
+            } else {
+                selection.select(count - 1, shiftDown);
+                keyScroll(count - 1);
+            }
         }
     }
 
