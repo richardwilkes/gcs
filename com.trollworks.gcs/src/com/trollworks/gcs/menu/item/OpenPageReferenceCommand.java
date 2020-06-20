@@ -112,7 +112,8 @@ public class OpenPageReferenceCommand extends Command {
             if (ref == null) {
                 Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.Text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
                 if (path != null) {
-                    prefs.putPdfRef(new PdfRef(id, path, 0));
+                    ref = new PdfRef(id, path, 0);
+                    prefs.putPdfRef(ref);
                 }
             }
             if (ref != null) {
