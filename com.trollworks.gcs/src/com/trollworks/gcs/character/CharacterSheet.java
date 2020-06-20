@@ -25,6 +25,7 @@ import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.ReactionBonus;
+import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteOutline;
@@ -607,6 +608,11 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
             String source = String.format(I18n.Text("from advantage %s"), advantage.getName());
             collectReactionsFromFeatureList(source, advantage.getFeatures(), reactionMap);
+            for (AdvantageModifier modifier : advantage.getModifiers()) {
+                if (modifier.isEnabled()) {
+                    collectReactionsFromFeatureList(source, modifier.getFeatures(), reactionMap);
+                }
+            }
             SelfControlRoll cr = advantage.getCR();
             if (cr != SelfControlRoll.NONE_REQUIRED) {
                 SelfControlRollAdjustments crAdj = advantage.getCRAdj();
@@ -624,7 +630,13 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
         for (Equipment equipment : mCharacter.getEquipmentIterator()) {
             if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
-                collectReactionsFromFeatureList(String.format(I18n.Text("from equipment %s"), equipment.getDescription()), equipment.getFeatures(), reactionMap);
+                String source = String.format(I18n.Text("from equipment %s"), equipment.getDescription());
+                collectReactionsFromFeatureList(source, equipment.getFeatures(), reactionMap);
+                for (EquipmentModifier modifier : equipment.getModifiers()) {
+                    if (modifier.isEnabled()) {
+                        collectReactionsFromFeatureList(source, modifier.getFeatures(), reactionMap);
+                    }
+                }
             }
         }
         return new ArrayList<>(reactionMap.values());
