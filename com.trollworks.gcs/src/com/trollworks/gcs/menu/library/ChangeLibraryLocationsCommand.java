@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.menu.help;
+package com.trollworks.gcs.menu.library;
 
 import com.trollworks.gcs.library.LibraryLocationsPanel;
 import com.trollworks.gcs.menu.Command;

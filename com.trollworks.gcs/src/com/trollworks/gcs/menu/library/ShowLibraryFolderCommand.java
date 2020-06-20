@@ -9,11 +9,11 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.menu.help;
+package com.trollworks.gcs.menu.library;
 
+import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -25,12 +25,12 @@ import java.util.Arrays;
 
 /** Shows the user the Library folder. */
 public class ShowLibraryFolderCommand extends Command {
-    private boolean mSystem;
+    private Library mLibrary;
 
     /** Creates a new {@link ShowLibraryFolderCommand}. */
-    public ShowLibraryFolderCommand(boolean system) {
-        super(system ? I18n.Text("Show Master Library on Disk") : I18n.Text("Show User Library on Disk"), system ? "show_master_library" : "show_user_library");
-        mSystem = system;
+    public ShowLibraryFolderCommand(Library library) {
+        super(String.format(I18n.Text("Show %s on Disk"), library.getTitle()), "slib:" + library.getKey());
+        mLibrary = library;
     }
 
     @Override
@@ -41,9 +41,8 @@ public class ShowLibraryFolderCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         try {
-            Preferences prefs   = Preferences.getInstance();
-            File        dir     = (mSystem ? prefs.getMasterLibraryPath() : prefs.getUserLibraryPath()).toFile();
-            Desktop     desktop = Desktop.getDesktop();
+            File    dir     = mLibrary.getPath().toFile();
+            Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Action.BROWSE_FILE_DIR)) {
                 File[] contents = dir.listFiles();
                 if (contents != null && contents.length > 0) {

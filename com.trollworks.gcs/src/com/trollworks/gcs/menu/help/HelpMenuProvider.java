@@ -32,17 +32,10 @@ public class HelpMenuProvider {
         menu.addSeparator();
         menu.add(new JMenuItem(UpdateAppCommand.INSTANCE));
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Release Notes"), "https://github.com/richardwilkes/gcs/releases")));
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Web Site"), GCS.WEB_SITE)));
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Mailing Lists"), "https://groups.io/g/gcs")));
         menu.add(new JMenuItem(new OpenURICommand(I18n.Text("License"), "https://github.com/richardwilkes/gcs/blob/master/LICENSE")));
         menu.addSeparator();
-        menu.add(new JMenuItem(MasterLibraryStatusCommand.INSTANCE));
-        menu.add(new JMenuItem(new UpdateMasterLibraryCommand()));
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Master Library Change Log"), "https://github.com/richardwilkes/gcs_library/commits/master")));
-        menu.add(new JMenuItem(new ShowLibraryFolderCommand(true)));
-        menu.add(new JMenuItem(new ShowLibraryFolderCommand(false)));
-        menu.addSeparator();
-        menu.add(new JMenuItem(ChangeLibraryLocationsCommand.INSTANCE));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Web Site"), GCS.WEB_SITE)));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Mailing Lists"), "https://groups.io/g/gcs")));
         DynamicMenuEnabler.add(menu);
         return menu;
     }

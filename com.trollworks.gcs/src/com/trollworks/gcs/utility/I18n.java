@@ -50,7 +50,7 @@ public class I18n {
         TRANSLATIONS = new HashMap<>();
 
         Path base;
-        if (GCS.VERSION == 0) { // Development mode, just use the working dir
+        if (GCS.VERSION.isZero()) { // Development mode, just use the working dir
             base = Paths.get(".").toAbsolutePath();
         } else {
             base = Paths.get(System.getProperty("java.home"));

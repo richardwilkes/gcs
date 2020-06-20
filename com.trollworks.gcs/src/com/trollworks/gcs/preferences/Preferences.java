@@ -14,6 +14,7 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
+import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.print.PageOrientation;
@@ -25,6 +26,7 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.SafeFileUpdater;
+import com.trollworks.gcs.utility.Version;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -54,9 +56,9 @@ import javax.swing.ToolTipManager;
 
 /** Provides the implementation of preferences. Note: not all preferences emit notifications. */
 public class Preferences {
-    private static final int CURRENT_VERSION   = 2;
-    private static final int VERSION_REACTIONS = 2;
-    private static final int MINIMUM_VERSION   = 1;
+    private static final int CURRENT_VERSION        = 2;
+    private static final int VERSION_AS_OF_GCS_4_18 = 2;
+    private static final int MINIMUM_VERSION        = 1;
 
     private static final String AUTO_NAME_NEW_CHARACTERS        = "auto_name_new_characters";
     private static final String BASE_WILL_AND_PER_ON_10         = "base_will_and_per_on_10";
@@ -76,10 +78,9 @@ public class Preferences {
     private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
     private static final String KEY_BINDINGS                    = "key_bindings";
     private static final String LAST_DIR                        = "last_dir";
-    private static final String LAST_GCS_VERSION                = "last_gcs_version";
-    private static final String LATEST_LIBRARY_COMMIT           = "latest_library_commit";
+    private static final String LAST_SEEN_GCS_VERSION           = "last_seen_gcs_version";
+    private static final String LIBRARIES                       = "libraries";
     private static final String LIBRARY_EXPLORER                = "library_explorer";
-    private static final String MASTER_LIBRARY_PATH             = "master_library_path";
     private static final String MODIFIERS_DISPLAY               = "modifiers_display";
     private static final String NOTES_DISPLAY                   = "notes_display";
     private static final String OPEN_ROW_KEYS                   = "open_row_keys";
@@ -95,9 +96,13 @@ public class Preferences {
     private static final String USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
     private static final String USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     private static final String USER_DESCRIPTION_DISPLAY        = "user_description_display";
-    private static final String USER_LIBRARY_PATH               = "user_library_path";
     private static final String VERSION                         = "version";
     private static final String WINDOW_POSITIONS                = "window_positions";
+
+    // No longer used as of the 4.18 release -- remove at some point in the future
+    private static final String LAST_GCS_VERSION    = "last_gcs_version";
+    private static final String MASTER_LIBRARY_PATH = "master_library_path";
+    private static final String USER_LIBRARY_PATH   = "user_library_path";
 
     public static final String KEY_PREFIX           = "prefs.";
     public static final String KEY_PER_SHEET_PREFIX = KEY_PREFIX + "sheet.";
@@ -149,10 +154,7 @@ public class Preferences {
     private static Preferences                      INSTANCE;
     private        Notifier                         mNotifier;
     private        UUID                             mID;
-    private        long                             mLastGCSVersion;
-    private        String                           mLatestLibraryCommit;
-    private        Path                             mMasterLibraryPath;
-    private        Path                             mUserLibraryPath;
+    private        Version                          mLastSeenGCSVersion;
     private        int                              mInitialPoints;
     private        int                              mToolTipTimeout;
     private        int                              mLibraryExplorerDividerPosition;
@@ -212,10 +214,8 @@ public class Preferences {
     private Preferences() {
         mNotifier = new Notifier();
         mID = UUID.randomUUID();
-        mLastGCSVersion = GCS.VERSION;
-        mLatestLibraryCommit = "";
-        mMasterLibraryPath = getDefaultMasterLibraryPath();
-        mUserLibraryPath = getDefaultUserLibraryPath();
+        mLastSeenGCSVersion = new Version(GCS.VERSION);
+        Library.LIBRARIES.clear();
         mInitialPoints = DEFAULT_INITIAL_POINTS;
         mToolTipTimeout = DEFAULT_TOOLTIP_TIMEOUT;
         mLibraryExplorerDividerPosition = DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION;
@@ -261,10 +261,26 @@ public class Preferences {
                     int version = m.getInt(VERSION);
                     if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION) {
                         mID = UUID.fromString(m.getStringWithDefault(ID, mID.toString()));
-                        mLastGCSVersion = m.getLongWithDefault(LAST_GCS_VERSION, mLastGCSVersion);
-                        mLatestLibraryCommit = m.getStringWithDefault(LATEST_LIBRARY_COMMIT, mLatestLibraryCommit);
-                        mMasterLibraryPath = Paths.get(m.getStringWithDefault(MASTER_LIBRARY_PATH, mMasterLibraryPath.toString())).normalize().toAbsolutePath();
-                        mUserLibraryPath = Paths.get(m.getStringWithDefault(USER_LIBRARY_PATH, mUserLibraryPath.toString())).normalize().toAbsolutePath();
+                        Version loadVersion;
+                        if (version >= VERSION_AS_OF_GCS_4_18) {
+                            loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION, false));
+                        } else {
+                            loadVersion = new Version(m.getString(LAST_GCS_VERSION, false));
+                        }
+                        if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
+                            mLastSeenGCSVersion = loadVersion;
+                        }
+                        if (version >= VERSION_AS_OF_GCS_4_18) {
+                            JsonMap m2 = m.getMap(LIBRARIES, true);
+                            if (m2 != null) {
+                                for (String key : m2.keySet()) {
+                                    Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key, false)));
+                                }
+                            }
+                        } else {
+                            Library.MASTER.setPath(Paths.get(m.getStringWithDefault(MASTER_LIBRARY_PATH, Library.MASTER.getPathNoCreate().toString())));
+                            Library.USER.setPath(Paths.get(m.getStringWithDefault(USER_LIBRARY_PATH, Library.USER.getPathNoCreate().toString())));
+                        }
                         mInitialPoints = m.getIntWithDefault(INITIAL_POINTS, mInitialPoints);
                         mToolTipTimeout = m.getIntWithDefault(TOOLTIP_TIMEOUT, mToolTipTimeout);
                         JsonMap m2 = m.getMap(LIBRARY_EXPLORER, true);
@@ -290,7 +306,7 @@ public class Preferences {
                             for (int i = 0; i < length; i++) {
                                 mBlockLayout.add(a.getString(i, false));
                             }
-                            if (version < VERSION_REACTIONS) {
+                            if (version < VERSION_AS_OF_GCS_4_18) {
                                 mBlockLayout.add(0, CharacterSheet.REACTIONS_KEY);
                             }
                         }
@@ -371,6 +387,28 @@ public class Preferences {
                 Log.error(exception);
             }
         }
+        boolean hasMaster = false;
+        boolean hasUser   = false;
+        for (Library lib : Library.LIBRARIES) {
+            if (lib == Library.MASTER) {
+                hasMaster = true;
+                if (hasUser) {
+                    break;
+                }
+            } else if (lib == Library.USER) {
+                hasUser = true;
+                if (hasMaster) {
+                    break;
+                }
+            }
+        }
+        if (!hasMaster) {
+            Library.LIBRARIES.add(Library.MASTER);
+        }
+        if (!hasUser) {
+            Library.LIBRARIES.add(Library.USER);
+        }
+        Collections.sort(Library.LIBRARIES);
         if (!GraphicsEnvironment.isHeadless()) {
             ToolTipManager.sharedInstance().setDismissDelay(mToolTipTimeout * 1000);
         }
@@ -400,10 +438,15 @@ public class Preferences {
                     w.startMap();
                     w.keyValue(VERSION, CURRENT_VERSION);
                     w.keyValue(ID, mID.toString());
-                    w.keyValue(LAST_GCS_VERSION, mLastGCSVersion);
-                    w.keyValue(LATEST_LIBRARY_COMMIT, mLatestLibraryCommit);
-                    w.keyValue(MASTER_LIBRARY_PATH, mMasterLibraryPath.toString());
-                    w.keyValue(USER_LIBRARY_PATH, mUserLibraryPath.toString());
+                    w.keyValue(LAST_SEEN_GCS_VERSION, mLastSeenGCSVersion.toString());
+                    w.key(LIBRARIES);
+                    w.startMap();
+                    for (Library lib : Library.LIBRARIES) {
+                        lib.toJSON(w);
+                    }
+                    w.endMap();
+                    w.keyValue(MASTER_LIBRARY_PATH, Library.MASTER.getPathNoCreate().toString());
+                    w.keyValue(USER_LIBRARY_PATH, Library.USER.getPathNoCreate().toString());
                     w.keyValue(INITIAL_POINTS, mInitialPoints);
                     w.keyValue(TOOLTIP_TIMEOUT, mToolTipTimeout);
                     w.key(LIBRARY_EXPLORER);
@@ -507,58 +550,12 @@ public class Preferences {
         return mID;
     }
 
-    public long getLastGCSVersion() {
-        return mLastGCSVersion;
+    public Version getLastSeenGCSVersion() {
+        return mLastSeenGCSVersion;
     }
 
-    public void setLastGCSVersion(long lastGCSVersion) {
-        mLastGCSVersion = lastGCSVersion;
-    }
-
-    public String getLatestLibraryCommit() {
-        return mLatestLibraryCommit;
-    }
-
-    public void setLatestLibraryCommit(String latestLibraryCommit) {
-        mLatestLibraryCommit = latestLibraryCommit;
-    }
-
-    public static Path getDefaultMasterLibraryPath() {
-        return Paths.get(System.getProperty("user.home", "."), "GCS", "Master Library").normalize().toAbsolutePath();
-    }
-
-    public Path getMasterLibraryPath() {
-        if (!Files.exists(mMasterLibraryPath)) {
-            try {
-                Files.createDirectories(mMasterLibraryPath);
-            } catch (IOException exception) {
-                Log.error(exception);
-            }
-        }
-        return mMasterLibraryPath;
-    }
-
-    public void setMasterLibraryPath(Path path) {
-        mMasterLibraryPath = path.normalize().toAbsolutePath();
-    }
-
-    public static Path getDefaultUserLibraryPath() {
-        return Paths.get(System.getProperty("user.home", "."), "GCS", "User Library").normalize().toAbsolutePath();
-    }
-
-    public Path getUserLibraryPath() {
-        if (!Files.exists(mUserLibraryPath)) {
-            try {
-                Files.createDirectories(mUserLibraryPath);
-            } catch (IOException exception) {
-                Log.error(exception);
-            }
-        }
-        return mUserLibraryPath;
-    }
-
-    public void setUserLibraryPath(Path path) {
-        mUserLibraryPath = path.normalize().toAbsolutePath();
+    public void setLastSeenGCSVersion(Version lastSeenGCSVersion) {
+        mLastSeenGCSVersion = new Version(lastSeenGCSVersion);
     }
 
     public int getInitialPoints() {

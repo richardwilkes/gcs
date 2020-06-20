@@ -18,6 +18,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
+import com.trollworks.gcs.advantage.SelfControlRoll;
+import com.trollworks.gcs.advantage.SelfControlRollAdjustments;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -603,7 +605,22 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private List<ReactionRow> collectReactions() {
         Map<String, ReactionRow> reactionMap = new HashMap<>();
         for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
-            collectReactionsFromFeatureList(String.format(I18n.Text("from advantage %s"), advantage.getName()), advantage.getFeatures(), reactionMap);
+            String source = String.format(I18n.Text("from advantage %s"), advantage.getName());
+            collectReactionsFromFeatureList(source, advantage.getFeatures(), reactionMap);
+            SelfControlRoll cr = advantage.getCR();
+            if (cr != SelfControlRoll.NONE_REQUIRED) {
+                SelfControlRollAdjustments crAdj = advantage.getCRAdj();
+                if (crAdj == SelfControlRollAdjustments.REACTION_PENALTY) {
+                    int         amt       = SelfControlRollAdjustments.REACTION_PENALTY.getAdjustment(cr);
+                    String      situation = String.format("from others when %s is triggered", advantage.getName());
+                    ReactionRow existing  = reactionMap.get(situation);
+                    if (existing == null) {
+                        reactionMap.put(situation, new ReactionRow(amt, situation, source));
+                    } else {
+                        existing.addAmount(amt, source);
+                    }
+                }
+            }
         }
         for (Equipment equipment : mCharacter.getEquipmentIterator()) {
             if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
@@ -869,6 +886,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 mCharacter.notifySingle(type, data);
             } else if (Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2.equals(type)) {
                 mCharacter.notifySingle(type, data);
+            } else if (Advantage.ID_LEVELS.equals(type)) {
+                markForRebuild();
             } else if (GURPSCharacter.ID_MODIFIED.equals(type)) {
                 int count = getComponentCount();
                 for (int i = 0; i < count; i++) {

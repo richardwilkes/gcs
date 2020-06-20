@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.TextCell;
+import com.trollworks.gcs.ui.widget.outline.WrappedCell;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 
@@ -66,10 +67,7 @@ public enum ReactionColumn {
 
         @Override
         public Cell getCell(boolean forEditor) {
-            if (forEditor) {
-                return new TextCell(SwingConstants.LEFT, false);
-            }
-            return new ListTextCell(SwingConstants.LEFT, false);
+            return new WrappedCell();
         }
     };
 

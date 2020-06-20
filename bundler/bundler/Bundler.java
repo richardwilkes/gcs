@@ -29,8 +29,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,28 +38,28 @@ import java.util.List;
 import java.util.Set;
 
 public class Bundler {
-    private static final String        GCS_VERSION       = "4.17.7";
-    private static       String        JDK_MAJOR_VERSION = "14";
-    private static final String        ITEXT_VERSION     = "2.1.7";
-    private static final String        LOGGING_VERSION   = "1.2.0";
-    private static final String        FONTBOX_VERSION   = "2.0.17";
-    private static final String        PDFBOX_VERSION    = "2.0.17";
-    private static final String        LINUX             = "linux";
-    private static final String        MACOS             = "macos";
-    private static final String        WINDOWS           = "windows";
-    private static final Path          DIST_DIR          = Paths.get("out", "dist");
-    private static final Path          BUILD_DIR         = DIST_DIR.resolve("build");
-    private static final Path          MODULE_DIR        = DIST_DIR.resolve("modules");
-    private static final Path          EXTRA_DIR         = DIST_DIR.resolve("extra");
-    private static final Path          I18N_DIR          = EXTRA_DIR.resolve("i18n");
-    private static final Path          MANIFEST          = BUILD_DIR.resolve("com.trollworks.gcs.manifest");
-    private static final Path          JRE               = BUILD_DIR.resolve("jre");
-    private static final ZonedDateTime STARTED           = Instant.now().atZone(ZoneOffset.UTC);
-    private static final char[]        HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-    private static       String        OS;
-    private static       Path          PKG;
-    private static       Path          JPACKAGE_15;
-    private static       String        ICON_TYPE;
+    private static final String GCS_VERSION       = "4.18.0";
+    private static       String JDK_MAJOR_VERSION = "14";
+    private static final String ITEXT_VERSION     = "2.1.7";
+    private static final String LOGGING_VERSION   = "1.2.0";
+    private static final String FONTBOX_VERSION   = "2.0.17";
+    private static final String PDFBOX_VERSION    = "2.0.17";
+    private static final String LINUX             = "linux";
+    private static final String MACOS             = "macos";
+    private static final String WINDOWS           = "windows";
+    private static final Path   DIST_DIR          = Paths.get("out", "dist");
+    private static final Path   BUILD_DIR         = DIST_DIR.resolve("build");
+    private static final Path   MODULE_DIR        = DIST_DIR.resolve("modules");
+    private static final Path   EXTRA_DIR         = DIST_DIR.resolve("extra");
+    private static final Path   I18N_DIR          = EXTRA_DIR.resolve("i18n");
+    private static final Path   MANIFEST          = BUILD_DIR.resolve("com.trollworks.gcs.manifest");
+    private static final Path   JRE               = BUILD_DIR.resolve("jre");
+    private static final String YEARS             = "1998-" + DateTimeFormatter.ofPattern("yyyy").format(Instant.now());
+    private static final char[] HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    private static       String OS;
+    private static       Path   PKG;
+    private static       Path   JPACKAGE_15;
+    private static       String ICON_TYPE;
 
     /**
      * The main entry point for bundling GCS.
@@ -163,7 +161,7 @@ public class Bundler {
 
         if (OS.equals(MACOS)) {
             boolean failed = false;
-            Path dir = Paths.get(System.getProperty("user.home", "."), "jdk-15.jdk").toAbsolutePath();
+            Path    dir    = Paths.get(System.getProperty("user.home", "."), "jdk-15.jdk").toAbsolutePath();
             JPACKAGE_15 = dir.resolve(Paths.get("Contents", "Home", "bin", "jpackage"));
             builder = new ProcessBuilder(JPACKAGE_15.toString(), "--version");
             builder.redirectOutput(Redirect.PIPE).redirectErrorStream(true);
@@ -316,10 +314,10 @@ public class Bundler {
         try (PrintWriter out = new PrintWriter(Files.newBufferedWriter(MANIFEST))) {
             out.println("Manifest-Version: 1.0");
             out.println("bundle-name: GCS");
-            out.println("bundle-version: " + GCS_VERSION + "." + DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(STARTED));
+            out.println("bundle-version: " + GCS_VERSION);
             out.println("bundle-license: Mozilla Public License 2.0");
             out.println("bundle-copyright-owner: Richard A. Wilkes");
-            out.println("bundle-copyright-years: 1998-" + DateTimeFormatter.ofPattern("yyyy").format(STARTED));
+            out.println("bundle-copyright-years: " + YEARS);
         } catch (IOException exception) {
             System.out.println();
             exception.printStackTrace(System.err);
@@ -602,7 +600,7 @@ public class Bundler {
         args.add("--app-version");
         args.add(GCS_VERSION);
         args.add("--copyright");
-        args.add("©1998-" + DateTimeFormatter.ofPattern("yyyy").format(STARTED) + " by Richard A. Wilkes");
+        args.add("©" + YEARS + " by Richard A. Wilkes");
         args.add("--vendor");
         args.add("Richard A. Wilkes");
         args.add("--description");

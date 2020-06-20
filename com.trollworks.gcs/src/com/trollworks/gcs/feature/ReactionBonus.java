@@ -12,10 +12,13 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 public class ReactionBonus extends Bonus {
     public static final String TAG_ROOT      = "reaction_bonus";
@@ -87,5 +90,15 @@ public class ReactionBonus extends Bonus {
 
     public void setSituation(String situation) {
         mSituation = situation;
+    }
+
+    @Override
+    public void fillWithNameableKeys(Set<String> set) {
+        ListRow.extractNameables(set, mSituation);
+    }
+
+    @Override
+    public void applyNameableKeys(Map<String, String> map) {
+        mSituation = ListRow.nameNameables(map, mSituation);
     }
 }

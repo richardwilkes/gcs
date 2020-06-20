@@ -13,7 +13,7 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.QuitCommand;
-import com.trollworks.gcs.menu.help.ChangeLibraryLocationsCommand;
+import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -65,25 +65,24 @@ public class LibraryLocationsPanel extends JPanel implements DocumentListener {
 
         LibraryLocationsPanel panel = new LibraryLocationsPanel();
         if (WindowUtils.showOptionDialog(Workspace.get(), panel, ChangeLibraryLocationsCommand.INSTANCE.getTitle(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new JButton[]{panel.mApplyButton, panel.mCancelButton}, panel.mCancelButton) == JOptionPane.OK_OPTION) {
-            Preferences prefs = Preferences.getInstance();
-            prefs.setMasterLibraryPath(Paths.get(panel.mMasterLibraryPath.getText()));
-            prefs.setUserLibraryPath(Paths.get(panel.mUserLibraryPath.getText()));
+            Library.MASTER.setPath(Paths.get(panel.mMasterLibraryPath.getText()));
+            Library.USER.setPath(Paths.get(panel.mUserLibraryPath.getText()));
             QuitCommand.INSTANCE.attemptQuit();
         }
     }
 
     private LibraryLocationsPanel() {
         super(new PrecisionLayout().setColumns(4));
-        JTextArea warning = new JTextArea(I18n.Text("Warning: The directory chosen for the Master Library Path will have its contents deleted and replaced when GCS starts up again if it does not already contain the Master Library data."));
+        String    masterLibraryTitle = Library.MASTER.getTitle();
+        JTextArea warning            = new JTextArea(String.format(I18n.Text("Warning: The directory chosen for the %1$s Path will have its contents deleted and replaced when GCS starts up again if it does not already contain the %1$s data."), masterLibraryTitle));
         warning.setEditable(false);
         warning.setWrapStyleWord(true);
         warning.setLineWrap(true);
         warning.setFont(UIManager.getFont("Label.font"));
         warning.setOpaque(false);
         add(warning, new PrecisionLayoutData().setHorizontalSpan(4).setFillHorizontalAlignment().setWidthHint(400).setBottomMargin(10));
-        Preferences prefs = Preferences.getInstance();
-        mMasterLibraryPath = createField("Master Library Path:", prefs.getMasterLibraryPath(), Preferences.getDefaultMasterLibraryPath());
-        mUserLibraryPath = createField("User Library Path:", prefs.getUserLibraryPath(), Preferences.getDefaultUserLibraryPath());
+        mMasterLibraryPath = createField(String.format("%s Path:", masterLibraryTitle), Library.MASTER.getPath(), Library.getDefaultMasterLibraryPath());
+        mUserLibraryPath = createField(String.format("%s Path:", Library.USER.getTitle()), Library.USER.getPath(), Library.getDefaultUserLibraryPath());
         mApplyButton = createDialogButton(I18n.Text("Apply & Quit"));
         mApplyButton.setEnabled(false);
         mCancelButton = createDialogButton(I18n.Text("Cancel"));
@@ -147,7 +146,7 @@ public class LibraryLocationsPanel extends JPanel implements DocumentListener {
         setColors(mMasterLibraryPath, masterPath != null);
         setColors(mUserLibraryPath, userPath != null);
         Preferences prefs = Preferences.getInstance();
-        mApplyButton.setEnabled(masterPath != null && userPath != null && (!masterPath.equals(prefs.getMasterLibraryPath()) || !userPath.equals(prefs.getUserLibraryPath())));
+        mApplyButton.setEnabled(masterPath != null && userPath != null && (!masterPath.equals(Library.MASTER.getPathNoCreate()) || !userPath.equals(Library.USER.getPathNoCreate())));
     }
 
     private Path getPath(JTextField field) {

@@ -98,7 +98,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         super(new BorderLayout());
         mNotifier = new Notifier();
         TreeRoot root = new TreeRoot(mNotifier);
-        fillTree(Library.collectFiles(), root);
+        fillTree(LibraryUpdater.collectFiles(), root);
         mTreePanel = new TreePanel(root);
         mTreePanel.setShowHeader(false);
         mTreePanel.addColumn(new TextTreeColumn(I18n.Text("Library Explorer"), this, this));
@@ -183,7 +183,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         Set<String> open = collectOpenRowKeys();
         mNotifier.startBatch();
         root.removeRow(new ArrayList<>(root.getChildren()));
-        fillTree(Library.collectFiles(), root);
+        fillTree(LibraryUpdater.collectFiles(), root);
         mNotifier.endBatch();
         mTreePanel.setOpen(true, collectRowsToOpen(root, open, null));
         mTreePanel.select(collectRows(root, selected, null));

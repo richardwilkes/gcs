@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Version;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -57,11 +56,8 @@ public class AboutPanel extends JPanel {
         int y     = draw(gc, I18n.Text("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games.\nThe iText Library is licensed under LGPL 2.1 by Bruno Lowagie and Paulo Soares.\nThe Trove Library is licensed under LGPL 2.1 by Eric D. Friedman and Rob Eden.\nThe PDFBox and FontBox libraries are licensed under the Apache License v2 by the Apache Software Foundation."), getHeight() - HMARGIN, right, true, true);
         int y2    = draw(gc, GCS.COPYRIGHT_BANNER, y, right, false, true);
         draw(gc, String.format(I18n.Text("%s %s\n%s Architecture\nJava %s"), System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false);  //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        if (GCS.VERSION != 0) {
-            y2 = draw(gc, Version.toBuildTimestamp(GCS.VERSION), y2, right, false, true);
-        }
         gc.setFont(baseFont.deriveFont(Font.BOLD, 12.0f));
-        draw(gc, GCS.VERSION != 0 ? String.format(I18n.Text("Version %s"), Version.toString(GCS.VERSION, false)) : I18n.Text("Development Version"), y2, right, false, true);
+        draw(gc, I18n.Text("Version ") + GCS.VERSION, y2, right, false, true);
         gc.setRenderingHints(saved);
     }
 

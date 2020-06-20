@@ -12,7 +12,6 @@
 package com.trollworks.gcs;
 
 import com.trollworks.gcs.character.CmdLineExport;
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.edit.PreferencesCommand;
 import com.trollworks.gcs.menu.file.OpenCommand;
 import com.trollworks.gcs.menu.file.OpenDataFileCommand;
@@ -50,8 +49,9 @@ import javax.swing.UIManager;
 
 /** The main entry point for the character sheet. */
 public class GCS {
-    public static final String  WEB_SITE = "https://gurpscharactersheet.com";
-    public static final long    VERSION;
+    public static final String  WEB_SITE        = "https://gurpscharactersheet.com";
+    public static final Version VERSION         = new Version();
+    public static final Version LIBRARY_VERSION = new Version();
     public static final String  COPYRIGHT;
     public static final String  COPYRIGHT_FOOTER;
     public static final String  COPYRIGHT_BANNER;
@@ -69,11 +69,10 @@ public class GCS {
         }
 
         // Determine the version
-        long   version = 0;
-        String years   = null;
+        String years = null;
         try (InputStream in = GCS.class.getModule().getResourceAsStream("/META-INF/MANIFEST.MF")) {
             Attributes attributes = new Manifest(in).getMainAttributes();
-            version = Version.extract(attributes.getValue("bundle-version"), 0);
+            VERSION.extract(attributes.getValue("bundle-version"));
             years = attributes.getValue("bundle-copyright-years");
         } catch (Exception exception) {
             // Ignore... we'll fill in default values below
@@ -81,7 +80,6 @@ public class GCS {
         if (years == null || years.isBlank()) {
             years = "1998-" + DateTimeFormatter.ofPattern("yyyy").format(Instant.now().atZone(ZoneOffset.UTC));
         }
-        VERSION = version;
 
         // Setup localizations -- must be called AFTER the version is determined
         I18n.initialize();
@@ -92,10 +90,10 @@ public class GCS {
         COPYRIGHT_BANNER = String.format("%s. All rights reserved.", COPYRIGHT);
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");
-        buffer.append(Version.toString(VERSION, false));
-        if (VERSION != 0) {
-            buffer.append('\n');
-            buffer.append(Version.toBuildTimestamp(VERSION));
+        if (VERSION.isZero()) {
+            buffer.append(I18n.Text("(development)"));
+        } else {
+            buffer.append(VERSION);
         }
         buffer.append('\n');
         if (Platform.isWindows()) {
@@ -114,17 +112,16 @@ public class GCS {
      * @param args Arguments to the program.
      */
     public static void main(String[] args) {
-        boolean      showVersion     = false;
-        boolean      showFullVersion = false;
-        boolean      generatePDF     = false;
-        boolean      generatePNG     = false;
-        boolean      generateText    = false;
-        Path         template        = null;
-        String       margins         = null;
-        String       paper           = null;
-        List<Path>   files           = new ArrayList<>();
-        List<String> msgs            = new ArrayList<>();
-        int          length          = args.length;
+        boolean      showVersion  = false;
+        boolean      generatePDF  = false;
+        boolean      generatePNG  = false;
+        boolean      generateText = false;
+        Path         template     = null;
+        String       margins      = null;
+        String       paper        = null;
+        List<Path>   files        = new ArrayList<>();
+        List<String> msgs         = new ArrayList<>();
+        int          length       = args.length;
         for (int i = 0; i < length; i++) {
             String arg = args[i];
             if (arg.startsWith("-")) {
@@ -206,10 +203,8 @@ public class GCS {
                     }
                     break;
                 case "-v":
-                    showVersion = true;
-                    break;
                 case "--version":
-                    showFullVersion = true;
+                    showVersion = true;
                     break;
                 default:
                     msgs.add(I18n.Text("unknown option: ") + parts[0]);
@@ -220,8 +215,8 @@ public class GCS {
             }
         }
 
-        if (showVersion || showFullVersion) {
-            System.out.println(VERSION != 0 ? Version.toString(VERSION, showFullVersion) : I18n.Text("Development"));
+        if (showVersion) {
+            System.out.println(VERSION);
             System.exit(0);
         }
 
@@ -239,7 +234,6 @@ public class GCS {
             }
             System.setProperty("java.awt.headless", Boolean.TRUE.toString());
             initialize();
-            Library.downloadIfNotPresent();
             try {
                 // This is run on the event queue since much of the sheet logic assumes a UI
                 // environment and would otherwise cause concurrent modification exceptions, as the
@@ -297,7 +291,6 @@ public class GCS {
             if (Platform.isMacintosh() && System.getProperty("java.home").toLowerCase().contains("/apptranslocation/")) {
                 WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.Text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + "xattr -d com.apple.quarantine \"/Applications/GCS.app\"");
             }
-            Library.downloadIfNotPresent();
             setNotificationAllowed(true);
         });
     }
@@ -316,19 +309,7 @@ public class GCS {
     }
 
     public static void showHelp() {
-        if (VERSION == 0) {
-            System.out.println("GCS " + I18n.Text("Development Version"));
-        } else {
-            System.out.println("GCS " + Version.toString(VERSION, false));
-            System.out.println(Version.toBuildTimestamp(VERSION));
-        }
-        String banner = COPYRIGHT_BANNER;
-        if (Platform.isWindows()) {
-            // The windows command prompt doesn't understand the copyright symbol, so translate it
-            // to something it can deal with.
-            banner = banner.replaceAll("©", "(c)");
-        }
-        System.out.println(banner);
+        System.out.println(APP_BANNER);
         System.out.println();
         System.out.println(I18n.Text("Available options:"));
         System.out.println();
@@ -345,10 +326,8 @@ public class GCS {
         options.add(I18n.Text("Create PNG versions of sheets specified on the command line."));
         options.add(I18n.Text("--text <file>"));
         options.add(I18n.Text("Create text versions of sheets specified on the command line using the specified template file."));
-        options.add(I18n.Text("-v"));
+        options.add(I18n.Text("-v, --version"));
         options.add(I18n.Text("Displays the program version."));
-        options.add(I18n.Text("--version"));
-        options.add(I18n.Text("Displays the full program version."));
         int longest = 0;
         int length  = options.size();
         for (int i = 0; i < length; i += 2) {

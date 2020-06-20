@@ -34,7 +34,7 @@ public class Log {
         String property = Debug.getPropertyOrEnvironmentSetting("GCS_LOG");
         if (property != null && !property.isBlank()) {
             path = Paths.get(property);
-        } else if (GCS.VERSION != 0) { // When running a dev version, assume the console is always appropriate, since you're likely running from an IDE
+        } else if (!GCS.VERSION.isZero()) { // When running a dev version, assume the console is always appropriate, since you're likely running from an IDE
             String home = System.getProperty("user.home", ".");
             switch (Platform.getPlatform()) {
             case MAC:
