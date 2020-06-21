@@ -15,7 +15,7 @@ import com.trollworks.gcs.menu.edit.EditMenuProvider;
 import com.trollworks.gcs.menu.file.FileMenuProvider;
 import com.trollworks.gcs.menu.help.HelpMenuProvider;
 import com.trollworks.gcs.menu.item.ItemMenuProvider;
-import com.trollworks.gcs.menu.library.LibraryMenuProvider;
+import com.trollworks.gcs.menu.library.LibraryMenu;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class StdMenuBar extends JMenuBar {
         add(FileMenuProvider.createMenu());
         add(EditMenuProvider.createMenu());
         add(ItemMenuProvider.createMenu());
-        add(LibraryMenuProvider.createMenu());
+        add(new LibraryMenu());
         add(HelpMenuProvider.createMenu());
     }
 }
