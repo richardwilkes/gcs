@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,7 +55,7 @@ public class Bundler {
     private static final Path   I18N_DIR          = EXTRA_DIR.resolve("i18n");
     private static final Path   MANIFEST          = BUILD_DIR.resolve("com.trollworks.gcs.manifest");
     private static final Path   JRE               = BUILD_DIR.resolve("jre");
-    private static final String YEARS             = "1998-" + DateTimeFormatter.ofPattern("yyyy").format(Instant.now());
+    private static final String YEARS             = "1998-" + DateTimeFormatter.ofPattern("yyyy").format(Instant.now().atZone(ZoneId.systemDefault()));
     private static final char[] HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     private static       String OS;
     private static       Path   PKG;
