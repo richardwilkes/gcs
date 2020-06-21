@@ -73,7 +73,7 @@ public class LibraryUpdateCommand extends Command {
     }
 
     public static void askUserToUpdate(Library library, Release release) {
-        JTextPane   markdown = new JTextPane(new MarkdownDocument(I18n.Text("Existing content for this library will be removed and replaced. Content in other libraries will not be modified.\n\n" + release.getNotes())));
+        JTextPane   markdown = new JTextPane(new MarkdownDocument(I18n.Text("NOTE: Existing content for this library will be removed and replaced. Content in other libraries will not be modified.\n\n" + release.getNotes())));
         Dimension   size     = markdown.getPreferredSize();
         JScrollPane scroller = new JScrollPane(markdown);
         int         maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);

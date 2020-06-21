@@ -171,7 +171,7 @@ public class UpdateChecker implements Runnable {
             for (Library lib : Library.LIBRARIES) {
                 if (lib != Library.USER) {
                     Release release = lib.getAvailableUpgrade();
-                    if (release != null) {
+                    if (release != null && !release.unableToAccessRepo() && release.hasUpdate() && !release.getVersion().equals(lib.getVersionOnDisk())) {
                         LibraryUpdateCommand.askUserToUpdate(lib, release);
                     }
                 }
