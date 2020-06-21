@@ -175,7 +175,10 @@ public class Library implements Comparable<Library> {
             }
         }
         mAvailableUpgrade = new Release(availableUpgrades);
-        mLastSeen = new Version(mAvailableUpgrade.getVersion());
+        Version version = mAvailableUpgrade.getVersion();
+        if (!version.isZero()) {
+            mLastSeen = new Version(mAvailableUpgrade.getVersion());
+        }
     }
 
     public Version getVersionOnDisk() {
