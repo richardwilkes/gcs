@@ -13,41 +13,28 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.UpdateChecker;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.JScrollPane;
 
-public class LibraryLocationsPanel extends JPanel implements DocumentListener {
-    private JTextField mMasterLibraryPath;
-    private JTextField mUserLibraryPath;
-    private JButton    mApplyButton;
-    private JButton    mCancelButton;
-    private Color      mNormalForeground;
-    private Color      mNormalBackground;
+public class LibraryLocationsPanel extends JPanel {
+    private List<LibraryFields> mFields;
+    private JButton             mApplyButton;
+    private JButton             mCancelButton;
 
     public static void showDialog() {
         // Close all documents
@@ -68,11 +55,27 @@ public class LibraryLocationsPanel extends JPanel implements DocumentListener {
         LibraryWatcher.INSTANCE.watchDirs(new HashSet<>());
 
         // Ask the user to make changes
-        LibraryLocationsPanel panel  = new LibraryLocationsPanel();
-        int                   result = WindowUtils.showOptionDialog(Workspace.get(), panel, ChangeLibraryLocationsCommand.INSTANCE.getTitle(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new JButton[]{panel.mApplyButton, panel.mCancelButton}, panel.mCancelButton);
+        LibraryLocationsPanel panel    = new LibraryLocationsPanel();
+        JScrollPane           scroller = new JScrollPane(panel);
+        int                   result   = WindowUtils.showOptionDialog(Workspace.get(), scroller, ChangeLibraryLocationsCommand.INSTANCE.getTitle(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new JButton[]{panel.mApplyButton, panel.mCancelButton}, panel.mCancelButton);
         if (result == JOptionPane.OK_OPTION) {
-            Library.MASTER.setPath(Paths.get(panel.mMasterLibraryPath.getText()));
-            Library.USER.setPath(Paths.get(panel.mUserLibraryPath.getText()));
+            Library.LIBRARIES.clear();
+            for (LibraryFields fields : panel.mFields) {
+                switch (fields.getLibraryType()) {
+                case MASTER:
+                    Library.MASTER.setPath(fields.getPath());
+                    Library.LIBRARIES.add(Library.MASTER);
+                    break;
+                case USER:
+                    Library.USER.setPath(fields.getPath());
+                    Library.LIBRARIES.add(Library.USER);
+                    break;
+                default:
+                    Library.LIBRARIES.add(fields.createLibrary());
+                    break;
+                }
+            }
+            Collections.sort(Library.LIBRARIES);
         }
 
         // Refresh the library view
@@ -88,55 +91,44 @@ public class LibraryLocationsPanel extends JPanel implements DocumentListener {
     }
 
     private LibraryLocationsPanel() {
-        super(new PrecisionLayout().setColumns(4));
-        String    masterLibraryTitle = Library.MASTER.getTitle();
-        JTextArea warning            = new JTextArea(String.format(I18n.Text("Warning: The directory chosen for the %1$s Path will have its contents deleted and replaced when GCS starts up again if it does not already contain the %1$s data."), masterLibraryTitle));
-        warning.setEditable(false);
-        warning.setWrapStyleWord(true);
-        warning.setLineWrap(true);
-        warning.setFont(UIManager.getFont("Label.font"));
-        warning.setOpaque(false);
-        add(warning, new PrecisionLayoutData().setHorizontalSpan(4).setFillHorizontalAlignment().setWidthHint(400).setBottomMargin(10));
-        mMasterLibraryPath = createField(String.format("%s Path:", masterLibraryTitle), Library.MASTER.getPath(), Library.getDefaultMasterLibraryPath());
-        mUserLibraryPath = createField(String.format("%s Path:", Library.USER.getTitle()), Library.USER.getPath(), Library.getDefaultUserLibraryPath());
+        super(new PrecisionLayout().setColumns(8).setVerticalSpacing(1));
+        mFields = new ArrayList<>();
+        for (Library library : Library.LIBRARIES) {
+            LibraryFields.LibraryType libType;
+            if (library == Library.MASTER) {
+                libType = LibraryFields.LibraryType.MASTER;
+            } else if (library == Library.USER) {
+                libType = LibraryFields.LibraryType.USER;
+            } else {
+                libType = LibraryFields.LibraryType.EXTRA;
+            }
+            mFields.add(new LibraryFields(this, library.getTitle(), library.getGitHubAccountName(), library.getRepoName(), library.getPathNoCreate().toString(), libType));
+        }
+        createAddButton();
         mApplyButton = createDialogButton(I18n.Text("Apply"));
-        mApplyButton.setEnabled(false);
         mCancelButton = createDialogButton(I18n.Text("Cancel"));
-        mNormalForeground = mMasterLibraryPath.getForeground();
-        mNormalBackground = mMasterLibraryPath.getBackground();
+        mFields.get(0).contentsChanged();
     }
 
-    private JTextField createField(String title, Path value, Path def) {
-        add(new JLabel(title, SwingConstants.RIGHT), new PrecisionLayoutData().setEndHorizontalAlignment());
-        JTextField field    = new JTextField(value.toString());
-        Dimension  prefSize = field.getPreferredSize();
-        if (prefSize.width < 400) {
-            prefSize.width = 400;
-            field.setPreferredSize(prefSize);
-        }
-        field.getDocument().addDocumentListener(this);
-        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
-        JButton button = new JButton(I18n.Text("Locate"));
+    public List<LibraryFields> getFields() {
+        return mFields;
+    }
+
+    private void createAddButton() {
+        JButton button = new JButton(I18n.Text("Add"));
         button.addActionListener(e -> {
-            Path         current = Paths.get(field.getText()).toAbsolutePath();
-            JFileChooser dialog  = new JFileChooser(current.getParent().toString());
-            dialog.setDialogTitle(title);
-            dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (dialog.showDialog(this, I18n.Text("Select")) == JFileChooser.APPROVE_OPTION) {
-                field.setText(dialog.getSelectedFile().getAbsolutePath());
-                field.requestFocusInWindow();
-                field.selectAll();
-            }
+            remove(button);
+            mFields.add(new LibraryFields(this, "", "", "", "", LibraryFields.LibraryType.EXTRA));
+            add(button);
+            mFields.get(0).contentsChanged();
+            revalidate();
+            repaint();
+            EventQueue.invokeLater(() -> {
+                scrollRectToVisible(button.getBounds());
+                mFields.get(mFields.size() - 1).getTitleField().requestFocus();
+            });
         });
         add(button);
-        button = new JButton(I18n.Text("Use Default"));
-        button.addActionListener(e -> {
-            field.setText(def.toString());
-            field.requestFocusInWindow();
-            field.selectAll();
-        });
-        add(button);
-        return field;
     }
 
     private JButton createDialogButton(String title) {
@@ -150,55 +142,7 @@ public class LibraryLocationsPanel extends JPanel implements DocumentListener {
         return button;
     }
 
-    private void contentsChanged() {
-        Path masterPath = getPath(mMasterLibraryPath);
-        Path userPath   = getPath(mUserLibraryPath);
-        if (masterPath != null && userPath != null) {
-            if (masterPath.startsWith(userPath) || userPath.startsWith(masterPath)) {
-                masterPath = null;
-                userPath = null;
-            }
-        }
-        setColors(mMasterLibraryPath, masterPath != null);
-        setColors(mUserLibraryPath, userPath != null);
-        Preferences prefs = Preferences.getInstance();
-        mApplyButton.setEnabled(masterPath != null && userPath != null && (!masterPath.equals(Library.MASTER.getPathNoCreate()) || !userPath.equals(Library.USER.getPathNoCreate())));
-    }
-
-    private Path getPath(JTextField field) {
-        String text = field.getText();
-        if (text.isBlank()) {
-            return null;
-        }
-        Path path = Paths.get(text).toAbsolutePath().normalize();
-        if (!Files.isDirectory(path)) {
-            return null;
-        }
-        return path;
-    }
-
-    private void setColors(JTextField field, boolean valid) {
-        if (valid) {
-            field.setForeground(mNormalForeground);
-            field.setBackground(mNormalBackground);
-        } else {
-            field.setForeground(Color.WHITE);
-            field.setBackground(Color.RED);
-        }
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent event) {
-        contentsChanged();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent event) {
-        contentsChanged();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent event) {
-        contentsChanged();
+    public void setApplyState(boolean enabled) {
+        mApplyButton.setEnabled(enabled);
     }
 }

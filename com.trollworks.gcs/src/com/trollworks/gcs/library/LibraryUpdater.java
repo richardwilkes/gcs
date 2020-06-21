@@ -12,7 +12,6 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.datafile.DataFileDockable;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -53,15 +52,13 @@ public class LibraryUpdater implements Runnable {
     private              boolean         mUpdateComplete;
 
     public static List<Object> collectFiles() {
-        String masterText = Library.MASTER.getTitle();
-        String userText   = Library.USER.getTitle();
         FutureTask<List<Object>> task = new FutureTask<>(() -> {
             Set<Path>    dirs = new HashSet<>();
             List<Object> list = new ArrayList<>();
             list.add("GCS");
-            Preferences prefs = Preferences.getInstance();
-            list.add(LibraryCollector.list(masterText, Library.MASTER.getPath(), dirs));
-            list.add(LibraryCollector.list(userText, Library.USER.getPath(), dirs));
+            for (Library library : Library.LIBRARIES) {
+                list.add(LibraryCollector.list(library.getTitle(), library.getPath(), dirs));
+            }
             LibraryWatcher.INSTANCE.watchDirs(dirs);
             return list;
         });
@@ -73,9 +70,9 @@ public class LibraryUpdater implements Runnable {
             List<Object> list   = new ArrayList<>();
             List<Object> master = new ArrayList<>();
             List<Object> user   = new ArrayList<>();
-            master.add(masterText);
+            master.add(Library.MASTER.getTitle());
             list.add(master);
-            user.add(userText);
+            user.add(Library.USER.getTitle());
             list.add(user);
             return list;
         }
@@ -151,7 +148,6 @@ public class LibraryUpdater implements Runnable {
         } else {
             try {
                 Thread.sleep(10000);
-                Preferences prefs = Preferences.getInstance();
                 LibraryWatcher.INSTANCE.watchDirs(new HashSet<>());
                 Path    root           = mLibrary.getPath();
                 boolean shouldContinue = true;
