@@ -149,25 +149,33 @@ public class Library implements Comparable<Library> {
         return mLastSeen;
     }
 
-    public Release checkForAvailableUpgrade() {
+    public List<Release> checkForAvailableUpgrade() {
         Version nextMajorVersion = new Version(GCS.LIBRARY_VERSION);
         if (nextMajorVersion.isZero()) {
             nextMajorVersion.major = 2;
         } else {
             nextMajorVersion.major++;
         }
-        return new Release(Release.load(mGitHubAccountName, mRepoName, getVersionOnDisk(), (version, notes) -> version.compareTo(GCS.LIBRARY_VERSION) > 0 && version.compareTo(nextMajorVersion) < 0));
+        return Release.load(mGitHubAccountName, mRepoName, getVersionOnDisk(), (version, notes) -> version.compareTo(GCS.LIBRARY_VERSION) > 0 && version.compareTo(nextMajorVersion) < 0);
     }
 
     public synchronized Release getAvailableUpgrade() {
         return mAvailableUpgrade;
     }
 
-    public synchronized void setAvailableUpgrade(Release availableUpgrade) {
-        mAvailableUpgrade = availableUpgrade;
-        if (availableUpgrade != null) {
-            mLastSeen = new Version(availableUpgrade.getVersion());
+    public synchronized void setAvailableUpgrade(List<Release> availableUpgrades) {
+        if (availableUpgrades == null) {
+            mAvailableUpgrade = new Release(null);
+            return;
         }
+        int count = availableUpgrades.size();
+        if (count > 1) {
+            if (availableUpgrades.get(count - 1).getVersion().equals(getVersionOnDisk())) {
+                availableUpgrades.remove(count - 1);
+            }
+        }
+        mAvailableUpgrade = new Release(availableUpgrades);
+        mLastSeen = new Version(mAvailableUpgrade.getVersion());
     }
 
     public Version getVersionOnDisk() {

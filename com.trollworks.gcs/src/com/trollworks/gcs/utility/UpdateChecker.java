@@ -111,6 +111,14 @@ public class UpdateChecker implements Runnable {
         } else {
             Version       minimum  = new Version(4, 17, 0);
             List<Release> releases = Release.load("richardwilkes", "gcs", GCS.VERSION, (version, notes) -> version.compareTo(minimum) >= 0);
+            if (releases == null) {
+                setAppResult(I18n.Text("Unable to access the GCS repo"), null, false);
+                return;
+            }
+            int count = releases.size() - 1;
+            if (count >= 0 && releases.get(count).getVersion().equals(GCS.VERSION)) {
+                releases.remove(count);
+            }
             if (releases.isEmpty()) {
                 setAppResult(I18n.Text("GCS has no update available"), null, false);
             } else {
@@ -130,15 +138,11 @@ public class UpdateChecker implements Runnable {
     private void checkForLibraryUpdates() {
         for (Library lib : Library.LIBRARIES) {
             if (lib != Library.USER) {
-                String  title   = lib.getTitle();
-                Release release = lib.checkForAvailableUpgrade();
-                if (release.hasUpdate()) {
-                    Version available = release.getVersion();
-                    Version lastSeen = lib.getLastSeen();
-                    lib.setAvailableUpgrade(release);
-                    if (available.compareTo(lastSeen) > 0) {
-                       mMode = Mode.NOTIFY;
-                    }
+                List<Release> releases = lib.checkForAvailableUpgrade();
+                Version       lastSeen = lib.getLastSeen();
+                lib.setAvailableUpgrade(releases);
+                if (lib.getAvailableUpgrade().getVersion().compareTo(lastSeen) > 0) {
+                    mMode = Mode.NOTIFY;
                 }
             }
         }

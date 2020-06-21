@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Release;
+import com.trollworks.gcs.utility.Version;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -35,10 +36,32 @@ public class LibraryUpdateCommand extends Command {
 
     @Override
     public void adjust() {
-        Release availableUpgrade = mLibrary.getAvailableUpgrade();
-        boolean upToDate         = availableUpgrade == null || availableUpgrade.getVersion().equals(mLibrary.getVersionOnDisk());
-        setTitle(upToDate ? String.format(I18n.Text("%s is up to date"), mLibrary.getTitle()) : String.format(I18n.Text("Update %s to v%s"), mLibrary.getTitle(), availableUpgrade.getVersion().toString()));
-        setEnabled(!upToDate);
+        Release upgrade = mLibrary.getAvailableUpgrade();
+        String  title   = mLibrary.getTitle();
+        if (upgrade == null) {
+            setTitle(String.format(I18n.Text("Checking for updates to %s"), title));
+            setEnabled(false);
+            return;
+        }
+        if (upgrade.unableToAccessRepo()) {
+            setTitle(String.format(I18n.Text("Unable to access the %s repo"), title));
+            setEnabled(false);
+            return;
+        }
+        if (!upgrade.hasUpdate()) {
+            setTitle(String.format(I18n.Text("No releases available for %s"), title));
+            setEnabled(false);
+            return;
+        }
+        Version versionOnDisk    = mLibrary.getVersionOnDisk();
+        Version availableVersion = upgrade.getVersion();
+        if (availableVersion.equals(versionOnDisk)) {
+            setTitle(String.format(I18n.Text("%s is up to date (re-download v%s)"), title, versionOnDisk.toString()));
+            setEnabled(true);
+            return;
+        }
+        setTitle(String.format(I18n.Text("Update %s to v%s"), title, availableVersion.toString()));
+        setEnabled(true);
     }
 
     @Override

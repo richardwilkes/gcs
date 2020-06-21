@@ -24,6 +24,7 @@ public class Release implements Comparable<Release> {
     private Version mVersion;
     private String  mNotes;
     private String  mZipFileURL;
+    private boolean mUnableToAccessRepo;
 
     public interface ReleaseFilter {
         boolean isReleaseUsable(Version version, String notes);
@@ -39,7 +40,7 @@ public class Release implements Comparable<Release> {
                 String  tag = m.getString("tag_name", false);
                 if (tag.startsWith("v")) {
                     Version version = new Version(tag.substring(1));
-                    if (!version.isZero() && version.compareTo(currentVersion) > 0) {
+                    if (!version.isZero() && version.compareTo(currentVersion) >= 0) {
                         String notes = m.getString("body", false);
                         if (filter == null || filter.isReleaseUsable(version, notes)) {
                             versions.add(new Release(version, notes, m.getString("zipball_url", false)));
@@ -49,6 +50,7 @@ public class Release implements Comparable<Release> {
             }
         } catch (Exception exception) {
             Log.error(exception);
+            return null;
         }
         Collections.sort(versions);
         return versions;
@@ -65,6 +67,11 @@ public class Release implements Comparable<Release> {
     }
 
     public Release(List<Release> releases) {
+        if (releases == null) {
+            mVersion = new Version();
+            mUnableToAccessRepo = true;
+            return;
+        }
         switch (releases.size()) {
         case 0:
             mVersion = new Version();
@@ -108,6 +115,10 @@ public class Release implements Comparable<Release> {
 
     public String getZipFileURL() {
         return mZipFileURL;
+    }
+
+    public boolean unableToAccessRepo() {
+        return mUnableToAccessRepo;
     }
 
     @Override
