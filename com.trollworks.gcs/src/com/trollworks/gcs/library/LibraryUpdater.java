@@ -147,7 +147,6 @@ public class LibraryUpdater implements Runnable {
             mResult = "No releases available";
         } else {
             try {
-                Thread.sleep(10000);
                 LibraryWatcher.INSTANCE.watchDirs(new HashSet<>());
                 Path    root           = mLibrary.getPath();
                 boolean shouldContinue = true;
