@@ -171,7 +171,6 @@ public class LibraryUpdater implements Runnable {
                 if (shouldContinue) {
                     try {
                         mLibrary.download(mRelease);
-                        mLibrary.setAvailableUpgrade(null);
                     } catch (IOException exception) {
                         Log.error(exception);
                         mResult = exception.getMessage();

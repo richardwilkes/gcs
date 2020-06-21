@@ -138,7 +138,11 @@ public class Library implements Comparable<Library> {
     }
 
     public void setPath(Path path) {
-        mPath = path.normalize().toAbsolutePath();
+        path = path.normalize().toAbsolutePath();
+        if (!mPath.equals(path)) {
+            mPath = path;
+            mLastSeen = getVersionOnDisk();
+        }
     }
 
     public Version getLastSeen() {

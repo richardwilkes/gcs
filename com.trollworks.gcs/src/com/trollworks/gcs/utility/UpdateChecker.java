@@ -134,8 +134,9 @@ public class UpdateChecker implements Runnable {
                 Release release = lib.checkForAvailableUpgrade();
                 if (release.hasUpdate()) {
                     Version available = release.getVersion();
+                    Version lastSeen = lib.getLastSeen();
                     lib.setAvailableUpgrade(release);
-                    if (available.compareTo(lib.getLastSeen()) > 0) {
+                    if (available.compareTo(lastSeen) > 0) {
                        mMode = Mode.NOTIFY;
                     }
                 }

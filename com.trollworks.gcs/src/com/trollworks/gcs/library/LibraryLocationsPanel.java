@@ -12,7 +12,6 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -22,12 +21,14 @@ import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.UpdateChecker;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -56,18 +57,33 @@ public class LibraryLocationsPanel extends JPanel implements DocumentListener {
                 CloseHandler handler = (CloseHandler) dockable;
                 if (handler.mayAttemptClose()) {
                     if (!handler.attemptClose()) {
-                        JOptionPane.showMessageDialog(null, I18n.Text("No documents may be open when setting the library locations."), I18n.Text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, I18n.Text("No documents may be open when setting library locations."), I18n.Text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
                         return;
                     }
                 }
             }
         }
 
-        LibraryLocationsPanel panel = new LibraryLocationsPanel();
-        if (WindowUtils.showOptionDialog(Workspace.get(), panel, ChangeLibraryLocationsCommand.INSTANCE.getTitle(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new JButton[]{panel.mApplyButton, panel.mCancelButton}, panel.mCancelButton) == JOptionPane.OK_OPTION) {
+        // Remove all library watchers
+        LibraryWatcher.INSTANCE.watchDirs(new HashSet<>());
+
+        // Ask the user to make changes
+        LibraryLocationsPanel panel  = new LibraryLocationsPanel();
+        int                   result = WindowUtils.showOptionDialog(Workspace.get(), panel, ChangeLibraryLocationsCommand.INSTANCE.getTitle(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new JButton[]{panel.mApplyButton, panel.mCancelButton}, panel.mCancelButton);
+        if (result == JOptionPane.OK_OPTION) {
             Library.MASTER.setPath(Paths.get(panel.mMasterLibraryPath.getText()));
             Library.USER.setPath(Paths.get(panel.mUserLibraryPath.getText()));
-            QuitCommand.INSTANCE.attemptQuit();
+        }
+
+        // Refresh the library view
+        LibraryExplorerDockable libraryDockable = LibraryExplorerDockable.get();
+        if (libraryDockable != null) {
+            libraryDockable.refresh();
+        }
+
+        // Check to see if the new library locations need updating
+        if (result == JOptionPane.OK_OPTION) {
+            UpdateChecker.check();
         }
     }
 
@@ -83,7 +99,7 @@ public class LibraryLocationsPanel extends JPanel implements DocumentListener {
         add(warning, new PrecisionLayoutData().setHorizontalSpan(4).setFillHorizontalAlignment().setWidthHint(400).setBottomMargin(10));
         mMasterLibraryPath = createField(String.format("%s Path:", masterLibraryTitle), Library.MASTER.getPath(), Library.getDefaultMasterLibraryPath());
         mUserLibraryPath = createField(String.format("%s Path:", Library.USER.getTitle()), Library.USER.getPath(), Library.getDefaultUserLibraryPath());
-        mApplyButton = createDialogButton(I18n.Text("Apply & Quit"));
+        mApplyButton = createDialogButton(I18n.Text("Apply"));
         mApplyButton.setEnabled(false);
         mCancelButton = createDialogButton(I18n.Text("Cancel"));
         mNormalForeground = mMasterLibraryPath.getForeground();

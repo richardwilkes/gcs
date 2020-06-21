@@ -36,8 +36,9 @@ public class LibraryUpdateCommand extends Command {
     @Override
     public void adjust() {
         Release availableUpgrade = mLibrary.getAvailableUpgrade();
-        setTitle(availableUpgrade == null ? String.format(I18n.Text("%s is up to date"), mLibrary.getTitle()) : String.format(I18n.Text("Update %s to v%s"), mLibrary.getTitle(), availableUpgrade.getVersion().toString()));
-        setEnabled(availableUpgrade != null);
+        boolean upToDate         = availableUpgrade == null || availableUpgrade.getVersion().equals(mLibrary.getVersionOnDisk());
+        setTitle(upToDate ? String.format(I18n.Text("%s is up to date"), mLibrary.getTitle()) : String.format(I18n.Text("Update %s to v%s"), mLibrary.getTitle(), availableUpgrade.getVersion().toString()));
+        setEnabled(!upToDate);
     }
 
     @Override
