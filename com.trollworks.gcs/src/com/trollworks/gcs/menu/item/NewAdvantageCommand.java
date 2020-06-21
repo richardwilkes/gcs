@@ -16,7 +16,6 @@ import com.trollworks.gcs.advantage.AdvantagesDockable;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.I18n;
@@ -43,10 +42,6 @@ public class NewAdvantageCommand extends Command {
 
     @Override
     public void adjust() {
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-            return;
-        }
         AdvantagesDockable adq = getTarget(AdvantagesDockable.class);
         if (adq != null) {
             setEnabled(!adq.getOutline().getModel().isLocked());

@@ -15,7 +15,6 @@ import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.advantage.AdvantagesDockable;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -33,7 +32,6 @@ public class NewAdvantagesLibraryCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override

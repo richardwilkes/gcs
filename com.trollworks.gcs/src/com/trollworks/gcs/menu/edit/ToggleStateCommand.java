@@ -18,7 +18,6 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -45,10 +44,6 @@ public class ToggleStateCommand extends Command {
 
     @Override
     public void adjust() {
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-            return;
-        }
         Component focus = getFocusOwner();
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();

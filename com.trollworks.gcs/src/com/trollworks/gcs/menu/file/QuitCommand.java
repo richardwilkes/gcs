@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.BaseWindow;
@@ -43,7 +42,6 @@ public class QuitCommand extends Command implements QuitHandler {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override

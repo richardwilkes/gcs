@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.help;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.AboutPanel;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -41,7 +40,7 @@ public class AboutCommand extends Command implements AboutHandler {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS && !UIUtilities.inModalState());
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override

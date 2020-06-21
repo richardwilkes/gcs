@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.library;
 
 import com.trollworks.gcs.library.LibraryLocationsPanel;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -27,7 +26,6 @@ public class ChangeLibraryLocationsCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override

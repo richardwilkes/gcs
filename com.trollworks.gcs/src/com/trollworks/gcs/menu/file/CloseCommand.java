@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Window;
@@ -34,12 +33,8 @@ public class CloseCommand extends Command {
 
     @Override
     public void adjust() {
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-        } else {
-            CloseHandler handler = getTarget(CloseHandler.class);
-            setEnabled(handler != null && handler.mayAttemptClose());
-        }
+        CloseHandler handler = getTarget(CloseHandler.class);
+        setEnabled(handler != null && handler.mayAttemptClose());
     }
 
     @Override

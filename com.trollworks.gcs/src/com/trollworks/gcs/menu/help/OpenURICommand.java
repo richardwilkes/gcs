@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.help;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 
 import java.awt.Desktop;
@@ -53,7 +52,7 @@ public class OpenURICommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS && mURI != null && Desktop.isDesktopSupported());
+        setEnabled(mURI != null && Desktop.isDesktopSupported());
     }
 
     @Override

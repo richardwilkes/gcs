@@ -12,7 +12,6 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.datafile.DataFileDockable;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -126,7 +125,6 @@ public class LibraryUpdater implements Runnable {
             content.add(bar);
             dialog.pack();
             dialog.setLocationRelativeTo(workspace);
-            StdMenuBar.SUPRESS_MENUS = true;
             lib.mDialog = dialog;
             QUEUE.submit(lib);
             dialog.setVisible(true);
@@ -152,6 +150,7 @@ public class LibraryUpdater implements Runnable {
             mResult = "No releases available";
         } else {
             try {
+                Thread.sleep(10000);
                 Preferences prefs = Preferences.getInstance();
                 LibraryWatcher.INSTANCE.watchDirs(new HashSet<>());
                 Path    root           = mLibrary.getPath();
@@ -224,7 +223,6 @@ public class LibraryUpdater implements Runnable {
             libraryDockable.refresh();
         }
         mDialog.dispose();
-        StdMenuBar.SUPRESS_MENUS = false;
         String title = mLibrary.getTitle();
         if (mResult == null) {
             JOptionPane.showMessageDialog(null, String.format(I18n.Text("%s update was successful."), title), I18n.Text("Success!"), JOptionPane.INFORMATION_MESSAGE);

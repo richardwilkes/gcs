@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.I18n;
 
@@ -34,7 +33,7 @@ public class ClearRecentFilesMenuCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS && !Preferences.getInstance().getRecentFiles().isEmpty());
+        setEnabled(!Preferences.getInstance().getRecentFiles().isEmpty());
     }
 
     @Override

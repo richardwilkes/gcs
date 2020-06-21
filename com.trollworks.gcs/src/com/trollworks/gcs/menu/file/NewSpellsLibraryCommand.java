@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.utility.I18n;
@@ -33,7 +32,6 @@ public class NewSpellsLibraryCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override

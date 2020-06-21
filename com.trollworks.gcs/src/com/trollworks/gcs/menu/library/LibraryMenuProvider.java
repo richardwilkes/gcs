@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.library;
 
 import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.menu.DynamicMenuEnabler;
 import com.trollworks.gcs.utility.I18n;
 
 import javax.swing.JMenu;
@@ -29,7 +28,6 @@ public class LibraryMenuProvider {
             menu.addSeparator();
         }
         menu.add(new JMenuItem(ChangeLibraryLocationsCommand.INSTANCE));
-        DynamicMenuEnabler.add(menu);
         return menu;
     }
 }

@@ -13,9 +13,9 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -61,13 +61,13 @@ public class ExportToGURPSCalculatorCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS && getTarget(CharacterSheet.class) != null);
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        CharacterSheet sheet = getTarget(CharacterSheet.class);
-        if (sheet != null) {
+        SheetDockable dockable = getTarget(SheetDockable.class);
+        if (dockable != null) {
+            CharacterSheet sheet     = dockable.getSheet();
             GURPSCharacter character = sheet.getCharacter();
             try {
                 String key = Preferences.getInstance().getGURPSCalculatorKey();

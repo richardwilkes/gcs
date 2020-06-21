@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.utility.FileType;
 
 import java.awt.EventQueue;
@@ -87,7 +86,6 @@ public class OpenDataFileCommand extends Command implements Runnable {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS);
     }
 
     @Override

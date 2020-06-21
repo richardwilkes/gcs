@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -33,10 +32,6 @@ public class UndoCommand extends Command {
 
     @Override
     public void adjust() {
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-            return;
-        }
         Undoable undoable = getTarget(Undoable.class);
         if (undoable != null) {
             UndoManager mgr = undoable.getUndoManager();

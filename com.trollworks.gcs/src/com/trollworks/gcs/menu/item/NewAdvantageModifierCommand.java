@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.AdvantageModifiersDockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
@@ -38,10 +37,6 @@ public class NewAdvantageModifierCommand extends Command {
 
     @Override
     public void adjust() {
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-            return;
-        }
         boolean                    enable   = false;
         AdvantageModifiersDockable dockable = getTarget(AdvantageModifiersDockable.class);
         if (dockable != null) {

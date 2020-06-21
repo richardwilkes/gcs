@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.preferences.PreferencesWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
@@ -36,7 +35,7 @@ public class PreferencesCommand extends Command implements PreferencesHandler {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS && !UIUtilities.inModalState());
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override

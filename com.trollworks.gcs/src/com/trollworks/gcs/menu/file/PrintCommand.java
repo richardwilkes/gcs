@@ -12,7 +12,6 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.widget.BaseWindow;
@@ -44,7 +43,7 @@ public class PrintCommand extends Command implements PrintFilesHandler {
 
     @Override
     public void adjust() {
-        setEnabled(!StdMenuBar.SUPRESS_MENUS && getTarget(PrintProxy.class) != null);
+        setEnabled(getTarget(PrintProxy.class) != null);
     }
 
     @Override

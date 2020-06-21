@@ -14,7 +14,6 @@ package com.trollworks.gcs.menu.library;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.library.LibraryUpdater;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -38,10 +37,6 @@ public class LibraryUpdateCommand extends Command {
     public void adjust() {
         Release availableUpgrade = mLibrary.getAvailableUpgrade();
         setTitle(availableUpgrade == null ? String.format(I18n.Text("%s is up to date"), mLibrary.getTitle()) : String.format(I18n.Text("Update %s to v%s"), mLibrary.getTitle(), availableUpgrade.getVersion().toString()));
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-            return;
-        }
         setEnabled(availableUpgrade != null);
     }
 

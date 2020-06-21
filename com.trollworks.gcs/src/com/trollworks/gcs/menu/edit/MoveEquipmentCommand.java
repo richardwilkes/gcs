@@ -17,7 +17,6 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateSheet;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -49,10 +48,6 @@ public class MoveEquipmentCommand extends Command {
 
     @Override
     public void adjust() {
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-            return;
-        }
         Component focus = getFocusOwner();
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();

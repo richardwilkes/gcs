@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.widget.outline.Row;
@@ -51,10 +50,6 @@ public class ApplyTemplateCommand extends Command {
 
     @Override
     public void adjust() {
-        if (StdMenuBar.SUPRESS_MENUS) {
-            setEnabled(false);
-            return;
-        }
         TemplateDockable template = mTemplate != null ? mTemplate : getTarget(TemplateDockable.class);
         if (template != null) {
             setEnabled((mSheet != null ? mSheet : SheetDockable.getLastActivated()) != null);
