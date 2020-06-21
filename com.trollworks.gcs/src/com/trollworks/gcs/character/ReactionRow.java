@@ -13,11 +13,12 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReactionRow extends Row {
+public class ReactionRow extends Row implements Comparable<ReactionRow> {
     private String        mFrom;
     private List<Integer> mAmounts;
     private List<String>  mSources;
@@ -73,5 +74,14 @@ public class ReactionRow extends Row {
     @Override
     public String getToolTip(Column column) {
         return ReactionColumn.values()[column.getID()].getToolTip(this);
+    }
+
+    @Override
+    public int compareTo(ReactionRow other) {
+        int result = NumericComparator.caselessCompareStrings(mFrom, other.mFrom);
+        if (result == 0) {
+            result = Integer.compare(getTotalAmount(), other.getTotalAmount());
+        }
+        return result;
     }
 }

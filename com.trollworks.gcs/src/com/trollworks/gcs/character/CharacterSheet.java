@@ -603,7 +603,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         resetOutline(mReactionsOutline);
     }
 
-    private List<ReactionRow> collectReactions() {
+    public List<ReactionRow> collectReactions() {
         Map<String, ReactionRow> reactionMap = new HashMap<>();
         for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
             String source = String.format(I18n.Text("from advantage %s"), advantage.getName());

@@ -188,6 +188,7 @@ public class TextTemplate {
     private static final String         KEY_MELEE_LOOP_END                    = "MELEE_LOOP_END";
     private static final String         KEY_MELEE_LOOP_START                  = "MELEE_LOOP_START";
     private static final String         KEY_MODIFIED_ON                       = "MODIFIED_ON";
+    private static final String         KEY_MODIFIER                          = "MODIFIER";
     private static final String         KEY_MODIFIER_NOTES_FOR                = "MODIFIER_NOTES_FOR_";
     private static final String         KEY_MOVE                              = "MOVE";
     private static final String         KEY_NAME                              = "NAME";
@@ -221,6 +222,8 @@ public class TextTemplate {
     private static final String         KEY_RANGED_LOOP_END                   = "RANGED_LOOP_END";
     private static final String         KEY_RANGED_LOOP_START                 = "RANGED_LOOP_START";
     private static final String         KEY_REACH                             = "REACH";
+    private static final String         KEY_REACTION_LOOP_END                 = "REACTION_LOOP_END";
+    private static final String         KEY_REACTION_LOOP_START               = "REACTION_LOOP_START";
     private static final String         KEY_RECOIL                            = "RECOIL";
     private static final String         KEY_REELING                           = "REELING";
     private static final String         KEY_REF                               = "REF";
@@ -233,6 +236,7 @@ public class TextTemplate {
     private static final String         KEY_SHIFT_SLIGHTLY                    = "SHIFT_SLIGHTLY";
     private static final String         KEY_SHOTS                             = "SHOTS";
     private static final String         KEY_SHOVE                             = "SHOVE";
+    private static final String         KEY_SITUATION                         = "SITUATION";
     private static final String         KEY_SIZE                              = "SIZE";
     private static final String         KEY_SKILL_POINTS                      = "SKILL_POINTS";
     private static final String         KEY_SKILLS_LOOP_END                   = "SKILLS_LOOP_END";
@@ -663,6 +667,8 @@ public class TextTemplate {
                 processEquipmentLoop(out, extractUpToMarker(in, KEY_OTHER_EQUIPMENT_LOOP_END), false);
             } else if (key.startsWith(KEY_NOTES_LOOP_START)) {
                 processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
+            } else if (key.startsWith(KEY_REACTION_LOOP_START)) {
+                processReactionLoop(out, extractUpToMarker(in, KEY_REACTION_LOOP_END));
             } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
                 setOnlyCategories(key);
             } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
@@ -1791,6 +1797,54 @@ public class TextTemplate {
                                 writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 break;
                             }
+                        }
+                    }
+                }
+            }
+        }
+        mStartId = 0;
+    }
+
+    private void processReactionLoop(BufferedWriter out, String contents) throws IOException {
+        int           length           = contents.length();
+        StringBuilder keyBuffer        = new StringBuilder();
+        boolean       lookForKeyMarker = true;
+        mCurrentId = mStartId;
+        List<ReactionRow> reactions = mSheet.collectReactions();
+        for (ReactionRow reaction : reactions) {
+            mCurrentId++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        switch (key) {
+                        case KEY_MODIFIER:
+                            writeEncodedText(out, Numbers.formatWithForcedSign(reaction.getTotalAmount()));
+                            break;
+                        case KEY_SITUATION:
+                            writeEncodedText(out, reaction.getFrom());
+                            break;
+                        case KEY_ID:
+                            writeEncodedText(out, Integer.toString(mCurrentId));
+                            break;
+                        default:
+                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                            break;
                         }
                     }
                 }
