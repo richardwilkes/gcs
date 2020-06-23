@@ -54,7 +54,6 @@ public class GCS {
     public static final Version LIBRARY_VERSION = new Version();
     public static final String  COPYRIGHT;
     public static final String  COPYRIGHT_FOOTER;
-    public static final String  COPYRIGHT_BANNER;
     public static final String  APP_BANNER;
     private static      boolean NOTIFICATION_ALLOWED;
 
@@ -87,7 +86,6 @@ public class GCS {
         // Setup the copyright notices and such that rely on the version and year info
         COPYRIGHT = String.format(I18n.Text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
         COPYRIGHT_FOOTER = String.format("GCS " + I18n.Text(" is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
-        COPYRIGHT_BANNER = String.format("%s. All rights reserved.", COPYRIGHT);
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");
         if (VERSION.isZero()) {
@@ -99,10 +97,11 @@ public class GCS {
         if (Platform.isWindows()) {
             // The windows command prompt doesn't understand the copyright symbol, so translate it
             // to something it can deal with.
-            buffer.append(COPYRIGHT_BANNER.replaceAll("©", "(c)"));
+            buffer.append(COPYRIGHT.replaceAll("©", "(c)"));
         } else {
-            buffer.append(COPYRIGHT_BANNER);
+            buffer.append(COPYRIGHT);
         }
+        buffer.append(". All rights reserved.");
         APP_BANNER = buffer.toString();
     }
 
