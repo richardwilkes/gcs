@@ -753,7 +753,7 @@ public class Profile {
             color = I18n.Text("Blond");
             break;
         case 5:
-            color = I18n.Text("Readhead");
+            color = I18n.Text("Redhead");
             break;
         default:
             color = I18n.Text("Brown");
