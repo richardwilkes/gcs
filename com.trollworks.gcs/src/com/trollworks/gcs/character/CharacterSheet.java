@@ -850,12 +850,15 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
+        System.out.println(type);
         if (MARK_FOR_REBUILD_NOTIFICATIONS.contains(type)) {
             markForRebuild();
         } else {
             if (type.startsWith(Advantage.PREFIX)) {
                 OutlineSyncer.add(mAdvantageOutline);
                 OutlineSyncer.add(mReactionsOutline);
+                mSyncWeapons = true;
+                markForRebuild();
             } else if (Settings.ID_USER_DESCRIPTION_DISPLAY.equals(type) || Settings.ID_MODIFIERS_DISPLAY.equals(type) || Settings.ID_NOTES_DISPLAY.equals(type)) {
                 OutlineSyncer.add(mAdvantageOutline);
                 OutlineSyncer.add(mSkillOutline);
