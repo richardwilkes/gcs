@@ -43,7 +43,7 @@ class Server extends Thread {
     public void run() {
         try {
             while (true) {
-                @SuppressWarnings("resource") Socket socket = mServerSocket.accept();
+                Socket socket = mServerSocket.accept();
                 try {
                     Client client = new Client(this, socket);
                     client.setDaemon(true);
