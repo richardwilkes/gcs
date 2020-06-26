@@ -48,6 +48,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected JTextField                 mNameField;
     protected JTextField                 mCollegeField;
     protected JTextField                 mPowerSourceField;
+    protected JTextField                 mResistField;
     protected JTextField                 mClassField;
     protected JTextField                 mCastingCostField;
     protected JTextField                 mMaintenanceField;

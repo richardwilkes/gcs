@@ -54,6 +54,7 @@ public class Spell extends ListRow implements HasSourceReference {
     private static final   String            TAG_COLLEGE              = "college";
     private static final   String            TAG_POWER_SOURCE         = "power_source";
     private static final   String            TAG_SPELL_CLASS          = "spell_class";
+    private static final   String            TAG_RESIST               = "resist";
     private static final   String            TAG_CASTING_COST         = "casting_cost";
     private static final   String            TAG_MAINTENANCE_COST     = "maintenance_cost";
     private static final   String            TAG_CASTING_TIME         = "casting_time";
@@ -73,22 +74,10 @@ public class Spell extends ListRow implements HasSourceReference {
     public static final    String            ID_COLLEGE               = PREFIX + "College";
     /** The field ID for power source changes. */
     public static final    String            ID_POWER_SOURCE          = PREFIX + "PowerSource";
-    /** The field ID for spell class changes. */
-    public static final    String            ID_SPELL_CLASS           = PREFIX + "Class";
-    /** The field ID for casting cost changes */
-    public static final    String            ID_CASTING_COST          = PREFIX + "CastingCost";
-    /** The field ID for maintainance cost changes */
-    public static final    String            ID_MAINTENANCE_COST      = PREFIX + "MaintenanceCost";
-    /** The field ID for casting time changes */
-    public static final    String            ID_CASTING_TIME          = PREFIX + "CastingTime";
-    /** The field ID for duration changes */
-    public static final    String            ID_DURATION              = PREFIX + "Duration";
     /** The field ID for point changes. */
     public static final    String            ID_POINTS                = PREFIX + "Points";
     /** The field ID for level changes. */
     public static final    String            ID_LEVEL                 = PREFIX + "Level";
-    /** The field ID for page reference changes. */
-    public static final    String            ID_REFERENCE             = PREFIX + "Reference";
     /** The field ID for difficulty changes. */
     public static final    String            ID_DIFFICULTY            = PREFIX + "Difficulty";
     /** The field ID for when the categories change. */
@@ -102,6 +91,7 @@ public class Spell extends ListRow implements HasSourceReference {
     private                String            mCollege;
     private                String            mPowerSource;
     private                String            mSpellClass;
+    private                String            mResist;
     private                String            mCastingCost;
     private                String            mMaintenance;
     private                String            mCastingTime;
@@ -154,6 +144,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mCollege = spell.mCollege;
         mPowerSource = spell.mPowerSource;
         mSpellClass = spell.mSpellClass;
+        mResist = spell.mResist;
         mCastingCost = spell.mCastingCost;
         mMaintenance = spell.mMaintenance;
         mCastingTime = spell.mCastingTime;
@@ -209,7 +200,7 @@ public class Spell extends ListRow implements HasSourceReference {
             Spell row = (Spell) obj;
             if (mDifficulty == row.mDifficulty && mPoints == row.mPoints && mLevel.isSameLevelAs(row.mLevel) && mAttribute == row.mAttribute) {
                 if (Objects.equals(mTechLevel, row.mTechLevel)) {
-                    if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mPowerSource.equals(row.mPowerSource) && mSpellClass.equals(row.mSpellClass) && mReference.equals(row.mReference)) {
+                    if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mPowerSource.equals(row.mPowerSource) && mSpellClass.equals(row.mSpellClass) && mResist.equals(row.mResist) && mReference.equals(row.mReference)) {
                         if (mCastingCost.equals(row.mCastingCost) && mMaintenance.equals(row.mMaintenance) && mCastingTime.equals(row.mCastingTime) && mDuration.equals(row.mDuration)) {
                             return mWeapons.equals(row.mWeapons);
                         }
@@ -255,6 +246,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mCollege = "";
         mPowerSource = isContainer ? "" : getDefaultPowerSource();
         mSpellClass = isContainer ? "" : getDefaultSpellClass();
+        mResist = "";
         mCastingCost = isContainer ? "" : getDefaultCastingCost();
         mMaintenance = "";
         mCastingTime = isContainer ? "" : getDefaultCastingTime();
@@ -305,6 +297,8 @@ public class Spell extends ListRow implements HasSourceReference {
                 mPowerSource = reader.readText().replace("\n", " ");
             } else if (TAG_SPELL_CLASS.equals(name)) {
                 mSpellClass = reader.readText().replace("\n", " ");
+            } else if (TAG_RESIST.equals(name)) {
+                mResist = reader.readText().replace("\n", " ");
             } else if (TAG_CASTING_COST.equals(name)) {
                 mCastingCost = reader.readText().replace("\n", " ");
             } else if (TAG_MAINTENANCE_COST.equals(name)) {
@@ -354,6 +348,7 @@ public class Spell extends ListRow implements HasSourceReference {
             out.simpleTagNotEmpty(TAG_COLLEGE, mCollege);
             out.simpleTagNotEmpty(TAG_POWER_SOURCE, mPowerSource);
             out.simpleTagNotEmpty(TAG_SPELL_CLASS, mSpellClass);
+            out.simpleTagNotEmpty(TAG_RESIST, mResist);
             out.simpleTagNotEmpty(TAG_CASTING_COST, mCastingCost);
             out.simpleTagNotEmpty(TAG_MAINTENANCE_COST, mMaintenance);
             out.simpleTagNotEmpty(TAG_CASTING_TIME, mCastingTime);
@@ -550,6 +545,23 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setSpellClass(String spellClass) {
         if (!mSpellClass.equals(spellClass)) {
             mSpellClass = spellClass;
+            return true;
+        }
+        return false;
+    }
+
+    /** @return The resistance. */
+    public String getResist() {
+        return mResist;
+    }
+
+    /**
+     * @param resist The resistance to set.
+     * @return Whether it was modified.
+     */
+    public boolean setResist(String resist) {
+        if (!mResist.equals(resist)) {
+            mResist = resist;
             return true;
         }
         return false;

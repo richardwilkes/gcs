@@ -71,6 +71,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             mCastingCostField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
             mMaintenanceField = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), spell.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
             mCastingTimeField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), spell.getCastingTime(), I18n.Text("The casting time of the spell"));
+            mResistField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Resist"), spell.getResist(), I18n.Text("The resistance roll, if any"));
             mDurationField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spell.getDuration(), I18n.Text("The duration of the spell once its cast"));
             fields.add(wrapper2);
 
@@ -173,6 +174,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             modified |= mRow.setCastingCost(mCastingCostField.getText());
             modified |= mRow.setMaintenance(mMaintenanceField.getText());
             modified |= mRow.setCastingTime(mCastingTimeField.getText());
+            modified |= mRow.setResist(mResistField.getText());
             modified |= mRow.setDuration(mDurationField.getText());
             modified |= mRow.setDifficulty(getAttribute(), getDifficulty());
             if (mRow.getCharacter() != null || mRow.getTemplate() != null) {

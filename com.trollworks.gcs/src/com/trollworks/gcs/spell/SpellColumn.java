@@ -65,6 +65,31 @@ public enum SpellColumn {
             return builder.toString();
         }
     },
+    /** The resistance. */
+    RESIST {
+        @Override
+        public String toString() {
+            return I18n.Text("Resist");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The resistance");
+        }
+
+        @Override
+        public Object getData(Spell spell) {
+            return getDataAsText(spell);
+        }
+
+        @Override
+        public String getDataAsText(Spell spell) {
+            if (!spell.canHaveChildren()) {
+                return spell.getResist();
+            }
+            return "";
+        }
+    },
     /** The spell class. */
     CLASS {
         @Override
