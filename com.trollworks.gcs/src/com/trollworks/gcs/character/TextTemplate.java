@@ -228,6 +228,7 @@ public class TextTemplate {
     private static final String         KEY_REELING                           = "REELING";
     private static final String         KEY_REF                               = "REF";
     private static final String         KEY_RELIGION                          = "RELIGION";
+    private static final String         KEY_RESIST                            = "RESIST";
     private static final String         KEY_ROF                               = "ROF";
     private static final String         KEY_ROLL                              = "ROLL";
     private static final String         KEY_RSL                               = "RSL";
@@ -1172,6 +1173,9 @@ public class TextTemplate {
                                     break;
                                 case KEY_DURATION:
                                     writeEncodedText(out, spell.getDuration());
+                                    break;
+                                case KEY_RESIST:
+                                    writeEncodedText(out, spell.getResist());
                                     break;
                                 case KEY_SL:
                                     writeEncodedText(out, SpellColumn.LEVEL.getDataAsText(spell));
