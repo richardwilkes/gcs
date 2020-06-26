@@ -22,59 +22,36 @@ import javax.swing.text.StyleConstants;
 
 public class MarkdownDocument extends DefaultStyledDocument {
     public MarkdownDocument(String markdown) {
-        Font   defaultFont = Fonts.getDefaultFont();
-        String family      = defaultFont.getFamily();
-        int    size        = defaultFont.getSize();
-        Style  body        = addStyle("body", null);
-        body.addAttribute(StyleConstants.FontFamily, family);
-        body.addAttribute(StyleConstants.FontSize, Integer.valueOf(size));
-        Style h2 = addStyle("h2", null);
-        h2.addAttribute(StyleConstants.FontFamily, family);
-        h2.addAttribute(StyleConstants.FontSize, Integer.valueOf(size + size / 3));
-        h2.addAttribute(StyleConstants.Bold, Boolean.TRUE);
-        Style h3 = addStyle("h3", null);
-        h3.addAttribute(StyleConstants.FontFamily, family);
-        h3.addAttribute(StyleConstants.FontSize, Integer.valueOf(size + size / 5));
-        h3.addAttribute(StyleConstants.Bold, Boolean.TRUE);
-        Style h3Paragraph = addStyle("h3P", null);
-        int   spacing     = size * 2 / 3;
-        h3Paragraph.addAttribute(StyleConstants.SpaceAbove, Float.valueOf(spacing));
-        h3Paragraph.addAttribute(StyleConstants.SpaceBelow, Float.valueOf(spacing));
-        Style bullet = addStyle("bullet", null);
-        bullet.addAttribute(StyleConstants.FontFamily, family);
-        bullet.addAttribute(StyleConstants.FontSize, Integer.valueOf(size));
-        Style bulletParagraph = addStyle("bulletP", null);
-        int   indent          = TextDrawing.getSimpleWidth(defaultFont, "• ");
-        bulletParagraph.addAttribute(StyleConstants.FirstLineIndent, Float.valueOf(-indent));
-        bulletParagraph.addAttribute(StyleConstants.LeftIndent, Float.valueOf(indent));
+        Font             font     = Fonts.getDefaultFont();
+        Style            body     = createBodyStyle(font);
+        Style[]          headers  = createHeaderStyles(font);
+        Style            bullet   = createBulletStyle(font);
         Iterator<String> iterator = markdown.lines().iterator();
         while (iterator.hasNext()) {
-            String line = iterator.next();
+            String line  = iterator.next();
             Style  charStyle;
             Style  paraStyle;
-            if (line.startsWith("## ")) {
-                line = line.substring(3);
-                charStyle = h2;
-                paraStyle = null;
-            } else if (line.startsWith("### ")) {
-                line = line.substring(4);
-                charStyle = h3;
-                paraStyle = h3Paragraph;
-            } else if (line.startsWith("- ")) {
-                line = "•" + line.substring(1);
-                charStyle = bullet;
-                paraStyle = bulletParagraph;
-            } else {
-                charStyle = body;
-                paraStyle = null;
+            Style  style = null;
+            for (int i = 1; i < 5; i++) {
+                if (line.startsWith("#".repeat(i) + " ")) {
+                    line = line.substring(i + 1);
+                    style = headers[i - 1];
+                    break;
+                }
+            }
+            if (style == null) {
+                if (line.startsWith("- ")) {
+                    line = "•" + line.substring(1);
+                    style = bullet;
+                } else {
+                    style = body;
+                }
             }
             line += "\n";
             try {
                 int start = getLength();
-                insertString(start, line, charStyle);
-                if (paraStyle != null) {
-                    setParagraphAttributes(start, getLength() - start, paraStyle, false);
-                }
+                insertString(start, line, null);
+                setParagraphAttributes(start, getLength() - start, style, true);
             } catch (BadLocationException exception) {
                 Log.error(exception);
             }
@@ -86,5 +63,39 @@ public class MarkdownDocument extends DefaultStyledDocument {
                 Log.error(exception);
             }
         }
+    }
+
+    private Style createBodyStyle(Font font) {
+        Style style = addStyle("body", null);
+        style.addAttribute(StyleConstants.FontFamily, font.getFamily());
+        style.addAttribute(StyleConstants.FontSize, Integer.valueOf(font.getSize()));
+        return style;
+    }
+
+    private Style[] createHeaderStyles(Font font) {
+        String  family = font.getFamily();
+        int     size   = font.getSize();
+        int[]   sizes  = {size * 2, size * 3 / 2, size * 5 / 4, size, size * 7 / 8};
+        int     count  = sizes.length;
+        Style[] styles = new Style[count];
+        for (int i = 0; i < count; i++) {
+            Style h = addStyle("h" + (i + 1), null);
+            h.addAttribute(StyleConstants.FontFamily, family);
+            h.addAttribute(StyleConstants.FontSize, Integer.valueOf(sizes[i]));
+            h.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+            h.addAttribute(StyleConstants.SpaceBelow, Float.valueOf(sizes[i] / 2.0f));
+            styles[i] = h;
+        }
+        return styles;
+    }
+
+    private Style createBulletStyle(Font font) {
+        Style style = addStyle("bullet", null);
+        style.addAttribute(StyleConstants.FontFamily, font.getFamily());
+        style.addAttribute(StyleConstants.FontSize, Integer.valueOf(font.getSize()));
+        int indent = TextDrawing.getSimpleWidth(font, "• ");
+        style.addAttribute(StyleConstants.FirstLineIndent, Float.valueOf(-indent));
+        style.addAttribute(StyleConstants.LeftIndent, Float.valueOf(indent));
+        return style;
     }
 }
