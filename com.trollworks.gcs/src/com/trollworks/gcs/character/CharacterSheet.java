@@ -850,7 +850,6 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
-        System.out.println(type);
         if (MARK_FOR_REBUILD_NOTIFICATIONS.contains(type)) {
             markForRebuild();
         } else {
