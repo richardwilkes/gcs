@@ -108,6 +108,7 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         // Ensure everything is laid out and register for notification
         revalidate();
         template.addTarget(this, Template.TEMPLATE_PREFIX, GURPSCharacter.CHARACTER_PREFIX);
+        Preferences.getInstance().getNotifier().add(this, Preferences.KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
 
         setDropTarget(new DropTarget(this, this));
 
@@ -226,6 +227,9 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
             OutlineSyncer.add(mOtherEquipmentOutline);
         } else if (type.startsWith(Note.PREFIX)) {
             OutlineSyncer.add(mNoteOutline);
+        } else if (Preferences.KEY_SHOW_COLLEGE_IN_SHEET_SPELLS.equals(type)) {
+            mSpellOutline.resetColumns();
+            OutlineSyncer.add(mSpellOutline);
         }
         if (!mBatchMode) {
             validate();

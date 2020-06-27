@@ -38,6 +38,7 @@ import com.trollworks.gcs.ui.widget.search.Search;
 import com.trollworks.gcs.ui.widget.search.SearchTarget;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
+import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
@@ -97,7 +98,9 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
     public boolean attemptClose() {
         boolean closed = super.attemptClose();
         if (closed) {
-            Preferences.getInstance().getNotifier().remove(this);
+            Notifier notifier = Preferences.getInstance().getNotifier();
+            notifier.remove(mTemplate);
+            notifier.remove(this);
         }
         return closed;
     }
