@@ -66,6 +66,11 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         SpellColumn.addColumns(this, dataFile);
     }
 
+    public void resetColumns() {
+        getModel().removeAllColumns();
+        SpellColumn.addColumns(this, mDataFile);
+    }
+
     @Override
     public String getDecrementTitle() {
         return I18n.Text("Decrement Points");

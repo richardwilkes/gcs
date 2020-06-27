@@ -149,6 +149,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     private              boolean          mOkToPaint          = true;
     private              boolean          mIsPrinting;
     private              boolean          mSyncWeapons;
+    private              boolean          mReloadSpellColumns;
     private              boolean          mDisposed;
 
     /**
@@ -537,6 +538,12 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     private void createSpellOutline() {
+        if (mReloadSpellColumns) {
+            mReloadSpellColumns = false;
+            if (mSpellOutline != null) {
+                mSpellOutline.resetColumns();
+            }
+        }
         if (mSpellOutline == null) {
             mSpellOutline = new SpellOutline(mCharacter);
             initOutline(mSpellOutline);
@@ -809,6 +816,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_REDUCED_SWING);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_COLLEGE_IN_SPELLS);
 
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_DISABLED);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_WEAPON_STATUS_CHANGED);
@@ -850,6 +858,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
+        if (Settings.ID_SHOW_COLLEGE_IN_SPELLS.equals(type)) {
+            mReloadSpellColumns = true;
+        }
         if (MARK_FOR_REBUILD_NOTIFICATIONS.contains(type)) {
             markForRebuild();
         } else {

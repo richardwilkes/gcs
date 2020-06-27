@@ -183,6 +183,10 @@ public class OutlineModel implements SelectionOwner, StateEditable {
         mColumns.remove(column);
     }
 
+    public void removeAllColumns() {
+        mColumns.clear();
+    }
+
     /** @return The columns contained by the model. */
     public List<Column> getColumns() {
         return mColumns;

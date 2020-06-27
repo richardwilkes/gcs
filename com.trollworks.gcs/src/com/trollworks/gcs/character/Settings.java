@@ -43,6 +43,7 @@ public class Settings {
     public static final  String         TAG_USE_REDUCED_SWING               = "use_reduced_swing";
     public static final  String         TAG_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     public static final  String         TAG_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
+    public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
     public static final  String         PREFIX                              = GURPSCharacter.CHARACTER_PREFIX + "settings.";
     public static final  String         ID_DEFAULT_LENGTH_UNITS             = PREFIX + TAG_DEFAULT_LENGTH_UNITS;
     public static final  String         ID_DEFAULT_WEIGHT_UNITS             = PREFIX + TAG_DEFAULT_WEIGHT_UNITS;
@@ -57,6 +58,7 @@ public class Settings {
     public static final  String         ID_USE_REDUCED_SWING                = PREFIX + TAG_USE_REDUCED_SWING;
     public static final  String         ID_USE_THRUST_EQUALS_SWING_MINUS_2  = PREFIX + TAG_USE_THRUST_EQUALS_SWING_MINUS_2;
     public static final  String         ID_USE_SIMPLE_METRIC_CONVERSIONS    = PREFIX + TAG_USE_SIMPLE_METRIC_CONVERSIONS;
+    public static final  String         ID_SHOW_COLLEGE_IN_SPELLS           = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
     private              GURPSCharacter mCharacter;
     private              LengthUnits    mDefaultLengthUnits;
     private              WeightUnits    mDefaultWeightUnits;
@@ -71,6 +73,7 @@ public class Settings {
     private              boolean        mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
     private              boolean        mUseThrustEqualsSwingMinus2; // Home brew
     private              boolean        mUseSimpleMetricConversions; // B9
+    private              boolean        mShowCollegeInSpells;
 
     public Settings(GURPSCharacter character) {
         Preferences prefs = Preferences.getInstance();
@@ -88,17 +91,18 @@ public class Settings {
         mUseReducedSwing = prefs.useReducedSwing();
         mUseThrustEqualsSwingMinus2 = prefs.useThrustEqualsSwingMinus2();
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
+        mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
     }
 
     void load(XMLReader reader) throws IOException {
-        int    version = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
+        int version = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
         if (version < MINIMUM_VERSION) {
             throw VersionException.createTooOld();
         }
         if (version > CURRENT_VERSION) {
             throw VersionException.createTooNew();
         }
-        String marker  = reader.getMarker();
+        String marker = reader.getMarker();
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 loadTag(reader, version);
@@ -137,6 +141,8 @@ public class Settings {
             mUseThrustEqualsSwingMinus2 = reader.readBoolean();
         } else if (TAG_USE_SIMPLE_METRIC_CONVERSIONS.equals(tag)) {
             mUseSimpleMetricConversions = reader.readBoolean();
+        } else if (TAG_SHOW_COLLEGE_IN_SPELLS.equals(tag)) {
+            mShowCollegeInSpells = reader.readBoolean();
         } else {
             reader.skipTag(tag);
         }
@@ -159,6 +165,7 @@ public class Settings {
         out.simpleTag(TAG_USE_REDUCED_SWING, mUseReducedSwing);
         out.simpleTag(TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
         out.simpleTag(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
+        out.simpleTag(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
         out.endTagEOL(TAG_ROOT, true);
     }
 
@@ -315,6 +322,17 @@ public class Settings {
         if (mUseSimpleMetricConversions != useSimpleMetricConversions) {
             mUseSimpleMetricConversions = useSimpleMetricConversions;
             mCharacter.notifySingle(ID_USE_SIMPLE_METRIC_CONVERSIONS, Boolean.valueOf(mUseSimpleMetricConversions));
+        }
+    }
+
+    public boolean showCollegeInSpells() {
+        return mShowCollegeInSpells;
+    }
+
+    public void setShowCollegeInSpells(boolean show) {
+        if (mShowCollegeInSpells != show) {
+            mShowCollegeInSpells = show;
+            mCharacter.notifySingle(ID_SHOW_COLLEGE_IN_SPELLS, Boolean.valueOf(mShowCollegeInSpells));
         }
     }
 }

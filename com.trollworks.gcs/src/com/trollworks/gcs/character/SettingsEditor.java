@@ -57,6 +57,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mUseReducedSwing;
     private JCheckBox                mUseThrustEqualsSwingMinus2;
     private JCheckBox                mUseSimpleMetricConversions;
+    private JCheckBox                mShowCollegeInSpells;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
     private JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
@@ -106,6 +107,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
     private JPanel createTopPanel() {
         JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
+        mShowCollegeInSpells = createCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
         mBaseWillAndPerOn10 = createCheckBox(panel, I18n.Text("Base Will and Perception on 10 and not IQ"), null, mSettings.baseWillAndPerOn10());
         mUseMultiplicativeModifiers = createCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
         mUseModifyingDicePlusAdds = createCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
@@ -181,7 +183,9 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     @Override
     public void itemStateChanged(ItemEvent event) {
         Object source = event.getSource();
-        if (source == mBaseWillAndPerOn10) {
+        if (source == mShowCollegeInSpells) {
+            mSettings.setShowCollegeInSpells(mShowCollegeInSpells.isSelected());
+        } else if (source == mBaseWillAndPerOn10) {
             mSettings.setBaseWillAndPerOn10(mBaseWillAndPerOn10.isSelected());
         } else if (source == mUseMultiplicativeModifiers) {
             mSettings.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
@@ -206,6 +210,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private boolean isSetToDefaults() {
         Preferences prefs      = Preferences.getInstance();
         boolean     atDefaults = mUseModifyingDicePlusAdds.isSelected() == prefs.useModifyingDicePlusAdds();
+        atDefaults = atDefaults && mShowCollegeInSpells.isSelected() == prefs.showCollegeInSheetSpells();
         atDefaults = atDefaults && mBaseWillAndPerOn10.isSelected() == prefs.baseWillAndPerOn10();
         atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
         atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == prefs.useKnowYourOwnStrength();
@@ -237,6 +242,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         } else if (source == mResetButton) {
             Preferences prefs = Preferences.getInstance();
             mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
+            mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
             mBaseWillAndPerOn10.setSelected(prefs.baseWillAndPerOn10());
             mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
             mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());

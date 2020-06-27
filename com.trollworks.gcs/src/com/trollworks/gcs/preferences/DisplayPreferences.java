@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 /** The display preferences panel. */
 public class DisplayPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
     private JCheckBox                mIncludeUnspentPointsInTotal;
+    private JCheckBox                mShowCollegeInSheetSpells;
     private JComboBox<Scales>        mUIScaleCombo;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
@@ -66,6 +67,9 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
 
         mIncludeUnspentPointsInTotal = createCheckBox(I18n.Text("Character point total display includes unspent points"), null, prefs.includeUnspentPointsInTotal());
         column.add(mIncludeUnspentPointsInTotal);
+
+        mShowCollegeInSheetSpells = createCheckBox(I18n.Text("Show the College column on character sheets"), null, prefs.showCollegeInSheetSpells());
+        column.add(mShowCollegeInSheetSpells);
 
         FlexRow row = new FlexRow();
         row.add(createLabel(I18n.Text("Use"), null));
@@ -208,6 +212,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         Object source = event.getSource();
         if (source == mIncludeUnspentPointsInTotal) {
             Preferences.getInstance().setIncludeUnspentPointsInTotal(mIncludeUnspentPointsInTotal.isSelected());
+        } else if (source == mShowCollegeInSheetSpells) {
+            Preferences.getInstance().setShowCollegeInSheetSpells(mShowCollegeInSheetSpells.isSelected());
         }
         adjustResetButton();
     }
@@ -215,6 +221,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     @Override
     public void reset() {
         mIncludeUnspentPointsInTotal.setSelected(Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
+        mShowCollegeInSheetSpells.setSelected(Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS);
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
         mLengthUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
         mWeightUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
@@ -229,6 +236,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     public boolean isSetToDefaults() {
         Preferences prefs     = Preferences.getInstance();
         boolean     atDefault = prefs.includeUnspentPointsInTotal() == Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
+        atDefault = atDefault && prefs.showCollegeInSheetSpells() == Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
         atDefault = atDefault && prefs.getInitialUIScale() == Preferences.DEFAULT_INITIAL_UI_SCALE;
         atDefault = atDefault && prefs.getDefaultLengthUnits() == Preferences.DEFAULT_DEFAULT_LENGTH_UNITS;
         atDefault = atDefault && prefs.getDefaultWeightUnits() == Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS;

@@ -139,6 +139,14 @@ public enum SpellColumn {
             }
             return "";
         }
+
+        @Override
+        public boolean shouldDisplay(DataFile dataFile) {
+            if (dataFile instanceof GURPSCharacter) {
+                return ((GURPSCharacter)dataFile).getSettings().showCollegeInSpells();
+            }
+            return true;
+        }
     },
     /** The casting cost. */
     MANA_COST {
@@ -482,11 +490,9 @@ public enum SpellColumn {
     public static void addColumns(Outline outline, DataFile dataFile) {
         boolean      sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
         OutlineModel model           = outline.getModel();
-
         for (SpellColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());
-
                 column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
                 model.addColumn(column);
             }
