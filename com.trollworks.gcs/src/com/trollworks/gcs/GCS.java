@@ -123,6 +123,9 @@ public class GCS {
         int          length       = args.length;
         for (int i = 0; i < length; i++) {
             String arg = args[i];
+            if (i == 0 && Platform.isMacintosh() && arg.startsWith("-psn_")) {
+                continue;
+            }
             if (arg.startsWith("-")) {
                 if (arg.startsWith("=")) {
                     files.add(Paths.get(arg));
