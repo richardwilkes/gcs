@@ -83,18 +83,23 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
                 }
             }
         }
+        Advantage advantage = create(dataFile, outline);
+        outline.getModel().select(advantage, false);
+        outline.scrollSelectionIntoView();
+    }
+
+    public Advantage create(DataFile dataFile, ListOutline outline) {
         Advantage advantage = new Advantage(dataFile, false);
         advantage.setName(I18n.Text("Natural Attacks"));
         advantage.setReference("B271");
         advantage.setWeapons(List.of(createBite(advantage), createPunch(advantage), createKick(advantage)));
         outline.addRow(advantage, getTitle(), false);
-        outline.getModel().select(advantage, false);
-        outline.scrollSelectionIntoView();
+        return advantage;
     }
 
     private WeaponStats createBite(Advantage owner) {
-        MeleeWeaponStats  bite    = new MeleeWeaponStats(owner);
-        WeaponDamage      damage  = new WeaponDamage(bite);
+        MeleeWeaponStats bite   = new MeleeWeaponStats(owner);
+        WeaponDamage     damage = new WeaponDamage(bite);
         damage.setType("cr");
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
@@ -108,8 +113,8 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
     }
 
     private WeaponStats createPunch(Advantage owner) {
-        MeleeWeaponStats  punch    = new MeleeWeaponStats(owner);
-        WeaponDamage      damage  = new WeaponDamage(punch);
+        MeleeWeaponStats punch  = new MeleeWeaponStats(owner);
+        WeaponDamage     damage = new WeaponDamage(punch);
         damage.setType("cr");
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
@@ -122,8 +127,8 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
     }
 
     private WeaponStats createKick(Advantage owner) {
-        MeleeWeaponStats  kick    = new MeleeWeaponStats(owner);
-        WeaponDamage      damage  = new WeaponDamage(kick);
+        MeleeWeaponStats kick   = new MeleeWeaponStats(owner);
+        WeaponDamage     damage = new WeaponDamage(kick);
         damage.setType("cr");
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         kick.setDamage(damage);

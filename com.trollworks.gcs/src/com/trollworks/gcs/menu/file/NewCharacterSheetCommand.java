@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.menu.item.AddNaturalAttacksAdvantageCommand;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -46,6 +47,7 @@ public class NewCharacterSheetCommand extends Command {
         if (library != null) {
             SheetDockable sheet = new SheetDockable(new GURPSCharacter());
             library.dockSheet(sheet);
+            AddNaturalAttacksAdvantageCommand.INSTANCE.create(sheet.getDataFile(), sheet.getSheet().getAdvantageOutline());
             return sheet;
         }
         return null;
