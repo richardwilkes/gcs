@@ -13,6 +13,7 @@ package com.trollworks.gcs.menu.help;
 
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
@@ -46,7 +47,7 @@ public class OpenURICommand extends Command {
         try {
             mURI = new URI(uri);
         } catch (URISyntaxException exception) {
-            exception.printStackTrace();
+            Log.error(exception);
         }
     }
 

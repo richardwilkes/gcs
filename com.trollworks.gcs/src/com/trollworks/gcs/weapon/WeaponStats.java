@@ -25,11 +25,15 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +44,7 @@ import java.util.Set;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
+    private static final String             KEY_DEFAULTS = "defaults";
     private static final String             TAG_STRENGTH = "strength";
     private static final String             TAG_USAGE    = "usage";
     /** The prefix used in front of all IDs for weapons. */
@@ -55,6 +60,38 @@ public abstract class WeaponStats {
     private              String             mStrength;
     private              String             mUsage;
     private              List<SkillDefault> mDefaults;
+
+    public static void loadFromJSONArray(ListRow row, JsonArray a, List<WeaponStats> list) throws IOException {
+        int       count = a.size();
+        for (int i = 0; i < count; i++) {
+            JsonMap m1   = a.getMap(i);
+            String  type = m1.getString(DataFile.KEY_TYPE);
+            switch (type) {
+            case MeleeWeaponStats.TAG_ROOT:
+                list.add(new MeleeWeaponStats(row, m1));
+                break;
+            case RangedWeaponStats.TAG_ROOT:
+                list.add(new RangedWeaponStats(row, m1));
+                break;
+            default:
+                Log.warn("unknown weapon type: " + type);
+                break;
+            }
+        }
+    }
+
+    public static void saveList(JsonWriter w, String key, List<?> list) throws IOException {
+        FilteredList<WeaponStats> rows = new FilteredList<>(list, WeaponStats.class, true);
+        if (!rows.isEmpty()) {
+            w.key(key);
+            w.startArray();
+            for (WeaponStats row : rows) {
+                row.save(w);
+            }
+            w.endArray();
+        }
+    }
+
 
     /**
      * Creates a new weapon.
@@ -90,14 +127,23 @@ public abstract class WeaponStats {
     /**
      * Creates a weapon.
      *
+     * @param owner The owning piece of equipment or advantage.
+     * @param m     The {@link JsonMap} to load from.
+     */
+    public WeaponStats(ListRow owner, JsonMap m) throws IOException {
+        this(owner);
+        loadSelf(m);
+    }
+
+    /**
+     * Creates a weapon.
+     *
      * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
     public WeaponStats(ListRow owner, XMLReader reader) throws IOException {
         this(owner);
-
         String marker = reader.getMarker();
-
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 loadSelf(reader);
@@ -116,6 +162,12 @@ public abstract class WeaponStats {
     /** Called so that sub-classes can initialize themselves. */
     protected abstract void initialize();
 
+    /** @return The type name to use for this data. */
+    public abstract String getJSONTypeName();
+
+    /** @return The root XML tag to use when saving. */
+    protected abstract String getRootTag();
+
     /** @param reader The reader to load from. */
     protected void loadSelf(XMLReader reader) throws IOException {
         String name = reader.getName();
@@ -133,32 +185,50 @@ public abstract class WeaponStats {
         }
     }
 
-    /** @return The root XML tag to use when saving. */
-    protected abstract String getRootTag();
+    /** @param m The {@link JsonMap} to load from. */
+    protected void loadSelf(JsonMap m) throws IOException {
+        mDamage = new WeaponDamage(m.getMap(WeaponDamage.TAG_ROOT), this);
+        mStrength = m.getString(TAG_STRENGTH);
+        mUsage = m.getString(TAG_USAGE);
+        if (m.has(KEY_DEFAULTS)) {
+            JsonArray a     = m.getArray(KEY_DEFAULTS);
+            int       count = a.size();
+            for (int i = 0; i < count; i++) {
+                mDefaults.add(new SkillDefault(a.getMap(i), false));
+            }
+        }
+    }
 
     /**
      * Saves the weapon.
      *
-     * @param out The XML writer to use.
+     * @param w The {@link JsonWriter} to use.
      */
-    public void save(XMLWriter out) {
-        out.startSimpleTagEOL(getRootTag());
-        mDamage.save(out);
-        out.simpleTagNotEmpty(TAG_STRENGTH, mStrength);
-        out.simpleTagNotEmpty(TAG_USAGE, mUsage);
-        saveSelf(out);
-        for (SkillDefault skillDefault : mDefaults) {
-            skillDefault.save(out);
+    public final void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        w.key(WeaponDamage.TAG_ROOT);
+        mDamage.save(w);
+        w.keyValueNot(TAG_STRENGTH, mStrength, "");
+        w.keyValueNot(TAG_USAGE, mUsage, "");
+        saveSelf(w);
+        if (!mDefaults.isEmpty()) {
+            w.key(KEY_DEFAULTS);
+            w.startArray();
+            for (SkillDefault skillDefault : mDefaults) {
+                skillDefault.save(w, false);
+            }
+            w.endArray();
         }
-        out.endTagEOL(getRootTag(), true);
+        w.endMap();
     }
 
     /**
      * Called so that sub-classes can save their own data.
      *
-     * @param out The XML writer to use.
+     * @param w The {@link JsonWriter} to use.
      */
-    protected abstract void saveSelf(XMLWriter out);
+    protected abstract void saveSelf(JsonWriter w) throws IOException;
 
     /** @return The defaults for this weapon. */
     public List<SkillDefault> getDefaults() {

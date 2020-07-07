@@ -11,17 +11,17 @@
 
 package com.trollworks.gcs.criteria;
 
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
 /** Manages string comparison criteria. */
-public class StringCriteria {
-    private static final String            ATTRIBUTE_COMPARE = "compare";
-    private              StringCompareType mType;
-    private              String            mQualifier;
+public class StringCriteria extends Criteria {
+    private StringCompareType mType;
+    private String            mQualifier;
 
     /**
      * Creates a new string comparison.
@@ -61,22 +61,31 @@ public class StringCriteria {
         return super.hashCode();
     }
 
+    @Override
+    public void load(JsonMap m) throws IOException {
+        setQualifier(m.getString(KEY_QUALIFIER));
+        setType(Enums.extract(m.getString(ATTRIBUTE_COMPARE), StringCompareType.values(), StringCompareType.ANY));
+    }
+
+    @Override
+    public void save(JsonWriter w, String key) throws IOException {
+        if (!isTypeAnything()) {
+            super.save(w, key);
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        w.keyValue(ATTRIBUTE_COMPARE, Enums.toId(mType));
+        w.keyValueNot(KEY_QUALIFIER, mQualifier, "");
+    }
+
     /**
      * @param reader The reader to load data from.
      */
     public void load(XMLReader reader) throws IOException {
-        setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), StringCompareType.values()));
+        setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), StringCompareType.values(), StringCompareType.ANY));
         setQualifier(reader.readText());
-    }
-
-    /**
-     * Saves this object as XML to a stream.
-     *
-     * @param out The XML writer to use.
-     * @param tag The tag to use.
-     */
-    public void save(XMLWriter out, String tag) {
-        out.simpleTagWithAttribute(tag, mQualifier, ATTRIBUTE_COMPARE, Enums.toId(mType));
     }
 
     /** @return The type of comparison to make. */
@@ -114,11 +123,11 @@ public class StringCriteria {
 
     /** @return Is this criteria for an exact match? */
     public boolean isTypeIs() {
-        return mType.isTypeIs();
+        return mType == StringCompareType.IS;
     }
 
     /** @return Is this criteria for any match? */
     public boolean isTypeAnything() {
-        return mType.isTypeAnything();
+        return mType == StringCompareType.ANY;
     }
 }

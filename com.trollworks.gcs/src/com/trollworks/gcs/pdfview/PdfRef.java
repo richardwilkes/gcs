@@ -43,7 +43,7 @@ public class PdfRef implements Comparable<PdfRef> {
     }
 
     public PdfRef(JsonMap m) {
-        mId = m.getString(ID, false);
+        mId = m.getString(ID);
         mPath = Paths.get(m.getStringWithDefault(PATH, ".")).normalize().toAbsolutePath();
         mPageToIndexOffset = m.getInt(OFFSET);
     }

@@ -21,9 +21,11 @@ import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -31,21 +33,22 @@ import java.util.Set;
 
 /** A note. */
 public class Note extends ListRow implements HasSourceReference {
-    private static final int    CURRENT_VERSION    = 1;
+    private static final int    CURRENT_JSON_VERSION = 1;
+    private static final int    CURRENT_VERSION      = 1;
     /** The XML tag used for items. */
-    public static final  String TAG_NOTE           = "note";
+    public static final  String TAG_NOTE             = "note";
     /** The XML tag used for containers. */
-    public static final  String TAG_NOTE_CONTAINER = "note_container";
-    private static final String TAG_TEXT           = "text";
-    private static final String TAG_REFERENCE      = "reference";
+    public static final  String TAG_NOTE_CONTAINER   = "note_container";
+    private static final String TAG_TEXT             = "text";
+    private static final String TAG_REFERENCE        = "reference";
     /** The prefix used in front of all IDs for the notes. */
-    public static final  String PREFIX             = GURPSCharacter.CHARACTER_PREFIX + "note.";
+    public static final  String PREFIX               = GURPSCharacter.CHARACTER_PREFIX + "note.";
     /** The field ID for text changes. */
-    public static final  String ID_TEXT            = PREFIX + "Text";
+    public static final  String ID_TEXT              = PREFIX + "Text";
     /** The field ID for page reference changes. */
-    public static final  String ID_REFERENCE       = PREFIX + "Reference";
+    public static final  String ID_REFERENCE         = PREFIX + "Reference";
     /** The field ID for when the row hierarchy changes. */
-    public static final  String ID_LIST_CHANGED    = PREFIX + "ListChanged";
+    public static final  String ID_LIST_CHANGED      = PREFIX + "ListChanged";
     private              String mText;
     private              String mReference;
 
@@ -80,6 +83,11 @@ public class Note extends ListRow implements HasSourceReference {
         }
     }
 
+    public Note(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_NOTE_CONTAINER));
+        load(m, state);
+    }
+
     /**
      * Loads a note and associates it with the specified data file.
      *
@@ -112,6 +120,16 @@ public class Note extends ListRow implements HasSourceReference {
     @Override
     public String getListChangedID() {
         return ID_LIST_CHANGED;
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return canHaveChildren() ? TAG_NOTE_CONTAINER : TAG_NOTE;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
     }
 
     @Override
@@ -151,9 +169,27 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    protected void saveSelf(XMLWriter out, boolean forUndo) {
-        out.simpleTagNotEmpty(TAG_TEXT, mText);
-        out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        mText = m.getString(TAG_TEXT);
+        mReference = m.getString(TAG_REFERENCE);
+    }
+
+    @Override
+    protected void loadChild(JsonMap m, LoadState state) throws IOException {
+        if (!state.mForUndo) {
+            String type = m.getString(DataFile.KEY_TYPE);
+            if (TAG_NOTE.equals(type) || TAG_NOTE_CONTAINER.equals(type)) {
+                addChild(new Note(mDataFile, m, state));
+            } else {
+                Log.warn("invalid child type: " + type);
+            }
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        w.keyValueNot(TAG_TEXT, mText, "");
+        w.keyValueNot(TAG_REFERENCE, mReference, "");
     }
 
     /** @return The description. */

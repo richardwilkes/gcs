@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.widget.EditorPanel;
 import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
@@ -189,7 +190,7 @@ public abstract class PrereqEditor extends EditorPanel {
                     parent.add(create(mRow, prereq, mDepth), UIUtilities.getIndexOf(parent, this));
                 } catch (Exception exception) {
                     // Shouldn't have a failure...
-                    exception.printStackTrace(System.err);
+                    Log.error(exception);
                 }
                 parent.remove(this);
                 parent.revalidate();

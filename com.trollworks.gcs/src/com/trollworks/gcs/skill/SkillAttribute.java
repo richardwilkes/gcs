@@ -73,7 +73,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getWill() : Integer.MIN_VALUE;
+            return character != null ? character.getWillAdj() : Integer.MIN_VALUE;
         }
     },
     /** The perception attribute. */
@@ -85,7 +85,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getPerception() : Integer.MIN_VALUE;
+            return character != null ? character.getPerAdj() : Integer.MIN_VALUE;
         }
     },
     /** Just 10 instead of the actual attribute. */

@@ -16,10 +16,12 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -40,7 +42,17 @@ public class AdvantagePrereq extends NameLevelPrereq {
      */
     public AdvantagePrereq(PrereqList parent) {
         super(TAG_ROOT, parent);
-        mNotesCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mNotesCriteria = new StringCriteria(StringCompareType.ANY, "");
+    }
+
+    /**
+     * Loads a prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param m      The {@link JsonMap} to load from.
+     */
+    public AdvantagePrereq(PrereqList parent, JsonMap m) throws IOException {
+        super(parent, m);
     }
 
     /**
@@ -60,7 +72,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
 
     @Override
     protected void initializeForLoad() {
-        mNotesCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mNotesCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
     @Override
@@ -89,8 +101,20 @@ public class AdvantagePrereq extends NameLevelPrereq {
     }
 
     @Override
-    protected void saveSelf(XMLWriter out) {
-        mNotesCriteria.save(out, TAG_NOTES);
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        mNotesCriteria.load(m.getMap(TAG_NOTES));
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        mNotesCriteria.save(w, TAG_NOTES);
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -132,7 +156,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
         }
         if (!satisfied && builder != null) {
             builder.append(MessageFormat.format(I18n.Text("{0}{1} an advantage whose name {2}"), prefix, hasText(), nameCriteria.toString()));
-            if (mNotesCriteria.getType() != StringCompareType.IS_ANYTHING) {
+            if (!mNotesCriteria.isTypeAnything()) {
                 builder.append(MessageFormat.format(I18n.Text(", notes {0},"), mNotesCriteria.toString()));
             }
             builder.append(MessageFormat.format(I18n.Text(" and level {0}"), levelCriteria.toString()));

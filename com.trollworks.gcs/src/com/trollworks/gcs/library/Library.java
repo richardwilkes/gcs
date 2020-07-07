@@ -65,8 +65,8 @@ public class Library implements Comparable<Library> {
     }
 
     public static Library fromJSON(String key, JsonMap m) throws IOException {
-        String pathStr = m.getString(KEY_PATH, true);
-        if (pathStr == null) {
+        String pathStr = m.getString(KEY_PATH);
+        if (pathStr.isBlank()) {
             throw new IOException("invalid library path");
         }
         Path path = Paths.get(pathStr);
@@ -74,7 +74,7 @@ public class Library implements Comparable<Library> {
             USER.mPath = path;
             return USER;
         }
-        Version lastSeen = new Version(m.getString(KEY_LAST_SEEN, false));
+        Version lastSeen = new Version(m.getString(KEY_LAST_SEEN));
         if (MASTER.getKey().equals(key)) {
             MASTER.mPath = path;
             MASTER.mLastSeen = lastSeen;
@@ -84,7 +84,7 @@ public class Library implements Comparable<Library> {
         if (parts.length != 2) {
             throw new IOException("invalid library key");
         }
-        String title = m.getString(KEY_TITLE, false);
+        String title = m.getString(KEY_TITLE);
         if (title.isBlank() || MASTER.getTitle().equalsIgnoreCase(title) || USER.getTitle().equalsIgnoreCase(title)) {
             throw new IOException("invalid library title");
         }

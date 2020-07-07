@@ -14,13 +14,17 @@ package com.trollworks.gcs.prereq;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -36,6 +40,7 @@ public class PrereqList extends Prereq {
     public static final  String          TAG_ROOT      = "prereq_list";
     private static final String          TAG_WHEN_TL   = "when_tl";
     private static final String          ATTRIBUTE_ALL = "all";
+    private static final String          KEY_PREREQS = "prereqs";
     private              boolean         mAll;
     private              IntegerCriteria mWhenTLCriteria;
     private              List<Prereq>    mPrereqs;
@@ -52,6 +57,20 @@ public class PrereqList extends Prereq {
         mAll = all;
         mWhenTLCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, Integer.MIN_VALUE);
         mPrereqs = new ArrayList<>();
+    }
+
+    /**
+     * Loads a prerequisite list.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param m The {@link JsonMap} to load from.
+     * @param defWeightUnits The default weight units to use.
+     */
+    public PrereqList(PrereqList parent, WeightUnits defWeightUnits, JsonMap m) throws IOException {
+        this(parent, true);
+        LoadState state = new LoadState();
+        state.mDefWeightUnits = defWeightUnits;
+        loadSelf(m, state);
     }
 
     /**
@@ -124,24 +143,71 @@ public class PrereqList extends Prereq {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
     public String getXMLTag() {
         return TAG_ROOT;
     }
 
     @Override
-    public void save(XMLWriter out) {
-        if (!mPrereqs.isEmpty()) {
-            out.startTag(TAG_ROOT);
-            out.writeAttribute(ATTRIBUTE_ALL, mAll);
-            out.finishTagEOL();
-            if (isWhenTLEnabled(mWhenTLCriteria)) {
-                mWhenTLCriteria.save(out, TAG_WHEN_TL);
-            }
-            for (Prereq prereq : mPrereqs) {
-                prereq.save(out);
-            }
-            out.endTagEOL(TAG_ROOT, true);
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        mAll = m.getBoolean(ATTRIBUTE_ALL);
+        if (m.has(TAG_WHEN_TL)) {
+            mWhenTLCriteria.load(m.getMap(TAG_WHEN_TL));
         }
+        if (m.has(KEY_PREREQS)) {
+            JsonArray a = m.getArray(KEY_PREREQS);
+            int count = a.size();
+            for (int i = 0; i < count; i++) {
+                JsonMap m1 = a.getMap(i);
+                switch (m1.getString(DataFile.KEY_TYPE)) {
+                case TAG_ROOT:
+                    mPrereqs.add(new PrereqList(this, state.mDefWeightUnits, m1));
+                    break;
+                case AdvantagePrereq.TAG_ROOT:
+                    mPrereqs.add(new AdvantagePrereq(this, m1));
+                    break;
+                case AttributePrereq.TAG_ROOT:
+                    mPrereqs.add(new AttributePrereq(this, m1));
+                    break;
+                case ContainedWeightPrereq.TAG_ROOT:
+                    mPrereqs.add(new ContainedWeightPrereq(this, state.mDefWeightUnits, m1));
+                    break;
+                case ContainedQuantityPrereq.TAG_ROOT:
+                    mPrereqs.add(new ContainedQuantityPrereq(this, m1));
+                    break;
+                case SkillPrereq.TAG_ROOT:
+                    mPrereqs.add(new SkillPrereq(this, m1));
+                    break;
+                case SpellPrereq.TAG_ROOT:
+                    mPrereqs.add(new SpellPrereq(this, m1));
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        w.keyValue(ATTRIBUTE_ALL, mAll);
+        if (isWhenTLEnabled(mWhenTLCriteria)) {
+            mWhenTLCriteria.save(w, TAG_WHEN_TL);
+        }
+        if (!mPrereqs.isEmpty()) {
+            w.key(KEY_PREREQS);
+            w.startArray();
+            for (Prereq prereq : mPrereqs) {
+                prereq.save(w);
+            }
+            w.endArray();
+        }
+    }
+
+    public boolean isEmpty() {
+        return mPrereqs.isEmpty();
     }
 
     /** @return The character's TL criteria. */

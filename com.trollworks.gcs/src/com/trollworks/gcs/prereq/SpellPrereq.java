@@ -16,12 +16,14 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -43,6 +45,8 @@ public class SpellPrereq extends HasPrereq {
     /** The tag/type for college count comparison. */
     public static final  String          TAG_COLLEGE_COUNT = "college_count";
     private static final String          TAG_QUANTITY      = "quantity";
+    private static final String          KEY_SUB_TYPE      = "sub_type";
+    private static final String          KEY_QUALIFIER     = "qualifier";
     private              String          mType;
     private              StringCriteria  mStringCriteria;
     private              IntegerCriteria mQuantityCriteria;
@@ -57,6 +61,17 @@ public class SpellPrereq extends HasPrereq {
         mType = TAG_NAME;
         mStringCriteria = new StringCriteria(StringCompareType.IS, "");
         mQuantityCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 1);
+    }
+
+    /**
+     * Loads a prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param m      The {@link JsonMap} to load from.
+     */
+    public SpellPrereq(PrereqList parent, JsonMap m) throws IOException {
+        this(parent);
+        loadSelf(m, new LoadState());
     }
 
     /**
@@ -122,6 +137,11 @@ public class SpellPrereq extends HasPrereq {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
     public String getXMLTag() {
         return TAG_ROOT;
     }
@@ -132,23 +152,21 @@ public class SpellPrereq extends HasPrereq {
     }
 
     @Override
-    public void save(XMLWriter out) {
-        out.startTag(TAG_ROOT);
-        saveHasAttribute(out);
-        out.finishTagEOL();
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        mType = m.getString(KEY_SUB_TYPE);
+        mQuantityCriteria.load(m.getMap(TAG_QUANTITY));
+        mStringCriteria.load(m.getMap(KEY_QUALIFIER));
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(KEY_SUB_TYPE, mType);
         if (TAG_NAME.equals(mType) || TAG_COLLEGE.equals(mType)) {
-            mStringCriteria.save(out, mType);
-            if (mQuantityCriteria.getType() != NumericCompareType.AT_LEAST || mQuantityCriteria.getQualifier() != 1) {
-                mQuantityCriteria.save(out, TAG_QUANTITY);
-            }
-        } else if (TAG_COLLEGE_COUNT.equals(mType)) {
-            mQuantityCriteria.save(out, mType);
-        } else if (TAG_ANY.equals(mType)) {
-            out.startTag(TAG_ANY);
-            out.finishEmptyTagEOL();
-            mQuantityCriteria.save(out, TAG_QUANTITY);
+            mStringCriteria.save(w, KEY_QUALIFIER);
         }
-        out.endTagEOL(TAG_ROOT, true);
+        mQuantityCriteria.save(w, TAG_QUANTITY);
     }
 
     /** @return The type of comparison to make. */

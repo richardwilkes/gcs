@@ -14,8 +14,10 @@ package com.trollworks.gcs.datafile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,11 +26,25 @@ import java.util.TreeSet;
 
 /** A list of rows. */
 public abstract class ListFile extends DataFile {
+    private static final String KEY_ROWS = "rows";
     private OutlineModel mModel = new OutlineModel();
 
     public ListFile() {
         setSortingMarksDirty(false);
     }
+
+    @Override
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        loadList(m.getArray(KEY_ROWS), state);
+    }
+
+    /**
+     * Called to load the individual rows.
+     *
+     * @param a     The {@link JsonArray} to load data from.
+     * @param state  The {@link LoadState} to use.
+     */
+    protected abstract void loadList(JsonArray a, LoadState state) throws IOException;
 
     @Override
     protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
@@ -44,9 +60,15 @@ public abstract class ListFile extends DataFile {
     protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
 
     @Override
-    protected final void saveSelf(XMLWriter out) {
-        for (Row one : getTopLevelRows()) {
-            ((ListRow) one).save(out, false);
+    protected final void saveSelf(JsonWriter w) throws IOException {
+        List<Row> rows = getTopLevelRows();
+        if (!rows.isEmpty()) {
+            w.key(KEY_ROWS);
+            w.startArray();
+            for (Row one : rows) {
+                ((ListRow) one).save(w, false);
+            }
+            w.endArray();
         }
     }
 

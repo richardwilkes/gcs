@@ -28,10 +28,14 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.VersionException;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +53,10 @@ public abstract class ListRow extends Row {
     private static final String             TAG_NOTES      = "notes";
     private static final String             TAG_CATEGORIES = "categories";
     private static final String             TAG_CATEGORY   = "category";
+    private static final String             KEY_FEATURES   = "features";
+    private static final String             KEY_DEFAULTS   = "defaults";
+    private static final String             KEY_CHILDREN   = "children";
+    private static final String             KEY_PREREQS    = "prereqs";
     /** The data file the row is associated with. */
     protected            DataFile           mDataFile;
     private              List<Feature>      mFeatures;
@@ -58,6 +66,18 @@ public abstract class ListRow extends Row {
     private              String             mUnsatisfiedReason;
     private              String             mNotes;
     private              TreeSet<String>    mCategories;
+
+    public static void saveList(JsonWriter w, String key, List<?> list, boolean forUndo) throws IOException {
+        FilteredList<ListRow> rows = new FilteredList<>(list, ListRow.class, true);
+        if (!rows.isEmpty()) {
+            w.key(key);
+            w.startArray();
+            for (ListRow row : rows) {
+                row.save(w, forUndo);
+            }
+            w.endArray();
+        }
+    }
 
     /**
      * Extracts any "nameable" portions of the buffer and puts their keys into the provided set.
@@ -208,6 +228,12 @@ public abstract class ListRow extends Row {
     /** @return The ID for the "list changed" notification. */
     public abstract String getListChangedID();
 
+    /** @return The most recent version of the JSON data this object knows how to load. */
+    public abstract int getJSONVersion();
+
+    /** @return The type name to use for this data. */
+    public abstract String getJSONTypeName();
+
     /** @return The XML root container tag name for this particular row. */
     public abstract String getXMLTagName();
 
@@ -239,6 +265,94 @@ public abstract class ListRow extends Row {
     public void setReasonForUnsatisfied(String reason) {
         mUnsatisfiedReason = reason;
     }
+
+    /**
+     * Loads this row's contents.
+     *
+     * @param m     The {@link JsonMap} to load data from.
+     * @param state The {@link LoadState} to use.
+     */
+    public final void load(JsonMap m, LoadState state) throws IOException {
+        state.mDataItemVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
+        if (state.mDataItemVersion > getJSONVersion()) {
+            throw VersionException.createTooNew();
+        }
+        boolean isContainer = m.getString(DataFile.KEY_TYPE).endsWith("_container");
+        setCanHaveChildren(isContainer);
+        setOpen(isContainer);
+        prepareForLoad(state);
+        loadSelf(m, state);
+        if (m.has(KEY_PREREQS)) {
+            mPrereqList = new PrereqList(null, mDataFile.defaultWeightUnits(), m.getMap(KEY_PREREQS));
+        }
+        if (!(this instanceof Technique) && m.has(KEY_DEFAULTS)) {
+            JsonArray a     = m.getArray(KEY_DEFAULTS);
+            int       count = a.size();
+            for (int i = 0; i < count; i++) {
+                mDefaults.add(new SkillDefault(a.getMap(i), false));
+            }
+        }
+        if (m.has(KEY_FEATURES)) {
+            JsonArray a     = m.getArray(KEY_FEATURES);
+            int       count = a.size();
+            for (int i = 0; i < count; i++) {
+                JsonMap m1   = a.getMap(i);
+                String  type = m1.getString(DataFile.KEY_TYPE);
+                switch (type) {
+                case AttributeBonus.TAG_ROOT:
+                    mFeatures.add(new AttributeBonus(m1));
+                    break;
+                case DRBonus.TAG_ROOT:
+                    mFeatures.add(new DRBonus(m1));
+                    break;
+                case ReactionBonus.TAG_ROOT:
+                    mFeatures.add(new ReactionBonus(m1));
+                    break;
+                case SkillBonus.TAG_ROOT:
+                    mFeatures.add(new SkillBonus(m1));
+                    break;
+                case SpellBonus.TAG_ROOT:
+                    mFeatures.add(new SpellBonus(m1));
+                    break;
+                case WeaponBonus.TAG_ROOT:
+                    mFeatures.add(new WeaponBonus(m1));
+                    break;
+                case CostReduction.TAG_ROOT:
+                    mFeatures.add(new CostReduction(m1));
+                    break;
+                case ContainedWeightReduction.TAG_ROOT:
+                    mFeatures.add(new ContainedWeightReduction(m1));
+                    break;
+                default:
+                    Log.warn("unknown feature type: " + type);
+                    break;
+                }
+            }
+        }
+        mNotes = m.getString(TAG_NOTES);
+        if (m.has(TAG_CATEGORIES)) {
+            JsonArray a     = m.getArray(TAG_CATEGORIES);
+            int       count = a.size();
+            for (int i = 0; i < count; i++) {
+                mCategories.add(a.getString(i));
+            }
+        }
+        if (canHaveChildren()) {
+            setOpen(m.getBoolean(ATTRIBUTE_OPEN));
+            if (m.has(KEY_CHILDREN)) {
+                JsonArray a     = m.getArray(KEY_CHILDREN);
+                int       count = a.size();
+                for (int i = 0; i < count; i++) {
+                    loadChild(a.getMap(i), state);
+                }
+            }
+        }
+        finishedLoading(state);
+    }
+
+    protected abstract void loadSelf(JsonMap m, LoadState state) throws IOException;
+
+    protected abstract void loadChild(JsonMap m, LoadState state) throws IOException;
 
     /**
      * Loads this row's contents.
@@ -350,67 +464,59 @@ public abstract class ListRow extends Row {
     /**
      * Saves the row.
      *
-     * @param out     The XML writer to use.
+     * @param w       The {@link JsonWriter} to use.
      * @param forUndo Whether this is being called to save undo state.
      */
-    public void save(XMLWriter out, boolean forUndo) {
-        out.startTag(getXMLTagName());
-        out.writeAttribute(LoadState.ATTRIBUTE_VERSION, getXMLTagVersion());
-        if (canHaveChildren()) {
-            out.writeAttribute(ATTRIBUTE_OPEN, isOpen());
+    public void save(JsonWriter w, boolean forUndo) throws IOException {
+        w.startMap();
+        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
+        saveSelf(w, forUndo);
+        if (!mPrereqList.isEmpty()) {
+            w.key(KEY_PREREQS);
+            mPrereqList.save(w);
         }
-        saveAttributes(out, forUndo);
-        out.finishTagEOL();
-        saveSelf(out, forUndo);
-        out.simpleTagNotEmpty(TAG_NOTES, mNotes);
-
-        if (!mCategories.isEmpty()) {
-            out.startSimpleTagEOL(TAG_CATEGORIES);
-            for (String category : mCategories) {
-                out.simpleTag(TAG_CATEGORY, category);
-            }
-            out.endTagEOL(TAG_CATEGORIES, true);
-        }
-
-        if (!mFeatures.isEmpty()) {
-            for (Feature feature : mFeatures) {
-                feature.save(out);
-            }
-        }
-
-        mPrereqList.save(out);
-
         if (!(this instanceof Technique) && !mDefaults.isEmpty()) {
+            w.key(KEY_DEFAULTS);
+            w.startArray();
             for (SkillDefault skillDefault : mDefaults) {
-                skillDefault.save(out);
+                skillDefault.save(w, false);
+            }
+            w.endArray();
+        }
+        if (!mFeatures.isEmpty()) {
+            w.key(KEY_FEATURES);
+            w.startArray();
+            for (Feature feature : mFeatures) {
+                feature.save(w);
+            }
+            w.endArray();
+        }
+        w.keyValueNot(TAG_NOTES, mNotes, "");
+        if (!mCategories.isEmpty()) {
+            w.key(TAG_CATEGORIES);
+            w.startArray();
+            for (String category : mCategories) {
+                w.value(category);
+            }
+            w.endArray();
+        }
+        if (canHaveChildren()) {
+            w.keyValue(ATTRIBUTE_OPEN, isOpen());
+            if (!forUndo) {
+                saveList(w, KEY_CHILDREN, getChildren(), false);
             }
         }
-
-        if (!forUndo && canHaveChildren()) {
-            for (Row row : getChildren()) {
-                ((ListRow) row).save(out, false);
-            }
-        }
-        out.endTagEOL(getXMLTagName(), true);
+        w.endMap();
     }
 
     /**
      * Saves the row.
      *
-     * @param out     The XML writer to use.
+     * @param w       The {@link JsonWriter} to use.
      * @param forUndo Whether this is being called to save undo state.
      */
-    protected abstract void saveSelf(XMLWriter out, boolean forUndo);
-
-    /**
-     * Saves extra attributes of the row, if any.
-     *
-     * @param out     The XML writer to use.
-     * @param forUndo Whether this is being called to save undo state.
-     */
-    protected void saveAttributes(XMLWriter out, boolean forUndo) {
-        // Does nothing by default.
-    }
+    protected abstract void saveSelf(JsonWriter w, boolean forUndo) throws IOException;
 
     /**
      * Starts the notification process. Should be called before calling {@link #notify(String,

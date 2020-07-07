@@ -14,7 +14,7 @@ package com.trollworks.gcs.utility.text;
 /** A utility for consistent extraction of an {@link Enum} value from a text buffer. */
 public class Enums {
     public static final String toId(Enum<?> value) {
-        return value.name().toLowerCase().replace('_', ' ');
+        return value.name().toLowerCase();
     }
 
     /**

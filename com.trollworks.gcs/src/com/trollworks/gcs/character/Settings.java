@@ -14,18 +14,21 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.VersionException;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Settings {
+    private static final int          CURRENT_JSON_VERSION   = 1;
     private static final int            CURRENT_VERSION                     = 1;
     private static final int            VERSION_REACTIONS                   = 1;
     private static final int            MINIMUM_VERSION                     = 0;
@@ -148,25 +151,58 @@ public class Settings {
         }
     }
 
-    void save(XMLWriter out) {
-        out.startTag(TAG_ROOT);
-        out.writeAttribute(LoadState.ATTRIBUTE_VERSION, CURRENT_VERSION);
-        out.finishTagEOL();
-        out.simpleTag(TAG_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
-        out.simpleTag(TAG_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
-        out.simpleTag(TAG_BLOCK_LAYOUT, Preferences.linesToString(mBlockLayout));
-        out.simpleTag(TAG_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
-        out.simpleTag(TAG_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
-        out.simpleTag(TAG_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
-        out.simpleTag(TAG_BASE_WILL_AND_PER_ON_10, mBaseWillAndPerOn10);
-        out.simpleTag(TAG_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
-        out.simpleTag(TAG_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
-        out.simpleTag(TAG_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
-        out.simpleTag(TAG_USE_REDUCED_SWING, mUseReducedSwing);
-        out.simpleTag(TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
-        out.simpleTag(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
-        out.simpleTag(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
-        out.endTagEOL(TAG_ROOT, true);
+    void load(JsonMap m) throws IOException {
+        int version = m.getInt(LoadState.ATTRIBUTE_VERSION);
+        if (version < MINIMUM_VERSION) {
+            throw VersionException.createTooOld();
+        }
+        if (version > CURRENT_VERSION) {
+            throw VersionException.createTooNew();
+        }
+        mDefaultLengthUnits = Enums.extract(m.getString(TAG_DEFAULT_LENGTH_UNITS), LengthUnits.values(), Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
+        mDefaultWeightUnits = Enums.extract(m.getString(TAG_DEFAULT_WEIGHT_UNITS), WeightUnits.values(), Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
+        mUserDescriptionDisplay = Enums.extract(m.getString(TAG_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
+        mModifiersDisplay = Enums.extract(m.getString(TAG_MODIFIERS_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
+        mNotesDisplay = Enums.extract(m.getString(TAG_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
+        mBaseWillAndPerOn10 = m.getBoolean(TAG_BASE_WILL_AND_PER_ON_10);
+        mUseMultiplicativeModifiers = m.getBoolean(TAG_USE_MULTIPLICATIVE_MODIFIERS);
+        mUseModifyingDicePlusAdds = m.getBoolean(TAG_USE_MODIFYING_DICE_PLUS_ADDS);
+        mUseKnowYourOwnStrength = m.getBoolean(TAG_USE_KNOW_YOUR_OWN_STRENGTH);
+        mUseReducedSwing = m.getBoolean(TAG_USE_REDUCED_SWING);
+        mUseThrustEqualsSwingMinus2 = m.getBoolean(TAG_USE_THRUST_EQUALS_SWING_MINUS_2);
+        mUseSimpleMetricConversions = m.getBoolean(TAG_USE_SIMPLE_METRIC_CONVERSIONS);
+        mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
+        mBlockLayout = new ArrayList<>();
+        JsonArray a = m.getArray(TAG_BLOCK_LAYOUT);
+        int count = a.size();
+        for (int i = 0; i < count; i++) {
+            mBlockLayout.add(a.getString(i));
+        }
+    }
+
+    void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValue(LoadState.ATTRIBUTE_VERSION, CURRENT_JSON_VERSION);
+        w.keyValue(TAG_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
+        w.keyValue(TAG_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
+        w.keyValue(TAG_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
+        w.keyValue(TAG_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
+        w.keyValue(TAG_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
+        w.keyValue(TAG_BASE_WILL_AND_PER_ON_10, mBaseWillAndPerOn10);
+        w.keyValue(TAG_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
+        w.keyValue(TAG_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
+        w.keyValue(TAG_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
+        w.keyValue(TAG_USE_REDUCED_SWING, mUseReducedSwing);
+        w.keyValue(TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
+        w.keyValue(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
+        w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
+        w.key(TAG_BLOCK_LAYOUT);
+        w.startArray();
+        for (String one : mBlockLayout) {
+            w.value(one);
+        }
+        w.endArray();
+        w.endMap();
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")

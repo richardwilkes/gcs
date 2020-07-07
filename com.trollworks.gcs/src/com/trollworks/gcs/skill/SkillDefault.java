@@ -11,11 +11,13 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -74,6 +76,24 @@ public class SkillDefault {
         mName = other.mName;
         mSpecialization = other.mSpecialization;
         mModifier = other.mModifier;
+    }
+
+    /**
+     * Creates a skill default.
+     *
+     * @param m    The {@link JsonMap} to load data from.
+     * @param full {@code true} if all fields should be loaded.
+     */
+    public SkillDefault(JsonMap m, boolean full) throws IOException {
+        mType = SkillDefaultType.getByName(m.getString(DataFile.KEY_TYPE));
+        mName = m.getString(TAG_NAME);
+        mSpecialization = m.getString(TAG_SPECIALIZATION);
+        mModifier = m.getInt(TAG_MODIFIER);
+        if (full) {
+            mLevel = m.getInt(TAG_LEVEL);
+            mAdjLevel = m.getInt(TAG_ADJ_LEVEL);
+            mPoints = m.getInt(TAG_POINTS);
+        }
     }
 
     /**
@@ -165,33 +185,23 @@ public class SkillDefault {
     /**
      * Saves the skill default.
      *
-     * @param out The XML writer to use.
+     * @param w    The {@link JsonWriter} to use.
+     * @param full {@code true} if all fields should be saved.
      */
-    public void save(XMLWriter out) {
-        save(out, TAG_ROOT, false);
-    }
-
-    /**
-     * Saves the skill default.
-     *
-     * @param out     The XML writer to use.
-     * @param tagRoot The root tag to use.
-     * @param full    {@code true} if all fields should be saved.
-     */
-    public void save(XMLWriter out, String tagRoot, boolean full) {
-        out.startSimpleTagEOL(tagRoot);
-        out.simpleTag(TAG_TYPE, mType.name());
+    public void save(JsonWriter w, boolean full) throws IOException {
+        w.startMap();
+        w.keyValue(DataFile.KEY_TYPE, mType.name());
         if (mType.isSkillBased()) {
-            out.simpleTagNotEmpty(TAG_NAME, mName);
-            out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
+            w.keyValueNot(TAG_NAME, mName, "");
+            w.keyValueNot(TAG_SPECIALIZATION, mSpecialization, "");
         }
-        out.simpleTag(TAG_MODIFIER, mModifier);
+        w.keyValueNot(TAG_MODIFIER, mModifier, 0);
         if (full) {
-            out.simpleTag(TAG_LEVEL, mLevel);
-            out.simpleTag(TAG_ADJ_LEVEL, mAdjLevel);
-            out.simpleTag(TAG_POINTS, mPoints);
+            w.keyValue(TAG_LEVEL, mLevel);
+            w.keyValue(TAG_ADJ_LEVEL, mAdjLevel);
+            w.keyValueNot(TAG_POINTS, mPoints, 0);
         }
-        out.endTagEOL(tagRoot, true);
+        w.endMap();
     }
 
     /** @return The type of default. */

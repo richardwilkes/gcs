@@ -23,9 +23,11 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -42,6 +44,7 @@ import java.util.Set;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
+    private static final int               CURRENT_JSON_VERSION     = 1;
     private static final int               CURRENT_VERSION          = 4;
     /** The XML tag used for items. */
     public static final  String            TAG_SKILL                = "skill";
@@ -55,6 +58,7 @@ public class Skill extends ListRow implements HasSourceReference {
     private static final String            TAG_REFERENCE            = "reference";
     private static final String            TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";
     private static final String            TAG_DEFAULTED_FROM       = "defaulted_from";
+    private static final String            KEY_WEAPONS              = "weapons";
     /** The prefix used in front of all IDs for the skills. */
     public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill.";
     /** The field ID for name changes. */
@@ -181,6 +185,11 @@ public class Skill extends ListRow implements HasSourceReference {
         }
     }
 
+    public Skill(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_SKILL_CONTAINER));
+        load(m, state);
+    }
+
     /**
      * Loads a skill and associates it with the specified data file.
      *
@@ -231,6 +240,16 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     public String getListChangedID() {
         return ID_LIST_CHANGED;
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return canHaveChildren() ? TAG_SKILL_CONTAINER : TAG_SKILL;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
     }
 
     @Override
@@ -305,31 +324,65 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public void saveSelf(XMLWriter out, boolean forUndo) {
-        out.simpleTag(TAG_NAME, mName);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        mName = m.getString(TAG_NAME);
+        mReference = m.getString(TAG_REFERENCE);
         if (!canHaveChildren()) {
-            out.simpleTagNotEmpty(TAG_SPECIALIZATION, mSpecialization);
-            if (mTechLevel != null) {
-                if (getCharacter() != null) {
-                    out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
-                } else {
-                    out.startTag(TAG_TECH_LEVEL);
-                    out.finishEmptyTagEOL();
+            mSpecialization = m.getString(TAG_SPECIALIZATION);
+            if (m.has(TAG_TECH_LEVEL)) {
+                mTechLevel = m.getString(TAG_TECH_LEVEL);
+                if (!mTechLevel.isBlank() && getDataFile() instanceof ListFile) {
+                    mTechLevel = "";
                 }
             }
-            if (mEncumbrancePenaltyMultiplier != 0) {
-                out.simpleTag(TAG_ENCUMBRANCE_PENALTY, mEncumbrancePenaltyMultiplier);
+            mEncumbrancePenaltyMultiplier = m.getInt(TAG_ENCUMBRANCE_PENALTY);
+            setDifficultyFromText(m.getString(TAG_DIFFICULTY));
+            mPoints = m.getInt(TAG_POINTS);
+            if (m.has(TAG_DEFAULTED_FROM)) {
+                mDefaultedFrom = new SkillDefault(m.getMap(TAG_DEFAULTED_FROM), true);
             }
-            out.simpleTag(TAG_DIFFICULTY, getDifficultyAsText(false));
-            out.simpleTag(TAG_POINTS, mPoints);
-            if (mDefaultedFrom != null) {
-                mDefaultedFrom.save(out, TAG_DEFAULTED_FROM, true);
-            }
-            for (WeaponStats weapon : mWeapons) {
-                weapon.save(out);
+            if (m.has(KEY_WEAPONS)) {
+                WeaponStats.loadFromJSONArray(this, m.getArray(KEY_WEAPONS), mWeapons);
             }
         }
-        out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
+    }
+
+    @Override
+    protected void loadChild(JsonMap m, LoadState state) throws IOException {
+        if (!state.mForUndo) {
+            String type = m.getString(DataFile.KEY_TYPE);
+            if (TAG_SKILL.equals(type) || TAG_SKILL_CONTAINER.equals(type)) {
+                addChild(new Skill(mDataFile, m, state));
+            } else if (Technique.TAG_TECHNIQUE.equals(type)) {
+                addChild(new Technique(mDataFile, m, state));
+            } else {
+                Log.warn("invalid child type: " + type);
+            }
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        w.keyValue(TAG_NAME, mName);
+        w.keyValueNot(TAG_REFERENCE, mReference, "");
+        if (!canHaveChildren()) {
+            w.keyValueNot(TAG_SPECIALIZATION, mSpecialization, "");
+            if (mTechLevel != null) {
+                if (getCharacter() != null) {
+                    w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
+                } else {
+                    w.keyValue(TAG_TECH_LEVEL, "");
+                }
+            }
+            w.keyValueNot(TAG_ENCUMBRANCE_PENALTY, mEncumbrancePenaltyMultiplier, 0);
+            w.keyValue(TAG_DIFFICULTY, getDifficultyAsText(false));
+            w.keyValue(TAG_POINTS, mPoints);
+            if (mDefaultedFrom != null) {
+                w.key(TAG_DEFAULTED_FROM);
+                mDefaultedFrom.save(w, true);
+            }
+            WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
+        }
     }
 
     /** @return The weapon list. */

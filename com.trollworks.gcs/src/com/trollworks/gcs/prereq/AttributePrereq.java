@@ -14,12 +14,14 @@ package com.trollworks.gcs.prereq;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -33,6 +35,7 @@ public class AttributePrereq extends HasPrereq {
     private static final String               ATTRIBUTE_WHICH         = "which";
     private static final String               ATTRIBUTE_COMBINED_WITH = "combined_with";
     private static final String               ATTRIBUTE_COMPARE       = "compare";
+    private static final String               KEY_QUALIFIER           = "qualifier";
     private              BonusAttributeType   mWhich;
     private              BonusAttributeType   mCombinedWith;
     private              IntegerCriteria      mValueCompare;
@@ -47,6 +50,17 @@ public class AttributePrereq extends HasPrereq {
         mValueCompare = new IntegerCriteria(NumericCompareType.AT_LEAST, 10);
         setWhich(BonusAttributeType.IQ);
         setCombinedWith(null);
+    }
+
+    /**
+     * Loads a prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param m      The {@link JsonMap} to load from.
+     */
+    public AttributePrereq(PrereqList parent, JsonMap m) throws IOException {
+        this(parent);
+        loadSelf(m, new LoadState());
     }
 
     /**
@@ -95,6 +109,11 @@ public class AttributePrereq extends HasPrereq {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
     public String getXMLTag() {
         return TAG_ROOT;
     }
@@ -105,17 +124,21 @@ public class AttributePrereq extends HasPrereq {
     }
 
     @Override
-    public void save(XMLWriter out) {
-        out.startTag(TAG_ROOT);
-        saveHasAttribute(out);
-        out.writeAttribute(ATTRIBUTE_WHICH, Enums.toId(mWhich));
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        setWhich(Enums.extract(m.getString(ATTRIBUTE_WHICH), TYPES, BonusAttributeType.ST));
+        setCombinedWith(Enums.extract(m.getString(ATTRIBUTE_COMBINED_WITH), TYPES));
+        mValueCompare.load(m.getMap(KEY_QUALIFIER));
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(ATTRIBUTE_WHICH, Enums.toId(mWhich));
         if (mCombinedWith != null) {
-            out.writeAttribute(ATTRIBUTE_COMBINED_WITH, Enums.toId(mCombinedWith));
+            w.keyValue(ATTRIBUTE_COMBINED_WITH, Enums.toId(mCombinedWith));
         }
-        out.writeAttribute(ATTRIBUTE_COMPARE, Enums.toId(mValueCompare.getType()));
-        out.finishTag();
-        out.writeEncodedData(Integer.toString(mValueCompare.getQualifier()));
-        out.endTagEOL(TAG_ROOT, false);
+        mValueCompare.save(w, KEY_QUALIFIER);
     }
 
     /** @return The type of comparison to make. */
@@ -152,9 +175,9 @@ public class AttributePrereq extends HasPrereq {
         case HT:
             return character.getHealth();
         case WILL:
-            return character.getWill();
+            return character.getWillAdj();
         case PERCEPTION:
-            return character.getPerception();
+            return character.getPerAdj();
         default:
             return 0;
         }

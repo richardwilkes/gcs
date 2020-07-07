@@ -14,15 +14,17 @@ package com.trollworks.gcs.prereq;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.WeightCriteria;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -32,6 +34,7 @@ public class ContainedWeightPrereq extends HasPrereq {
     /** The XML tag for this class. */
     public static final  String         TAG_ROOT          = "contained_weight_prereq";
     private static final String         ATTRIBUTE_COMPARE = "compare";
+    private static final String         KEY_QUALIFIER     = "qualifier";
     private              WeightCriteria mWeightCompare;
 
     /**
@@ -42,6 +45,17 @@ public class ContainedWeightPrereq extends HasPrereq {
     public ContainedWeightPrereq(PrereqList parent, WeightUnits defUnits) {
         super(parent);
         mWeightCompare = new WeightCriteria(NumericCompareType.AT_MOST, new WeightValue(new Fixed6(5), defUnits));
+    }
+
+    /**
+     * Loads a prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param m      The {@link JsonMap} to load from.
+     */
+    public ContainedWeightPrereq(PrereqList parent, WeightUnits defUnits, JsonMap m) throws IOException {
+        this(parent, defUnits);
+        loadSelf(m, new LoadState());
     }
 
     /**
@@ -85,6 +99,11 @@ public class ContainedWeightPrereq extends HasPrereq {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
     public String getXMLTag() {
         return TAG_ROOT;
     }
@@ -95,13 +114,15 @@ public class ContainedWeightPrereq extends HasPrereq {
     }
 
     @Override
-    public void save(XMLWriter out) {
-        out.startTag(TAG_ROOT);
-        saveHasAttribute(out);
-        out.writeAttribute(ATTRIBUTE_COMPARE, Enums.toId(mWeightCompare.getType()));
-        out.finishTag();
-        out.writeEncodedData(mWeightCompare.getQualifier().toString(false));
-        out.endTagEOL(TAG_ROOT, false);
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        mWeightCompare.load(m.getMap(KEY_QUALIFIER));
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        mWeightCompare.save(w, KEY_QUALIFIER);
     }
 
     /** @return The weight comparison object. */

@@ -12,17 +12,18 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 /** Describes a cost reduction. */
-public class CostReduction implements Feature {
+public class CostReduction extends Feature {
     /** The possible {@link BonusAttributeType}s that can be affected. */
     public static final  BonusAttributeType[] TYPES          = {BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT};
     /** The XML tag. */
@@ -46,6 +47,11 @@ public class CostReduction implements Feature {
     public CostReduction(CostReduction other) {
         mAttribute = other.mAttribute;
         mPercentage = other.mPercentage;
+    }
+
+    public CostReduction(JsonMap m) throws IOException {
+        this();
+        load(m);
     }
 
     /**
@@ -95,6 +101,26 @@ public class CostReduction implements Feature {
         mAttribute = attribute;
     }
 
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
+    public String getXMLTag() {
+        return TAG_ROOT;
+    }
+
+    @Override
+    public String getKey() {
+        return GURPSCharacter.ATTRIBUTES_PREFIX + mAttribute.name();
+    }
+
+    @Override
+    public Feature cloneFeature() {
+        return new CostReduction(this);
+    }
+
     /**
      * Loads a cost reduction.
      *
@@ -118,27 +144,15 @@ public class CostReduction implements Feature {
         } while (reader.withinMarker(marker));
     }
 
-    @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
+    protected void load(JsonMap m) throws IOException {
+        setAttribute(Enums.extract(m.getString(TAG_ATTRIBUTE), TYPES, BonusAttributeType.ST));
+        setPercentage(m.getInt(TAG_PERCENTAGE));
     }
 
     @Override
-    public String getKey() {
-        return GURPSCharacter.ATTRIBUTES_PREFIX + mAttribute.name();
-    }
-
-    @Override
-    public Feature cloneFeature() {
-        return new CostReduction(this);
-    }
-
-    @Override
-    public void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
-        out.simpleTag(TAG_ATTRIBUTE, Enums.toId(mAttribute));
-        out.simpleTag(TAG_PERCENTAGE, mPercentage);
-        out.endTagEOL(TAG_ROOT, true);
+    protected void saveSelf(JsonWriter w) throws IOException {
+        w.keyValue(TAG_ATTRIBUTE, Enums.toId(mAttribute));
+        w.keyValue(TAG_PERCENTAGE, mPercentage);
     }
 
     @Override

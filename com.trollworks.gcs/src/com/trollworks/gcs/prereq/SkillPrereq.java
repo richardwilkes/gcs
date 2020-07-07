@@ -15,11 +15,13 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -40,7 +42,17 @@ public class SkillPrereq extends NameLevelPrereq {
      */
     public SkillPrereq(PrereqList parent) {
         super(TAG_ROOT, parent);
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
+    }
+
+    /**
+     * Loads a prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param m      The {@link JsonMap} to load from.
+     */
+    public SkillPrereq(PrereqList parent, JsonMap m) throws IOException {
+        super(parent, m);
     }
 
     /**
@@ -60,7 +72,7 @@ public class SkillPrereq extends NameLevelPrereq {
 
     @Override
     protected void initializeForLoad() {
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
     @Override
@@ -84,8 +96,20 @@ public class SkillPrereq extends NameLevelPrereq {
     }
 
     @Override
-    protected void saveSelf(XMLWriter out) {
-        mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -126,8 +150,7 @@ public class SkillPrereq extends NameLevelPrereq {
         }
         if (!satisfied && builder != null) {
             builder.append(MessageFormat.format(I18n.Text("{0}{1} a skill whose name {2}"), prefix, hasText(), nameCriteria.toString()));
-            boolean notAnySpecialization = mSpecializationCriteria.getType() != StringCompareType.IS_ANYTHING;
-
+            boolean notAnySpecialization = !mSpecializationCriteria.isTypeAnything();
             if (notAnySpecialization) {
                 builder.append(MessageFormat.format(I18n.Text(", specialization {0},"), mSpecializationCriteria.toString()));
             }

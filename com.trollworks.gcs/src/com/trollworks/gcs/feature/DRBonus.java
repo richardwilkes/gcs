@@ -12,9 +12,10 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.Armor;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -29,6 +30,11 @@ public class DRBonus extends Bonus {
     public DRBonus() {
         super(1);
         mLocation = HitLocation.TORSO;
+    }
+
+    public DRBonus(JsonMap m) throws IOException {
+        this();
+        loadSelf(m);
     }
 
     /**
@@ -63,6 +69,11 @@ public class DRBonus extends Bonus {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
     public String getXMLTag() {
         return TAG_ROOT;
     }
@@ -86,17 +97,16 @@ public class DRBonus extends Bonus {
         }
     }
 
-    /**
-     * Saves the bonus.
-     *
-     * @param out The XML writer to use.
-     */
     @Override
-    public void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
-        out.simpleTag(TAG_LOCATION, Enums.toId(mLocation));
-        saveBase(out);
-        out.endTagEOL(TAG_ROOT, true);
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        setLocation(Enums.extract(m.getString(TAG_LOCATION), HitLocation.values(), HitLocation.TORSO));
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(TAG_LOCATION, Enums.toId(mLocation));
     }
 
     /** @return The location protected by the DR. */

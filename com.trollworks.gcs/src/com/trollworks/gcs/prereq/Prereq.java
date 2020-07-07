@@ -12,9 +12,13 @@
 package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.utility.xml.XMLWriter;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,15 +48,38 @@ public abstract class Prereq {
         }
     }
 
+    /** @return The type name to use for this data. */
+    public abstract String getJSONTypeName();
+
     /** @return The XML tag representing this prereq. */
     public abstract String getXMLTag();
 
     /**
+     * Loads the prerequisite.
+     *
+     * @param m The {@link JsonMap} to load from.
+     * @param state The {@link LoadState} to use.
+     */
+    public abstract void loadSelf(JsonMap m, LoadState state) throws IOException;
+
+    /**
      * Saves the prerequisite.
      *
-     * @param out The XML writer to use.
+     * @param w The {@link JsonWriter} to use.
      */
-    public abstract void save(XMLWriter out);
+    public final void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        saveSelf(w);
+        w.endMap();
+    }
+
+    /**
+     * Saves the prerequisite.
+     *
+     * @param w The {@link JsonWriter} to use.
+     */
+    public abstract void saveSelf(JsonWriter w) throws IOException;
 
     /**
      * @param character The character to check.

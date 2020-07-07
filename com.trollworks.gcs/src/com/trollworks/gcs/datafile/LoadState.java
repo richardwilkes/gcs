@@ -12,6 +12,7 @@
 package com.trollworks.gcs.datafile;
 
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.util.HashSet;
 
@@ -27,4 +28,6 @@ public class LoadState {
     public              boolean            mForUndo;
     /** Used to move uncarried equipment out of the carried equipment list for old sheets. */
     public              HashSet<Equipment> mUncarriedEquipment;
+    /** The default weight units to use. */
+    public              WeightUnits        mDefWeightUnits;
 }

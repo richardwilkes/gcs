@@ -14,9 +14,10 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -77,6 +78,16 @@ public class RangedWeaponStats extends WeaponStats {
     /**
      * Creates a {@link RangedWeaponStats}.
      *
+     * @param owner The owning piece of equipment or advantage.
+     * @param m     The {@link JsonMap} to load from.
+     */
+    public RangedWeaponStats(ListRow owner, JsonMap m) throws IOException {
+        super(owner, m);
+    }
+
+    /**
+     * Creates a {@link RangedWeaponStats}.
+     *
      * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
@@ -126,13 +137,29 @@ public class RangedWeaponStats extends WeaponStats {
     }
 
     @Override
-    protected void saveSelf(XMLWriter out) {
-        out.simpleTagNotEmpty(TAG_ACCURACY, mAccuracy);
-        out.simpleTagNotEmpty(TAG_RANGE, mRange);
-        out.simpleTagNotEmpty(TAG_RATE_OF_FIRE, mRateOfFire);
-        out.simpleTagNotEmpty(TAG_SHOTS, mShots);
-        out.simpleTagNotEmpty(TAG_BULK, mBulk);
-        out.simpleTagNotEmpty(TAG_RECOIL, mRecoil);
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        mAccuracy = m.getString(TAG_ACCURACY);
+        mRange = m.getString(TAG_RANGE);
+        mRateOfFire = m.getString(TAG_RATE_OF_FIRE);
+        mShots = m.getString(TAG_SHOTS);
+        mBulk = m.getString(TAG_BULK);
+        mRecoil = m.getString(TAG_RECOIL);
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        w.keyValueNot(TAG_ACCURACY, mAccuracy, "");
+        w.keyValueNot(TAG_RANGE, mRange, "");
+        w.keyValueNot(TAG_RATE_OF_FIRE, mRateOfFire, "");
+        w.keyValueNot(TAG_SHOTS, mShots, "");
+        w.keyValueNot(TAG_BULK, mBulk, "");
+        w.keyValueNot(TAG_RECOIL, mRecoil, "");
     }
 
     /** @return The accuracy. */

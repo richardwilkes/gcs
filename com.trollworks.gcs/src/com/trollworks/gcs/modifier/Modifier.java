@@ -16,8 +16,9 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -30,6 +31,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     protected static final String  TAG_REFERENCE     = "reference";
     /** The attribute for whether it is enabled. */
     protected static final String  ATTRIBUTE_ENABLED = "enabled";
+    private static final   String  KEY_DISABLED      = "disabled";
     /** The name of the {@link Modifier}. */
     protected              String  mName;
     /** The page reference for the {@link Modifier}. */
@@ -81,17 +83,17 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     }
 
     @Override
-    protected void saveAttributes(XMLWriter out, boolean forUndo) {
-        super.saveAttributes(out, forUndo);
-        if (!mEnabled) {
-            out.writeAttribute(ATTRIBUTE_ENABLED, false);
-        }
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        mEnabled = !m.getBoolean(KEY_DISABLED);
+        mName = m.getString(TAG_NAME);
+        mReference = m.getString(TAG_REFERENCE);
     }
 
     @Override
-    protected void saveSelf(XMLWriter out, boolean forUndo) {
-        out.simpleTag(TAG_NAME, mName);
-        out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        w.keyValueNot(KEY_DISABLED, !mEnabled, false);
+        w.keyValue(TAG_NAME, mName);
+        w.keyValueNot(TAG_REFERENCE, mReference, "");
     }
 
     public abstract String getNotificationPrefix();

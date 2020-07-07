@@ -27,9 +27,11 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -44,6 +46,7 @@ import java.util.Set;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
+    private static final   int               CURRENT_JSON_VERSION     = 1;
     private static final   int               CURRENT_VERSION          = 5;
     /** The XML tag used for items. */
     public static final    String            TAG_SPELL                = "spell";
@@ -64,6 +67,7 @@ public class Spell extends ListRow implements HasSourceReference {
     private static final   String            TAG_ATTRIBUTE            = "attribute";
     private static final   String            TAG_DIFFICULTY           = "difficulty";
     private static final   String            ATTRIBUTE_VERY_HARD      = "very_hard";
+    private static final   String            KEY_WEAPONS              = "weapons";
     /** The prefix used in front of all IDs for the spells. */
     public static final    String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
     /** The field ID for name changes. */
@@ -179,6 +183,11 @@ public class Spell extends ListRow implements HasSourceReference {
         }
     }
 
+    public Spell(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_SPELL_CONTAINER));
+        load(m, state);
+    }
+
     /**
      * Loads a spell and associates it with the specified data file.
      *
@@ -219,6 +228,16 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     public String getListChangedID() {
         return ID_LIST_CHANGED;
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return canHaveChildren() ? TAG_SPELL_CONTAINER : TAG_SPELL;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
     }
 
     @Override
@@ -290,8 +309,6 @@ public class Spell extends ListRow implements HasSourceReference {
             mReference = reader.readText().replace("\n", " ");
         } else if (!state.mForUndo && (TAG_SPELL.equals(name) || TAG_SPELL_CONTAINER.equals(name))) {
             addChild(new Spell(mDataFile, reader, state));
-        } else if (!state.mForUndo && RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(name)) {
-            addChild(new RitualMagicSpell(mDataFile, reader, state));
         } else if (!canHaveChildren()) {
             if (TAG_COLLEGE.equals(name)) {
                 mCollege = reader.readText().replace("\n", " ").replace("/ ", "/");
@@ -332,37 +349,74 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public void saveSelf(XMLWriter out, boolean forUndo) {
-        out.simpleTag(TAG_NAME, mName);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        mName = m.getString(TAG_NAME);
+        mReference = m.getString(TAG_REFERENCE);
         if (!canHaveChildren()) {
-            out.simpleTag(TAG_DIFFICULTY, getDifficultyAsText(false));
+            setDifficultyFromText(m.getString(TAG_DIFFICULTY));
+            if (m.has(TAG_TECH_LEVEL)) {
+                mTechLevel = m.getString(TAG_TECH_LEVEL);
+                if (!mTechLevel.isBlank() && getDataFile() instanceof ListFile) {
+                    mTechLevel = "";
+                }
+            }
+            mAttribute = Enums.extract(m.getString(TAG_ATTRIBUTE), SkillAttribute.values(), SkillAttribute.IQ);
+            mCollege = m.getString(TAG_COLLEGE);
+            mPowerSource = m.getString(TAG_POWER_SOURCE);
+            mSpellClass = m.getString(TAG_SPELL_CLASS);
+            mResist = m.getString(TAG_RESIST);
+            mCastingCost = m.getString(TAG_CASTING_COST);
+            mMaintenance = m.getString(TAG_MAINTENANCE_COST);
+            mCastingTime = m.getString(TAG_CASTING_TIME);
+            mDuration = m.getString(TAG_DURATION);
+            mPoints = m.getIntWithDefault(TAG_POINTS, 1);
+            if (m.has(KEY_WEAPONS)) {
+                WeaponStats.loadFromJSONArray(this, m.getArray(KEY_WEAPONS), mWeapons);
+            }
+        }
+    }
+
+    @Override
+    protected void loadChild(JsonMap m, LoadState state) throws IOException {
+        if (!state.mForUndo) {
+            String type = m.getString(DataFile.KEY_TYPE);
+            if (TAG_SPELL.equals(type) || TAG_SPELL_CONTAINER.equals(type)) {
+                addChild(new Spell(mDataFile, m, state));
+            } else if (RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(type)) {
+                addChild(new RitualMagicSpell(mDataFile, m, state));
+            } else {
+                Log.warn("invalid child type: " + type);
+            }
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        w.keyValue(TAG_NAME, mName);
+        w.keyValueNot(TAG_REFERENCE, mReference, "");
+        if (!canHaveChildren()) {
+            w.keyValue(TAG_DIFFICULTY, getDifficultyAsText(false));
             if (mTechLevel != null) {
                 if (getCharacter() != null) {
-                    out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
+                    w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
                 } else {
-                    out.startTag(TAG_TECH_LEVEL);
-                    out.finishEmptyTagEOL();
+                    w.keyValue(TAG_TECH_LEVEL, "");
                 }
             }
             if (mAttribute != SkillAttribute.IQ) {
-                out.simpleTagNotEmpty(TAG_ATTRIBUTE, mAttribute.name());
+                w.keyValue(TAG_ATTRIBUTE, Enums.toId(mAttribute));
             }
-            out.simpleTagNotEmpty(TAG_COLLEGE, mCollege);
-            out.simpleTagNotEmpty(TAG_POWER_SOURCE, mPowerSource);
-            out.simpleTagNotEmpty(TAG_SPELL_CLASS, mSpellClass);
-            out.simpleTagNotEmpty(TAG_RESIST, mResist);
-            out.simpleTagNotEmpty(TAG_CASTING_COST, mCastingCost);
-            out.simpleTagNotEmpty(TAG_MAINTENANCE_COST, mMaintenance);
-            out.simpleTagNotEmpty(TAG_CASTING_TIME, mCastingTime);
-            out.simpleTagNotEmpty(TAG_DURATION, mDuration);
-            if (mPoints != 1) {
-                out.simpleTag(TAG_POINTS, mPoints);
-            }
-            for (WeaponStats weapon : mWeapons) {
-                weapon.save(out);
-            }
+            w.keyValueNot(TAG_COLLEGE, mCollege, "");
+            w.keyValueNot(TAG_POWER_SOURCE, mPowerSource, "");
+            w.keyValueNot(TAG_SPELL_CLASS, mSpellClass, "");
+            w.keyValueNot(TAG_RESIST, mResist, "");
+            w.keyValueNot(TAG_CASTING_COST, mCastingCost, "");
+            w.keyValueNot(TAG_MAINTENANCE_COST, mMaintenance, "");
+            w.keyValueNot(TAG_CASTING_TIME, mCastingTime, "");
+            w.keyValueNot(TAG_DURATION, mDuration, "");
+            w.keyValueNot(TAG_POINTS, mPoints, 1);
+            WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
         }
-        out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
     }
 
     /** @return The weapon list. */

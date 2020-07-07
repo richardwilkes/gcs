@@ -143,7 +143,7 @@ public class LibraryCollector implements Comparator<Object> {
                 loadSave(new NoteList(), path);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Log.error(ex);
             System.exit(1);
         }
     }

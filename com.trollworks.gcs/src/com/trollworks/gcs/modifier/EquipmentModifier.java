@@ -20,15 +20,18 @@ import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Fixed6;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightValue;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
+    private static final int                         CURRENT_JSON_VERSION   = 1;
     private static final int                         CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                      TAG_MODIFIER           = "eqp_modifier";
@@ -84,6 +87,11 @@ public class EquipmentModifier extends Modifier {
                 addChild(new EquipmentModifier(file, (EquipmentModifier) other.getChild(i), true));
             }
         }
+    }
+
+    public EquipmentModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
+        this(file, TAG_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
+        load(m, state);
     }
 
     /**
@@ -224,6 +232,16 @@ public class EquipmentModifier extends Modifier {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
+    }
+
+    @Override
     public String getXMLTagName() {
         return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
     }
@@ -276,16 +294,46 @@ public class EquipmentModifier extends Modifier {
     }
 
     @Override
-    protected void saveSelf(XMLWriter out, boolean forUndo) {
-        super.saveSelf(out, forUndo);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        if (!canHaveChildren()) {
+            if (m.has(ATTRIBUTE_COST_TYPE)) {
+                mCostType = Enums.extract(m.getString(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.TO_ORIGINAL_COST);
+                mCostAmount = mCostType.format(m.getString(TAG_COST_ADJ), false);
+            }
+            if (m.has(ATTRIBUTE_WEIGHT_TYPE)) {
+                mWeightType = Enums.extract(m.getString(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
+                mWeightAmount = mWeightType.format(m.getString(TAG_WEIGHT_ADJ), getDataFile().defaultWeightUnits(), false);
+            }
+            mTechLevel = m.getString(TAG_TECH_LEVEL);
+        }
+    }
+
+    @Override
+    protected void loadChild(JsonMap m, LoadState state) throws IOException {
+        if (!state.mForUndo) {
+            String type = m.getString(DataFile.KEY_TYPE);
+            if (TAG_MODIFIER.equals(type) || TAG_MODIFIER_CONTAINER.equals(type)) {
+                addChild(new EquipmentModifier(mDataFile, m, state));
+            } else {
+                Log.warn("invalid child type: " + type);
+            }
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        super.saveSelf(w, forUndo);
         if (!canHaveChildren()) {
             if (mCostType != EquipmentModifierCostType.TO_ORIGINAL_COST || !mCostAmount.equals(DEFAULT_COST_AMOUNT)) {
-                out.simpleTagWithAttribute(TAG_COST_ADJ, mCostAmount, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+                w.keyValue(ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+                w.keyValue(TAG_COST_ADJ, mCostAmount);
             }
             if (mWeightType != EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT || !mWeightAmount.equals(getDefaultWeightAmount())) {
-                out.simpleTagWithAttribute(TAG_WEIGHT_ADJ, mWeightAmount, ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+                w.keyValue(ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
+                w.keyValue(TAG_WEIGHT_ADJ, mWeightAmount);
             }
-            out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
+            w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
         }
     }
 

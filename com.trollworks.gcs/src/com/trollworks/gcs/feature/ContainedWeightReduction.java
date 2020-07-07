@@ -13,20 +13,22 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.utility.Fixed6;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 /** Describes a contained weight reduction. */
-public class ContainedWeightReduction implements Feature {
+public class ContainedWeightReduction extends Feature {
     /** The XML tag. */
     public static final String TAG_ROOT = "contained_weight_reduction";
+    private static final String KEY_REDUCTION = "reduction";
     private             Object mValue;
 
     /** Creates a new contained weight reduction. */
@@ -41,6 +43,11 @@ public class ContainedWeightReduction implements Feature {
      */
     public ContainedWeightReduction(ContainedWeightReduction other) {
         mValue = other.mValue instanceof WeightValue ? new WeightValue((WeightValue) other.mValue) : other.mValue;
+    }
+
+    public ContainedWeightReduction(JsonMap m) throws IOException {
+        this();
+        load(m);
     }
 
     /**
@@ -139,14 +146,9 @@ public class ContainedWeightReduction implements Feature {
         mValue = new WeightValue(reduction);
     }
 
-    /**
-     * Loads a contained weight reduction.
-     *
-     * @param reader The XML reader to use.
-     */
-    protected void load(XMLReader reader) throws IOException {
-        String value = reader.readText().trim();
-        mValue = value.endsWith("%") ? Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false)) : WeightValue.extract(value, false);
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -164,8 +166,23 @@ public class ContainedWeightReduction implements Feature {
         return new ContainedWeightReduction(this);
     }
 
+    /**
+     * Loads a contained weight reduction.
+     *
+     * @param reader The XML reader to use.
+     */
+    protected void load(XMLReader reader) throws IOException {
+        String value = reader.readText().trim();
+        mValue = value.endsWith("%") ? Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false)) : WeightValue.extract(value, false);
+    }
+
+    protected void load(JsonMap m) throws IOException {
+        String value = m.getString(KEY_REDUCTION).trim();
+        mValue = value.endsWith("%") ? Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false)) : WeightValue.extract(value, false);
+    }
+
     @Override
-    public void save(XMLWriter out) {
+    protected void saveSelf(JsonWriter w) throws IOException {
         String text = "";
         if (mValue instanceof Integer) {
             int percentage = ((Integer) mValue).intValue();
@@ -178,7 +195,7 @@ public class ContainedWeightReduction implements Feature {
                 text = weight.toString(false);
             }
         }
-        out.simpleTag(TAG_ROOT, text);
+        w.keyValue(KEY_REDUCTION, text);
     }
 
     @Override

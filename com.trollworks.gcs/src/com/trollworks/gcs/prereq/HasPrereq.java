@@ -11,9 +11,13 @@
 
 package com.trollworks.gcs.prereq;
 
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
+
+import java.io.IOException;
 
 /** An abstract prerequisite class for whether or not the specific item is present. */
 public abstract class HasPrereq extends Prereq {
@@ -58,6 +62,16 @@ public abstract class HasPrereq extends Prereq {
         return super.hashCode();
     }
 
+    @Override
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        mHas = m.getBoolean(ATTRIBUTE_HAS);
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        w.keyValue(ATTRIBUTE_HAS, mHas);
+    }
+
     /**
      * Loads the "has" attribute.
      *
@@ -65,15 +79,6 @@ public abstract class HasPrereq extends Prereq {
      */
     protected void loadHasAttribute(XMLReader reader) {
         mHas = reader.isAttributeSet(ATTRIBUTE_HAS);
-    }
-
-    /**
-     * Writes the "has" attribute to the stream.
-     *
-     * @param out The XML writer to use.
-     */
-    protected void saveHasAttribute(XMLWriter out) {
-        out.writeAttribute(ATTRIBUTE_HAS, mHas);
     }
 
     /**

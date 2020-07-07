@@ -261,25 +261,25 @@ public class Preferences {
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-                JsonMap m = Json.asMap(Json.parse(in), true);
-                if (m != null) {
+                JsonMap m = Json.asMap(Json.parse(in));
+                if (!m.isEmpty()) {
                     int version = m.getInt(VERSION);
                     if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION) {
                         mID = UUID.fromString(m.getStringWithDefault(ID, mID.toString()));
                         Version loadVersion;
                         if (version >= VERSION_AS_OF_GCS_4_18) {
-                            loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION, false));
+                            loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION));
                         } else {
-                            loadVersion = new Version(m.getString(LAST_GCS_VERSION, false));
+                            loadVersion = new Version(m.getString(LAST_GCS_VERSION));
                         }
                         if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
                             mLastSeenGCSVersion = loadVersion;
                         }
                         if (version >= VERSION_AS_OF_GCS_4_18) {
-                            JsonMap m2 = m.getMap(LIBRARIES, true);
-                            if (m2 != null) {
+                            if (m.has(LIBRARIES)) {
+                                JsonMap m2 = m.getMap(LIBRARIES);
                                 for (String key : m2.keySet()) {
-                                    Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key, false)));
+                                    Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key)));
                                 }
                             }
                         } else {
@@ -288,14 +288,14 @@ public class Preferences {
                         }
                         mInitialPoints = m.getIntWithDefault(INITIAL_POINTS, mInitialPoints);
                         mToolTipTimeout = m.getIntWithDefault(TOOLTIP_TIMEOUT, mToolTipTimeout);
-                        JsonMap m2 = m.getMap(LIBRARY_EXPLORER, true);
-                        if (m2 != null) {
+                        if (m.has(LIBRARY_EXPLORER)) {
+                            JsonMap m2 = m.getMap(LIBRARY_EXPLORER);
                             mLibraryExplorerDividerPosition = m2.getIntWithDefault(DIVIDER_POSITION, mLibraryExplorerDividerPosition);
-                            JsonArray a      = m2.getArray(OPEN_ROW_KEYS, true);
+                            JsonArray a      = m2.getArray(OPEN_ROW_KEYS);
                             int       length = a.size();
                             mLibraryExplorerOpenRowKeys = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
-                                mLibraryExplorerOpenRowKeys.add(a.getString(i, false));
+                                mLibraryExplorerOpenRowKeys.add(a.getString(i));
                             }
                         }
                         mUserDescriptionDisplay = Enums.extract(m.getStringWithDefault(USER_DESCRIPTION_DISPLAY, ""), DisplayOption.values(), mUserDescriptionDisplay);
@@ -304,67 +304,52 @@ public class Preferences {
                         mInitialUIScale = Enums.extract(m.getStringWithDefault(INITIAL_UI_SCALE, ""), Scales.values(), mInitialUIScale);
                         mDefaultLengthUnits = Enums.extract(m.getStringWithDefault(DEFAULT_LENGTH_UNITS, ""), LengthUnits.values(), mDefaultLengthUnits);
                         mDefaultWeightUnits = Enums.extract(m.getStringWithDefault(DEFAULT_WEIGHT_UNITS, ""), WeightUnits.values(), mDefaultWeightUnits);
-                        JsonArray a = m.getArray(BLOCK_LAYOUT, true);
-                        if (a != null) {
-                            int length = a.size();
+                        if (m.has(BLOCK_LAYOUT)) {
+                            JsonArray a      = m.getArray(BLOCK_LAYOUT);
+                            int       length = a.size();
                             mBlockLayout = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
-                                mBlockLayout.add(a.getString(i, false));
+                                mBlockLayout.add(a.getString(i));
                             }
                             if (version < VERSION_AS_OF_GCS_4_18) {
                                 mBlockLayout.add(0, CharacterSheet.REACTIONS_KEY);
                             }
                         }
-                        a = m.getArray(RECENT_FILES, true);
-                        if (a != null) {
-                            int length = a.size();
+                        if (m.has(RECENT_FILES)) {
+                            JsonArray a      = m.getArray(RECENT_FILES);
+                            int       length = a.size();
                             mRecentFiles = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
-                                String p = a.getString(i, true);
-                                if (p != null) {
-                                    mRecentFiles.add(Paths.get(p).normalize().toAbsolutePath());
-                                }
+                                mRecentFiles.add(Paths.get(a.getString(i)).normalize().toAbsolutePath());
                             }
                         }
                         mLastDir = Paths.get(m.getStringWithDefault(LAST_DIR, mLastDir.toString())).normalize().toAbsolutePath();
-                        m2 = m.getMap(PDF_REFS, true);
-                        if (m2 != null) {
+                        if (m.has(PDF_REFS)) {
+                            JsonMap m2 = m.getMap(PDF_REFS);
                             mPdfRefs = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                JsonMap m3 = m2.getMap(key, true);
-                                if (m3 != null) {
-                                    mPdfRefs.put(key, new PdfRef(m3));
-                                }
+                                mPdfRefs.put(key, new PdfRef(m2.getMap(key)));
                             }
                         }
-                        m2 = m.getMap(KEY_BINDINGS, true);
-                        if (m2 != null) {
+                        if (m.has(KEY_BINDINGS)) {
+                            JsonMap m2 = m.getMap(KEY_BINDINGS);
                             mKeyBindingOverrides = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                String v = m2.getString(key, true);
-                                if (v != null) {
-                                    mKeyBindingOverrides.put(key, v);
-                                }
+                                mKeyBindingOverrides.put(key, m2.getString(key));
                             }
                         }
-                        m2 = m.getMap(FONTS, true);
-                        if (m2 != null) {
+                        if (m.has(FONTS)) {
+                            JsonMap m2 = m.getMap(FONTS);
                             mFontInfo = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                JsonMap m3 = m2.getMap(key, true);
-                                if (m3 != null) {
-                                    mFontInfo.put(key, new Fonts.Info(m3));
-                                }
+                                mFontInfo.put(key, new Fonts.Info(m2.getMap(key)));
                             }
                         }
-                        m2 = m.getMap(WINDOW_POSITIONS, true);
-                        if (m2 != null) {
+                        if (m.has(WINDOW_POSITIONS)) {
+                            JsonMap m2 = m.getMap(WINDOW_POSITIONS);
                             mBaseWindowPositions = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                JsonMap m3 = m2.getMap(key, true);
-                                if (m3 != null) {
-                                    mBaseWindowPositions.put(key, new BaseWindow.Position(m3));
-                                }
+                                mBaseWindowPositions.put(key, new BaseWindow.Position(m2.getMap(key)));
                             }
                         }
                         mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
@@ -383,9 +368,8 @@ public class Preferences {
                         mAutoNameNewCharacters = m.getBooleanWithDefault(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                         mUseNativePrintDialogs = m.getBooleanWithDefault(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
-                        m2 = m.getMap(DEFAULT_PAGE_SETTINGS, true);
-                        if (m2 != null) {
-                            mDefaultPageSettings = new PrintManager(m2);
+                        if (m.has(DEFAULT_PAGE_SETTINGS)) {
+                            mDefaultPageSettings = new PrintManager(m.getMap(DEFAULT_PAGE_SETTINGS));
                         }
                     }
                 }

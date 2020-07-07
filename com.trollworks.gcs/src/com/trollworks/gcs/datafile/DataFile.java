@@ -20,18 +20,20 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SafeFileUpdater;
 import com.trollworks.gcs.utility.VersionException;
+import com.trollworks.gcs.utility.json.Json;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -45,6 +47,8 @@ import javax.swing.undo.UndoableEdit;
 public abstract class DataFile implements Undoable {
     /** The 'id' attribute. */
     public static final String                     ATTRIBUTE_ID           = "id";
+    /** Identifies the type of a JSON object. */
+    public static final String                     KEY_TYPE               = "type";
     private             Path                       mPath;
     private             UUID                       mId                    = UUID.randomUUID();
     private             Notifier                   mNotifier              = new Notifier();
@@ -57,26 +61,38 @@ public abstract class DataFile implements Undoable {
     public void load(Path path) throws IOException {
         setPath(path);
         try (BufferedReader fileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            try (XMLReader reader = new XMLReader(fileReader)) {
-                XMLNodeType type  = reader.next();
-                boolean     found = false;
-                while (type != XMLNodeType.END_DOCUMENT) {
-                    if (type == XMLNodeType.START_TAG) {
-                        String name = reader.getName();
-                        if (matchesRootTag(name)) {
-                            if (found) {
-                                throw new IOException();
+            fileReader.mark(20);
+            char[] buffer = new char[5];
+            int    n      = fileReader.read(buffer);
+            if (n < 0) {
+                throw new IOException("Premature EOF");
+            }
+            fileReader.reset();
+            if (n == 5 && buffer[0] == '<' && buffer[1] == '?' && buffer[2] == 'x' && buffer[3] == 'm' && buffer[4] == 'l') {
+                // Load xml format from version 4.18 and earlier
+                try (XMLReader reader = new XMLReader(fileReader)) {
+                    XMLNodeType type  = reader.next();
+                    boolean     found = false;
+                    while (type != XMLNodeType.END_DOCUMENT) {
+                        if (type == XMLNodeType.START_TAG) {
+                            String name = reader.getName();
+                            if (matchesRootTag(name)) {
+                                if (found) {
+                                    throw new IOException();
+                                }
+                                found = true;
+                                load(reader, new LoadState());
+                            } else {
+                                reader.skipTag(name);
                             }
-                            found = true;
-                            load(reader, new LoadState());
+                            type = reader.getType();
                         } else {
-                            reader.skipTag(name);
+                            type = reader.next();
                         }
-                        type = reader.getType();
-                    } else {
-                        type = reader.next();
                     }
                 }
+            } else {
+                load(Json.asMap(Json.parse(fileReader)), new LoadState());
             }
         }
         mModified = false;
@@ -100,12 +116,37 @@ public abstract class DataFile implements Undoable {
     }
 
     /**
+     * @param m     The {@link JsonMap} to load data from.
+     * @param state The {@link LoadState} to use.
+     */
+    public void load(JsonMap m, LoadState state) throws IOException {
+        try {
+            mId = UUID.fromString(m.getString(ATTRIBUTE_ID));
+        } catch (Exception exception) {
+            mId = UUID.randomUUID();
+        }
+        state.mDataFileVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
+        if (state.mDataFileVersion > getJSONVersion()) {
+            throw VersionException.createTooNew();
+        }
+        loadSelf(m, state);
+    }
+
+    /**
      * Called to load the data file.
      *
      * @param reader The {@link XMLReader} to load data from.
      * @param state  The {@link LoadState} to use.
      */
     protected abstract void loadSelf(XMLReader reader, LoadState state) throws IOException;
+
+    /**
+     * Called to load the data file.
+     *
+     * @param m     The {@link JsonMap} to load data from.
+     * @param state The {@link LoadState} to use.
+     */
+    protected abstract void loadSelf(JsonMap m, LoadState state) throws IOException;
 
     /**
      * Saves the data out to the specified path. Does not affect the result of {@link #getPath()}.
@@ -119,19 +160,12 @@ public abstract class DataFile implements Undoable {
         transaction.begin();
         try {
             File transactionFile = transaction.getTransactionFile(path.toFile());
-            try (XMLWriter out = new XMLWriter(new BufferedOutputStream(new FileOutputStream(transactionFile)))) {
-                out.writeHeader();
-                save(out, true, false);
-                success = !out.checkError();
+            try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(transactionFile, StandardCharsets.UTF_8)), "\t")) {
+                save(w, true, false);
             }
-            if (success) {
-                success = false;
-                transaction.commit();
-                setModified(false);
-                success = true;
-            } else {
-                transaction.abort();
-            }
+            transaction.commit();
+            setModified(false);
+            success = true;
         } catch (Exception exception) {
             Log.error(exception);
             transaction.abort();
@@ -140,37 +174,43 @@ public abstract class DataFile implements Undoable {
     }
 
     /**
-     * Saves the root tag.
+     * Writes the data to the specified {@link JsonWriter}.
      *
-     * @param out             The XML writer to use.
+     * @param w               The {@link JsonWriter} to use.
      * @param includeUniqueID Whether the unique should be included in the attribute list.
      * @param onlyIfNotEmpty  Whether to write something even if the file contents are empty.
      */
-    public void save(XMLWriter out, boolean includeUniqueID, boolean onlyIfNotEmpty) {
+    public void save(JsonWriter w, boolean includeUniqueID, boolean onlyIfNotEmpty) throws IOException {
         if (!onlyIfNotEmpty || !isEmpty()) {
-            out.startTag(getXMLTagName());
+            w.startMap();
+            w.keyValue(KEY_TYPE, getJSONTypeName());
+            w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
             if (includeUniqueID) {
-                out.writeAttribute(ATTRIBUTE_ID, mId.toString());
+                w.keyValue(ATTRIBUTE_ID, mId.toString());
             }
-            out.writeAttribute(LoadState.ATTRIBUTE_VERSION, getXMLTagVersion());
-            out.finishTagEOL();
-            saveSelf(out);
-            out.endTagEOL(getXMLTagName(), true);
+            saveSelf(w);
+            w.endMap();
         }
     }
 
     /**
      * Called to save the data file.
      *
-     * @param out The XML writer to use.
+     * @param w The {@link JsonWriter} to use.
      */
-    protected abstract void saveSelf(XMLWriter out);
+    protected abstract void saveSelf(JsonWriter w) throws IOException;
 
     /** @return Whether the file is empty. By default, returns {@code false}. */
     @SuppressWarnings("static-method")
     public boolean isEmpty() {
         return false;
     }
+
+    /** @return The most recent version of the JSON data this object knows how to load. */
+    public abstract int getJSONVersion();
+
+    /** @return The type name to use for this data. */
+    public abstract String getJSONTypeName();
 
     /** @return The most recent version of the XML tag this object knows how to load. */
     public abstract int getXMLTagVersion();

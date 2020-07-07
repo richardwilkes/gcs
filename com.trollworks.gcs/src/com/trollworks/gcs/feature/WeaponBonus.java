@@ -17,9 +17,10 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -48,9 +49,14 @@ public class WeaponBonus extends Bonus {
         super(1);
         mWeaponSelectionType = WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
         mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
-        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
+    }
+
+    public WeaponBonus(JsonMap m) throws IOException {
+        this();
+        loadSelf(m);
     }
 
     /**
@@ -92,6 +98,11 @@ public class WeaponBonus extends Bonus {
     @Override
     public Feature cloneFeature() {
         return new WeaponBonus(this);
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -146,33 +157,48 @@ public class WeaponBonus extends Bonus {
         }
     }
 
-    /**
-     * Saves the bonus.
-     *
-     * @param out The XML writer to use.
-     */
     @Override
-    public void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
-        out.simpleTag(TAG_SELECTION_TYPE, Enums.toId(mWeaponSelectionType));
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        mWeaponSelectionType = Enums.extract(m.getString(TAG_SELECTION_TYPE), WeaponSelectionType.values(), WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL);
         switch (mWeaponSelectionType) {
         case THIS_WEAPON:
         default:
             break;
         case WEAPONS_WITH_NAME:
-            mNameCriteria.save(out, TAG_NAME);
-            mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
-            mCategoryCriteria.save(out, TAG_CATEGORY);
+            mNameCriteria.load(m.getMap(TAG_NAME));
+            mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
+            mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
             break;
         case WEAPONS_WITH_REQUIRED_SKILL:
-            mNameCriteria.save(out, TAG_NAME);
-            mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
-            mLevelCriteria.save(out, TAG_LEVEL);
-            mCategoryCriteria.save(out, TAG_CATEGORY);
+            mNameCriteria.load(m.getMap(TAG_NAME));
+            mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
+            mLevelCriteria.load(m.getMap(TAG_LEVEL));
+            mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
             break;
         }
-        saveBase(out);
-        out.endTagEOL(TAG_ROOT, true);
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(TAG_SELECTION_TYPE, Enums.toId(mWeaponSelectionType));
+        switch (mWeaponSelectionType) {
+        case THIS_WEAPON:
+        default:
+            break;
+        case WEAPONS_WITH_NAME:
+            mNameCriteria.save(w, TAG_NAME);
+            mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
+            mCategoryCriteria.save(w, TAG_CATEGORY);
+            break;
+        case WEAPONS_WITH_REQUIRED_SKILL:
+            mNameCriteria.save(w, TAG_NAME);
+            mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
+            mLevelCriteria.save(w, TAG_LEVEL);
+            mCategoryCriteria.save(w, TAG_CATEGORY);
+            break;
+        }
     }
 
     public WeaponSelectionType getWeaponSelectionType() {

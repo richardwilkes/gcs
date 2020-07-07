@@ -15,8 +15,9 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,6 +37,8 @@ public class SpellBonus extends Bonus {
     /** The XML attribute name for the "all colleges" flag. */
     public static final  String         ATTRIBUTE_ALL_COLLEGES = "all_colleges";
     private static final String         TAG_CATEGORY           = "category";
+    private static final String         KEY_MATCH              = "match";
+    private static final String         KEY_NAME               = "name";
     private              boolean        mAllColleges;
     private              String         mMatchType;
     private              StringCriteria mNameCriteria;
@@ -47,7 +50,12 @@ public class SpellBonus extends Bonus {
         mAllColleges = true;
         mMatchType = TAG_COLLEGE_NAME;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
-        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
+    }
+
+    public SpellBonus(JsonMap m) throws IOException {
+        this();
+        loadSelf(m);
     }
 
     /**
@@ -90,6 +98,11 @@ public class SpellBonus extends Bonus {
     @Override
     public Feature cloneFeature() {
         return new SpellBonus(this);
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -147,24 +160,26 @@ public class SpellBonus extends Bonus {
         }
     }
 
-    /**
-     * Saves the bonus.
-     *
-     * @param out The XML writer to use.
-     */
     @Override
-    public void save(XMLWriter out) {
-        out.startTag(TAG_ROOT);
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        mMatchType = m.getString(KEY_MATCH);
+        mAllColleges = ATTRIBUTE_ALL_COLLEGES.equals(mMatchType);
         if (mAllColleges) {
-            out.writeAttribute(ATTRIBUTE_ALL_COLLEGES, true);
+            mMatchType = TAG_COLLEGE_NAME;
         }
-        out.finishTagEOL();
+        mNameCriteria.load(m.getMap(KEY_NAME));
+        mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(KEY_MATCH, mAllColleges ? ATTRIBUTE_ALL_COLLEGES : mMatchType);
         if (!mAllColleges) {
-            mNameCriteria.save(out, mMatchType);
+            mNameCriteria.save(w, KEY_NAME);
         }
-        saveBase(out);
-        mCategoryCriteria.save(out, TAG_CATEGORY);
-        out.endTagEOL(TAG_ROOT, true);
+        mCategoryCriteria.save(w, TAG_CATEGORY);
     }
 
     /** @return Whether the bonus applies to all colleges. */

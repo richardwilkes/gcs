@@ -14,13 +14,14 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.Json;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.zip.GZIPInputStream;
@@ -71,33 +72,27 @@ public class RowUndo extends AbstractUndoableEdit {
     private static byte[] serialize(ListRow row) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            GZIPOutputStream      gos  = new GZIPOutputStream(baos);
-            try (XMLWriter writer = new XMLWriter(gos)) {
-                row.save(writer, true);
+            try (GZIPOutputStream gos = new GZIPOutputStream(baos)) {
+                try (JsonWriter w = new JsonWriter(new OutputStreamWriter(gos, StandardCharsets.UTF_8), "")) {
+                    row.save(w, true);
+                }
             }
             return baos.toByteArray();
         } catch (Exception exception) {
-            exception.printStackTrace(System.err);
+            Log.error(exception);
         }
         return new byte[0];
     }
 
     private void deserialize(byte[] buffer) {
-        try (XMLReader reader = new XMLReader(new InputStreamReader(new GZIPInputStream(new ByteArrayInputStream(buffer)), StandardCharsets.UTF_8))) {
-            XMLNodeType type  = reader.next();
-            LoadState   state = new LoadState();
-            state.mDataFileVersion = mDataFile.getXMLTagVersion();
+        try (GZIPInputStream s = new GZIPInputStream(new ByteArrayInputStream(buffer))) {
+            JsonMap   m     = Json.asMap(Json.parse(s));
+            LoadState state = new LoadState();
+            state.mDataFileVersion = mDataFile.getJSONVersion();
             state.mForUndo = true;
-            while (type != XMLNodeType.END_DOCUMENT) {
-                if (type == XMLNodeType.START_TAG) {
-                    mRow.load(reader, state);
-                    type = reader.getType();
-                } else {
-                    type = reader.next();
-                }
-            }
+            mRow.load(m, state);
         } catch (Exception exception) {
-            exception.printStackTrace(System.err);
+            Log.error(exception);
         }
     }
 

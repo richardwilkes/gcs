@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.utility.json;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +28,10 @@ public class JsonMap extends JsonCollection {
      */
     public boolean has(String key) {
         return mMap.containsKey(key);
+    }
+
+    public boolean isEmpty() {
+        return mMap.isEmpty();
     }
 
     /**
@@ -146,57 +148,32 @@ public class JsonMap extends JsonCollection {
     }
 
     /**
-     * @param key       The key to retrieve.
-     * @param allowNull {@code false} to return an empty string if no key matches.
+     * @param key The key to retrieve.
      * @return The value associated with the key.
      */
-    public String getString(String key, boolean allowNull) {
-        return Json.asString(get(key), allowNull);
+    public String getString(String key) {
+        return Json.asString(get(key));
     }
 
     public String getStringWithDefault(String key, String def) {
         Object value = get(key);
-        return value != null ? Json.asString(value, true) : def;
+        return value != null ? Json.asString(value) : def;
     }
 
     /**
-     * @param key       The key to retrieve.
-     * @param allowNull {@code false} to return an empty array if no key matches or the value cannot
-     *                  be converted to a {@link JsonArray}.
+     * @param key The key to retrieve.
      * @return The value associated with the key.
      */
-    public JsonArray getArray(String key, boolean allowNull) {
-        return Json.asArray(get(key), allowNull);
+    public JsonArray getArray(String key) {
+        return Json.asArray(get(key));
     }
 
     /**
-     * @param key       The key to retrieve.
-     * @param allowNull {@code false} to return an empty map if no key matches or the value cannot
-     *                  be converted to a {@link JsonMap}.
+     * @param key The key to retrieve.
      * @return The value associated with the key.
      */
-    public JsonMap getMap(String key, boolean allowNull) {
-        return Json.asMap(get(key), allowNull);
-    }
-
-    /**
-     * @param key       The key to retrieve.
-     * @param allowNull {@code false} to return an empty point if no such key exists or the value
-     *                  cannot be converted to a {@link Point}.
-     * @return The value associated with the key.
-     */
-    public Point getPoint(String key, boolean allowNull) {
-        return Json.asPoint(getString(key, true), allowNull);
-    }
-
-    /**
-     * @param key       The key to retrieve.
-     * @param allowNull {@code false} to return an empty rectangle if no such key exists or the
-     *                  value cannot be converted to a {@link Rectangle}.
-     * @return The value associated with the key.
-     */
-    public Rectangle getRectangle(String key, boolean allowNull) {
-        return Json.asRectangle(getString(key, true), allowNull);
+    public JsonMap getMap(String key) {
+        return Json.asMap(get(key));
     }
 
     /**

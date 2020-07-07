@@ -34,10 +34,13 @@ import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -51,6 +54,7 @@ import java.util.Set;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
+    private static final int                     CURRENT_JSON_VERSION       = 1;
     private static final int                     CURRENT_VERSION            = 7;
     private static final int                     EQUIPMENT_SPLIT_VERSION    = 6;
     private static final String                  DEFAULT_LEGALITY_CLASS     = "4";
@@ -58,6 +62,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     public static final  String                  TAG_EQUIPMENT              = "equipment";
     /** The XML tag used for containers. */
     public static final  String                  TAG_EQUIPMENT_CONTAINER    = "equipment_container";
+    private static final String                  KEY_WEAPONS                = "weapons";
+    private static final String                  KEY_MODIFIERS              = "modifiers";
     private static final String                  ATTRIBUTE_EQUIPPED         = "equipped";
     private static final String                  TAG_QUANTITY               = "quantity";
     private static final String                  TAG_USES                   = "uses";
@@ -187,6 +193,18 @@ public class Equipment extends ListRow implements HasSourceReference {
      * Loads an equipment and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
+     * @param m        The {@JsonMap} to load from.
+     * @param state    The {@link LoadState} to use.
+     */
+    public Equipment(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_EQUIPMENT_CONTAINER));
+        load(m, state);
+    }
+
+    /**
+     * Loads an equipment and associates it with the specified data file.
+     *
+     * @param dataFile The data file to associate it with.
      * @param reader   The XML reader to load from.
      * @param state    The {@link LoadState} to use.
      */
@@ -219,6 +237,16 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     public String getListChangedID() {
         return ID_LIST_CHANGED;
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return canHaveChildren() ? TAG_EQUIPMENT_CONTAINER : TAG_EQUIPMENT;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
     }
 
     @Override
@@ -320,33 +348,67 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     @Override
-    protected void saveAttributes(XMLWriter out, boolean forUndo) {
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         if (mDataFile instanceof GURPSCharacter) {
-            out.writeAttribute(ATTRIBUTE_EQUIPPED, mEquipped);
+            mEquipped = m.getBoolean(ATTRIBUTE_EQUIPPED);
+        }
+        if (!canHaveChildren()) {
+            mQuantity = m.getInt(TAG_QUANTITY);
+        }
+        mDescription = m.getString(TAG_DESCRIPTION);
+        mTechLevel = m.getString(TAG_TECH_LEVEL);
+        mLegalityClass = m.getStringWithDefault(TAG_LEGALITY_CLASS, DEFAULT_LEGALITY_CLASS);
+        mValue = new Fixed6(m.getString(TAG_VALUE), Fixed6.ZERO, false);
+        mWeight = WeightValue.extract(m.getString(TAG_WEIGHT), false);
+        mReference = m.getString(TAG_REFERENCE);
+        mUses = m.getInt(TAG_USES);
+        mMaxUses = m.getInt(TAG_MAX_USES);
+        if (m.has(KEY_WEAPONS)) {
+            WeaponStats.loadFromJSONArray(this, m.getArray(KEY_WEAPONS), mWeapons);
+        }
+        if (m.has(KEY_MODIFIERS)) {
+            JsonArray a     = m.getArray(KEY_MODIFIERS);
+            int       count = a.size();
+            for (int i = 0; i < count; i++) {
+                mModifiers.add(new EquipmentModifier(getDataFile(), a.getMap(i), state));
+            }
         }
     }
 
     @Override
-    protected void saveSelf(XMLWriter out, boolean forUndo) {
+    protected void loadChild(JsonMap m, LoadState state) throws IOException {
+        if (!state.mForUndo) {
+            String type = m.getString(DataFile.KEY_TYPE);
+            if (TAG_EQUIPMENT.equals(type) || TAG_EQUIPMENT_CONTAINER.equals(type)) {
+                addChild(new Equipment(mDataFile, m, state));
+            } else {
+                Log.warn("invalid child type: " + type);
+            }
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        if (mDataFile instanceof GURPSCharacter) {
+            w.keyValue(ATTRIBUTE_EQUIPPED, mEquipped);
+        }
         if (!canHaveChildren()) {
-            out.simpleTag(TAG_QUANTITY, mQuantity);
+            w.keyValueNot(TAG_QUANTITY, mQuantity, 0);
         }
-        out.simpleTagNotEmpty(TAG_DESCRIPTION, mDescription);
-        out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
-        out.simpleTagNotEmpty(TAG_LEGALITY_CLASS, mLegalityClass);
-        out.simpleTag(TAG_VALUE, mValue.toString());
+        w.keyValueNot(TAG_DESCRIPTION, mDescription, "");
+        w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
+        w.keyValueNot(TAG_LEGALITY_CLASS, mLegalityClass, DEFAULT_LEGALITY_CLASS);
+        if (!mValue.equals(Fixed6.ZERO)) {
+            w.keyValue(TAG_VALUE, mValue.toString());
+        }
         if (!mWeight.getNormalizedValue().equals(Fixed6.ZERO)) {
-            out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
+            w.keyValue(TAG_WEIGHT, mWeight.toString(false));
         }
-        out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
-        out.simpleTagNotZero(TAG_USES, mUses);
-        out.simpleTagNotZero(TAG_MAX_USES, mMaxUses);
-        for (WeaponStats weapon : mWeapons) {
-            weapon.save(out);
-        }
-        for (EquipmentModifier modifier : mModifiers) {
-            modifier.save(out, forUndo);
-        }
+        w.keyValueNot(TAG_REFERENCE, mReference, "");
+        w.keyValueNot(TAG_USES, mUses, 0);
+        w.keyValueNot(TAG_MAX_USES, mMaxUses, 0);
+        WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
+        saveList(w, KEY_MODIFIERS, mModifiers, false);
     }
 
     @Override

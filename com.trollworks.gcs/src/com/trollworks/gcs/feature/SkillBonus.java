@@ -15,9 +15,10 @@ import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -41,8 +42,13 @@ public class SkillBonus extends Bonus {
         super(1);
         mSkillSelectionType = SkillSelectionType.SKILLS_WITH_NAME;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
-        mSpecializationCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
-        mCategoryCriteria = new StringCriteria(StringCompareType.IS_ANYTHING, "");
+        mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
+        mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
+    }
+
+    public SkillBonus(JsonMap m) throws IOException {
+        this();
+        loadSelf(m);
     }
 
     /**
@@ -85,6 +91,11 @@ public class SkillBonus extends Bonus {
     @Override
     public Feature cloneFeature() {
         return new SkillBonus(this);
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -137,28 +148,26 @@ public class SkillBonus extends Bonus {
         }
     }
 
-    /**
-     * Saves the bonus.
-     *
-     * @param out The XML writer to use.
-     */
     @Override
-    public void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
-        out.simpleTag(TAG_SELECTION_TYPE, Enums.toId(mSkillSelectionType));
-        switch (mSkillSelectionType) {
-        case THIS_WEAPON:
-        default:
-            break;
-        case WEAPONS_WITH_NAME:
-        case SKILLS_WITH_NAME:
-            mNameCriteria.save(out, TAG_NAME);
-            mSpecializationCriteria.save(out, TAG_SPECIALIZATION);
-            mCategoryCriteria.save(out, TAG_CATEGORY);
-            break;
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        mSkillSelectionType = Enums.extract(m.getString(TAG_SELECTION_TYPE), SkillSelectionType.values(), SkillSelectionType.SKILLS_WITH_NAME);
+        if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
+            mNameCriteria.load(m.getMap(TAG_NAME));
+            mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
+            mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
         }
-        saveBase(out);
-        out.endTagEOL(TAG_ROOT, true);
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(TAG_SELECTION_TYPE, Enums.toId(mSkillSelectionType));
+        if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
+            mNameCriteria.save(w, TAG_NAME);
+            mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
+            mCategoryCriteria.save(w, TAG_CATEGORY);
+        }
     }
 
     public SkillSelectionType getSkillSelectionType() {
@@ -190,31 +199,19 @@ public class SkillBonus extends Bonus {
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {
-        switch (mSkillSelectionType) {
-        case THIS_WEAPON:
-        default:
-            break;
-        case WEAPONS_WITH_NAME:
-        case SKILLS_WITH_NAME:
+        if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
             ListRow.extractNameables(set, mNameCriteria.getQualifier());
             ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
             ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
-            break;
         }
     }
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
-        switch (mSkillSelectionType) {
-        case THIS_WEAPON:
-        default:
-            break;
-        case WEAPONS_WITH_NAME:
-        case SKILLS_WITH_NAME:
+        if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
             mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
             mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
             mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
-            break;
         }
     }
 }

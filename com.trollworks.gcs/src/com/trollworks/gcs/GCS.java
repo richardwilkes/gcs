@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.widget.WiderToolTipUI;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.UpdateChecker;
 import com.trollworks.gcs.utility.Version;
@@ -305,7 +306,7 @@ public class GCS {
             UIManager.getDefaults().put(Fonts.KEY_STD_TEXT_FIELD, new Font("SansSerif", current.getStyle(), current.getSize()));
             WiderToolTipUI.installIfNeeded();
         } catch (Exception ex) {
-            ex.printStackTrace(System.err);
+            Log.error(ex);
         }
         Fonts.loadFromPreferences();
     }

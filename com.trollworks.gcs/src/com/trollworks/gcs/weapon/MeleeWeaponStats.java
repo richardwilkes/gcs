@@ -16,9 +16,10 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -66,6 +67,16 @@ public class MeleeWeaponStats extends WeaponStats {
     /**
      * Creates a {@link MeleeWeaponStats}.
      *
+     * @param owner The owning piece of equipment or advantage.
+     * @param m     The {@link JsonMap} to load from.
+     */
+    public MeleeWeaponStats(ListRow owner, JsonMap m) throws IOException {
+        super(owner, m);
+    }
+
+    /**
+     * Creates a {@link MeleeWeaponStats}.
+     *
      * @param owner  The owning piece of equipment or advantage.
      * @param reader The reader to load from.
      */
@@ -88,7 +99,6 @@ public class MeleeWeaponStats extends WeaponStats {
     @Override
     protected void loadSelf(XMLReader reader) throws IOException {
         String name = reader.getName();
-
         if (TAG_REACH.equals(name)) {
             mReach = reader.readText();
         } else if (TAG_PARRY.equals(name)) {
@@ -106,10 +116,23 @@ public class MeleeWeaponStats extends WeaponStats {
     }
 
     @Override
-    protected void saveSelf(XMLWriter out) {
-        out.simpleTagNotEmpty(TAG_REACH, mReach);
-        out.simpleTagNotEmpty(TAG_PARRY, mParry);
-        out.simpleTagNotEmpty(TAG_BLOCK, mBlock);
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        mReach = m.getString(TAG_REACH);
+        mParry = m.getString(TAG_PARRY);
+        mBlock = m.getString(TAG_BLOCK);
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        w.keyValueNot(TAG_REACH, mReach, "");
+        w.keyValueNot(TAG_PARRY, mParry, "");
+        w.keyValueNot(TAG_BLOCK, mBlock, "");
     }
 
     /** @return The parry. */
