@@ -75,6 +75,9 @@ public class PdfRenderer extends PDFTextStripper {
 
     @Override
     protected void writeString(String text, List<TextPosition> textPositions) throws IOException {
+        if (mTextToHighlight.isBlank()) {
+            return;
+        }
         text = text.toLowerCase();
         int index = text.indexOf(mTextToHighlight);
         if (index != -1) {
