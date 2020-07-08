@@ -42,7 +42,7 @@ public class HitLocationPanel extends DropPanel {
         addVerticalBackground(createDivider(), Color.black);
         createHeader(I18n.Text("Where"), null);
         addVerticalBackground(createDivider(), Color.black);
-        createHeader("Penalty", I18n.Text("The hit penalty for targeting a specific hit location"));
+        createHeader(I18n.Text("Penalty"), I18n.Text("The hit penalty for targeting a specific hit location"));
         addVerticalBackground(createDivider(), Color.black);
         createHeader(I18n.Text("DR"), null);
 
