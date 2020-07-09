@@ -2359,7 +2359,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
-     * Sets the fatigue points (HP).
+     * Sets the fatigue points (FP).
      *
      * @param fp The new fatigue points.
      */

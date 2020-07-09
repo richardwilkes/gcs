@@ -39,7 +39,7 @@ public class FatiguePointsPanel extends DropPanel implements NotifierTarget {
     }
 
     /**
-     * Creates a new hit points panel.
+     * Creates a new fatigue points panel.
      *
      * @param sheet The sheet to display the data for.
      */

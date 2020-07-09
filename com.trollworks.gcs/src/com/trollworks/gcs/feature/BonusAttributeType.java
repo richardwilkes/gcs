@@ -99,14 +99,14 @@ public enum BonusAttributeType {
             return I18n.Text("dodge");
         }
     },
-    /** The Dodge attribute. */
+    /** The Parry attribute. */
     PARRY {
         @Override
         public String toString() {
             return I18n.Text("parry");
         }
     },
-    /** The Dodge attribute. */
+    /** The Block attribute. */
     BLOCK {
         @Override
         public String toString() {
