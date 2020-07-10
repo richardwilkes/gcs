@@ -39,12 +39,12 @@ import java.util.List;
 import java.util.Set;
 
 public class Bundler {
-    private static final String GCS_VERSION       = "4.19.1";
+    private static final String GCS_VERSION       = "4.20.0";
     private static       String JDK_MAJOR_VERSION = "14";
     private static final String ITEXT_VERSION     = "2.1.7";
     private static final String LOGGING_VERSION   = "1.2.0";
-    private static final String FONTBOX_VERSION   = "2.0.17";
-    private static final String PDFBOX_VERSION    = "2.0.17";
+    private static final String FONTBOX_VERSION   = "2.0.20";
+    private static final String PDFBOX_VERSION    = "2.0.20";
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
     private static final String WINDOWS           = "windows";
