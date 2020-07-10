@@ -46,6 +46,7 @@ import javax.swing.text.Document;
 public class DisplayPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
     private JCheckBox                mIncludeUnspentPointsInTotal;
     private JCheckBox                mShowCollegeInSheetSpells;
+    private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JComboBox<Scales>        mUIScaleCombo;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
@@ -70,6 +71,9 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
 
         mShowCollegeInSheetSpells = createCheckBox(I18n.Text("Show the College column on character sheets"), null, prefs.showCollegeInSheetSpells());
         column.add(mShowCollegeInSheetSpells);
+
+        mShowTitleInsteadOfNameInPageFooter = createCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets"), null, prefs.useTitleInFooter());
+        column.add(mShowTitleInsteadOfNameInPageFooter);
 
         FlexRow row = new FlexRow();
         row.add(createLabel(I18n.Text("Use"), null));
@@ -214,6 +218,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
             Preferences.getInstance().setIncludeUnspentPointsInTotal(mIncludeUnspentPointsInTotal.isSelected());
         } else if (source == mShowCollegeInSheetSpells) {
             Preferences.getInstance().setShowCollegeInSheetSpells(mShowCollegeInSheetSpells.isSelected());
+        } else if (source == mShowTitleInsteadOfNameInPageFooter) {
+            Preferences.getInstance().setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
         }
         adjustResetButton();
     }
@@ -222,6 +228,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     public void reset() {
         mIncludeUnspentPointsInTotal.setSelected(Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
         mShowCollegeInSheetSpells.setSelected(Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS);
+        mShowTitleInsteadOfNameInPageFooter.setSelected(Preferences.DEFAULT_USE_TITLE_IN_FOOTER);
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
         mLengthUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
         mWeightUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);

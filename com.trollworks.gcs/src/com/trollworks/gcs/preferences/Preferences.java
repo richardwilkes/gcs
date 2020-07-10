@@ -88,6 +88,7 @@ public class Preferences {
     private static final String PNG_RESOLUTION                  = "png_resolution";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHOW_COLLEGE_IN_SHEET_SPELLS    = "show_college_in_sheet_spells";
+    private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
     private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
     private static final String USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
@@ -116,6 +117,7 @@ public class Preferences {
     public static final String KEY_MODIFIERS_DISPLAY               = KEY_PER_SHEET_PREFIX + MODIFIERS_DISPLAY;
     public static final String KEY_NOTES_DISPLAY                   = KEY_PER_SHEET_PREFIX + NOTES_DISPLAY;
     public static final String KEY_SHOW_COLLEGE_IN_SHEET_SPELLS    = KEY_PER_SHEET_PREFIX + SHOW_COLLEGE_IN_SHEET_SPELLS;
+    public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
     public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
@@ -130,6 +132,7 @@ public class Preferences {
     public static final int           DEFAULT_INITIAL_POINTS                    = 100;
     public static final int           DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
     public static final boolean       DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS      = false;
+    public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
@@ -193,6 +196,7 @@ public class Preferences {
     private        boolean                          mAutoNameNewCharacters;
     private        boolean                          mUseNativePrintDialogs;
     private        boolean                          mShowCollegeInSheetSpells;
+    private        boolean                          mUseTitleInFooter;
 
     public static synchronized Preferences getInstance() {
         if (INSTANCE == null) {
@@ -258,6 +262,7 @@ public class Preferences {
         mAutoNameNewCharacters = DEFAULT_AUTO_NAME_NEW_CHARACTERS;
         mUseNativePrintDialogs = DEFAULT_USE_NATIVE_PRINT_DIALOGS;
         mShowCollegeInSheetSpells = DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
+        mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -368,6 +373,7 @@ public class Preferences {
                         mAutoNameNewCharacters = m.getBooleanWithDefault(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                         mUseNativePrintDialogs = m.getBooleanWithDefault(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
+                        mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                         if (m.has(DEFAULT_PAGE_SETTINGS)) {
                             mDefaultPageSettings = new PrintManager(m.getMap(DEFAULT_PAGE_SETTINGS));
                         }
@@ -519,6 +525,7 @@ public class Preferences {
                     w.keyValue(USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
                     w.keyValue(USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
                     w.keyValue(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
+                    w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                     w.keyValue(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                     w.keyValue(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                     if (mDefaultPageSettings != null) {
@@ -880,6 +887,20 @@ public class Preferences {
         if (mShowCollegeInSheetSpells != show) {
             mShowCollegeInSheetSpells = show;
             mNotifier.notify(this, KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
+            return true;
+        }
+        return false;
+    }
+
+    /** @return Whether to show the title in the page footer (rather than the name). */
+    public boolean useTitleInFooter() {
+        return mUseTitleInFooter;
+    }
+
+    public boolean setUseTitleInFooter(boolean show) {
+        if (mUseTitleInFooter != show) {
+            mUseTitleInFooter = show;
+            mNotifier.notify(this, KEY_USE_TITLE_IN_FOOTER);
             return true;
         }
         return false;

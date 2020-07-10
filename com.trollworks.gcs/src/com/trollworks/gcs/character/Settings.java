@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Settings {
-    private static final int          CURRENT_JSON_VERSION   = 1;
+    private static final int            CURRENT_JSON_VERSION                = 1;
     private static final int            CURRENT_VERSION                     = 1;
     private static final int            VERSION_REACTIONS                   = 1;
     private static final int            MINIMUM_VERSION                     = 0;
@@ -47,6 +47,7 @@ public class Settings {
     public static final  String         TAG_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     public static final  String         TAG_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
     public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
+    public static final  String         TAG_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     public static final  String         PREFIX                              = GURPSCharacter.CHARACTER_PREFIX + "settings.";
     public static final  String         ID_DEFAULT_LENGTH_UNITS             = PREFIX + TAG_DEFAULT_LENGTH_UNITS;
     public static final  String         ID_DEFAULT_WEIGHT_UNITS             = PREFIX + TAG_DEFAULT_WEIGHT_UNITS;
@@ -62,6 +63,7 @@ public class Settings {
     public static final  String         ID_USE_THRUST_EQUALS_SWING_MINUS_2  = PREFIX + TAG_USE_THRUST_EQUALS_SWING_MINUS_2;
     public static final  String         ID_USE_SIMPLE_METRIC_CONVERSIONS    = PREFIX + TAG_USE_SIMPLE_METRIC_CONVERSIONS;
     public static final  String         ID_SHOW_COLLEGE_IN_SPELLS           = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
+    public static final  String         ID_USE_TITLE_IN_FOOTER              = PREFIX + TAG_USE_TITLE_IN_FOOTER;
     private              GURPSCharacter mCharacter;
     private              LengthUnits    mDefaultLengthUnits;
     private              WeightUnits    mDefaultWeightUnits;
@@ -77,6 +79,7 @@ public class Settings {
     private              boolean        mUseThrustEqualsSwingMinus2; // Home brew
     private              boolean        mUseSimpleMetricConversions; // B9
     private              boolean        mShowCollegeInSpells;
+    private              boolean        mUseTitleInFooter;
 
     public Settings(GURPSCharacter character) {
         Preferences prefs = Preferences.getInstance();
@@ -95,6 +98,7 @@ public class Settings {
         mUseThrustEqualsSwingMinus2 = prefs.useThrustEqualsSwingMinus2();
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
+        mUseTitleInFooter = prefs.useTitleInFooter();
     }
 
     void load(XMLReader reader) throws IOException {
@@ -146,6 +150,8 @@ public class Settings {
             mUseSimpleMetricConversions = reader.readBoolean();
         } else if (TAG_SHOW_COLLEGE_IN_SPELLS.equals(tag)) {
             mShowCollegeInSpells = reader.readBoolean();
+        } else if (TAG_USE_TITLE_IN_FOOTER.equals(tag)) {
+            mUseTitleInFooter = reader.readBoolean();
         } else {
             reader.skipTag(tag);
         }
@@ -172,9 +178,10 @@ public class Settings {
         mUseThrustEqualsSwingMinus2 = m.getBoolean(TAG_USE_THRUST_EQUALS_SWING_MINUS_2);
         mUseSimpleMetricConversions = m.getBoolean(TAG_USE_SIMPLE_METRIC_CONVERSIONS);
         mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
+        mUseTitleInFooter = m.getBoolean(TAG_USE_TITLE_IN_FOOTER);
         mBlockLayout = new ArrayList<>();
-        JsonArray a = m.getArray(TAG_BLOCK_LAYOUT);
-        int count = a.size();
+        JsonArray a     = m.getArray(TAG_BLOCK_LAYOUT);
+        int       count = a.size();
         for (int i = 0; i < count; i++) {
             mBlockLayout.add(a.getString(i));
         }
@@ -196,6 +203,7 @@ public class Settings {
         w.keyValue(TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
         w.keyValue(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
+        w.keyValue(TAG_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
         w.key(TAG_BLOCK_LAYOUT);
         w.startArray();
         for (String one : mBlockLayout) {
@@ -369,6 +377,17 @@ public class Settings {
         if (mShowCollegeInSpells != show) {
             mShowCollegeInSpells = show;
             mCharacter.notifySingle(ID_SHOW_COLLEGE_IN_SPELLS, Boolean.valueOf(mShowCollegeInSpells));
+        }
+    }
+
+    public boolean useTitleInFooter() {
+        return mUseTitleInFooter;
+    }
+
+    public void setUseTitleInFooter(boolean show) {
+        if (mUseTitleInFooter != show) {
+            mUseTitleInFooter = show;
+            mCharacter.notifySingle(ID_USE_TITLE_IN_FOOTER, Boolean.valueOf(mUseTitleInFooter));
         }
     }
 }
