@@ -84,6 +84,7 @@ public class LibraryCollector implements Comparator<Object> {
                         for (FileType one : FileType.OPENABLE) {
                             if (one.matchExtension(ext)) {
                                 mCurrent.add(path);
+                                //loadSave(path, ext);
                                 break;
                             }
                         }
