@@ -432,7 +432,7 @@ public class PDFMergerUtility
             // - destination is closed
             // - all PDDocuments are closed
             // - all FileInputStreams are closed
-            // - there's a way to see which errors occured
+            // - there's a way to see which errors occurred
 
             List<PDDocument> tobeclosed = new ArrayList<PDDocument>();
 
@@ -659,10 +659,8 @@ public class PDFMergerUtility
             destCatalog.setPageMode(srcPageMode);
         }
 
-        COSDictionary destLabels = (COSDictionary) destCatalog.getCOSObject().getDictionaryObject(
-                COSName.PAGE_LABELS);
-        COSDictionary srcLabels = (COSDictionary) srcCatalog.getCOSObject()
-                .getDictionaryObject(COSName.PAGE_LABELS);
+        COSDictionary destLabels = destCatalog.getCOSObject().getCOSDictionary(COSName.PAGE_LABELS);
+        COSDictionary srcLabels = srcCatalog.getCOSObject().getCOSDictionary(COSName.PAGE_LABELS);
         if (srcLabels != null)
         {
             int destPageCount = destination.getNumberOfPages();
@@ -703,8 +701,8 @@ public class PDFMergerUtility
             }
         }
 
-        COSStream destMetadata = (COSStream) destCatalog.getCOSObject().getDictionaryObject(COSName.METADATA);
-        COSStream srcMetadata = (COSStream) srcCatalog.getCOSObject().getDictionaryObject(COSName.METADATA);
+        COSStream destMetadata = destCatalog.getCOSObject().getCOSStream(COSName.METADATA);
+        COSStream srcMetadata = srcCatalog.getCOSObject().getCOSStream(COSName.METADATA);
         if (destMetadata == null && srcMetadata != null)
         {
             try
@@ -721,8 +719,8 @@ public class PDFMergerUtility
             }
         }
 
-        COSDictionary destOCP = (COSDictionary) destCatalog.getCOSObject().getDictionaryObject(COSName.OCPROPERTIES);
-        COSDictionary srcOCP = (COSDictionary) srcCatalog.getCOSObject().getDictionaryObject(COSName.OCPROPERTIES);
+        COSDictionary destOCP = destCatalog.getCOSObject().getCOSDictionary(COSName.OCPROPERTIES);
+        COSDictionary srcOCP = srcCatalog.getCOSObject().getCOSDictionary(COSName.OCPROPERTIES);
         if (destOCP == null && srcOCP != null)
         {
             destCatalog.getCOSObject().setItem(COSName.OCPROPERTIES, cloner.cloneForNewDocument(srcOCP));
@@ -1151,8 +1149,8 @@ public class PDFMergerUtility
      * destination file.
      *
      * @param cloner the object cloner for the destination document
-     * @param destAcroForm the destination form
-     * @param srcAcroForm the source form
+     * @param destCatalog the destination form
+     * @param srcCatalog the source form
      * @throws IOException If an error occurs while adding the field.
      */
     private void mergeAcroForm(PDFCloneUtility cloner, PDDocumentCatalog destCatalog,
@@ -1230,7 +1228,7 @@ public class PDFMergerUtility
                 PDField destinationField = destAcroForm.getField(srcField.getFullyQualifiedName());
                 if (destinationField == null)
                 {
-                    // field doesn't exist - can savely add it
+                    // field doesn't exist - can safely add it
                     COSDictionary importedField = (COSDictionary) cloner.cloneForNewDocument(srcField.getCOSObject());
                     destFields.add(importedField);
                 }

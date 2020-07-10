@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +29,7 @@ import java.util.Set;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.util.DateConverter;
+import org.apache.pdfbox.util.SmallMap;
 
 /**
  * This class represents a dictionary where name/value pairs reside.
@@ -45,7 +45,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
     /**
      * The name-value pairs of this dictionary. The pairs are kept in the order they were added to the dictionary.
      */
-    protected Map<COSName, COSBase> items = new LinkedHashMap<COSName, COSBase>();
+    protected Map<COSName, COSBase> items = new SmallMap<COSName, COSBase>();
 
     /**
      * Constructor.
@@ -168,7 +168,6 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
      * @deprecated Will be removed in 3.0. A value may have to keys, the regular one and sometimes an additional
      * abbreviation. More than 2 values doesn't make sense.
      */
-    @Deprecated
     public COSBase getDictionaryObject(String[] keyList)
     {
         COSBase retval = null;
@@ -1102,7 +1101,6 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
      * @deprecated Will be removed in 3.0. A value may have to keys, the regular one and sometimes an additional
      * abbreviation. More than 2 values doesn't make sense.
      */
-    @Deprecated
     public int getInt(String[] keyList, int defaultValue)
     {
         int retval = defaultValue;
@@ -1209,7 +1207,6 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
      * @deprecated Will be removed in 3.0. A value may have to keys, the regular one and sometimes an additional
      * abbreviation. More than 2 values doesn't make sense.
      */
-    @Deprecated
     public long getLong(String[] keyList, long defaultValue)
     {
         long retval = defaultValue;

@@ -197,11 +197,6 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
                     TTFParser ttfParser = new TTFParser(true);
                     ttfFont = ttfParser.parse(ff2Stream.createInputStream());
                 }
-                catch (NullPointerException e) // TTF parser is buggy
-                {
-                    LOG.warn("Could not read embedded TTF for font " + getBaseFont(), e);
-                    fontIsDamaged = true;
-                }
                 catch (IOException e)
                 {
                     LOG.warn("Could not read embedded TTF for font " + getBaseFont(), e);
@@ -625,6 +620,12 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
                 gid = cmapMacRoman.getGlyphId(code);
             }
 
+            // PDFBOX-4755 / PDF.js #5501
+            if (gid == 0 && cmapWinUnicode != null)
+            {
+                gid = cmapWinUnicode.getGlyphId(code);
+            }
+
             // PDFBOX-3965: fallback for font has that the symbol flag but isn't
             if (gid == 0 && cmapWinUnicode != null && encoding != null)
             {
@@ -677,6 +678,12 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
                         && CmapTable.ENCODING_MAC_ROMAN == cmap.getPlatformEncodingId())
                 {
                     cmapMacRoman = cmap;
+                }
+                else if (CmapTable.PLATFORM_UNICODE == cmap.getPlatformId()
+                        && CmapTable.ENCODING_UNICODE_1_0 == cmap.getPlatformEncodingId())
+                {
+                    // PDFBOX-4755 / PDF.js #5501
+                    cmapWinUnicode = cmap;
                 }
             }
         }

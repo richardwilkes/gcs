@@ -16,14 +16,16 @@
  */
 package org.apache.pdfbox.contentstream.operator;
 
+import java.io.IOException;
+import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Do: Draws an XObject.
@@ -33,6 +35,8 @@ import java.util.List;
  */
 public class DrawObject extends OperatorProcessor
 {
+    private static final Log LOG = LogFactory.getLog(DrawObject.class);
+
     @Override
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
@@ -55,14 +59,30 @@ public class DrawObject extends OperatorProcessor
         
         PDXObject xobject = context.getResources().getXObject(name);
 
-        if (xobject instanceof PDTransparencyGroup)
+        if (xobject instanceof PDFormXObject)
         {
-            context.showTransparencyGroup((PDTransparencyGroup) xobject);
-        }
-        else if (xobject instanceof PDFormXObject)
-        {
-            PDFormXObject form = (PDFormXObject) xobject;
-            context.showForm(form);
+            try
+            {
+                context.increaseLevel();
+                if (context.getLevel() > 25)
+                {
+                    LOG.error("recursion is too deep, skipping form XObject");
+                    return;
+                }
+                PDFormXObject form = (PDFormXObject) xobject;
+                if (form instanceof PDTransparencyGroup)
+                {
+                    context.showTransparencyGroup((PDTransparencyGroup) form);
+                }
+                else
+                {
+                    context.showForm(form);
+                }
+            }
+            finally
+            {
+                context.decreaseLevel();
+            }
         }
     }
 

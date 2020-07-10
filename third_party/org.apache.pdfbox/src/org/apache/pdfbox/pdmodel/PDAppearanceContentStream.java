@@ -16,6 +16,7 @@
  */
 package org.apache.pdfbox.pdmodel;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -32,7 +33,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
  *
  * @author Ben Litchfield
  */
-public final class PDAppearanceContentStream extends PDAbstractContentStream
+public final class PDAppearanceContentStream extends PDAbstractContentStream implements Closeable
 {
     /**
      * Create a new appearance stream.

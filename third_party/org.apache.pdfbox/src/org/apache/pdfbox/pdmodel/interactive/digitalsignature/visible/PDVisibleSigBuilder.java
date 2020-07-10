@@ -165,7 +165,6 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
      *
      * @deprecated use {@link #createAffineTransform(java.awt.geom.AffineTransform) }
      */
-    @SuppressWarnings("deprecation")
     @Override
     @Deprecated
     public void createAffineTransform(byte[] params)
@@ -208,7 +207,6 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
      * 
      * @deprecated use {@link #createFormatterRectangle(int[]) createFormatterRectangle(int[])}
      */
-    @SuppressWarnings("deprecation")
     @Override
     @Deprecated
     public void createFormatterRectangle(byte[] params)

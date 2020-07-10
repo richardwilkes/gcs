@@ -23,10 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,12 +32,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -84,6 +78,9 @@ public abstract class SecurityHandler
     /** indicates if the Metadata have to be decrypted of not. */
     private boolean decryptMetadata;
 
+    /** Can be used to allow stateless AES encryption */
+    private SecureRandom customSecureRandom;
+
     // PDFBOX-4453, PDFBOX-4477: Originally this was just a Set. This failed in rare cases
     // when a decrypted string was identical to an encrypted string.
     // Because COSString.equals() checks the contents, decryption was then skipped.
@@ -103,15 +100,15 @@ public abstract class SecurityHandler
     /**
      * The stream filter name.
      */
-	private COSName streamFilterName;
-
-	/**
-	 * The string filter name.
-	 */
-	private COSName stringFilterName;
+    private COSName streamFilterName;
 
     /**
-     * Set wether to decrypt meta data.
+     * The string filter name.
+     */
+    private COSName stringFilterName;
+
+    /**
+     * Set whether to decrypt meta data.
      *
      * @param decryptMetadata true if meta data has to be decrypted.
      */
@@ -127,8 +124,8 @@ public abstract class SecurityHandler
      */
     protected void setStringFilterName(COSName stringFilterName)
     {
-		this.stringFilterName = stringFilterName;
-	}
+        this.stringFilterName = stringFilterName;
+    }
 
     /**
      * Set the stream filter name.
@@ -136,9 +133,19 @@ public abstract class SecurityHandler
      * @param streamFilterName the stream filter name.
      */
     protected void setStreamFilterName(COSName streamFilterName)
-	{
-    	this.streamFilterName = streamFilterName;
-	}
+    {
+        this.streamFilterName = streamFilterName;
+    }
+
+    /**
+     * Set the custom SecureRandom.
+     * 
+     * @param customSecureRandom the custom SecureRandom for AES encryption
+     */
+    public void setCustomSecureRandom(SecureRandom customSecureRandom)
+    {
+        this.customSecureRandom = customSecureRandom;
+    }
 
     /**
      * Prepare the document for encryption.
@@ -286,20 +293,7 @@ public abstract class SecurityHandler
 
         try
         {
-            Cipher decryptCipher;
-            try
-            {
-                decryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            }
-            catch (NoSuchAlgorithmException e)
-            {
-                // should never happen
-                throw new RuntimeException(e);
-            }
-
-            SecretKey aesKey = new SecretKeySpec(finalKey, "AES");
-            IvParameterSpec ips = new IvParameterSpec(iv);
-            decryptCipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, aesKey, ips);
+            Cipher decryptCipher = createCipher(finalKey, iv, decrypt);
             byte[] buffer = new byte[256];
             int n;
             while ((n = data.read(buffer)) != -1)
@@ -312,23 +306,7 @@ public abstract class SecurityHandler
             }
             output.write(decryptCipher.doFinal());
         }
-        catch (InvalidKeyException e)
-        {
-            throw new IOException(e);
-        }
-        catch (InvalidAlgorithmParameterException e)
-        {
-            throw new IOException(e);
-        }
-        catch (NoSuchPaddingException e)
-        {
-            throw new IOException(e);
-        }
-        catch (IllegalBlockSizeException e)
-        {
-            throw new IOException(e);
-        }
-        catch (BadPaddingException e)
+        catch (GeneralSecurityException e)
         {
             throw new IOException(e);
         }
@@ -355,10 +333,7 @@ public abstract class SecurityHandler
         Cipher cipher;
         try
         {
-            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            SecretKeySpec keySpec = new SecretKeySpec(encryptionKey, "AES");
-            IvParameterSpec ivSpec = new IvParameterSpec(iv);
-            cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            cipher = createCipher(this.encryptionKey, iv, decrypt);
         }
         catch (GeneralSecurityException e)
         {
@@ -370,7 +345,7 @@ public abstract class SecurityHandler
         {
             IOUtils.copy(cis, output);
         }
-        catch(IOException exception)
+        catch (IOException exception)
         {
             // starting with java 8 the JVM wraps an IOException around a GeneralSecurityException
             // it should be safe to swallow a GeneralSecurityException
@@ -378,7 +353,7 @@ public abstract class SecurityHandler
             {
                 throw exception;
             }
-            LOG.debug("A GeneralSecurityException occured when decrypting some stream data", exception);
+            LOG.debug("A GeneralSecurityException occurred when decrypting some stream data", exception);
         }
         finally
         {
@@ -386,12 +361,22 @@ public abstract class SecurityHandler
         }
     }
 
+    private Cipher createCipher(byte[] key, byte[] iv, boolean decrypt) throws GeneralSecurityException
+    {
+        @SuppressWarnings({"squid:S4432"}) // PKCS#5 padding is requested by PDF specification
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Key keySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ips = new IvParameterSpec(iv);
+        cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ips);
+        return cipher;
+    }
+
     private boolean prepareAESInitializationVector(boolean decrypt, byte[] iv, InputStream data, OutputStream output) throws IOException
     {
         if (decrypt)
         {
             // read IV from stream
-            int ivSize = data.read(iv);
+            int ivSize = (int) IOUtils.populateBuffer(data, iv);
             if (ivSize == -1)
             {
                 return false;
@@ -406,7 +391,7 @@ public abstract class SecurityHandler
         else
         {
             // generate random IV and write to stream
-            SecureRandom rnd = new SecureRandom();
+            SecureRandom rnd = getSecureRandom();
             rnd.nextBytes(iv);
             output.write(iv);
         }
@@ -414,9 +399,23 @@ public abstract class SecurityHandler
     }
 
     /**
+     * Returns a SecureRandom If customSecureRandom is not defined, instantiate a new SecureRandom
+     * 
+     * @return SecureRandom
+     */
+    private SecureRandom getSecureRandom()
+    {
+        if (customSecureRandom != null)
+        {
+            return customSecureRandom;
+        }
+        return new SecureRandom();
+    }
+
+    /**
      * This will dispatch to the correct method.
      *
-     * @param obj The object to decrypt.
+     * @param obj    The object to decrypt.
      * @param objNum The object number.
      * @param genNum The object generation Number.
      *
@@ -468,12 +467,12 @@ public abstract class SecurityHandler
      */
     public void decryptStream(COSStream stream, long objNum, long genNum) throws IOException
     {
-    	// Stream encrypted with identity filter
-    	if (COSName.IDENTITY.equals(streamFilterName))
-    	{
+        // Stream encrypted with identity filter
+        if (COSName.IDENTITY.equals(streamFilterName))
+        {
             return;
-    	}
-    	
+        }
+        
         COSBase type = stream.getCOSName(COSName.TYPE);
         if (!decryptMetadata && COSName.METADATA.equals(type))
         {
@@ -489,7 +488,7 @@ public abstract class SecurityHandler
             // PDFBOX-3229 check case where metadata is not encrypted despite /EncryptMetadata missing
             InputStream is = stream.createRawInputStream();
             byte buf[] = new byte[10];
-            is.read(buf);
+            IOUtils.populateBuffer(is, buf);
             is.close();
             if (Arrays.equals(buf, "<?xpacket ".getBytes(Charsets.ISO_8859_1)))
             {
@@ -587,12 +586,12 @@ public abstract class SecurityHandler
      */
     private void decryptString(COSString string, long objNum, long genNum) throws IOException
     {
-    	// String encrypted with identity filter
-    	if (COSName.IDENTITY.equals(stringFilterName))
-    	{
+        // String encrypted with identity filter
+        if (COSName.IDENTITY.equals(stringFilterName))
+        {
             return;
-    	}
-    	
+        }
+        
         ByteArrayInputStream data = new ByteArrayInputStream(string.getBytes());
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try

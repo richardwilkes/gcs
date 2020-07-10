@@ -282,7 +282,6 @@ final class UnmodifiableCOSDictionary extends COSDictionary
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("deprecation")
     @Override
     public void mergeInto(COSDictionary dic)
     {

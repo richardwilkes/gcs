@@ -324,6 +324,10 @@ class ScratchFileBuffer implements RandomAccess
             }
             
             int newPagePosition = (int) (seekToPosition / pageSize);
+            if (seekToPosition % pageSize == 0 && seekToPosition == size)
+            {
+                newPagePosition--; // PDFBOX-4756: Prevent seeking a non-yet-existent page...
+            }
             
             currentPage = pageHandler.readPage(pageIndexes[newPagePosition]);
             currentPagePositionInPageIndexes = newPagePosition;
@@ -506,7 +510,6 @@ class ScratchFileBuffer implements RandomAccess
      * <p>Enabling debugging one will see if there are still cases
      * where the buffer is not closed.</p>
      */
-    @SuppressWarnings("deprecation")
     @Override
     protected void finalize() throws Throwable
     {

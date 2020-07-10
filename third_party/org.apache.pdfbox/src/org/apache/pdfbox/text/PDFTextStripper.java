@@ -671,10 +671,12 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
                     }
                     // test if our TextPosition starts after a new word would be expected to start
                     if (expectedStartOfNextWordX != EXPECTED_START_OF_NEXT_WORD_X_RESET_VALUE
-                            && expectedStartOfNextWordX < positionX &&
-                            // only bother adding a space if the last character was not a space
-                            lastPosition.getTextPosition().getUnicode() != null
-                            && !lastPosition.getTextPosition().getUnicode().endsWith(" "))
+                            && expectedStartOfNextWordX < positionX
+                            // only bother adding a word separator if the last character was not a word separator
+                            && (wordSeparator.isEmpty() || //
+                                    (lastPosition.getTextPosition().getUnicode() != null
+                                            && !lastPosition.getTextPosition().getUnicode()
+                                                    .endsWith(wordSeparator))))
                     {
                         line.add(LineItem.getWordSeparator());
                     }
@@ -924,7 +926,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
 
             // In the wild, some PDF encoded documents put diacritics (accents on
             // top of characters) into a separate Tj element. When displaying them
-            // graphically, the two chunks get overlayed. With text output though,
+            // graphically, the two chunks get overlaid. With text output though,
             // we need to do the overlay. This code recombines the diacritic with
             // its associated character if the two are consecutive.
             if (textList.isEmpty())

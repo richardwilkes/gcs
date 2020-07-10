@@ -34,28 +34,24 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
-    @Deprecated
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_NONE = "UseNone";
     /**
      * From PDF Reference: "Document outline visible".
      * 
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
-    @Deprecated
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_OUTLINES = "UseOutlines";
     /**
      * From PDF Reference: "Thumbnail images visible".
      * 
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
-    @Deprecated
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_THUMBS = "UseThumbs";
     /**
      * From PDF Reference: "Optional content group panel visible".
      * 
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
-    @Deprecated
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_OPTIONAL_CONTENT = "UseOC";
 
     /**
@@ -86,14 +82,12 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated use {@link READING_DIRECTION} instead
      */
-    @Deprecated
     public static final String READING_DIRECTION_L2R = "L2R";
     /**
      * Reading direction.
      * 
      * @deprecated use {@link READING_DIRECTION} instead
      */
-    @Deprecated
     public static final String READING_DIRECTION_R2L = "R2L";
     /**
      * Enumeration containing all valid values for ReadingDirection.
@@ -115,35 +109,30 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated use {@link BOUNDARY} instead
      */
-    @Deprecated
     public static final String BOUNDARY_MEDIA_BOX = "MediaBox";
     /**
      * Boundary constant.
      * 
      * @deprecated use {@link BOUNDARY} instead
      */
-    @Deprecated
     public static final String BOUNDARY_CROP_BOX = "CropBox";
     /**
      * Boundary constant.
      * 
      * @deprecated use {@link BOUNDARY} instead
      */
-    @Deprecated
     public static final String BOUNDARY_BLEED_BOX = "BleedBox";
     /**
      * Boundary constant.
      * 
      * @deprecated use {@link BOUNDARY} instead
      */
-    @Deprecated
     public static final String BOUNDARY_TRIM_BOX = "TrimBox";
     /**
      * Boundary constant.
      * 
      * @deprecated use {@link BOUNDARY} instead
      */
-    @Deprecated
     public static final String BOUNDARY_ART_BOX = "ArtBox";
     /**
      * Enumeration containing all valid values for boundaries.
@@ -377,7 +366,6 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated
      */
-    @Deprecated
     public void setNonFullScreenPageMode( String value )
     {
         prefs.setName( COSName.NON_FULL_SCREEN_PAGE_MODE, value );
@@ -410,7 +398,6 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated
      */
-    @Deprecated
     public void setReadingDirection( String value )
     {
         prefs.setName( COSName.DIRECTION, value);
@@ -433,7 +420,6 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated
      */
-    @Deprecated
     public void setViewArea( String value )
     {
         prefs.setName( COSName.VIEW_AREA, value );
@@ -476,7 +462,6 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated
      */
-    @Deprecated
     public void setViewClip( String value )
     {
         prefs.setName( COSName.VIEW_CLIP, value );
@@ -499,7 +484,6 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated
      */
-    @Deprecated
     public void setPrintArea( String value )
     {
         prefs.setName( COSName.PRINT_AREA, value );
@@ -532,7 +516,6 @@ public class PDViewerPreferences implements COSObjectable
      * 
      * @deprecated
      */
-    @Deprecated
     public void setPrintClip( String value )
     {
         prefs.setName( COSName.PRINT_CLIP, value );

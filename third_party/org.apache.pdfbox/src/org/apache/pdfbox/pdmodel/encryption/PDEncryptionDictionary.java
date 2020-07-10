@@ -14,32 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.contentstream.operator.graphics;
 
-import java.awt.geom.Path2D;
-import java.io.IOException;
-import java.util.List;
+package org.apache.pdfbox.pdmodel.encryption;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.contentstream.operator.Operator;
-import org.apache.pdfbox.contentstream.operator.OperatorName;
+import org.apache.pdfbox.cos.COSDictionary;
 
 /**
- * f* Fill path using even odd rule.
- *
- * @author Ben Litchfield
+ * @deprecated Use {@link PDEncryption } instead
  */
-public final class FillEvenOddRule extends GraphicsOperatorProcessor
+@Deprecated
+public class PDEncryptionDictionary extends PDEncryption
 {
-    @Override
-    public void process(Operator operator, List<COSBase> operands) throws IOException
+    /**
+     * @deprecated Use {@link PDEncryption } instead
+     */
+    public PDEncryptionDictionary()
     {
-        context.fillPath(Path2D.WIND_EVEN_ODD);
+        super();
     }
 
-    @Override
-    public String getName()
+    /**
+     * @deprecated Use {@link PDEncryption#PDEncryption(COSDictionary) } instead
+     * @param dictionary a COS encryption dictionary
+     */
+    public PDEncryptionDictionary(COSDictionary dictionary)
     {
-        return OperatorName.FILL_EVEN_ODD;
+        super(dictionary);
     }
 }
