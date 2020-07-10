@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -706,7 +705,7 @@ public final class TTFSubsetter
         // encoding record
         writeUint16(out, CmapTable.PLATFORM_WINDOWS); // platformID
         writeUint16(out, CmapTable.ENCODING_WIN_UNICODE_BMP); // platformSpecificID
-        writeUint32(out, 4 * 2 + 4); // offset
+        writeUint32(out, 12); // offset 4 * 2 + 4
 
         // build Format 4 subtable (Unicode BMP)
         Iterator<Entry<Integer, Integer>> it = uniToGID.entrySet().iterator();
@@ -897,7 +896,7 @@ public final class TTFSubsetter
                 if (glyphId <= lastgid)
                 {
                     // copy width and lsb
-                    offset = glyphId * 4;
+                    offset = glyphId * 4l;
                     lastOffset = copyBytes(is, bos, offset, lastOffset, 4);
                 }
                 else 
@@ -907,14 +906,14 @@ public final class TTFSubsetter
                         // one time only: copy width from lastgid, whose width applies
                         // to all later glyphs
                         needLastGidWidth = false;
-                        offset = lastgid * 4;
+                        offset = lastgid * 4l;
                         lastOffset = copyBytes(is, bos, offset, lastOffset, 2);
 
                         // then go on with lsb from actual glyph (lsb are individual even in monotype fonts)
                     }
 
                     // copy lsb only, as we are beyond numOfHMetrics
-                    offset = h.getNumberOfHMetrics() * 4 + (glyphId - h.getNumberOfHMetrics()) * 2;
+                    offset = h.getNumberOfHMetrics() * 4l + (glyphId - h.getNumberOfHMetrics()) * 2l;
                     lastOffset = copyBytes(is, bos, offset, lastOffset, 2);
                 }
             }
@@ -1072,7 +1071,7 @@ public final class TTFSubsetter
     private void writeLongDateTime(DataOutputStream out, Calendar calendar) throws IOException
     {
         // inverse operation of TTFDataStream.readInternationalDate()
-        Calendar cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         cal.set(1904, 0, 1, 0, 0, 0);
         cal.set(Calendar.MILLISECOND, 0);
         long millisFor1904 = cal.getTimeInMillis();

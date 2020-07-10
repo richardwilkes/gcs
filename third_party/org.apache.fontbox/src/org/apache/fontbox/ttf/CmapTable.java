@@ -71,6 +71,7 @@ public class CmapTable extends TTFTable
     @Override
     void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
     {
+        @SuppressWarnings({"unused", "squid:S1854", "squid:S1481"})
         int version = data.readUnsignedShort();
         int numberOfTables = data.readUnsignedShort();
         cmaps = new CmapSubtable[numberOfTables];

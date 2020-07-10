@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * context-free, and the execution of the program can modify the
  * the behaviour of the lexer/parser.
  *
- * Nevertheless, this class represents an attempt to artificially seperate
+ * Nevertheless, this class represents an attempt to artificially separate
  * the PostScript parsing process into separate lexing and parsing phases
  * in order to reduce the complexity of the parsing phase.
  *
@@ -203,7 +203,7 @@ class Type1Lexer
                         if (name.equals("RD") || name.equals("-|"))
                         {
                             // return the next CharString instead
-                            if (prevToken.getKind() == Token.INTEGER)
+                            if (prevToken != null && prevToken.getKind() == Token.INTEGER)
                             {
                                 return readCharString(prevToken.intValue());
                             }
@@ -435,6 +435,8 @@ class Type1Lexer
                         case '\\': sb.append('\\'); break;
                         case '(': sb.append('('); break;
                         case ')': sb.append(')'); break;
+                        default:
+                            break;
                     }   
                     // octal \ddd
                     if (Character.isDigit(c1))

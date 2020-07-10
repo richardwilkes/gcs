@@ -109,6 +109,7 @@ public class CMap
     {
         byte[] bytes = new byte[maxCodeLength];
         in.read(bytes,0,minCodeLength);
+        in.mark(maxCodeLength);
         for (int i = minCodeLength-1; i < maxCodeLength; i++)
         {
             final int byteCount = i+1;
@@ -130,7 +131,17 @@ public class CMap
             seq += String.format("0x%02X (%04o) ", bytes[i], bytes[i]);
         }
         LOG.warn("Invalid character code sequence " + seq + "in CMap " + cmapName);
-        return 0;
+        // PDFBOX-4811 reposition to where we were after initial read
+        if (in.markSupported())
+        {
+            in.reset();
+        }
+        else
+        {
+            LOG.warn("mark() and reset() not supported, " + (maxCodeLength - 1) +
+                     " bytes have been skipped");
+        }
+        return toInt(bytes, minCodeLength); // Adobe Reader behavior
     }
 
     /**
@@ -221,7 +232,7 @@ public class CMap
     /**
      * This will add a CID Range.
      *
-     * @param from starting charactor of the CID range.
+     * @param from starting character of the CID range.
      * @param to ending character of the CID range.
      * @param cid the cid to be started with.
      *

@@ -105,6 +105,7 @@ public class CFFParser
             input.setPosition(0);
         }
 
+        @SuppressWarnings("unused")
         Header header = readHeader(input);
         String[] nameIndex = readStringIndexData(input);
         if (nameIndex == null)
@@ -131,12 +132,16 @@ public class CFFParser
         // this is OpenType font containing CFF data
         // so find CFF tag
         short numTables = input.readShort();
+        @SuppressWarnings("unused")
         short searchRange = input.readShort();
+        @SuppressWarnings("unused")
         short entrySelector = input.readShort();
+        @SuppressWarnings("unused")
         short rangeShift = input.readShort();
         for (int q = 0; q < numTables; q++)
         {
             String tagName = readTagName(input);
+            @SuppressWarnings("unused")
             long checksum = readLong(input);
             long offset = readLong(input);
             long length = readLong(input);
@@ -407,7 +412,14 @@ public class CFFParser
         {
             return 0d;
         }
-        return Double.valueOf(sb.toString());
+        try
+        {
+            return Double.valueOf(sb.toString());
+        }
+        catch (NumberFormatException ex)
+        {
+            throw new IOException(ex);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -417,7 +429,7 @@ public class CFFParser
         CFFDataInput topDictInput = new CFFDataInput(topDictIndex);
         DictData topDict = readDictData(topDictInput);
 
-        // we dont't support synthetic fonts
+        // we don't support synthetic fonts
         DictData.Entry syntheticBaseEntry = topDict.getEntry("SyntheticBase");
         if (syntheticBaseEntry != null)
         {
@@ -736,7 +748,7 @@ public class CFFParser
         }
     }
 
-    private String readString(int index) throws IOException
+    private String readString(int index)
     {
         if (index >= 0 && index <= 390)
         {
@@ -753,7 +765,7 @@ public class CFFParser
         }
     }
 
-    private String getString(DictData dict, String name) throws IOException
+    private String getString(DictData dict, String name)
     {
         DictData.Entry entry = dict.getEntry(name);
         return entry != null ? readString(entry.getNumber(0).intValue()) : null;
@@ -984,6 +996,7 @@ public class CFFParser
      */
     private static class Format0FDSelect extends FDSelect
     {
+        @SuppressWarnings("unused")
         private int format;
         private int[] fds;
 
