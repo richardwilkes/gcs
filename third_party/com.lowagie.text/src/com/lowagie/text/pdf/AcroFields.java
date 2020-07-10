@@ -1843,6 +1843,7 @@ public class AcroFields {
 		 *
 		 * @deprecated (will remove 'public' in the future)
 		 */
+		@SuppressWarnings("DeprecatedIsStillUsed")
 		@Deprecated
 		public ArrayList	widgets		= new ArrayList();
 
@@ -1851,6 +1852,7 @@ public class AcroFields {
 		 *
 		 * @deprecated (will remove 'public' in the future)
 		 */
+		@SuppressWarnings("DeprecatedIsStillUsed")
 		@Deprecated
 		public ArrayList	widget_refs	= new ArrayList();
 

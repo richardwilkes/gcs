@@ -54,6 +54,7 @@ import org.apache.pdfbox.util.Charsets;
  * @author Ben Litchfield
  * @author John Hewson
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
 public final class PDICCBased extends PDCIEBasedColorSpace
 {
     private static final Log LOG = LogFactory.getLog(PDICCBased.class);

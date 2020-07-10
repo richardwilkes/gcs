@@ -390,6 +390,7 @@ public class PDType1Font extends PDSimpleFont
         return dict.getNameAsString(COSName.BASE_FONT);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {

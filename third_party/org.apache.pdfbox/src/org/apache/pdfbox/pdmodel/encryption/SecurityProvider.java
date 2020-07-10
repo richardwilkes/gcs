@@ -39,6 +39,7 @@ public class SecurityProvider
      * 
      * @throws IOException if the default provider can't be instantiated
      */
+    @SuppressWarnings("unchecked")
     public static Provider getProvider() throws IOException
     {
         // TODO synchronize access

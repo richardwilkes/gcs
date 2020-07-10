@@ -510,6 +510,7 @@ class ScratchFileBuffer implements RandomAccess
      * <p>Enabling debugging one will see if there are still cases
      * where the buffer is not closed.</p>
      */
+    @SuppressWarnings("deprecation")
     @Override
     protected void finalize() throws Throwable
     {

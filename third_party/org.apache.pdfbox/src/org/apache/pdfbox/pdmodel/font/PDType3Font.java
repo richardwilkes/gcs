@@ -186,6 +186,7 @@ public class PDType3Font extends PDSimpleFont
         return true;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {

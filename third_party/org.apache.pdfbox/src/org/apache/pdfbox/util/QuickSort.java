@@ -36,6 +36,7 @@ public final class QuickSort
     
     private static final Comparator<? extends Comparable> OBJCOMP = new Comparator<Comparable>()
     {
+        @SuppressWarnings("unchecked")
         @Override
         public int compare(Comparable object1, Comparable object2)
         {
@@ -66,6 +67,7 @@ public final class QuickSort
      * @param <T> type of the objects to be sorted.
      * @param list list to be sorted
      */
+    @SuppressWarnings("unchecked")
     public static <T extends Comparable> void sort(List<T> list)
     {
         sort(list, (Comparator<T>) OBJCOMP);

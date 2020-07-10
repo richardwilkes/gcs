@@ -74,6 +74,7 @@ abstract class TrueTypeEmbedder implements Subsetter
     /**
      * Creates a new TrueType font for embedding.
      */
+    @SuppressWarnings("deprecation")
     TrueTypeEmbedder(PDDocument document, COSDictionary dict, TrueTypeFont ttf,
                      boolean embedSubset) throws IOException
     {

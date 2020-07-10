@@ -370,6 +370,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
         return width;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {

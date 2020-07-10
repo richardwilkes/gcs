@@ -72,6 +72,7 @@ import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
  * 
  * @author Ben Litchfield
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
 public abstract class PDFStreamEngine
 {
     private static final Log LOG = LogFactory.getLog(PDFStreamEngine.class);
@@ -775,9 +776,10 @@ public abstract class PDFStreamEngine
      * 
      * @deprecated use {@link #showGlyph(Matrix, PDFont, int, Vector)} instead
      */
+    @Deprecated
     protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code,
-            String unicode,
-            Vector displacement) throws IOException
+                             String unicode,
+                             Vector displacement) throws IOException
     {
         if (font instanceof PDType3Font)
         {
@@ -819,8 +821,9 @@ public abstract class PDFStreamEngine
      * 
      * @deprecated use {@link #showFontGlyph(Matrix, PDFont, int, Vector)} instead
      */
+    @Deprecated
     protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
-            Vector displacement) throws IOException
+                                 Vector displacement) throws IOException
     {
         // overridden in subclasses
     }

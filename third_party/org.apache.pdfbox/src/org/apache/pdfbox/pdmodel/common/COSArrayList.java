@@ -38,6 +38,7 @@ import org.apache.pdfbox.cos.COSObject;
  *
  * @author Ben Litchfield
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
 public class COSArrayList<E> implements List<E>
 {
     private final COSArray array;

@@ -403,6 +403,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
         return cMap.getWMode() == 1;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {

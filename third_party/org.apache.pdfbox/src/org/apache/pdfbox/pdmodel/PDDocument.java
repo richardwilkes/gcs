@@ -337,6 +337,7 @@ public class PDDocument implements Closeable
      * @throws IllegalStateException if one attempts to add several signature
      * fields.
      */
+    @SuppressWarnings("deprecation")
     public void addSignature(PDSignature sigObject, SignatureInterface signatureInterface,
                              SignatureOptions options) throws IOException
     {

@@ -168,6 +168,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
      * @deprecated Will be removed in 3.0. A value may have to keys, the regular one and sometimes an additional
      * abbreviation. More than 2 values doesn't make sense.
      */
+    @Deprecated
     public COSBase getDictionaryObject(String[] keyList)
     {
         COSBase retval = null;
@@ -1101,6 +1102,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
      * @deprecated Will be removed in 3.0. A value may have to keys, the regular one and sometimes an additional
      * abbreviation. More than 2 values doesn't make sense.
      */
+    @Deprecated
     public int getInt(String[] keyList, int defaultValue)
     {
         int retval = defaultValue;
@@ -1207,6 +1209,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
      * @deprecated Will be removed in 3.0. A value may have to keys, the regular one and sometimes an additional
      * abbreviation. More than 2 values doesn't make sense.
      */
+    @Deprecated
     public long getLong(String[] keyList, long defaultValue)
     {
         long retval = defaultValue;

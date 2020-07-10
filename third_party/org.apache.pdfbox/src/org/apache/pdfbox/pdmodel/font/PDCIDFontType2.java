@@ -297,6 +297,7 @@ public class PDCIDFontType2 extends PDCIDFont
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {

@@ -374,6 +374,7 @@ public class COSDocument extends COSBase implements Closeable
      * 
      * @deprecated use {@link PDDocument#getDocumentCatalog()} instead.
      */
+    @Deprecated
     public COSObject getCatalog() throws IOException
     {
         COSObject catalog = getObjectByType( COSName.CATALOG );
