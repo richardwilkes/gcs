@@ -66,7 +66,7 @@ import java.util.ListIterator;
  *
  * @see PdfObject
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "DeprecatedIsStillUsed"})
 public class PdfArray extends PdfObject {
 
 	// CLASS VARIABLES

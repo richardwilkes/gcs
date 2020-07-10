@@ -72,6 +72,7 @@ package com.lowagie.text;
  * @see ListItem
  */
 
+@SuppressWarnings("DeprecatedIsStillUsed")
 public class Paragraph extends Phrase {
 
 	// constants

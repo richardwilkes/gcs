@@ -18,9 +18,10 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -33,6 +34,7 @@ public class Technique extends Skill {
     /** The XML tag used for items. */
     public static final  String       TAG_TECHNIQUE   = "technique";
     private static final String       ATTRIBUTE_LIMIT = "limit";
+    private static final String KEY_DEFAULT = "default";
     private              SkillDefault mDefault;
     private              boolean      mLimited;
     private              int          mLimitModifier;
@@ -139,6 +141,14 @@ public class Technique extends Skill {
         updateLevel(false);
     }
 
+    public Technique(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile);
+        load(m, state);
+        if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
+            mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
+        }
+    }
+
     /**
      * Loads a technique and associates it with the specified data file.
      *
@@ -171,6 +181,11 @@ public class Technique extends Skill {
     @Override
     public String getLocalizedName() {
         return I18n.Text("Technique");
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_TECHNIQUE;
     }
 
     @Override
@@ -216,16 +231,23 @@ public class Technique extends Skill {
     }
 
     @Override
-    public void saveSelf(XMLWriter out, boolean forUndo) {
-        super.saveSelf(out, forUndo);
-        mDefault.save(out);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        if (m.has(ATTRIBUTE_LIMIT)) {
+            mLimited = true;
+            mLimitModifier = m.getInt(ATTRIBUTE_LIMIT);
+        }
+        mDefault = new SkillDefault(m.getMap(KEY_DEFAULT), false);
     }
 
     @Override
-    protected void saveAttributes(XMLWriter out, boolean forUndo) {
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        super.saveSelf(w, forUndo);
         if (mLimited) {
-            out.writeAttribute(ATTRIBUTE_LIMIT, mLimitModifier);
+            w.keyValue(ATTRIBUTE_LIMIT, mLimitModifier);
         }
+        w.key(KEY_DEFAULT);
+        mDefault.save(w, false);
     }
 
     /**

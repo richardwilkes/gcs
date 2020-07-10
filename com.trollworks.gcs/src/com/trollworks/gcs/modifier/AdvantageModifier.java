@@ -18,16 +18,19 @@ import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
+    private static final int                       CURRENT_JSON_VERSION   = 1;
     private static final int                       CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                    TAG_MODIFIER           = "modifier";
@@ -37,6 +40,7 @@ public class AdvantageModifier extends Modifier {
     public static final  String                    TAG_COST               = "cost";
     /** The attribute for the cost type. */
     public static final  String                    ATTRIBUTE_COST_TYPE    = "type";
+    private static final  String                    KEY_COST_TYPE    = "cost_type";
     /** The tag for the cost per level. */
     public static final  String                    TAG_LEVELS             = "levels";
     /** The tag for how the cost is affected. */
@@ -76,6 +80,11 @@ public class AdvantageModifier extends Modifier {
                 addChild(new AdvantageModifier(file, (AdvantageModifier) other.getChild(i), true));
             }
         }
+    }
+
+    public AdvantageModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
+        this(file, TAG_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
+        load(m, state);
     }
 
     /**
@@ -223,6 +232,16 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
+    }
+
+    @Override
     public String getXMLTagName() {
         return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
     }
@@ -268,18 +287,44 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
-    protected void saveSelf(XMLWriter out, boolean forUndo) {
-        super.saveSelf(out, forUndo);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
         if (!canHaveChildren()) {
+            mCostType = Enums.extract(m.getString(KEY_COST_TYPE), AdvantageModifierCostType.values(), AdvantageModifierCostType.PERCENTAGE);
             if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
-                out.simpleTagWithAttribute(TAG_COST, mCostMultiplier, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+                mCostMultiplier = m.getDouble(TAG_COST);
             } else {
-                out.simpleTagWithAttribute(TAG_COST, mCost, ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
+                mCost = m.getInt(TAG_COST);
+                mAffects = Enums.extract(m.getString(TAG_AFFECTS), Affects.values(), Affects.TOTAL);
             }
-            out.simpleTagNotZero(TAG_LEVELS, mLevels);
-            if (mCostType != AdvantageModifierCostType.MULTIPLIER) {
-                out.simpleTag(TAG_AFFECTS, Enums.toId(mAffects));
+            mLevels = m.getInt(TAG_LEVELS);
+        }
+    }
+
+    @Override
+    protected void loadChild(JsonMap m, LoadState state) throws IOException {
+        if (!state.mForUndo) {
+            String type = m.getString(DataFile.KEY_TYPE);
+            if (TAG_MODIFIER.equals(type) || TAG_MODIFIER_CONTAINER.equals(type)) {
+                addChild(new AdvantageModifier(mDataFile, m, state));
+            } else {
+                Log.warn("invalid child type: " + type);
             }
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        super.saveSelf(w, forUndo);
+        if (!canHaveChildren()) {
+            w.keyValue(KEY_COST_TYPE, Enums.toId(mCostType));
+            if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
+                w.keyValue(TAG_COST, mCostMultiplier);
+            } else {
+                w.keyValue(TAG_COST, mCost);
+                w.keyValue(TAG_AFFECTS, Enums.toId(mAffects));
+            }
+            w.keyValueNot(TAG_LEVELS, mLevels, 0);
         }
     }
 

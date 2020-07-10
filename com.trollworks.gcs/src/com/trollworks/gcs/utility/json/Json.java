@@ -11,19 +11,15 @@
 
 package com.trollworks.gcs.utility.json;
 
-import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.UrlUtils;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -62,16 +58,7 @@ public class Json {
      * @return The result of loading the data.
      */
     public static final Object parse(InputStream stream) throws IOException {
-        return parse(stream, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * @param stream   An {@link InputStream} to load JSON data from.
-     * @param encoding The character encoding to use when reading from the stream.
-     * @return The result of loading the data.
-     */
-    public static final Object parse(InputStream stream, Charset encoding) throws IOException {
-        return parse(new InputStreamReader(stream, encoding));
+        return parse(new InputStreamReader(stream, StandardCharsets.UTF_8));
     }
 
     /**
@@ -296,82 +283,27 @@ public class Json {
     }
 
     /**
-     * @param obj       An object to process.
-     * @param allowNull {@code false} to return an empty string if the result would be {@code
-     *                  null}.
+     * @param obj An object to process.
      * @return The value associated with the object.
      */
-    public static final String asString(Object obj, boolean allowNull) {
-        if (JsonNull.INSTANCE.equals(obj)) {
-            return allowNull ? null : "";
-        }
-        return obj.toString();
+    public static final String asString(Object obj) {
+        return JsonNull.INSTANCE.equals(obj) ? "" : obj.toString();
     }
 
     /**
-     * @param obj       An object to process.
-     * @param allowNull {@code false} to return an empty array if the object is {@code null} or the
-     *                  value is not a {@link JsonArray}.
+     * @param obj An object to process.
      * @return The {@link JsonArray}.
      */
-    public static final JsonArray asArray(Object obj, boolean allowNull) {
-        if (obj instanceof JsonArray) {
-            return (JsonArray) obj;
-        }
-        return allowNull ? null : new JsonArray();
+    public static final JsonArray asArray(Object obj) {
+        return (obj instanceof JsonArray) ? (JsonArray) obj : new JsonArray();
     }
 
     /**
-     * @param obj       An object to process.
-     * @param allowNull {@code false} to return an empty map if the object is {@code null} or the
-     *                  value is not a {@link JsonMap}.
+     * @param obj An object to process.
      * @return The {@link JsonMap}.
      */
-    public static final JsonMap asMap(Object obj, boolean allowNull) {
-        if (obj instanceof JsonMap) {
-            return (JsonMap) obj;
-        }
-        return allowNull ? null : new JsonMap();
-    }
-
-    /**
-     * @param obj       An object to process.
-     * @param allowNull {@code false} to return an empty point if the object is {@code null} or the
-     *                  value cannot be converted to a {@link Point}.
-     * @return The value associated with the object.
-     */
-    public static final Point asPoint(Object obj, boolean allowNull) {
-        if (obj instanceof Point) {
-            return (Point) obj;
-        }
-        if (!JsonNull.INSTANCE.equals(obj)) {
-            try {
-                return Geometry.toPoint(obj.toString());
-            } catch (Exception exception) {
-                // Fall through
-            }
-        }
-        return allowNull ? null : new Point();
-    }
-
-    /**
-     * @param obj       An object to process.
-     * @param allowNull {@code false} to return an empty point if the object is {@code null} or the
-     *                  value cannot be converted to a {@link Rectangle}.
-     * @return The value associated with the object.
-     */
-    public static final Rectangle asRectangle(Object obj, boolean allowNull) {
-        if (obj instanceof Rectangle) {
-            return (Rectangle) obj;
-        }
-        if (!JsonNull.INSTANCE.equals(obj)) {
-            try {
-                return Geometry.toRectangle(obj.toString());
-            } catch (Exception exception) {
-                // Fall through
-            }
-        }
-        return allowNull ? null : new Rectangle();
+    public static final JsonMap asMap(Object obj) {
+        return (obj instanceof JsonMap) ? (JsonMap) obj : new JsonMap();
     }
 
     /**
@@ -399,12 +331,6 @@ public class Json {
         }
         if (value instanceof Map || value instanceof List || value.getClass().isArray()) {
             return wrap(value).toString();
-        }
-        if (value instanceof Point) {
-            return quote(Geometry.toString((Point) value));
-        }
-        if (value instanceof Rectangle) {
-            return quote(Geometry.toString((Rectangle) value));
         }
         return quote(value.toString());
     }
@@ -476,12 +402,6 @@ public class Json {
             }
             return map;
         }
-        if (object instanceof Point) {
-            return Geometry.toString((Point) object);
-        }
-        if (object instanceof Rectangle) {
-            return Geometry.toString((Rectangle) object);
-        }
         return object.toString();
     }
 
@@ -528,7 +448,7 @@ public class Json {
                 buffer.append("\\r");
                 break;
             default:
-                if (ch < ' ' || ch >= '\u0080' && ch < '\u00a0' || ch >= '\u2000' && ch < '\u2100') {
+                if (ch < 0x20) {
                     String hex = "000" + Integer.toHexString(ch);
                     buffer.append("\\u").append(hex.substring(hex.length() - 4));
                 } else {
@@ -608,7 +528,7 @@ public class Json {
 
         s = sb.toString().trim();
         if (s.isEmpty()) {
-            throw syntaxError("Missing value");
+            throw syntaxError("missing value");
         }
         if ("true".equalsIgnoreCase(s)) {
             return Boolean.TRUE;
@@ -653,7 +573,7 @@ public class Json {
         } else if (c == '(') {
             q = ')';
         } else {
-            throw syntaxError("A JSONArray text must start with '['");
+            throw syntaxError("a JSONArray text must start with '['");
         }
         JsonArray array = new JsonArray();
         if (nextSkippingWhitespace() == ']') {
@@ -680,11 +600,11 @@ public class Json {
             case ']':
             case ')':
                 if (q != c) {
-                    throw syntaxError("Expected a '" + Character.toString(q) + "'");
+                    throw syntaxError("expected a '" + Character.toString(q) + "'");
                 }
                 return array;
             default:
-                throw syntaxError("Expected a ',' or ']'");
+                throw syntaxError("expected a ',' or ']'");
             }
         }
     }
@@ -715,10 +635,10 @@ public class Json {
                     back();
                 }
             } else if (c != ':') {
-                throw syntaxError("Expected a ':' after a key");
+                throw syntaxError("expected a ':' after a key");
             }
             if (map.has(key)) {
-                throw new IOException("Duplicate key \"" + key + "\"");
+                throw new IOException("duplicate key \"" + key + "\"");
             }
             map.put(key, nextValue());
 
@@ -733,7 +653,7 @@ public class Json {
             case '}':
                 return map;
             default:
-                throw syntaxError("Expected a ',' or '}'");
+                throw syntaxError("expected a ',' or '}'");
             }
         }
     }
@@ -741,13 +661,13 @@ public class Json {
     private String nextString(char quote) throws IOException {
         char          c;
         StringBuilder buffer = new StringBuilder();
-        for (; ; ) {
+        while (true) {
             c = next();
             switch (c) {
             case 0:
             case '\n':
             case '\r':
-                throw syntaxError("Unterminated string");
+                throw syntaxError("unterminated string");
             case '\\':
                 c = next();
                 switch (c) {
@@ -776,7 +696,7 @@ public class Json {
                     buffer.append(c);
                     break;
                 default:
-                    throw syntaxError("Illegal escape.");
+                    throw syntaxError("illegal escape");
                 }
                 break;
             default:
@@ -790,7 +710,7 @@ public class Json {
 
     private void back() {
         if (mUsePrevious || mIndex <= 0) {
-            throw new IllegalStateException("Stepping back two steps is not supported");
+            throw new IllegalStateException("stepping back two steps is not supported");
         }
         mIndex--;
         mCharacter--;
@@ -802,14 +722,12 @@ public class Json {
         if (n == 0) {
             return "";
         }
-
         char[] buffer = new char[n];
         int    pos    = 0;
-
         while (pos < n) {
             buffer[pos] = next();
             if (mEOF && !mUsePrevious) {
-                throw syntaxError("Substring bounds error");
+                throw syntaxError("substring bounds error");
             }
             pos++;
         }

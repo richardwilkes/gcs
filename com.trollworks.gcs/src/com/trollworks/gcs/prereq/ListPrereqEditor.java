@@ -21,6 +21,7 @@ import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
@@ -112,7 +113,7 @@ public class ListPrereqEditor extends PrereqEditor {
             addItem(prereq);
         } catch (Exception exception) {
             // Shouldn't have a failure...
-            exception.printStackTrace(System.err);
+            Log.error(exception);
         }
     }
 

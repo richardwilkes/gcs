@@ -88,6 +88,7 @@ public class Preferences {
     private static final String PNG_RESOLUTION                  = "png_resolution";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHOW_COLLEGE_IN_SHEET_SPELLS    = "show_college_in_sheet_spells";
+    private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
     private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
     private static final String USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
@@ -116,6 +117,7 @@ public class Preferences {
     public static final String KEY_MODIFIERS_DISPLAY               = KEY_PER_SHEET_PREFIX + MODIFIERS_DISPLAY;
     public static final String KEY_NOTES_DISPLAY                   = KEY_PER_SHEET_PREFIX + NOTES_DISPLAY;
     public static final String KEY_SHOW_COLLEGE_IN_SHEET_SPELLS    = KEY_PER_SHEET_PREFIX + SHOW_COLLEGE_IN_SHEET_SPELLS;
+    public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
     public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
@@ -130,6 +132,7 @@ public class Preferences {
     public static final int           DEFAULT_INITIAL_POINTS                    = 100;
     public static final int           DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
     public static final boolean       DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS      = false;
+    public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
@@ -193,6 +196,7 @@ public class Preferences {
     private        boolean                          mAutoNameNewCharacters;
     private        boolean                          mUseNativePrintDialogs;
     private        boolean                          mShowCollegeInSheetSpells;
+    private        boolean                          mUseTitleInFooter;
 
     public static synchronized Preferences getInstance() {
         if (INSTANCE == null) {
@@ -258,28 +262,29 @@ public class Preferences {
         mAutoNameNewCharacters = DEFAULT_AUTO_NAME_NEW_CHARACTERS;
         mUseNativePrintDialogs = DEFAULT_USE_NATIVE_PRINT_DIALOGS;
         mShowCollegeInSheetSpells = DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
+        mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-                JsonMap m = Json.asMap(Json.parse(in), true);
-                if (m != null) {
+                JsonMap m = Json.asMap(Json.parse(in));
+                if (!m.isEmpty()) {
                     int version = m.getInt(VERSION);
                     if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION) {
                         mID = UUID.fromString(m.getStringWithDefault(ID, mID.toString()));
                         Version loadVersion;
                         if (version >= VERSION_AS_OF_GCS_4_18) {
-                            loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION, false));
+                            loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION));
                         } else {
-                            loadVersion = new Version(m.getString(LAST_GCS_VERSION, false));
+                            loadVersion = new Version(m.getString(LAST_GCS_VERSION));
                         }
                         if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
                             mLastSeenGCSVersion = loadVersion;
                         }
                         if (version >= VERSION_AS_OF_GCS_4_18) {
-                            JsonMap m2 = m.getMap(LIBRARIES, true);
-                            if (m2 != null) {
+                            if (m.has(LIBRARIES)) {
+                                JsonMap m2 = m.getMap(LIBRARIES);
                                 for (String key : m2.keySet()) {
-                                    Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key, false)));
+                                    Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key)));
                                 }
                             }
                         } else {
@@ -288,14 +293,14 @@ public class Preferences {
                         }
                         mInitialPoints = m.getIntWithDefault(INITIAL_POINTS, mInitialPoints);
                         mToolTipTimeout = m.getIntWithDefault(TOOLTIP_TIMEOUT, mToolTipTimeout);
-                        JsonMap m2 = m.getMap(LIBRARY_EXPLORER, true);
-                        if (m2 != null) {
+                        if (m.has(LIBRARY_EXPLORER)) {
+                            JsonMap m2 = m.getMap(LIBRARY_EXPLORER);
                             mLibraryExplorerDividerPosition = m2.getIntWithDefault(DIVIDER_POSITION, mLibraryExplorerDividerPosition);
-                            JsonArray a      = m2.getArray(OPEN_ROW_KEYS, true);
+                            JsonArray a      = m2.getArray(OPEN_ROW_KEYS);
                             int       length = a.size();
                             mLibraryExplorerOpenRowKeys = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
-                                mLibraryExplorerOpenRowKeys.add(a.getString(i, false));
+                                mLibraryExplorerOpenRowKeys.add(a.getString(i));
                             }
                         }
                         mUserDescriptionDisplay = Enums.extract(m.getStringWithDefault(USER_DESCRIPTION_DISPLAY, ""), DisplayOption.values(), mUserDescriptionDisplay);
@@ -304,67 +309,52 @@ public class Preferences {
                         mInitialUIScale = Enums.extract(m.getStringWithDefault(INITIAL_UI_SCALE, ""), Scales.values(), mInitialUIScale);
                         mDefaultLengthUnits = Enums.extract(m.getStringWithDefault(DEFAULT_LENGTH_UNITS, ""), LengthUnits.values(), mDefaultLengthUnits);
                         mDefaultWeightUnits = Enums.extract(m.getStringWithDefault(DEFAULT_WEIGHT_UNITS, ""), WeightUnits.values(), mDefaultWeightUnits);
-                        JsonArray a = m.getArray(BLOCK_LAYOUT, true);
-                        if (a != null) {
-                            int length = a.size();
+                        if (m.has(BLOCK_LAYOUT)) {
+                            JsonArray a      = m.getArray(BLOCK_LAYOUT);
+                            int       length = a.size();
                             mBlockLayout = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
-                                mBlockLayout.add(a.getString(i, false));
+                                mBlockLayout.add(a.getString(i));
                             }
                             if (version < VERSION_AS_OF_GCS_4_18) {
                                 mBlockLayout.add(0, CharacterSheet.REACTIONS_KEY);
                             }
                         }
-                        a = m.getArray(RECENT_FILES, true);
-                        if (a != null) {
-                            int length = a.size();
+                        if (m.has(RECENT_FILES)) {
+                            JsonArray a      = m.getArray(RECENT_FILES);
+                            int       length = a.size();
                             mRecentFiles = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
-                                String p = a.getString(i, true);
-                                if (p != null) {
-                                    mRecentFiles.add(Paths.get(p).normalize().toAbsolutePath());
-                                }
+                                mRecentFiles.add(Paths.get(a.getString(i)).normalize().toAbsolutePath());
                             }
                         }
                         mLastDir = Paths.get(m.getStringWithDefault(LAST_DIR, mLastDir.toString())).normalize().toAbsolutePath();
-                        m2 = m.getMap(PDF_REFS, true);
-                        if (m2 != null) {
+                        if (m.has(PDF_REFS)) {
+                            JsonMap m2 = m.getMap(PDF_REFS);
                             mPdfRefs = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                JsonMap m3 = m2.getMap(key, true);
-                                if (m3 != null) {
-                                    mPdfRefs.put(key, new PdfRef(m3));
-                                }
+                                mPdfRefs.put(key, new PdfRef(m2.getMap(key)));
                             }
                         }
-                        m2 = m.getMap(KEY_BINDINGS, true);
-                        if (m2 != null) {
+                        if (m.has(KEY_BINDINGS)) {
+                            JsonMap m2 = m.getMap(KEY_BINDINGS);
                             mKeyBindingOverrides = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                String v = m2.getString(key, true);
-                                if (v != null) {
-                                    mKeyBindingOverrides.put(key, v);
-                                }
+                                mKeyBindingOverrides.put(key, m2.getString(key));
                             }
                         }
-                        m2 = m.getMap(FONTS, true);
-                        if (m2 != null) {
+                        if (m.has(FONTS)) {
+                            JsonMap m2 = m.getMap(FONTS);
                             mFontInfo = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                JsonMap m3 = m2.getMap(key, true);
-                                if (m3 != null) {
-                                    mFontInfo.put(key, new Fonts.Info(m3));
-                                }
+                                mFontInfo.put(key, new Fonts.Info(m2.getMap(key)));
                             }
                         }
-                        m2 = m.getMap(WINDOW_POSITIONS, true);
-                        if (m2 != null) {
+                        if (m.has(WINDOW_POSITIONS)) {
+                            JsonMap m2 = m.getMap(WINDOW_POSITIONS);
                             mBaseWindowPositions = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                JsonMap m3 = m2.getMap(key, true);
-                                if (m3 != null) {
-                                    mBaseWindowPositions.put(key, new BaseWindow.Position(m3));
-                                }
+                                mBaseWindowPositions.put(key, new BaseWindow.Position(m2.getMap(key)));
                             }
                         }
                         mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
@@ -383,9 +373,9 @@ public class Preferences {
                         mAutoNameNewCharacters = m.getBooleanWithDefault(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                         mUseNativePrintDialogs = m.getBooleanWithDefault(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
-                        m2 = m.getMap(DEFAULT_PAGE_SETTINGS, true);
-                        if (m2 != null) {
-                            mDefaultPageSettings = new PrintManager(m2);
+                        mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+                        if (m.has(DEFAULT_PAGE_SETTINGS)) {
+                            mDefaultPageSettings = new PrintManager(m.getMap(DEFAULT_PAGE_SETTINGS));
                         }
                     }
                 }
@@ -535,6 +525,7 @@ public class Preferences {
                     w.keyValue(USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
                     w.keyValue(USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
                     w.keyValue(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
+                    w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                     w.keyValue(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                     w.keyValue(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                     if (mDefaultPageSettings != null) {
@@ -896,6 +887,20 @@ public class Preferences {
         if (mShowCollegeInSheetSpells != show) {
             mShowCollegeInSheetSpells = show;
             mNotifier.notify(this, KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
+            return true;
+        }
+        return false;
+    }
+
+    /** @return Whether to show the title in the page footer (rather than the name). */
+    public boolean useTitleInFooter() {
+        return mUseTitleInFooter;
+    }
+
+    public boolean setUseTitleInFooter(boolean show) {
+        if (mUseTitleInFooter != show) {
+            mUseTitleInFooter = show;
+            mNotifier.notify(this, KEY_USE_TITLE_IN_FOOTER);
             return true;
         }
         return false;

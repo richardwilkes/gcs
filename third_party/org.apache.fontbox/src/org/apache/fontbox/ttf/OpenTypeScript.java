@@ -206,9 +206,8 @@ public final class OpenTypeScript
             {"Yi", new String[] { "yi  " }}
         };
         UNICODE_SCRIPT_TO_OPENTYPE_TAG_MAP = new HashMap<String, String[]>(table.length);
-        for (Object obj : table)
+        for (Object[] array : table)
         {
-            Object[] array = (Object[]) obj;
             UNICODE_SCRIPT_TO_OPENTYPE_TAG_MAP.put((String) array[0], (String[]) array[1]);
         }
     }
@@ -265,7 +264,7 @@ public final class OpenTypeScript
             public int compare(int[] o1, int[] o2)
             {
                 return o1[0] < o2[0] ? -1 : o1[0] == o2[0] ? 0 : 1;
-            }
+            };
         });
         LineNumberReader rd = new LineNumberReader(new InputStreamReader(inputStream));
         int[] lastRange = { Integer.MIN_VALUE, Integer.MIN_VALUE };

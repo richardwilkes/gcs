@@ -15,10 +15,13 @@ import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -53,6 +56,18 @@ public abstract class NameLevelPrereq extends HasPrereq {
      * Loads a prerequisite.
      *
      * @param parent The owning prerequisite list, if any.
+     * @param m The {@link JsonMap} to load from.
+     */
+    public NameLevelPrereq(PrereqList parent, JsonMap m) throws IOException {
+        this(m.getString(DataFile.KEY_TYPE), parent);
+        initializeForLoad();
+        loadSelf(m, new LoadState());
+    }
+
+    /**
+     * Loads a prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
      * @param reader The XML reader to load from.
      */
     public NameLevelPrereq(PrereqList parent, XMLReader reader) throws IOException {
@@ -60,7 +75,6 @@ public abstract class NameLevelPrereq extends HasPrereq {
         initializeForLoad();
         String marker = reader.getMarker();
         loadHasAttribute(reader);
-
         do {
             if (reader.next() == XMLNodeType.START_TAG) {
                 loadSelf(reader);
@@ -98,23 +112,9 @@ public abstract class NameLevelPrereq extends HasPrereq {
         return false;
     }
 
-    @Override
-    public void save(XMLWriter out) {
-        out.startTag(mTag);
-        saveHasAttribute(out);
-        out.finishTagEOL();
-        mNameCriteria.save(out, TAG_NAME);
-        saveSelf(out);
-        if (mLevelCriteria.getType() != NumericCompareType.AT_LEAST || mLevelCriteria.getQualifier() != 0) {
-            mLevelCriteria.save(out, TAG_LEVEL);
-        }
-        out.endTagEOL(mTag, true);
-    }
-
     /** @param reader The XML reader to load from. */
     protected void loadSelf(XMLReader reader) throws IOException {
         String name = reader.getName();
-
         if (TAG_NAME.equals(name)) {
             mNameCriteria.load(reader);
         } else if (TAG_LEVEL.equals(name)) {
@@ -124,13 +124,22 @@ public abstract class NameLevelPrereq extends HasPrereq {
         }
     }
 
-    /**
-     * Called so that sub-classes can save extra data.
-     *
-     * @param out The XML writer to use.
-     */
-    protected void saveSelf(XMLWriter out) {
-        // Does nothing
+    @Override
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        mNameCriteria.load(m.getMap(TAG_NAME));
+        if (m.has(TAG_LEVEL)) {
+            mLevelCriteria.load(m.getMap(TAG_LEVEL));
+        }
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        mNameCriteria.save(w, TAG_NAME);
+        if (mLevelCriteria.getType() != NumericCompareType.AT_LEAST || mLevelCriteria.getQualifier() != 0) {
+            mLevelCriteria.save(w, TAG_LEVEL);
+        }
     }
 
     /** @return The name comparison object. */

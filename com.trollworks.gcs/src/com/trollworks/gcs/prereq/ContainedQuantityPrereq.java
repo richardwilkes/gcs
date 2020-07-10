@@ -14,13 +14,15 @@ package com.trollworks.gcs.prereq;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
+import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -30,6 +32,7 @@ public class ContainedQuantityPrereq extends HasPrereq {
     /** The XML tag for this class. */
     public static final  String          TAG_ROOT          = "contained_quantity_prereq";
     private static final String          ATTRIBUTE_COMPARE = "compare";
+    private static final String          KEY_QUALIFIER     = "qualifier";
     private              IntegerCriteria mQuantityCompare;
 
     /**
@@ -40,6 +43,17 @@ public class ContainedQuantityPrereq extends HasPrereq {
     public ContainedQuantityPrereq(PrereqList parent) {
         super(parent);
         mQuantityCompare = new IntegerCriteria(NumericCompareType.AT_MOST, 1);
+    }
+
+    /**
+     * Loads a prerequisite.
+     *
+     * @param parent The owning prerequisite list, if any.
+     * @param m      The {@link JsonMap} to load from.
+     */
+    public ContainedQuantityPrereq(PrereqList parent, JsonMap m) throws IOException {
+        this(parent);
+        loadSelf(m, new LoadState());
     }
 
     /**
@@ -83,6 +97,11 @@ public class ContainedQuantityPrereq extends HasPrereq {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
     public String getXMLTag() {
         return TAG_ROOT;
     }
@@ -93,13 +112,15 @@ public class ContainedQuantityPrereq extends HasPrereq {
     }
 
     @Override
-    public void save(XMLWriter out) {
-        out.startTag(TAG_ROOT);
-        saveHasAttribute(out);
-        out.writeAttribute(ATTRIBUTE_COMPARE, Enums.toId(mQuantityCompare.getType()));
-        out.finishTag();
-        out.writeEncodedData(mQuantityCompare.getQualifierAsString(false));
-        out.endTagEOL(TAG_ROOT, false);
+    public void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        mQuantityCompare.load(m.getMap(KEY_QUALIFIER));
+    }
+
+    @Override
+    public void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        mQuantityCompare.save(w, KEY_QUALIFIER);
     }
 
     /** @return The quantity comparison object. */

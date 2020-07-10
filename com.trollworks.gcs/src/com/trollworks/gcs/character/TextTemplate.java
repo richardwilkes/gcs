@@ -492,7 +492,7 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getHealth()));
             break;
         case KEY_WILL:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getWill()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getWillAdj()));
             break;
         case KEY_FRIGHT_CHECK:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getFrightCheck()));
@@ -504,7 +504,7 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMove()));
             break;
         case KEY_PERCEPTION:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getPerception()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getPerAdj()));
             break;
         case KEY_VISION:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getVision()));
@@ -558,7 +558,7 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getCurrentHitPoints()));
             break;
         case KEY_BASIC_HP:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getHitPointsAdj()));
             break;
         case KEY_REELING:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getReelingHitPoints()));

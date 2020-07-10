@@ -525,6 +525,17 @@
     <inspection_tool class="MethodOverridesInaccessibleMethodOfSuper" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="MethodOverridesStaticMethod" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="MigrateAssertToMatcherAssert" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="MismatchedCollectionQueryUpdate" enabled="false" level="WARNING" enabled_by_default="false">
+      <option name="queryNames">
+        <value />
+      </option>
+      <option name="updateNames">
+        <value />
+      </option>
+      <option name="ignoredClasses">
+        <value />
+      </option>
+    </inspection_tool>
     <inspection_tool class="MisorderedAssertEqualsParameters" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="MissingDeprecatedAnnotation" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="MissortedModifiers" enabled="true" level="WARNING" enabled_by_default="true">

@@ -1183,7 +1183,7 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Set the stroking color in the DeviceRGB color space. Range is 0..255.
+     * Set the stroking color in the DeviceRGB color space. Range is 0..1.
      *
      * @param r The red value
      * @param g The green value.
@@ -1191,6 +1191,32 @@ public final class PDPageContentStream implements Closeable
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameters are invalid.
      */
+    public void setStrokingColor(float r, float g, float b) throws IOException
+    {
+        if (isOutsideOneInterval(r) || isOutsideOneInterval(g) || isOutsideOneInterval(b))
+        {
+            throw new IllegalArgumentException("Parameters must be within 0..1, but are "
+                    + String.format("(%.2f,%.2f,%.2f)", r, g, b));
+        }
+        writeOperand(r);
+        writeOperand(g);
+        writeOperand(b);
+        writeOperator(OperatorName.STROKING_COLOR_RGB);
+        setStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+    }
+
+    /**
+     * Set the stroking color in the DeviceRGB color space. Range is 0..255.
+     *
+     * @param r The red value
+     * @param g The green value.
+     * @param b The blue value.
+     * @throws IOException If an IO error occurs while writing to the stream.
+     * @throws IllegalArgumentException If the parameters are invalid.
+     * @deprecated use
+     * {@link #setStrokingColor(float, float, float) setStrokingColor(r/255f, g/255f, b/255f)}
+     */
+    @Deprecated
     public void setStrokingColor(int r, int g, int b) throws IOException
     {
         if (isOutside255Interval(r) || isOutside255Interval(g) || isOutside255Interval(b))
@@ -1198,11 +1224,7 @@ public final class PDPageContentStream implements Closeable
             throw new IllegalArgumentException("Parameters must be within 0..255, but are "
                     + String.format("(%d,%d,%d)", r, g, b));
         }
-        writeOperand(r / 255f);
-        writeOperand(g / 255f);
-        writeOperand(b / 255f);
-        writeOperator(OperatorName.STROKING_COLOR_RGB);
-        setStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+        setStrokingColor(r / 255f, g / 255f, b / 255f);
     }
 
     /**
@@ -1214,7 +1236,7 @@ public final class PDPageContentStream implements Closeable
      * @param k The black value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameters are invalid.
-     * @deprecated Use {@link #setStrokingColor(float, float, float, float)} instead.
+     * @deprecated Use {@link #setStrokingColor(float, float, float, float) setStrokingColor(c/255f, m/255f, y/255f, k/255f)} instead.
      */
     @Deprecated
     public void setStrokingColor(int c, int m, int y, int k) throws IOException
@@ -1258,7 +1280,7 @@ public final class PDPageContentStream implements Closeable
      * @param g The gray value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameter is invalid.
-     * @deprecated Use {@link #setStrokingColor(float)} instead.
+     * @deprecated Use {@link #setStrokingColor(float) setStrokingColor(g/255f)} instead.
      */
     @Deprecated
     public void setStrokingColor(int g) throws IOException
@@ -1398,6 +1420,32 @@ public final class PDPageContentStream implements Closeable
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameters are invalid.
      */
+    public void setNonStrokingColor(float r, float g, float b) throws IOException
+    {
+        if (isOutsideOneInterval(r) || isOutsideOneInterval(g) || isOutsideOneInterval(b))
+        {
+            throw new IllegalArgumentException("Parameters must be within 0..1, but are "
+                    + String.format("(%.2f,%.2f,%.2f)", r, g, b));
+        }
+        writeOperand(r);
+        writeOperand(g);
+        writeOperand(b);
+        writeOperator(OperatorName.NON_STROKING_RGB);
+        setNonStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+    }
+
+    /**
+     * Set the non stroking color in the DeviceRGB color space. Range is 0..255.
+     *
+     * @param r The red value
+     * @param g The green value.
+     * @param b The blue value.
+     * @throws IOException If an IO error occurs while writing to the stream.
+     * @throws IllegalArgumentException If the parameters are invalid.
+     * @deprecated use
+     * {@link #setNonStrokingColor(float, float, float) setNonStrokingColor(r/255f, g/255f, b/255f)}
+     */
+    @Deprecated
     public void setNonStrokingColor(int r, int g, int b) throws IOException
     {
         if (isOutside255Interval(r) || isOutside255Interval(g) || isOutside255Interval(b))
@@ -1405,11 +1453,7 @@ public final class PDPageContentStream implements Closeable
             throw new IllegalArgumentException("Parameters must be within 0..255, but are "
                     + String.format("(%d,%d,%d)", r, g, b));
         }
-        writeOperand(r / 255f);
-        writeOperand(g / 255f);
-        writeOperand(b / 255f);
-        writeOperator(OperatorName.NON_STROKING_RGB);
-        setNonStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+        setNonStrokingColor(r / 255f, g / 255f, b / 255f);
     }
 
     /**
@@ -1479,7 +1523,9 @@ public final class PDPageContentStream implements Closeable
      * @param g The gray value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameter is invalid.
+     * @deprecated use {@link #setNonStrokingColor(float) setNonStrokingColor(g/255f)}
      */
+    @Deprecated
     public void setNonStrokingColor(int g) throws IOException
     {
         if (isOutside255Interval(g))
@@ -2421,9 +2467,15 @@ public final class PDPageContentStream implements Closeable
      * @param real the float value to be added to the content stream.
      * 
      * @throws IOException if something went wrong
+     * @throws IllegalArgumentException if the parameter is not a finite number
      */
     protected void writeOperand(float real) throws IOException
     {
+        if (Float.isInfinite(real) || Float.isNaN(real))
+        {
+            throw new IllegalArgumentException(real + " is not a finite number");
+        }
+
         int byteCount = NumberFormatUtil.formatFloatFast(real, formatDecimal.getMaximumFractionDigits(), formatBuffer);
 
         if (byteCount == -1)

@@ -47,7 +47,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDFontFactory;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.PDType3CharProc;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
 import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
@@ -72,6 +72,7 @@ import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
  * 
  * @author Ben Litchfield
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
 public abstract class PDFStreamEngine
 {
     private static final Log LOG = LogFactory.getLog(PDFStreamEngine.class);
@@ -87,6 +88,9 @@ public abstract class PDFStreamEngine
     private PDPage currentPage;
     private boolean isProcessingPage;
     private Matrix initialMatrix;
+
+    // used to monitor potentially recursive operations.
+    private int level = 0;
 
     /**
      * Creates a new PDFStreamEngine.
@@ -307,7 +311,8 @@ public abstract class PDFStreamEngine
         Matrix matrix = appearance.getMatrix();
 
         // zero-sized rectangles are not valid
-        if (rect != null && rect.getWidth() > 0 && rect.getHeight() > 0 && bbox != null)
+        if (rect != null && rect.getWidth() > 0 && rect.getHeight() > 0 &&
+            bbox != null && bbox.getWidth() > 0 && bbox.getHeight() > 0)
         {
             // transformed appearance box  fixme: may be an arbitrary shape
             Rectangle2D transformedBox = bbox.transform(matrix).getBounds2D();
@@ -681,7 +686,7 @@ public abstract class PDFStreamEngine
         if (font == null)
         {
             LOG.warn("No current font, will use default");
-            font = PDFontFactory.createDefaultFont();
+            font = PDType1Font.HELVETICA;
         }
 
         float fontSize = textState.getFontSize();
@@ -702,7 +707,6 @@ public abstract class PDFStreamEngine
             int before = in.available();
             int code = font.readCode(in);
             int codeLength = before - in.available();
-            String unicode = font.toUnicode(code);
 
             // Word spacing shall be applied to every occurrence of the single-byte character code
             // 32 in a string when using a simple font or a composite font that defines code 32 as
@@ -735,7 +739,7 @@ public abstract class PDFStreamEngine
             saveGraphicsState();
             Matrix textMatrixOld = textMatrix;
             Matrix textLineMatrixOld = textLineMatrix;
-            showGlyph(textRenderingMatrix, font, code, unicode, w);
+            showGlyph(textRenderingMatrix, font, code, w);
             textMatrix = textMatrixOld;
             textLineMatrix = textLineMatrixOld;
             restoreGraphicsState();
@@ -760,8 +764,8 @@ public abstract class PDFStreamEngine
     }
 
     /**
-     * Called when a glyph is to be processed.This method is intended for overriding in subclasses,
-     * the default implementation does nothing.
+     * Called when a glyph is to be processed. This method is intended for overriding in subclasses, the default
+     * implementation does nothing.
      *
      * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
      * @param font the current font
@@ -769,23 +773,44 @@ public abstract class PDFStreamEngine
      * @param unicode the Unicode text for this glyph, or null if the PDF does provide it
      * @param displacement the displacement (i.e. advance) of the glyph in text space
      * @throws IOException if the glyph cannot be processed
+     * 
+     * @deprecated use {@link #showGlyph(Matrix, PDFont, int, Vector)} instead
      */
-    protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
+    @Deprecated
+    protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code,
+                             String unicode,
                              Vector displacement) throws IOException
     {
         if (font instanceof PDType3Font)
         {
-            showType3Glyph(textRenderingMatrix, (PDType3Font)font, code, unicode, displacement);
+            showType3Glyph(textRenderingMatrix, (PDType3Font) font, code, displacement);
         }
         else
         {
-            showFontGlyph(textRenderingMatrix, font, code, unicode, displacement);
+            showFontGlyph(textRenderingMatrix, font, code, displacement);
         }
     }
 
     /**
-     * Called when a glyph is to be processed.This method is intended for overriding in subclasses,
-     * the default implementation does nothing.
+     * Called when a glyph is to be processed. This method is intended for overriding in subclasses, the default
+     * implementation does nothing.
+     *
+     * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
+     * @param font the current font
+     * @param code internal PDF character code for the glyph
+     * @param displacement the displacement (i.e. advance) of the glyph in text space
+     * @throws IOException if the glyph cannot be processed
+     */
+    protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, Vector displacement)
+            throws IOException
+    {
+        // call deprecated method to ensure binary compatibility
+        showGlyph(textRenderingMatrix, font, code, null, displacement);
+    }
+
+    /**
+     * Called when a glyph is to be processed. This method is intended for overriding in subclasses, the default
+     * implementation does nothing.
      *
      * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
      * @param font the current font
@@ -793,7 +818,10 @@ public abstract class PDFStreamEngine
      * @param unicode the Unicode text for this glyph, or null if the PDF does provide it
      * @param displacement the displacement (i.e. advance) of the glyph in text space
      * @throws IOException if the glyph cannot be processed
+     * 
+     * @deprecated use {@link #showFontGlyph(Matrix, PDFont, int, Vector)} instead
      */
+    @Deprecated
     protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
                                  Vector displacement) throws IOException
     {
@@ -801,7 +829,25 @@ public abstract class PDFStreamEngine
     }
 
     /**
-     * Called when a glyph is to be processed.This method is intended for overriding in subclasses,
+     * Called when a glyph is to be processed. This method is intended for overriding in subclasses, the default
+     * implementation does nothing.
+     *
+     * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
+     * @param font the current font
+     * @param code internal PDF character code for the glyph
+     * @param displacement the displacement (i.e. advance) of the glyph in text space
+     * @throws IOException if the glyph cannot be processed
+     */
+    protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code,
+            Vector displacement) throws IOException
+    {
+        // overridden in subclasses
+        // call deprecated method to ensure binary compatibility if not overridden
+        showFontGlyph(textRenderingMatrix, font, code, null, displacement);
+    }
+
+    /**
+     * Called when a glyph is to be processed. This method is intended for overriding in subclasses,
      * the default implementation does nothing.
      *
      * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
@@ -812,13 +858,30 @@ public abstract class PDFStreamEngine
      * @throws IOException if the glyph cannot be processed
      */
     protected void showType3Glyph(Matrix textRenderingMatrix, PDType3Font font, int code,
-                                  String unicode, Vector displacement) throws IOException
+            String unicode, Vector displacement) throws IOException
     {
         PDType3CharProc charProc = font.getCharProc(code);
         if (charProc != null)
         {
             processType3Stream(charProc, textRenderingMatrix);
         }
+    }
+
+    /**
+     * Called when a glyph is to be processed. This method is intended for overriding in subclasses, the default
+     * implementation does nothing.
+     *
+     * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
+     * @param font the current font
+     * @param code internal PDF character code for the glyph
+     * @param displacement the displacement (i.e. advance) of the glyph in text space
+     * @throws IOException if the glyph cannot be processed
+     */
+    protected void showType3Glyph(Matrix textRenderingMatrix, PDType3Font font, int code,
+            Vector displacement) throws IOException
+    {
+        // call deprecated method to ensure binary compatibility if not overridden
+        showType3Glyph(textRenderingMatrix, font, code, null, displacement);
     }
 
     /**
@@ -1087,5 +1150,38 @@ public abstract class PDFStreamEngine
         float x = ctm.getScaleX() + ctm.getShearX();
         float y = ctm.getScaleY() + ctm.getShearY();
         return width * (float)Math.sqrt((x * x + y * y) * 0.5);
+    }
+
+    /**
+     * Get the current level. This can be used to decide whether a recursion has done too deep and
+     * an operation should be skipped to avoid a stack overflow.
+     *
+     * @return the current level.
+     */
+    public int getLevel()
+    {
+        return level;
+    }
+
+    /**
+     * Increase the level. Call this before running a potentially recursive operation.
+     */
+    public void increaseLevel()
+    {
+        ++level;
+    }
+
+    /**
+     * Decrease the level. Call this after running a potentially recursive operation. A log message
+     * is shown if the level is below 0. This can happen if the level is not decreased after an
+     * operation is done, e.g. by using a "finally" block.
+     */
+    public void decreaseLevel()
+    {
+        --level;
+        if (level < 0)
+        {
+            LOG.error("level is " + level);
+        }
     }
 }

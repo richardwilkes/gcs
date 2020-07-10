@@ -84,6 +84,7 @@ public class LibraryCollector implements Comparator<Object> {
                         for (FileType one : FileType.OPENABLE) {
                             if (one.matchExtension(ext)) {
                                 mCurrent.add(path);
+                                //loadSave(path, ext);
                                 break;
                             }
                         }
@@ -143,7 +144,7 @@ public class LibraryCollector implements Comparator<Object> {
                 loadSave(new NoteList(), path);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Log.error(ex);
             System.exit(1);
         }
     }

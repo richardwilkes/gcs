@@ -24,8 +24,9 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -81,6 +82,14 @@ public class RitualMagicSpell extends Spell {
         mPoints = forSheet ? ritualMagicSpell.mPoints : 0;
         mPrerequisiteSpellsCount = ritualMagicSpell.mPrerequisiteSpellsCount;
         updateLevel(false);
+    }
+
+    public RitualMagicSpell(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile);
+        load(m, state);
+        if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
+            mPoints = 0;
+        }
     }
 
     /**
@@ -180,6 +189,11 @@ public class RitualMagicSpell extends Spell {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_RITUAL_MAGIC_SPELL;
+    }
+
+    @Override
     public String getXMLTagName() {
         return TAG_RITUAL_MAGIC_SPELL;
     }
@@ -215,14 +229,21 @@ public class RitualMagicSpell extends Spell {
     }
 
     @Override
-    public void saveSelf(XMLWriter out, boolean forUndo) {
-        super.saveSelf(out, forUndo);
-        out.simpleTag(TAG_BASE_SKILL_NAME, mBaseSkillName);
-        out.simpleTagNotZero(TAG_PREREQ_COUNT, mPrerequisiteSpellsCount);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        super.loadSelf(m, state);
+        mBaseSkillName = m.getString(TAG_BASE_SKILL_NAME);
+        mPrerequisiteSpellsCount = m.getInt(TAG_PREREQ_COUNT);
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        super.saveSelf(w, forUndo);
+        w.keyValue(TAG_BASE_SKILL_NAME, mBaseSkillName);
+        w.keyValueNot(TAG_PREREQ_COUNT, mPrerequisiteSpellsCount, 0);
         // Spells assume a default of 1 point, while RM assumes a default of 0, so we have to make
         // sure it gets written
         if (mPoints == 1) {
-            out.simpleTag(TAG_POINTS, mPoints);
+            w.keyValue(TAG_POINTS, 1);
         }
     }
 

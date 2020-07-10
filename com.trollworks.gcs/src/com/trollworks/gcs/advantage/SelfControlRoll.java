@@ -148,6 +148,19 @@ public enum SelfControlRoll {
         return NONE_REQUIRED;
     }
 
+    /**
+     * @param value The value to look for.
+     * @return The actual SelfControlRoll.
+     */
+    public static final SelfControlRoll getByCRValue(int value) {
+        for (SelfControlRoll cr : values()) {
+            if (cr.getCR() == value) {
+                return cr;
+            }
+        }
+        return NONE_REQUIRED;
+    }
+
     /** @return The description, along with the cost. */
     public String getDescriptionWithCost() {
         return toString() + ", x" + getMultiplier();

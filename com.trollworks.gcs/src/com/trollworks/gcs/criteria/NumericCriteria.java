@@ -12,17 +12,16 @@
 package com.trollworks.gcs.criteria;
 
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
 /** Manages numeric comparison criteria. */
-public abstract class NumericCriteria {
-    /** The comparison attribute. */
-    public static final String             ATTRIBUTE_COMPARE = "compare";
-    private             NumericCompareType mType;
+public abstract class NumericCriteria extends Criteria {
+    private NumericCompareType mType;
 
     /**
      * Creates a new numeric comparison.
@@ -59,14 +58,14 @@ public abstract class NumericCriteria {
         setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
     }
 
-    /**
-     * Saves this object as XML to a stream.
-     *
-     * @param out The XML writer to use.
-     * @param tag The tag to use.
-     */
-    public void save(XMLWriter out, String tag) {
-        out.simpleTagWithAttribute(tag, getQualifierAsString(false), ATTRIBUTE_COMPARE, Enums.toId(mType));
+    @Override
+    public void load(JsonMap m) throws IOException {
+        setType(Enums.extract(m.getString(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        w.keyValue(ATTRIBUTE_COMPARE, Enums.toId(mType));
     }
 
     /**

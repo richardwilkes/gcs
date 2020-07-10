@@ -21,6 +21,7 @@ public class JsonWriter extends FilterWriter {
     private int     mDepth;
     private boolean mCompact;
     private boolean mNeedComma;
+    private boolean mNeedIndent;
 
     public JsonWriter(Writer writer, String indent) {
         super(writer);
@@ -32,6 +33,7 @@ public class JsonWriter extends FilterWriter {
         for (int i = 0; i < mDepth; i++) {
             write(mIndent);
         }
+        mNeedIndent = false;
     }
 
     public void startMap() throws IOException {
@@ -42,11 +44,14 @@ public class JsonWriter extends FilterWriter {
                 write('\n');
                 indent();
             }
+        } else if (mNeedIndent) {
+            indent();
         }
         write('{');
         if (!mCompact) {
             write('\n');
             mDepth++;
+            mNeedIndent = true;
         }
     }
 
@@ -68,11 +73,14 @@ public class JsonWriter extends FilterWriter {
                 write('\n');
                 indent();
             }
+        } else if (mNeedIndent) {
+            indent();
         }
         write('[');
         if (!mCompact) {
             write('\n');
             mDepth++;
+            mNeedIndent = true;
         }
     }
 

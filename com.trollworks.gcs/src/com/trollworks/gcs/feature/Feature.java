@@ -11,32 +11,44 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.utility.xml.XMLWriter;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.utility.json.JsonWriter;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 /** Describes a feature of an advantage, skill, spell, or piece of equipment. */
-public interface Feature {
+public abstract class Feature {
+    /** @return The type name to use for this data. */
+    public abstract String getJSONTypeName();
+
     /** @return The XML tag representing this feature. */
-    String getXMLTag();
+    public abstract String getXMLTag();
 
     /** @return The feature key used in the feature map. */
-    String getKey();
+    public abstract String getKey();
 
     /** @return An exact clone of this feature. */
-    Feature cloneFeature();
+    public abstract Feature cloneFeature();
 
     /**
      * Saves the feature.
      *
-     * @param out The XML writer to use.
+     * @param w The {@link JsonWriter} to use.
      */
-    void save(XMLWriter out);
+   public final void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        saveSelf(w);
+        w.endMap();
+    }
+
+    protected abstract void saveSelf(JsonWriter w) throws IOException;
 
     /** @param set The nameable keys. */
-    void fillWithNameableKeys(Set<String> set);
+    public abstract void fillWithNameableKeys(Set<String> set);
 
     /** @param map The map of nameable keys to names to apply. */
-    void applyNameableKeys(Map<String, String> map);
+    public abstract void applyNameableKeys(Map<String, String> map);
 }

@@ -12,9 +12,10 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -32,6 +33,11 @@ public class AttributeBonus extends Bonus {
         super(1);
         mAttribute = BonusAttributeType.ST;
         mLimitation = AttributeBonusLimitation.NONE;
+    }
+
+    public AttributeBonus(JsonMap m) throws IOException {
+        this();
+        loadSelf(m);
     }
 
     /**
@@ -78,6 +84,11 @@ public class AttributeBonus extends Bonus {
     }
 
     @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
     public String getXMLTag() {
         return TAG_ROOT;
     }
@@ -103,23 +114,20 @@ public class AttributeBonus extends Bonus {
         }
     }
 
-    /**
-     * Saves the bonus.
-     *
-     * @param out The XML writer to use.
-     */
     @Override
-    public void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
-        out.startTag(TAG_ATTRIBUTE);
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        setAttribute(Enums.extract(m.getString(TAG_ATTRIBUTE), BonusAttributeType.values(), BonusAttributeType.ST));
+        setLimitation(Enums.extract(m.getString(ATTRIBUTE_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(TAG_ATTRIBUTE, Enums.toId(mAttribute));
         if (mLimitation != AttributeBonusLimitation.NONE) {
-            out.writeAttribute(ATTRIBUTE_LIMITATION, Enums.toId(mLimitation));
+            w.keyValue(ATTRIBUTE_LIMITATION, Enums.toId(mLimitation));
         }
-        out.finishTag();
-        out.writeEncodedData(Enums.toId(mAttribute));
-        out.endTagEOL(TAG_ATTRIBUTE, false);
-        saveBase(out);
-        out.endTagEOL(TAG_ROOT, true);
     }
 
     /** @return The attribute this bonus applies to. */

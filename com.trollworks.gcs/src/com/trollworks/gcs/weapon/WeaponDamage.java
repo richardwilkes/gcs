@@ -24,10 +24,11 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -98,38 +99,52 @@ public class WeaponDamage {
         }
     }
 
+    public WeaponDamage(JsonMap m, WeaponStats owner) throws IOException {
+        mOwner = owner;
+        mType = m.getString(DataFile.KEY_TYPE);
+        mST = Enums.extract(m.getString(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
+        if (m.has(ATTR_BASE)) {
+            mBase = new Dice(m.getString(ATTR_BASE));
+        }
+        mArmorDivisor = m.getDoubleWithDefault(ATTR_ARMOR_DIVISOR, 1);
+        mModifierPerDie = m.getInt(ATTR_MODIFIER_PER_DIE);
+        if (m.has(ATTR_FRAGMENTATION)) {
+            mFragmentation = new Dice(m.getString(ATTR_FRAGMENTATION));
+            mFragmentationType = m.getString(ATTR_FRAGMENTATION_TYPE);
+            mFragmentationArmorDivisor = m.getDoubleWithDefault(ATTR_FRAGMENTATION_ARMOR_DIVISOR, 1);
+        }
+    }
+
     /**
      * Saves the weapon damage.
      *
-     * @param out The XML writer to use.
+     * @param w The {@link JsonWriter} to use.
      */
-    public void save(XMLWriter out) {
-        out.startTag(TAG_ROOT);
-        out.writeAttribute(ATTR_TYPE, mType);
+    public void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValue(DataFile.KEY_TYPE, mType);
         if (mST != WeaponSTDamage.NONE) {
-            out.writeAttribute(ATTR_ST, mST.name().toLowerCase());
+            w.keyValue(ATTR_ST, mST.name().toLowerCase());
         }
         if (mBase != null) {
             String base = mBase.toString();
             if (!"0".equals(base)) {
-                out.writeAttribute(ATTR_BASE, base);
+                w.keyValue(ATTR_BASE, base);
             }
         }
         if (mArmorDivisor != 1) {
-            out.writeAttribute(ATTR_ARMOR_DIVISOR, mArmorDivisor);
+            w.keyValue(ATTR_ARMOR_DIVISOR, mArmorDivisor);
         }
         if (mFragmentation != null) {
             String frag = mFragmentation.toString();
             if (!"0".equals(frag)) {
-                out.writeAttribute(ATTR_FRAGMENTATION, frag);
-                if (mFragmentationArmorDivisor != 1) {
-                    out.writeAttribute(ATTR_FRAGMENTATION_ARMOR_DIVISOR, mFragmentationArmorDivisor);
-                }
-                out.writeAttribute(ATTR_FRAGMENTATION_TYPE, mFragmentationType);
+                w.keyValue(ATTR_FRAGMENTATION, frag);
+                w.keyValueNot(ATTR_FRAGMENTATION_ARMOR_DIVISOR, mFragmentationArmorDivisor, 1);
+                w.keyValue(ATTR_FRAGMENTATION_TYPE, mFragmentationType);
             }
         }
-        out.writeAttributeNotZero(ATTR_MODIFIER_PER_DIE, mModifierPerDie);
-        out.finishEmptyTagEOL();
+        w.keyValueNot(ATTR_MODIFIER_PER_DIE, mModifierPerDie, 0);
+        w.endMap();
     }
 
     public WeaponDamage clone(WeaponStats owner) {

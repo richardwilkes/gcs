@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.criteria;
 
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.units.WeightValue;
 import com.trollworks.gcs.utility.xml.XMLReader;
 
@@ -61,6 +63,18 @@ public class WeightCriteria extends NumericCriteria {
     public void load(XMLReader reader) throws IOException {
         super.load(reader);
         setQualifier(WeightValue.extract(reader.readText(), false));
+    }
+
+    @Override
+    public void load(JsonMap m) throws IOException {
+        super.load(m);
+        setQualifier(WeightValue.extract(m.getString(KEY_QUALIFIER), false));
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(KEY_QUALIFIER, mQualifier.toString(false));
     }
 
     /** @return The qualifier to match against. */

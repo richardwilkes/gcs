@@ -16,7 +16,6 @@
  */
 package org.apache.pdfbox.pdmodel.graphics.color;
 
-import java.awt.Color;
 import java.awt.Transparency;
 import java.awt.color.CMMException;
 import java.awt.color.ColorSpace;
@@ -55,6 +54,7 @@ import org.apache.pdfbox.util.Charsets;
  * @author Ben Litchfield
  * @author John Hewson
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
 public final class PDICCBased extends PDCIEBasedColorSpace
 {
     private static final Log LOG = LogFactory.getLog(PDICCBased.class);
@@ -75,7 +75,26 @@ public final class PDICCBased extends PDCIEBasedColorSpace
     static
     {
         String cmmProperty = System.getProperty("sun.java2d.cmm");
-        IS_KCMS = !isMinJdk8() || "sun.java2d.cmm.kcms.KcmsServiceProvider".equals(cmmProperty);
+        boolean result = false;
+        if (!isMinJdk8())
+        {
+            // always KCMS but class has different name
+            result = true;
+        }
+        else if ("sun.java2d.cmm.kcms.KcmsServiceProvider".equals(cmmProperty))
+        {
+            try
+            {
+                Class.forName("sun.java2d.cmm.kcms.KcmsServiceProvider");
+                result = true;
+            }
+            catch (ClassNotFoundException e)
+            {
+                // KCMS not available
+            }
+        }
+        // else maybe KCMS was available, but not wished
+        IS_KCMS = result;
     }
 
     /**
@@ -133,7 +152,7 @@ public final class PDICCBased extends PDCIEBasedColorSpace
         if (indirect != null && resources != null && resources.getResourceCache() != null)
         {
             PDColorSpace space = resources.getResourceCache().getColorSpace(indirect);
-            if (space != null && space instanceof PDICCBased)
+            if (space instanceof PDICCBased)
             {
                 return (PDICCBased) space;
             }
@@ -228,7 +247,7 @@ public final class PDICCBased extends PDCIEBasedColorSpace
                     // or CMMException due to invalid profiles, see PDFBOX-1295 and PDFBOX-1740 (ü-file)
                     // or ArrayIndexOutOfBoundsException, see PDFBOX-3610
                     // also triggers a ProfileDataException for PDFBOX-3549 with KCMS
-                    new Color(awtColorSpace, new float[getNumberOfComponents()], 1f);
+                    awtColorSpace.toRGB(new float[getNumberOfComponents()]);
                 }
                 else
                 {
@@ -367,6 +386,18 @@ public final class PDICCBased extends PDCIEBasedColorSpace
         if (numberOfComponents < 0)
         {
             numberOfComponents = stream.getCOSObject().getInt(COSName.N);
+
+            // PDFBOX-4801 correct wrong /N values
+            if (iccProfile != null)
+            {
+                int numIccComponents = iccProfile.getNumComponents();
+                if (numIccComponents != numberOfComponents)
+                {
+                    LOG.warn("Using " + numIccComponents + " components from ICC profile info instead of " +
+                            numberOfComponents + " components from /N entry");
+                    numberOfComponents = numIccComponents;
+                }
+            }
         }
         return numberOfComponents;
     }
@@ -494,11 +525,11 @@ public final class PDICCBased extends PDCIEBasedColorSpace
         switch (alternateColorSpace.getNumberOfComponents())
         {
             case 1:
-                return ICC_ColorSpace.TYPE_GRAY;
+                return ColorSpace.TYPE_GRAY;
             case 3:
-                return ICC_ColorSpace.TYPE_RGB;
+                return ColorSpace.TYPE_RGB;
             case 4:
-                return ICC_ColorSpace.TYPE_CMYK;
+                return ColorSpace.TYPE_CMYK;
             default:
                 // should not happen as all ICC color spaces in PDF must have 1,3, or 4 components
                 return -1;
@@ -508,8 +539,8 @@ public final class PDICCBased extends PDCIEBasedColorSpace
     /**
      * Sets the number of color components.
      * @param n the number of color components
+     * @deprecated it's probably not safe to use this, this method will be removed in 3.0.
      */
-    // TODO it's probably not safe to use this
     @Deprecated
     public void setNumberOfComponents(int n)
     {

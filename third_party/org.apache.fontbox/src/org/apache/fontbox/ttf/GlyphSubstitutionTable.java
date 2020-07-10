@@ -62,11 +62,13 @@ public class GlyphSubstitutionTable extends TTFTable
     void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
     {
         long start = data.getCurrentPosition();
+        @SuppressWarnings("unused")
         int majorVersion = data.readUnsignedShort();
         int minorVersion = data.readUnsignedShort();
         int scriptListOffset = data.readUnsignedShort();
         int featureListOffset = data.readUnsignedShort();
         int lookupListOffset = data.readUnsignedShort();
+        @SuppressWarnings("unused")
         long featureVariationsOffset = -1L;
         if (minorVersion == 1L)
         {
@@ -147,6 +149,7 @@ public class GlyphSubstitutionTable extends TTFTable
     {
         data.seek(offset);
         LangSysTable langSysTable = new LangSysTable();
+        @SuppressWarnings("unused")
         int lookupOrder = data.readUnsignedShort();
         langSysTable.requiredFeatureIndex = data.readUnsignedShort();
         int featureIndexCount = data.readUnsignedShort();
@@ -173,9 +176,19 @@ public class GlyphSubstitutionTable extends TTFTable
             {
                 // catch corrupt file
                 // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#flTbl
-                LOG.error("FeatureRecord array not alphabetically sorted by FeatureTag: " +
-                           featureRecord.featureTag + " < " + prevFeatureTag);
-                return new FeatureRecord[0];
+                if (featureRecord.featureTag.matches("\\w{4}") && prevFeatureTag.matches("\\w{4}"))
+                {
+                    // ArialUni.ttf has many warnings but isn't corrupt, so we assume that only
+                    // strings with trash characters indicate real corruption
+                    LOG.debug("FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                               featureRecord.featureTag + " < " + prevFeatureTag);
+                }
+                else
+                {
+                    LOG.warn("FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                               featureRecord.featureTag + " < " + prevFeatureTag);
+                    return new FeatureRecord[0];
+                }                
             }
             featureOffsets[i] = data.readUnsignedShort();
             featureRecords[i] = featureRecord;
@@ -192,6 +205,7 @@ public class GlyphSubstitutionTable extends TTFTable
     {
         data.seek(offset);
         FeatureTable featureTable = new FeatureTable();
+        @SuppressWarnings("unused")
         int featureParams = data.readUnsignedShort();
         int lookupIndexCount = data.readUnsignedShort();
         featureTable.lookupListIndices = new int[lookupIndexCount];
@@ -405,14 +419,15 @@ public class GlyphSubstitutionTable extends TTFTable
         for (LangSysTable langSysTable : langSysTables)
         {
             int required = langSysTable.requiredFeatureIndex;
-            if (required != 0xffff) // if no required features = 0xFFFF
+            if (required != 0xffff && required < featureList.length) // if no required features = 0xFFFF
             {
                 result.add(featureList[required]);
             }
             for (int featureIndex : langSysTable.featureIndices)
             {
-                if (enabledFeatures == null
-                        || enabledFeatures.contains(featureList[featureIndex].featureTag))
+                if (featureIndex < featureList.length &&
+                        (enabledFeatures == null ||
+                         enabledFeatures.contains(featureList[featureIndex].featureTag)))
                 {
                     result.add(featureList[featureIndex]);
                 }

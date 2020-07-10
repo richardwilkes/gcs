@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.utility.json;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,52 +99,27 @@ public class JsonArray extends JsonCollection {
     }
 
     /**
-     * @param index     The index to retrieve.
-     * @param allowNull {@code false} to return an empty string if no such index exists.
+     * @param index The index to retrieve.
      * @return The value associated with the index.
      */
-    public String getString(int index, boolean allowNull) {
-        return Json.asString(get(index), allowNull);
+    public String getString(int index) {
+        return Json.asString(get(index));
     }
 
     /**
-     * @param index     The index to retrieve.
-     * @param allowNull {@code false} to return an empty array if no such index exists or the value
-     *                  cannot be converted to a {@link JsonArray}.
+     * @param index The index to retrieve.
      * @return The value associated with the index.
      */
-    public JsonArray getArray(int index, boolean allowNull) {
-        return Json.asArray(get(index), allowNull);
+    public JsonArray getArray(int index) {
+        return Json.asArray(get(index));
     }
 
     /**
-     * @param index     The index to retrieve.
-     * @param allowNull {@code false} to return an empty map if no such index exists or the value
-     *                  cannot be converted to a {@link JsonMap}.
+     * @param index The index to retrieve.
      * @return The value associated with the index.
      */
-    public JsonMap getMap(int index, boolean allowNull) {
-        return Json.asMap(get(index), allowNull);
-    }
-
-    /**
-     * @param index     The index to retrieve.
-     * @param allowNull {@code false} to return an empty point if no such index exists or the value
-     *                  cannot be converted to a {@link Point}.
-     * @return The value associated with the index.
-     */
-    public Point getPoint(int index, boolean allowNull) {
-        return Json.asPoint(getString(index, true), allowNull);
-    }
-
-    /**
-     * @param index     The index to retrieve.
-     * @param allowNull {@code false} to return an empty rectangle if no such index exists or the
-     *                  value cannot be converted to a {@link Rectangle}.
-     * @return The value associated with the index.
-     */
-    public Rectangle getRectangle(int index, boolean allowNull) {
-        return Json.asRectangle(getString(index, true), allowNull);
+    public JsonMap getMap(int index) {
+        return Json.asMap(get(index));
     }
 
     /** @return The number of elements in the array. */

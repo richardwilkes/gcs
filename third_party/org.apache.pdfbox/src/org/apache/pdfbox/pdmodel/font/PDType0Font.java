@@ -403,6 +403,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
         return cMap.getWMode() == 1;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {
@@ -456,7 +457,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
     @Override
     protected float getStandard14Width(int code)
     {
-        throw new UnsupportedOperationException("not suppported");
+        throw new UnsupportedOperationException("not supported");
     }
 
     @Override
@@ -484,7 +485,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
         if ((isCMapPredefined || isDescendantCJK) && cMapUCS2 != null)
         {
             // if the font is composite and uses a predefined cmap (excluding Identity-H/V) then
-            // or if its decendant font uses Adobe-GB1/CNS1/Japan1/Korea1
+            // or if its descendant font uses Adobe-GB1/CNS1/Japan1/Korea1
 
             // a) Map the character code to a character identifier (CID) according to the font?s CMap
             int cid = codeToCID(code);

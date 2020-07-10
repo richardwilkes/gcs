@@ -913,7 +913,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
                 mCharacter.notifySingle(type, data);
             } else if (Advantage.ID_LEVELS.equals(type)) {
                 markForRebuild();
-            } else if (GURPSCharacter.ID_MODIFIED.equals(type)) {
+            } else if (GURPSCharacter.ID_MODIFIED.equals(type) || Settings.ID_USE_TITLE_IN_FOOTER.equals(type)) {
                 int count = getComponentCount();
                 for (int i = 0; i < count; i++) {
                     Page      page   = (Page) getComponent(i);
@@ -968,7 +968,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         gc.drawString(left, bounds.x, y);
         gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
         gc.setFont(font2);
-        String center = mCharacter.getProfile().getName();
+        Profile profile = mCharacter.getProfile();
+        String  center  = mCharacter.getSettings().useTitleInFooter() ? profile.getTitle() : profile.getName();
         gc.drawString(center, bounds.x + (bounds.width - (int) fm2.getStringBounds(center, gc).getWidth()) / 2, y);
 
         String allRightsReserved = I18n.Text("All rights reserved");

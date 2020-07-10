@@ -13,8 +13,9 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,6 +37,11 @@ public class ReactionBonus extends Bonus {
         mSituation = other.mSituation;
     }
 
+    public ReactionBonus(JsonMap m) throws IOException {
+        this();
+        loadSelf(m);
+    }
+
     public ReactionBonus(XMLReader reader) throws IOException {
         this();
         load(reader);
@@ -50,6 +56,11 @@ public class ReactionBonus extends Bonus {
             return mSituation.equals(((ReactionBonus) obj).mSituation);
         }
         return false;
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -77,11 +88,15 @@ public class ReactionBonus extends Bonus {
     }
 
     @Override
-    public void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
-        out.simpleTag(TAG_SITUATION, mSituation);
-        saveBase(out);
-        out.endTagEOL(TAG_ROOT, true);
+    protected void loadSelf(JsonMap m) throws IOException {
+        super.loadSelf(m);
+        setSituation(m.getString(TAG_SITUATION));
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(TAG_SITUATION, mSituation);
     }
 
     public String getSituation() {

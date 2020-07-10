@@ -100,7 +100,7 @@ public class I18n {
                                 }
                                 last = 'v';
                             } else {
-                                System.err.println("ignoring value with no previous key on line " + lineNum);
+                                Log.warn("ignoring value with no previous key on line " + lineNum);
                             }
                         }
                         line = in.readLine();
@@ -113,11 +113,11 @@ public class I18n {
                                 TRANSLATIONS.put(key, valueBuilder.toString());
                             }
                         } else {
-                            System.err.println("ignoring key with missing value on line " + lastKeyLineStart);
+                            Log.warn("ignoring key with missing value on line " + lastKeyLineStart);
                         }
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
+                    Log.error(ex);
                 }
             }
             int last = Math.max(filename.lastIndexOf('.'), filename.lastIndexOf('_'));

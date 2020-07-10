@@ -14,16 +14,17 @@ package com.trollworks.gcs.feature;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 /** Describes a bonus. */
-public abstract class Bonus implements Feature {
+public abstract class Bonus extends Feature {
     /** The "amount" tag. */
     public static final String        TAG_AMOUNT = "amount";
     private             LeveledAmount mAmount;
@@ -94,13 +95,12 @@ public abstract class Bonus implements Feature {
         }
     }
 
-    /**
-     * Saves the bonus base information.
-     *
-     * @param out The XML writer to use..
-     */
-    public void saveBase(XMLWriter out) {
-        mAmount.save(out, TAG_AMOUNT);
+    protected void loadSelf(JsonMap m) throws IOException {
+        mAmount.load(m);
+    }
+
+    protected void saveSelf(JsonWriter w) throws IOException {
+        mAmount.saveInline(w);
     }
 
     /** @return The leveled amount. */
@@ -128,11 +128,6 @@ public abstract class Bonus implements Feature {
 
     public String getParentName() {
         return mParent == null ? I18n.Text("Unknown") : mParent.toString();
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + " (" + getToolTipAmount() + ", parent:" + mParent + ")";
     }
 
     public void addToToolTip(StringBuilder toolTip) {

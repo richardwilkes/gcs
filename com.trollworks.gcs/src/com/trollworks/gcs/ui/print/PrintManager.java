@@ -26,7 +26,6 @@ import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
@@ -136,20 +135,20 @@ public class PrintManager {
         this();
         double[]    size    = {8.5, 11.0};
         double[]    margins = {0, 0, 0, 0};
-        LengthUnits units   = Enums.extract(m.getString(ATTRIBUTE_UNITS, false), LengthUnits.values(), LengthUnits.IN);
-        setPrintServiceForPrinter(m.getString(ATTRIBUTE_PRINTER, true));
-        setPageOrientation(Enums.extract(m.getString(TAG_ORIENTATION, false), PageOrientation.values(), PageOrientation.PORTRAIT));
+        LengthUnits units   = Enums.extract(m.getString(ATTRIBUTE_UNITS), LengthUnits.values(), LengthUnits.IN);
+        setPrintServiceForPrinter(m.getString(ATTRIBUTE_PRINTER));
+        setPageOrientation(Enums.extract(m.getString(TAG_ORIENTATION), PageOrientation.values(), PageOrientation.PORTRAIT));
         size[0] = getNumberForJSON(m, TAG_WIDTH, units, 8.5);
         size[1] = getNumberForJSON(m, TAG_HEIGHT, units, 11.0);
         margins[0] = getNumberForJSON(m, TAG_TOP_MARGIN, units, 0.0);
         margins[1] = getNumberForJSON(m, TAG_LEFT_MARGIN, units, 0.0);
         margins[2] = getNumberForJSON(m, TAG_BOTTOM_MARGIN, units, 0.0);
         margins[3] = getNumberForJSON(m, TAG_RIGHT_MARGIN, units, 0.0);
-        setChromaticity(Enums.extract(m.getString(TAG_CHROMATICITY, false), InkChromaticity.values(), InkChromaticity.COLOR));
-        setSides(Enums.extract(m.getString(TAG_SIDES, false), PageSides.values(), PageSides.SINGLE));
+        setChromaticity(Enums.extract(m.getString(TAG_CHROMATICITY), InkChromaticity.values(), InkChromaticity.COLOR));
+        setSides(Enums.extract(m.getString(TAG_SIDES), PageSides.values(), PageSides.SINGLE));
         setNumberUp(m.getIntWithDefault(TAG_NUMBER_UP, 1));
-        setPrintQuality(Enums.extract(m.getString(TAG_QUALITY, false), Quality.values(), Quality.NORMAL));
-        setResolution(extractFromResolutionString(m.getString(TAG_RESOLUTION, false)));
+        setPrintQuality(Enums.extract(m.getString(TAG_QUALITY), Quality.values(), Quality.NORMAL));
+        setResolution(extractFromResolutionString(m.getString(TAG_RESOLUTION)));
         setPaperSize(size, units);
         setPaperMargins(margins, units);
     }
@@ -366,7 +365,7 @@ public class PrintManager {
         w.keyValue(TAG_RIGHT_MARGIN, margins[3]);
         w.keyValue(TAG_CHROMATICITY, Enums.toId(getChromaticity(false)));
         w.keyValue(TAG_SIDES, Enums.toId(getSides()));
-        w.keyValue(TAG_NUMBER_UP, getNumberUp().toString());
+        w.keyValueNot(TAG_NUMBER_UP, getNumberUp().getValue(), 1);
         w.keyValue(TAG_QUALITY, Enums.toId(getPrintQuality(false)));
         w.keyValueNot(TAG_RESOLUTION, createResolutionString(getResolution(false)), null);
         w.endMap();
@@ -377,43 +376,15 @@ public class PrintManager {
             try (JsonWriter w = new JsonWriter(new OutputStreamWriter(buffer, StandardCharsets.UTF_8), "\t")) {
                 toJSON(w, LengthUnits.IN);
             }
-            return Json.asMap(Json.parse(new ByteArrayInputStream(buffer.toByteArray())), false);
+            return Json.asMap(Json.parse(new ByteArrayInputStream(buffer.toByteArray())));
         } catch (Exception exception) {
             Log.error(exception);
             return new JsonMap();
         }
     }
 
-    /**
-     * Writes this object to an XML stream.
-     *
-     * @param out   The XML writer to use.
-     * @param units The type of units to write the data out with.
-     */
-    public void save(XMLWriter out, LengthUnits units) {
-        double[]     size    = getPaperSize(units);
-        double[]     margins = getPaperMargins(units);
-        PrintService service = getPrintService();
-
-        out.startTag(TAG_ROOT);
-        if (service != null) {
-            out.writeAttribute(ATTRIBUTE_PRINTER, service.getName());
-        }
-        out.writeAttribute(ATTRIBUTE_UNITS, Enums.toId(units));
-        out.finishTagEOL();
-        out.simpleTag(TAG_ORIENTATION, Enums.toId(getPageOrientation()));
-        out.simpleTag(TAG_WIDTH, size[0]);
-        out.simpleTag(TAG_HEIGHT, size[1]);
-        out.simpleTag(TAG_TOP_MARGIN, margins[0]);
-        out.simpleTag(TAG_LEFT_MARGIN, margins[1]);
-        out.simpleTag(TAG_BOTTOM_MARGIN, margins[2]);
-        out.simpleTag(TAG_RIGHT_MARGIN, margins[3]);
-        out.simpleTag(TAG_CHROMATICITY, Enums.toId(getChromaticity(false)));
-        out.simpleTag(TAG_SIDES, Enums.toId(getSides()));
-        out.simpleTag(TAG_NUMBER_UP, getNumberUp());
-        out.simpleTag(TAG_QUALITY, Enums.toId(getPrintQuality(false)));
-        out.simpleTagNotEmpty(TAG_RESOLUTION, createResolutionString(getResolution(false)));
-        out.endTagEOL(TAG_ROOT, true);
+    public void save(JsonWriter w, LengthUnits units) throws IOException {
+        toJSON(w, units);
     }
 
     private PrintService getPrintService() {

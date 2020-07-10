@@ -295,6 +295,7 @@ public class PDType1CFont extends PDSimpleFont
         return isEmbedded;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {

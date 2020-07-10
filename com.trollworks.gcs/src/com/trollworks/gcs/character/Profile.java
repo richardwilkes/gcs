@@ -23,6 +23,8 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
@@ -30,7 +32,6 @@ import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.awt.Graphics2D;
 import java.awt.Transparency;
@@ -49,6 +50,7 @@ import javax.imageio.ImageIO;
 public class Profile {
     /** The root XML tag. */
     public static final  String           TAG_ROOT         = "profile";
+    private static final String           KEY_SM           = "SM";
     /** The prefix used in front of all IDs for profile. */
     public static final  String           PROFILE_PREFIX   = GURPSCharacter.CHARACTER_PREFIX + "pi.";
     /** The field ID for portrait changes. */
@@ -217,42 +219,67 @@ public class Profile {
         return true;
     }
 
-    void save(XMLWriter out) {
-        out.startSimpleTagEOL(TAG_ROOT);
-        out.simpleTagNotEmpty(TAG_PLAYER_NAME, mPlayerName);
-        out.simpleTagNotEmpty(TAG_NAME, mName);
-        out.simpleTagNotEmpty(TAG_TITLE, mTitle);
-        out.simpleTag(TAG_AGE, mAge);
-        out.simpleTagNotEmpty(TAG_BIRTHDAY, mBirthday);
-        out.simpleTagNotEmpty(TAG_EYES, mEyeColor);
-        out.simpleTagNotEmpty(TAG_HAIR, mHair);
-        out.simpleTagNotEmpty(TAG_SKIN, mSkinColor);
-        out.simpleTagNotEmpty(TAG_HANDEDNESS, mHandedness);
-        if (!mHeight.getNormalizedValue().equals(Fixed6.ZERO)) {
-            out.simpleTag(TAG_HEIGHT, mHeight.toString(false));
+    void load(JsonMap m) throws IOException {
+        mPlayerName = m.getString(TAG_PLAYER_NAME);
+        mName = m.getString(TAG_NAME);
+        mTitle = m.getString(TAG_TITLE);
+        mAge = m.getInt(TAG_AGE);
+        mBirthday = m.getString(TAG_BIRTHDAY);
+        mEyeColor = m.getString(TAG_EYES);
+        mHair = m.getString(TAG_HAIR);
+        mSkinColor = m.getString(TAG_SKIN);
+        mHandedness = m.getString(TAG_HANDEDNESS);
+        mHeight = LengthValue.extract(m.getString(TAG_HEIGHT), false);
+        mWeight = WeightValue.extract(m.getString(TAG_WEIGHT), false);
+        mSizeModifier = m.getInt(KEY_SM);
+        mGender = m.getString(TAG_GENDER);
+        mHitLocationTable = HitLocationTable.MAP.get(m.getString(TAG_BODY_TYPE));
+        if (mHitLocationTable == null) {
+            mHitLocationTable = HitLocationTable.HUMANOID;
         }
-        if (!mWeight.getNormalizedValue().equals(Fixed6.ZERO)) {
-            out.simpleTag(TAG_WEIGHT, mWeight.toString(false));
-        }
-        out.simpleTag(BonusAttributeType.SM.getXMLTag(), mSizeModifier);
-        out.simpleTagNotEmpty(TAG_GENDER, mGender);
-        out.simpleTag(TAG_BODY_TYPE, mHitLocationTable.getKey());
-        out.simpleTagNotEmpty(TAG_TECH_LEVEL, mTechLevel);
-        out.simpleTagNotEmpty(TAG_RELIGION, mReligion);
-        if (mCustomPortrait && mPortrait != null) {
+        mTechLevel = m.getString(TAG_TECH_LEVEL);
+        mReligion = m.getString(TAG_RELIGION);
+        if (m.has(TAG_PORTRAIT)) {
             try {
-                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                    ImageIO.write(mPortrait.getRetina(), FileType.PNG.getExtension(), baos);
-                    out.writeComment("The portrait is a PNG file encoded as Base64");
-                    out.startSimpleTagEOL(TAG_PORTRAIT);
-                    out.println(Text.standardizeLineEndings(Base64.getMimeEncoder().encodeToString(baos.toByteArray())));
-                    out.endTagEOL(TAG_PORTRAIT, true);
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException("Could not write portrait.");
+                mPortrait = createPortrait(Img.create(new ByteArrayInputStream(Base64.getDecoder().decode(m.getString(TAG_PORTRAIT)))));
+                mCustomPortrait = true;
+            } catch (Exception imageException) {
+                Log.warn(imageException);
             }
         }
-        out.endTagEOL(TAG_ROOT, true);
+    }
+
+    void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValueNot(TAG_PLAYER_NAME, mPlayerName, "");
+        w.keyValueNot(TAG_NAME, mName, "");
+        w.keyValueNot(TAG_TITLE, mTitle, "");
+        w.keyValueNot(TAG_AGE, mAge, 0);
+        w.keyValueNot(TAG_BIRTHDAY, mBirthday, "");
+        w.keyValueNot(TAG_EYES, mEyeColor, "");
+        w.keyValueNot(TAG_HAIR, mHair, "");
+        w.keyValueNot(TAG_SKIN, mSkinColor, "");
+        w.keyValueNot(TAG_HANDEDNESS, mHandedness, "");
+        if (!mHeight.getNormalizedValue().equals(Fixed6.ZERO)) {
+            w.keyValue(TAG_HEIGHT, mHeight.toString(false));
+        }
+        if (!mWeight.getNormalizedValue().equals(Fixed6.ZERO)) {
+            w.keyValue(TAG_WEIGHT, mWeight.toString(false));
+        }
+        w.keyValueNot(KEY_SM, mSizeModifier, 0);
+        w.keyValueNot(TAG_GENDER, mGender, "");
+        w.keyValue(TAG_BODY_TYPE, mHitLocationTable.getKey());
+        w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
+        w.keyValueNot(TAG_RELIGION, mReligion, "");
+        if (mCustomPortrait && mPortrait != null) {
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                ImageIO.write(mPortrait.getRetina(), FileType.PNG.getExtension(), baos);
+                w.keyValue(TAG_PORTRAIT, Base64.getEncoder().encodeToString(baos.toByteArray()));
+            } catch (Exception imageException) {
+                Log.warn(imageException);
+            }
+        }
+        w.endMap();
     }
 
     void update() {

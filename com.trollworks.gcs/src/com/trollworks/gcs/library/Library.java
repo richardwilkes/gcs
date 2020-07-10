@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Release;
@@ -34,13 +33,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class Library implements Comparable<Library> {
-    private static final String        RELEASE_FILE  = "release.txt";
-    private static final String        KEY_TITLE     = "title";
-    private static final String        KEY_PATH      = "path";
-    private static final String        KEY_LAST_SEEN = "last_seen";
-    public static final  Library       MASTER        = new Library(I18n.Text("Master Library"), "richardwilkes", "gcs_master_library", getDefaultMasterLibraryPath());
-    public static final  Library       USER          = new Library(I18n.Text("User Library"), "*", "gcs_user_library", getDefaultUserLibraryPath());
-    public static final  List<Library> LIBRARIES     = new ArrayList<>();
+    public static final  Version       MINIMUM_LIBRARY_VERSION             = new Version();
+    public static final  Version       INCOMPATIBLE_FUTURE_LIBRARY_VERSION = new Version(3, 0, 0);
+    private static final String        RELEASE_FILE                        = "release.txt";
+    private static final String        KEY_TITLE                           = "title";
+    private static final String        KEY_PATH                            = "path";
+    private static final String        KEY_LAST_SEEN                       = "last_seen";
+    public static final  Library       MASTER                              = new Library(I18n.Text("Master Library"), "richardwilkes", "gcs_master_library", getDefaultMasterLibraryPath());
+    public static final  Library       USER                                = new Library(I18n.Text("User Library"), "*", "gcs_user_library", getDefaultUserLibraryPath());
+    public static final  List<Library> LIBRARIES                           = new ArrayList<>();
     private              String        mTitle;
     private              String        mGitHubAccountName;
     private              String        mRepoName;
@@ -65,8 +66,8 @@ public class Library implements Comparable<Library> {
     }
 
     public static Library fromJSON(String key, JsonMap m) throws IOException {
-        String pathStr = m.getString(KEY_PATH, true);
-        if (pathStr == null) {
+        String pathStr = m.getString(KEY_PATH);
+        if (pathStr.isBlank()) {
             throw new IOException("invalid library path");
         }
         Path path = Paths.get(pathStr);
@@ -74,7 +75,7 @@ public class Library implements Comparable<Library> {
             USER.mPath = path;
             return USER;
         }
-        Version lastSeen = new Version(m.getString(KEY_LAST_SEEN, false));
+        Version lastSeen = new Version(m.getString(KEY_LAST_SEEN));
         if (MASTER.getKey().equals(key)) {
             MASTER.mPath = path;
             MASTER.mLastSeen = lastSeen;
@@ -84,7 +85,7 @@ public class Library implements Comparable<Library> {
         if (parts.length != 2) {
             throw new IOException("invalid library key");
         }
-        String title = m.getString(KEY_TITLE, false);
+        String title = m.getString(KEY_TITLE);
         if (title.isBlank() || MASTER.getTitle().equalsIgnoreCase(title) || USER.getTitle().equalsIgnoreCase(title)) {
             throw new IOException("invalid library title");
         }
@@ -150,13 +151,7 @@ public class Library implements Comparable<Library> {
     }
 
     public List<Release> checkForAvailableUpgrade() {
-        Version nextMajorVersion = new Version(GCS.LIBRARY_VERSION);
-        if (nextMajorVersion.isZero()) {
-            nextMajorVersion.major = 2;
-        } else {
-            nextMajorVersion.major++;
-        }
-        return Release.load(mGitHubAccountName, mRepoName, getVersionOnDisk(), (version, notes) -> version.compareTo(GCS.LIBRARY_VERSION) > 0 && version.compareTo(nextMajorVersion) < 0);
+        return Release.load(mGitHubAccountName, mRepoName, getVersionOnDisk(), (version, notes) -> version.compareTo(MINIMUM_LIBRARY_VERSION) > 0 && version.compareTo(INCOMPATIBLE_FUTURE_LIBRARY_VERSION) < 0);
     }
 
     public synchronized Release getAvailableUpgrade() {

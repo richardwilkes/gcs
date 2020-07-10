@@ -186,6 +186,7 @@ public class PDType3Font extends PDSimpleFont
         return true;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public float getHeight(int code) throws IOException
     {
@@ -256,6 +257,12 @@ public class PDType3Font extends PDSimpleFont
     public boolean isDamaged()
     {
         // there's no font file to load
+        return false;
+    }
+
+    @Override
+    public boolean isStandard14()
+    {
         return false;
     }
 

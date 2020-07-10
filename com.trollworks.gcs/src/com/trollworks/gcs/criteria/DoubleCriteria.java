@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.criteria;
 
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
@@ -60,6 +62,18 @@ public class DoubleCriteria extends NumericCriteria {
     public void load(XMLReader reader) throws IOException {
         super.load(reader);
         setQualifier(reader.readDouble(0.0));
+    }
+
+    @Override
+    public void load(JsonMap m) throws IOException {
+        super.load(m);
+        setQualifier(m.getDouble(KEY_QUALIFIER));
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w) throws IOException {
+        super.saveSelf(w);
+        w.keyValue(KEY_QUALIFIER, mQualifier);
     }
 
     /** @return The qualifier to match against. */

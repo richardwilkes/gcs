@@ -12,9 +12,10 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 
@@ -22,6 +23,7 @@ import java.io.IOException;
 public class LeveledAmount {
     /** The "per level" attribute. */
     public static final String  ATTRIBUTE_PER_LEVEL = "per_level";
+    private static final String KEY_AMOUNT = "amount";
     private             boolean mPerLevel;
     private             int     mLevel;
     private             double  mAmount;
@@ -84,26 +86,21 @@ public class LeveledAmount {
         mAmount = reader.readDouble(0.0);
     }
 
-    /**
-     * Saves this object as XML to a stream.
-     *
-     * @param out The XML writer to use.
-     * @param tag The tag to use.
-     */
-    public void save(XMLWriter out, String tag) {
-        if (isPerLevel()) {
-            if (mInteger) {
-                out.simpleTagWithAttribute(tag, getIntegerAmount(), ATTRIBUTE_PER_LEVEL, mPerLevel);
-            } else {
-                out.simpleTagWithAttribute(tag, mAmount, ATTRIBUTE_PER_LEVEL, mPerLevel);
-            }
-        } else {
-            if (mInteger) {
-                out.simpleTag(tag, getIntegerAmount());
-            } else {
-                out.simpleTag(tag, mAmount);
-            }
+    public final void load(JsonMap m) throws IOException {
+        mAmount = m.getDouble(KEY_AMOUNT);
+        if (mInteger) {
+            mAmount = Math.round(mAmount);
         }
+        mPerLevel = m.getBoolean(ATTRIBUTE_PER_LEVEL);
+    }
+
+    public final void saveInline(JsonWriter w) throws IOException {
+        if (mInteger) {
+            w.keyValue(KEY_AMOUNT, getIntegerAmount());
+        } else {
+            w.keyValue(KEY_AMOUNT, getAmount());
+        }
+        w.keyValueNot(ATTRIBUTE_PER_LEVEL, mPerLevel, false);
     }
 
     /** @return Whether the amount should be applied per level. */

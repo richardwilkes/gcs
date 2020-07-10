@@ -33,17 +33,17 @@ public class Release implements Comparable<Release> {
     public static List<Release> load(String githubAccountName, String repoName, Version currentVersion, ReleaseFilter filter) {
         List<Release> versions = new ArrayList<>();
         try {
-            JsonArray list  = Json.asArray(Json.parse(new URL("https://api.github.com/repos/" + githubAccountName + "/" + repoName + "/releases")), false);
+            JsonArray list  = Json.asArray(Json.parse(new URL("https://api.github.com/repos/" + githubAccountName + "/" + repoName + "/releases")));
             int       count = list.size();
             for (int i = 0; i < count; i++) {
-                JsonMap m   = list.getMap(i, false);
-                String  tag = m.getString("tag_name", false);
+                JsonMap m   = list.getMap(i);
+                String  tag = m.getString("tag_name");
                 if (tag.startsWith("v")) {
                     Version version = new Version(tag.substring(1));
                     if (!version.isZero() && version.compareTo(currentVersion) >= 0) {
-                        String notes = m.getString("body", false);
+                        String notes = m.getString("body");
                         if (filter == null || filter.isReleaseUsable(version, notes)) {
-                            versions.add(new Release(version, notes, m.getString("zipball_url", false)));
+                            versions.add(new Release(version, notes, m.getString("zipball_url")));
                         }
                     }
                 }

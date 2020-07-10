@@ -27,12 +27,16 @@ import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.ui.widget.outline.Switchable;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -47,6 +51,7 @@ import java.util.Set;
 
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
+    private static final int                        CURRENT_JSON_VERSION       = 1;
     private static final int                        CURRENT_VERSION            = 4;
     /** The XML tag used for items. */
     public static final  String                     TAG_ADVANTAGE              = "advantage";
@@ -69,6 +74,15 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String                     ATTR_ROUND_COST_DOWN       = "round_down";
     private static final String                     ATTR_ALLOW_HALF_LEVELS     = "allow_half_levels";
     private static final String                     ATTR_HALF_LEVEL            = "half_level";
+    private static final String                     KEY_CONTAINER_TYPE         = "container_type";
+    private static final String                     KEY_WEAPONS                = "weapons";
+    private static final String                     KEY_MODIFIERS              = "modifiers";
+    private static final String                     KEY_CR_ADJ                 = "cr_adj";
+    private static final String                     KEY_MENTAL                 = "mental";
+    private static final String                     KEY_PHYSICAL               = "physical";
+    private static final String                     KEY_SOCIAL                 = "social";
+    private static final String                     KEY_EXOTIC                 = "exotic";
+    private static final String                     KEY_SUPERNATURAL           = "supernatural";
     /** The prefix used in front of all IDs for the advantages. */
     public static final  String                     PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage" + Notifier.SEPARATOR;
     /** The field ID for type changes. */
@@ -194,6 +208,11 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
     }
 
+    public Advantage(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_ADVANTAGE_CONTAINER));
+        load(m, state);
+    }
+
     /**
      * Loads an advantage and associates it with the specified data file.
      *
@@ -233,6 +252,26 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     @Override
+    public String getJSONTypeName() {
+        return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
+    }
+
+    @Override
+    public String getXMLTagName() {
+        return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
+    }
+
+    @Override
+    public int getXMLTagVersion() {
+        return CURRENT_VERSION;
+    }
+
+    @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mType = TYPE_MASK_PHYSICAL;
@@ -267,7 +306,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
         String name = reader.getName();
-
         if (TAG_NAME.equals(name)) {
             mName = reader.readText().replace("\n", " ");
         } else if (TAG_CR.equals(name)) {
@@ -307,63 +345,112 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
-    protected void saveAttributes(XMLWriter out, boolean forUndo) {
-        super.saveAttributes(out, forUndo);
-        if (mRoundCostDown) {
-            out.writeAttribute(ATTR_ROUND_COST_DOWN, true);
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        mRoundCostDown = m.getBoolean(ATTR_ROUND_COST_DOWN);
+        mDisabled = m.getBoolean(ATTR_DISABLED);
+        mAllowHalfLevels = m.getBoolean(ATTR_ALLOW_HALF_LEVELS);
+        if (canHaveChildren()) {
+            mContainerType = Enums.extract(m.getString(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
         }
-        if (mAllowHalfLevels) {
-            out.writeAttribute(ATTR_ALLOW_HALF_LEVELS, true);
-        }
-        if (mDisabled) {
-            out.writeAttribute(ATTR_DISABLED, true);
-        }
-        if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
-            out.writeAttribute(TAG_TYPE, Enums.toId(mContainerType));
-        }
-    }
-
-    @Override
-    public void saveSelf(XMLWriter out, boolean forUndo) {
-        out.simpleTag(TAG_NAME, mName);
+        mName = m.getString(TAG_NAME);
+        mType = 0;
         if (!canHaveChildren()) {
-            out.simpleTag(TAG_TYPE, getTypeAsText());
-            if (mLevels != -1) {
+            if (m.getBoolean(KEY_MENTAL)) {
+                mType |= TYPE_MASK_MENTAL;
+            }
+            if (m.getBoolean(KEY_PHYSICAL)) {
+                mType |= TYPE_MASK_PHYSICAL;
+            }
+            if (m.getBoolean(KEY_SOCIAL)) {
+                mType |= TYPE_MASK_SOCIAL;
+            }
+            if (m.getBoolean(KEY_EXOTIC)) {
+                mType |= TYPE_MASK_EXOTIC;
+            }
+            if (m.getBoolean(KEY_SUPERNATURAL)) {
+                mType |= TYPE_MASK_SUPERNATURAL;
+            }
+            if (m.has(TAG_LEVELS)) {
+                Fixed6 levels = new Fixed6(m.getString(TAG_LEVELS), false);
+                mLevels = (int) levels.asLong();
                 if (mAllowHalfLevels) {
-                    out.simpleTagWithAttribute(TAG_LEVELS, mLevels, ATTR_HALF_LEVEL, mHalfLevel);
-                } else {
-                    out.simpleTag(TAG_LEVELS, mLevels);
+                    mHalfLevel = levels.sub(new Fixed6(mLevels)).equals(new Fixed6(0.5));
                 }
             }
-            if (mPoints != 0) {
-                out.simpleTag(TAG_BASE_POINTS, mPoints);
-            }
-            if (mPointsPerLevel != 0) {
-                out.simpleTag(TAG_POINTS_PER_LEVEL, mPointsPerLevel);
-            }
-
-            for (WeaponStats weapon : mWeapons) {
-                weapon.save(out);
+            mPoints = m.getInt(TAG_BASE_POINTS);
+            mPointsPerLevel = m.getInt(TAG_POINTS_PER_LEVEL);
+            if (m.has(KEY_WEAPONS)) {
+                WeaponStats.loadFromJSONArray(this, m.getArray(KEY_WEAPONS), mWeapons);
             }
         }
-        mCR.save(out, TAG_CR, mCRAdj);
-        for (AdvantageModifier modifier : mModifiers) {
-            modifier.save(out, forUndo);
+        if (m.has(TAG_CR)) {
+            mCR = SelfControlRoll.getByCRValue(m.getInt(TAG_CR));
+            if (m.has(KEY_CR_ADJ)) {
+                mCRAdj = Enums.extract(m.getString(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
+            }
+        }
+        if (m.has(KEY_MODIFIERS)) {
+            JsonArray a     = m.getArray(KEY_MODIFIERS);
+            int       count = a.size();
+            for (int i = 0; i < count; i++) {
+                mModifiers.add(new AdvantageModifier(getDataFile(), a.getMap(i), state));
+            }
         }
         if (getDataFile() instanceof GURPSCharacter) {
-            out.simpleTagNotEmpty(TAG_USER_DESC, mUserDesc);
+            mUserDesc = m.getString(TAG_USER_DESC);
         }
-        out.simpleTagNotEmpty(TAG_REFERENCE, mReference);
+        mReference = m.getString(TAG_REFERENCE);
+    }
+
+    @Override
+    protected void loadChild(JsonMap m, LoadState state) throws IOException {
+        if (!state.mForUndo) {
+            String type = m.getString(DataFile.KEY_TYPE);
+            if (TAG_ADVANTAGE.equals(type) || TAG_ADVANTAGE_CONTAINER.equals(type)) {
+                addChild(new Advantage(mDataFile, m, state));
+            } else {
+                Log.warn("invalid child type: " + type);
+            }
+        }
+    }
+
+    @Override
+    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+        w.keyValueNot(ATTR_ROUND_COST_DOWN, mRoundCostDown, false);
+        w.keyValueNot(ATTR_ALLOW_HALF_LEVELS, mAllowHalfLevels, false);
+        w.keyValueNot(ATTR_DISABLED, mDisabled, false);
+        if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
+            w.keyValue(KEY_CONTAINER_TYPE, Enums.toId(mContainerType));
+        }
+        w.keyValue(TAG_NAME, mName);
+        if (!canHaveChildren()) {
+            w.keyValueNot(KEY_MENTAL, (mType & TYPE_MASK_MENTAL) != 0, false);
+            w.keyValueNot(KEY_PHYSICAL, (mType & TYPE_MASK_PHYSICAL) != 0, false);
+            w.keyValueNot(KEY_SOCIAL, (mType & TYPE_MASK_SOCIAL) != 0, false);
+            w.keyValueNot(KEY_EXOTIC, (mType & TYPE_MASK_EXOTIC) != 0, false);
+            w.keyValueNot(KEY_SUPERNATURAL, (mType & TYPE_MASK_SUPERNATURAL) != 0, false);
+            if (mLevels != -1) {
+                Fixed6 levels = new Fixed6(mLevels);
+                if (mAllowHalfLevels && mHalfLevel) {
+                    levels = levels.add(new Fixed6(0.5));
+                }
+                w.keyValue(TAG_LEVELS, levels.toString());
+            }
+            w.keyValueNot(TAG_BASE_POINTS, mPoints, 0);
+            w.keyValueNot(TAG_POINTS_PER_LEVEL, mPointsPerLevel, 0);
+            WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
+        }
+        if (mCR != SelfControlRoll.NONE_REQUIRED) {
+            w.keyValue(TAG_CR, mCR.getCR());
+            if (mCRAdj != SelfControlRollAdjustments.NONE) {
+                w.keyValue(KEY_CR_ADJ, Enums.toId(mCRAdj));
+            }
+        }
+        saveList(w, KEY_MODIFIERS, mModifiers, false);
+        if (getDataFile() instanceof GURPSCharacter) {
+            w.keyValueNot(TAG_USER_DESC, mUserDesc, "");
+        }
+        w.keyValueNot(TAG_REFERENCE, mReference, "");
     }
 
     /** @return The container type. */
@@ -828,7 +915,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     private static int getTypeFromText(String text) {
         int type = 0;
-
         if (text.contains(TYPE_MENTAL)) {
             type |= TYPE_MASK_MENTAL;
         }
@@ -853,7 +939,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             String        separator = ", ";
             StringBuilder buffer    = new StringBuilder();
             int           type      = getType();
-
             if ((type & TYPE_MASK_MENTAL) != 0) {
                 buffer.append(TYPE_MENTAL);
             }

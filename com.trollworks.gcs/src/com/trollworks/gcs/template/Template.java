@@ -13,6 +13,7 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
@@ -22,7 +23,6 @@ import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
-import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -32,16 +32,18 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
 /** A template. */
 public class Template extends DataFile {
+    private static final int          CURRENT_JSON_VERSION   = 1;
     private static final int          CURRENT_VERSION        = 2;
     private static final String       TAG_ROOT               = "template";
     private static final String       TAG_OLD_NOTES          = "notes";
@@ -99,6 +101,26 @@ public class Template extends DataFile {
     public Template(Path path) throws IOException {
         this();
         load(path);
+    }
+
+    @Override
+    public String getJSONTypeName() {
+        return TAG_ROOT;
+    }
+
+    @Override
+    public int getJSONVersion() {
+        return CURRENT_JSON_VERSION;
+    }
+
+    @Override
+    public int getXMLTagVersion() {
+        return CURRENT_VERSION;
+    }
+
+    @Override
+    public String getXMLTagName() {
+        return TAG_ROOT;
     }
 
     @Override
@@ -180,8 +202,6 @@ public class Template extends DataFile {
                 String name = reader.getName();
                 if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
                     mSpells.addRow(new Spell(this, reader, state), true);
-                } else if (RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(name)) {
-                    mSpells.addRow(new RitualMagicSpell(this, reader, state), true);
                 } else {
                     reader.skipTag(name);
                 }
@@ -218,33 +238,26 @@ public class Template extends DataFile {
     }
 
     @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
+    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+        AdvantageList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_ADVANTAGES), mAdvantages, state);
+        SkillList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_SKILLS), mSkills, state);
+        SpellList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_SPELLS), mSpells, state);
+        EquipmentList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_EQUIPMENT), mEquipment, state);
+        EquipmentList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_OTHER_EQUIPMENT), mOtherEquipment, state);
+        NoteList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_NOTES), mNotes, state);
+        calculateAdvantagePoints();
+        calculateSkillPoints();
+        calculateSpellPoints();
     }
 
     @Override
-    public String getXMLTagName() {
-        return TAG_ROOT;
-    }
-
-    @Override
-    protected void saveSelf(XMLWriter out) {
-        saveList(AdvantageList.TAG_ROOT, mAdvantages, out);
-        saveList(SkillList.TAG_ROOT, mSkills, out);
-        saveList(SpellList.TAG_ROOT, mSpells, out);
-        saveList(EquipmentList.TAG_CARRIED_ROOT, mEquipment, out);
-        saveList(EquipmentList.TAG_OTHER_ROOT, mOtherEquipment, out);
-        saveList(NoteList.TAG_ROOT, mNotes, out);
-    }
-
-    private static void saveList(String tag, OutlineModel model, XMLWriter out) {
-        if (model.getRowCount() > 0) {
-            out.startSimpleTagEOL(tag);
-            for (ListRow row : new FilteredIterator<>(model.getTopLevelRows(), ListRow.class)) {
-                row.save(out, false);
-            }
-            out.endTagEOL(tag, true);
-        }
+    protected void saveSelf(JsonWriter w) throws IOException {
+        ListRow.saveList(w, GURPSCharacter.KEY_ADVANTAGES, mAdvantages.getTopLevelRows(), false);
+        ListRow.saveList(w, GURPSCharacter.KEY_SKILLS, mSkills.getTopLevelRows(), false);
+        ListRow.saveList(w, GURPSCharacter.KEY_SPELLS, mSpells.getTopLevelRows(), false);
+        ListRow.saveList(w, GURPSCharacter.KEY_EQUIPMENT, mEquipment.getTopLevelRows(), false);
+        ListRow.saveList(w, GURPSCharacter.KEY_OTHER_EQUIPMENT, mOtherEquipment.getTopLevelRows(), false);
+        ListRow.saveList(w, GURPSCharacter.KEY_NOTES, mNotes.getTopLevelRows(), false);
     }
 
     /**

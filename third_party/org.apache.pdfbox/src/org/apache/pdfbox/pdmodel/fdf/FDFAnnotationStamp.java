@@ -30,9 +30,8 @@ import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBoolean;
 
 import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.util.Hex;
@@ -138,7 +137,7 @@ public class FDFAnnotationStamp extends FDFAnnotation
     /**
      * This will create an Appearance dictionary from an appearance XML document.
      *
-     * @param fdfXML The XML document that contains the appearance data.
+     * @param appearanceXML The XML document that contains the appearance data.
      */
     private COSDictionary parseStampAnnotationAppearanceXML(Element appearanceXML) throws IOException
     {
@@ -297,21 +296,15 @@ public class FDFAnnotationStamp extends FDFAnnotation
         NodeList nodeList = arrayEl.getChildNodes();
         String parentAttrKey = arrayEl.getAttribute("KEY");
 
-        if ("BBox".equals(parentAttrKey))
+        if ("BBox".equals(parentAttrKey) && nodeList.getLength() < 4)
         {
-            if (nodeList.getLength() < 4)
-            {
-                throw new IOException("BBox does not have enough coordinates, only has: " +
-                        nodeList.getLength());
-            }
+            throw new IOException("BBox does not have enough coordinates, only has: " +
+                    nodeList.getLength());
         }
-        else if ("Matrix".equals(parentAttrKey))
+        else if ("Matrix".equals(parentAttrKey) && nodeList.getLength() < 6)
         {
-            if (nodeList.getLength() < 6)
-            {
-                throw new IOException("Matrix does not have enough coordinates, only has: " + 
-                        nodeList.getLength());
-            }
+            throw new IOException("Matrix does not have enough coordinates, only has: " + 
+                    nodeList.getLength());
         }
 
         for (int i = 0; i < nodeList.getLength(); i++)
@@ -324,39 +317,34 @@ public class FDFAnnotationStamp extends FDFAnnotation
                 String childAttrVal = child.getAttribute("VAL");
                 LOG.debug(parentAttrKey + " => reading child: " + child.getTagName() +
                            " with key: " + childAttrKey);
-                if ("INT".equalsIgnoreCase(child.getTagName()))
+                if ("INT".equalsIgnoreCase(child.getTagName()) || "FIXED".equalsIgnoreCase(child.getTagName()))
                 {
-                    LOG.debug(parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
-                    array.add(COSFloat.get(childAttrVal));
-                }
-                else if ("FIXED".equalsIgnoreCase(child.getTagName()))
-                {
-                    LOG.debug(parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
-                    array.add(COSInteger.get(childAttrVal));
+                    LOG.debug(parentAttrKey + " value(" + i + "): " + childAttrVal);
+                    array.add(COSNumber.get(childAttrVal));
                 }
                 else if ("NAME".equalsIgnoreCase(child.getTagName()))
                 {
-                    LOG.debug(parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    LOG.debug(parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(COSName.getPDFName(childAttrVal));
                 }
                 else if ("BOOL".equalsIgnoreCase(child.getTagName()))
                 {
-                    LOG.debug(parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    LOG.debug(parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(COSBoolean.getBoolean(Boolean.parseBoolean(childAttrVal)));
                 }
                 else if ("DICT".equalsIgnoreCase(child.getTagName()))
                 {
-                    LOG.debug(parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    LOG.debug(parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(parseDictElement(child));
                 }
                 else if ("STREAM".equalsIgnoreCase(child.getTagName()))
                 {
-                    LOG.debug(parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    LOG.debug(parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(parseStreamElement(child));
                 }
                 else if ("ARRAY".equalsIgnoreCase(child.getTagName()))
                 {
-                    LOG.debug(parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    LOG.debug(parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(parseArrayElement(child));
                 }
                 else

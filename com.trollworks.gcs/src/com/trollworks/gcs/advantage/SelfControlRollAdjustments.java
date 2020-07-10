@@ -182,7 +182,7 @@ public enum SelfControlRollAdjustments {
             criteria.setType(StringCompareType.IS);
             criteria.setQualifier("Merchant");
             criteria = bonus.getSpecializationCriteria();
-            criteria.setType(StringCompareType.IS_ANYTHING);
+            criteria.setType(StringCompareType.ANY);
             LeveledAmount amount = bonus.getAmount();
             amount.setIntegerOnly(true);
             amount.setPerLevel(false);

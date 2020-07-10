@@ -18,8 +18,10 @@ package org.apache.pdfbox.contentstream.operator.graphics;
 
 import java.io.IOException;
 import java.util.List;
-import org.apache.pdfbox.contentstream.operator.MissingOperandException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.contentstream.operator.MissingOperandException;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.MissingResourceException;
@@ -38,6 +40,8 @@ import org.apache.pdfbox.contentstream.operator.OperatorName;
  */
 public final class DrawObject extends GraphicsOperatorProcessor
 {
+    private static final Log LOG = LogFactory.getLog(DrawObject.class);
+
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
@@ -62,13 +66,30 @@ public final class DrawObject extends GraphicsOperatorProcessor
             PDImageXObject image = (PDImageXObject)xobject;
             context.drawImage(image);
         }
-        else if (xobject instanceof PDTransparencyGroup)
-        {
-            getContext().showTransparencyGroup((PDTransparencyGroup) xobject);
-        }
         else if (xobject instanceof PDFormXObject)
         {
-            getContext().showForm((PDFormXObject) xobject);
+            try
+            {
+                context.increaseLevel();
+                if (context.getLevel() > 25)
+                {
+                    LOG.error("recursion is too deep, skipping form XObject");
+                    return;
+                }
+                PDFormXObject form = (PDFormXObject) xobject;
+                if (form instanceof PDTransparencyGroup)
+                {
+                    context.showTransparencyGroup((PDTransparencyGroup) form);
+                }
+                else
+                {
+                    context.showForm(form);
+                }
+            }
+            finally
+            {
+                context.decreaseLevel();
+            }
         }
     }
 
