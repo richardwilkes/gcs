@@ -50,9 +50,8 @@ import javax.swing.UIManager;
 
 /** The main entry point for the character sheet. */
 public class GCS {
-    public static final String  WEB_SITE        = "https://gurpscharactersheet.com";
-    public static final Version VERSION         = new Version();
-    public static final Version LIBRARY_VERSION = new Version();
+    public static final String  WEB_SITE = "https://gurpscharactersheet.com";
+    public static final Version VERSION  = new Version();
     public static final String  COPYRIGHT;
     public static final String  COPYRIGHT_FOOTER;
     public static final String  APP_BANNER;
