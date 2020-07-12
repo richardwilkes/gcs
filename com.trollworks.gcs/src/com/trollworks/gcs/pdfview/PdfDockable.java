@@ -84,7 +84,7 @@ public class PdfDockable extends Dockable implements FileProxy, CloseHandler {
                 int pageIndex    = ((Integer) mPageField.getValue()).intValue() - 1;
                 int newPageIndex = mPanel.goToPageIndex(pageIndex, null);
                 if (pageIndex == newPageIndex) {
-                    mPanel.requestFocusInWindow();
+                    mPanel.requestFocus();
                 } else {
                     mPageField.setValue(Integer.valueOf(newPageIndex + 1));
                 }

@@ -270,6 +270,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
 
     @Override
     public void jumpToSearchField() {
-        mFilterField.requestFocusInWindow();
+        mFilterField.requestFocus();
     }
 }

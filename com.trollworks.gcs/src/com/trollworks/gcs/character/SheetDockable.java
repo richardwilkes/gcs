@@ -178,7 +178,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
 
     @Override
     public void jumpToSearchField() {
-        mSearch.requestFocusInWindow();
+        mSearch.requestFocus();
     }
 
     @Override

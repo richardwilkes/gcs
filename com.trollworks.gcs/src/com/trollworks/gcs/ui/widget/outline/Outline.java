@@ -2588,6 +2588,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dtde The drop target drop event.
      */
     protected void dropRow(DropTargetDropEvent dtde) {
+        requestFocus();
         if (dropOnRow(dtde)) {
             return;
         }

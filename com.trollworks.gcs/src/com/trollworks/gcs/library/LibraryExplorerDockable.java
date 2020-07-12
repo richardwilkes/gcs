@@ -519,7 +519,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     @Override
     public void jumpToSearchField() {
-        mSearch.requestFocusInWindow();
+        mSearch.requestFocus();
     }
 
     @Override

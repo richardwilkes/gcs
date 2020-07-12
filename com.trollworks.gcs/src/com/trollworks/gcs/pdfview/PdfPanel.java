@@ -177,7 +177,7 @@ public class PdfPanel extends JPanel implements KeyListener, MouseListener, Scro
 
     @Override
     public void mouseClicked(MouseEvent event) {
-        requestFocusInWindow();
+        requestFocus();
     }
 
     @Override

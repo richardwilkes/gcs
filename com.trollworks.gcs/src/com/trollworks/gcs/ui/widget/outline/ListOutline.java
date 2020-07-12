@@ -200,7 +200,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
      *              opening the editor.
      */
     public void openDetailEditor(boolean later) {
-        requestFocusInWindow();
+        requestFocus();
         mRowsToEdit = new FilteredList<>(getModel().getSelectionAsList(), ListRow.class);
         if (later) {
             EventQueue.invokeLater(this);
@@ -236,7 +236,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
     protected void rowsWereDropped() {
         updateAllRows();
         mDataFile.notifySingle(mRowSetChangedID, null);
-        requestFocusInWindow();
+        requestFocus();
     }
 
     public void updateAllRows() {

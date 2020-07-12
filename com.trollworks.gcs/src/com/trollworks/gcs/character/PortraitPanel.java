@@ -157,7 +157,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
                     WindowUtils.showError(this, I18n.Text("Unable to load image."));
                 }
                 dtde.dropComplete(true);
-                dtde.getDropTargetContext().getComponent().requestFocusInWindow();
+                dtde.getDropTargetContext().getComponent().requestFocus();
             } catch (Exception exception) {
                 Log.error(exception);
             }
@@ -175,7 +175,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
                     }
                 }
                 dtde.dropComplete(true);
-                dtde.getDropTargetContext().getComponent().requestFocusInWindow();
+                dtde.getDropTargetContext().getComponent().requestFocus();
             } catch (Exception exception) {
                 Log.error(exception);
             }

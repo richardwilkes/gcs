@@ -335,9 +335,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (focusKey != null) {
             restoreFocusToKey(focusKey, this);
         } else if (focus instanceof Outline) {
-            ((Outline) focus).getBestOutlineForRowIndex(firstRow).requestFocusInWindow();
+            ((Outline) focus).getBestOutlineForRowIndex(firstRow).requestFocus();
         } else if (focus != null) {
-            focus.requestFocusInWindow();
+            focus.requestFocus();
         }
         setSize(getPreferredSize());
         repaint();
@@ -443,7 +443,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         if (key != null) {
             if (panel instanceof PageField) {
                 if (key.equals(((PageField) panel).getConsumedType())) {
-                    panel.requestFocusInWindow();
+                    panel.requestFocus();
                     return true;
                 }
             } else if (panel instanceof Container) {

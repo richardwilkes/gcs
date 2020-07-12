@@ -132,7 +132,7 @@ public class LibraryFields implements DocumentListener {
             dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (dialog.showDialog(mOwner, I18n.Text("Select")) == JFileChooser.APPROVE_OPTION) {
                 mPath.setText(dialog.getSelectedFile().getAbsolutePath());
-                mPath.requestFocusInWindow();
+                mPath.requestFocus();
                 mPath.selectAll();
             }
         });
@@ -159,7 +159,7 @@ public class LibraryFields implements DocumentListener {
                     return;
                 }
                 mPath.setText(def.toString());
-                mPath.requestFocusInWindow();
+                mPath.requestFocus();
                 mPath.selectAll();
             });
             mOwner.add(button);

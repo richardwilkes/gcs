@@ -140,7 +140,7 @@ public class WindowUtils {
         dialog.setVisible(true);
         dialog.dispose();
         if (focusOwner != null) {
-            focusOwner.requestFocusInWindow(FocusEvent.Cause.ROLLBACK);
+            focusOwner.requestFocus();
         }
         pane.setMessage(null);
 

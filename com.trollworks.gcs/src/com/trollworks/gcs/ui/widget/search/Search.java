@@ -77,6 +77,11 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
         return mFilterField.requestFocusInWindow();
     }
 
+    @Override
+    public void requestFocus() {
+        mFilterField.requestFocus();
+    }
+
     private void searchSelect() {
         if (mFloater != null) {
             List<Object> selection = mFloater.getSelectedValues();
