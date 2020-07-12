@@ -2681,6 +2681,7 @@ public class GURPSCharacter extends DataFile {
         needRepaint |= processPrerequisites(getSkillsIterator());
         needRepaint |= processPrerequisites(getSpellsIterator());
         needRepaint |= processPrerequisites(getEquipmentIterator());
+        needRepaint |= processPrerequisites(getOtherEquipmentIterator());
         return needRepaint;
     }
 
