@@ -392,6 +392,11 @@ public enum SpellColumn {
         public String getDataAsText(Spell spell) {
             return Numbers.format(spell.getPoints()); // $NON-NLS-1$
         }
+
+        @Override
+        public String getToolTip(Spell spell) {
+            return spell.getPointsToolTip();
+        }
     },
     /** The category. */
     CATEGORY {

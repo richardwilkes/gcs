@@ -475,6 +475,24 @@ public class Skill extends ListRow implements HasSourceReference {
         return false;
     }
 
+    /** @return The tooltTip to describe how the points were calculated */
+    public String getPointsToolTip() {
+        if (canHaveChildren()) {
+            return I18n.Text("The sum of the points spent by children of this container");
+        }
+        GURPSCharacter character = getCharacter();
+        if (character != null) {
+            StringBuilder tooltip = new StringBuilder();
+            String        name    = getName();
+            character.getSkillPointComparedIntegerBonusFor(ID_POINTS + "*", name, getSpecialization(), getCategories(), tooltip);
+            character.getIntegerBonusFor(ID_POINTS + "/" + name.toLowerCase(), tooltip);
+            if (tooltip.length() > 0) {
+                return I18n.Text("Includes modifiers from") + tooltip;
+            }
+        }
+        return "";
+    }
+
     /** @return The points. */
     public int getPoints() {
         if (canHaveChildren()) {
@@ -486,14 +504,29 @@ public class Skill extends ListRow implements HasSourceReference {
             }
             return sum;
         }
-        return mPoints;
+        int            points    = mPoints;
+        GURPSCharacter character = getCharacter();
+        if (character != null) {
+            String name = getName();
+            points += character.getSkillPointComparedIntegerBonusFor(ID_POINTS + "*", name, getSpecialization(), getCategories());
+            points += character.getIntegerBonusFor(ID_POINTS + "/" + name.toLowerCase());
+            if (points < 0) {
+                points = 0;
+            }
+        }
+        return points;
+    }
+
+    /** @return the unmodified points */
+    public int getRawPoints() {
+        return canHaveChildren() ? 0 : mPoints;
     }
 
     /**
      * @param points The points to set.
      * @return Whether it was changed.
      */
-    public boolean setPoints(int points) {
+    public boolean setRawPoints(int points) {
         if (mPoints != points) {
             mPoints = points;
             startNotify();

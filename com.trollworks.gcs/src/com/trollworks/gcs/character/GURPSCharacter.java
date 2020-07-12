@@ -25,8 +25,10 @@ import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
+import com.trollworks.gcs.feature.SkillPointBonus;
 import com.trollworks.gcs.feature.SkillSelectionType;
 import com.trollworks.gcs.feature.SpellBonus;
+import com.trollworks.gcs.feature.SpellPointBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
@@ -2028,9 +2030,7 @@ public class GURPSCharacter extends DataFile {
     private void calculateSkillPoints() {
         mCachedSkillPoints = 0;
         for (Skill skill : getSkillsIterator()) {
-            if (!skill.canHaveChildren()) {
-                mCachedSkillPoints += skill.getPoints();
-            }
+            mCachedSkillPoints += skill.getRawPoints();
         }
     }
 
@@ -2042,9 +2042,7 @@ public class GURPSCharacter extends DataFile {
     private void calculateSpellPoints() {
         mCachedSpellPoints = 0;
         for (Spell spell : getSpellsIterator()) {
-            if (!spell.canHaveChildren()) {
-                mCachedSpellPoints += spell.getPoints();
-            }
+            mCachedSpellPoints += spell.getRawPoints();
         }
     }
 
@@ -3003,6 +3001,42 @@ public class GURPSCharacter extends DataFile {
     }
 
     /**
+     * @param id                      The feature ID to search for.
+     * @param nameQualifier           The name qualifier.
+     * @param specializationQualifier The specialization qualifier.
+     * @param categoryQualifier       The categories qualifier
+     * @return The bonus.
+     */
+    public int getSkillPointComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoryQualifier) {
+        return getSkillPointComparedIntegerBonusFor(id, nameQualifier, specializationQualifier, categoryQualifier, null);
+    }
+
+    /**
+     * @param id                      The feature ID to search for.
+     * @param nameQualifier           The name qualifier.
+     * @param specializationQualifier The specialization qualifier.
+     * @param categoryQualifier       The categories qualifier
+     * @param toolTip                 The toolTip being built
+     * @return The point bonus.
+     */
+    public int getSkillPointComparedIntegerBonusFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoryQualifier, StringBuilder toolTip) {
+        int           total = 0;
+        List<Feature> list  = mFeatureMap.get(id.toLowerCase());
+        if (list != null) {
+            for (Feature feature : list) {
+                if (feature instanceof SkillPointBonus) {
+                    SkillPointBonus bonus = (SkillPointBonus) feature;
+                    if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
+                        total += bonus.getAmount().getIntegerAdjustedAmount();
+                        bonus.addToToolTip(toolTip);
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
+    /**
      * @param id         The feature ID to search for.
      * @param qualifier  The qualifier.
      * @param categories The categories qualifier
@@ -3015,6 +3049,40 @@ public class GURPSCharacter extends DataFile {
             for (Feature feature : list) {
                 if (feature instanceof SpellBonus) {
                     SpellBonus bonus = (SpellBonus) feature;
+                    if (bonus.getNameCriteria().matches(qualifier) && bonus.matchesCategories(categories)) {
+                        total += bonus.getAmount().getIntegerAdjustedAmount();
+                        bonus.addToToolTip(toolTip);
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
+    /**
+     * @param id         The feature ID to search for.
+     * @param qualifier  The qualifier.
+     * @param categories The categories qualifier
+     * @return The bonus.
+     */
+    public int getSpellPointComparedIntegerBonusFor(String id, String qualifier, Set<String> categories) {
+        return getSpellPointComparedIntegerBonusFor(id, qualifier, categories, null);
+    }
+
+    /**
+     * @param id         The feature ID to search for.
+     * @param qualifier  The qualifier.
+     * @param categories The categories qualifier
+     * @param toolTip    The toolTip being built
+     * @return The point bonus.
+     */
+    public int getSpellPointComparedIntegerBonusFor(String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
+        int           total = 0;
+        List<Feature> list  = mFeatureMap.get(id.toLowerCase());
+        if (list != null) {
+            for (Feature feature : list) {
+                if (feature instanceof SpellPointBonus) {
+                    SpellPointBonus bonus = (SpellPointBonus) feature;
                     if (bonus.getNameCriteria().matches(qualifier) && bonus.matchesCategories(categories)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                         bonus.addToToolTip(toolTip);

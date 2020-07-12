@@ -101,11 +101,10 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
             if (!skill.canHaveChildren()) {
-                int points = skill.getPoints();
+                int points = skill.getRawPoints();
                 if (points > 0) {
                     RowUndo undo = new RowUndo(skill);
-
-                    skill.setPoints(points - 1);
+                    skill.setRawPoints(points - 1);
                     if (undo.finish()) {
                         undos.add(undo);
                     }
@@ -125,7 +124,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
             if (!skill.canHaveChildren()) {
                 RowUndo undo = new RowUndo(skill);
-                skill.setPoints(skill.getPoints() + 1);
+                skill.setRawPoints(skill.getRawPoints() + 1);
                 if (undo.finish()) {
                     undos.add(undo);
                 }
@@ -163,12 +162,12 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Skill skill : new FilteredIterator<>(getModel().getSelectionAsList(), Skill.class)) {
             if (!skill.canHaveChildren()) {
-                int     basePoints = skill.getPoints() + 1;
+                int     basePoints = skill.getRawPoints() + 1;
                 int     maxPoints  = basePoints + (skill.getDifficulty() == SkillDifficulty.W ? 12 : 4);
                 int     oldLevel   = skill.getLevel();
                 RowUndo undo       = new RowUndo(skill);
                 for (int points = basePoints; points < maxPoints; points++) {
-                    skill.setPoints(points);
+                    skill.setRawPoints(points);
                     if (skill.getLevel() > oldLevel) {
                         break;
                     }
@@ -176,7 +175,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
                 // if skill level didn't change, perhaps we hit the limit and should reset points to
                 // old value
                 if (skill.getLevel() == oldLevel) {
-                    skill.setPoints(basePoints - 1);
+                    skill.setRawPoints(basePoints - 1);
                 }
                 if (undo.finish()) {
                     undos.add(undo);
@@ -197,15 +196,15 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
             if (!skill.canHaveChildren()) {
                 RowUndo undo     = new RowUndo(skill);
                 int     oldLevel = skill.getLevel();
-                int     points   = skill.getPoints() - 1;
-                skill.setPoints(points);
+                int     points   = skill.getRawPoints() - 1;
+                skill.setRawPoints(points);
                 if (skill.getLevel() == Integer.MIN_VALUE) {
-                    skill.setPoints(0);
+                    skill.setRawPoints(0);
                 } else {
                     while (points > 0) {
-                        skill.setPoints(--points);
+                        skill.setRawPoints(--points);
                         if (skill.getLevel() < oldLevel - 1) {
-                            skill.setPoints(points + 1);
+                            skill.setRawPoints(points + 1);
                             break;
                         }
                     }

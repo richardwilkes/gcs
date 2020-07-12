@@ -93,7 +93,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 
     private boolean selectionHasLeafRows(boolean requirePointsAboveZero) {
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
-            if (!spell.canHaveChildren() && (!requirePointsAboveZero || spell.getPoints() > 0)) {
+            if (!spell.canHaveChildren() && (!requirePointsAboveZero || spell.getRawPoints() > 0)) {
                 return true;
             }
         }
@@ -106,10 +106,10 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
-                int points = spell.getPoints();
+                int points = spell.getRawPoints();
                 if (points > 0) {
                     RowUndo undo = new RowUndo(spell);
-                    spell.setPoints(points - 1);
+                    spell.setRawPoints(points - 1);
                     if (undo.finish()) {
                         undos.add(undo);
                     }
@@ -129,7 +129,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
                 RowUndo undo = new RowUndo(spell);
-                spell.setPoints(spell.getPoints() + 1);
+                spell.setRawPoints(spell.getRawPoints() + 1);
                 if (undo.finish()) {
                     undos.add(undo);
                 }
@@ -167,12 +167,12 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         List<RowUndo> undos = new ArrayList<>();
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
-                int     basePoints = spell.getPoints() + 1;
+                int     basePoints = spell.getRawPoints() + 1;
                 int     maxPoints  = basePoints + 4;
                 int     oldLevel   = spell.getLevel();
                 RowUndo undo       = new RowUndo(spell);
                 for (int points = basePoints; points < maxPoints; points++) {
-                    spell.setPoints(points);
+                    spell.setRawPoints(points);
                     if (spell.getLevel() > oldLevel) {
                         break;
                     }
@@ -180,7 +180,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
                 // if skill level didn't change, perhaps we hit the limit and should reset points to
                 // old value
                 if (spell.getLevel() == oldLevel) {
-                    spell.setPoints(basePoints - 1);
+                    spell.setRawPoints(basePoints - 1);
                 }
                 if (undo.finish()) {
                     undos.add(undo);
@@ -201,15 +201,15 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
             if (!spell.canHaveChildren()) {
                 RowUndo undo     = new RowUndo(spell);
                 int     oldLevel = spell.getLevel();
-                int     points   = spell.getPoints() - 1;
-                spell.setPoints(points);
+                int     points   = spell.getRawPoints() - 1;
+                spell.setRawPoints(points);
                 if (spell.getLevel() == -1) {
-                    spell.setPoints(0);
+                    spell.setRawPoints(0);
                 } else {
                     while (points > 0) {
-                        spell.setPoints(--points);
+                        spell.setRawPoints(--points);
                         if (spell.getLevel() < oldLevel - 1) {
-                            spell.setPoints(points + 1);
+                            spell.setRawPoints(points + 1);
                             break;
                         }
                     }

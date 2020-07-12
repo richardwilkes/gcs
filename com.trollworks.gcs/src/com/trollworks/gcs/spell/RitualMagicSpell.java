@@ -114,7 +114,7 @@ public class RitualMagicSpell extends Spell {
      */
     @Override
     public void updateLevel(boolean notify) {
-        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getBaseSkillName(), getCollege(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, mPoints);
+        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getBaseSkillName(), getCollege(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, getPoints());
         if (mLevel == null || !mLevel.isSameLevelAs(skillLevel)) {
             mLevel = skillLevel;
             if (notify) {

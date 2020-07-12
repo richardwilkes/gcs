@@ -110,6 +110,29 @@ public enum FeatureType {
         public Feature createFeature() {
             return new SkillBonus();
         }
+    }, SKILL_POINT_BONUS {
+        @Override
+        public String toString() {
+            return I18n.Text("Gives a skill point bonus of");
+        }
+
+        @Override
+        public boolean matches(Feature feature) {
+            return feature instanceof SkillPointBonus;
+        }
+
+        @Override
+        public FeatureEditor createFeatureEditor(ListRow row, Feature feature) {
+            if (matches(feature)) {
+                return new SkillPointBonusEditor(row, (SkillPointBonus) feature);
+            }
+            return null;
+        }
+
+        @Override
+        public Feature createFeature() {
+            return new SkillPointBonus();
+        }
     }, SPELL_LEVEL_BONUS {
         @Override
         public String toString() {
@@ -132,6 +155,29 @@ public enum FeatureType {
         @Override
         public Feature createFeature() {
             return new SpellBonus();
+        }
+    }, SPELL_POINT_BONUS {
+        @Override
+        public String toString() {
+            return I18n.Text("Gives a spell point bonus of");
+        }
+
+        @Override
+        public boolean matches(Feature feature) {
+            return feature instanceof SpellPointBonus;
+        }
+
+        @Override
+        public FeatureEditor createFeatureEditor(ListRow row, Feature feature) {
+            if (matches(feature)) {
+                return new SpellPointBonusEditor(row, (SpellPointBonus) feature);
+            }
+            return null;
+        }
+
+        @Override
+        public Feature createFeature() {
+            return new SpellPointBonus();
         }
     }, WEAPON_DAMAGE_BONUS {
         @Override

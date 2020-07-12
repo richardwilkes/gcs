@@ -134,7 +134,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         mDifficultyCombo = createComboBox(panel, allowedDifficulties, mRow.getDifficulty(), I18n.Text("The difficulty of the spell"));
 
         if (forCharacter || forTemplate) {
-            mPointsField = createNumberField(panel, panel, I18n.Text("Points"), I18n.Text("The number of points spent on this spell"), mRow.getPoints(), 4);
+            mPointsField = createNumberField(panel, panel, I18n.Text("Points"), I18n.Text("The number of points spent on this spell"), mRow.getRawPoints(), 4);
             if (forCharacter) {
                 mLevelField = createField(panel, panel, I18n.Text("Level"), getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()), I18n.Text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(), 7);
                 mLevelField.setEnabled(false);
@@ -172,7 +172,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         modified |= mRow.setDuration(mDurationField.getText());
         modified |= mRow.setPrerequisiteSpellsCount(getPrerequisiteSpellsCount());
         if (mRow.getCharacter() != null || mRow.getTemplate() != null) {
-            modified |= mRow.setPoints(Numbers.extractInteger(mPointsField.getText(), 0, true));
+            modified |= mRow.setRawPoints(getPoints());
         }
         modified |= mRow.setNotes(mNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
@@ -184,7 +184,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     }
 
     protected void recalculateLevel(JTextField levelField) {
-        SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mBaseSkillNameField.getText(), mCollegeField.getText(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getPoints());
+        SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mBaseSkillNameField.getText(), mCollegeField.getText(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getAdjustedPoints());
         levelField.setText(getDisplayLevel(level.getLevel(), level.getRelativeLevel()));
         levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
     }

@@ -138,7 +138,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.Text("The difficulty of the spell"));
 
         if (forCharacter || forTemplate) {
-            mPointsField = createNumberField(panel, panel, I18n.Text("Points"), I18n.Text("The number of points spent on this spell"), mRow.getPoints(), 4);
+            mPointsField = createNumberField(panel, panel, I18n.Text("Points"), I18n.Text("The number of points spent on this spell"), mRow.getRawPoints(), 4);
             if (forCharacter) {
                 mLevelField = createField(panel, panel, I18n.Text("Level"), getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), I18n.Text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(), 7);
                 mLevelField.setEnabled(false);
@@ -178,7 +178,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             modified |= mRow.setDuration(mDurationField.getText());
             modified |= mRow.setDifficulty(getAttribute(), getDifficulty());
             if (mRow.getCharacter() != null || mRow.getTemplate() != null) {
-                modified |= mRow.setPoints(getPoints());
+                modified |= mRow.setRawPoints(getPoints());
             }
         }
         modified |= mRow.setNotes(mNotesField.getText());
@@ -208,7 +208,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
     @Override
     protected void recalculateLevel(JTextField levelField) {
         SkillAttribute attribute = getAttribute();
-        SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getPoints(), attribute, getDifficulty(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
+        SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getAdjustedPoints(), attribute, getDifficulty(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
         levelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
         levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
     }

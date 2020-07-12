@@ -249,7 +249,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     @SuppressWarnings("unused")
     private void createPointsFields(Container parent, boolean forCharacter) {
-        mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getPoints()), I18n.Text("The number of points spent on this technique"), 4);
+        mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getRawPoints()), I18n.Text("The number of points spent on this technique"), 4);
         new NumberFilter(mPointsField, false, false, false, 4);
         mPointsField.addActionListener(this);
 
@@ -284,7 +284,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     private void recalculateLevel() {
         if (mLevelField != null) {
-            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(), mNameField.getText(), getSpecialization(), ListRow.createCategoriesList(mCategoriesField.getText()), createNewDefault(), getSkillDifficulty(), getPoints(), true, mLimitCheckbox.isSelected(), getLimitModifier());
+            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(), mNameField.getText(), getSpecialization(), ListRow.createCategoriesList(mCategoriesField.getText()), createNewDefault(), getSkillDifficulty(), getAdjustedSkillPoints(), true, mLimitCheckbox.isSelected(), getLimitModifier());
             mLevelField.setText(Technique.getTechniqueDisplayLevel(level.mLevel, level.mRelativeLevel, getDefaultModifier()));
             mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
         }
@@ -306,6 +306,20 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         return Numbers.extractInteger(mPointsField.getText(), 0, true);
     }
 
+    private int getAdjustedSkillPoints() {
+        int            points    = getPoints();
+        GURPSCharacter character = mRow.getCharacter();
+        if (character != null) {
+            String name = mNameField.getText();
+            points += character.getSkillPointComparedIntegerBonusFor(Skill.ID_POINTS + "*", name, mDefaultSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
+            points += character.getIntegerBonusFor(Skill.ID_POINTS + "/" + name.toLowerCase());
+            if (points < 0) {
+                points = 0;
+            }
+        }
+        return points;
+    }
+
     private int getDefaultModifier() {
         return Numbers.extractInteger(mDefaultModifierField.getText(), 0, true);
     }
@@ -317,24 +331,21 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Override
     public boolean applyChangesSelf() {
         boolean modified = mRow.setName(mNameField.getText());
-
         modified |= mRow.setDefault(createNewDefault());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mPointsField != null) {
-            modified |= mRow.setPoints(getPoints());
+            modified |= mRow.setRawPoints(getPoints());
         }
         modified |= mRow.setLimited(mLimitCheckbox.isSelected());
         modified |= mRow.setLimitModifier(getLimitModifier());
         modified |= mRow.setDifficulty(getSkillDifficulty());
         modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
         modified |= mRow.setFeatures(mFeatures.getFeatures());
-
         List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
         list.addAll(mRangedWeapons.getWeapons());
         modified |= mRow.setWeapons(list);
-
         return modified;
     }
 

@@ -34,7 +34,7 @@ public class Technique extends Skill {
     /** The XML tag used for items. */
     public static final  String       TAG_TECHNIQUE   = "technique";
     private static final String       ATTRIBUTE_LIMIT = "limit";
-    private static final String KEY_DEFAULT = "default";
+    private static final String       KEY_DEFAULT     = "default";
     private              SkillDefault mDefault;
     private              boolean      mLimited;
     private              int          mLimitModifier;

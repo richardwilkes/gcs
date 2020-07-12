@@ -174,7 +174,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     @SuppressWarnings("unused")
     private void createPointsFields(Container parent, boolean forCharacter) {
-        mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getPoints()), I18n.Text("The number of points spent on this skill"), 4);
+        mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getRawPoints()), I18n.Text("The number of points spent on this skill"), 4);
         new NumberFilter(mPointsField, false, false, false, 4);
         if (forCharacter) {
             mLevelField = createField(parent, parent, I18n.Text("Level"), Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), editorLevelTooltip() + mRow.getLevelToolTip(), 8);
@@ -277,7 +277,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private void recalculateLevel() {
         if (mLevelField != null) {
             SkillAttribute attribute = getSkillAttribute();
-            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getSkillPoints(), new HashSet<>(), getEncumbrancePenaltyMultiplier());
+            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getAdjustedSkillPoints(), new HashSet<>(), getEncumbrancePenaltyMultiplier());
             mLevelField.setText(Skill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
             mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
         }
@@ -293,6 +293,20 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private int getSkillPoints() {
         return Numbers.extractInteger(mPointsField.getText(), 0, true);
+    }
+
+    private int getAdjustedSkillPoints() {
+        int            points    = getSkillPoints();
+        GURPSCharacter character = mRow.getCharacter();
+        if (character != null) {
+            String name = mNameField.getText();
+            points += character.getSkillPointComparedIntegerBonusFor(Skill.ID_POINTS + "*", name, mSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
+            points += character.getIntegerBonusFor(Skill.ID_POINTS + "/" + name.toLowerCase());
+            if (points < 0) {
+                points = 0;
+            }
+        }
+        return points;
     }
 
     private int getEncumbrancePenaltyMultiplier() {
@@ -318,7 +332,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             modified |= mRow.setEncumbrancePenaltyMultiplier(getEncumbrancePenaltyMultiplier());
         }
         if (mPointsField != null) {
-            modified |= mRow.setPoints(getSkillPoints());
+            modified |= mRow.setRawPoints(getSkillPoints());
         }
         if (mDefaults != null) {
             modified |= mRow.setDefaults(mDefaults.getDefaults());

@@ -80,6 +80,10 @@ public class Spell extends ListRow implements HasSourceReference {
     public static final    String            ID_POWER_SOURCE          = PREFIX + "PowerSource";
     /** The field ID for point changes. */
     public static final    String            ID_POINTS                = PREFIX + "Points";
+    /** The field ID for college changes. */
+    public static final    String            ID_POINTS_COLLEGE        = PREFIX + "PtsCollege";
+    /** The field ID for power source changes. */
+    public static final    String            ID_POINTS_POWER_SOURCE   = PREFIX + "PtsPowerSource";
     /** The field ID for level changes. */
     public static final    String            ID_LEVEL                 = PREFIX + "Level";
     /** The field ID for difficulty changes. */
@@ -121,6 +125,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mCollege = "";
         mPowerSource = isContainer ? "" : getDefaultPowerSource();
         mSpellClass = isContainer ? "" : getDefaultSpellClass();
+        mResist = "";
         mCastingCost = isContainer ? "" : getDefaultCastingCost();
         mMaintenance = "";
         mCastingTime = isContainer ? "" : getDefaultCastingTime();
@@ -470,7 +475,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return The calculated spell skill level. */
     private SkillLevel calculateLevelSelf() {
-        return calculateLevel(getCharacter(), mPoints, mAttribute, mDifficulty, mCollege, mPowerSource, mName, getCategories());
+        return calculateLevel(getCharacter(), getPoints(), mAttribute, mDifficulty, mCollege, mPowerSource, mName, getCategories());
     }
 
     /**
@@ -532,6 +537,13 @@ public class Spell extends ListRow implements HasSourceReference {
         int level = character.getIntegerBonusFor(id, toolTip);
         level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase(), toolTip);
         level += character.getSpellComparedIntegerBonusFor(id + '*', qualifier, categories, toolTip);
+        return level;
+    }
+
+    public static int getSpellPointBonusesFor(GURPSCharacter character, String id, String qualifier, Set<String> categories, StringBuilder toolTip) {
+        int level = character.getIntegerBonusFor(id, toolTip);
+        level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase(), toolTip);
+        level += character.getSpellPointComparedIntegerBonusFor(id + '*', qualifier, categories, toolTip);
         return level;
     }
 
@@ -691,6 +703,25 @@ public class Spell extends ListRow implements HasSourceReference {
         return false;
     }
 
+    /** @return The tooltTip to describe how the points were calculated */
+    public String getPointsToolTip() {
+        if (canHaveChildren()) {
+            return I18n.Text("The sum of the points spent by children of this container");
+        }
+        GURPSCharacter character = getCharacter();
+        if (character != null) {
+            StringBuilder tooltip    = new StringBuilder();
+            Set<String>   categories = getCategories();
+            getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, getCollege(), categories, tooltip);
+            getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, tooltip);
+            getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, tooltip);
+            if (tooltip.length() > 0) {
+                return I18n.Text("Includes modifiers from") + tooltip;
+            }
+        }
+        return "";
+    }
+
     /** @return The points. */
     public int getPoints() {
         if (canHaveChildren()) {
@@ -702,14 +733,30 @@ public class Spell extends ListRow implements HasSourceReference {
             }
             return sum;
         }
-        return mPoints;
+        int            points    = mPoints;
+        GURPSCharacter character = getCharacter();
+        if (character != null) {
+            Set<String> categories = getCategories();
+            points += getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, getCollege(), categories, null);
+            points += getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, null);
+            points += getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, null);
+            if (points < 0) {
+                points = 0;
+            }
+        }
+        return points;
+    }
+
+    /** @return the unmodified points */
+    public int getRawPoints() {
+        return canHaveChildren() ? 0 : mPoints;
     }
 
     /**
      * @param points The points to set.
      * @return Whether it was modified.
      */
-    public boolean setPoints(int points) {
+    public boolean setRawPoints(int points) {
         if (mPoints != points) {
             mPoints = points;
             startNotify();

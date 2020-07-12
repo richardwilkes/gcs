@@ -21,7 +21,9 @@ import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.ReactionBonus;
 import com.trollworks.gcs.feature.SkillBonus;
+import com.trollworks.gcs.feature.SkillPointBonus;
 import com.trollworks.gcs.feature.SpellBonus;
+import com.trollworks.gcs.feature.SpellPointBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -311,8 +313,14 @@ public abstract class ListRow extends Row {
                 case SkillBonus.TAG_ROOT:
                     mFeatures.add(new SkillBonus(m1));
                     break;
+                case SkillPointBonus.TAG_ROOT:
+                    mFeatures.add(new SkillPointBonus(m1));
+                    break;
                 case SpellBonus.TAG_ROOT:
                     mFeatures.add(new SpellBonus(m1));
+                    break;
+                case SpellPointBonus.TAG_ROOT:
+                    mFeatures.add(new SpellPointBonus(m1));
                     break;
                 case WeaponBonus.TAG_ROOT:
                     mFeatures.add(new WeaponBonus(m1));

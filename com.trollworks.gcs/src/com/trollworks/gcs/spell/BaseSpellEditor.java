@@ -17,6 +17,7 @@ import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -33,6 +34,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -100,6 +102,21 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     /** @return The points in the points field, as an integer. */
     protected int getPoints() {
         return Numbers.extractInteger(mPointsField.getText(), 0, true);
+    }
+
+    protected int getAdjustedPoints() {
+        int            points    = getPoints();
+        GURPSCharacter character = mRow.getCharacter();
+        if (character != null) {
+            Set<String> categories = ListRow.createCategoriesList(mCategoriesField.getText());
+            points += Spell.getSpellPointBonusesFor(character, Spell.ID_POINTS_COLLEGE, mCollegeField.getText(), categories, null);
+            points += Spell.getSpellPointBonusesFor(character, Spell.ID_POINTS_POWER_SOURCE, mPowerSourceField.getText(), categories, null);
+            points += Spell.getSpellPointBonusesFor(character, Spell.ID_POINTS, mNameField.getText(), categories, null);
+            if (points < 0) {
+                points = 0;
+            }
+        }
+        return points;
     }
 
     /** @return The selected item of the difficulty combobox, as a SkillDifficulty. */

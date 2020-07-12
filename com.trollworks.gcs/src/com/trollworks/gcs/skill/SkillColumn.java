@@ -269,6 +269,11 @@ public enum SkillColumn {
         public String getDataAsText(Skill skill) {
             return Numbers.format(skill.getPoints());
         }
+
+        @Override
+        public String getToolTip(Skill skill) {
+            return skill.getPointsToolTip();
+        }
     },
     /** The category. */
     CATEGORY {
@@ -380,7 +385,6 @@ public enum SkillColumn {
         for (SkillColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());
-
                 column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
                 model.addColumn(column);
             }
