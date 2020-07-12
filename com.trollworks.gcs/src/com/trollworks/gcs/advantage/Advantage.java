@@ -350,7 +350,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mDisabled = m.getBoolean(ATTR_DISABLED);
         mAllowHalfLevels = m.getBoolean(ATTR_ALLOW_HALF_LEVELS);
         if (canHaveChildren()) {
-            mContainerType = Enums.extract(m.getString(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
+            mContainerType = Enums.extract(m.getString(KEY_CONTAINER_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
         }
         mName = m.getString(TAG_NAME);
         mType = 0;
