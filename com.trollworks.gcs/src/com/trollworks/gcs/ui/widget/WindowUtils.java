@@ -28,12 +28,14 @@ import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -131,8 +133,15 @@ public class WindowUtils {
                 }
             });
         }
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        if (focusOwner == null) {
+            focusOwner = parentComponent;
+        }
         dialog.setVisible(true);
         dialog.dispose();
+        if (focusOwner != null) {
+            focusOwner.requestFocusInWindow(FocusEvent.Cause.ROLLBACK);
+        }
         pane.setMessage(null);
 
         Object selectedValue = pane.getValue();
