@@ -23,6 +23,7 @@ import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
+import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -202,6 +203,8 @@ public class Template extends DataFile {
                 String name = reader.getName();
                 if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
                     mSpells.addRow(new Spell(this, reader, state), true);
+                } else if (RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(name)) {
+                    mSpells.addRow(new RitualMagicSpell(this, reader, state), true);
                 } else {
                     reader.skipTag(name);
                 }
