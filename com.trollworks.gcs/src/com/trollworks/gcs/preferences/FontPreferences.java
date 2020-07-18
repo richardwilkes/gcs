@@ -12,9 +12,8 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.layout.Alignment;
-import com.trollworks.gcs.ui.layout.FlexComponent;
-import com.trollworks.gcs.ui.layout.FlexGrid;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.utility.I18n;
@@ -22,6 +21,8 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 /** The font preferences panel. */
@@ -36,20 +37,20 @@ public class FontPreferences extends PreferencePanel implements ActionListener {
      */
     public FontPreferences(PreferencesWindow owner) {
         super(I18n.Text("Fonts"), owner);
-        FlexGrid grid = new FlexGrid();
+        setLayout(new PrecisionLayout().setColumns(2));
         String[] keys = Fonts.getKeys();
         mFontPanels = new FontPanel[keys.length];
         int i = 0;
         for (String key : keys) {
-            grid.add(new FlexComponent(createLabel(Fonts.getDescription(key), null), Alignment.RIGHT_BOTTOM, Alignment.CENTER), i, 0);
+            JLabel label = new JLabel(Fonts.getDescription(key), SwingConstants.RIGHT);
+            label.setOpaque(false);
+            add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
             mFontPanels[i] = new FontPanel(UIManager.getFont(key));
             mFontPanels[i].setActionCommand(key);
             mFontPanels[i].addActionListener(this);
             add(mFontPanels[i]);
-            grid.add(mFontPanels[i], i, 1);
             i++;
         }
-        grid.apply(this);
     }
 
     @Override
@@ -60,8 +61,8 @@ public class FontPreferences extends PreferencePanel implements ActionListener {
                 boolean adjusted = false;
                 for (FontPanel panel : mFontPanels) {
                     if (panel == source) {
-                        Font font = panel.getCurrentFont();
-                        String key = panel.getActionCommand();
+                        Font   font = panel.getCurrentFont();
+                        String key  = panel.getActionCommand();
                         if (!font.equals(UIManager.getFont(key))) {
                             UIManager.put(key, font);
                             Preferences.getInstance().setFontInfo(key, new Fonts.Info(font));

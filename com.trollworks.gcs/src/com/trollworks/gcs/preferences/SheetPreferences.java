@@ -13,25 +13,24 @@ package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.ui.image.Img;
-import com.trollworks.gcs.ui.layout.Alignment;
-import com.trollworks.gcs.ui.layout.FlexColumn;
-import com.trollworks.gcs.ui.layout.FlexComponent;
-import com.trollworks.gcs.ui.layout.FlexGrid;
-import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.nio.file.Path;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -58,85 +57,62 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
      */
     public SheetPreferences(PreferencesWindow owner) {
         super(I18n.Text("Sheet"), owner);
-        Preferences prefs  = Preferences.getInstance();
-        FlexColumn  column = new FlexColumn();
+        setLayout(new PrecisionLayout().setColumns(3));
+        Preferences prefs = Preferences.getInstance();
 
-        FlexGrid grid = new FlexGrid();
-        column.add(grid);
-
-        int rowIndex = 0;
-        mPortrait = createPortrait();
-        FlexComponent comp = new FlexComponent(mPortrait, Alignment.LEFT_TOP, Alignment.LEFT_TOP);
-        grid.add(comp, rowIndex, 0, 4, 1);
+        mPortrait = new PortraitPreferencePanel(Profile.getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
+        mPortrait.addActionListener(this);
+        add(mPortrait, new PrecisionLayoutData().setVerticalSpan(11).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         String playerTooltip = I18n.Text("The player name to use when a new character sheet is created");
-        grid.add(createFlexLabel(I18n.Text("Player"), playerTooltip), rowIndex, 1);
-        mPlayerName = createTextField(playerTooltip, prefs.getDefaultPlayerName());
-        grid.add(mPlayerName, rowIndex++, 2);
+        addLabel(I18n.Text("Player"), playerTooltip);
+        mPlayerName = addTextField(playerTooltip, prefs.getDefaultPlayerName());
 
         String techLevelTooltip = I18n.Text("<html><body>TL0: Stone Age (Prehistory and later)<br>TL1: Bronze Age (3500 B.C.+)<br>TL2: Iron Age (1200 B.C.+)<br>TL3: Medieval (600 A.D.+)<br>TL4: Age of Sail (1450+)<br>TL5: Industrial Revolution (1730+)<br>TL6: Mechanized Age (1880+)<br>TL7: Nuclear Age (1940+)<br>TL8: Digital Age (1980+)<br>TL9: Microtech Age (2025+?)<br>TL10: Robotic Age (2070+?)<br>TL11: Age of Exotic Matter<br>TL12: Anything Goes</body></html>");
-        grid.add(createFlexLabel(I18n.Text("Tech Level"), techLevelTooltip), rowIndex, 1);
-        mTechLevel = createTextField(techLevelTooltip, prefs.getDefaultTechLevel());
-        grid.add(mTechLevel, rowIndex++, 2);
+        addLabel(I18n.Text("Tech Level"), techLevelTooltip);
+        mTechLevel = addTextField(techLevelTooltip, prefs.getDefaultTechLevel());
 
         String initialPointsTooltip = I18n.Text("The initial number of character points to start with");
-        grid.add(createFlexLabel(I18n.Text("Initial Points"), initialPointsTooltip), rowIndex, 1);
-        mInitialPoints = createTextField(initialPointsTooltip, Integer.toString(prefs.getInitialPoints()));
-        grid.add(mInitialPoints, rowIndex++, 2);
+        addLabel(I18n.Text("Initial Points"), initialPointsTooltip);
+        mInitialPoints = addTextField(initialPointsTooltip, Integer.toString(prefs.getInitialPoints()));
 
-        grid.add(new FlexSpacer(0, 0, false, false), rowIndex, 1);
-        grid.add(new FlexSpacer(0, 0, true, false), rowIndex, 2);
+        mAutoNameNewCharacters = addCheckBox(I18n.Text("Automatically name new characters"), null, prefs.autoNameNewCharacters());
+        mBaseWillAndPerOn10 = addCheckBox(I18n.Text("Base Will and Perception on 10 and not IQ *"), null, prefs.baseWillAndPerOn10());
+        mUseMultiplicativeModifiers = addCheckBox(I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value) *"), null, prefs.useMultiplicativeModifiers());
+        mUseModifyingDicePlusAdds = addCheckBox(I18n.Text("Use Modifying Dice + Adds from B269 *"), null, prefs.useModifyingDicePlusAdds());
+        mUseKnowYourOwnStrength = addCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83) *"), null, prefs.useKnowYourOwnStrength());
+        mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy *"), "From noschoolgrognard.blogspot.com", prefs.useReducedSwing());
+        mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
+        mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules from B9 *"), null, prefs.useSimpleMetricConversions());
 
-        mAutoNameNewCharacters = createCheckBox(I18n.Text("Automatically name new characters"), null, prefs.autoNameNewCharacters());
-        column.add(mAutoNameNewCharacters);
-
-        mBaseWillAndPerOn10 = createCheckBox(I18n.Text("Base Will and Perception on 10 and not IQ"), null, prefs.baseWillAndPerOn10());
-        column.add(mBaseWillAndPerOn10);
-
-        mUseMultiplicativeModifiers = createCheckBox(I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, prefs.useMultiplicativeModifiers());
-        column.add(mUseMultiplicativeModifiers);
-
-        mUseModifyingDicePlusAdds = createCheckBox(I18n.Text("Use Modifying Dice + Adds from B269"), null, prefs.useModifyingDicePlusAdds());
-        column.add(mUseModifyingDicePlusAdds);
-
-        mUseKnowYourOwnStrength = createCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, prefs.useKnowYourOwnStrength());
-        column.add(mUseKnowYourOwnStrength);
-
-        mUseReducedSwing = createCheckBox(I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", prefs.useReducedSwing());
-        column.add(mUseReducedSwing);
-
-        mUseThrustEqualsSwingMinus2 = createCheckBox(I18n.Text("Use Thrust = Swing - 2"), null, prefs.useThrustEqualsSwingMinus2());
-        column.add(mUseThrustEqualsSwingMinus2);
-
-        mUseSimpleMetricConversions = createCheckBox(I18n.Text("Use the simple metric conversion rules from B9"), null, prefs.useSimpleMetricConversions());
-        column.add(mUseSimpleMetricConversions);
-
-        column.add(new FlexSpacer(0, 0, false, true));
-
-        column.apply(this);
+        JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));
+        label.setOpaque(false);
+        add(label, new PrecisionLayoutData().setHorizontalSpan(3).setAlignment(PrecisionLayoutAlignment.MIDDLE, PrecisionLayoutAlignment.END).setGrabVerticalSpace(true));
     }
 
-    private FlexComponent createFlexLabel(String title, String tooltip) {
-        return new FlexComponent(createLabel(title, tooltip), Alignment.RIGHT_BOTTOM, Alignment.CENTER);
+    private JLabel addLabel(String title, String tooltip) {
+        JLabel label = new JLabel(title, SwingConstants.RIGHT);
+        label.setOpaque(false);
+        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+        return label;
     }
 
-    private PortraitPreferencePanel createPortrait() {
-        PortraitPreferencePanel panel = new PortraitPreferencePanel(Profile.getPortraitFromPortraitPath(Preferences.getInstance().getDefaultPortraitPath()));
-        panel.addActionListener(this);
-        add(panel);
-        return panel;
-    }
-
-    private JTextField createTextField(String tooltip, String value) {
+    private JTextField addTextField(String tooltip, String value) {
         JTextField field = new JTextField(value);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.getDocument().addDocumentListener(this);
-        Dimension size    = field.getPreferredSize();
-        Dimension maxSize = field.getMaximumSize();
-        maxSize.height = size.height;
-        field.setMaximumSize(maxSize);
-        add(field);
+        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         return field;
+    }
+
+    private JCheckBox addCheckBox(String title, String tooltip, boolean checked) {
+        JCheckBox checkbox = new JCheckBox(title, checked);
+        checkbox.setOpaque(false);
+        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        checkbox.addItemListener(this);
+        add(checkbox, new PrecisionLayoutData().setHorizontalSpan(2));
+        return checkbox;
     }
 
     public static Path choosePortrait() {

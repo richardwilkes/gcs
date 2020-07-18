@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -67,6 +68,8 @@ public class BandedPanel extends ActionPanel implements Scrollable {
         } else if (layout instanceof FlexLayout && ((FlexLayout) layout).getRootCell() instanceof FlexGrid) {
             int columns = ((FlexGrid) ((FlexLayout) layout).getRootCell()).getColumnCount();
             return columns - columns / 2;
+        } else if (layout instanceof PrecisionLayout) {
+            return ((PrecisionLayout)layout).getColumns();
         }
         return 1;
     }

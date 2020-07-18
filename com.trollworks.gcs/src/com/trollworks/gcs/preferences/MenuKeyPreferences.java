@@ -15,7 +15,7 @@ import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -51,7 +51,7 @@ public class MenuKeyPreferences extends PreferencePanel implements ActionListene
         super(I18n.Text("Menu Keys"), owner);
         setLayout(new BorderLayout());
         mPanel = new BandedPanel(I18n.Text("Menu Keys"));
-        mPanel.setLayout(new ColumnLayout(2, 5, 0));
+        mPanel.setLayout(new PrecisionLayout().setColumns(2));
         mPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
         mPanel.setOpaque(true);
         mPanel.setBackground(Color.WHITE);

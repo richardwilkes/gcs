@@ -44,7 +44,6 @@ public class Images {
     public static final RetinaIcon EXPAND                = getRetina("expand");
     public static final RetinaIcon FILE                  = getRetina("file");
     public static final RetinaIcon FOLDER                = getRetina("folder");
-    public static final RetinaIcon GCALC_LOGO            = getRetina("gcalc_logo");
     public static final RetinaIcon GCS_FILE              = getRetina("gcs_file");
     public static final RetinaIcon GCS_MARKER            = getRetina("gcs_marker");
     public static final RetinaIcon GCT_FILE              = getRetina("gct_file");

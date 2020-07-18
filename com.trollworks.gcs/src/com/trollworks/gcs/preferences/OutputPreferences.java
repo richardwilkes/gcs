@@ -11,20 +11,13 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.layout.FlexColumn;
-import com.trollworks.gcs.ui.layout.FlexGrid;
-import com.trollworks.gcs.ui.layout.FlexRow;
-import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
 import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -34,6 +27,7 @@ import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -56,72 +50,59 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
      */
     public OutputPreferences(PreferencesWindow owner) {
         super(I18n.Text("Output"), owner);
-        Preferences prefs  = Preferences.getInstance();
-        FlexColumn  column = new FlexColumn();
+        setLayout(new PrecisionLayout().setColumns(3));
+        Preferences prefs = Preferences.getInstance();
 
-        FlexGrid grid = new FlexGrid();
-        column.add(grid);
+        String gcalcTitle = I18n.Text("GURPS Calculator Key");
+        addLabel(gcalcTitle, null);
+        mGurpsCalculatorKey = addTextField(prefs.getGURPSCalculatorKey(), gcalcTitle);
+        mGurpsCalculatorLink = addButton(I18n.Text("Find mine"), gcalcTitle);
 
-        FlexRow row        = new FlexRow();
-        String  gcalcTitle = I18n.Text("GURPS Calculator Key");
-        row.add(createLabel(gcalcTitle, gcalcTitle, Images.GCALC_LOGO));
-        mGurpsCalculatorKey = createTextField(gcalcTitle, prefs.getGURPSCalculatorKey());
-        row.add(mGurpsCalculatorKey);
-        mGurpsCalculatorLink = createHyperlinkButton(I18n.Text("Find mine"), GURPS_CALCULATOR_URL);
-        if (Desktop.isDesktopSupported()) {
-            row.add(mGurpsCalculatorLink);
-        }
-        column.add(row);
+        addLabel(I18n.Text("Image Resolution"), pngDPIMsg());
+        mPNGResolutionCombo = addPNGResolutionPopup();
 
-        mUseNativePrinter = createCheckBox(I18n.Text("Use platform native print dialogs (settings cannot be saved)"), I18n.Text("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>"), prefs.useNativePrintDialogs());
-        column.add(mUseNativePrinter);
-
-        row = new FlexRow();
-        row.add(createLabel(I18n.Text("Use"), pngDPIMsg()));
-        mPNGResolutionCombo = createPNGResolutionPopup();
-        row.add(mPNGResolutionCombo);
-        row.add(createLabel(I18n.Text("when saving sheets to PNG"), pngDPIMsg(), SwingConstants.LEFT));
-        column.add(row);
-
-        column.add(new FlexSpacer(0, 0, false, true));
-
-        column.apply(this);
+        mUseNativePrinter = addCheckBox(I18n.Text("Use platform native print dialogs (settings cannot be saved)"), I18n.Text("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>"), prefs.useNativePrintDialogs());
     }
 
-    private static String pngDPIMsg() {
-        return I18n.Text("The resolution, in dots-per-inch, to use when saving sheets as PNG files");
+    private JLabel addLabel(String text, String tooltip) {
+        JLabel label = new JLabel(text, SwingConstants.RIGHT);
+        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        label.setOpaque(false);
+        add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+        return label;
     }
 
-    private JButton createButton(String title, String tooltip) {
+    private JTextField addTextField(String text, String tooltip) {
+        JTextField field = new JTextField(text);
+        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        field.getDocument().addDocumentListener(this);
+        add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        return field;
+    }
+
+    private JButton addButton(String title, String tooltip) {
         JButton button = new JButton(title);
-        button.setOpaque(false);
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         button.addActionListener(this);
-        UIUtilities.setToPreferredSizeOnly(button);
         add(button);
         return button;
     }
 
-    private JButton createHyperlinkButton(String linkText, String tooltip) {
-        JButton button = new JButton(String.format("<html><body><font color=\"#000099\"><u>%s</u></font></body></html>", linkText));
-        button.setFocusPainted(false);
-        button.setMargin(new Insets(0, 0, 0, 0));
-        button.setContentAreaFilled(false);
-        button.setBorderPainted(false);
-        button.setOpaque(false);
-        button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        button.setBackground(Color.white);
-        button.addActionListener(this);
-        UIUtilities.setToPreferredSizeOnly(button);
-        add(button);
-        return button;
+    private JCheckBox addCheckBox(String title, String tooltip, boolean checked) {
+        JCheckBox checkbox = new JCheckBox(title, checked);
+        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        checkbox.setOpaque(false);
+        checkbox.addItemListener(this);
+        add(checkbox, new PrecisionLayoutData().setHorizontalSpan(3));
+        return checkbox;
     }
 
-    private JComboBox<String> createPNGResolutionPopup() {
+    private JComboBox<String> addPNGResolutionPopup() {
         int               selection  = 0;
         int               resolution = Preferences.getInstance().getPNGResolution();
         JComboBox<String> combo      = new JComboBox<>();
-        setupCombo(combo, pngDPIMsg());
+        combo.setOpaque(false);
+        combo.setToolTipText(Text.wrapPlainTextForToolTip(pngDPIMsg()));
         int length = DPI.length;
         for (int i = 0; i < length; i++) {
             combo.addItem(MessageFormat.format(I18n.Text("{0} dpi"), Integer.valueOf(DPI[i])));
@@ -132,20 +113,12 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         combo.setSelectedIndex(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
-        UIUtilities.setToPreferredSizeOnly(combo);
+        add(combo, new PrecisionLayoutData().setHorizontalSpan(2));
         return combo;
     }
 
-    private JTextField createTextField(String tooltip, String value) {
-        JTextField field = new JTextField(value);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.getDocument().addDocumentListener(this);
-        Dimension size    = field.getPreferredSize();
-        Dimension maxSize = field.getMaximumSize();
-        maxSize.height = size.height;
-        field.setMaximumSize(maxSize);
-        add(field);
-        return field;
+    private static String pngDPIMsg() {
+        return I18n.Text("The resolution, in dots-per-inch, to use when saving sheets as PNG files");
     }
 
     @Override
