@@ -66,7 +66,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         Preferences prefs = Preferences.getInstance();
 
         mIncludeUnspentPointsInTotal = addCheckBox(I18n.Text("Character point total display includes unspent points"), prefs.includeUnspentPointsInTotal());
-        mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column in character sheet spell lists *"), prefs.showCollegeInSheetSpells());
+        mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column in character sheet spells list *"), prefs.showCollegeInSheetSpells());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets *"), prefs.useTitleInFooter());
 
         addLabel(I18n.Text("Initial Scale"));
@@ -130,7 +130,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.getDocument().addDocumentListener(this);
         field.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
-        add(field, new PrecisionLayoutData().setHorizontalSpan(2).setGrabSpace(true).setFillHorizontalAlignment().setFillVerticalAlignment());
+        add(field, new PrecisionLayoutData().setHorizontalSpan(2).setGrabSpace(true).setFillAlignment());
         return field;
     }
 

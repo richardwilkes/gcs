@@ -16,7 +16,6 @@ import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.I18n;
@@ -98,88 +97,89 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mCharacter = character;
         mSettings = character.getSettings();
         Container content = getContentPane();
-        content.add(createTopPanel());
-        content.add(createResetPanel(), BorderLayout.SOUTH);
+        addTopPanel();
+        addResetPanel();
         adjustResetButton();
         restoreBounds();
         character.addTarget(this, Profile.ID_NAME);
         Preferences.getInstance().getNotifier().add(this, Preferences.KEY_PER_SHEET_PREFIX);
     }
 
-    private JPanel createTopPanel() {
+    private void addTopPanel() {
         JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
-        mShowCollegeInSpells = createCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
-        mShowTitleInsteadOfNameInPageFooter = createCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
-        mBaseWillAndPerOn10 = createCheckBox(panel, I18n.Text("Base Will and Perception on 10 and not IQ"), null, mSettings.baseWillAndPerOn10());
-        mUseMultiplicativeModifiers = createCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
-        mUseModifyingDicePlusAdds = createCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
-        mUseKnowYourOwnStrength = createCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
-        mUseReducedSwing = createCheckBox(panel, I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
-        mUseThrustEqualsSwingMinus2 = createCheckBox(panel, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
-        mUseSimpleMetricConversions = createCheckBox(panel, I18n.Text("Use the simple metric conversion rules from B9"), null, mSettings.useSimpleMetricConversions());
-        JPanel wrapper = new JPanel();
-        wrapper.add(createLabel(I18n.Text("Use"), null, SwingConstants.LEFT));
-        mLengthUnitsCombo = createCombo(wrapper, LengthUnits.values(), mSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
-        wrapper.add(createLabel(I18n.Text("and"), null, SwingConstants.LEFT));
-        mWeightUnitsCombo = createCombo(wrapper, WeightUnits.values(), mSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
-        wrapper.add(createLabel(I18n.Text("for display of generated units"), null, SwingConstants.LEFT));
-        panel.add(wrapper, new PrecisionLayoutData().setHorizontalSpan(2));
-        panel.add(createLabel(I18n.Text("Show User Description"), null, SwingConstants.RIGHT), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setLeftMargin(5).setRightMargin(5));
-        mUserDescriptionDisplayCombo = createCombo(panel, DisplayOption.values(), mSettings.userDescriptionDisplay(), I18n.Text("Where to display this information"));
-        panel.add(createLabel(I18n.Text("Show Modifiers"), null, SwingConstants.RIGHT), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setLeftMargin(5).setRightMargin(5));
-        mModifiersDisplayCombo = createCombo(panel, DisplayOption.values(), mSettings.modifiersDisplay(), I18n.Text("Where to display this information"));
-        panel.add(createLabel(I18n.Text("Show Notes"), null, SwingConstants.RIGHT), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setLeftMargin(5).setRightMargin(5));
-        mNotesDisplayCombo = createCombo(panel, DisplayOption.values(), mSettings.notesDisplay(), I18n.Text("Where to display this information"));
+        mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
+        mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
+        mBaseWillAndPerOn10 = addCheckBox(panel, I18n.Text("Base Will and Perception on 10 and not IQ"), null, mSettings.baseWillAndPerOn10());
+        mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
+        mUseModifyingDicePlusAdds = addCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
+        mUseKnowYourOwnStrength = addCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
+        mUseReducedSwing = addCheckBox(panel, I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
+        mUseThrustEqualsSwingMinus2 = addCheckBox(panel, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
+        mUseSimpleMetricConversions = addCheckBox(panel, I18n.Text("Use the simple metric conversion rules from B9"), null, mSettings.useSimpleMetricConversions());
+
+        addLabel(panel, I18n.Text("Length Units"));
+        mLengthUnitsCombo = addCombo(panel, LengthUnits.values(), mSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
+
+        addLabel(panel, I18n.Text("Weight Units"));
+        mWeightUnitsCombo = addCombo(panel, WeightUnits.values(), mSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
+
+        addLabel(panel, I18n.Text("Show User Description"));
+        String tooltip = I18n.Text("Where to display this information");
+        mUserDescriptionDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.userDescriptionDisplay(), tooltip);
+
+        addLabel(panel, I18n.Text("Show Modifiers"));
+        mModifiersDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.modifiersDisplay(), tooltip);
+
+        addLabel(panel, I18n.Text("Show Notes"));
+        mNotesDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.notesDisplay(), tooltip);
+
+        JLabel label = new JLabel(I18n.Text("Block Layout"));
+        label.setOpaque(false);
+        panel.add(label, new PrecisionLayoutData().setHorizontalSpan(2));
+
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
-        panel.add(createLabel(I18n.Text("Block Layout"), blockLayoutTooltip, SwingConstants.LEFT), new PrecisionLayoutData().setHorizontalSpan(2).setLeftMargin(5).setRightMargin(5));
         mBlockLayoutField = new JTextArea(Preferences.linesToString(mSettings.blockLayout()));
         mBlockLayoutField.setToolTipText(blockLayoutTooltip);
         mBlockLayoutField.getDocument().addDocumentListener(this);
         mBlockLayoutField.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
-        panel.add(mBlockLayoutField, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true).setLeftMargin(5).setRightMargin(5));
-        return panel;
+        panel.add(mBlockLayoutField, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true));
+
+        getContentPane().add(panel);
     }
 
-    private JPanel createResetPanel() {
+    private void addResetPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         mResetButton = new JButton(I18n.Text("Reset to Current Preference Values"));
         mResetButton.addActionListener(this);
         panel.add(mResetButton);
-        return panel;
+        getContentPane().add(panel, BorderLayout.SOUTH);
     }
 
-    private JLabel createLabel(String title, String tooltip, int alignment) {
-        JLabel label = new JLabel(title, alignment);
+    private JLabel addLabel(JPanel panel, String title) {
+        JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        UIUtilities.setToPreferredSizeOnly(label);
-        add(label);
+        panel.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
         return label;
     }
 
-    private JCheckBox createCheckBox(JPanel panel, String title, String tooltip, boolean checked) {
-        JCheckBox checkbox = new JCheckBox(title, checked);
-        checkbox.setOpaque(false);
-        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        checkbox.addItemListener(this);
-        panel.add(checkbox, new PrecisionLayoutData().setHorizontalSpan(2));
-        return checkbox;
-    }
-
-    private JComboBox<DisplayOption> createDisplayOptionCombo(JPanel panel, DisplayOption choice) {
-        return createCombo(panel, DisplayOption.values(), choice, I18n.Text("Where to display this information"));
-    }
-
-    private <E> JComboBox<E> createCombo(JPanel panel, E[] values, E choice, String tooltip) {
+    private <E> JComboBox<E> addCombo(JPanel panel, E[] values, E choice, String tooltip) {
         JComboBox<E> combo = new JComboBox<>(values);
         combo.setOpaque(false);
         combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         combo.setSelectedItem(choice);
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
-        UIUtilities.setToPreferredSizeOnly(combo);
         panel.add(combo);
         return combo;
+    }
+
+    private JCheckBox addCheckBox(JPanel panel, String title, String tooltip, boolean checked) {
+        JCheckBox checkbox = new JCheckBox(title, checked);
+        checkbox.setOpaque(false);
+        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        checkbox.addItemListener(this);
+        panel.add(checkbox, new PrecisionLayoutData().setHorizontalSpan(2));
+        return checkbox;
     }
 
     @Override
