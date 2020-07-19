@@ -19,13 +19,9 @@ import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.layout.Alignment;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.layout.FlexComponent;
-import com.trollworks.gcs.ui.layout.FlexGrid;
-import com.trollworks.gcs.ui.layout.FlexRow;
-import com.trollworks.gcs.ui.layout.FlexSpacer;
-import com.trollworks.gcs.ui.layout.RowDistribution;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -49,13 +45,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -101,37 +95,23 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
      * @param advantage The {@link Advantage} to edit.
      */
     public AdvantageEditor(Advantage advantage) {
-        super(advantage);
-
-        FlexGrid outerGrid = new FlexGrid();
-
-        JLabel icon = new JLabel(advantage.getIcon(true));
-        UIUtilities.setOnlySize(icon, icon.getPreferredSize());
-        add(icon);
-        outerGrid.add(new FlexComponent(icon, Alignment.LEFT_TOP, Alignment.LEFT_TOP), 0, 0);
-
-        FlexGrid innerGrid = new FlexGrid();
-        int      ri        = 0;
-        outerGrid.add(innerGrid, 0, 1);
-
-        FlexRow row = new FlexRow();
+        super(advantage, new PrecisionLayout().setColumns(3).setMargins(0));
+        boolean notContainer = !advantage.canHaveChildren();
+        add(new JLabel(advantage.getIcon(true)), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setVerticalSpan(notContainer ? 6 : 5));
 
         mNameField = createField(advantage.getName(), null, I18n.Text("The name of the advantage, without any notes"));
         mNameField.getDocument().addDocumentListener(this);
-        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Name"), mNameField), Alignment.RIGHT_BOTTOM, null), ri, 0);
-        innerGrid.add(row, ri++, 1);
-        row.add(mNameField);
-
+        add(new LinkedLabel(I18n.Text("Name"), mNameField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        wrapper.add(mNameField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mEnabledCheckBox = new JCheckBox(I18n.Text("Enabled"));
         mEnabledCheckBox.setSelected(advantage.isSelfEnabled());
         mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")));
         mEnabledCheckBox.setEnabled(mIsEditable);
         mEnabledCheckBox.addActionListener(this);
-        UIUtilities.setToPreferredSizeOnly(mEnabledCheckBox);
-        add(mEnabledCheckBox);
-        row.add(mEnabledCheckBox);
+        wrapper.add(mEnabledCheckBox);
+        add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        boolean notContainer = !advantage.canHaveChildren();
         if (notContainer) {
             mLastLevel = mRow.getLevels();
             mLastHalfLevel = mRow.hasHalfLevel();
@@ -141,54 +121,46 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 mLastHalfLevel = false;
             }
 
-            row = new FlexRow();
-
             mBasePointsField = createField(-9999, 9999, mRow.getPoints(), I18n.Text("The base point cost of this advantage"));
-            row.add(mBasePointsField);
-            innerGrid.add(new FlexComponent(createLabel(I18n.Text("Base Point Cost"), mBasePointsField), Alignment.RIGHT_BOTTOM, null), ri, 0);
-            innerGrid.add(row, ri++, 1);
+            add(new LinkedLabel(I18n.Text("Base Point Cost"), mBasePointsField), new PrecisionLayoutData().setFillHorizontalAlignment());
+            wrapper = new JPanel(new PrecisionLayout().setColumns(10).setMargins(0));
+            wrapper.add(mBasePointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
             mLevelTypeCombo = new JComboBox<>(Levels.values());
             Levels levels = mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS;
             mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? levels : Levels.NO_LEVELS);
-            UIUtilities.setToPreferredSizeOnly(mLevelTypeCombo);
             mLevelTypeCombo.setEnabled(mIsEditable);
             mLevelTypeCombo.addActionListener(this);
-            add(mLevelTypeCombo);
-            row.add(mLevelTypeCombo);
+            wrapper.add(mLevelTypeCombo);
 
             mLevelField = createField(0, 999, mLastLevel, I18n.Text("The level of this advantage"));
-            row.add(createLabel(I18n.Text("Level"), mLevelField));
-            row.add(mLevelField);
+            wrapper.add(new LinkedLabel(I18n.Text("Level"), mLevelField));
+            wrapper.add(mLevelField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
             mHalfLevel = new JCheckBox("+½");
             mHalfLevel.setSelected(mLastHalfLevel);
             mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Add a half Level")));
             mHalfLevel.setEnabled(mIsEditable && advantage.allowHalfLevels());
             mHalfLevel.addActionListener(this);
-            UIUtilities.setToPreferredSizeOnly(mHalfLevel);
-            add(mHalfLevel);
-            row.add(mHalfLevel);
+            wrapper.add(mHalfLevel);
 
             mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, I18n.Text("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used"));
-            row.add(createLabel(I18n.Text("Point Cost Per Level"), mLevelPointsField));
-            row.add(mLevelPointsField);
+            wrapper.add(new LinkedLabel(I18n.Text("Point Cost Per Level"), mLevelPointsField));
+            wrapper.add(mLevelPointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
             mShouldRoundCostDown = new JCheckBox(I18n.Text("Round Down"));
             mShouldRoundCostDown.setSelected(advantage.shouldRoundCostDown());
             mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Round point costs down if selected, round them up if not (most things in GURPS round up)")));
             mShouldRoundCostDown.setEnabled(mIsEditable);
             mShouldRoundCostDown.addActionListener(this);
-            UIUtilities.setToPreferredSizeOnly(mShouldRoundCostDown);
-            add(mShouldRoundCostDown);
-            row.add(mShouldRoundCostDown);
-
-            row.add(new FlexSpacer(0, 0, true, false));
+            wrapper.add(mShouldRoundCostDown);
 
             mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), I18n.Text("The total point cost of this advantage"));
             mPointsField.setEnabled(false);
-            row.add(createLabel(I18n.Text("Total"), mPointsField));
-            row.add(mPointsField);
+            wrapper.add(new LinkedLabel(I18n.Text("Total"), mPointsField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
+            wrapper.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
+
+            add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
             if (!mRow.isLeveled()) {
                 mLevelField.setText("");
@@ -199,74 +171,65 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
 
         mNotesField = createField(advantage.getNotes(), null, I18n.Text("Any notes that you would like to show up in the list along with this advantage"));
-        add(mNotesField);
-        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Notes"), mNotesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
-        innerGrid.add(mNotesField, ri++, 1);
+        add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mCategoriesField = createField(advantage.getCategoriesAsString(), null, I18n.Text("The category or categories the advantage belongs to (separate multiple categories with a comma)"));
-        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Categories"), mCategoriesField), Alignment.RIGHT_BOTTOM, null), ri, 0);
-        innerGrid.add(mCategoriesField, ri++, 1);
+        add(new LinkedLabel(I18n.Text("Categories"), mCategoriesField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        add(mCategoriesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mCRCombo = new JComboBox<>(SelfControlRoll.values());
         mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
-        UIUtilities.setToPreferredSizeOnly(mCRCombo);
         mCRCombo.setEnabled(mIsEditable);
         mCRCombo.addActionListener(this);
-        add(mCRCombo);
+        add(new LinkedLabel(I18n.Text("Self-Control Roll"), mCRCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        wrapper.add(mCRCombo);
         mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
         mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Adjustments that are applied due to Self-Control Roll limitations")));
         mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
-        UIUtilities.setToPreferredSizeOnly(mCRAdjCombo);
         mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
-        add(mCRAdjCombo);
-        innerGrid.add(new FlexComponent(createLabel(I18n.Text("Self-Control Roll"), mCRCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
-        row = new FlexRow();
-        row.add(mCRCombo);
-        row.add(mCRAdjCombo);
-        innerGrid.add(row, ri++, 1);
+        wrapper.add(mCRAdjCombo);
+        add(wrapper);
 
-        row = new FlexRow();
-        innerGrid.add(row, ri, 1);
         if (notContainer) {
             JLabel label = new JLabel(I18n.Text("Type"), SwingConstants.RIGHT);
             label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of advantage this is")));
-            add(label);
-            innerGrid.add(new FlexComponent(label, Alignment.RIGHT_BOTTOM, null), ri, 0);
+            add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
 
+            wrapper = new JPanel(new PrecisionLayout().setColumns(12).setMargins(0));
             mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.Text("Mental"));
-            row.add(mMentalType);
-            row.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
+            wrapper.add(mMentalType);
+            wrapper.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
 
             mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, I18n.Text("Physical"));
-            row.add(mPhysicalType);
-            row.add(createTypeLabel(Images.PHYSICAL_TYPE, mPhysicalType));
+            wrapper.add(mPhysicalType);
+            wrapper.add(createTypeLabel(Images.PHYSICAL_TYPE, mPhysicalType));
 
             mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, I18n.Text("Social"));
-            row.add(mSocialType);
-            row.add(createTypeLabel(Images.SOCIAL_TYPE, mSocialType));
+            wrapper.add(mSocialType);
+            wrapper.add(createTypeLabel(Images.SOCIAL_TYPE, mSocialType));
 
             mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, I18n.Text("Exotic"));
-            row.add(mExoticType);
-            row.add(createTypeLabel(Images.EXOTIC_TYPE, mExoticType));
+            wrapper.add(mExoticType);
+            wrapper.add(createTypeLabel(Images.EXOTIC_TYPE, mExoticType));
 
             mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, I18n.Text("Supernatural"));
-            row.add(mSupernaturalType);
-            row.add(createTypeLabel(Images.SUPERNATURAL_TYPE, mSupernaturalType));
+            wrapper.add(mSupernaturalType);
+            wrapper.add(createTypeLabel(Images.SUPERNATURAL_TYPE, mSupernaturalType));
         } else {
             mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
             mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
-            UIUtilities.setToPreferredSizeOnly(mContainerTypeCombo);
             mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of container this is")));
-            add(mContainerTypeCombo);
-            row.add(mContainerTypeCombo);
-            innerGrid.add(new FlexComponent(new LinkedLabel(I18n.Text("Container Type"), mContainerTypeCombo), Alignment.RIGHT_BOTTOM, null), ri, 0);
+            add(new LinkedLabel(I18n.Text("Container Type"), mContainerTypeCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+            wrapper = new JPanel(new PrecisionLayout().setColumns(3).setMargins(0));
+            wrapper.add(mContainerTypeCombo);
         }
 
-        row.add(new FlexSpacer(0, 0, true, false));
-
         mReferenceField = createField(mRow.getReference(), "MMMMMM", I18n.Text("Page Reference"));
-        row.add(createLabel(I18n.Text("Ref"), mReferenceField));
-        row.add(mReferenceField);
+        wrapper.add(new LinkedLabel(I18n.Text("Ref"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
+        wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mTabPanel = new JTabbedPane();
         mModifiers = AdvantageModifierListEditor.createEditor(mRow);
@@ -304,43 +267,35 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         UIUtilities.selectTab(mTabPanel, getLastTabName());
 
-        add(mTabPanel);
-        outerGrid.add(mTabPanel, 1, 0, 1, 2);
-        outerGrid.apply(this);
+        add(mTabPanel, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
     }
 
     private JPanel createUserDescEditor() {
-        JPanel    content = new JPanel(new ColumnLayout(2, RowDistribution.GIVE_EXCESS_TO_LAST));
-        JLabel    icon    = new JLabel(Images.NOT_MARKER);
-        JTextArea editor  = new JTextArea(mUserDesc);
+        JPanel content = new JPanel(new PrecisionLayout().setColumns(2));
+        content.add(new JLabel(Images.NOT_MARKER), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+
+        JTextArea editor = new JTextArea(mUserDesc);
         editor.setLineWrap(true);
         editor.setWrapStyleWord(true);
         editor.setEnabled(mIsEditable);
-        JScrollPane scroller = new JScrollPane(editor, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scroller.setMinimumSize(new Dimension(500, 300));
-        icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1);
-        content.add(icon);
-        content.add(scroller);
-
-        // editor.setPreferredSize(new Dimension(600, 400));
         editor.getDocument().addDocumentListener(new DocumentListener() {
-
             @Override
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent event) {
                 mUserDesc = editor.getText();
             }
 
             @Override
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent event) {
                 mUserDesc = editor.getText();
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(DocumentEvent event) {
                 mUserDesc = editor.getText();
             }
         });
+        JScrollPane scroller = new JScrollPane(editor);
+        content.add(scroller, new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
         return content;
     }
 
@@ -349,8 +304,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         button.setSelected(selected);
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         button.setEnabled(mIsEditable);
-        UIUtilities.setToPreferredSizeOnly(button);
-        add(button);
         return button;
     }
 
@@ -362,7 +315,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 linkTo.doClick();
             }
         });
-        add(label);
         return label;
     }
 
@@ -376,18 +328,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         return scrollPanel;
     }
 
-    private LinkedLabel createLabel(String title, JComponent linkTo) {
-        LinkedLabel label = new LinkedLabel(title, linkTo);
-        add(label);
-        return label;
-    }
-
     private EditorField createField(String text, String prototype, String tooltip) {
         DefaultFormatter formatter = new DefaultFormatter();
         formatter.setOverwriteMode(false);
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, text, prototype, tooltip);
         field.setEnabled(mIsEditable);
-        add(field);
         return field;
     }
 
@@ -398,7 +343,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, false)), this, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(proto), tooltip);
         field.setEnabled(mIsEditable);
-        add(field);
         return field;
     }
 

@@ -35,7 +35,7 @@ public class NoteEditor extends RowEditor<Note> {
      * @param note The {@link Note} to edit.
      */
     public NoteEditor(Note note) {
-        super(note, new PrecisionLayout().setColumns(3));
+        super(note, new PrecisionLayout().setColumns(3).setMargins(0));
         add(new JLabel(note.getIcon(true)), new PrecisionLayoutData().setVerticalSpan(3).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         add(new LinkedLabel(I18n.Text("Note Content")), new PrecisionLayoutData().setHorizontalSpan(2));
