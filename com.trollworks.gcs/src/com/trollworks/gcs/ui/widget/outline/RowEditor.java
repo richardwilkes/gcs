@@ -21,6 +21,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.LayoutManager;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,7 +109,17 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      * @param row The row being edited.
      */
     protected RowEditor(T row) {
-        super(new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
+        this(row, new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
+    }
+
+    /**
+     * Creates a new {@link RowEditor}.
+     *
+     * @param row The row being edited.
+     * @param layout The layout to use.
+     */
+    protected RowEditor(T row, LayoutManager layout) {
+        super(layout);
         mRow = row;
         mIsEditable = !mRow.getOwner().isLocked();
     }
