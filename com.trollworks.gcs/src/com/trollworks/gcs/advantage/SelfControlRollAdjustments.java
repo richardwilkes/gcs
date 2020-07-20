@@ -160,18 +160,13 @@ public enum SelfControlRollAdjustments {
 
         @Override
         public int getAdjustment(SelfControlRoll cr) {
-            switch (cr) {
-            case CR6:
-                return 80;
-            case CR9:
-                return 40;
-            case CR12:
-                return 20;
-            case CR15:
-                return 10;
-            default:
-                return 0;
-            }
+            return switch (cr) {
+                case CR6 -> 80;
+                case CR9 -> 40;
+                case CR12 -> 20;
+                case CR15 -> 10;
+                default -> 0;
+            };
         }
 
         @Override

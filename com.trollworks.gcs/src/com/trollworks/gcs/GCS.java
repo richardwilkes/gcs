@@ -133,11 +133,8 @@ public class GCS {
                 }
                 String[] parts = arg.split("=", 2);
                 switch (parts[0]) {
-                case "-h":
-                case "--help":
-                    showHelp();
-                    break;
-                case "--margins":
+                case "-h", "--help" -> showHelp();
+                case "--margins" -> {
                     boolean missingMarginsArg = false;
                     if (parts.length > 1) {
                         if (parts[1].isBlank()) {
@@ -156,8 +153,8 @@ public class GCS {
                     if (missingMarginsArg) {
                         msgs.add(I18n.Text("missing argument for --margins"));
                     }
-                    break;
-                case "--paper":
+                }
+                case "--paper" -> {
                     boolean missingPaperArg = false;
                     if (parts.length > 1) {
                         if (parts[1].isBlank()) {
@@ -176,14 +173,10 @@ public class GCS {
                     if (missingPaperArg) {
                         msgs.add(I18n.Text("missing argument for --paper"));
                     }
-                    break;
-                case "--pdf":
-                    generatePDF = true;
-                    break;
-                case "--png":
-                    generatePNG = true;
-                    break;
-                case "--text":
+                }
+                case "--pdf" -> generatePDF = true;
+                case "--png" -> generatePNG = true;
+                case "--text" -> {
                     generateText = true;
                     boolean missingTemplateArg = false;
                     if (parts.length > 1) {
@@ -203,14 +196,9 @@ public class GCS {
                     if (missingTemplateArg) {
                         msgs.add(I18n.Text("missing argument for --text"));
                     }
-                    break;
-                case "-v":
-                case "--version":
-                    showVersion = true;
-                    break;
-                default:
-                    msgs.add(I18n.Text("unknown option: ") + parts[0]);
-                    break;
+                }
+                case "-v", "--version" -> showVersion = true;
+                default -> msgs.add(I18n.Text("unknown option: ") + parts[0]);
                 }
             } else {
                 files.add(Paths.get(arg));

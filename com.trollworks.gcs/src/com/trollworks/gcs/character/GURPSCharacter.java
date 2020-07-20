@@ -1592,16 +1592,12 @@ public class GURPSCharacter extends DataFile {
      * @return The converted imperial {@link WeightValue}.
      */
     public static WeightValue convertFromGurpsMetric(WeightValue value) {
-        switch (value.getUnits()) {
-        case G:
-            return new WeightValue(value.getValue().div(new Fixed6(30)), WeightUnits.OZ);
-        case KG:
-            return new WeightValue(value.getValue().mul(new Fixed6(2)), WeightUnits.LB);
-        case T:
-            return new WeightValue(value.getValue(), WeightUnits.LT);
-        default:
-            return value;
-        }
+        return switch (value.getUnits()) {
+            case G -> new WeightValue(value.getValue().div(new Fixed6(30)), WeightUnits.OZ);
+            case KG -> new WeightValue(value.getValue().mul(new Fixed6(2)), WeightUnits.LB);
+            case T -> new WeightValue(value.getValue(), WeightUnits.LT);
+            default -> value;
+        };
     }
 
     /**
@@ -1612,17 +1608,12 @@ public class GURPSCharacter extends DataFile {
      * @return The converted metric {@link WeightValue}.
      */
     public static WeightValue convertToGurpsMetric(WeightValue value) {
-        switch (value.getUnits()) {
-        case LB:
-            return new WeightValue(value.getValue().div(new Fixed6(2)), WeightUnits.KG);
-        case LT:
-        case TN:
-            return new WeightValue(value.getValue(), WeightUnits.T);
-        case OZ:
-            return new WeightValue(value.getValue().mul(new Fixed6(30)), WeightUnits.G);
-        default:
-            return value;
-        }
+        return switch (value.getUnits()) {
+            case LB -> new WeightValue(value.getValue().div(new Fixed6(2)), WeightUnits.KG);
+            case LT, TN -> new WeightValue(value.getValue(), WeightUnits.T);
+            case OZ -> new WeightValue(value.getValue().mul(new Fixed6(30)), WeightUnits.G);
+            default -> value;
+        };
     }
 
     /**

@@ -62,17 +62,15 @@ public class LibraryLocationsPanel extends JPanel {
             Library.LIBRARIES.clear();
             for (LibraryFields fields : panel.mFields) {
                 switch (fields.getLibraryType()) {
-                case MASTER:
+                case MASTER -> {
                     Library.MASTER.setPath(fields.getPath());
                     Library.LIBRARIES.add(Library.MASTER);
-                    break;
-                case USER:
+                }
+                case USER -> {
                     Library.USER.setPath(fields.getPath());
                     Library.LIBRARIES.add(Library.USER);
-                    break;
-                default:
-                    Library.LIBRARIES.add(fields.createLibrary());
-                    break;
+                }
+                default -> Library.LIBRARIES.add(fields.createLibrary());
                 }
             }
             Collections.sort(Library.LIBRARIES);

@@ -71,16 +71,9 @@ public class FlexColumn extends FlexContainer {
                 childBounds[i].width = Math.min(maxSizes[i].width, bounds.width);
             }
             switch (children.get(i).getHorizontalAlignment()) {
-            case LEFT_TOP:
-            default:
-                childBounds[i].x = bounds.x;
-                break;
-            case CENTER:
-                childBounds[i].x = bounds.x + (bounds.width - childBounds[i].width) / 2;
-                break;
-            case RIGHT_BOTTOM:
-                childBounds[i].x = bounds.x + bounds.width - childBounds[i].width;
-                break;
+            case CENTER -> childBounds[i].x = bounds.x + (bounds.width - childBounds[i].width) / 2;
+            case RIGHT_BOTTOM -> childBounds[i].x = bounds.x + bounds.width - childBounds[i].width;
+            default -> childBounds[i].x = bounds.x;
             }
         }
         int       y      = bounds.y;

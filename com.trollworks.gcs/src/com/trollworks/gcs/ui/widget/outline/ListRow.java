@@ -301,39 +301,17 @@ public abstract class ListRow extends Row {
                 JsonMap m1   = a.getMap(i);
                 String  type = m1.getString(DataFile.KEY_TYPE);
                 switch (type) {
-                case AttributeBonus.TAG_ROOT:
-                    mFeatures.add(new AttributeBonus(m1));
-                    break;
-                case DRBonus.TAG_ROOT:
-                    mFeatures.add(new DRBonus(m1));
-                    break;
-                case ReactionBonus.TAG_ROOT:
-                    mFeatures.add(new ReactionBonus(m1));
-                    break;
-                case SkillBonus.TAG_ROOT:
-                    mFeatures.add(new SkillBonus(m1));
-                    break;
-                case SkillPointBonus.TAG_ROOT:
-                    mFeatures.add(new SkillPointBonus(m1));
-                    break;
-                case SpellBonus.TAG_ROOT:
-                    mFeatures.add(new SpellBonus(m1));
-                    break;
-                case SpellPointBonus.TAG_ROOT:
-                    mFeatures.add(new SpellPointBonus(m1));
-                    break;
-                case WeaponBonus.TAG_ROOT:
-                    mFeatures.add(new WeaponBonus(m1));
-                    break;
-                case CostReduction.TAG_ROOT:
-                    mFeatures.add(new CostReduction(m1));
-                    break;
-                case ContainedWeightReduction.TAG_ROOT:
-                    mFeatures.add(new ContainedWeightReduction(m1));
-                    break;
-                default:
-                    Log.warn("unknown feature type: " + type);
-                    break;
+                case AttributeBonus.TAG_ROOT -> mFeatures.add(new AttributeBonus(m1));
+                case DRBonus.TAG_ROOT -> mFeatures.add(new DRBonus(m1));
+                case ReactionBonus.TAG_ROOT -> mFeatures.add(new ReactionBonus(m1));
+                case SkillBonus.TAG_ROOT -> mFeatures.add(new SkillBonus(m1));
+                case SkillPointBonus.TAG_ROOT -> mFeatures.add(new SkillPointBonus(m1));
+                case SpellBonus.TAG_ROOT -> mFeatures.add(new SpellBonus(m1));
+                case SpellPointBonus.TAG_ROOT -> mFeatures.add(new SpellPointBonus(m1));
+                case WeaponBonus.TAG_ROOT -> mFeatures.add(new WeaponBonus(m1));
+                case CostReduction.TAG_ROOT -> mFeatures.add(new CostReduction(m1));
+                case ContainedWeightReduction.TAG_ROOT -> mFeatures.add(new ContainedWeightReduction(m1));
+                default -> Log.warn("unknown feature type: " + type);
                 }
             }
         }

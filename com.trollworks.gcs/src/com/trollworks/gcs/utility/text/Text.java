@@ -181,26 +181,13 @@ public class Text {
         for (int i = 0; i < length; i++) {
             char ch = str.charAt(i);
             switch (ch) {
-            case '&':
-                buffer.append("&amp;");
-                break;
-            case '<':
-                buffer.append("&lt;");
-                break;
-            case '>':
-                buffer.append("&gt;");
-                break;
-            case '"':
-                buffer.append("&quot;");
-                break;
-            case '\'':
-                buffer.append("&#39;");
-                break;
-            case '/':
-                buffer.append("&#47;");
-                break;
-            default:
-                buffer.append(ch);
+            case '&' -> buffer.append("&amp;");
+            case '<' -> buffer.append("&lt;");
+            case '>' -> buffer.append("&gt;");
+            case '"' -> buffer.append("&quot;");
+            case '\'' -> buffer.append("&#39;");
+            case '/' -> buffer.append("&#47;");
+            default -> buffer.append(ch);
             }
         }
         return buffer.toString();
@@ -239,28 +226,18 @@ public class Text {
                 buffer.append(ch);
             } else {
                 switch (ch) {
-                case '\b':
-                    buffer.append("\\b");
-                    break;
-                case '\f':
-                    buffer.append("\\f");
-                    break;
-                case '\n':
-                    buffer.append("\\n");
-                    break;
-                case '\r':
-                    buffer.append("\\r");
-                    break;
-                case '\t':
-                    buffer.append("\\t");
-                    break;
-                default:
+                case '\b' -> buffer.append("\\b");
+                case '\f' -> buffer.append("\\f");
+                case '\n' -> buffer.append("\\n");
+                case '\r' -> buffer.append("\\r");
+                case '\t' -> buffer.append("\\t");
+                default -> {
                     buffer.append("\\u");
                     buffer.append(HEX_DIGITS[ch >> 12 & 0xF]);
                     buffer.append(HEX_DIGITS[ch >> 8 & 0xF]);
                     buffer.append(HEX_DIGITS[ch >> 4 & 0xF]);
                     buffer.append(HEX_DIGITS[ch & 0xF]);
-                    break;
+                }
                 }
             }
         }
@@ -293,38 +270,35 @@ public class Text {
                 break;
             case 1: // Process escape
                 switch (ch) {
-                case '\\':
-                case '"':
+                case '\\', '"' -> {
                     buffer.append(ch);
                     state = 0;
-                    break;
-                case 'b':
+                }
+                case 'b' -> {
                     buffer.append('\b');
                     state = 0;
-                    break;
-                case 'f':
+                }
+                case 'f' -> {
                     buffer.append('\f');
                     state = 0;
-                    break;
-                case 'n':
+                }
+                case 'n' -> {
                     buffer.append('\n');
                     state = 0;
-                    break;
-                case 'r':
+                }
+                case 'r' -> {
                     buffer.append('\r');
                     state = 0;
-                    break;
-                case 't':
+                }
+                case 't' -> {
                     buffer.append('\t');
                     state = 0;
-                    break;
-                case 'u':
+                }
+                case 'u' -> {
                     value = 0;
                     state = 2;
-                    break;
-                default:
-                    state = 0; // In case bogus input was provided
-                    break;
+                }
+                default -> state = 0; // In case bogus input was provided
                 }
                 break;
             case 2: // Process 4-byte escape, part 1

@@ -476,38 +476,39 @@ public class Bundler {
                 break;
             case 1: // Processing escape sequence
                 switch (ch) {
-                case 't':
+                case 't' -> {
                     buffer.append('\t');
                     state = 0;
-                    break;
-                case 'b':
+                }
+                case 'b' -> {
                     buffer.append('\b');
                     state = 0;
-                    break;
-                case 'n':
+                }
+                case 'n' -> {
                     buffer.append('\n');
                     state = 0;
-                    break;
-                case 'r':
+                }
+                case 'r' -> {
                     buffer.append('\r');
                     state = 0;
-                    break;
-                case '"':
+                }
+                case '"' -> {
                     buffer.append('"');
                     state = 0;
-                    break;
-                case '\\':
+                }
+                case '\\' -> {
                     buffer.append('\\');
                     state = 0;
-                    break;
-                case 'u':
+                }
+                case 'u' -> {
                     state = 2;
                     unicodeValue = 0;
-                    break;
-                default:
+                }
+                default -> {
                     System.out.println();
                     new RuntimeException("invalid escape sequence").printStackTrace(System.err);
                     System.exit(1);
+                }
                 }
                 break;
             case 2: // Processing first digit of unicode escape sequence
@@ -568,28 +569,18 @@ public class Bundler {
                 buffer.append(ch);
             } else {
                 switch (ch) {
-                case '\b':
-                    buffer.append("\\b");
-                    break;
-                case '\f':
-                    buffer.append("\\f");
-                    break;
-                case '\n':
-                    buffer.append("\\n");
-                    break;
-                case '\r':
-                    buffer.append("\\r");
-                    break;
-                case '\t':
-                    buffer.append("\\t");
-                    break;
-                default:
+                case '\b' -> buffer.append("\\b");
+                case '\f' -> buffer.append("\\f");
+                case '\n' -> buffer.append("\\n");
+                case '\r' -> buffer.append("\\r");
+                case '\t' -> buffer.append("\\t");
+                default -> {
                     buffer.append("\\u");
                     buffer.append(HEX_DIGITS[ch >> 12 & 0xF]);
                     buffer.append(HEX_DIGITS[ch >> 8 & 0xF]);
                     buffer.append(HEX_DIGITS[ch >> 4 & 0xF]);
                     buffer.append(HEX_DIGITS[ch & 0xF]);
-                    break;
+                }
                 }
             }
         }
@@ -658,7 +649,7 @@ public class Bundler {
         args.add("--java-options");
         args.add("-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1");
         switch (OS) {
-        case MACOS:
+        case MACOS -> {
             args.add("--mac-package-name");
             args.add("GCS");
             args.add("--mac-package-identifier");
@@ -668,8 +659,8 @@ public class Bundler {
                 args.add("--mac-signing-key-user-name");
                 args.add("Richard Wilkes");
             }
-            break;
-        case LINUX:
+        }
+        case LINUX -> {
             args.add("--linux-package-name");
             args.add("gcs");
             args.add("--linux-deb-maintainer");
@@ -685,8 +676,8 @@ public class Bundler {
             args.add("1");
             args.add("--linux-package-deps");
             args.add("");
-            break;
-        case WINDOWS:
+        }
+        case WINDOWS -> {
             args.add("--java-options");
             args.add("-Dsun.java2d.dpiaware=false");
             args.add("--win-menu");
@@ -708,7 +699,7 @@ public class Bundler {
             }
             args.add("--add-launcher");
             args.add("GCScmdline=" + propsFile.toString());
-            break;
+        }
         }
         runNoOutputCmd(args);
         showTiming(timing);

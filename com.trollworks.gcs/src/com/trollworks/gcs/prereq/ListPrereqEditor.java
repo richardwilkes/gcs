@@ -51,15 +51,11 @@ public class ListPrereqEditor extends PrereqEditor {
 
     private static String mapWhenTLToString(IntegerCriteria criteria) {
         if (PrereqList.isWhenTLEnabled(criteria)) {
-            switch (criteria.getType()) {
-            case IS:
-            default:
-                return tlIs();
-            case AT_LEAST:
-                return tlIsAtLeast();
-            case AT_MOST:
-                return tlIsAtMost();
-            }
+            return switch (criteria.getType()) {
+                case AT_LEAST -> tlIsAtLeast();
+                case AT_MOST -> tlIsAtMost();
+                default -> tlIs();
+            };
         }
         return " ";
     }

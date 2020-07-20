@@ -366,10 +366,10 @@ public class AdvantageModifier extends Modifier {
     public String getCostDescription() {
         StringBuilder             builder  = new StringBuilder();
         AdvantageModifierCostType costType = getCostType();
-        switch (costType) {
-        case PERCENTAGE:
-        case POINTS:
-        default:
+        if (costType == AdvantageModifierCostType.MULTIPLIER) {
+            builder.append('x');
+            builder.append(Numbers.format(getCostMultiplier()));
+        } else {
             builder.append(Numbers.formatWithForcedSign(getCostModifier()));
             if (costType == AdvantageModifierCostType.PERCENTAGE) {
                 builder.append('%');
@@ -379,11 +379,6 @@ public class AdvantageModifier extends Modifier {
                 builder.append(' ');
                 builder.append(desc);
             }
-            break;
-        case MULTIPLIER:
-            builder.append('x');
-            builder.append(Numbers.format(getCostMultiplier()));
-            break;
         }
         return builder.toString();
     }

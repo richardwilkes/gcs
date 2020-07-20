@@ -66,16 +66,9 @@ public class FlexRow extends FlexContainer {
                 childBounds[i].height = Math.min(maxSizes[i].height, bounds.height);
             }
             switch (children.get(i).getVerticalAlignment()) {
-            case LEFT_TOP:
-            default:
-                childBounds[i].y = bounds.y;
-                break;
-            case CENTER:
-                childBounds[i].y = bounds.y + (bounds.height - childBounds[i].height) / 2;
-                break;
-            case RIGHT_BOTTOM:
-                childBounds[i].y = bounds.y + bounds.height - childBounds[i].height;
-                break;
+            case CENTER -> childBounds[i].y = bounds.y + (bounds.height - childBounds[i].height) / 2;
+            case RIGHT_BOTTOM -> childBounds[i].y = bounds.y + bounds.height - childBounds[i].height;
+            default -> childBounds[i].y = bounds.y;
             }
         }
         int       x      = bounds.x;

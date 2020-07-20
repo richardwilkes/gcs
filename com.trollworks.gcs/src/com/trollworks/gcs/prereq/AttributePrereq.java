@@ -165,22 +165,15 @@ public class AttributePrereq extends HasPrereq {
         if (attribute == null) {
             return 0;
         }
-        switch (attribute) {
-        case ST:
-            return character.getStrength();
-        case DX:
-            return character.getDexterity();
-        case IQ:
-            return character.getIntelligence();
-        case HT:
-            return character.getHealth();
-        case WILL:
-            return character.getWillAdj();
-        case PERCEPTION:
-            return character.getPerAdj();
-        default:
-            return 0;
-        }
+        return switch (attribute) {
+            case ST -> character.getStrength();
+            case DX -> character.getDexterity();
+            case IQ -> character.getIntelligence();
+            case HT -> character.getHealth();
+            case WILL -> character.getWillAdj();
+            case PERCEPTION -> character.getPerAdj();
+            default -> 0;
+        };
     }
 
     /** @return The value comparison object. */

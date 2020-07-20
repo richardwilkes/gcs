@@ -194,27 +194,13 @@ public class WeaponDamage {
         // Fix up some known bad data file input
         text = text.trim();
         switch (text) {
-        case "1d (+1d) burn":
-            text = "1d burn";
-            break;
-        case "Sw cut -1":
-            text = "sw-1 cut";
-            break;
-        case "Thr imp +1":
-            text = "thr+1 imp";
-            break;
-        case "Thr +1":
-            text = "thr+1";
-            break;
-        case "th-1 imp":
-            text = "thr-1 imp";
-            break;
-        case "40mm warhead":
-            text = "2d [2d] cr ex";
-            break;
-        case "3d cr (x5)":
-            text = "3dx5 cr";
-            break;
+        case "1d (+1d) burn" -> text = "1d burn";
+        case "Sw cut -1" -> text = "sw-1 cut";
+        case "Thr imp +1" -> text = "thr+1 imp";
+        case "Thr +1" -> text = "thr+1";
+        case "th-1 imp" -> text = "thr-1 imp";
+        case "40mm warhead" -> text = "2d [2d] cr ex";
+        case "3d cr (x5)" -> text = "3dx5 cr";
         }
         String saved = text;
 

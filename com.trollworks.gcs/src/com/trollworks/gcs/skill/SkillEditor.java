@@ -172,10 +172,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         return I18n.Text("The skill level and relative skill level to roll against.\n");
     }
 
-    @SuppressWarnings("unused")
     private void createPointsFields(Container parent, boolean forCharacter) {
         mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getRawPoints()), I18n.Text("The number of points spent on this skill"), 4);
-        new NumberFilter(mPointsField, false, false, false, 4);
+        NumberFilter.apply(mPointsField, false, false, false, 4);
         if (forCharacter) {
             mLevelField = createField(parent, parent, I18n.Text("Level"), Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), editorLevelTooltip() + mRow.getLevelToolTip(), 8);
             mLevelField.setEnabled(false);

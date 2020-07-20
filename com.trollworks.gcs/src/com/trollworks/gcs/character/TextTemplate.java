@@ -851,33 +851,20 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_ROLL:
-                            writeEncodedText(out, entry.getRoll());
-                            break;
-                        case KEY_WHERE:
-                            writeEncodedText(out, entry.getName());
-                            break;
-                        case KEY_PENALTY:
-                            writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
-                            break;
-                        case KEY_DR:
-                            writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
-                            break;
-                        case KEY_ID:
-                            writeEncodedText(out, Integer.toString(mCurrentId));
-                            break;
-                        case KEY_EQUIPMENT:     // Show the equipment that is providing the DR bonus
-                            writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
-                            break;
-                        case KEY_EQUIPMENT_FORMATTED:
+                        case KEY_ROLL -> writeEncodedText(out, entry.getRoll());
+                        case KEY_WHERE -> writeEncodedText(out, entry.getName());
+                        case KEY_PENALTY -> writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
+                        case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
+                        case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                        // Show the equipment that is providing the DR bonus
+                        case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
+                        case KEY_EQUIPMENT_FORMATTED -> {
                             String loc = hitLocationEquipment(entry);
                             if (!loc.isEmpty()) {
                                 writeEncodedText(out, PARAGRAPH_START + loc.replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
                             }
-                            break;
-                        default:
-                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                            break;
+                        }
+                        default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                         }
                     }
                 }
@@ -1066,27 +1053,13 @@ public class TextTemplate {
                         if (!processStyleIndentWarning(key, out, skill)) {
                             if (!processDescription(key, out, skill)) {
                                 switch (key) {
-                                case KEY_SL:
-                                    writeEncodedText(out, SkillColumn.LEVEL.getDataAsText(skill));
-                                    break;
-                                case KEY_RSL:
-                                    writeEncodedText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
-                                    break;
-                                case KEY_DIFFICULTY:
-                                    writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
-                                    break;
-                                case KEY_POINTS:
-                                    writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
-                                    break;
-                                case KEY_REF:
-                                    writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
-                                    break;
-                                case KEY_ID:
-                                    writeEncodedText(out, Integer.toString(mCurrentId));
-                                    break;
-                                default:
-                                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                                    break;
+                                case KEY_SL -> writeEncodedText(out, SkillColumn.LEVEL.getDataAsText(skill));
+                                case KEY_RSL -> writeEncodedText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
+                                case KEY_DIFFICULTY -> writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
+                                case KEY_POINTS -> writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
+                                case KEY_REF -> writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
+                                case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
                         }
@@ -1156,48 +1129,20 @@ public class TextTemplate {
                         if (!processStyleIndentWarning(key, out, spell)) {
                             if (!processDescription(key, out, spell)) {
                                 switch (key) {
-                                case KEY_CLASS:
-                                    writeEncodedText(out, spell.getSpellClass());
-                                    break;
-                                case KEY_COLLEGE:
-                                    writeEncodedText(out, spell.getCollege());
-                                    break;
-                                case KEY_MANA_CAST:
-                                    writeEncodedText(out, spell.getCastingCost());
-                                    break;
-                                case KEY_MANA_MAINTAIN:
-                                    writeEncodedText(out, spell.getMaintenance());
-                                    break;
-                                case KEY_TIME_CAST:
-                                    writeEncodedText(out, spell.getCastingTime());
-                                    break;
-                                case KEY_DURATION:
-                                    writeEncodedText(out, spell.getDuration());
-                                    break;
-                                case KEY_RESIST:
-                                    writeEncodedText(out, spell.getResist());
-                                    break;
-                                case KEY_SL:
-                                    writeEncodedText(out, SpellColumn.LEVEL.getDataAsText(spell));
-                                    break;
-                                case KEY_RSL:
-                                    writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
-                                    break;
-                                case KEY_DIFFICULTY:
-                                    writeEncodedText(out, spell.getDifficultyAsText());
-                                    break;
-                                case KEY_POINTS:
-                                    writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
-                                    break;
-                                case KEY_REF:
-                                    writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
-                                    break;
-                                case KEY_ID:
-                                    writeEncodedText(out, Integer.toString(mCurrentId));
-                                    break;
-                                default:
-                                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                                    break;
+                                case KEY_CLASS -> writeEncodedText(out, spell.getSpellClass());
+                                case KEY_COLLEGE -> writeEncodedText(out, spell.getCollege());
+                                case KEY_MANA_CAST -> writeEncodedText(out, spell.getCastingCost());
+                                case KEY_MANA_MAINTAIN -> writeEncodedText(out, spell.getMaintenance());
+                                case KEY_TIME_CAST -> writeEncodedText(out, spell.getCastingTime());
+                                case KEY_DURATION -> writeEncodedText(out, spell.getDuration());
+                                case KEY_RESIST -> writeEncodedText(out, spell.getResist());
+                                case KEY_SL -> writeEncodedText(out, SpellColumn.LEVEL.getDataAsText(spell));
+                                case KEY_RSL -> writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
+                                case KEY_DIFFICULTY -> writeEncodedText(out, spell.getDifficultyAsText());
+                                case KEY_POINTS -> writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
+                                case KEY_REF -> writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
+                                case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
                         }
@@ -1246,16 +1191,19 @@ public class TextTemplate {
     /* Handle keys specific to MeleeWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
     private int processMeleeWeaponKeys(BufferedWriter out, String key, int counter, MeleeWeaponStats weapon, int index, String contents, List<MeleeWeaponStats> attackModes) throws IOException {
         switch (key) {
-        case KEY_PARRY:
+        case KEY_PARRY -> {
             writeEncodedText(out, weapon.getResolvedParry());
             return index;
-        case KEY_BLOCK:
+        }
+        case KEY_BLOCK -> {
             writeEncodedText(out, weapon.getResolvedBlock());
             return index;
-        case KEY_REACH:
+        }
+        case KEY_REACH -> {
             writeEncodedText(out, weapon.getReach());
             return index;
-        default:
+        }
+        default -> {
             if (attackModes != null && key.startsWith(KEY_ATTACK_MODES_LOOP_START)) {
                 int endIndex = contents.indexOf(KEY_ATTACK_MODES_LOOP_END);
                 if (endIndex > 0) {
@@ -1266,30 +1214,37 @@ public class TextTemplate {
             }
             return processWeaponKeys(out, key, counter, weapon, index);
         }
+        }
     }
 
     /* Handle keys specific to RangedWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
     private int processRangedWeaponKeys(BufferedWriter out, String key, int counter, RangedWeaponStats weapon, int index, String contents, List<RangedWeaponStats> attackModes) throws IOException {
         switch (key) {
-        case KEY_BULK:
+        case KEY_BULK -> {
             writeEncodedText(out, weapon.getBulk());
             return index;
-        case KEY_ACCURACY:
+        }
+        case KEY_ACCURACY -> {
             writeEncodedText(out, weapon.getAccuracy());
             return index;
-        case KEY_RANGE:
+        }
+        case KEY_RANGE -> {
             writeEncodedText(out, weapon.getRange());
             return index;
-        case KEY_ROF:
+        }
+        case KEY_ROF -> {
             writeEncodedText(out, weapon.getRateOfFire());
             return index;
-        case KEY_SHOTS:
+        }
+        case KEY_SHOTS -> {
             writeEncodedText(out, weapon.getShots());
             return index;
-        case KEY_RECOIL:
+        }
+        case KEY_RECOIL -> {
             writeEncodedText(out, weapon.getRecoil());
             return index;
-        default:
+        }
+        default -> {
             if (attackModes != null && key.startsWith(KEY_ATTACK_MODES_LOOP_START)) {
                 int endIndex = contents.indexOf(KEY_ATTACK_MODES_LOOP_END);
                 if (endIndex > 0) {
@@ -1299,6 +1254,7 @@ public class TextTemplate {
                 }
             }
             return processWeaponKeys(out, key, counter, weapon, index);
+        }
         }
     }
 
@@ -1837,18 +1793,10 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_MODIFIER:
-                            writeEncodedText(out, Numbers.formatWithForcedSign(reaction.getTotalAmount()));
-                            break;
-                        case KEY_SITUATION:
-                            writeEncodedText(out, reaction.getFrom());
-                            break;
-                        case KEY_ID:
-                            writeEncodedText(out, Integer.toString(mCurrentId));
-                            break;
-                        default:
-                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                            break;
+                        case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(reaction.getTotalAmount()));
+                        case KEY_SITUATION -> writeEncodedText(out, reaction.getFrom());
+                        case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                        default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                         }
                     }
                 }

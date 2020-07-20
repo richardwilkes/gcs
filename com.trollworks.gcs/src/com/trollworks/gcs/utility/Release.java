@@ -73,16 +73,14 @@ public class Release implements Comparable<Release> {
             return;
         }
         switch (releases.size()) {
-        case 0:
-            mVersion = new Version();
-            return;
-        case 1:
+        case 0 -> mVersion = new Version();
+        case 1 -> {
             Release other = releases.get(0);
             mVersion = other.mVersion;
             mNotes = other.mNotes;
             mZipFileURL = other.mZipFileURL;
-            break;
-        default:
+        }
+        default -> {
             Release other2 = releases.get(0);
             mVersion = other2.mVersion;
             mZipFileURL = other2.mZipFileURL;
@@ -97,7 +95,7 @@ public class Release implements Comparable<Release> {
                 buffer.append(one.mNotes);
             }
             mNotes = buffer.toString();
-            break;
+        }
         }
     }
 

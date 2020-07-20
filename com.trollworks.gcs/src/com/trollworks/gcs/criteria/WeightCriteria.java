@@ -97,14 +97,10 @@ public class WeightCriteria extends NumericCriteria {
      * @return Whether the data matches this criteria.
      */
     public boolean matches(WeightValue data) {
-        switch (getType()) {
-        case IS:
-            return mQualifier.equals(data);
-        case AT_LEAST:
-        default:
-            return data.getNormalizedValue().greaterThanOrEqual(mQualifier.getNormalizedValue());
-        case AT_MOST:
-            return data.getNormalizedValue().lessThanOrEqual(mQualifier.getNormalizedValue());
-        }
+        return switch (getType()) {
+            case IS -> mQualifier.equals(data);
+            case AT_MOST -> data.getNormalizedValue().lessThanOrEqual(mQualifier.getNormalizedValue());
+            default -> data.getNormalizedValue().greaterThanOrEqual(mQualifier.getNormalizedValue());
+        };
     }
 }

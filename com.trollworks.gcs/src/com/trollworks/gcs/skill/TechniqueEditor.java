@@ -236,10 +236,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         return field;
     }
 
-    @SuppressWarnings("unused")
     private JTextField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxDigits) {
         JTextField field = createField(labelParent, fieldParent, title, Numbers.formatWithForcedSign(value), tooltip, maxDigits + 1);
-        new NumberFilter(field, false, true, false, maxDigits);
+        NumberFilter.apply(field, false, true, false, maxDigits);
         return field;
     }
 
@@ -247,10 +246,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         return I18n.Text("The skill level and relative skill level to roll against.\n");
     }
 
-    @SuppressWarnings("unused")
     private void createPointsFields(Container parent, boolean forCharacter) {
         mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getRawPoints()), I18n.Text("The number of points spent on this technique"), 4);
-        new NumberFilter(mPointsField, false, false, false, 4);
+        NumberFilter.apply(mPointsField, false, false, false, 4);
         mPointsField.addActionListener(this);
 
         if (forCharacter) {

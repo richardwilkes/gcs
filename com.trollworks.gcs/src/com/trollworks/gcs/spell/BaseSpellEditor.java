@@ -172,7 +172,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected JTextField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxDigits) {
         JTextField field = createField(labelParent, fieldParent, title, Numbers.format(value), tooltip, maxDigits + 1);
-        new NumberFilter(field, false, false, false, maxDigits);
+        NumberFilter.apply(field, false, false, false, maxDigits);
         return field;
     }
 

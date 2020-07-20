@@ -224,14 +224,13 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         return field;
     }
 
-    @SuppressWarnings("unused")
     private JTextField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ','));
         UIUtilities.setToPreferredSizeOnly(field);
         field.setText(Numbers.format(value));
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
-        new NumberFilter(field, false, false, true, maxDigits);
+        NumberFilter.apply(field, false, false, true, maxDigits);
         field.addActionListener(this);
         field.addFocusListener(this);
         labelParent.add(new LinkedLabel(title, field));
@@ -239,14 +238,13 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         return field;
     }
 
-    @SuppressWarnings("unused")
     private JTextField createValueField(Container labelParent, Container fieldParent, String title, Fixed6 value, String tooltip, int maxDigits) {
         JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
         UIUtilities.setToPreferredSizeOnly(field);
         field.setText(value.toLocalizedString());
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
-        new NumberFilter(field, true, false, true, maxDigits);
+        NumberFilter.apply(field, true, false, true, maxDigits);
         field.addActionListener(this);
         field.addFocusListener(this);
         labelParent.add(new LinkedLabel(title, field));

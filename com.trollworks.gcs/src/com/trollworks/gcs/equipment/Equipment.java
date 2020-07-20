@@ -535,20 +535,14 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     public String getDisplayLegalityClass() {
         String lc = getLegalityClass().trim();
-        switch (lc) {
-        case "0":
-            return I18n.Text("LC0: Banned");
-        case "1":
-            return I18n.Text("LC1: Military");
-        case "2":
-            return I18n.Text("LC2: Restricted");
-        case "3":
-            return I18n.Text("LC3: Licensed");
-        case "4":
-            return I18n.Text("LC4: Open");
-        default:
-            return lc;
-        }
+        return switch (lc) {
+            case "0" -> I18n.Text("LC0: Banned");
+            case "1" -> I18n.Text("LC1: Military");
+            case "2" -> I18n.Text("LC2: Restricted");
+            case "3" -> I18n.Text("LC3: Licensed");
+            case "4" -> I18n.Text("LC4: Open");
+            default -> lc;
+        };
     }
 
     /**
@@ -618,15 +612,9 @@ public class Equipment extends ListRow implements HasSourceReference {
                 ModifierCostValueType mvt = costType.determineType(adj);
                 Fixed6                amt = mvt.extractValue(adj, false);
                 switch (mvt) {
-                case ADDITION:
-                    additions = additions.add(amt);
-                    break;
-                case PERCENTAGE:
-                    percentages = percentages.add(amt);
-                    break;
-                case MULTIPLIER:
-                    cost = cost.mul(amt);
-                    break;
+                case ADDITION -> additions = additions.add(amt);
+                case PERCENTAGE -> percentages = percentages.add(amt);
+                case MULTIPLIER -> cost = cost.mul(amt);
                 }
             }
         }

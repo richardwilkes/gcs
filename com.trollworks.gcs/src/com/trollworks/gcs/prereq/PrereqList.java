@@ -164,27 +164,13 @@ public class PrereqList extends Prereq {
             for (int i = 0; i < count; i++) {
                 JsonMap m1 = a.getMap(i);
                 switch (m1.getString(DataFile.KEY_TYPE)) {
-                case TAG_ROOT:
-                    mPrereqs.add(new PrereqList(this, state.mDefWeightUnits, m1));
-                    break;
-                case AdvantagePrereq.TAG_ROOT:
-                    mPrereqs.add(new AdvantagePrereq(this, m1));
-                    break;
-                case AttributePrereq.TAG_ROOT:
-                    mPrereqs.add(new AttributePrereq(this, m1));
-                    break;
-                case ContainedWeightPrereq.TAG_ROOT:
-                    mPrereqs.add(new ContainedWeightPrereq(this, state.mDefWeightUnits, m1));
-                    break;
-                case ContainedQuantityPrereq.TAG_ROOT:
-                    mPrereqs.add(new ContainedQuantityPrereq(this, m1));
-                    break;
-                case SkillPrereq.TAG_ROOT:
-                    mPrereqs.add(new SkillPrereq(this, m1));
-                    break;
-                case SpellPrereq.TAG_ROOT:
-                    mPrereqs.add(new SpellPrereq(this, m1));
-                    break;
+                case TAG_ROOT -> mPrereqs.add(new PrereqList(this, state.mDefWeightUnits, m1));
+                case AdvantagePrereq.TAG_ROOT -> mPrereqs.add(new AdvantagePrereq(this, m1));
+                case AttributePrereq.TAG_ROOT -> mPrereqs.add(new AttributePrereq(this, m1));
+                case ContainedWeightPrereq.TAG_ROOT -> mPrereqs.add(new ContainedWeightPrereq(this, state.mDefWeightUnits, m1));
+                case ContainedQuantityPrereq.TAG_ROOT -> mPrereqs.add(new ContainedQuantityPrereq(this, m1));
+                case SkillPrereq.TAG_ROOT -> mPrereqs.add(new SkillPrereq(this, m1));
+                case SpellPrereq.TAG_ROOT -> mPrereqs.add(new SpellPrereq(this, m1));
                 }
             }
         }

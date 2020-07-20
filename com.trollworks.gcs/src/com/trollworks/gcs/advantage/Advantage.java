@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.modifier.AdvantageModifier;
+import com.trollworks.gcs.modifier.Affects;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -751,15 +752,10 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                     }
                     break;
                 case POINTS:
-                    switch (one.getAffects()) {
-                    case TOTAL:
-                    case BASE_ONLY:
-                    default:
-                        basePoints += modifier;
-                        break;
-                    case LEVELS_ONLY:
+                    if (one.getAffects() == Affects.LEVELS_ONLY) {
                         pointsPerLevel += modifier;
-                        break;
+                    } else {
+                        basePoints += modifier;
                     }
                     break;
                 case MULTIPLIER:

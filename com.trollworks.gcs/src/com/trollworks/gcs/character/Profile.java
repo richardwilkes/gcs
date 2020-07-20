@@ -768,91 +768,51 @@ public class Profile {
             return I18n.Text("Bald");
         }
 
-        String color;
-        switch (RANDOM.nextInt(9)) {
-        case 0:
-        case 1:
-        case 2:
-            color = I18n.Text("Black");
-            break;
-        case 3:
-        case 4:
-            color = I18n.Text("Blond");
-            break;
-        case 5:
-            color = I18n.Text("Redhead");
-            break;
-        default:
-            color = I18n.Text("Brown");
-            break;
-        }
+        String color = switch (RANDOM.nextInt(9)) {
+            case 0, 1, 2 -> I18n.Text("Black");
+            case 3, 4 -> I18n.Text("Blond");
+            case 5 -> I18n.Text("Redhead");
+            default -> I18n.Text("Brown");
+        };
 
-        String style;
-        switch (RANDOM.nextInt(3)) {
-        case 0:
-            style = I18n.Text("Curly");
-            break;
-        case 1:
-            style = I18n.Text("Wavy");
-            break;
-        default:
-            style = I18n.Text("Straight");
-            break;
-        }
+        String style = switch (RANDOM.nextInt(3)) {
+            case 0 -> I18n.Text("Curly");
+            case 1 -> I18n.Text("Wavy");
+            default -> I18n.Text("Straight");
+        };
 
-        String length;
-        switch (RANDOM.nextInt(3)) {
-        case 0:
-            length = I18n.Text("Short");
-            break;
-        case 1:
-            length = I18n.Text("Long");
-            break;
-        default:
-            length = I18n.Text("Medium");
-            break;
-        }
+        String length = switch (RANDOM.nextInt(3)) {
+            case 0 -> I18n.Text("Short");
+            case 1 -> I18n.Text("Long");
+            default -> I18n.Text("Medium");
+        };
 
         return MessageFormat.format("{0}, {1}, {2}", color, style, length);
     }
 
     /** @return A random eye color. */
     public static String getRandomEyeColor() {
-        switch (RANDOM.nextInt(8)) {
-        case 0:
-        case 1:
-            return I18n.Text("Blue");
-        case 2:
-            return I18n.Text("Green");
-        case 3:
-            return I18n.Text("Grey");
-        case 4:
-            return I18n.Text("Violet");
-        default:
-            return I18n.Text("Brown");
-        }
+        return switch (RANDOM.nextInt(8)) {
+            case 0, 1 -> I18n.Text("Blue");
+            case 2 -> I18n.Text("Green");
+            case 3 -> I18n.Text("Grey");
+            case 4 -> I18n.Text("Violet");
+            default -> I18n.Text("Brown");
+        };
     }
 
     /** @return A random sking color. */
     public static String getRandomSkinColor() {
-        switch (RANDOM.nextInt(8)) {
-        case 0:
-            return I18n.Text("Freckled");
-        case 1:
-            return I18n.Text("Light Tan");
-        case 2:
-            return I18n.Text("Dark Tan");
-        case 3:
-            return I18n.Text("Brown");
-        case 4:
-            return I18n.Text("Light Brown");
-        case 5:
-            return I18n.Text("Dark Brown");
-        case 6:
-            return I18n.Text("Pale");
-        default:
-            return I18n.Text("Tan");
-        }
+        return switch (RANDOM.nextInt(8)) {
+            case 0 -> I18n.Text("Freckled");
+            case 1 -> I18n.Text("Light Tan");
+            case 2 -> I18n.Text("Dark Tan");
+            case 3 -> I18n.Text("Brown");
+            case 4 -> I18n.Text("Light Brown");
+            case 5 -> I18n.Text("Dark Brown");
+            case 6 -> I18n.Text("Pale");
+            default -> I18n.Text("Tan");
+        };
     }
 
     /** @return A random handedness. */

@@ -641,23 +641,18 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
     private Rectangle getDragOverBounds() {
         Rectangle bounds = new Rectangle(mDragOverNode.getX(), mDragOverNode.getY(), mDragOverNode.getWidth(), mDragOverNode.getHeight());
         switch (mDragOverLocation) {
-        case NORTH:
-            bounds.height = Math.max(bounds.height / 2, 1);
-            break;
-        case SOUTH:
+        case NORTH -> bounds.height = Math.max(bounds.height / 2, 1);
+        case SOUTH -> {
             int halfHeight = Math.max(bounds.height / 2, 1);
             bounds.y += bounds.height - halfHeight;
             bounds.height = halfHeight;
-            break;
-        case EAST:
+        }
+        case EAST -> {
             int halfWidth = Math.max(bounds.width / 2, 1);
             bounds.x += bounds.width - halfWidth;
             bounds.width = halfWidth;
-            break;
-        case WEST:
-        default:
-            bounds.width = Math.max(bounds.width / 2, 1);
-            break;
+        }
+        default -> bounds.width = Math.max(bounds.width / 2, 1);
         }
         return bounds;
     }

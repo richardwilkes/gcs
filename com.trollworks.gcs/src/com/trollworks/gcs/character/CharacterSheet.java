@@ -390,53 +390,33 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
     }
 
     private static String getOutlineTitleForKey(String key) {
-        switch (key) {
-        case REACTIONS_KEY:
-            return I18n.Text("Reactions");
-        case MELEE_KEY:
-            return I18n.Text("Melee Weapons");
-        case RANGED_KEY:
-            return I18n.Text("Ranged Weapons");
-        case ADVANTAGES_KEY:
-            return I18n.Text("Advantages, Disadvantages & Quirks");
-        case SKILLS_KEY:
-            return I18n.Text("Skills");
-        case SPELLS_KEY:
-            return I18n.Text("Spells");
-        case EQUIPMENT_KEY:
-            return I18n.Text("Equipment");
-        case OTHER_EQUIPMENT_KEY:
-            return I18n.Text("Other Equipment");
-        case NOTES_KEY:
-            return I18n.Text("Notes");
-        default:
-            return "";
-        }
+        return switch (key) {
+            case REACTIONS_KEY -> I18n.Text("Reactions");
+            case MELEE_KEY -> I18n.Text("Melee Weapons");
+            case RANGED_KEY -> I18n.Text("Ranged Weapons");
+            case ADVANTAGES_KEY -> I18n.Text("Advantages, Disadvantages & Quirks");
+            case SKILLS_KEY -> I18n.Text("Skills");
+            case SPELLS_KEY -> I18n.Text("Spells");
+            case EQUIPMENT_KEY -> I18n.Text("Equipment");
+            case OTHER_EQUIPMENT_KEY -> I18n.Text("Other Equipment");
+            case NOTES_KEY -> I18n.Text("Notes");
+            default -> "";
+        };
     }
 
     private Outline getOutlineForKey(String key) {
-        switch (key) {
-        case REACTIONS_KEY:
-            return mReactionsOutline;
-        case MELEE_KEY:
-            return mMeleeWeaponOutline;
-        case RANGED_KEY:
-            return mRangedWeaponOutline;
-        case ADVANTAGES_KEY:
-            return mAdvantageOutline;
-        case SKILLS_KEY:
-            return mSkillOutline;
-        case SPELLS_KEY:
-            return mSpellOutline;
-        case EQUIPMENT_KEY:
-            return mEquipmentOutline;
-        case OTHER_EQUIPMENT_KEY:
-            return mOtherEquipmentOutline;
-        case NOTES_KEY:
-            return mNoteOutline;
-        default:
-            return null;
-        }
+        return switch (key) {
+            case REACTIONS_KEY -> mReactionsOutline;
+            case MELEE_KEY -> mMeleeWeaponOutline;
+            case RANGED_KEY -> mRangedWeaponOutline;
+            case ADVANTAGES_KEY -> mAdvantageOutline;
+            case SKILLS_KEY -> mSkillOutline;
+            case SPELLS_KEY -> mSpellOutline;
+            case EQUIPMENT_KEY -> mEquipmentOutline;
+            case OTHER_EQUIPMENT_KEY -> mOtherEquipmentOutline;
+            case NOTES_KEY -> mNoteOutline;
+            default -> null;
+        };
     }
 
     private boolean restoreFocusToKey(String key, Component panel) {

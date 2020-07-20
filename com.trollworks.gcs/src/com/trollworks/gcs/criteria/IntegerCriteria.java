@@ -98,14 +98,10 @@ public class IntegerCriteria extends NumericCriteria {
      * @return Whether the data matches this criteria.
      */
     public boolean matches(int data) {
-        switch (getType()) {
-        case IS:
-            return data == mQualifier;
-        case AT_LEAST:
-        default:
-            return data >= mQualifier;
-        case AT_MOST:
-            return data <= mQualifier;
-        }
+        return switch (getType()) {
+            case IS -> data == mQualifier;
+            case AT_MOST -> data <= mQualifier;
+            default -> data >= mQualifier;
+        };
     }
 }

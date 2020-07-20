@@ -67,15 +67,9 @@ public abstract class WeaponStats {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
             switch (type) {
-            case MeleeWeaponStats.TAG_ROOT:
-                list.add(new MeleeWeaponStats(row, m1));
-                break;
-            case RangedWeaponStats.TAG_ROOT:
-                list.add(new RangedWeaponStats(row, m1));
-                break;
-            default:
-                Log.warn("unknown weapon type: " + type);
-                break;
+            case MeleeWeaponStats.TAG_ROOT -> list.add(new MeleeWeaponStats(row, m1));
+            case RangedWeaponStats.TAG_ROOT -> list.add(new RangedWeaponStats(row, m1));
+            default -> Log.warn("unknown weapon type: " + type);
             }
         }
     }

@@ -24,7 +24,6 @@ public class NumberFilter implements KeyListener {
     private static final char       GROUP_CHAR;
     private static final char       DECIMAL_CHAR;
     private              JTextField mField;
-    private              boolean    mIsHeightFilter;
     private              boolean    mAllowDecimal;
     private              boolean    mAllowSign;
     private              boolean    mAllowGroup;
@@ -37,53 +36,7 @@ public class NumberFilter implements KeyListener {
     }
 
     /**
-     * Creates a new height key entry filter.
-     *
-     * @param field The {@link JTextField} to filter.
-     */
-    public NumberFilter(JTextField field) {
-        this(field, false, false, false, Integer.MAX_VALUE);
-        mIsHeightFilter = true;
-    }
-
-    /**
-     * Creates a new numeric key entry filter.
-     *
-     * @param field        The {@link JTextField} to filter.
-     * @param allowDecimal Pass in {@code true} to allow floating point.
-     * @param allowSign    Pass in {@code true} to allow sign characters.
-     */
-    public NumberFilter(JTextField field, boolean allowDecimal, boolean allowSign) {
-        this(field, allowDecimal, allowSign, true, Integer.MAX_VALUE);
-    }
-
-    /**
-     * Creates a new numeric key entry filter.
-     *
-     * @param field        The {@link JTextField} to filter.
-     * @param allowDecimal Pass in {@code true} to allow floating point.
-     * @param allowSign    Pass in {@code true} to allow sign characters.
-     * @param allowGroup   Pass in {@code true} to allow group characters.
-     */
-    public NumberFilter(JTextField field, boolean allowDecimal, boolean allowSign, boolean allowGroup) {
-        this(field, allowDecimal, allowSign, allowGroup, Integer.MAX_VALUE);
-    }
-
-    /**
-     * Creates a new numeric key entry filter.
-     *
-     * @param field        The {@link JTextField} to filter.
-     * @param allowDecimal Pass in {@code true} to allow floating point.
-     * @param allowSign    Pass in {@code true} to allow sign characters.
-     * @param maxDigits    The maximum number of digits (not necessarily characters) the field can
-     *                     have.
-     */
-    public NumberFilter(JTextField field, boolean allowDecimal, boolean allowSign, int maxDigits) {
-        this(field, allowDecimal, allowSign, true, maxDigits);
-    }
-
-    /**
-     * Creates a new numeric key entry filter.
+     * Applies a new numeric key entry filter to a field.
      *
      * @param field        The {@link JTextField} to filter.
      * @param allowDecimal Pass in {@code true} to allow floating point.
@@ -92,7 +45,11 @@ public class NumberFilter implements KeyListener {
      * @param maxDigits    The maximum number of digits (not necessarily characters) the field can
      *                     have.
      */
-    public NumberFilter(JTextField field, boolean allowDecimal, boolean allowSign, boolean allowGroup, int maxDigits) {
+    public static void apply(JTextField field, boolean allowDecimal, boolean allowSign, boolean allowGroup, int maxDigits) {
+        field.addKeyListener(new NumberFilter(field, allowDecimal, allowSign, allowGroup, maxDigits));
+    }
+
+    private NumberFilter(JTextField field, boolean allowDecimal, boolean allowSign, boolean allowGroup, int maxDigits) {
         mField = field;
         mAllowDecimal = allowDecimal;
         mAllowSign = allowSign;
@@ -121,7 +78,7 @@ public class NumberFilter implements KeyListener {
         if (!event.isConsumed() && (event.getModifiersEx() & mField.getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
             char ch = event.getKeyChar();
             if (ch != '\n' && ch != '\r' && ch != '\t' && ch != '\b' && ch != KeyEvent.VK_DELETE) {
-                if (mAllowGroup && ch == GROUP_CHAR || ch >= '0' && ch <= '9' || mAllowSign && (ch == '-' || ch == '+') || mAllowDecimal && ch == DECIMAL_CHAR || mIsHeightFilter && (ch == '\'' || ch == '"' || ch == ' ')) {
+                if (mAllowGroup && ch == GROUP_CHAR || ch >= '0' && ch <= '9' || mAllowSign && (ch == '-' || ch == '+') || mAllowDecimal && ch == DECIMAL_CHAR) {
                     StringBuilder buffer = new StringBuilder(mField.getText());
                     int           start  = mField.getSelectionStart();
                     int           end    = mField.getSelectionEnd();
@@ -150,18 +107,8 @@ public class NumberFilter implements KeyListener {
                         if (start != 0) {
                             filter(event);
                         }
-                    } else if (ch == DECIMAL_CHAR) {
-                        if (buffer.indexOf("" + DECIMAL_CHAR) != -1 || mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
-                            filter(event);
-                        }
-                    } else if (ch == '\'') {
-                        if (buffer.indexOf("'") != -1) {
-                            filter(event);
-                        }
-                    } else if (ch == '"') {
-                        if (buffer.indexOf("\"") != -1) {
-                            filter(event);
-                        }
+                    } else if (buffer.indexOf("" + DECIMAL_CHAR) != -1 || mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
+                        filter(event);
                     }
                 } else {
                     filter(event);

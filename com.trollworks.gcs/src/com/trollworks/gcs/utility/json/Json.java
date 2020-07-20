@@ -590,21 +590,19 @@ public class Json {
             }
             c = nextSkippingWhitespace();
             switch (c) {
-            case ';':
-            case ',':
+            case ';', ',' -> {
                 if (nextSkippingWhitespace() == ']') {
                     return array;
                 }
                 back();
-                break;
-            case ']':
-            case ')':
+            }
+            case ']', ')' -> {
                 if (q != c) {
                     throw syntaxError("expected a '" + Character.toString(q) + "'");
                 }
                 return array;
-            default:
-                throw syntaxError("expected a ',' or ']'");
+            }
+            default -> throw syntaxError("expected a ',' or ']'");
             }
         }
     }
@@ -664,46 +662,26 @@ public class Json {
         while (true) {
             c = next();
             switch (c) {
-            case 0:
-            case '\n':
-            case '\r':
-                throw syntaxError("unterminated string");
-            case '\\':
+            case 0, '\n', '\r' -> throw syntaxError("unterminated string");
+            case '\\' -> {
                 c = next();
                 switch (c) {
-                case 'b':
-                    buffer.append('\b');
-                    break;
-                case 't':
-                    buffer.append('\t');
-                    break;
-                case 'n':
-                    buffer.append('\n');
-                    break;
-                case 'f':
-                    buffer.append('\f');
-                    break;
-                case 'r':
-                    buffer.append('\r');
-                    break;
-                case 'u':
-                    buffer.append((char) Integer.parseInt(next(4), 16));
-                    break;
-                case '"':
-                case '\'':
-                case '\\':
-                case '/':
-                    buffer.append(c);
-                    break;
-                default:
-                    throw syntaxError("illegal escape");
+                case 'b' -> buffer.append('\b');
+                case 't' -> buffer.append('\t');
+                case 'n' -> buffer.append('\n');
+                case 'f' -> buffer.append('\f');
+                case 'r' -> buffer.append('\r');
+                case 'u' -> buffer.append((char) Integer.parseInt(next(4), 16));
+                case '"', '\'', '\\', '/' -> buffer.append(c);
+                default -> throw syntaxError("illegal escape");
                 }
-                break;
-            default:
+            }
+            default -> {
                 if (c == quote) {
                     return buffer.toString();
                 }
                 buffer.append(c);
+            }
             }
         }
     }

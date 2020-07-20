@@ -142,65 +142,63 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
                 int xc = xl + 1;
                 int xr = xl + 2;
                 switch (sortSequence + 1) {
-                case 1:
-                    gc.drawLine(xc, yt, xc, yb);
-                    break;
-                case 2:
+                case 1 -> gc.drawLine(xc, yt, xc, yb);
+                case 2 -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xr, yt, xr, yc);
                     gc.drawLine(xl, yc, xr, yc);
                     gc.drawLine(xl, yc, xl, yb);
                     gc.drawLine(xl, yb, xr, yb);
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xr, yt, xr, yb);
                     gc.drawLine(xc, yc, xr, yc);
                     gc.drawLine(xl, yb, xr, yb);
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     gc.drawLine(xl, yt, xl, yc);
                     gc.drawLine(xl, yc, xr, yc);
                     gc.drawLine(xr, yt, xr, yb);
-                    break;
-                case 5:
+                }
+                case 5 -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xl, yt, xl, yc);
                     gc.drawLine(xl, yc, xr, yc);
                     gc.drawLine(xr, yc, xr, yb);
                     gc.drawLine(xl, yb, xr, yb);
-                    break;
-                case 6:
+                }
+                case 6 -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xl, yt, xl, yb);
                     gc.drawLine(xl, yc, xr, yc);
                     gc.drawLine(xr, yc, xr, yb);
                     gc.drawLine(xl, yb, xr, yb);
-                    break;
-                case 7:
+                }
+                case 7 -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xr, yt, xr, yb);
-                    break;
-                case 8:
+                }
+                case 8 -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xl, yt, xl, yb);
                     gc.drawLine(xl, yc, xr, yc);
                     gc.drawLine(xl, yb, xr, yb);
                     gc.drawLine(xr, yt, xr, yb);
-                    break;
-                case 9:
+                }
+                case 9 -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xl, yt, xl, yc);
                     gc.drawLine(xl, yc, xr, yc);
                     gc.drawLine(xr, yt, xr, yb);
                     gc.drawLine(xl, yb, xr, yb);
-                    break;
-                default:
+                }
+                default -> {
                     gc.drawLine(xl, yt, xr, yt);
                     gc.drawLine(xr, yt, xr, yc);
                     gc.drawLine(xc, yc, xr, yc);
                     gc.drawLine(xc, yb, xc, yb);
-                    break;
+                }
                 }
             }
             boolean ascending = treeSorter.isSortAscending(this);

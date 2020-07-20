@@ -116,14 +116,11 @@ public class XMLReader implements AutoCloseable {
 
     /** @return A marker for determining if you've come to the end of a specific tag. */
     public String getMarker() {
-        switch (mType) {
-        case START_TAG:
-            return getDepth() - 1 + ":" + getName();
-        case END_TAG:
-            return getDepth() + ":" + getName();
-        default:
-            return getDepth() + ":" + mStack.get(mStack.size() - 1);
-        }
+        return switch (mType) {
+            case START_TAG -> getDepth() - 1 + ":" + getName();
+            case END_TAG -> getDepth() + ":" + getName();
+            default -> getDepth() + ":" + mStack.get(mStack.size() - 1);
+        };
     }
 
     /**
@@ -426,26 +423,17 @@ public class XMLReader implements AutoCloseable {
     }
 
     private XMLNodeType peekType() {
-        switch (mPeek0) {
-        case -1:
-            return XMLNodeType.END_DOCUMENT;
-        case '&':
-            return XMLNodeType.ENTITY_REF;
-        case '<':
-            switch (mPeek1) {
-            case '/':
-                return XMLNodeType.END_TAG;
-            case '[':
-                return XMLNodeType.DATA;
-            case '?':
-            case '!':
-                return XMLNodeType.OTHER;
-            default:
-                return XMLNodeType.START_TAG;
-            }
-        default:
-            return XMLNodeType.TEXT;
-        }
+        return switch (mPeek0) {
+            case -1 -> XMLNodeType.END_DOCUMENT;
+            case '&' -> XMLNodeType.ENTITY_REF;
+            case '<' -> switch (mPeek1) {
+                case '/' -> XMLNodeType.END_TAG;
+                case '[' -> XMLNodeType.DATA;
+                case '?', '!' -> XMLNodeType.OTHER;
+                default -> XMLNodeType.START_TAG;
+            };
+            default -> XMLNodeType.TEXT;
+        };
     }
 
     private void parseStartTag() throws IOException {

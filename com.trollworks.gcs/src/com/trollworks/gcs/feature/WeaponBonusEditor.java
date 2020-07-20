@@ -54,16 +54,9 @@ public class WeaponBonusEditor extends FeatureEditor {
         row.add(addComboBox(SELECTION_TYPE, WeaponSelectionType.values(), bonus.getWeaponSelectionType()));
         grid.add(row, 1, 0);
         switch (bonus.getWeaponSelectionType()) {
-        case THIS_WEAPON:
-        default:
-            row.add(new FlexSpacer(0, 0, true, false));
-            break;
-        case WEAPONS_WITH_NAME:
-            rebuildWeaponsWithName(grid, row);
-            break;
-        case WEAPONS_WITH_REQUIRED_SKILL:
-            rebuildWeaponsWithRequiredSkill(grid, row);
-            break;
+        case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
+        case WEAPONS_WITH_REQUIRED_SKILL -> rebuildWeaponsWithRequiredSkill(grid, row);
+        default -> row.add(new FlexSpacer(0, 0, true, false));
         }
     }
 
