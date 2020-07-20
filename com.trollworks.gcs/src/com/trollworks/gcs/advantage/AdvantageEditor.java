@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -244,8 +245,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             panel = embedEditor(mFeatures);
             mTabPanel.addTab(panel.getName(), panel);
             mTabPanel.addTab(mModifiers.getName(), mModifiers);
-            mTabPanel.addTab(mMeleeWeapons.getName(), mMeleeWeapons);
-            mTabPanel.addTab(mRangedWeapons.getName(), mRangedWeapons);
+            mTabPanel.addTab(mMeleeWeapons.getName(), wrapInScroller(mMeleeWeapons));
+            mTabPanel.addTab(mRangedWeapons.getName(), wrapInScroller(mRangedWeapons));
 
             if (!mIsEditable) {
                 UIUtilities.disableControls(mMeleeWeapons);
@@ -270,10 +271,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         add(mTabPanel, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
     }
 
-    private JPanel createUserDescEditor() {
-        JPanel content = new JPanel(new PrecisionLayout().setColumns(2));
-        content.add(new JLabel(Images.NOT_MARKER), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+    private JScrollPane wrapInScroller(JComponent comp) {
+        JScrollPane scroller = new JScrollPane(comp);
+        // Unclear why this next line is needed. Failure to include it, however, results in the
+        // scroller being sized larger than the space available.
+        scroller.setPreferredSize(new Dimension(10, 10));
+        return scroller;
+    }
 
+    private JScrollPane createUserDescEditor() {
         JTextArea editor = new JTextArea(mUserDesc);
         editor.setLineWrap(true);
         editor.setWrapStyleWord(true);
@@ -294,9 +300,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 mUserDesc = editor.getText();
             }
         });
-        JScrollPane scroller = new JScrollPane(editor);
-        content.add(scroller, new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
-        return content;
+        return wrapInScroller(editor);
     }
 
     private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
