@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
@@ -117,7 +118,12 @@ public enum AdvantageModifierColumnID {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)");
+            return PageRefCell.getStdToolTip(I18n.Text("advantage modifier"));
+        }
+
+        @Override
+        public String getToolTip(AdvantageModifier modifier) {
+            return PageRefCell.getStdCellToolTip(modifier.getReference());
         }
 
         @Override
@@ -125,7 +131,7 @@ public enum AdvantageModifierColumnID {
             if (forEditor) {
                 return new TextCell(SwingConstants.RIGHT, false);
             }
-            return new ListTextCell(SwingConstants.RIGHT, false);
+            return new PageRefCell();
         }
 
         @Override
@@ -150,6 +156,15 @@ public enum AdvantageModifierColumnID {
 
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
+
+    /**
+     * @param modifier The {@link AdvantageModifier} to get the data from.
+     * @return The tooltip for a specific row within the column.
+     */
+    @SuppressWarnings("static-method")
+    public String getToolTip(AdvantageModifier modifier) {
+        return null;
+    }
 
     /**
      * @param forEditor Whether this is for an editor or not.

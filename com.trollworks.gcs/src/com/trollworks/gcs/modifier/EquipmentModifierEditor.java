@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -69,7 +70,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         if (modifier.canHaveChildren()) {
             mNameField = createCorrectableField(fields, fields, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of container"));
             mNotesField = createField(fields, fields, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
-            mReferenceField = createField(fields, fields, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
+            mReferenceField = createField(fields, fields, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("equipment modifier")), 6);
         } else {
             JPanel wrapper = new JPanel(new ColumnLayout(4));
             mNameField = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
@@ -85,7 +86,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
             wrapper = new JPanel(new ColumnLayout(3));
             mNotesField = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
-            mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), I18n.Text("A reference to the book and page this modifier appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
+            mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("equipment modifier")), 6);
             fields.add(wrapper);
         }
 

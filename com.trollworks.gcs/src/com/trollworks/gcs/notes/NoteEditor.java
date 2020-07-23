@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.notes;
 
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -49,7 +50,7 @@ public class NoteEditor extends RowEditor<Note> {
         add(new LinkedLabel(I18n.Text("Page Reference"), mReferenceField));
         mReferenceField = new JTextField(Text.makeFiller(6, 'M'));
         mReferenceField.setText(note.getReference());
-        mReferenceField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("A reference to the book and page this note applies to (e.g. B22 would refer to \"Basic Set\", page 22)")));
+        mReferenceField.setToolTipText(Text.wrapPlainTextForToolTip(PageRefCell.getStdToolTip(I18n.Text("note"))));
         mReferenceField.setEnabled(mIsEditable);
         add(mReferenceField, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
     }

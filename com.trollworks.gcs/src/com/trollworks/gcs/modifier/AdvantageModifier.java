@@ -405,4 +405,9 @@ public class AdvantageModifier extends Modifier {
     protected String getCategoryID() {
         return ID_CATEGORY;
     }
+
+    @Override
+    public String getToolTip(Column column) {
+        return AdvantageModifierColumnID.values()[column.getID()].getToolTip(this);
+    }
 }

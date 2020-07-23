@@ -388,4 +388,9 @@ public class EquipmentModifier extends Modifier {
         }
         return false;
     }
+
+    @Override
+    public String getToolTip(Column column) {
+        return EquipmentModifierColumnID.values()[column.getID()].getToolTip(this);
+    }
 }

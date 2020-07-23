@@ -14,6 +14,7 @@ package com.trollworks.gcs.advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
@@ -249,12 +250,17 @@ public enum AdvantageColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("A reference to the book and page this advantage appears on (e.g. B22 would refer to \"Basic Set\", page 22)");
+            return PageRefCell.getStdToolTip(I18n.Text("advantage"));
+        }
+
+        @Override
+        public String getToolTip(Advantage advantage) {
+            return PageRefCell.getStdCellToolTip(advantage.getReference());
         }
 
         @Override
         public Cell getCell() {
-            return new ListTextCell(SwingConstants.RIGHT, false);
+            return new PageRefCell();
         }
 
         @Override

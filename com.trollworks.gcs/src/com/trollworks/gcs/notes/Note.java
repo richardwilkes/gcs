@@ -272,4 +272,9 @@ public class Note extends ListRow implements HasSourceReference {
         }
         return false;
     }
+
+    @Override
+    public String getToolTip(Column column) {
+        return NoteColumn.values()[column.getID()].getToolTip(this);
+    }
 }

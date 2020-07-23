@@ -14,6 +14,7 @@ package com.trollworks.gcs.spell;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.SkillPointsTextCell;
 import com.trollworks.gcs.template.Template;
@@ -434,12 +435,17 @@ public enum SpellColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)");
+            return PageRefCell.getStdToolTip(I18n.Text("spell"));
+        }
+
+        @Override
+        public String getToolTip(Spell spell) {
+            return PageRefCell.getStdCellToolTip(spell.getReference());
         }
 
         @Override
         public Cell getCell() {
-            return new ListTextCell(SwingConstants.RIGHT, false);
+            return new PageRefCell();
         }
 
         @Override

@@ -13,6 +13,7 @@ package com.trollworks.gcs.notes;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -69,12 +70,17 @@ public enum NoteColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("A reference to the book and page this note applies to (e.g. B22 would refer to \"Basic Set\", page 22)");
+            return PageRefCell.getStdToolTip(I18n.Text("note"));
+        }
+
+        @Override
+        public String getToolTip(Note note) {
+            return PageRefCell.getStdCellToolTip(note.getReference());
         }
 
         @Override
         public Cell getCell() {
-            return new ListTextCell(SwingConstants.RIGHT, false);
+            return new PageRefCell();
         }
 
         @Override
@@ -111,6 +117,15 @@ public enum NoteColumn {
 
     /** @return The tooltip for the column. */
     public abstract String getToolTip();
+
+    /**
+     * @param note The {@link Note} to get the data from.
+     * @return The tooltip for a specific row within the column.
+     */
+    @SuppressWarnings("static-method")
+    public String getToolTip(Note note) {
+        return null;
+    }
 
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();

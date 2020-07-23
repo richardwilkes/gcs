@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.spell;
 
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
@@ -84,7 +85,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
 
         mNotesField = createField(wrapper3, wrapper3, I18n.Text("Notes"), spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
         mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), spell.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
-        mReferenceField = createField(ptsPanel, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), I18n.Text("A reference to the book and page this spell appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), 6);
+        mReferenceField = createField(ptsPanel, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("spell")), 6);
         noGapWrapper.add(new JPanel());
         ptsPanel.add(noGapWrapper);
         fields.add(wrapper3);
