@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row {
@@ -55,12 +56,14 @@ public abstract class ListRow extends Row {
     private static final String             TAG_NOTES      = "notes";
     private static final String             TAG_CATEGORIES = "categories";
     private static final String             TAG_CATEGORY   = "category";
+    private static final String             KEY_ID         = "id";
     private static final String             KEY_FEATURES   = "features";
     private static final String             KEY_DEFAULTS   = "defaults";
     private static final String             KEY_CHILDREN   = "children";
     private static final String             KEY_PREREQS    = "prereqs";
     /** The data file the row is associated with. */
     protected            DataFile           mDataFile;
+    private              UUID               mID;
     private              List<Feature>      mFeatures;
     private              PrereqList         mPrereqList;
     private              List<SkillDefault> mDefaults;
@@ -151,6 +154,7 @@ public abstract class ListRow extends Row {
         setCanHaveChildren(isContainer);
         setOpen(isContainer);
         mDataFile = dataFile;
+        mID = UUID.randomUUID();
         mFeatures = new ArrayList<>();
         mPrereqList = new PrereqList(null, true);
         mDefaults = new ArrayList<>();
@@ -169,7 +173,6 @@ public abstract class ListRow extends Row {
         this(dataFile, rowToClone.canHaveChildren());
         setOpen(rowToClone.isOpen());
         mNotes = rowToClone.mNotes;
-
         for (Feature feature : rowToClone.mFeatures) {
             mFeatures.add(feature.cloneFeature());
         }
@@ -275,6 +278,13 @@ public abstract class ListRow extends Row {
      * @param state The {@link LoadState} to use.
      */
     public final void load(JsonMap m, LoadState state) throws IOException {
+        if (m.has(KEY_ID)) {
+            try {
+                mID = UUID.fromString(m.getString(KEY_ID));
+            } catch (Exception exception) {
+                mID = UUID.randomUUID();
+            }
+        }
         state.mDataItemVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
         if (state.mDataItemVersion > getJSONVersion()) {
             throw VersionException.createTooNew();
@@ -457,6 +467,7 @@ public abstract class ListRow extends Row {
         w.startMap();
         w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
         w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
+        w.keyValue(KEY_ID, mID.toString());
         saveSelf(w, forUndo);
         if (!mPrereqList.isEmpty()) {
             w.key(KEY_PREREQS);
