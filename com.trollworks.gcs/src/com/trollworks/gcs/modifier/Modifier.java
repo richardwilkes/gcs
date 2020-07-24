@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLReader;
@@ -90,7 +91,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     }
 
     @Override
-    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+    protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.keyValueNot(KEY_DISABLED, !mEnabled, false);
         w.keyValue(TAG_NAME, mName);
         w.keyValueNot(TAG_REFERENCE, mReference, "");

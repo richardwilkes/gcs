@@ -14,6 +14,7 @@ package com.trollworks.gcs.datafile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -26,8 +27,8 @@ import java.util.TreeSet;
 
 /** A list of rows. */
 public abstract class ListFile extends DataFile {
-    private static final String KEY_ROWS = "rows";
-    private OutlineModel mModel = new OutlineModel();
+    private static final String       KEY_ROWS = "rows";
+    private              OutlineModel mModel   = new OutlineModel();
 
     public ListFile() {
         setSortingMarksDirty(false);
@@ -42,7 +43,7 @@ public abstract class ListFile extends DataFile {
      * Called to load the individual rows.
      *
      * @param a     The {@link JsonArray} to load data from.
-     * @param state  The {@link LoadState} to use.
+     * @param state The {@link LoadState} to use.
      */
     protected abstract void loadList(JsonArray a, LoadState state) throws IOException;
 
@@ -60,13 +61,13 @@ public abstract class ListFile extends DataFile {
     protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
 
     @Override
-    protected final void saveSelf(JsonWriter w) throws IOException {
+    protected final void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         List<Row> rows = getTopLevelRows();
         if (!rows.isEmpty()) {
             w.key(KEY_ROWS);
             w.startArray();
             for (Row one : rows) {
-                ((ListRow) one).save(w, false);
+                ((ListRow) one).save(w, saveType);
             }
             w.endArray();
         }

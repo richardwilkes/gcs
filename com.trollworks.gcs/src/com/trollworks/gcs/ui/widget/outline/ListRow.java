@@ -32,6 +32,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -39,9 +40,14 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.xml.XMLNodeType;
 import com.trollworks.gcs.utility.xml.XMLReader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -52,18 +58,22 @@ import java.util.UUID;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row {
-    private static final String             ATTRIBUTE_OPEN = "open";
-    private static final String             TAG_NOTES      = "notes";
-    private static final String             TAG_CATEGORIES = "categories";
-    private static final String             TAG_CATEGORY   = "category";
-    private static final String             KEY_ID         = "id";
-    private static final String             KEY_FEATURES   = "features";
-    private static final String             KEY_DEFAULTS   = "defaults";
-    private static final String             KEY_CHILDREN   = "children";
-    private static final String             KEY_PREREQS    = "prereqs";
+    private static final String             ATTRIBUTE_OPEN    = "open";
+    private static final String             TAG_NOTES         = "notes";
+    private static final String             TAG_CATEGORIES    = "categories";
+    private static final String             TAG_CATEGORY      = "category";
+    private static final String             KEY_ID            = "id";
+    private static final String             KEY_BASED_ON_ID   = "based_on_id";
+    private static final String             KEY_BASED_ON_HASH = "based_on_hash";
+    private static final String             KEY_FEATURES      = "features";
+    private static final String             KEY_DEFAULTS      = "defaults";
+    private static final String             KEY_CHILDREN      = "children";
+    private static final String             KEY_PREREQS       = "prereqs";
     /** The data file the row is associated with. */
     protected            DataFile           mDataFile;
     private              UUID               mID;
+    private              UUID               mBasedOnID;
+    private              String             mBasedOnHash;
     private              List<Feature>      mFeatures;
     private              PrereqList         mPrereqList;
     private              List<SkillDefault> mDefaults;
@@ -72,13 +82,13 @@ public abstract class ListRow extends Row {
     private              String             mNotes;
     private              TreeSet<String>    mCategories;
 
-    public static void saveList(JsonWriter w, String key, List<?> list, boolean forUndo) throws IOException {
+    public static void saveList(JsonWriter w, String key, List<?> list, SaveType saveType) throws IOException {
         FilteredList<ListRow> rows = new FilteredList<>(list, ListRow.class, true);
         if (!rows.isEmpty()) {
             w.key(key);
             w.startArray();
             for (ListRow row : rows) {
-                row.save(w, forUndo);
+                row.save(w, saveType);
             }
             w.endArray();
         }
@@ -182,6 +192,20 @@ public abstract class ListRow extends Row {
             mDefaults.add(new SkillDefault(skillDefault));
         }
         mCategories = new TreeSet<>(rowToClone.mCategories);
+        try {
+            MessageDigest         digest = MessageDigest.getInstance("SHA3-256");
+            StringBuilder         buffer = new StringBuilder();
+            ByteArrayOutputStream baos   = new ByteArrayOutputStream();
+            try (JsonWriter w = new JsonWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8), "")) {
+                rowToClone.save(w, SaveType.HASH);
+            }
+            mBasedOnHash = Base64.getEncoder().withoutPadding().encodeToString(digest.digest(baos.toByteArray()));
+            mBasedOnID = rowToClone.mID;
+        } catch (Exception exception) {
+            mBasedOnID = null;
+            mBasedOnHash = null;
+            Log.warn(exception);
+        }
     }
 
     /**
@@ -283,6 +307,15 @@ public abstract class ListRow extends Row {
                 mID = UUID.fromString(m.getString(KEY_ID));
             } catch (Exception exception) {
                 mID = UUID.randomUUID();
+            }
+        }
+        if (m.has(KEY_BASED_ON_ID)) {
+            try {
+                mBasedOnID = UUID.fromString(m.getString(KEY_BASED_ON_ID));
+                mBasedOnHash = m.getString(KEY_BASED_ON_HASH);
+            } catch (Exception exception) {
+                mBasedOnID = null;
+                mBasedOnHash = null;
             }
         }
         state.mDataItemVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
@@ -460,15 +493,19 @@ public abstract class ListRow extends Row {
     /**
      * Saves the row.
      *
-     * @param w       The {@link JsonWriter} to use.
-     * @param forUndo Whether this is being called to save undo state.
+     * @param w        The {@link JsonWriter} to use.
+     * @param saveType The type of save being performed.
      */
-    public void save(JsonWriter w, boolean forUndo) throws IOException {
+    public void save(JsonWriter w, SaveType saveType) throws IOException {
         w.startMap();
         w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
         w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
         w.keyValue(KEY_ID, mID.toString());
-        saveSelf(w, forUndo);
+        if (mBasedOnID != null) {
+            w.keyValue(KEY_BASED_ON_ID, mBasedOnID.toString());
+            w.keyValue(KEY_BASED_ON_HASH, mBasedOnHash);
+        }
+        saveSelf(w, saveType);
         if (!mPrereqList.isEmpty()) {
             w.key(KEY_PREREQS);
             mPrereqList.save(w);
@@ -499,9 +536,11 @@ public abstract class ListRow extends Row {
             w.endArray();
         }
         if (canHaveChildren()) {
-            w.keyValue(ATTRIBUTE_OPEN, isOpen());
-            if (!forUndo) {
-                saveList(w, KEY_CHILDREN, getChildren(), false);
+            if (saveType != SaveType.HASH) {
+                w.keyValue(ATTRIBUTE_OPEN, isOpen());
+            }
+            if (saveType != SaveType.UNDO) {
+                saveList(w, KEY_CHILDREN, getChildren(), saveType);
             }
         }
         w.endMap();
@@ -510,10 +549,10 @@ public abstract class ListRow extends Row {
     /**
      * Saves the row.
      *
-     * @param w       The {@link JsonWriter} to use.
-     * @param forUndo Whether this is being called to save undo state.
+     * @param w        The {@link JsonWriter} to use.
+     * @param saveType The type of save being performed.
      */
-    protected abstract void saveSelf(JsonWriter w, boolean forUndo) throws IOException;
+    protected abstract void saveSelf(JsonWriter w, SaveType saveType) throws IOException;
 
     /**
      * Starts the notification process. Should be called before calling {@link #notify(String,

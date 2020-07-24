@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
@@ -40,7 +41,7 @@ public class AdvantageModifier extends Modifier {
     public static final  String                    TAG_COST               = "cost";
     /** The attribute for the cost type. */
     public static final  String                    ATTRIBUTE_COST_TYPE    = "type";
-    private static final  String                    KEY_COST_TYPE    = "cost_type";
+    private static final String                    KEY_COST_TYPE          = "cost_type";
     /** The tag for the cost per level. */
     public static final  String                    TAG_LEVELS             = "levels";
     /** The tag for how the cost is affected. */
@@ -314,8 +315,8 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
-    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
-        super.saveSelf(w, forUndo);
+    protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
+        super.saveSelf(w, saveType);
         if (!canHaveChildren()) {
             w.keyValue(KEY_COST_TYPE, Enums.toId(mCostType));
             if (mCostType == AdvantageModifierCostType.MULTIPLIER) {

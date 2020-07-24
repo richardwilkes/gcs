@@ -35,6 +35,7 @@ import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -388,7 +389,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     @Override
-    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+    protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         if (mDataFile instanceof GURPSCharacter) {
             w.keyValue(ATTRIBUTE_EQUIPPED, mEquipped);
         }
@@ -408,7 +409,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         w.keyValueNot(TAG_USES, mUses, 0);
         w.keyValueNot(TAG_MAX_USES, mMaxUses, 0);
         WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
-        saveList(w, KEY_MODIFIERS, mModifiers, false);
+        saveList(w, KEY_MODIFIERS, mModifiers, saveType);
     }
 
     @Override

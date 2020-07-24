@@ -55,6 +55,7 @@ import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -662,7 +663,7 @@ public class GURPSCharacter extends DataFile {
     }
 
     @Override
-    protected void saveSelf(JsonWriter w) throws IOException {
+    protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.key(Settings.TAG_ROOT);
         mSettings.save(w);
         w.keyValue(TAG_CREATED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mCreatedOn)));
@@ -682,13 +683,13 @@ public class GURPSCharacter extends DataFile {
         w.keyValueNot(KEY_PER_ADJ, mPerAdj, 0);
         w.keyValueNot(KEY_SPEED_ADJ, mSpeedAdj, 0);
         w.keyValueNot(KEY_MOVE_ADJ, mMoveAdj, 0);
-        ListRow.saveList(w, KEY_ADVANTAGES, mAdvantages.getTopLevelRows(), false);
-        ListRow.saveList(w, KEY_SKILLS, mSkills.getTopLevelRows(), false);
-        ListRow.saveList(w, KEY_SPELLS, mSpells.getTopLevelRows(), false);
-        ListRow.saveList(w, KEY_EQUIPMENT, mEquipment.getTopLevelRows(), false);
-        ListRow.saveList(w, KEY_OTHER_EQUIPMENT, mOtherEquipment.getTopLevelRows(), false);
-        ListRow.saveList(w, KEY_NOTES, mNotes.getTopLevelRows(), false);
-        if (mPageSettings != null) {
+        ListRow.saveList(w, KEY_ADVANTAGES, mAdvantages.getTopLevelRows(), saveType);
+        ListRow.saveList(w, KEY_SKILLS, mSkills.getTopLevelRows(), saveType);
+        ListRow.saveList(w, KEY_SPELLS, mSpells.getTopLevelRows(), saveType);
+        ListRow.saveList(w, KEY_EQUIPMENT, mEquipment.getTopLevelRows(), saveType);
+        ListRow.saveList(w, KEY_OTHER_EQUIPMENT, mOtherEquipment.getTopLevelRows(), saveType);
+        ListRow.saveList(w, KEY_NOTES, mNotes.getTopLevelRows(), saveType);
+        if (saveType != SaveType.HASH && mPageSettings != null) {
             w.key(PrintManager.TAG_ROOT);
             mPageSettings.save(w, LengthUnits.IN);
             mPageSettingsString = mPageSettings.toString();

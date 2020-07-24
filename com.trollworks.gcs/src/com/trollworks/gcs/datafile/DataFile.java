@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SafeFileUpdater;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -161,7 +162,7 @@ public abstract class DataFile implements Undoable {
         try {
             File transactionFile = transaction.getTransactionFile(path.toFile());
             try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(transactionFile, StandardCharsets.UTF_8)), "\t")) {
-                save(w, true, false);
+                save(w, SaveType.NORMAL, false);
             }
             transaction.commit();
             setModified(false);
@@ -176,19 +177,17 @@ public abstract class DataFile implements Undoable {
     /**
      * Writes the data to the specified {@link JsonWriter}.
      *
-     * @param w               The {@link JsonWriter} to use.
-     * @param includeUniqueID Whether the unique should be included in the attribute list.
-     * @param onlyIfNotEmpty  Whether to write something even if the file contents are empty.
+     * @param w              The {@link JsonWriter} to use.
+     * @param saveType       The type of save being performed.
+     * @param onlyIfNotEmpty Whether to write something even if the file contents are empty.
      */
-    public void save(JsonWriter w, boolean includeUniqueID, boolean onlyIfNotEmpty) throws IOException {
+    public void save(JsonWriter w, SaveType saveType, boolean onlyIfNotEmpty) throws IOException {
         if (!onlyIfNotEmpty || !isEmpty()) {
             w.startMap();
             w.keyValue(KEY_TYPE, getJSONTypeName());
             w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
-            if (includeUniqueID) {
-                w.keyValue(ATTRIBUTE_ID, mId.toString());
-            }
-            saveSelf(w);
+            w.keyValue(ATTRIBUTE_ID, mId.toString());
+            saveSelf(w, saveType);
             w.endMap();
         }
     }
@@ -196,9 +195,10 @@ public abstract class DataFile implements Undoable {
     /**
      * Called to save the data file.
      *
-     * @param w The {@link JsonWriter} to use.
+     * @param w        The {@link JsonWriter} to use.
+     * @param saveType The type of save being performed.
      */
-    protected abstract void saveSelf(JsonWriter w) throws IOException;
+    protected abstract void saveSelf(JsonWriter w, SaveType saveType) throws IOException;
 
     /** @return Whether the file is empty. By default, returns {@code false}. */
     @SuppressWarnings("static-method")

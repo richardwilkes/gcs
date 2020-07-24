@@ -21,6 +21,7 @@ import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.awt.Color;
@@ -117,7 +118,7 @@ public class ExportToGURPSCalculatorCommand extends Command {
                             }
                             try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                                 try (JsonWriter w = new JsonWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), "\t")) {
-                                    character.save(w, true, false);
+                                    character.save(w, SaveType.NORMAL, false);
                                 }
                                 path = String.format("api/SaveCharacterRawFileGCS/%s/%s", id, key);
                                 result = post(path, out.toByteArray());

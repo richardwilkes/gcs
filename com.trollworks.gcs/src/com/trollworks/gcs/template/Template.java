@@ -33,6 +33,7 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Text;
@@ -254,13 +255,13 @@ public class Template extends DataFile {
     }
 
     @Override
-    protected void saveSelf(JsonWriter w) throws IOException {
-        ListRow.saveList(w, GURPSCharacter.KEY_ADVANTAGES, mAdvantages.getTopLevelRows(), false);
-        ListRow.saveList(w, GURPSCharacter.KEY_SKILLS, mSkills.getTopLevelRows(), false);
-        ListRow.saveList(w, GURPSCharacter.KEY_SPELLS, mSpells.getTopLevelRows(), false);
-        ListRow.saveList(w, GURPSCharacter.KEY_EQUIPMENT, mEquipment.getTopLevelRows(), false);
-        ListRow.saveList(w, GURPSCharacter.KEY_OTHER_EQUIPMENT, mOtherEquipment.getTopLevelRows(), false);
-        ListRow.saveList(w, GURPSCharacter.KEY_NOTES, mNotes.getTopLevelRows(), false);
+    protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
+        ListRow.saveList(w, GURPSCharacter.KEY_ADVANTAGES, mAdvantages.getTopLevelRows(), saveType);
+        ListRow.saveList(w, GURPSCharacter.KEY_SKILLS, mSkills.getTopLevelRows(), saveType);
+        ListRow.saveList(w, GURPSCharacter.KEY_SPELLS, mSpells.getTopLevelRows(), saveType);
+        ListRow.saveList(w, GURPSCharacter.KEY_EQUIPMENT, mEquipment.getTopLevelRows(), saveType);
+        ListRow.saveList(w, GURPSCharacter.KEY_OTHER_EQUIPMENT, mOtherEquipment.getTopLevelRows(), saveType);
+        ListRow.saveList(w, GURPSCharacter.KEY_NOTES, mNotes.getTopLevelRows(), saveType);
     }
 
     /**

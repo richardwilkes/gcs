@@ -15,6 +15,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -74,7 +75,7 @@ public class RowUndo extends AbstractUndoableEdit {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (GZIPOutputStream gos = new GZIPOutputStream(baos)) {
                 try (JsonWriter w = new JsonWriter(new OutputStreamWriter(gos, StandardCharsets.UTF_8), "")) {
-                    row.save(w, true);
+                    row.save(w, SaveType.UNDO);
                 }
             }
             return baos.toByteArray();

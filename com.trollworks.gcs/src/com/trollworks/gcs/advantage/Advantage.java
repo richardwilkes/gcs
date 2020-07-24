@@ -31,6 +31,7 @@ import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -416,7 +417,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     @Override
-    protected void saveSelf(JsonWriter w, boolean forUndo) throws IOException {
+    protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.keyValueNot(ATTR_ROUND_COST_DOWN, mRoundCostDown, false);
         w.keyValueNot(ATTR_ALLOW_HALF_LEVELS, mAllowHalfLevels, false);
         w.keyValueNot(ATTR_DISABLED, mDisabled, false);
@@ -447,7 +448,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 w.keyValue(KEY_CR_ADJ, Enums.toId(mCRAdj));
             }
         }
-        saveList(w, KEY_MODIFIERS, mModifiers, false);
+        saveList(w, KEY_MODIFIERS, mModifiers, saveType);
         if (getDataFile() instanceof GURPSCharacter) {
             w.keyValueNot(TAG_USER_DESC, mUserDesc, "");
         }
