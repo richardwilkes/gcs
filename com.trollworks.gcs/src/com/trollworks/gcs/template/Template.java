@@ -15,7 +15,9 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.notes.Note;
@@ -42,6 +44,8 @@ import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.UUID;
 
 /** A template. */
 public class Template extends DataFile {
@@ -450,5 +454,15 @@ public class Template extends DataFile {
     /** @return A recursive iterator over the notes. */
     public RowIterator<Note> getNoteIterator() {
         return new RowIterator<>(mNotes);
+    }
+
+    @Override
+    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
+        ListFile.getContainedUpdatables(mAdvantages, updatables);
+        ListFile.getContainedUpdatables(mSkills, updatables);
+        ListFile.getContainedUpdatables(mSpells, updatables);
+        ListFile.getContainedUpdatables(mEquipment, updatables);
+        ListFile.getContainedUpdatables(mOtherEquipment, updatables);
+        ListFile.getContainedUpdatables(mNotes, updatables);
     }
 }

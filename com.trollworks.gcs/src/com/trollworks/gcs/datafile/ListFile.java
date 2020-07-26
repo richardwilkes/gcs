@@ -22,8 +22,10 @@ import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 /** A list of rows. */
 public abstract class ListFile extends DataFile {
@@ -104,6 +106,24 @@ public abstract class ListFile extends DataFile {
         if (row.hasChildren()) {
             for (Row child : row.getChildren()) {
                 processRowForCategories(child, set);
+            }
+        }
+    }
+
+    @Override
+    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
+        getContainedUpdatables(mModel, updatables);
+    }
+
+    public static void getContainedUpdatables(OutlineModel model, Map<UUID, Updatable> updatables) {
+        List<Row> rows = model.getTopLevelRows();
+        if (!rows.isEmpty()) {
+            for (Row one : rows) {
+                if (one instanceof Updatable) {
+                    Updatable u = (Updatable) one;
+                    updatables.put(u.getID(), u);
+                    u.getContainedUpdatables(updatables);
+                }
             }
         }
     }

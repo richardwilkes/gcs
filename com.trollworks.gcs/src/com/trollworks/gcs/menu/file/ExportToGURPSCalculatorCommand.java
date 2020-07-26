@@ -72,11 +72,11 @@ public class ExportToGURPSCalculatorCommand extends Command {
             GURPSCharacter character = sheet.getCharacter();
             try {
                 String key = Preferences.getInstance().getGURPSCalculatorKey();
-                if ("true".equals(get(String.format("api/GetCharacterExists/%s/%s", character.getId(), key)))) {
+                if ("true".equals(get(String.format("api/GetCharacterExists/%s/%s", character.getID(), key)))) {
                     String cancel = I18n.Text("Cancel");
                     switch (JOptionPane.showOptionDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(), I18n.Text("This character already exists in GURPS Calculator.\nWould you like to replace it?\n\nIf you choose 'Create New', you should save your\ncharacter afterwards."), I18n.Text("Character Exists"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{I18n.Text("Replace"), I18n.Text("Create New"), cancel}, cancel)) {
                     case JOptionPane.NO_OPTION:
-                        character.generateNewId();
+                        character.generateNewID();
                         character.setModified(true);
                         break;
                     case JOptionPane.CANCEL_OPTION:
@@ -99,7 +99,7 @@ public class ExportToGURPSCalculatorCommand extends Command {
                             } catch (FileNotFoundException exception) {
                                 Log.error(exception);
                             }
-                            UUID   id   = character.getId();
+                            UUID   id   = character.getID();
                             String path = String.format("api/SaveCharacter/%s/%s", id, key);
                             result = post(path, result);
                             if (!result.isEmpty()) {

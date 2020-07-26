@@ -800,11 +800,11 @@ public class Preferences {
     }
 
     public void putPdfRef(PdfRef ref) {
-        mPdfRefs.put(ref.getId(), ref);
+        mPdfRefs.put(ref.getID(), ref);
     }
 
     public void removePdfRef(PdfRef ref) {
-        mPdfRefs.remove(ref.getId());
+        mPdfRefs.remove(ref.getID());
     }
 
     public void clearPdfRefs() {

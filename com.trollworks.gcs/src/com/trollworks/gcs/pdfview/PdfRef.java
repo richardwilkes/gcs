@@ -24,7 +24,7 @@ public class PdfRef implements Comparable<PdfRef> {
     private static final String ID     = "id";
     private static final String PATH   = "path";
     private static final String OFFSET = "offset";
-    private              String mId;
+    private              String mID;
     private              Path   mPath;
     private              int    mPageToIndexOffset;
 
@@ -37,20 +37,20 @@ public class PdfRef implements Comparable<PdfRef> {
      * @param offset The amount to add to a symbolic page number to find the actual index.
      */
     public PdfRef(String id, Path path, int offset) {
-        mId = id == null ? "" : id;
+        mID = id == null ? "" : id;
         mPath = path;
         mPageToIndexOffset = offset;
     }
 
     public PdfRef(JsonMap m) {
-        mId = m.getString(ID);
+        mID = m.getString(ID);
         mPath = Paths.get(m.getStringWithDefault(PATH, ".")).normalize().toAbsolutePath();
         mPageToIndexOffset = m.getInt(OFFSET);
     }
 
     /** @return The id. */
-    public String getId() {
-        return mId;
+    public String getID() {
+        return mID;
     }
 
     /** @return The path. */
@@ -70,12 +70,12 @@ public class PdfRef implements Comparable<PdfRef> {
 
     @Override
     public int compareTo(PdfRef other) {
-        return NumericComparator.caselessCompareStrings(mId, other.mId);
+        return NumericComparator.caselessCompareStrings(mID, other.mID);
     }
 
     public void toJSON(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(ID, mId);
+        w.keyValue(ID, mID);
         w.keyValue(PATH, mPath.toString());
         w.keyValue(OFFSET, mPageToIndexOffset);
         w.endMap();

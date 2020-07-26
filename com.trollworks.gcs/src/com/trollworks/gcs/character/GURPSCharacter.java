@@ -15,7 +15,9 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
@@ -75,7 +77,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /** A GURPS character. */
 public class GURPSCharacter extends DataFile {
@@ -3152,5 +3156,15 @@ public class GURPSCharacter extends DataFile {
     @Override
     public DisplayOption notesDisplay() {
         return mSettings.notesDisplay();
+    }
+
+    @Override
+    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
+        ListFile.getContainedUpdatables(mAdvantages, updatables);
+        ListFile.getContainedUpdatables(mSkills, updatables);
+        ListFile.getContainedUpdatables(mSpells, updatables);
+        ListFile.getContainedUpdatables(mEquipment, updatables);
+        ListFile.getContainedUpdatables(mOtherEquipment, updatables);
+        ListFile.getContainedUpdatables(mNotes, updatables);
     }
 }

@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.feature.AttributeBonus;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.CostReduction;
@@ -57,7 +58,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 /** A common row super-class for the model. */
-public abstract class ListRow extends Row {
+public abstract class ListRow extends Row implements Updatable {
     private static final String             ATTRIBUTE_OPEN    = "open";
     private static final String             TAG_NOTES         = "notes";
     private static final String             TAG_CATEGORIES    = "categories";
@@ -206,6 +207,11 @@ public abstract class ListRow extends Row {
             mBasedOnHash = null;
             Log.warn(exception);
         }
+    }
+
+    @Override
+    public UUID getID() {
+        return mID;
     }
 
     /**
@@ -848,5 +854,18 @@ public abstract class ListRow extends Row {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
+        if (canHaveChildren()) {
+            for (Row one : getChildren()) {
+                if (one instanceof Updatable) {
+                    Updatable u = (Updatable) one;
+                    updatables.put(u.getID(), u);
+                    u.getContainedUpdatables(updatables);
+                }
+            }
+        }
     }
 }

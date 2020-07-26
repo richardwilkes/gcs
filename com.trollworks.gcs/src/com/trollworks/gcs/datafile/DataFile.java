@@ -45,13 +45,13 @@ import java.util.UUID;
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
-public abstract class DataFile implements Undoable {
+public abstract class DataFile implements Updatable, Undoable {
     /** The 'id' attribute. */
     public static final String                     ATTRIBUTE_ID           = "id";
     /** Identifies the type of a JSON object. */
     public static final String                     KEY_TYPE               = "type";
     private             Path                       mPath;
-    private             UUID                       mId                    = UUID.randomUUID();
+    private             UUID                       mID                    = UUID.randomUUID();
     private             Notifier                   mNotifier              = new Notifier();
     private             boolean                    mModified;
     private             StdUndoManager             mUndoManager           = new StdUndoManager();
@@ -105,9 +105,9 @@ public abstract class DataFile implements Undoable {
      */
     public void load(XMLReader reader, LoadState state) throws IOException {
         try {
-            mId = UUID.fromString(reader.getAttribute(ATTRIBUTE_ID));
+            mID = UUID.fromString(reader.getAttribute(ATTRIBUTE_ID));
         } catch (Exception exception) {
-            mId = UUID.randomUUID();
+            mID = UUID.randomUUID();
         }
         state.mDataFileVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
         if (state.mDataFileVersion > getXMLTagVersion()) {
@@ -122,9 +122,9 @@ public abstract class DataFile implements Undoable {
      */
     public void load(JsonMap m, LoadState state) throws IOException {
         try {
-            mId = UUID.fromString(m.getString(ATTRIBUTE_ID));
+            mID = UUID.fromString(m.getString(ATTRIBUTE_ID));
         } catch (Exception exception) {
-            mId = UUID.randomUUID();
+            mID = UUID.randomUUID();
         }
         state.mDataFileVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
         if (state.mDataFileVersion > getJSONVersion()) {
@@ -186,7 +186,7 @@ public abstract class DataFile implements Undoable {
             w.startMap();
             w.keyValue(KEY_TYPE, getJSONTypeName());
             w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
-            w.keyValue(ATTRIBUTE_ID, mId.toString());
+            w.keyValue(ATTRIBUTE_ID, mID.toString());
             saveSelf(w, saveType);
             w.endMap();
         }
@@ -248,13 +248,13 @@ public abstract class DataFile implements Undoable {
     }
 
     /** @return The ID for this data file. */
-    public UUID getId() {
-        return mId;
+    public UUID getID() {
+        return mID;
     }
 
     /** Replaces the existing ID with a new randomly generated one. */
-    public void generateNewId() {
-        mId = UUID.randomUUID();
+    public void generateNewID() {
+        mID = UUID.randomUUID();
     }
 
     /** @return {@code true} if the data has been modified. */

@@ -68,7 +68,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
                 }
             });
             mPanel.add(button);
-            JLabel idLabel = new JLabel(ref.getId(), SwingConstants.CENTER);
+            JLabel idLabel = new JLabel(ref.getID(), SwingConstants.CENTER);
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
             idLabel.setBackground(background);
