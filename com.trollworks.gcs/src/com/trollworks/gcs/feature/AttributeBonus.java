@@ -116,9 +116,9 @@ public class AttributeBonus extends Bonus {
 
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
-        super.loadSelf(m);
         setAttribute(Enums.extract(m.getString(TAG_ATTRIBUTE), BonusAttributeType.values(), BonusAttributeType.ST));
         setLimitation(Enums.extract(m.getString(ATTRIBUTE_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
+        super.loadSelf(m);
     }
 
     @Override
