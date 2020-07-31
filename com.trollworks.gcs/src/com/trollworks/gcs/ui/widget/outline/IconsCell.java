@@ -129,7 +129,7 @@ public class IconsCell implements Cell {
         Scale scale  = Scale.get(outline);
         int   height = 0;
         for (RetinaIcon img : getIcons(row, column, false, true)) {
-            height += scale.scale(img.getIconHeight());
+            height = Math.max(height, scale.scale(img.getIconHeight()));
         }
         return height;
     }
