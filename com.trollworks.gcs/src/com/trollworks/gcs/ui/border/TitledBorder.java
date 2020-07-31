@@ -75,11 +75,7 @@ public class TitledBorder extends LineBorder {
 
     @Override
     public Insets getBorderInsets(Component component) {
-        int top = 1;
-        if (mTitle != null && mFont != null) {
-            top = TextDrawing.getPreferredSize(mFont, mTitle).height;
-        }
-        setThickness(Edge.TOP, top);
+        setThickness(Edge.TOP, (mTitle != null && mFont != null) ? TextDrawing.getPreferredSize(mFont, mTitle).height : Scale.get(component).scale(1));
         return super.getBorderInsets(component);
     }
 
