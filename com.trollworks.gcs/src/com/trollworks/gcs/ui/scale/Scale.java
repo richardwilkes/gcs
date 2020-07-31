@@ -64,7 +64,7 @@ public class Scale {
         if (mScale == 1) {
             return font;
         }
-        return font.deriveFont((float) (font.getSize() * mScale));
+        return font.deriveFont((float) Math.floor(font.getSize() * mScale));
     }
 
     /**
