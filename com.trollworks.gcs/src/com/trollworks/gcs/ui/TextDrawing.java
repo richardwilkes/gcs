@@ -26,11 +26,8 @@ import javax.swing.SwingConstants;
 
 /** General text drawing utilities. */
 public class TextDrawing {
-    private static       Map<Font, Map<Character, Integer>> WIDTH_MAP  = new HashMap<>();
-    private static       Map<Font, Integer>                 HEIGHT_MAP = new HashMap<>();
-    private static final String                             SPACE      = " ";
-    private static final String                             NEWLINE    = "\n";
-    private static final char                               ELLIPSIS   = '…';
+    private static Map<Font, Map<Character, Integer>> WIDTH_MAP  = new HashMap<>();
+    private static Map<Font, Integer>                 HEIGHT_MAP = new HashMap<>();
 
     /**
      * @param font The {@link Font} to measure with.
@@ -72,7 +69,7 @@ public class TextDrawing {
             WIDTH_MAP.put(font, map);
             FontMetrics fm = Fonts.getFontMetrics(font);
             for (char i = 32; i < 127; i++) {
-                map.put(Character.valueOf(i), Integer.valueOf(fm.charWidth(i)));
+                map.put(Character.valueOf(i), Integer.valueOf(Math.max(fm.charWidth(i), 1)));
             }
         }
         return map;
@@ -125,7 +122,7 @@ public class TextDrawing {
             int             width;
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();
-                if (token.equals(NEWLINE)) {
+                if ("\n".equals(token)) {
                     text = buffer.toString();
                     textHeight += fHeight;
                     list.add(text);
@@ -137,6 +134,9 @@ public class TextDrawing {
                         textHeight += fHeight;
                         list.add(text);
                         buffer.setLength(0);
+                        if (" ".equals(token)) {
+                            continue;
+                        }
                     }
                     buffer.append(token);
                 }
@@ -261,18 +261,18 @@ public class TextDrawing {
      * @return The width of the text in the specified font.
      */
     public static final int getWidth(Font font, String text) {
-        StringTokenizer tokenizer = new StringTokenizer(text, NEWLINE, true);
+        StringTokenizer tokenizer = new StringTokenizer(text, "\n", true);
         boolean         veryFirst = true;
         boolean         first     = true;
         int             width     = 0;
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            if (token.equals(NEWLINE)) {
+            if ("\n".equals(token)) {
                 if (first && !veryFirst) {
                     first = false;
                     continue;
                 }
-                token = SPACE;
+                token = " ";
             } else {
                 first = true;
             }
@@ -301,7 +301,7 @@ public class TextDrawing {
             StringBuilder buffer = new StringBuilder(text);
             int           max    = buffer.length();
             if (truncationPolicy == SwingConstants.LEFT) {
-                buffer.insert(0, ELLIPSIS);
+                buffer.insert(0, '…');
                 while (max-- > 0 && getSimpleWidth(font, buffer.toString()) > width) {
                     buffer.deleteCharAt(1);
                 }
@@ -309,7 +309,7 @@ public class TextDrawing {
                 int     left     = max / 2;
                 int     right    = left + 1;
                 boolean leftSide = false;
-                buffer.insert(left--, ELLIPSIS);
+                buffer.insert(left--, '…');
                 while (max-- > 0 && getSimpleWidth(font, buffer.toString()) > width) {
                     if (leftSide) {
                         buffer.deleteCharAt(left--);
@@ -324,7 +324,7 @@ public class TextDrawing {
                     }
                 }
             } else if (truncationPolicy == SwingConstants.RIGHT) {
-                buffer.append(ELLIPSIS);
+                buffer.append('…');
                 while (max-- > 0 && getSimpleWidth(font, buffer.toString()) > width) {
                     buffer.deleteCharAt(max);
                 }
@@ -344,11 +344,11 @@ public class TextDrawing {
         int[]           lineWidth  = {0};
         StringBuilder   buffer     = new StringBuilder(text.length() * 2);
         StringBuilder   lineBuffer = new StringBuilder(text.length());
-        StringTokenizer tokenizer  = new StringTokenizer(text + NEWLINE, " \t/\\\n", true);
+        StringTokenizer tokenizer  = new StringTokenizer(text + "\n", " \t/\\\n", true);
         boolean         wrapped    = false;
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            if (token.equals(NEWLINE)) {
+            if ("\n".equals(token)) {
                 if (lineWidth[0] > 0) {
                     buffer.append(lineBuffer);
                 }
@@ -357,7 +357,7 @@ public class TextDrawing {
                 lineBuffer.setLength(0);
                 lineWidth[0] = 0;
             } else {
-                if (!wrapped || lineWidth[0] != 0 || !token.equals(SPACE)) {
+                if (!wrapped || lineWidth[0] != 0 || !" ".equals(token)) {
                     wrapped = processOneTokenForWrapToPixelWidth(token, font, buffer, lineBuffer, width, lineWidth, wrapped);
                 }
             }
@@ -383,7 +383,7 @@ public class TextDrawing {
                 if (getSimpleWidth(font, lineBuffer.toString()) > width) {
                     lineBuffer.deleteCharAt(lineBuffer.length() - 1);
                     buffer.append(lineBuffer);
-                    buffer.append(NEWLINE);
+                    buffer.append("\n");
                     hasBeenWrapped = true;
                     lineBuffer.setLength(0);
                     lineBuffer.append(token.charAt(i));
@@ -392,11 +392,11 @@ public class TextDrawing {
             lineWidth[0] = getSimpleWidth(font, lineBuffer.toString());
         } else {
             buffer.append(lineBuffer);
-            buffer.append(NEWLINE);
+            buffer.append("\n");
             hasBeenWrapped = true;
             lineBuffer.setLength(0);
             lineWidth[0] = 0;
-            if (!token.equals(SPACE)) {
+            if (!" ".equals(token)) {
                 return processOneTokenForWrapToPixelWidth(token, font, buffer, lineBuffer, width, lineWidth, true);
             }
         }
