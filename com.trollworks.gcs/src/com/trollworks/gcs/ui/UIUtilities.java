@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.WiderToolTipUI;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
@@ -21,6 +22,7 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
@@ -38,9 +40,24 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
+import javax.swing.UIManager;
 
 /** Various utility methods for the UI. */
 public class UIUtilities {
+    /** Initialize the UI. */
+    public static void initialize() {
+        System.setProperty("apple.laf.useScreenMenuBar", Boolean.TRUE.toString());
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            Font current = UIManager.getFont(Fonts.KEY_STD_TEXT_FIELD);
+            UIManager.getDefaults().put(Fonts.KEY_STD_TEXT_FIELD, new Font("SansSerif", current.getStyle(), current.getSize()));
+            WiderToolTipUI.installIfNeeded();
+        } catch (Exception ex) {
+            Log.error(ex);
+        }
+        Fonts.loadFromPreferences();
+    }
+
     /**
      * Selects the tab with the specified title.
      *

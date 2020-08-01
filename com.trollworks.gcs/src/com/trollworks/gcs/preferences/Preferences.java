@@ -701,7 +701,7 @@ public class Preferences {
         if (Platform.isMacintosh() || Platform.isWindows()) {
             extension = extension.toLowerCase();
         }
-        for (FileType fileType : FileType.OPENABLE) {
+        for (FileType fileType : FileType.ALL_OPENABLE) {
             if (fileType.matchExtension(extension)) {
                 if (Files.isReadable(path)) {
                     mLastRecentFilesUpdateCounter++;

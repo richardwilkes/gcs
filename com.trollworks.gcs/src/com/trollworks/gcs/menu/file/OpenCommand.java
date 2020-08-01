@@ -52,7 +52,7 @@ public class OpenCommand extends Command implements OpenFilesHandler {
 
     /** Ask the user to open a file. */
     public static void open() {
-        Path path = StdFileDialog.showOpenDialog(getFocusOwner(), I18n.Text("Open…"), FileType.createFileFilters(I18n.Text("All Readable Files"), FileType.OPENABLE));
+        Path path = StdFileDialog.showOpenDialog(getFocusOwner(), I18n.Text("Open…"), FileType.createFileFilters(I18n.Text("All Readable Files"), FileType.ALL_OPENABLE.toArray(new FileType[0])));
         if (path != null) {
             open(path);
         }

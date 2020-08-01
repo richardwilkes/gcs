@@ -9,9 +9,13 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.cmdline;
 
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.ui.GraphicsUtilities;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
@@ -21,13 +25,14 @@ import com.trollworks.gcs.utility.Timing;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.LengthUnits;
 
+import java.awt.EventQueue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class CmdLineExport implements Runnable {
+public class Export implements Runnable {
     List<Path> mFiles;
     boolean    mGeneratePDF;
     boolean    mGeneratePNG;
@@ -36,7 +41,25 @@ public class CmdLineExport implements Runnable {
     String     mMargins;
     String     mPaper;
 
-    public CmdLineExport(List<Path> files, boolean generatePDF, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
+    public static void process(List<Path> files, boolean generatePDF, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
+        if (files.isEmpty()) {
+            System.err.println(I18n.Text("must specify one or more sheet files to process"));
+            System.exit(1);
+        }
+        System.setProperty("java.awt.headless", Boolean.TRUE.toString());
+        UIUtilities.initialize();
+        try {
+            // This is run on the event queue since much of the sheet logic assumes a UI
+            // environment and would otherwise cause concurrent modification exceptions, as the
+            // detection of whether it was safe to modify data would be inaccurate.
+            EventQueue.invokeAndWait(new Export(files, generatePDF, generatePNG, generateText, template, margins, paper));
+        } catch (Exception exception) {
+            exception.printStackTrace(System.err);
+            System.exit(1);
+        }
+    }
+
+    private Export(List<Path> files, boolean generatePDF, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
         mFiles = files;
         mGeneratePDF = generatePDF;
         mGeneratePNG = generatePNG;

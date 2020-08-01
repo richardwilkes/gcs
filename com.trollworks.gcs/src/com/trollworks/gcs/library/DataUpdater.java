@@ -13,6 +13,7 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.modifier.AdvantageModifierList;
@@ -60,24 +61,29 @@ public class DataUpdater {
                         } else if (FileType.TEMPLATE.matchExtension(ext)) {
                             add(uuidToPathMap, path, new Template(path));
                         } else if (FileType.ADVANTAGE.matchExtension(ext)) {
-                            add(uuidToPathMap, path, new AdvantageList());
+                            addList(uuidToPathMap, path, new AdvantageList());
                         } else if (FileType.ADVANTAGE_MODIFIER.matchExtension(ext)) {
-                            add(uuidToPathMap, path, new AdvantageModifierList());
+                            addList(uuidToPathMap, path, new AdvantageModifierList());
                         } else if (FileType.EQUIPMENT.matchExtension(ext)) {
-                            add(uuidToPathMap, path, new EquipmentList());
+                            addList(uuidToPathMap, path, new EquipmentList());
                         } else if (FileType.EQUIPMENT_MODIFIER.matchExtension(ext)) {
-                            add(uuidToPathMap, path, new EquipmentModifierList());
+                            addList(uuidToPathMap, path, new EquipmentModifierList());
                         } else if (FileType.SKILL.matchExtension(ext)) {
-                            add(uuidToPathMap, path, new SkillList());
+                            addList(uuidToPathMap, path, new SkillList());
                         } else if (FileType.SPELL.matchExtension(ext)) {
-                            add(uuidToPathMap, path, new SpellList());
+                            addList(uuidToPathMap, path, new SpellList());
                         } else if (FileType.NOTE.matchExtension(ext)) {
-                            add(uuidToPathMap, path, new NoteList());
+                            addList(uuidToPathMap, path, new NoteList());
                         }
                     }
                 }
             }
         }
+    }
+
+    private void addList(Map<UUID, Path> uuidToPathMap, Path path, Updatable updatable) throws IOException {
+        ((DataFile)updatable).load(path);
+        add(uuidToPathMap, path, updatable);
     }
 
     private void add(Map<UUID, Path> uuidToPathMap, Path path, Updatable updatable) {

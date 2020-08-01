@@ -11,19 +11,18 @@
 
 package com.trollworks.gcs;
 
-import com.trollworks.gcs.character.CmdLineExport;
+import com.trollworks.gcs.cmdline.Export;
+import com.trollworks.gcs.cmdline.LoadSave;
 import com.trollworks.gcs.menu.edit.PreferencesCommand;
 import com.trollworks.gcs.menu.file.OpenCommand;
 import com.trollworks.gcs.menu.file.OpenDataFileCommand;
 import com.trollworks.gcs.menu.file.PrintCommand;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.help.AboutCommand;
-import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.widget.WiderToolTipUI;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.UpdateChecker;
 import com.trollworks.gcs.utility.Version;
@@ -33,7 +32,6 @@ import com.trollworks.gcs.utility.text.Text;
 import java.awt.Desktop;
 import java.awt.Desktop.Action;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.desktop.QuitStrategy;
 import java.io.InputStream;
@@ -46,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import javax.swing.UIManager;
 
 /** The main entry point for the character sheet. */
 public class GCS {
@@ -115,6 +112,7 @@ public class GCS {
         boolean      generatePDF  = false;
         boolean      generatePNG  = false;
         boolean      generateText = false;
+        boolean      loadSave     = false;
         Path         template     = null;
         String       margins      = null;
         String       paper        = null;
@@ -197,6 +195,7 @@ public class GCS {
                         msgs.add(I18n.Text("missing argument for --text"));
                     }
                 }
+                case "--loadsave" -> loadSave = true;
                 case "-v", "--version" -> showVersion = true;
                 default -> msgs.add(I18n.Text("unknown option: ") + parts[0]);
                 }
@@ -217,22 +216,13 @@ public class GCS {
             System.exit(1);
         }
 
+        if (loadSave) {
+            LoadSave.process(files);
+            System.exit(0);
+        }
+
         if (generatePDF || generatePNG || generateText) {
-            if (files.isEmpty()) {
-                System.err.println(I18n.Text("must specify one or more sheet files to process"));
-                System.exit(1);
-            }
-            System.setProperty("java.awt.headless", Boolean.TRUE.toString());
-            initialize();
-            try {
-                // This is run on the event queue since much of the sheet logic assumes a UI
-                // environment and would otherwise cause concurrent modification exceptions, as the
-                // detection of whether it was safe to modify data would be inaccurate.
-                EventQueue.invokeAndWait(new CmdLineExport(files, generatePDF, generatePNG, generateText, template, margins, paper));
-            } catch (Exception exception) {
-                exception.printStackTrace(System.err);
-                System.exit(1);
-            }
+            Export.process(files, generatePDF, generatePNG, generateText, template, margins, paper);
             System.exit(0);
         }
 
@@ -242,7 +232,7 @@ public class GCS {
         }
 
         LaunchProxy launchProxy = new LaunchProxy(files);
-        initialize();
+        UIUtilities.initialize();
 
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
@@ -285,20 +275,7 @@ public class GCS {
         });
     }
 
-    public static void initialize() {
-        System.setProperty("apple.laf.useScreenMenuBar", Boolean.TRUE.toString());
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            Font current = UIManager.getFont(Fonts.KEY_STD_TEXT_FIELD);
-            UIManager.getDefaults().put(Fonts.KEY_STD_TEXT_FIELD, new Font("SansSerif", current.getStyle(), current.getSize()));
-            WiderToolTipUI.installIfNeeded();
-        } catch (Exception ex) {
-            Log.error(ex);
-        }
-        Fonts.loadFromPreferences();
-    }
-
-    public static void showHelp() {
+    private static void showHelp() {
         System.out.println(APP_BANNER);
         System.out.println();
         System.out.println(I18n.Text("Available options:"));
@@ -306,6 +283,8 @@ public class GCS {
         List<String> options = new ArrayList<>();
         options.add(I18n.Text("-h, --help"));
         options.add(I18n.Text("Displays a description of each option."));
+        options.add(I18n.Text("--loadsave"));
+        options.add(I18n.Text("Load and then save all files specified on the command line. If a directory is specified, it will be traversed recursively and all files found will be loaded and saved. This operation is intended to easily bring files up to the current version's data format. After all files have been processed, GCS will exit."));
         options.add(I18n.Text("--margins <margins>"));
         options.add(I18n.Text("When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'."));
         options.add(I18n.Text("--paper <size>"));
