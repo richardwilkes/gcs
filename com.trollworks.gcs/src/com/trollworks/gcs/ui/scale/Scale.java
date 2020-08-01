@@ -75,7 +75,7 @@ public class Scale {
         if (mScale == 1) {
             return insets;
         }
-        return new Insets((int) (insets.top * mScale), (int) (insets.left * mScale), (int) (insets.bottom * mScale), (int) (insets.right * mScale));
+        return new Insets(scale(insets.top), scale(insets.left), scale(insets.bottom), scale(insets.right));
     }
 
     /**
@@ -89,7 +89,7 @@ public class Scale {
         int      length = values.length;
         double[] scaled = new double[length];
         for (int i = 0; i < length; i++) {
-            scaled[i] = values[i] * mScale;
+            scaled[i] = scale(values[i]);
         }
         return scaled;
     }
