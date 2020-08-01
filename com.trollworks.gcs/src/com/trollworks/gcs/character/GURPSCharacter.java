@@ -306,6 +306,7 @@ public class GURPSCharacter extends DataFile {
     private              OutlineModel                        mOtherEquipment;
     private              OutlineModel                        mNotes;
     private              WeightValue                         mCachedWeightCarried;
+    private              WeightValue                         mCachedWeightCarriedForSkills;
     private              Fixed6                              mCachedWealthCarried;
     private              Fixed6                              mCachedWealthNotCarried;
     private              int                                 mCachedAttributePoints;
@@ -363,6 +364,7 @@ public class GURPSCharacter extends DataFile {
         mProfile = new Profile(this, full);
         mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
+        mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mPageSettings = Preferences.getInstance().getDefaultPageSettings();
         mPageSettingsString = "{}";
         if (mPageSettings != null) {
@@ -990,7 +992,7 @@ public class GURPSCharacter extends DataFile {
         }
     }
 
-    private void updateSkills() {
+    public void updateSkills() {
         for (Skill skill : getSkillsIterator()) {
             skill.updateLevel(true);
         }
@@ -1556,8 +1558,8 @@ public class GURPSCharacter extends DataFile {
     }
 
     /** @return The current encumbrance level. */
-    public Encumbrance getEncumbranceLevel() {
-        Fixed6 carried = getWeightCarried().getNormalizedValue();
+    public Encumbrance getEncumbranceLevel(boolean forSkills) {
+        Fixed6 carried = getWeightCarried(forSkills).getNormalizedValue();
         for (Encumbrance encumbrance : Encumbrance.values()) {
             if (carried.lessThanOrEqual(getMaximumCarry(encumbrance).getNormalizedValue())) {
                 return encumbrance;
@@ -1570,13 +1572,13 @@ public class GURPSCharacter extends DataFile {
      * @return {@code true} if the carried weight is greater than the maximum allowed for an
      *         extra-heavy load.
      */
-    public boolean isCarryingGreaterThanMaxLoad() {
-        return getWeightCarried().getNormalizedValue().greaterThan(getMaximumCarry(Encumbrance.EXTRA_HEAVY).getNormalizedValue());
+    public boolean isCarryingGreaterThanMaxLoad(boolean forSkills) {
+        return getWeightCarried(forSkills).getNormalizedValue().greaterThan(getMaximumCarry(Encumbrance.EXTRA_HEAVY).getNormalizedValue());
     }
 
     /** @return The current weight being carried. */
-    public WeightValue getWeightCarried() {
-        return mCachedWeightCarried;
+    public WeightValue getWeightCarried(boolean forSkills) {
+        return forSkills ? mCachedWeightCarriedForSkills : mCachedWeightCarried;
     }
 
     /** @return The current wealth being carried. */
@@ -1628,21 +1630,29 @@ public class GURPSCharacter extends DataFile {
      *               the previous values.
      */
     public void calculateWeightAndWealthCarried(boolean notify) {
-        WeightValue savedWeight = new WeightValue(mCachedWeightCarried);
-        Fixed6      savedWealth = mCachedWealthCarried;
+        WeightValue savedWeight          = new WeightValue(mCachedWeightCarried);
+        WeightValue savedWeightForSkills = new WeightValue(mCachedWeightCarriedForSkills);
+        Fixed6      savedWealth          = mCachedWealthCarried;
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, defaultWeightUnits());
+        mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, defaultWeightUnits());
         mCachedWealthCarried = Fixed6.ZERO;
         for (Row one : mEquipment.getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
-            WeightValue weight    = new WeightValue(equipment.getExtendedWeight());
+            WeightValue weight    = new WeightValue(equipment.getExtendedWeight(false));
             if (useSimpleMetricConversions()) {
                 weight = defaultWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
             }
             mCachedWeightCarried.add(weight);
             mCachedWealthCarried = mCachedWealthCarried.add(equipment.getExtendedValue());
+
+            weight = new WeightValue(equipment.getExtendedWeight(true));
+            if (useSimpleMetricConversions()) {
+                weight = defaultWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
+            }
+            mCachedWeightCarriedForSkills.add(weight);
         }
         if (notify) {
-            if (!savedWeight.equals(mCachedWeightCarried)) {
+            if (!savedWeight.equals(mCachedWeightCarried) || !savedWeightForSkills.equals(mCachedWeightCarriedForSkills)) {
                 notify(ID_CARRIED_WEIGHT, mCachedWeightCarried);
             }
             if (!mCachedWealthCarried.equals(savedWealth)) {

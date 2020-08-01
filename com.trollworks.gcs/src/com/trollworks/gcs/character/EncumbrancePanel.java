@@ -60,14 +60,14 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         String dodgeTooltip = I18n.Text("The character's dodge for a specific encumbrance level");
         createHeader(this, I18n.Text("Dodge"), dodgeTooltip);
         GURPSCharacter character = mSheet.getCharacter();
-        Encumbrance    current   = character.getEncumbranceLevel();
+        Encumbrance    current   = character.getEncumbranceLevel(false);
         for (Encumbrance encumbrance : encumbranceValues) {
             int index = encumbrance.ordinal();
             mMarkers[index] = new PageLabel(encumbrance == current ? "•" : "", header);
             UIUtilities.setOnlySize(mMarkers[index], prefSize);
             add(mMarkers[index]);
             if (current == encumbrance) {
-                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad() ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
+                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
             }
             add(new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), header));
             createDivider();
@@ -94,11 +94,11 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
             character.notifyMoveAndDodge();
             character.notifyBasicLift();
         }
-        Encumbrance current = character.getEncumbranceLevel();
+        Encumbrance current = character.getEncumbranceLevel(false);
         for (Encumbrance encumbrance : Encumbrance.values()) {
             int index = encumbrance.ordinal();
             if (encumbrance == current) {
-                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad() ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
+                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
             } else {
                 removeHorizontalBackground(mMarkers[index]);
             }

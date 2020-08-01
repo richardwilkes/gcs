@@ -345,7 +345,7 @@ public abstract class WeaponStats {
             }
             if (this instanceof MeleeWeaponStats) {
                 if (((MeleeWeaponStats) this).getParry().contains("F")) {
-                    best += character.getEncumbranceLevel().getEncumbrancePenalty();
+                    best += character.getEncumbranceLevel(true).getEncumbrancePenalty();
                 }
             }
             if (best < 0) {

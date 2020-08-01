@@ -796,7 +796,7 @@ public class Skill extends ListRow implements HasSourceReference {
                     bonus = character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase(), toolTip);
                     level += bonus;
                     relativeLevel += bonus;
-                    bonus = character.getEncumbranceLevel().getEncumbrancePenalty() * encPenaltyMult;
+                    bonus = character.getEncumbranceLevel(true).getEncumbrancePenalty() * encPenaltyMult;
                     level += bonus;
                     if (bonus != 0) {
                         toolTip.append(String.format(I18n.Text("\nEncumbrance [%d]"), Integer.valueOf(bonus)));

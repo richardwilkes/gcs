@@ -880,6 +880,9 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
             } else if (GURPSCharacter.ID_CARRIED_WEIGHT.equals(type) || GURPSCharacter.ID_CARRIED_WEALTH.equals(type)) {
                 Column column = mEquipmentOutline.getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
                 column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
+                if (GURPSCharacter.ID_CARRIED_WEIGHT.equals(type)) {
+                    mCharacter.updateSkills();
+                }
             } else if (GURPSCharacter.ID_NOT_CARRIED_WEALTH.equals(type)) {
                 Column column = mOtherEquipmentOutline.getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
                 column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));

@@ -528,10 +528,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(Armor.ID_TORSO_DR)).intValue()));
             break;
         case KEY_CURRENT_DODGE:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel())));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel(false))));
             break;
         case KEY_CURRENT_MOVE:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel())));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel(false))));
             break;
         case KEY_BEST_CURRENT_PARRY:
             writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedParry());
@@ -603,7 +603,7 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getShiftSlightly().toString());
             break;
         case KEY_CARRIED_WEIGHT:
-            writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, gurpsCharacter.getWeightCarried()));
+            writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, gurpsCharacter.getWeightCarried(false)));
             break;
         case KEY_CARRIED_VALUE:
             writeEncodedText(out, "$" + gurpsCharacter.getWealthCarried().toLocalizedString());
@@ -780,22 +780,22 @@ public class TextTemplate {
                         lookForKeyMarker = true;
                         switch (key) {
                         case KEY_CURRENT_MARKER:
-                            if (encumbrance == gurpsCharacter.getEncumbranceLevel()) {
+                            if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
                                 out.write(CURRENT);
                             }
                             break;
                         case KEY_CURRENT_MARKER_1:
-                            if (encumbrance == gurpsCharacter.getEncumbranceLevel()) {
+                            if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
                                 out.write(ONE);
                             }
                             break;
                         case KEY_CURRENT_MARKER_BULLET:
-                            if (encumbrance == gurpsCharacter.getEncumbranceLevel()) {
+                            if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
                                 out.write("•");
                             }
                             break;
                         case KEY_LEVEL:
-                            writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel() ? "• {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                            writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel(false) ? "• {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
                             break;
                         case KEY_LEVEL_NO_MARKER:
                             writeEncodedText(out, MessageFormat.format("{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
@@ -1304,7 +1304,7 @@ public class TextTemplate {
                 break;
             case KEY_WEIGHT:
                 if (equipment != null) {
-                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight()));
+                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight(false)));
                 }
                 break;
             case KEY_AMMO:
@@ -1641,16 +1641,16 @@ public class TextTemplate {
                                     writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
                                     break;
                                 case KEY_WEIGHT:
-                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight()));
+                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight(false)));
                                     break;
                                 case KEY_COST_SUMMARY:
                                     writeEncodedText(out, equipment.getExtendedValue().toLocalizedString());
                                     break;
                                 case KEY_WEIGHT_SUMMARY:
-                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight()));
+                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight(false)));
                                     break;
                                 case KEY_WEIGHT_RAW:
-                                    writeEncodedText(out, equipment.getAdjustedWeight().getNormalizedValue().toLocalizedString());
+                                    writeEncodedText(out, equipment.getAdjustedWeight(false).getNormalizedValue().toLocalizedString());
                                     break;
                                 case KEY_REF:
                                     writeEncodedText(out, equipment.getReference());

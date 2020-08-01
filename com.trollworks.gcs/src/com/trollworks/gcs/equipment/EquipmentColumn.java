@@ -138,7 +138,7 @@ public enum EquipmentColumn {
             if (dataFile instanceof GURPSCharacter) {
                 GURPSCharacter character = (GURPSCharacter) dataFile;
                 if (carried) {
-                    return MessageFormat.format(I18n.Text("Carried Equipment ({0}; ${1})"), character.getWeightCarried().toString(), character.getWealthCarried().toLocalizedString());
+                    return MessageFormat.format(I18n.Text("Carried Equipment ({0}; ${1})"), character.getWeightCarried(false).toString(), character.getWealthCarried().toLocalizedString());
                 }
                 return MessageFormat.format(I18n.Text("Other Equipment (${0})"), character.getWealthNotCarried().toLocalizedString());
             }
@@ -322,12 +322,12 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return equipment.getAdjustedWeight();
+            return equipment.getAdjustedWeight(false);
         }
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight());
+            return getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight(false));
         }
     },
     /** The value. */
@@ -386,12 +386,12 @@ public enum EquipmentColumn {
 
         @Override
         public Object getData(Equipment equipment) {
-            return equipment.getExtendedWeight();
+            return equipment.getExtendedWeight(false);
         }
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight());
+            return getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight(false));
         }
     },
     /** The category. */

@@ -53,6 +53,7 @@ import javax.swing.event.DocumentListener;
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
     private JCheckBox                   mEquippedCheckBox;
+    private JCheckBox                   mIgnoreWeightForSkillsCheckBox;
     private JTextField                  mDescriptionField;
     private JTextField                  mTechLevelField;
     private JTextField                  mLegalityClassField;
@@ -163,7 +164,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void createValueAndWeightFields(Container parent) {
-        JPanel    wrapper = new JPanel(new ColumnLayout(4));
+        JPanel    wrapper = new JPanel(new ColumnLayout(3));
         Component first;
 
         mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed6(mRow.getQuantity())));
@@ -171,17 +172,23 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mExtValueField = createValueField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         first = wrapper.getComponent(1);
         mExtValueField.setEnabled(false);
-        wrapper.add(new JPanel());
         parent.add(wrapper);
 
-        wrapper = new JPanel(new ColumnLayout(3));
-        mContainedWeight = new WeightValue(mRow.getExtendedWeight());
-        WeightValue weight = new WeightValue(mRow.getAdjustedWeight());
+        wrapper = new JPanel(new ColumnLayout(4));
+        mContainedWeight = new WeightValue(mRow.getExtendedWeight(false));
+        WeightValue weight = new WeightValue(mRow.getAdjustedWeight(false));
         weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));
         mContainedWeight.subtract(weight);
         mWeightField = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
-        mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended Weight"), mRow.getExtendedWeight(), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
+        mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended Weight"), mRow.getExtendedWeight(false), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
         mExtWeightField.setEnabled(false);
+        mIgnoreWeightForSkillsCheckBox = new JCheckBox(I18n.Text("Ignore for Skills"));
+        mIgnoreWeightForSkillsCheckBox.setSelected(mRow.isWeightIgnoredForSkills());
+        UIUtilities.setToPreferredSizeOnly(mIgnoreWeightForSkillsCheckBox);
+        mIgnoreWeightForSkillsCheckBox.setEnabled(mIsEditable);
+        mIgnoreWeightForSkillsCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills")));
+        wrapper.add(mIgnoreWeightForSkillsCheckBox);
+
         UIUtilities.adjustToSameSize(first, wrapper.getComponent(1));
         parent.add(wrapper);
     }
@@ -275,6 +282,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         modified |= mRow.setQuantity(getQty());
         modified |= mRow.setValue(new Fixed6(mValueField.getText(), Fixed6.ZERO, true));
         modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
+        modified |= mRow.setWeightIgnoredForSkills(mIgnoreWeightForSkillsCheckBox.isSelected());
         modified |= mRow.setMaxUses(Numbers.extractInteger(mMaxUsesField.getText(), 0, true));
         modified |= mUsesField != null ? mRow.setUses(Numbers.extractInteger(mUsesField.getText(), 0, true)) : mRow.setUses(mRow.getMaxUses());
         if (showEquipmentState()) {
