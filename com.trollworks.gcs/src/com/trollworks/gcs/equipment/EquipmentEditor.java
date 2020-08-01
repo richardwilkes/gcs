@@ -329,7 +329,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         int         qty    = getQty();
         WeightValue weight = mRow.getWeightAdjustedForModifiers(WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class));
         if (qty > 0) {
-            weight.setValue(weight.getValue().mul(new Fixed6(Math.max(qty, 0))));
+            weight.setValue(weight.getValue().mul(new Fixed6(qty)));
             weight.add(mContainedWeight);
         } else {
             weight.setValue(Fixed6.ZERO);

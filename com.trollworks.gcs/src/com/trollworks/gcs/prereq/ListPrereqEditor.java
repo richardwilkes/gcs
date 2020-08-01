@@ -104,7 +104,8 @@ public class ListPrereqEditor extends PrereqEditor {
             if (LAST_ITEM_TYPE == ContainedWeightPrereq.class) {
                 prereq = new ContainedWeightPrereq((PrereqList) mPrereq, mRow.getDataFile().defaultWeightUnits());
             } else {
-                prereq = (Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance((PrereqList) mPrereq);
+                PrereqList prereqList = (PrereqList) mPrereq;
+                prereq = (Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance(prereqList);
             }
             addItem(prereq);
         } catch (Exception exception) {

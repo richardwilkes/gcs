@@ -220,7 +220,7 @@ public class Bundler {
     }
 
     private static void showTiming(long timing) {
-        System.out.println(String.format("%,.3fs", Double.valueOf((System.nanoTime() - timing) / 1000000000.0)));
+        System.out.printf("%,.3fs\n", Double.valueOf((System.nanoTime() - timing) / 1000000000.0));
     }
 
     private static void compile() {
