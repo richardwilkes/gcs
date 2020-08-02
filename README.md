@@ -25,10 +25,6 @@ a given release, so be sure to review them again with the version you plan to bu
    ```
    % git clone https://github.com/richardwilkes/gcs
    ```
-   and optionally:
-   ```
-   % git clone https://github.com/richardwilkes/gcs_library
-   ```
 
 5. Build and bundle the code for your platform:
 
