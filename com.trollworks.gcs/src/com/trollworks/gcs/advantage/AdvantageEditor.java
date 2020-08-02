@@ -34,7 +34,6 @@ import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -45,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -245,8 +243,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             panel = embedEditor(mFeatures);
             mTabPanel.addTab(panel.getName(), panel);
             mTabPanel.addTab(mModifiers.getName(), mModifiers);
-            mTabPanel.addTab(mMeleeWeapons.getName(), wrapInScroller(mMeleeWeapons));
-            mTabPanel.addTab(mRangedWeapons.getName(), wrapInScroller(mRangedWeapons));
+            mTabPanel.addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
+            mTabPanel.addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
 
             if (!mIsEditable) {
                 UIUtilities.disableControls(mMeleeWeapons);
@@ -268,15 +266,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         UIUtilities.selectTab(mTabPanel, getLastTabName());
 
-        add(mTabPanel, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
-    }
-
-    private JScrollPane wrapInScroller(JComponent comp) {
-        JScrollPane scroller = new JScrollPane(comp);
-        // Unclear why this next line is needed. Failure to include it, however, results in the
-        // scroller being sized larger than the space available.
-        scroller.setPreferredSize(new Dimension(10, 10));
-        return scroller;
+        add(mTabPanel, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true).setMinimumHeight(32));
     }
 
     private JScrollPane createUserDescEditor() {
@@ -300,7 +290,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 mUserDesc = editor.getText();
             }
         });
-        return wrapInScroller(editor);
+        return new JScrollPane(editor);
     }
 
     private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
@@ -323,13 +313,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private JScrollPane embedEditor(JPanel editor) {
-        JScrollPane scrollPanel = new JScrollPane(editor);
-        scrollPanel.setMinimumSize(new Dimension(500, 120));
-        scrollPanel.setName(editor.toString());
+        JScrollPane scroller = new JScrollPane(editor);
+        scroller.setName(editor.toString());
         if (!mIsEditable) {
             UIUtilities.disableControls(editor);
         }
-        return scrollPanel;
+        return scroller;
     }
 
     private EditorField createField(String text, String prototype, String tooltip) {

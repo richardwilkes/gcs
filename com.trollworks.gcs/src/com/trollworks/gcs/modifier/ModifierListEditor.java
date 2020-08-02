@@ -69,13 +69,10 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     protected abstract void addColumns(Outline outline);
 
     private Component createOutline(List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
-        JScrollPane  scroller;
-        OutlineModel model;
-
         mAddButton = new IconButton(Images.ADD, I18n.Text("Add a modifier"), () -> addModifier());
 
         mOutline = new ModifierOutline();
-        model = mOutline.getModel();
+        OutlineModel model = mOutline.getModel();
         addColumns(mOutline);
 
         if (readOnlyModifiers != null) {
@@ -92,7 +89,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         }
         mOutline.addActionListener(this);
 
-        scroller = new JScrollPane(mOutline, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        JScrollPane scroller = new JScrollPane(mOutline, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         scroller.setColumnHeaderView(mOutline.getHeaderPanel());
         scroller.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, mAddButton);
         return scroller;
