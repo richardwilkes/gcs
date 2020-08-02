@@ -102,7 +102,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
         toolbar.add(mScaleCombo);
         mSearch = new Search(this);
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
-        mHitLocationTableCombo = new JComboBox<>(HitLocationTable.ALL);
+        mHitLocationTableCombo = new JComboBox<>(HitLocationTable.ALL.toArray(new HitLocationTable[0]));
         mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
         mHitLocationTableCombo.addActionListener((event) -> getDataFile().getProfile().setHitLocationTable((HitLocationTable) mHitLocationTableCombo.getSelectedItem()));
         toolbar.add(mHitLocationTableCombo);

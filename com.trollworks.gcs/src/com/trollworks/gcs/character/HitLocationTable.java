@@ -15,7 +15,7 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
     public static final HitLocationTable              SCORPION;
     public static final HitLocationTable              ICHTHYOID;
     public static final HitLocationTable              ARACHNOID;
-    public static final HitLocationTable[]            ALL;
+    public static final List<HitLocationTable>        ALL                  = new ArrayList<>();
     public static final Map<String, HitLocationTable> MAP                  = new HashMap<>();
 
     static {
@@ -267,8 +267,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         entries.add(new HitLocationTableEntry(HitLocation.VITALS));
         ARACHNOID = new HitLocationTable(KEY_ARACHNOID, I18n.Text("Arachnoid"), entries);
 
-        ALL = new HitLocationTable[]{HUMANOID, QUADRUPED, WINGED_QUADRUPED, HEXAPOD, WINGED_HEXAPOD, CENTAUR, AVIAN, VERMIFORM, WINGED_VERMIFORM, SNAKEMEN, OCTOPOD, SQUID, CANCROID, SCORPION, ICHTHYOID, ARACHNOID};
-        Arrays.sort(ALL);
+        Collections.sort(ALL);
     }
 
     private String                      mKey;
@@ -280,6 +279,7 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         mName = name;
         mEntries = entries;
         MAP.put(mKey, this);
+        ALL.add(this);
     }
 
     /** @return The key. */
