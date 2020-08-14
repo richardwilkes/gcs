@@ -55,6 +55,7 @@ public class UIUtilities {
         } catch (Exception ex) {
             Log.error(ex);
         }
+        Theme.current(); // Just here to ensure the theme is loaded
         Fonts.loadFromPreferences();
     }
 
