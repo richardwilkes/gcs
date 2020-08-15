@@ -47,19 +47,27 @@ public class Theme implements Comparable<Theme>, Cloneable {
 
         LIGHT = new Theme(I18n.Text("Light"));
         LIGHT.setColor(ThemeColor.BANDING.getIndex(), new Color(232, 255, 232));
-        LIGHT.setColor(ThemeColor.CURRENT_ENCUMBRANCE_BACKGROUND.getIndex(), new Color(252, 242, 196));
-        LIGHT.setColor(ThemeColor.CURRENT_ENCUMBRANCE_BACKGROUND_OVERLOADED.getIndex(), new Color(255, 224, 224));
+        LIGHT.setColor(ThemeColor.CURRENT_ENCUMBRANCE.getIndex(), new Color(252, 242, 196));
         LIGHT.setColor(ThemeColor.DIVIDER.getIndex(), Color.LIGHT_GRAY);
-        LIGHT.setColor(ThemeColor.SHEET_BACKGROUND.getIndex(), Color.WHITE);
+        LIGHT.setColor(ThemeColor.EDITABLE_MARKER.getIndex(), Color.LIGHT_GRAY);
+        LIGHT.setColor(ThemeColor.ON_PAGE.getIndex(), Color.BLACK);
+        LIGHT.setColor(ThemeColor.ON_USER_EDITABLE.getIndex(), new Color(0, 0, 192));
+        LIGHT.setColor(ThemeColor.PAGE.getIndex(), Color.WHITE);
+        LIGHT.setColor(ThemeColor.PAGE_VOID.getIndex(), Color.LIGHT_GRAY);
+        LIGHT.setColor(ThemeColor.WARN.getIndex(), new Color(255, 205, 210));
         LIGHT.mReadOnly = true;
         AVAILABLE.add(LIGHT);
 
         DARK = new Theme(I18n.Text("Dark"));
         DARK.setColor(ThemeColor.BANDING.getIndex(), new Color(50, 53, 55));
-        DARK.setColor(ThemeColor.CURRENT_ENCUMBRANCE_BACKGROUND.getIndex(), new Color(89, 91, 24));
-        DARK.setColor(ThemeColor.CURRENT_ENCUMBRANCE_BACKGROUND_OVERLOADED.getIndex(), new Color(90, 16, 16));
+        DARK.setColor(ThemeColor.CURRENT_ENCUMBRANCE.getIndex(), new Color(89, 91, 24));
         DARK.setColor(ThemeColor.DIVIDER.getIndex(), Color.DARK_GRAY);
-        DARK.setColor(ThemeColor.SHEET_BACKGROUND.getIndex(), new Color(43, 43, 43));
+        DARK.setColor(ThemeColor.EDITABLE_MARKER.getIndex(), Color.DARK_GRAY);
+        DARK.setColor(ThemeColor.ON_PAGE.getIndex(), Color.WHITE);
+        DARK.setColor(ThemeColor.ON_USER_EDITABLE.getIndex(), new Color(0, 0, 192));
+        DARK.setColor(ThemeColor.PAGE.getIndex(), new Color(43, 43, 43));
+        DARK.setColor(ThemeColor.PAGE_VOID.getIndex(), Color.BLACK);
+        DARK.setColor(ThemeColor.WARN.getIndex(), new Color(90, 16, 16));
         DARK.mReadOnly = true;
         AVAILABLE.add(DARK);
 

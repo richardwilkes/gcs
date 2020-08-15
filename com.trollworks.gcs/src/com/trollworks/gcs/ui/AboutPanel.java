@@ -43,7 +43,7 @@ public class AboutPanel extends JPanel {
         super.paintComponent(gc);
         Images.ABOUT.paintIcon(this, gc, 0, 0);
         //noinspection IntegerDivisionInFloatingPointContext
-        LinearGradientPaint gradient = new LinearGradientPaint(0, Images.ABOUT.getIconHeight() / 2, 0, Images.ABOUT.getIconHeight(), new float[]{0, 1}, new Color[]{new Color(0, 0, 0, 0), Color.black});
+        LinearGradientPaint gradient = new LinearGradientPaint(0, Images.ABOUT.getIconHeight() / 2, 0, Images.ABOUT.getIconHeight(), new float[]{0, 1}, new Color[]{Colors.TRANSPARENT, Color.BLACK});
         gc.setPaint(gradient);
         gc.fillRect(0, 0, Images.ABOUT.getIconWidth(), Images.ABOUT.getIconHeight());
         RenderingHints saved = (RenderingHints) gc.getRenderingHints().clone();

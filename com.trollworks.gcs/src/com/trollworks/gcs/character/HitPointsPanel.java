@@ -15,31 +15,37 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.page.PagePoints;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.SwingConstants;
 
 /** The character hit points panel. */
 public class HitPointsPanel extends DropPanel implements NotifierTarget {
-    private static final Color          CURRENT_THRESHOLD_COLOR = new Color(255, 224, 224);
-    private              CharacterSheet mSheet;
-    private              PageField      mReelingField;
-    private              PageField      mCollapsedField;
-    private              PageField      mCheck1Field;
-    private              PageField      mCheck2Field;
-    private              PageField      mCheck3Field;
-    private              PageField      mCheck4Field;
-    private              PageField      mDeadField;
-    private              State          mState;
+    private CharacterSheet mSheet;
+    private PageField      mReelingField;
+    private PageField      mCollapsedField;
+    private PageField      mCheck1Field;
+    private PageField      mCheck2Field;
+    private PageField      mCheck3Field;
+    private PageField      mCheck4Field;
+    private PageField      mDeadField;
+    private State          mState;
 
     enum State {
-        UNAFFECTED, REELING, COLLAPSED, CHECK1, CHECK2, CHECK3, CHECK4, DEAD
+        UNAFFECTED,
+        REELING,
+        COLLAPSED,
+        CHECK1,
+        CHECK2,
+        CHECK3,
+        CHECK4,
+        DEAD
     }
 
     /**
@@ -127,7 +133,7 @@ public class HitPointsPanel extends DropPanel implements NotifierTarget {
 
     private void applyBackground(Component field, boolean add) {
         if (add) {
-            addHorizontalBackground(field, CURRENT_THRESHOLD_COLOR);
+            addHorizontalBackground(field, ThemeColor.WARN);
         } else {
             removeHorizontalBackground(field);
         }

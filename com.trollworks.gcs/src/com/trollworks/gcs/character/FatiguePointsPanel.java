@@ -15,19 +15,18 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.page.PagePoints;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.SwingConstants;
 
 /** The character fatigue points panel. */
 public class FatiguePointsPanel extends DropPanel implements NotifierTarget {
-    private static final Color          CURRENT_THRESHOLD_COLOR = new Color(255, 224, 224);
     private              CharacterSheet mSheet;
     private              PageField      mTiredField;
     private              PageField      mCollapsedField;
@@ -93,7 +92,7 @@ public class FatiguePointsPanel extends DropPanel implements NotifierTarget {
 
     private void applyBackground(Component field, boolean add) {
         if (add) {
-            addHorizontalBackground(field, CURRENT_THRESHOLD_COLOR);
+            addHorizontalBackground(field, ThemeColor.WARN);
         } else {
             removeHorizontalBackground(field);
         }

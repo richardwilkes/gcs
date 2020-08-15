@@ -14,10 +14,10 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.Color;
 import javax.swing.SwingConstants;
 
 /** The character damage panel. */
@@ -40,8 +40,8 @@ public class LiftPanel extends DropPanel {
 
     private void createRow(CharacterSheet sheet, String key, String title, String tooltip) {
         PageField field = new PageField(sheet, key, SwingConstants.RIGHT, false, tooltip);
-        field.setForeground(Color.BLACK);
-        field.setDisabledTextColor(Color.BLACK);
+        field.setForeground(ThemeColor.ON_PAGE);
+        field.setDisabledTextColor(ThemeColor.ON_PAGE);
         add(field);
         add(new PageLabel(title, field));
     }

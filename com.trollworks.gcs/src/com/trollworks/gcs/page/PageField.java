@@ -17,8 +17,10 @@ import com.trollworks.gcs.character.Encumbrance;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.Settings;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
@@ -30,7 +32,6 @@ import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.text.WeightFormatter;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -109,14 +110,14 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         setOpaque(false);
         // Just setting opaque to false isn't enough for some reason, so I'm also setting the
         // background color to a 100% transparent value.
-        setBackground(new Color(255, 255, 255, 0));
+        setBackground(Colors.TRANSPARENT);
         setHorizontalAlignment(alignment);
         setEditable(editable);
         setEnabled(editable);
         if (editable) {
-            setForeground(new Color(0, 0, 192));
+            setForeground(ThemeColor.ON_USER_EDITABLE);
         } else {
-            setDisabledTextColor(Color.BLACK);
+            setDisabledTextColor(ThemeColor.ON_PAGE);
         }
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         mSheet.getCharacter().addTarget(this, mConsumedType);
@@ -159,7 +160,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
             Rectangle bounds = getBounds();
             bounds.x = 0;
             bounds.y = 0;
-            gc.setColor(Color.lightGray);
+            gc.setColor(ThemeColor.EDITABLE_MARKER);
             int height = mSheet.getScale().scale(1);
             gc.fillRect(bounds.x, bounds.y + bounds.height - height, bounds.width, height);
             gc.setColor(getForeground());

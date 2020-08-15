@@ -23,6 +23,7 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
@@ -169,8 +170,8 @@ public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTa
         outline.setAllowColumnResize(false);
         outline.setAllowColumnContextMenu(false);
         header.setIgnoreResizeOK(true);
-        header.setBackground(Color.black);
-        header.setTopDividerColor(Color.black);
+        header.setBackground(ThemeColor.ON_PAGE);
+        header.setTopDividerColor(ThemeColor.ON_PAGE);
     }
 
     /** @return The outline containing the Advantages, Disadvantages & Quirks. */

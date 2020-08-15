@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.GraphicsUtilities;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -75,7 +76,7 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
 
     /** @return The top divider color. */
     public Color getTopDividerColor() {
-        return mTopDividerColor == null ? mOwner.getDividerColor() : mTopDividerColor;
+        return mTopDividerColor == null ? ThemeColor.DIVIDER : mTopDividerColor;
     }
 
     /** @param color The new top divider color. Pass in {@code null} to restore defaults. */
@@ -193,10 +194,9 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
         boolean   drawDividers = mOwner.shouldDrawColumnDividers();
         gc.setColor(getTopDividerColor());
         gc.fillRect(clip.x, height - one, clip.width, one);
-        Color        dividerColor = mOwner.getDividerColor();
-        List<Column> columns      = mOwner.getModel().getColumns();
-        int          count        = columns.size();
-        int          maxDivider   = count - 1;
+        List<Column> columns    = mOwner.getModel().getColumns();
+        int          count      = columns.size();
+        int          maxDivider = count - 1;
         while (maxDivider > 0 && !columns.get(maxDivider).isVisible()) {
             maxDivider--;
         }
@@ -218,7 +218,7 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
                 }
                 bounds.x += bounds.width;
                 if (drawDividers && i < maxDivider) {
-                    gc.setColor(dividerColor);
+                    gc.setColor(ThemeColor.DIVIDER);
                     gc.fillRect(bounds.x, bounds.y, one, bounds.y + bounds.height);
                     bounds.x += one;
                 }

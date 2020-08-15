@@ -22,6 +22,7 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scales;
@@ -44,7 +45,6 @@ import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
@@ -75,7 +75,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
         JScrollPane scroller = new JScrollPane(mSheet);
         scroller.setBorder(null);
         JViewport viewport = scroller.getViewport();
-        viewport.setBackground(Color.LIGHT_GRAY);
+        viewport.setBackground(ThemeColor.PAGE_VOID);
         viewport.addChangeListener(mSheet);
         add(scroller, BorderLayout.CENTER);
         mSheet.rebuild();

@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.layout.FlexGrid;
@@ -56,7 +56,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
             bounds.y = compBounds.y;
             bounds.height = compBounds.height;
             int logical = i / step;
-            gc.setColor(Colors.getBanding(logical % 2 == 0));
+            gc.setColor((logical % 2 == 0) ? Color.WHITE : ThemeColor.BANDING);
             gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
     }
@@ -69,7 +69,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
             int columns = ((FlexGrid) ((FlexLayout) layout).getRootCell()).getColumnCount();
             return columns - columns / 2;
         } else if (layout instanceof PrecisionLayout) {
-            return ((PrecisionLayout)layout).getColumns();
+            return ((PrecisionLayout) layout).getColumns();
         }
         return 1;
     }

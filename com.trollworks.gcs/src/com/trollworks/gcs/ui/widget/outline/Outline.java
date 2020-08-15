@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.Selection;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.print.PrintUtilities;
@@ -95,7 +96,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     protected            OutlineHeader     mHeaderPanel;
     private              boolean           mDrawRowDividers;
     private              boolean           mDrawColumnDividers;
-    private              Color             mDividerColor;
     private              boolean           mDrawingDragImage;
     private              Rectangle         mDragClip;
     private              Column            mDividerDrag;
@@ -171,7 +171,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         mDrawRowDividers = true;
         mDrawColumnDividers = true;
         mUseBanding = true;
-        mDividerColor = Color.LIGHT_GRAY;
         mSelectionChangedCommand = CMD_SELECTION_CHANGED;
         mPotentialContentSizeChangeCommand = CMD_POTENTIAL_CONTENT_SIZE_CHANGE;
         mDragChildInsertIndex = -1;
@@ -246,16 +245,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     /** @return {@code true} if hierarchy indention (and controls) will be shown. */
     public boolean showIndent() {
         return mModel.showIndent();
-    }
-
-    /** @return The color to use when drawing the divider lines. */
-    public Color getDividerColor() {
-        return mDividerColor;
-    }
-
-    /** @param color The color to use when drawing the divider lines. */
-    public void setDividerColor(Color color) {
-        mDividerColor = color;
     }
 
     /** @return Whether to draw the row dividers or not. */
@@ -523,7 +512,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                         gc.setColor(getBackground(rowIndex, rowSelected, active));
                         gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
                         if (mDrawRowDividers) {
-                            gc.setColor(mDividerColor);
+                            gc.setColor(ThemeColor.DIVIDER);
                             gc.fillRect(bounds.x, bounds.y + bounds.height, bounds.width, one);
                         }
                     }
@@ -534,7 +523,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
         if (mDrawColumnDividers) {
             int x = insets.left;
-            gc.setColor(mDividerColor);
+            gc.setColor(ThemeColor.DIVIDER);
             List<Column> columns = mModel.getColumns();
             int          count   = columns.size() - 1;
             while (count > 0 && !columns.get(count).isVisible()) {
@@ -684,7 +673,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         if (selected) {
             return Colors.getListBackground(true, active);
         }
-        return useBanding() ? Colors.getBanding(rowIndex % 2 == 0) : Color.white;
+        return (useBanding() && (rowIndex % 2 == 0)) ? Color.WHITE : ThemeColor.BANDING;
     }
 
     @Override
@@ -921,7 +910,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
                 gc.setColor(getBackground());
                 gc.fill(bounds);
-                gc.setColor(getDividerColor());
+                gc.setColor(ThemeColor.DIVIDER);
                 if (mDrawRowDividers) {
                     gc.fillRect(bounds.x, bounds.y, bounds.width, one);
                     gc.fillRect(bounds.x, bounds.y + bounds.height - one, bounds.width, one);
@@ -947,13 +936,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     }
 
     private void drawOneColumn(Graphics2D g2d, Column column, Rectangle bounds) {
-        Scale scale    = Scale.get(this);
-        int   one      = scale.scale(1);
-        Shape oldClip  = g2d.getClip();
-        Color divColor = getDividerColor();
-        int   last     = getLastRowToDisplay();
-        int   y        = bounds.y;
-        int   maxY     = bounds.y + bounds.height;
+        Scale scale   = Scale.get(this);
+        int   one     = scale.scale(1);
+        Shape oldClip = g2d.getClip();
+        int   last    = getLastRowToDisplay();
+        int   y       = bounds.y;
+        int   maxY    = bounds.y + bounds.height;
 
         if (mHeaderPanel != null) {
             bounds.height = mHeaderPanel.getHeight();
@@ -961,7 +949,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             g2d.fill(bounds);
             column.drawHeaderCell(this, g2d, bounds);
             bounds.y += mHeaderPanel.getHeight();
-            g2d.setColor(divColor);
+            g2d.setColor(ThemeColor.DIVIDER);
             g2d.fillRect(bounds.x, bounds.y, bounds.width, one);
             bounds.y += one;
         }
@@ -980,7 +968,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                     column.drawRowCell(this, g2d, bounds, row, false, true);
                     g2d.setClip(oldClip);
                     if (mDrawRowDividers) {
-                        g2d.setColor(divColor);
+                        g2d.setColor(ThemeColor.DIVIDER);
                         g2d.fillRect(bounds.x, bounds.y + bounds.height, bounds.width, one);
                     }
                 }

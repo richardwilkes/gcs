@@ -12,13 +12,13 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.GraphicsUtilities;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.utility.units.LengthUnits;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -37,7 +37,7 @@ public class Page extends JPanel {
         super(new BorderLayout());
         mOwner = owner;
         setOpaque(true);
-        setBackground(Color.white);
+        setBackground(ThemeColor.PAGE);
         PrintManager pageSettings = mOwner.getPageSettings();
         Insets       insets       = mOwner.getPageAdornmentsInsets(this);
         double[]     margins      = pageSettings != null ? pageSettings.getPageMargins(LengthUnits.PT) : new double[]{36.0, 36.0, 36.0, 36.0};

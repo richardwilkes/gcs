@@ -12,6 +12,7 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
@@ -29,7 +30,7 @@ public class LibraryContent extends JPanel implements ScaleRoot, Scrollable {
 
     public LibraryContent(ListOutline outline) {
         mOutline = outline;
-        mOutline.setBorder(new LineBorder(mOutline.getDividerColor(), 0, 0, 0, 1));
+        mOutline.setBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 0, 1));
         setLayout(new BorderLayout());
         add(mOutline);
         mScale = Preferences.getInstance().getInitialUIScale().getScale();

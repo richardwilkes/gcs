@@ -18,9 +18,9 @@ import javax.swing.UIManager;
 
 /** Provides standardized color access. */
 public class Colors {
-    private static final Color               SECONDARY_BANDING = new Color(232, 255, 232);
-    private static final Map<String, String> NAME_TO_RGB       = new HashMap<>();
-    private static final Map<String, String> RGB_TO_NAME       = new HashMap<>();
+    public static final  Color               TRANSPARENT = new Color(0, 0, 0, 0);
+    private static final Map<String, String> NAME_TO_RGB = new HashMap<>();
+    private static final Map<String, String> RGB_TO_NAME = new HashMap<>();
 
     static {
         // The HTML / CSS color list
@@ -254,14 +254,6 @@ public class Colors {
         } catch (NumberFormatException nfe) {
             return 0;
         }
-    }
-
-    /**
-     * @param primary Whether to return the primary or secondary banding color.
-     * @return The color.
-     */
-    public static Color getBanding(boolean primary) {
-        return primary ? Color.WHITE : SECONDARY_BANDING;
     }
 
     /**

@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
@@ -1183,7 +1184,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         if (selected) {
             return Colors.getListBackground(true, active);
         }
-        return mUseBanding ? Colors.getBanding(position % 2 == 0) : Color.WHITE;
+        return (mUseBanding && (position % 2 == 0)) ? Color.WHITE : ThemeColor.BANDING;
     }
 
     /** @return {@code true} if background banding is enabled. */

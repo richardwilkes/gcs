@@ -15,6 +15,7 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -22,7 +23,6 @@ import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.text.MessageFormat;
 import javax.swing.SwingConstants;
@@ -38,12 +38,12 @@ public class HitLocationPanel extends DropPanel {
     public HitLocationPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), I18n.Text("Hit Locations"));
 
-        addHorizontalBackground(createHeader(I18n.Text("Roll"), null), Color.black);
-        addVerticalBackground(createDivider(), Color.black);
+        addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.ON_PAGE);
+        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
         createHeader(I18n.Text("Where"), null);
-        addVerticalBackground(createDivider(), Color.black);
+        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
         createHeader(I18n.Text("Penalty"), I18n.Text("The hit penalty for targeting a specific hit location"));
-        addVerticalBackground(createDivider(), Color.black);
+        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
         createHeader(I18n.Text("DR"), null);
 
         GURPSCharacter   character = sheet.getCharacter();

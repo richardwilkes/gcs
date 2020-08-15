@@ -15,13 +15,13 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.page.PagePoints;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.Color;
 import javax.swing.SwingConstants;
 
 /** The character attributes panel. */
@@ -70,6 +70,6 @@ public class AttributesPanel extends DropPanel {
     private void addDivider() {
         Wrapper panel = new Wrapper();
         add(panel, new PrecisionLayoutData().setHorizontalSpan(3).setHeightHint(1));
-        addHorizontalBackground(panel, Color.black);
+        addHorizontalBackground(panel, ThemeColor.ON_PAGE);
     }
 }

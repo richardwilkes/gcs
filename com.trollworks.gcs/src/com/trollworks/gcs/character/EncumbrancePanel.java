@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.Wrapper;
@@ -21,7 +22,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Numbers;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.text.MessageFormat;
@@ -29,10 +29,8 @@ import javax.swing.SwingConstants;
 
 /** The character encumbrance panel. */
 public class EncumbrancePanel extends DropPanel implements NotifierTarget {
-    private static final Color          CURRENT_ENCUMBRANCE_COLOR            = new Color(252, 242, 196);
-    private static final Color          CURRENT_ENCUMBRANCE_OVERLOADED_COLOR = new Color(255, 224, 224);
-    private              CharacterSheet mSheet;
-    private              PageLabel[]    mMarkers;
+    private CharacterSheet mSheet;
+    private PageLabel[]    mMarkers;
 
     /**
      * Creates a new encumbrance panel.
@@ -48,15 +46,15 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         String     encLevelTooltip = I18n.Text("The encumbrance level");
         PageHeader bulletHeader    = createHeader(this, "", encLevelTooltip);
         UIUtilities.setOnlySize(bulletHeader, prefSize);
-        addHorizontalBackground(bulletHeader, Color.black);
+        addHorizontalBackground(bulletHeader, ThemeColor.ON_PAGE);
         PageHeader header = createHeader(this, I18n.Text("Level"), encLevelTooltip);
-        addVerticalBackground(createDivider(), Color.black);
+        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
         String maxLoadTooltip = I18n.Text("The maximum load a character can carry and still remain within a specific encumbrance level");
         createHeader(this, I18n.Text("Max Load"), maxLoadTooltip);
-        addVerticalBackground(createDivider(), Color.black);
+        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
         String moveTooltip = I18n.Text("The character's ground movement rate for a specific encumbrance level");
         createHeader(this, I18n.Text("Move"), moveTooltip);
-        addVerticalBackground(createDivider(), Color.black);
+        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
         String dodgeTooltip = I18n.Text("The character's dodge for a specific encumbrance level");
         createHeader(this, I18n.Text("Dodge"), dodgeTooltip);
         GURPSCharacter character = mSheet.getCharacter();
@@ -67,7 +65,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
             UIUtilities.setOnlySize(mMarkers[index], prefSize);
             add(mMarkers[index]);
             if (current == encumbrance) {
-                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
+                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? ThemeColor.WARN : ThemeColor.CURRENT_ENCUMBRANCE);
             }
             add(new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), header));
             createDivider();
@@ -98,7 +96,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         for (Encumbrance encumbrance : Encumbrance.values()) {
             int index = encumbrance.ordinal();
             if (encumbrance == current) {
-                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? CURRENT_ENCUMBRANCE_OVERLOADED_COLOR : CURRENT_ENCUMBRANCE_COLOR);
+                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? ThemeColor.WARN : ThemeColor.CURRENT_ENCUMBRANCE);
             } else {
                 removeHorizontalBackground(mMarkers[index]);
             }

@@ -12,11 +12,11 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.Color;
 import javax.swing.SwingConstants;
 
 /** The character description panel. */
@@ -59,6 +59,6 @@ public class DescriptionPanel extends DropPanel {
         Wrapper panel = new Wrapper();
         panel.setOnlySize(1, 1);
         add(panel);
-        addVerticalBackground(panel, Color.black);
+        addVerticalBackground(panel, ThemeColor.ON_PAGE);
     }
 }

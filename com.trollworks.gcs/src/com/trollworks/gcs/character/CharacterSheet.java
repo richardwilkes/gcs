@@ -40,6 +40,7 @@ import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.Selection;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -482,8 +483,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         outline.setAllowColumnResize(false);
         outline.setAllowColumnContextMenu(false);
         header.setIgnoreResizeOK(true);
-        header.setBackground(Color.black);
-        header.setTopDividerColor(Color.black);
+        header.setBackground(ThemeColor.ON_PAGE);
+        header.setTopDividerColor(ThemeColor.ON_PAGE);
     }
 
     /** @return The outline containing the Advantages, Disadvantages & Quirks. */
@@ -946,7 +947,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         }
 
         Font savedFont = gc.getFont();
-        gc.setColor(Color.BLACK);
+        gc.setColor(ThemeColor.ON_PAGE);
         gc.setFont(font1);
         gc.drawString(left, bounds.x, y);
         gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
