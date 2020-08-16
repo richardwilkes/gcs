@@ -17,6 +17,7 @@ import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PdfRef;
 import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.Theme;
 import com.trollworks.gcs.ui.print.PageOrientation;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scales;
@@ -89,6 +90,7 @@ public class Preferences {
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHOW_COLLEGE_IN_SHEET_SPELLS    = "show_college_in_sheet_spells";
     private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
+    private static final String THEME                           = "theme";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
     private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
     private static final String USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
@@ -374,6 +376,9 @@ public class Preferences {
                         mUseNativePrintDialogs = m.getBooleanWithDefault(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+                        if (m.has(THEME)) {
+                            Theme.set(new Theme(m.getMap(THEME)));
+                        }
                         if (m.has(DEFAULT_PAGE_SETTINGS)) {
                             mDefaultPageSettings = new PrintManager(m.getMap(DEFAULT_PAGE_SETTINGS));
                         }
@@ -527,6 +532,8 @@ public class Preferences {
                     w.keyValue(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
                     w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                     w.keyValue(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
+                    w.key(THEME);
+                    Theme.current().save(w);
                     w.keyValue(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                     if (mDefaultPageSettings != null) {
                         w.key(DEFAULT_PAGE_SETTINGS);

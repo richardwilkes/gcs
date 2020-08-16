@@ -15,6 +15,7 @@ import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Label;
 
+import java.awt.Color;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 
@@ -29,6 +30,21 @@ public class PageLabel extends Label {
     public PageLabel(String title, JComponent field) {
         super(title);
         setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
+        setRefersTo(field);
+        UIUtilities.setToPreferredSizeOnly(this);
+    }
+
+    /**
+     * Creates a new label for the specified field.
+     *
+     * @param title The title of the field.
+     * @param color The color to use.
+     * @param field The field.
+     */
+    public PageLabel(String title, Color color, JComponent field) {
+        super(title);
+        setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
+        setForeground(color);
         setRefersTo(field);
         UIUtilities.setToPreferredSizeOnly(this);
     }

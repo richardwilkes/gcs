@@ -1184,7 +1184,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         if (selected) {
             return Colors.getListBackground(true, active);
         }
-        return (mUseBanding && (position % 2 == 0)) ? Color.WHITE : ThemeColor.BANDING;
+        return (mUseBanding && (position % 2 != 0)) ? ThemeColor.BANDING : Color.WHITE;
     }
 
     /** @return {@code true} if background banding is enabled. */

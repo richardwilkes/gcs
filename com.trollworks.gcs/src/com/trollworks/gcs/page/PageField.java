@@ -32,6 +32,7 @@ import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.text.WeightFormatter;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -43,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.util.HashMap;
 import javax.swing.JFormattedTextField;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.text.DefaultFormatter;
@@ -55,36 +55,16 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
     private String         mConsumedType;
 
     /**
-     * Creates a new, left-aligned, text input field.
-     *
-     * @param sheet        The sheet to listen to.
-     * @param consumedType The field to listen to.
-     */
-    public PageField(CharacterSheet sheet, String consumedType) {
-        this(sheet, consumedType, SwingConstants.LEFT, true, null);
-    }
-
-    /**
-     * Creates a new, left-aligned, text input field.
-     *
-     * @param sheet        The sheet to listen to.
-     * @param consumedType The field to listen to.
-     * @param tooltip      The tooltip to set.
-     */
-    public PageField(CharacterSheet sheet, String consumedType, String tooltip) {
-        this(sheet, consumedType, SwingConstants.LEFT, true, tooltip);
-    }
-
-    /**
      * Creates a new text input field.
      *
      * @param sheet        The sheet to listen to.
      * @param consumedType The field to listen to.
      * @param alignment    The alignment of the field.
+     * @param editable     Whether or not the user can edit this field.
      * @param tooltip      The tooltip to set.
      */
-    public PageField(CharacterSheet sheet, String consumedType, int alignment, String tooltip) {
-        this(sheet, consumedType, alignment, true, tooltip);
+    public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip) {
+        this(sheet, consumedType, alignment, editable, tooltip, ThemeColor.ON_PAGE);
     }
 
     /**
@@ -96,7 +76,7 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
      * @param editable     Whether or not the user can edit this field.
      * @param tooltip      The tooltip to set.
      */
-    public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip) {
+    public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip, Color color) {
         super(getFormatterFactoryForType(sheet.getCharacter(), consumedType), sheet.getCharacter().getValueForID(consumedType));
         if (Platform.isLinux()) {
             // I override the UI here since the GTK UI on Linux has no way to turn off the border
@@ -114,11 +94,8 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         setHorizontalAlignment(alignment);
         setEditable(editable);
         setEnabled(editable);
-        if (editable) {
-            setForeground(ThemeColor.ON_USER_EDITABLE);
-        } else {
-            setDisabledTextColor(ThemeColor.ON_PAGE);
-        }
+        setForeground(editable ? ThemeColor.ON_EDITABLE : color);
+        setDisabledTextColor(color);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         mSheet.getCharacter().addTarget(this, mConsumedType);
         addPropertyChangeListener("value", this);
@@ -156,16 +133,16 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
 
     @Override
     protected void paintComponent(Graphics gc) {
+        super.paintComponent(GraphicsUtilities.prepare(gc));
         if (isEditable()) {
             Rectangle bounds = getBounds();
             bounds.x = 0;
             bounds.y = 0;
-            gc.setColor(ThemeColor.EDITABLE_MARKER);
+            gc.setColor(ThemeColor.EDITABLE_LINE);
             int height = mSheet.getScale().scale(1);
             gc.fillRect(bounds.x, bounds.y + bounds.height - height, bounds.width, height);
             gc.setColor(getForeground());
         }
-        super.paintComponent(GraphicsUtilities.prepare(gc));
     }
 
     /** @return The consumed type. */

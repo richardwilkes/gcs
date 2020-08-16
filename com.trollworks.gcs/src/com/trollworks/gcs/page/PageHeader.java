@@ -12,10 +12,10 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -30,7 +30,7 @@ public class PageHeader extends Label {
     public PageHeader(String title, String tooltip) {
         super(title, SwingConstants.CENTER);
         setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
-        setForeground(Color.white);
+        setForeground(ThemeColor.ON_HEADER);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
     }
 }

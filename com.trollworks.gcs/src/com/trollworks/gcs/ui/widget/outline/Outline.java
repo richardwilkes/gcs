@@ -673,7 +673,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         if (selected) {
             return Colors.getListBackground(true, active);
         }
-        return (useBanding() && (rowIndex % 2 == 0)) ? Color.WHITE : ThemeColor.BANDING;
+        return (useBanding() && (rowIndex % 2 != 0)) ? ThemeColor.BANDING : Color.WHITE;
     }
 
     @Override

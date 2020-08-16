@@ -41,6 +41,10 @@ public class ColorWell extends JPanel implements MouseListener {
         addMouseListener(this);
     }
 
+    public void setColorChangedListener(ColorChangedListener listener) {
+        mListener = listener;
+    }
+
     public Color getWellColor() {
         return mColor;
     }

@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -22,15 +23,20 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Numbers;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 /** The character encumbrance panel. */
 public class EncumbrancePanel extends DropPanel implements NotifierTarget {
-    private CharacterSheet mSheet;
-    private PageLabel[]    mMarkers;
+    private CharacterSheet   mSheet;
+    private PageLabel[]      mMarkers;
+    private List<JComponent> mFieldsForColorUpdate;
 
     /**
      * Creates a new encumbrance panel.
@@ -46,36 +52,56 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         String     encLevelTooltip = I18n.Text("The encumbrance level");
         PageHeader bulletHeader    = createHeader(this, "", encLevelTooltip);
         UIUtilities.setOnlySize(bulletHeader, prefSize);
-        addHorizontalBackground(bulletHeader, ThemeColor.ON_PAGE);
+        addHorizontalBackground(bulletHeader, ThemeColor.HEADER);
         PageHeader header = createHeader(this, I18n.Text("Level"), encLevelTooltip);
-        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
+        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         String maxLoadTooltip = I18n.Text("The maximum load a character can carry and still remain within a specific encumbrance level");
         createHeader(this, I18n.Text("Max Load"), maxLoadTooltip);
-        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
+        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         String moveTooltip = I18n.Text("The character's ground movement rate for a specific encumbrance level");
         createHeader(this, I18n.Text("Move"), moveTooltip);
-        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
+        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         String dodgeTooltip = I18n.Text("The character's dodge for a specific encumbrance level");
         createHeader(this, I18n.Text("Dodge"), dodgeTooltip);
+        mFieldsForColorUpdate = new ArrayList<>();
         GURPSCharacter character = mSheet.getCharacter();
         Encumbrance    current   = character.getEncumbranceLevel(false);
+        boolean        band      = false;
         for (Encumbrance encumbrance : encumbranceValues) {
-            int index = encumbrance.ordinal();
-            mMarkers[index] = new PageLabel(encumbrance == current ? "•" : "", header);
-            UIUtilities.setOnlySize(mMarkers[index], prefSize);
-            add(mMarkers[index]);
+            boolean warn;
+            Color   textColor;
             if (current == encumbrance) {
-                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? ThemeColor.WARN : ThemeColor.CURRENT_ENCUMBRANCE);
+                warn = character.isCarryingGreaterThanMaxLoad(false);
+                textColor = warn ? ThemeColor.ON_WARN : ThemeColor.ON_CURRENT;
+            } else {
+                warn = false;
+                textColor = ThemeColor.ON_PAGE;
             }
-            add(new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), header));
+            int index = encumbrance.ordinal();
+            mMarkers[index] = new PageLabel(encumbrance == current ? "•" : "", textColor, header);
+            UIUtilities.setOnlySize(mMarkers[index], prefSize);
+            addField(encumbrance, mMarkers[index]);
+            if (current == encumbrance) {
+                addHorizontalBackground(mMarkers[index], warn ? ThemeColor.WARN : ThemeColor.CURRENT);
+            } else if (band) {
+                addHorizontalBackground(mMarkers[index], ThemeColor.BANDING);
+            }
+            band = !band;
+            addField(encumbrance, new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header));
             createDivider();
-            createDisabledField(this, mSheet, GURPSCharacter.MAXIMUM_CARRY_PREFIX + index, maxLoadTooltip, SwingConstants.RIGHT);
+            addField(encumbrance, new PageField(mSheet, GURPSCharacter.MAXIMUM_CARRY_PREFIX + index, SwingConstants.RIGHT, false, maxLoadTooltip, textColor));
             createDivider();
-            createDisabledField(this, mSheet, GURPSCharacter.MOVE_PREFIX + index, moveTooltip, SwingConstants.RIGHT);
+            addField(encumbrance, new PageField(mSheet, GURPSCharacter.MOVE_PREFIX + index, SwingConstants.RIGHT, false, moveTooltip, textColor));
             createDivider();
-            createDisabledField(this, mSheet, GURPSCharacter.DODGE_PREFIX + index, dodgeTooltip, SwingConstants.RIGHT);
+            addField(encumbrance, new PageField(mSheet, GURPSCharacter.DODGE_PREFIX + index, SwingConstants.RIGHT, false, dodgeTooltip, textColor));
         }
         character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT, GURPSCharacter.ID_CURRENT_HP, GURPSCharacter.ID_CURRENT_FP);
+    }
+
+    private void addField(Encumbrance enc, JComponent field) {
+        field.putClientProperty(Encumbrance.class, enc);
+        add(field);
+        mFieldsForColorUpdate.add(field);
     }
 
     private Container createDivider() {
@@ -93,14 +119,32 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
             character.notifyBasicLift();
         }
         Encumbrance current = character.getEncumbranceLevel(false);
+        boolean band = false;
         for (Encumbrance encumbrance : Encumbrance.values()) {
             int index = encumbrance.ordinal();
             if (encumbrance == current) {
-                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? ThemeColor.WARN : ThemeColor.CURRENT_ENCUMBRANCE);
+                addHorizontalBackground(mMarkers[index], character.isCarryingGreaterThanMaxLoad(false) ? ThemeColor.WARN : ThemeColor.CURRENT);
+            } else if (band) {
+                addHorizontalBackground(mMarkers[index], ThemeColor.BANDING);
             } else {
                 removeHorizontalBackground(mMarkers[index]);
             }
             mMarkers[index].setText(encumbrance == current ? "•" : "");
+            band = !band;
+        }
+        for (JComponent comp : mFieldsForColorUpdate) {
+            Color       textColor;
+            Encumbrance enc = (Encumbrance) comp.getClientProperty(Encumbrance.class);
+            if (current == enc) {
+                textColor = character.isCarryingGreaterThanMaxLoad(false) ? ThemeColor.ON_WARN : ThemeColor.ON_CURRENT;
+            } else {
+                textColor = ThemeColor.ON_PAGE;
+            }
+            if (comp instanceof PageField) {
+                ((PageField) comp).setDisabledTextColor(textColor);
+            } else {
+                comp.setForeground(textColor);
+            }
         }
         revalidate();
         repaint();

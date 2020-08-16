@@ -12,9 +12,9 @@
 package com.trollworks.gcs.ui.border;
 
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -24,12 +24,12 @@ import javax.swing.SwingConstants;
 
 /** A border consisting of a frame and optional title. */
 public class TitledBorder extends LineBorder {
-    private Color  mTextColor = Color.WHITE;
     private String mTitle;
     private Font   mFont;
 
     /** Creates a new border without a title. */
     public TitledBorder() {
+        super(ThemeColor.HEADER);
     }
 
     /**
@@ -39,18 +39,9 @@ public class TitledBorder extends LineBorder {
      * @param title The title to use.
      */
     public TitledBorder(Font font, String title) {
+        this();
         mFont = font;
         mTitle = title;
-    }
-
-    /** @return The color to use for the text. */
-    public Color getTextColor() {
-        return mTextColor;
-    }
-
-    /** @param color The color to use for the text. */
-    public void setTextColor(Color color) {
-        mTextColor = color;
     }
 
     /** @return The font. */
@@ -88,7 +79,7 @@ public class TitledBorder extends LineBorder {
             Font  font      = scale.scale(mFont);
             int   one       = scale.scale(1);
             graphics.setFont(font);
-            graphics.setColor(mTextColor);
+            graphics.setColor(ThemeColor.ON_HEADER);
             TextDrawing.draw(graphics, new Rectangle(x + one, y, width - (one + one), TextDrawing.getPreferredSize(font, mTitle).height), mTitle, SwingConstants.CENTER, SwingConstants.TOP);
             graphics.setFont(savedFont);
         }

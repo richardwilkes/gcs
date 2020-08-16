@@ -38,18 +38,25 @@ public class HitLocationPanel extends DropPanel {
     public HitLocationPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), I18n.Text("Hit Locations"));
 
-        addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.ON_PAGE);
-        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
+        addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.HEADER);
+        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         createHeader(I18n.Text("Where"), null);
-        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
+        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         createHeader(I18n.Text("Penalty"), I18n.Text("The hit penalty for targeting a specific hit location"));
-        addVerticalBackground(createDivider(), ThemeColor.ON_PAGE);
+        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         createHeader(I18n.Text("DR"), null);
 
         GURPSCharacter   character = sheet.getCharacter();
         HitLocationTable table     = character.getProfile().getHitLocationTable();
+        boolean band = false;
         for (HitLocationTableEntry entry : table.getEntries()) {
-            createLabel(entry.getRoll(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), entry.getName()), true);
+            PageLabel first = createLabel(entry.getRoll(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), entry.getName()), true);
+            if (band) {
+                band = false;
+                addHorizontalBackground(first, ThemeColor.BANDING);
+            } else {
+                band = true;
+            }
             createDivider();
             createLabel(entry.getName(), Text.wrapPlainTextForToolTip(entry.getLocation().getDescription()), true);
             createDivider();
@@ -79,11 +86,12 @@ public class HitLocationPanel extends DropPanel {
         return panel;
     }
 
-    private void createLabel(String title, String tooltip, boolean center) {
+    private PageLabel createLabel(String title, String tooltip, boolean center) {
         PageLabel label = new PageLabel(title, null);
         label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         label.setHorizontalAlignment(center ? SwingConstants.CENTER : SwingConstants.RIGHT);
         add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        return label;
     }
 
     private void createDRField(CharacterSheet sheet, String key, String tooltip) {

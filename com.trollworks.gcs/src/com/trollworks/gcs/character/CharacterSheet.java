@@ -483,8 +483,8 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
         outline.setAllowColumnResize(false);
         outline.setAllowColumnContextMenu(false);
         header.setIgnoreResizeOK(true);
-        header.setBackground(ThemeColor.ON_PAGE);
-        header.setTopDividerColor(ThemeColor.ON_PAGE);
+        header.setBackground(ThemeColor.HEADER);
+        header.setTopDividerColor(ThemeColor.HEADER);
     }
 
     /** @return The outline containing the Advantages, Disadvantages & Quirks. */
