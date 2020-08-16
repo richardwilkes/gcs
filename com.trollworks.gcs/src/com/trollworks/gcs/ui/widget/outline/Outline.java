@@ -1523,6 +1523,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 while (index >= 0) {
                     mModel.getRowAtIndex(index).setOpen(false);
                     index = selection.nextSelectedIndex(index + 1);
+                    repaintSelection();
                 }
                 break;
             case KeyEvent.VK_RIGHT:
@@ -1530,6 +1531,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 while (index >= 0) {
                     mModel.getRowAtIndex(index).setOpen(true);
                     index = selection.nextSelectedIndex(index + 1);
+                    repaintSelection();
                 }
                 break;
             case KeyEvent.VK_UP:
