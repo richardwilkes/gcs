@@ -113,7 +113,6 @@ public class EquipmentModifierEnabler extends JPanel {
         JPanel wrapper = new JPanel(new ColumnLayout());
         wrapper.setBackground(Color.WHITE);
         mModifiers = mEquipment.getModifiers().toArray(new EquipmentModifier[0]);
-        Arrays.sort(mModifiers);
 
         int length = mModifiers.length;
         mEnabled = new JCheckBox[length];

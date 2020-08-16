@@ -132,7 +132,6 @@ public class AdvantageModifierEnabler extends JPanel {
         }
 
         mModifiers = mAdvantage.getModifiers().toArray(new AdvantageModifier[0]);
-        Arrays.sort(mModifiers);
 
         int length = mModifiers.length;
         mEnabled = new JCheckBox[length];
