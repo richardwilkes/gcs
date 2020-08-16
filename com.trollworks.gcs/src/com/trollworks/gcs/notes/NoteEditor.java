@@ -16,10 +16,12 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Dimension;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -45,6 +47,18 @@ public class NoteEditor extends RowEditor<Note> {
         mEditor.setWrapStyleWord(true);
         mEditor.setEnabled(mIsEditable);
         JScrollPane scroller = new JScrollPane(mEditor);
+        Dimension   size     = Workspace.get().getSize();
+        size.width -= 200;
+        if (size.width > 750) {
+            size.width = 750;
+        }
+        size.height -= 200;
+        if (size.height > 750) {
+            size.height = 750;
+        }
+        if (size.width > 300 && size.height > 200) {
+            scroller.setPreferredSize(size);
+        }
         add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true).setMinimumWidth(300).setMinimumHeight(200));
 
         add(new LinkedLabel(I18n.Text("Page Reference"), mReferenceField));
