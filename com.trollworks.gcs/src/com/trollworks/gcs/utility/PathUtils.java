@@ -14,14 +14,17 @@ package com.trollworks.gcs.utility;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /** Provides standard file path manipulation facilities. */
 public class PathUtils {
-    private static final char[]   INVALID_CHARACTERS;
-    private static final String[] INVALID_BASENAMES;
-    private static final String[] INVALID_FULLNAMES;
+    private static final char[]         INVALID_CHARACTERS;
+    private static final Set<Character> INVALID_CHARACTER_SET;
+    private static final String[]       INVALID_BASENAMES;
+    private static final String[]       INVALID_FULLNAMES;
 
     static {
         if (Platform.isWindows()) {
@@ -37,6 +40,11 @@ public class PathUtils {
             INVALID_BASENAMES = null;
             INVALID_FULLNAMES = null;
         }
+        Set<Character> exclude = new HashSet<>();
+        for (char ch : INVALID_CHARACTERS) {
+            exclude.add(Character.valueOf(ch));
+        }
+        INVALID_CHARACTER_SET = exclude;
     }
 
     /**
@@ -508,5 +516,30 @@ public class PathUtils {
             return Arrays.binarySearch(INVALID_FULLNAMES, name.toLowerCase()) < 0;
         }
         return true;
+    }
+
+    /**
+     * Cleans a file name (without the path) to be suitable for use on the current file system.
+     *
+     * @param name The file name to clean.
+     * @return A viable file name.
+     */
+    public static String cleanNameForFile(String name) {
+        if (isNameValidForFile(name)) {
+            return name;
+        }
+        StringBuilder buffer = new StringBuilder();
+        int           max    = name.length();
+        for (int i = 0; i < max; i++) {
+            char ch = name.charAt(i);
+            if (!INVALID_CHARACTER_SET.contains(Character.valueOf(ch))) {
+                buffer.append(ch);
+            }
+        }
+        name = buffer.toString();
+        if (isNameValidForFile(name)) {
+            return name;
+        }
+        return "untitled";
     }
 }

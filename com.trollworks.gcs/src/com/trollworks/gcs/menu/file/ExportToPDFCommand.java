@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.PathUtils;
 
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
@@ -38,7 +39,7 @@ public class ExportToPDFCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         SheetDockable sheet = getTarget(SheetDockable.class);
         if (sheet != null) {
-            String name = sheet.getSheet().getCharacter().getProfile().getName();
+            String name = PathUtils.cleanNameForFile(sheet.getSheet().getCharacter().getProfile().getName());
             if (name.isBlank()) {
                 name = "untitled";
             }

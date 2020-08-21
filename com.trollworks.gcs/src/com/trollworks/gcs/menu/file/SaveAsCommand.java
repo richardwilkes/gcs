@@ -55,8 +55,8 @@ public class SaveAsCommand extends Command {
         if (saveable == null) {
             return new Path[0];
         }
-        String name = saveable.getSaveTitle();
-        if (name.isBlank() || !PathUtils.isNameValidForFile(name)) {
+        String name = PathUtils.cleanNameForFile(saveable.getSaveTitle());
+        if (name.isBlank()) {
             name = "untitled";
         }
         Path   result = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable), I18n.Text("Save As…"), Preferences.getInstance().getLastDir().resolve(name), saveable.getFileType().getFilter());
