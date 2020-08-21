@@ -462,7 +462,7 @@ public class TextTemplate {
             writeEncodedText(out, description.getEyeColor());
             break;
         case KEY_AGE:
-            writeEncodedText(out, Numbers.format(description.getAge()));
+            writeEncodedText(out, description.getAge());
             break;
         case KEY_SIZE:
             writeEncodedText(out, Numbers.formatWithForcedSign(description.getSizeModifier()));

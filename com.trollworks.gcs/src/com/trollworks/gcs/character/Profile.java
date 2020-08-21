@@ -24,6 +24,7 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
+import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 import com.trollworks.gcs.utility.units.WeightUnits;
@@ -110,7 +111,7 @@ public class Profile {
     private              RetinaIcon       mPortrait;
     private              String           mName;
     private              String           mTitle;
-    private              int              mAge;
+    private              String              mAge;
     private              String           mBirthday;
     private              String           mEyeColor;
     private              String           mHair;
@@ -131,7 +132,7 @@ public class Profile {
         mCustomPortrait = false;
         mPortrait = null;
         mTitle = "";
-        mAge = full ? getRandomAge() : 0;
+        mAge = full ? Numbers.format(getRandomAge()) : "";
         mBirthday = full ? getRandomMonthAndDay() : "";
         mEyeColor = full ? getRandomEyeColor() : "";
         mHair = full ? getRandomHair() : "";
@@ -154,7 +155,7 @@ public class Profile {
         mPlayerName = m.getString(TAG_PLAYER_NAME);
         mName = m.getString(TAG_NAME);
         mTitle = m.getString(TAG_TITLE);
-        mAge = m.getInt(TAG_AGE);
+        mAge = m.getString(TAG_AGE);
         mBirthday = m.getString(TAG_BIRTHDAY);
         mEyeColor = m.getString(TAG_EYES);
         mHair = m.getString(TAG_HAIR);
@@ -185,7 +186,7 @@ public class Profile {
         w.keyValueNot(TAG_PLAYER_NAME, mPlayerName, "");
         w.keyValueNot(TAG_NAME, mName, "");
         w.keyValueNot(TAG_TITLE, mTitle, "");
-        w.keyValueNot(TAG_AGE, mAge, 0);
+        w.keyValueNot(TAG_AGE, mAge, "");
         w.keyValueNot(TAG_BIRTHDAY, mBirthday, "");
         w.keyValueNot(TAG_EYES, mEyeColor, "");
         w.keyValueNot(TAG_HAIR, mHair, "");
@@ -374,7 +375,7 @@ public class Profile {
     }
 
     /** @return The age. */
-    public int getAge() {
+    public String getAge() {
         return mAge;
     }
 
@@ -383,13 +384,11 @@ public class Profile {
      *
      * @param age The new age.
      */
-    public void setAge(int age) {
-        if (mAge != age) {
-            Integer value = Integer.valueOf(age);
-
-            mCharacter.postUndoEdit(I18n.Text("Age Change"), ID_AGE, Integer.valueOf(mAge), value);
+    public void setAge(String age) {
+        if (!mAge.equals(age)) {
+            mCharacter.postUndoEdit(I18n.Text("Age Change"), ID_AGE, mAge, age);
             mAge = age;
-            mCharacter.notifySingle(ID_AGE, value);
+            mCharacter.notifySingle(ID_AGE, age);
         }
     }
 
@@ -615,7 +614,7 @@ public class Profile {
             } else if (ID_TITLE.equals(id)) {
                 return getTitle();
             } else if (ID_AGE.equals(id)) {
-                return Integer.valueOf(getAge());
+                return getAge();
             } else if (ID_BIRTHDAY.equals(id)) {
                 return getBirthday();
             } else if (ID_EYE_COLOR.equals(id)) {
@@ -658,7 +657,7 @@ public class Profile {
             } else if (ID_TITLE.equals(id)) {
                 setTitle((String) value);
             } else if (ID_AGE.equals(id)) {
-                setAge(((Integer) value).intValue());
+                setAge((String) value);
             } else if (ID_BIRTHDAY.equals(id)) {
                 setBirthday((String) value);
             } else if (ID_EYE_COLOR.equals(id)) {

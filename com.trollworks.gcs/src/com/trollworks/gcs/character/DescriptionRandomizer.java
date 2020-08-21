@@ -59,7 +59,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
         wrapper.setBorder(new EmptyBorder(10));
         Profile description = mCharacter.getProfile();
         addField(wrapper, I18n.Text("Gender:"), null, GENDER_INDEX, description.getGender());
-        addField(wrapper, I18n.Text("Age:"), null, AGE_INDEX, Numbers.format(description.getAge()));
+        addField(wrapper, I18n.Text("Age:"), null, AGE_INDEX, description.getAge());
         addField(wrapper, I18n.Text("Birthday:"), null, BIRTHDAY_INDEX, description.getBirthday());
         addField(wrapper, I18n.Text("Height:"), null, HEIGHT_INDEX, description.getHeight().toString());
         addField(wrapper, I18n.Text("Weight:"), null, WEIGHT_INDEX, description.getWeight().toString());
@@ -123,7 +123,7 @@ public class DescriptionRandomizer extends JPanel implements ActionListener {
         mCharacter.addEdit(edit);
         mCharacter.startNotify();
         description.setGender(mFields[GENDER_INDEX].getText());
-        description.setAge(Numbers.extractInteger(mFields[AGE_INDEX].getText(), 18, true));
+        description.setAge(mFields[AGE_INDEX].getText());
         description.setBirthday(mFields[BIRTHDAY_INDEX].getText());
         description.setHeight(LengthValue.extract(mFields[HEIGHT_INDEX].getText(), true));
         description.setWeight(WeightValue.extract(mFields[WEIGHT_INDEX].getText(), true));
