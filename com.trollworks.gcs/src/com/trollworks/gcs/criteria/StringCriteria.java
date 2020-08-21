@@ -14,7 +14,6 @@ package com.trollworks.gcs.criteria;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -78,14 +77,6 @@ public class StringCriteria extends Criteria {
     protected void saveSelf(JsonWriter w) throws IOException {
         w.keyValue(ATTRIBUTE_COMPARE, Enums.toId(mType));
         w.keyValueNot(KEY_QUALIFIER, mQualifier, "");
-    }
-
-    /**
-     * @param reader The reader to load data from.
-     */
-    public void load(XMLReader reader) throws IOException {
-        setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), StringCompareType.values(), StringCompareType.ANY));
-        setQualifier(reader.readText());
     }
 
     /** @return The type of comparison to make. */

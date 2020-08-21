@@ -25,7 +25,6 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -86,18 +85,6 @@ public class AdvantageModifier extends Modifier {
     public AdvantageModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
         this(file, TAG_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
         load(m, state);
-    }
-
-    /**
-     * Creates a new {@link AdvantageModifier}.
-     *
-     * @param file   The {@link DataFile} to use.
-     * @param reader The {@link XMLReader} to use.
-     * @param state  The {@link LoadState} to use.
-     */
-    public AdvantageModifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
-        this(file, TAG_MODIFIER_CONTAINER.equals(reader.getName()));
-        load(reader, state);
     }
 
     /**
@@ -260,31 +247,6 @@ public class AdvantageModifier extends Modifier {
         mCostMultiplier = 1.0;
         mLevels = 0;
         mAffects = Affects.TOTAL;
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (!state.mForUndo && (TAG_MODIFIER.equals(name) || TAG_MODIFIER_CONTAINER.equals(name))) {
-            addChild(new AdvantageModifier(mDataFile, reader, state));
-        } else if (!canHaveChildren()) {
-            if (TAG_COST.equals(name)) {
-                mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), AdvantageModifierCostType.values(), AdvantageModifierCostType.PERCENTAGE);
-                if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
-                    mCostMultiplier = reader.readDouble(1.0);
-                } else {
-                    mCost = reader.readInteger(0);
-                }
-            } else if (TAG_LEVELS.equals(name)) {
-                mLevels = reader.readInteger(0);
-            } else if (TAG_AFFECTS.equals(name)) {
-                mAffects = Enums.extract(reader.readText(), Affects.values(), Affects.TOTAL);
-            } else {
-                super.loadSubElement(reader, state);
-            }
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override

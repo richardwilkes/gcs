@@ -19,7 +19,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -74,16 +73,6 @@ public class MeleeWeaponStats extends WeaponStats {
         super(owner, m);
     }
 
-    /**
-     * Creates a {@link MeleeWeaponStats}.
-     *
-     * @param owner  The owning piece of equipment or advantage.
-     * @param reader The reader to load from.
-     */
-    public MeleeWeaponStats(ListRow owner, XMLReader reader) throws IOException {
-        super(owner, reader);
-    }
-
     @Override
     public WeaponStats clone(ListRow owner) {
         return new MeleeWeaponStats(owner, this);
@@ -94,20 +83,6 @@ public class MeleeWeaponStats extends WeaponStats {
         mReach = "";
         mParry = "";
         mBlock = "";
-    }
-
-    @Override
-    protected void loadSelf(XMLReader reader) throws IOException {
-        String name = reader.getName();
-        if (TAG_REACH.equals(name)) {
-            mReach = reader.readText();
-        } else if (TAG_PARRY.equals(name)) {
-            mParry = reader.readText();
-        } else if (TAG_BLOCK.equals(name)) {
-            mBlock = reader.readText();
-        } else {
-            super.loadSelf(reader);
-        }
     }
 
     @Override

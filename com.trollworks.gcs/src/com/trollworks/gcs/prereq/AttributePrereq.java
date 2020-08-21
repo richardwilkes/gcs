@@ -21,7 +21,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -61,21 +60,6 @@ public class AttributePrereq extends HasPrereq {
     public AttributePrereq(PrereqList parent, JsonMap m) throws IOException {
         this(parent);
         loadSelf(m, new LoadState());
-    }
-
-    /**
-     * Loads a prerequisite.
-     *
-     * @param parent The owning prerequisite list, if any.
-     * @param reader The XML reader to load from.
-     */
-    public AttributePrereq(PrereqList parent, XMLReader reader) throws IOException {
-        this(parent);
-        loadHasAttribute(reader);
-        setWhich(Enums.extract(reader.getAttribute(ATTRIBUTE_WHICH), TYPES, BonusAttributeType.ST));
-        setCombinedWith(Enums.extract(reader.getAttribute(ATTRIBUTE_COMBINED_WITH), TYPES));
-        mValueCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
-        mValueCompare.setQualifier(reader.readInteger(10));
     }
 
     /**

@@ -18,7 +18,6 @@ import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,19 +47,6 @@ public abstract class ListFile extends DataFile {
      * @param state The {@link LoadState} to use.
      */
     protected abstract void loadList(JsonArray a, LoadState state) throws IOException;
-
-    @Override
-    protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
-        loadList(reader, state);
-    }
-
-    /**
-     * Called to load the individual rows.
-     *
-     * @param reader The XML reader to load from.
-     * @param state  The {@link LoadState} to use.
-     */
-    protected abstract void loadList(XMLReader reader, LoadState state) throws IOException;
 
     @Override
     protected final void saveSelf(JsonWriter w, SaveType saveType) throws IOException {

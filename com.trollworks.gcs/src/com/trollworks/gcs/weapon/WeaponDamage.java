@@ -28,7 +28,6 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,27 +75,6 @@ public class WeaponDamage {
         mOwner = owner;
         mST = WeaponSTDamage.NONE;
         mArmorDivisor = 1;
-    }
-
-    public WeaponDamage(XMLReader reader, WeaponStats owner) throws IOException {
-        mOwner = owner;
-        mType = reader.getAttribute(ATTR_TYPE, "");
-        mST = reader.hasAttribute(ATTR_ST) ? Enums.extract(reader.getAttribute(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE) : WeaponSTDamage.NONE;
-        if (reader.hasAttribute(ATTR_BASE)) {
-            mBase = new Dice(reader.getAttribute(ATTR_BASE));
-        }
-        mArmorDivisor = reader.getAttributeAsDouble(ATTR_ARMOR_DIVISOR, 1);
-        mModifierPerDie = reader.getAttributeAsInteger(ATTR_MODIFIER_PER_DIE, 0);
-        if (reader.hasAttribute(ATTR_FRAGMENTATION)) {
-            mFragmentation = new Dice(reader.getAttribute(ATTR_FRAGMENTATION));
-            mFragmentationType = reader.getAttribute(ATTR_FRAGMENTATION_TYPE, "cut");
-            mFragmentationArmorDivisor = reader.getAttributeAsDouble(ATTR_FRAGMENTATION_ARMOR_DIVISOR, 1);
-        }
-        String text = reader.readText().trim();
-        if (!text.isEmpty()) {
-            // If we find text here, then we have an old damage value that needs to be converted.
-            setValuesFromFreeformDamageString(text);
-        }
     }
 
     public WeaponDamage(JsonMap m, WeaponStats owner) throws IOException {

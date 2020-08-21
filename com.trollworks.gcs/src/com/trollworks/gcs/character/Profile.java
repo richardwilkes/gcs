@@ -14,7 +14,6 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
-import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
@@ -25,13 +24,10 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.awt.Graphics2D;
 import java.awt.Transparency;
@@ -152,71 +148,6 @@ public class Profile {
         mPlayerName = full ? prefs.getDefaultPlayerName() : "";
         mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         mHitLocationTable = HitLocationTable.HUMANOID;
-    }
-
-    void load(XMLReader reader) throws IOException {
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String tag = reader.getName();
-                if (!loadTag(reader, tag)) {
-                    reader.skipTag(tag);
-                }
-            }
-        } while (reader.withinMarker(marker));
-    }
-
-    boolean loadTag(XMLReader reader, String tag) throws IOException {
-        if (TAG_PLAYER_NAME.equals(tag)) {
-            mPlayerName = reader.readText();
-        } else if (TAG_NAME.equals(tag)) {
-            mName = reader.readText();
-        } else if (TAG_OLD_NOTES.equals(tag)) {
-            Note note = new Note(mCharacter, false);
-            note.setDescription(Text.standardizeLineEndings(reader.readText()));
-            mCharacter.getNotesRoot().addRow(note, false);
-        } else if (TAG_TITLE.equals(tag)) {
-            mTitle = reader.readText();
-        } else if (TAG_AGE.equals(tag)) {
-            mAge = reader.readInteger(0);
-        } else if (TAG_BIRTHDAY.equals(tag)) {
-            mBirthday = reader.readText();
-        } else if (TAG_EYES.equals(tag)) {
-            mEyeColor = reader.readText();
-        } else if (TAG_HAIR.equals(tag)) {
-            mHair = reader.readText();
-        } else if (TAG_SKIN.equals(tag)) {
-            mSkinColor = reader.readText();
-        } else if (TAG_HANDEDNESS.equals(tag)) {
-            mHandedness = reader.readText();
-        } else if (TAG_HEIGHT.equals(tag)) {
-            mHeight = LengthValue.extract(reader.readText(), false);
-        } else if (TAG_WEIGHT.equals(tag)) {
-            mWeight = WeightValue.extract(reader.readText(), false);
-        } else if (BonusAttributeType.SM.getXMLTag().equals(tag) || "size_modifier".equals(tag)) {
-            mSizeModifier = reader.readInteger(0);
-        } else if (TAG_GENDER.equals(tag)) {
-            mGender = reader.readText();
-        } else if (TAG_BODY_TYPE.equals(tag)) {
-            mHitLocationTable = HitLocationTable.MAP.get(reader.readText());
-            if (mHitLocationTable == null) {
-                mHitLocationTable = HitLocationTable.HUMANOID;
-            }
-        } else if (TAG_TECH_LEVEL.equals(tag)) {
-            mTechLevel = reader.readText();
-        } else if (TAG_RELIGION.equals(tag)) {
-            mReligion = reader.readText();
-        } else if (TAG_PORTRAIT.equals(tag)) {
-            try {
-                mPortrait = createPortrait(Img.create(new ByteArrayInputStream(Base64.getMimeDecoder().decode(reader.readText()))));
-                mCustomPortrait = true;
-            } catch (Exception imageException) {
-                Log.warn(imageException);
-            }
-        } else {
-            return false;
-        }
-        return true;
     }
 
     void load(JsonMap m) throws IOException {

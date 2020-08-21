@@ -20,8 +20,6 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -56,30 +54,12 @@ public abstract class NameLevelPrereq extends HasPrereq {
      * Loads a prerequisite.
      *
      * @param parent The owning prerequisite list, if any.
-     * @param m The {@link JsonMap} to load from.
+     * @param m      The {@link JsonMap} to load from.
      */
     public NameLevelPrereq(PrereqList parent, JsonMap m) throws IOException {
         this(m.getString(DataFile.KEY_TYPE), parent);
         initializeForLoad();
         loadSelf(m, new LoadState());
-    }
-
-    /**
-     * Loads a prerequisite.
-     *
-     * @param parent The owning prerequisite list, if any.
-     * @param reader The XML reader to load from.
-     */
-    public NameLevelPrereq(PrereqList parent, XMLReader reader) throws IOException {
-        this(reader.getName(), parent);
-        initializeForLoad();
-        String marker = reader.getMarker();
-        loadHasAttribute(reader);
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                loadSelf(reader);
-            }
-        } while (reader.withinMarker(marker));
     }
 
     /**
@@ -110,18 +90,6 @@ public abstract class NameLevelPrereq extends HasPrereq {
             return mTag.equals(nlp.mTag) && mNameCriteria.equals(nlp.mNameCriteria) && mLevelCriteria.equals(nlp.mLevelCriteria);
         }
         return false;
-    }
-
-    /** @param reader The XML reader to load from. */
-    protected void loadSelf(XMLReader reader) throws IOException {
-        String name = reader.getName();
-        if (TAG_NAME.equals(name)) {
-            mNameCriteria.load(reader);
-        } else if (TAG_LEVEL.equals(name)) {
-            mLevelCriteria.load(reader);
-        } else {
-            reader.skipTag(name);
-        }
     }
 
     @Override

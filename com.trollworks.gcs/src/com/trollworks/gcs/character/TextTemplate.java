@@ -33,7 +33,6 @@ import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.DateTimeFormatter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponDisplayRow;
@@ -44,6 +43,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -357,7 +357,7 @@ public class TextTemplate {
         case KEY_PORTRAIT:
             String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base, false), FileType.PNG.getExtension());
             ImageIO.write(description.getPortrait().getRetina(), "png", base.resolveSibling(fileName).toFile());
-            writeEncodedData(out, fileName);
+            out.write(URLEncoder.encode(fileName, StandardCharsets.UTF_8));
             break;
         case KEY_PORTRAIT_EMBEDDED:
             out.write("data:image/png;base64,");
@@ -708,12 +708,33 @@ public class TextTemplate {
         writeEncodedText(out, best);
     }
 
-    private void writeEncodedData(BufferedWriter out, String text) throws IOException {
-        out.write(mEncodeText ? XMLWriter.encodeData(text).replaceAll(" ", "%20") : text);
-    }
-
     private void writeEncodedText(BufferedWriter out, String text) throws IOException {
-        out.write(mEncodeText ? XMLWriter.encodeData(text).replaceAll("&#10;", "<br>").replaceAll("\"", "&quot;") : text);
+        if (mEncodeText) {
+            StringBuilder buffer = new StringBuilder();
+            int           length = text.length();
+            for (int i = 0; i < length; i++) {
+                char ch = text.charAt(i);
+                if (ch == '<') {
+                    buffer.append("&lt;");
+                } else if (ch == '>') {
+                    buffer.append("&gt;");
+                } else if (ch == '&') {
+                    buffer.append("&amp;");
+                } else if (ch == '"') {
+                    buffer.append("&quot;");
+                } else if (ch >= ' ' && ch <= '~') {
+                    buffer.append(ch);
+                } else if (ch == '\n') {
+                    buffer.append("<br>");
+                } else {
+                    buffer.append("&#");
+                    buffer.append((int) ch);
+                    buffer.append(';');
+                }
+            }
+            text = buffer.toString();
+        }
+        out.write(text);
     }
 
     private String extractUpToMarker(BufferedReader in, String marker) throws IOException {

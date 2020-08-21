@@ -22,8 +22,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -72,43 +70,6 @@ public class SpellPrereq extends HasPrereq {
     public SpellPrereq(PrereqList parent, JsonMap m) throws IOException {
         this(parent);
         loadSelf(m, new LoadState());
-    }
-
-    /**
-     * Loads a prerequisite.
-     *
-     * @param parent The owning prerequisite list, if any.
-     * @param reader The XML reader to load from.
-     */
-    public SpellPrereq(PrereqList parent, XMLReader reader) throws IOException {
-        this(parent);
-
-        String marker = reader.getMarker();
-        loadHasAttribute(reader);
-
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-
-                if (TAG_NAME.equals(name)) {
-                    setType(TAG_NAME);
-                    mStringCriteria.load(reader);
-                } else if (TAG_ANY.equals(name)) {
-                    setType(TAG_ANY);
-                    mQuantityCriteria.load(reader);
-                } else if (TAG_COLLEGE.equals(name)) {
-                    setType(TAG_COLLEGE);
-                    mStringCriteria.load(reader);
-                } else if (TAG_COLLEGE_COUNT.equals(name)) {
-                    setType(TAG_COLLEGE_COUNT);
-                    mQuantityCriteria.load(reader);
-                } else if (TAG_QUANTITY.equals(name)) {
-                    mQuantityCriteria.load(reader);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
     }
 
     /**

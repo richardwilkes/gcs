@@ -21,10 +21,8 @@ import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -56,19 +54,6 @@ public class ContainedWeightPrereq extends HasPrereq {
     public ContainedWeightPrereq(PrereqList parent, WeightUnits defUnits, JsonMap m) throws IOException {
         this(parent, defUnits);
         loadSelf(m, new LoadState());
-    }
-
-    /**
-     * Loads a prerequisite.
-     *
-     * @param parent The owning prerequisite list, if any.
-     * @param reader The XML reader to load from.
-     */
-    public ContainedWeightPrereq(PrereqList parent, WeightUnits defUnits, XMLReader reader) throws IOException {
-        this(parent, defUnits);
-        loadHasAttribute(reader);
-        mWeightCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
-        mWeightCompare.setQualifier(WeightValue.extract(reader.readText(), false));
     }
 
     /**

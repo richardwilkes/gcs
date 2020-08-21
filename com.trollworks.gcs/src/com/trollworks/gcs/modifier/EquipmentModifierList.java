@@ -22,8 +22,6 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -98,22 +96,5 @@ public class EquipmentModifierList extends ListFile {
                 Log.warn("invalid equipment modifier type: " + type);
             }
         }
-    }
-
-    @Override
-    protected void loadList(XMLReader reader, LoadState state) throws IOException {
-        OutlineModel model  = getModel();
-        String       marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-
-                if (EquipmentModifier.TAG_MODIFIER.equals(name) || EquipmentModifier.TAG_MODIFIER_CONTAINER.equals(name)) {
-                    model.addRow(new EquipmentModifier(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
     }
 }

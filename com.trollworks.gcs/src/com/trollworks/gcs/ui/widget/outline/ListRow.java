@@ -38,8 +38,6 @@ import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -390,68 +388,6 @@ public abstract class ListRow extends Row implements Updatable {
     protected abstract void loadChild(JsonMap m, LoadState state) throws IOException;
 
     /**
-     * Loads this row's contents.
-     *
-     * @param reader The XML reader to load from.
-     * @param state  The {@link LoadState} to use.
-     */
-    public final void load(XMLReader reader, LoadState state) throws IOException {
-        String marker = reader.getMarker();
-        state.mDataItemVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
-        if (state.mDataItemVersion > getXMLTagVersion()) {
-            throw VersionException.createTooNew();
-        }
-        boolean isContainer = reader.getName().endsWith("_container");
-        setCanHaveChildren(isContainer);
-        setOpen(isContainer);
-        prepareForLoad(state);
-        loadAttributes(reader, state);
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (AttributeBonus.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new AttributeBonus(reader));
-                } else if (DRBonus.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new DRBonus(reader));
-                } else if (ReactionBonus.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new ReactionBonus(reader));
-                } else if (SkillBonus.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new SkillBonus(reader));
-                } else if (SpellBonus.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new SpellBonus(reader));
-                } else if (WeaponBonus.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new WeaponBonus(reader));
-                } else if (CostReduction.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new CostReduction(reader));
-                } else if (ContainedWeightReduction.TAG_ROOT.equals(name)) {
-                    mFeatures.add(new ContainedWeightReduction(reader));
-                } else if (PrereqList.TAG_ROOT.equals(name)) {
-                    mPrereqList = new PrereqList(null, mDataFile.defaultWeightUnits(), reader);
-                } else if (!(this instanceof Technique) && SkillDefault.TAG_ROOT.equals(name)) {
-                    mDefaults.add(new SkillDefault(reader));
-                } else if (TAG_NOTES.equals(name)) {
-                    mNotes = reader.readText();
-                } else if (TAG_CATEGORIES.equals(name)) {
-                    String subMarker = reader.getMarker();
-                    do {
-                        if (reader.next() == XMLNodeType.START_TAG) {
-                            name = reader.getName();
-                            if (TAG_CATEGORY.equals(name)) {
-                                mCategories.add(reader.readText());
-                            } else {
-                                reader.skipTag(name);
-                            }
-                        }
-                    } while (reader.withinMarker(subMarker));
-                } else {
-                    loadSubElement(reader, state);
-                }
-            }
-        } while (reader.withinMarker(marker));
-        finishedLoading(state);
-    }
-
-    /**
      * Called to prepare the row for loading.
      *
      * @param state The {@link LoadState} to use.
@@ -462,29 +398,6 @@ public abstract class ListRow extends Row implements Updatable {
         mDefaults.clear();
         mPrereqList = new PrereqList(null, true);
         mCategories.clear();
-    }
-
-    /**
-     * Loads this row's custom attributes from the specified element.
-     *
-     * @param reader The XML reader to load from.
-     * @param state  The {@link LoadState} to use.
-     */
-    protected void loadAttributes(XMLReader reader, LoadState state) {
-        if (canHaveChildren()) {
-            setOpen(reader.isAttributeSet(ATTRIBUTE_OPEN));
-        }
-    }
-
-    /**
-     * Loads this row's custom data from the specified element.
-     *
-     * @param reader The XML reader to load from.
-     * @param state  The {@link LoadState} to use.
-     */
-    @SuppressWarnings("static-method")
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        reader.skipTag(reader.getName());
     }
 
     /**

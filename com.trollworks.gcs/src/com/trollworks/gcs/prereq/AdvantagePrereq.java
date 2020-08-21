@@ -21,7 +21,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -55,16 +54,6 @@ public class AdvantagePrereq extends NameLevelPrereq {
         super(parent, m);
     }
 
-    /**
-     * Loads a prerequisite.
-     *
-     * @param parent The owning prerequisite list, if any.
-     * @param reader The XML reader to load from.
-     */
-    public AdvantagePrereq(PrereqList parent, XMLReader reader) throws IOException {
-        super(parent, reader);
-    }
-
     private AdvantagePrereq(PrereqList parent, AdvantagePrereq prereq) {
         super(parent, prereq);
         mNotesCriteria = new StringCriteria(prereq.mNotesCriteria);
@@ -89,15 +78,6 @@ public class AdvantagePrereq extends NameLevelPrereq {
     @Override
     public int hashCode() {
         return super.hashCode();
-    }
-
-    @Override
-    protected void loadSelf(XMLReader reader) throws IOException {
-        if (TAG_NOTES.equals(reader.getName())) {
-            mNotesCriteria.load(reader);
-        } else {
-            super.loadSelf(reader);
-        }
     }
 
     @Override

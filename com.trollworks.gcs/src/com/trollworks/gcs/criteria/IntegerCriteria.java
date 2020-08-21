@@ -14,7 +14,6 @@ package com.trollworks.gcs.criteria;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -58,12 +57,6 @@ public class IntegerCriteria extends NumericCriteria {
     @Override
     public int hashCode() {
         return super.hashCode();
-    }
-
-    @Override
-    public void load(XMLReader reader) throws IOException {
-        super.load(reader);
-        setQualifier(reader.readInteger(0));
     }
 
     @Override

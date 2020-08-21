@@ -27,7 +27,6 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightValue;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -93,18 +92,6 @@ public class EquipmentModifier extends Modifier {
     public EquipmentModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
         this(file, TAG_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
         load(m, state);
-    }
-
-    /**
-     * Creates a new {@link EquipmentModifier}.
-     *
-     * @param file   The {@link DataFile} to use.
-     * @param reader The {@link XMLReader} to use.
-     * @param state  The {@link LoadState} to use.
-     */
-    public EquipmentModifier(DataFile file, XMLReader reader, LoadState state) throws IOException {
-        this(file, TAG_MODIFIER_CONTAINER.equals(reader.getName()));
-        load(reader, state);
     }
 
     /**
@@ -270,28 +257,6 @@ public class EquipmentModifier extends Modifier {
         mWeightType = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
         mWeightAmount = getDefaultWeightAmount();
         mTechLevel = "";
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (!state.mForUndo && (TAG_MODIFIER.equals(name) || TAG_MODIFIER_CONTAINER.equals(name))) {
-            addChild(new EquipmentModifier(mDataFile, reader, state));
-        } else if (!canHaveChildren()) {
-            if (TAG_COST_ADJ.equals(name)) {
-                mCostType = Enums.extract(reader.getAttribute(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.TO_ORIGINAL_COST);
-                mCostAmount = mCostType.format(reader.readText(), false);
-            } else if (TAG_WEIGHT_ADJ.equals(name)) {
-                mWeightType = Enums.extract(reader.getAttribute(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
-                mWeightAmount = mWeightType.format(reader.readText(), getDataFile().defaultWeightUnits(), false);
-            } else if (TAG_TECH_LEVEL.equals(name)) {
-                mTechLevel = reader.readText().replace("\n", " ");
-            } else {
-                super.loadSubElement(reader, state);
-            }
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override

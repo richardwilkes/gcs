@@ -24,8 +24,6 @@ import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillList;
-import com.trollworks.gcs.skill.Technique;
-import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -38,9 +36,6 @@ import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -137,112 +132,6 @@ public class Template extends DataFile {
     @Override
     public RetinaIcon getFileIcons() {
         return Images.GCT_FILE;
-    }
-
-    @Override
-    protected final void loadSelf(XMLReader reader, LoadState state) throws IOException {
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (AdvantageList.TAG_ROOT.equals(name)) {
-                    loadAdvantageList(reader, state);
-                } else if (SkillList.TAG_ROOT.equals(name)) {
-                    loadSkillList(reader, state);
-                } else if (SpellList.TAG_ROOT.equals(name)) {
-                    loadSpellList(reader, state);
-                } else if (EquipmentList.TAG_CARRIED_ROOT.equals(name)) {
-                    loadEquipmentList(reader, state, mEquipment);
-                } else if (EquipmentList.TAG_OTHER_ROOT.equals(name)) {
-                    loadEquipmentList(reader, state, mOtherEquipment);
-                } else if (NoteList.TAG_ROOT.equals(name)) {
-                    loadNotesList(reader, state);
-                } else if (TAG_OLD_NOTES.equals(name)) {
-                    Note note = new Note(this, false);
-                    note.setDescription(Text.standardizeLineEndings(reader.readText()));
-                    mNotes.addRow(note, false);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
-        calculateAdvantagePoints();
-        calculateSkillPoints();
-        calculateSpellPoints();
-    }
-
-    private void loadAdvantageList(XMLReader reader, LoadState state) throws IOException {
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (Advantage.TAG_ADVANTAGE.equals(name) || Advantage.TAG_ADVANTAGE_CONTAINER.equals(name)) {
-                    mAdvantages.addRow(new Advantage(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
-    }
-
-    private void loadSkillList(XMLReader reader, LoadState state) throws IOException {
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (Skill.TAG_SKILL.equals(name) || Skill.TAG_SKILL_CONTAINER.equals(name)) {
-                    mSkills.addRow(new Skill(this, reader, state), true);
-                } else if (Technique.TAG_TECHNIQUE.equals(name)) {
-                    mSkills.addRow(new Technique(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
-    }
-
-    private void loadSpellList(XMLReader reader, LoadState state) throws IOException {
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (Spell.TAG_SPELL.equals(name) || Spell.TAG_SPELL_CONTAINER.equals(name)) {
-                    mSpells.addRow(new Spell(this, reader, state), true);
-                } else if (RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(name)) {
-                    mSpells.addRow(new RitualMagicSpell(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
-    }
-
-    private void loadEquipmentList(XMLReader reader, LoadState state, OutlineModel outline) throws IOException {
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-                    outline.addRow(new Equipment(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
-    }
-
-    private void loadNotesList(XMLReader reader, LoadState state) throws IOException {
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (Note.TAG_NOTE.equals(name) || Note.TAG_NOTE_CONTAINER.equals(name)) {
-                    mNotes.addRow(new Note(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
     }
 
     @Override

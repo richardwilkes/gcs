@@ -19,7 +19,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -63,24 +62,6 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
         mName = getLocalizedName();
         mReference = "";
         mEnabled = !canHaveChildren();
-    }
-
-    @Override
-    protected void loadAttributes(XMLReader reader, LoadState state) {
-        super.loadAttributes(reader, state);
-        mEnabled = !reader.hasAttribute(ATTRIBUTE_ENABLED) || reader.isAttributeSet(ATTRIBUTE_ENABLED);
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace("\n", " ");
-        } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " ");
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override

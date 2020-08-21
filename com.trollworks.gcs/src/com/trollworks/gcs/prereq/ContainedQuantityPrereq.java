@@ -21,8 +21,6 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -54,19 +52,6 @@ public class ContainedQuantityPrereq extends HasPrereq {
     public ContainedQuantityPrereq(PrereqList parent, JsonMap m) throws IOException {
         this(parent);
         loadSelf(m, new LoadState());
-    }
-
-    /**
-     * Loads a prerequisite.
-     *
-     * @param parent The owning prerequisite list, if any.
-     * @param reader The XML reader to load from.
-     */
-    public ContainedQuantityPrereq(PrereqList parent, XMLReader reader) throws IOException {
-        this(parent);
-        loadHasAttribute(reader);
-        mQuantityCompare.setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
-        mQuantityCompare.setQualifier(reader.readInteger(0));
     }
 
     /**

@@ -32,7 +32,6 @@ import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -194,18 +193,6 @@ public class Spell extends ListRow implements HasSourceReference {
         load(m, state);
     }
 
-    /**
-     * Loads a spell and associates it with the specified data file.
-     *
-     * @param dataFile The data file to associate it with.
-     * @param reader   The XML reader to load from.
-     * @param state    The {@link LoadState} to use.
-     */
-    public Spell(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
-        this(dataFile, TAG_SPELL_CONTAINER.equals(reader.getName()));
-        load(reader, state);
-    }
-
     @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
@@ -280,74 +267,6 @@ public class Spell extends ListRow implements HasSourceReference {
         mReference = "";
         mDifficulty = SkillDifficulty.H;
         mWeapons = new ArrayList<>();
-    }
-
-    @Override
-    protected void loadAttributes(XMLReader reader, LoadState state) {
-        super.loadAttributes(reader, state);
-        // Compatibility with version 3 of the Spell format
-        if (reader.isAttributeSet(ATTRIBUTE_VERY_HARD)) {
-            mDifficulty = SkillDifficulty.VH;
-        }
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace("\n", " ");
-            // Fix for legacy format...
-            if (mName.toLowerCase().endsWith("(vh)")) {
-                mName = mName.substring(0, mName.length() - 4).trim();
-                mDifficulty = SkillDifficulty.VH;
-            }
-        } else if (TAG_TECH_LEVEL.equals(name)) {
-            mTechLevel = reader.readText();
-            if (mTechLevel != null) {
-                DataFile dataFile = getDataFile();
-                if (dataFile instanceof ListFile) {
-                    mTechLevel = "";
-                }
-            }
-        } else if (TAG_ATTRIBUTE.equals(name)) {
-            mAttribute = Enums.extract(reader.readText(), SkillAttribute.values(), SkillAttribute.IQ);
-        } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " ");
-        } else if (!state.mForUndo && (TAG_SPELL.equals(name) || TAG_SPELL_CONTAINER.equals(name))) {
-            addChild(new Spell(mDataFile, reader, state));
-        } else if (!state.mForUndo && RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(name)) {
-            addChild(new RitualMagicSpell(mDataFile, reader, state));
-        } else if (!canHaveChildren()) {
-            if (TAG_COLLEGE.equals(name)) {
-                mCollege = reader.readText().replace("\n", " ").replace("/ ", "/");
-            } else if (TAG_POWER_SOURCE.equals(name)) {
-                mPowerSource = reader.readText().replace("\n", " ");
-            } else if (TAG_SPELL_CLASS.equals(name)) {
-                mSpellClass = reader.readText().replace("\n", " ");
-            } else if (TAG_RESIST.equals(name)) {
-                mResist = reader.readText().replace("\n", " ");
-            } else if (TAG_CASTING_COST.equals(name)) {
-                mCastingCost = reader.readText().replace("\n", " ");
-            } else if (TAG_MAINTENANCE_COST.equals(name)) {
-                mMaintenance = reader.readText().replace("\n", " ");
-            } else if (TAG_CASTING_TIME.equals(name)) {
-                mCastingTime = reader.readText().replace("\n", " ");
-            } else if (TAG_DURATION.equals(name)) {
-                mDuration = reader.readText().replace("\n", " ");
-            } else if (TAG_DIFFICULTY.equals(name)) {
-                setDifficultyFromText(reader.readText().replace("\n", " "));
-            } else if (TAG_POINTS.equals(name)) {
-                mPoints = reader.readInteger(1);
-            } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
-                mWeapons.add(new MeleeWeaponStats(this, reader));
-            } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
-                mWeapons.add(new RangedWeaponStats(this, reader));
-            } else {
-                super.loadSubElement(reader, state);
-            }
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override

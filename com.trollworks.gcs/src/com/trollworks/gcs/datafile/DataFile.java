@@ -28,8 +28,6 @@ import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 import com.trollworks.gcs.utility.units.WeightUnits;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -70,50 +68,12 @@ public abstract class DataFile implements Updatable, Undoable {
             }
             fileReader.reset();
             if (n == 5 && buffer[0] == '<' && buffer[1] == '?' && buffer[2] == 'x' && buffer[3] == 'm' && buffer[4] == 'l') {
-                // Load xml format from version 4.18 and earlier
-                try (XMLReader reader = new XMLReader(fileReader)) {
-                    XMLNodeType type  = reader.next();
-                    boolean     found = false;
-                    while (type != XMLNodeType.END_DOCUMENT) {
-                        if (type == XMLNodeType.START_TAG) {
-                            String name = reader.getName();
-                            if (matchesRootTag(name)) {
-                                if (found) {
-                                    throw new IOException();
-                                }
-                                found = true;
-                                load(reader, new LoadState());
-                            } else {
-                                reader.skipTag(name);
-                            }
-                            type = reader.getType();
-                        } else {
-                            type = reader.next();
-                        }
-                    }
-                }
+                throw new IOException("The old xml format from versions 4.18 and earlier cannot be read by this version of GCS");
             } else {
                 load(Json.asMap(Json.parse(fileReader)), new LoadState());
             }
         }
         mModified = false;
-    }
-
-    /**
-     * @param reader The {@link XMLReader} to load data from.
-     * @param state  The {@link LoadState} to use.
-     */
-    public void load(XMLReader reader, LoadState state) throws IOException {
-        try {
-            mID = UUID.fromString(reader.getAttribute(ATTRIBUTE_ID));
-        } catch (Exception exception) {
-            mID = UUID.randomUUID();
-        }
-        state.mDataFileVersion = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
-        if (state.mDataFileVersion > getXMLTagVersion()) {
-            throw VersionException.createTooNew();
-        }
-        loadSelf(reader, state);
     }
 
     /**
@@ -132,14 +92,6 @@ public abstract class DataFile implements Updatable, Undoable {
         }
         loadSelf(m, state);
     }
-
-    /**
-     * Called to load the data file.
-     *
-     * @param reader The {@link XMLReader} to load data from.
-     * @param state  The {@link LoadState} to use.
-     */
-    protected abstract void loadSelf(XMLReader reader, LoadState state) throws IOException;
 
     /**
      * Called to load the data file.

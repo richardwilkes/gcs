@@ -15,7 +15,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -46,16 +45,6 @@ public abstract class NumericCriteria extends Criteria {
     @Override
     public int hashCode() {
         return super.hashCode();
-    }
-
-    /**
-     * Loads data.
-     *
-     * @param reader The reader to load data from.
-     */
-    @SuppressWarnings("unused")
-    public void load(XMLReader reader) throws IOException {
-        setType(Enums.extract(reader.getAttribute(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
     }
 
     @Override

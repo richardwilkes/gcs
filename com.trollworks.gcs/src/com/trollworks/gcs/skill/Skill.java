@@ -28,7 +28,6 @@ import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -191,18 +190,6 @@ public class Skill extends ListRow implements HasSourceReference {
         load(m, state);
     }
 
-    /**
-     * Loads a skill and associates it with the specified data file.
-     *
-     * @param dataFile The data file to associate it with.
-     * @param reader   The XML reader to load from.
-     * @param state    The {@link LoadState} to use.
-     */
-    public Skill(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
-        this(dataFile, TAG_SKILL_CONTAINER.equals(reader.getName()));
-        load(reader, state);
-    }
-
     @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
@@ -280,48 +267,6 @@ public class Skill extends ListRow implements HasSourceReference {
         mReference = "";
         mEncumbrancePenaltyMultiplier = 0;
         mWeapons = new ArrayList<>();
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace("\n", " ");
-        } else if (TAG_SPECIALIZATION.equals(name)) {
-            mSpecialization = reader.readText().replace("\n", " ");
-        } else if (TAG_TECH_LEVEL.equals(name)) {
-            mTechLevel = reader.readText().replace("\n", " ");
-            if (!mTechLevel.isEmpty()) {
-                DataFile dataFile = getDataFile();
-                if (dataFile instanceof ListFile) {
-                    mTechLevel = "";
-                }
-            }
-        } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " ");
-        } else if (!state.mForUndo && (TAG_SKILL.equals(name) || TAG_SKILL_CONTAINER.equals(name))) {
-            addChild(new Skill(mDataFile, reader, state));
-        } else if (!state.mForUndo && Technique.TAG_TECHNIQUE.equals(name)) {
-            addChild(new Technique(mDataFile, reader, state));
-        } else if (!canHaveChildren()) {
-            if (TAG_DIFFICULTY.equals(name)) {
-                setDifficultyFromText(reader.readText().replace("\n", " "));
-            } else if (TAG_POINTS.equals(name)) {
-                mPoints = reader.readInteger(1);
-            } else if (TAG_ENCUMBRANCE_PENALTY.equals(name)) {
-                mEncumbrancePenaltyMultiplier = Math.min(Math.max(reader.readInteger(0), 0), 9);
-            } else if (TAG_DEFAULTED_FROM.equals(name)) {
-                mDefaultedFrom = new SkillDefault(reader, true);
-            } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
-                mWeapons.add(new MeleeWeaponStats(this, reader));
-            } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
-                mWeapons.add(new RangedWeaponStats(this, reader));
-            } else {
-                super.loadSubElement(reader, state);
-            }
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override

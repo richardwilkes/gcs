@@ -12,9 +12,7 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLWriter;
 
 /** The possible self-control rolls, from page B121. */
 public enum SelfControlRoll {
@@ -124,11 +122,6 @@ public enum SelfControlRoll {
         public String getDescriptionWithCost() {
             return "";
         }
-
-        @Override
-        public void save(XMLWriter out, String tag, SelfControlRollAdjustments adj) {
-            // Do nothing.
-        }
     };
 
     /** The attribute tag use for {@link SelfControlRollAdjustments}. */
@@ -171,17 +164,4 @@ public enum SelfControlRoll {
 
     /** @return The minimum number to roll to retain control. */
     public abstract int getCR();
-
-    /**
-     * @param out The {@link XMLWriter} to use.
-     * @param tag The XML tag to use.
-     * @param adj The {@link SelfControlRollAdjustments} being used.
-     */
-    public void save(XMLWriter out, String tag, SelfControlRollAdjustments adj) {
-        if (adj == SelfControlRollAdjustments.NONE) {
-            out.simpleTag(tag, getCR());
-        } else {
-            out.simpleTagWithAttribute(tag, getCR(), ATTR_ADJUSTMENT, Enums.toId(adj));
-        }
-    }
 }

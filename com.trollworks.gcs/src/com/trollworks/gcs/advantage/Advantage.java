@@ -37,8 +37,6 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -215,18 +213,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         load(m, state);
     }
 
-    /**
-     * Loads an advantage and associates it with the specified data file.
-     *
-     * @param dataFile The data file to associate it with.
-     * @param reader   The XML reader to load from.
-     * @param state    The {@link LoadState} to use.
-     */
-    public Advantage(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
-        this(dataFile, TAG_ADVANTAGE_CONTAINER.equals(reader.getName()));
-        load(reader, state);
-    }
-
     @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
@@ -292,58 +278,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
         mUserDesc = "";
-    }
-
-    @Override
-    protected void loadAttributes(XMLReader reader, LoadState state) {
-        super.loadAttributes(reader, state);
-        mRoundCostDown = reader.isAttributeSet(ATTR_ROUND_COST_DOWN);
-        mDisabled = reader.isAttributeSet(ATTR_DISABLED);
-        mAllowHalfLevels = reader.isAttributeSet(ATTR_ALLOW_HALF_LEVELS);
-        if (canHaveChildren()) {
-            mContainerType = Enums.extract(reader.getAttribute(TAG_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
-        }
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (TAG_NAME.equals(name)) {
-            mName = reader.readText().replace("\n", " ");
-        } else if (TAG_CR.equals(name)) {
-            mCRAdj = Enums.extract(reader.getAttribute(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
-            mCR = SelfControlRoll.get(reader.readText());
-        } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " ");
-        } else if (!state.mForUndo && (TAG_ADVANTAGE.equals(name) || TAG_ADVANTAGE_CONTAINER.equals(name))) {
-            addChild(new Advantage(mDataFile, reader, state));
-        } else if (AdvantageModifier.TAG_MODIFIER.equals(name)) {
-            mModifiers.add(new AdvantageModifier(getDataFile(), reader, state));
-        } else if (TAG_USER_DESC.equals(name)) {
-            if (getDataFile() instanceof GURPSCharacter) {
-                mUserDesc = Text.standardizeLineEndings(reader.readText());
-            }
-        } else if (!canHaveChildren()) {
-            if (TAG_TYPE.equals(name)) {
-                mType = getTypeFromText(reader.readText());
-            } else if (TAG_LEVELS.equals(name)) {
-                // Read the attribute first as next operation clears attribute map
-                mHalfLevel = mAllowHalfLevels && reader.isAttributeSet(ATTR_HALF_LEVEL);
-                mLevels = reader.readInteger(-1);
-            } else if (TAG_BASE_POINTS.equals(name)) {
-                mPoints = reader.readInteger(0);
-            } else if (TAG_POINTS_PER_LEVEL.equals(name)) {
-                mPointsPerLevel = reader.readInteger(0);
-            } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
-                mWeapons.add(new MeleeWeaponStats(this, reader));
-            } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
-                mWeapons.add(new RangedWeaponStats(this, reader));
-            } else {
-                super.loadSubElement(reader, state);
-            }
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override

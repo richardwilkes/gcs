@@ -16,8 +16,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -94,54 +92,6 @@ public class SkillDefault {
             mAdjLevel = m.getInt(TAG_ADJ_LEVEL);
             mPoints = m.getInt(TAG_POINTS);
         }
-    }
-
-    /**
-     * Creates a skill default.
-     *
-     * @param reader The XML reader to use.
-     */
-    public SkillDefault(XMLReader reader) throws IOException {
-        this(reader, false);
-    }
-
-    /**
-     * Creates a skill default.
-     *
-     * @param reader The XML reader to use.
-     * @param full   {@code true} if all fields should be loaded.
-     */
-    public SkillDefault(XMLReader reader, boolean full) throws IOException {
-        String marker = reader.getMarker();
-
-        mType = SkillDefaultType.Skill;
-        mName = "";
-        mSpecialization = "";
-        mModifier = 0;
-
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-
-                if (TAG_TYPE.equals(name)) {
-                    setType(SkillDefaultType.getByName(reader.readText()));
-                } else if (TAG_NAME.equals(name)) {
-                    setName(reader.readText());
-                } else if (TAG_SPECIALIZATION.equals(name)) {
-                    setSpecialization(reader.readText());
-                } else if (TAG_MODIFIER.equals(name)) {
-                    setModifier(reader.readInteger(0));
-                } else if (full && TAG_LEVEL.equals(name)) {
-                    setLevel(reader.readInteger(0));
-                } else if (full && TAG_ADJ_LEVEL.equals(name)) {
-                    setAdjLevel(reader.readInteger(0));
-                } else if (full && TAG_POINTS.equals(name)) {
-                    setPoints(reader.readInteger(0));
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
     }
 
     /** @return The current level of this default. Temporary storage only. */

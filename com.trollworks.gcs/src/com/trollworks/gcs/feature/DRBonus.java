@@ -15,7 +15,6 @@ import com.trollworks.gcs.character.Armor;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -35,16 +34,6 @@ public class DRBonus extends Bonus {
     public DRBonus(JsonMap m) throws IOException {
         this();
         loadSelf(m);
-    }
-
-    /**
-     * Loads a {@link DRBonus}.
-     *
-     * @param reader The XML reader to use.
-     */
-    public DRBonus(XMLReader reader) throws IOException {
-        this();
-        load(reader);
     }
 
     /**
@@ -86,15 +75,6 @@ public class DRBonus extends Bonus {
     @Override
     public Feature cloneFeature() {
         return new DRBonus(this);
-    }
-
-    @Override
-    protected void loadSelf(XMLReader reader) throws IOException {
-        if (TAG_LOCATION.equals(reader.getName())) {
-            setLocation(Enums.extract(reader.readText(), HitLocation.values(), HitLocation.TORSO));
-        } else {
-            super.loadSelf(reader);
-        }
     }
 
     @Override

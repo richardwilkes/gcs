@@ -17,7 +17,6 @@ import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -56,18 +55,6 @@ public class SpellBonus extends Bonus {
     public SpellBonus(JsonMap m) throws IOException {
         this();
         loadSelf(m);
-    }
-
-    /**
-     * Loads a {@link SpellBonus}.
-     *
-     * @param reader The XML reader to use.
-     */
-    public SpellBonus(XMLReader reader) throws IOException {
-        this();
-        mAllColleges = reader.isAttributeSet(ATTRIBUTE_ALL_COLLEGES);
-        mMatchType = TAG_COLLEGE_NAME;
-        load(reader);
     }
 
     /**
@@ -139,25 +126,6 @@ public class SpellBonus extends Bonus {
             buffer.append(Spell.ID_NAME).append("*");
         }
         return buffer.toString();
-    }
-
-    @Override
-    protected void loadSelf(XMLReader reader) throws IOException {
-        String name = reader.getName();
-        if (TAG_COLLEGE_NAME.equals(name)) {
-            mMatchType = TAG_COLLEGE_NAME;
-            mNameCriteria.load(reader);
-        } else if (TAG_POWER_SOURCE_NAME.equals(name)) {
-            mMatchType = TAG_POWER_SOURCE_NAME;
-            mNameCriteria.load(reader);
-        } else if (TAG_SPELL_NAME.equals(name)) {
-            mMatchType = TAG_SPELL_NAME;
-            mNameCriteria.load(reader);
-        } else if (TAG_CATEGORY.equals(name)) {
-            mCategoryCriteria.load(reader);
-        } else {
-            super.loadSelf(reader);
-        }
     }
 
     @Override

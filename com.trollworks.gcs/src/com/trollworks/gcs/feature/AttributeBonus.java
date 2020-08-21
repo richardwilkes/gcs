@@ -15,7 +15,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -38,16 +37,6 @@ public class AttributeBonus extends Bonus {
     public AttributeBonus(JsonMap m) throws IOException {
         this();
         loadSelf(m);
-    }
-
-    /**
-     * Loads a {@link AttributeBonus}.
-     *
-     * @param reader The XML reader to use.
-     */
-    public AttributeBonus(XMLReader reader) throws IOException {
-        this();
-        load(reader);
     }
 
     /**
@@ -102,16 +91,6 @@ public class AttributeBonus extends Bonus {
             buffer.append(mLimitation.name());
         }
         return buffer.toString();
-    }
-
-    @Override
-    protected void loadSelf(XMLReader reader) throws IOException {
-        if (TAG_ATTRIBUTE.equals(reader.getName())) {
-            setLimitation(Enums.extract(reader.getAttribute(ATTRIBUTE_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
-            setAttribute(Enums.extract(reader.readText(), BonusAttributeType.values(), BonusAttributeType.ST));
-        } else {
-            super.loadSelf(reader);
-        }
     }
 
     @Override

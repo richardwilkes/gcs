@@ -17,7 +17,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -85,16 +84,6 @@ public class RangedWeaponStats extends WeaponStats {
         super(owner, m);
     }
 
-    /**
-     * Creates a {@link RangedWeaponStats}.
-     *
-     * @param owner  The owning piece of equipment or advantage.
-     * @param reader The reader to load from.
-     */
-    public RangedWeaponStats(ListRow owner, XMLReader reader) throws IOException {
-        super(owner, reader);
-    }
-
     @Override
     public WeaponStats clone(ListRow owner) {
         return new RangedWeaponStats(owner, this);
@@ -108,27 +97,6 @@ public class RangedWeaponStats extends WeaponStats {
         mShots = "";
         mBulk = "";
         mRecoil = "";
-    }
-
-    @Override
-    protected void loadSelf(XMLReader reader) throws IOException {
-        String name = reader.getName();
-
-        if (TAG_ACCURACY.equals(name)) {
-            mAccuracy = reader.readText();
-        } else if (TAG_RANGE.equals(name)) {
-            mRange = reader.readText();
-        } else if (TAG_RATE_OF_FIRE.equals(name)) {
-            mRateOfFire = reader.readText();
-        } else if (TAG_SHOTS.equals(name)) {
-            mShots = reader.readText();
-        } else if (TAG_BULK.equals(name)) {
-            mBulk = reader.readText();
-        } else if (TAG_RECOIL.equals(name)) {
-            mRecoil = reader.readText();
-        } else {
-            super.loadSelf(reader);
-        }
     }
 
     @Override

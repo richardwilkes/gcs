@@ -25,8 +25,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -89,18 +87,6 @@ public class Note extends ListRow implements HasSourceReference {
         load(m, state);
     }
 
-    /**
-     * Loads a note and associates it with the specified data file.
-     *
-     * @param dataFile The data file to associate it with.
-     * @param reader   The XML reader to load from.
-     * @param state    The {@link LoadState} to use.
-     */
-    public Note(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
-        this(dataFile, TAG_NOTE_CONTAINER.equals(reader.getName()));
-        load(reader, state);
-    }
-
     @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
@@ -153,20 +139,6 @@ public class Note extends ListRow implements HasSourceReference {
         super.prepareForLoad(state);
         mText = "";
         mReference = "";
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (TAG_TEXT.equals(name)) {
-            mText = Text.standardizeLineEndings(reader.readText());
-        } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " ");
-        } else if (!state.mForUndo && (TAG_NOTE.equals(name) || TAG_NOTE_CONTAINER.equals(name))) {
-            addChild(new Note(mDataFile, reader, state));
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override

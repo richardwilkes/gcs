@@ -15,7 +15,6 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -70,15 +69,6 @@ public abstract class HasPrereq extends Prereq {
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
         w.keyValue(ATTRIBUTE_HAS, mHas);
-    }
-
-    /**
-     * Loads the "has" attribute.
-     *
-     * @param reader The XML reader to load from.
-     */
-    protected void loadHasAttribute(XMLReader reader) {
-        mHas = reader.isAttributeSet(ATTRIBUTE_HAS);
     }
 
     /**

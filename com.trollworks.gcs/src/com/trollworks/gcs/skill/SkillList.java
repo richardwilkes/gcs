@@ -21,8 +21,6 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -82,24 +80,5 @@ public class SkillList extends ListFile {
                 Log.warn("invalid skill type: " + type);
             }
         }
-    }
-
-    @Override
-    protected void loadList(XMLReader reader, LoadState state) throws IOException {
-        OutlineModel model  = getModel();
-        String       marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-
-                if (Skill.TAG_SKILL.equals(name) || Skill.TAG_SKILL_CONTAINER.equals(name)) {
-                    model.addRow(new Skill(this, reader, state), true);
-                } else if (Technique.TAG_TECHNIQUE.equals(name)) {
-                    model.addRow(new Technique(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
     }
 }

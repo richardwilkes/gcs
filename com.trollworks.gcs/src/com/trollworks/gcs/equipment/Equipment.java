@@ -41,7 +41,6 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
-import com.trollworks.gcs.utility.xml.XMLReader;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -210,18 +209,6 @@ public class Equipment extends ListRow implements HasSourceReference {
         load(m, state);
     }
 
-    /**
-     * Loads an equipment and associates it with the specified data file.
-     *
-     * @param dataFile The data file to associate it with.
-     * @param reader   The XML reader to load from.
-     * @param state    The {@link LoadState} to use.
-     */
-    public Equipment(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
-        this(dataFile, TAG_EQUIPMENT_CONTAINER.equals(reader.getName()));
-        load(reader, state);
-    }
-
     @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
@@ -289,57 +276,6 @@ public class Equipment extends ListRow implements HasSourceReference {
         mWeightIgnoredForSkills = false;
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
-    }
-
-    @Override
-    protected void loadAttributes(XMLReader reader, LoadState state) {
-        super.loadAttributes(reader, state);
-        if (mDataFile instanceof GURPSCharacter) {
-            mEquipped = state.mDataItemVersion == 0 || state.mDataItemVersion >= EQUIPMENT_SPLIT_VERSION ? reader.isAttributeSet(ATTRIBUTE_EQUIPPED) : "equipped".equals(reader.getAttribute("state"));
-            if (state.mDataFileVersion < GURPSCharacter.SEPARATED_EQUIPMENT_VERSION) {
-                if (!mEquipped && !"carried".equals(reader.getAttribute("state"))) {
-                    state.mUncarriedEquipment.add(this);
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        String name = reader.getName();
-        if (TAG_DESCRIPTION.equals(name)) {
-            mDescription = reader.readText().replace("\n", " ");
-        } else if (TAG_TECH_LEVEL.equals(name)) {
-            mTechLevel = reader.readText().replace("\n", " ");
-        } else if (TAG_LEGALITY_CLASS.equals(name)) {
-            mLegalityClass = reader.readText().replace("\n", " ");
-        } else if (TAG_VALUE.equals(name)) {
-            mValue = new Fixed6(reader.readText(), Fixed6.ZERO, false);
-        } else if (TAG_WEIGHT.equals(name)) {
-            mWeight = WeightValue.extract(reader.readText(), false);
-        } else if (TAG_REFERENCE.equals(name)) {
-            mReference = reader.readText().replace("\n", " ");
-        } else if (TAG_USES.equals(name)) {
-            mUses = reader.readInteger(0);
-        } else if (TAG_MAX_USES.equals(name)) {
-            mMaxUses = reader.readInteger(0);
-        } else if (!state.mForUndo && (TAG_EQUIPMENT.equals(name) || TAG_EQUIPMENT_CONTAINER.equals(name))) {
-            addChild(new Equipment(mDataFile, reader, state));
-        } else if (EquipmentModifier.TAG_MODIFIER.equals(name)) {
-            mModifiers.add(new EquipmentModifier(getDataFile(), reader, state));
-        } else if (MeleeWeaponStats.TAG_ROOT.equals(name)) {
-            mWeapons.add(new MeleeWeaponStats(this, reader));
-        } else if (RangedWeaponStats.TAG_ROOT.equals(name)) {
-            mWeapons.add(new RangedWeaponStats(this, reader));
-        } else if (!canHaveChildren()) {
-            if (TAG_QUANTITY.equals(name)) {
-                mQuantity = reader.readInteger(1);
-            } else {
-                super.loadSubElement(reader, state);
-            }
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override
@@ -897,7 +833,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     /**
-     * @param ignore Whether skills ignore the weight of this equipment for encumbrance calculations.
+     * @param ignore Whether skills ignore the weight of this equipment for encumbrance
+     *               calculations.
      * @return Whether it was changed.
      */
     public boolean setWeightIgnoredForSkills(boolean ignore) {

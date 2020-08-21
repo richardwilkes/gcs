@@ -21,8 +21,6 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
@@ -81,21 +79,5 @@ public class EquipmentList extends ListFile {
                 Log.warn("invalid equipment type: " + type);
             }
         }
-    }
-
-    @Override
-    protected void loadList(XMLReader reader, LoadState state) throws IOException {
-        OutlineModel model  = getModel();
-        String       marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                String name = reader.getName();
-                if (Equipment.TAG_EQUIPMENT.equals(name) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(name)) {
-                    model.addRow(new Equipment(this, reader, state), true);
-                } else {
-                    reader.skipTag(name);
-                }
-            }
-        } while (reader.withinMarker(marker));
     }
 }

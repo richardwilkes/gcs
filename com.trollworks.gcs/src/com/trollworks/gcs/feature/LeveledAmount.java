@@ -15,19 +15,18 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 
 /** Manages a leveled amount. */
 public class LeveledAmount {
     /** The "per level" attribute. */
-    public static final String  ATTRIBUTE_PER_LEVEL = "per_level";
-    private static final String KEY_AMOUNT = "amount";
-    private             boolean mPerLevel;
-    private             int     mLevel;
-    private             double  mAmount;
-    private             boolean mInteger;
+    public static final  String  ATTRIBUTE_PER_LEVEL = "per_level";
+    private static final String  KEY_AMOUNT          = "amount";
+    private              boolean mPerLevel;
+    private              int     mLevel;
+    private              double  mAmount;
+    private              boolean mInteger;
 
     /**
      * Creates a new leveled amount.
@@ -78,12 +77,6 @@ public class LeveledAmount {
     @Override
     public int hashCode() {
         return super.hashCode();
-    }
-
-    /** @param reader The reader to load data from. */
-    public void load(XMLReader reader) throws IOException {
-        mPerLevel = reader.isAttributeSet(ATTRIBUTE_PER_LEVEL);
-        mAmount = reader.readDouble(0.0);
     }
 
     public final void load(JsonMap m) throws IOException {

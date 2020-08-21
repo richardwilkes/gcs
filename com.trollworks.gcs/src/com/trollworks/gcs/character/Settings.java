@@ -20,8 +20,6 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
-import com.trollworks.gcs.utility.xml.XMLNodeType;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -99,62 +97,6 @@ public class Settings {
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
         mUseTitleInFooter = prefs.useTitleInFooter();
-    }
-
-    void load(XMLReader reader) throws IOException {
-        int version = reader.getAttributeAsInteger(LoadState.ATTRIBUTE_VERSION, 0);
-        if (version < MINIMUM_VERSION) {
-            throw VersionException.createTooOld();
-        }
-        if (version > CURRENT_VERSION) {
-            throw VersionException.createTooNew();
-        }
-        String marker = reader.getMarker();
-        do {
-            if (reader.next() == XMLNodeType.START_TAG) {
-                loadTag(reader, version);
-            }
-        } while (reader.withinMarker(marker));
-    }
-
-    private void loadTag(XMLReader reader, int version) throws IOException {
-        String tag = reader.getName();
-        if (TAG_DEFAULT_LENGTH_UNITS.equals(tag)) {
-            mDefaultLengthUnits = Enums.extract(reader.readText(), LengthUnits.values(), Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
-        } else if (TAG_DEFAULT_WEIGHT_UNITS.equals(tag)) {
-            mDefaultWeightUnits = Enums.extract(reader.readText(), WeightUnits.values(), Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
-        } else if (TAG_BLOCK_LAYOUT.equals(tag)) {
-            mBlockLayout = new ArrayList<>(List.of(reader.readText().split("\n")));
-            if (version < VERSION_REACTIONS) {
-                mBlockLayout.add(0, CharacterSheet.REACTIONS_KEY);
-            }
-        } else if (TAG_USER_DESCRIPTION_DISPLAY.equals(tag)) {
-            mUserDescriptionDisplay = Enums.extract(reader.readText(), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
-        } else if (TAG_MODIFIERS_DISPLAY.equals(tag)) {
-            mModifiersDisplay = Enums.extract(reader.readText(), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
-        } else if (TAG_NOTES_DISPLAY.equals(tag)) {
-            mNotesDisplay = Enums.extract(reader.readText(), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
-        } else if (TAG_BASE_WILL_AND_PER_ON_10.equals(tag)) {
-            mBaseWillAndPerOn10 = reader.readBoolean();
-        } else if (TAG_USE_MULTIPLICATIVE_MODIFIERS.equals(tag)) {
-            mUseMultiplicativeModifiers = reader.readBoolean();
-        } else if (TAG_USE_MODIFYING_DICE_PLUS_ADDS.equals(tag)) {
-            mUseModifyingDicePlusAdds = reader.readBoolean();
-        } else if (TAG_USE_KNOW_YOUR_OWN_STRENGTH.equals(tag)) {
-            mUseKnowYourOwnStrength = reader.readBoolean();
-        } else if (TAG_USE_REDUCED_SWING.equals(tag)) {
-            mUseReducedSwing = reader.readBoolean();
-        } else if (TAG_USE_THRUST_EQUALS_SWING_MINUS_2.equals(tag)) {
-            mUseThrustEqualsSwingMinus2 = reader.readBoolean();
-        } else if (TAG_USE_SIMPLE_METRIC_CONVERSIONS.equals(tag)) {
-            mUseSimpleMetricConversions = reader.readBoolean();
-        } else if (TAG_SHOW_COLLEGE_IN_SPELLS.equals(tag)) {
-            mShowCollegeInSpells = reader.readBoolean();
-        } else if (TAG_USE_TITLE_IN_FOOTER.equals(tag)) {
-            mUseTitleInFooter = reader.readBoolean();
-        } else {
-            reader.skipTag(tag);
-        }
     }
 
     void load(JsonMap m) throws IOException {

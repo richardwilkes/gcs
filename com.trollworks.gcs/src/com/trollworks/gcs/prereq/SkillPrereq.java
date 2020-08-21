@@ -21,7 +21,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -55,16 +54,6 @@ public class SkillPrereq extends NameLevelPrereq {
         super(parent, m);
     }
 
-    /**
-     * Loads a prerequisite.
-     *
-     * @param parent The owning prerequisite list, if any.
-     * @param reader The XML reader to load from.
-     */
-    public SkillPrereq(PrereqList parent, XMLReader reader) throws IOException {
-        super(parent, reader);
-    }
-
     private SkillPrereq(PrereqList parent, SkillPrereq prereq) {
         super(parent, prereq);
         mSpecializationCriteria = new StringCriteria(prereq.mSpecializationCriteria);
@@ -84,15 +73,6 @@ public class SkillPrereq extends NameLevelPrereq {
             return mSpecializationCriteria.equals(((SkillPrereq) obj).mSpecializationCriteria);
         }
         return false;
-    }
-
-    @Override
-    protected void loadSelf(XMLReader reader) throws IOException {
-        if (TAG_SPECIALIZATION.equals(reader.getName())) {
-            mSpecializationCriteria.load(reader);
-        } else {
-            super.loadSelf(reader);
-        }
     }
 
     @Override

@@ -22,7 +22,6 @@ import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.xml.XMLReader;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -150,21 +149,6 @@ public class Technique extends Skill {
         }
     }
 
-    /**
-     * Loads a technique and associates it with the specified data file.
-     *
-     * @param dataFile The data file to associate it with.
-     * @param reader   The XML reader to load from.
-     * @param state    The {@link LoadState} to use.
-     */
-    public Technique(DataFile dataFile, XMLReader reader, LoadState state) throws IOException {
-        this(dataFile);
-        load(reader, state);
-        if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
-            mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
-        }
-    }
-
     @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
@@ -205,30 +189,6 @@ public class Technique extends Skill {
         mDefault = new SkillDefault(SkillDefaultType.Skill, I18n.Text("Skill"), null, 0);
         mLimited = false;
         mLimitModifier = 0;
-    }
-
-    @Override
-    protected void loadAttributes(XMLReader reader, LoadState state) {
-        String value = reader.getAttribute(ATTRIBUTE_LIMIT);
-        if (value != null && !value.isEmpty()) {
-            mLimited = true;
-            try {
-                mLimitModifier = Integer.parseInt(value);
-            } catch (Exception exception) {
-                mLimited = false;
-                mLimitModifier = 0;
-            }
-        }
-        super.loadAttributes(reader, state);
-    }
-
-    @Override
-    protected void loadSubElement(XMLReader reader, LoadState state) throws IOException {
-        if (SkillDefault.TAG_ROOT.equals(reader.getName())) {
-            mDefault = new SkillDefault(reader);
-        } else {
-            super.loadSubElement(reader, state);
-        }
     }
 
     @Override
