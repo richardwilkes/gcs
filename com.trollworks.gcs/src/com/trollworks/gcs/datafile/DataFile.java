@@ -68,7 +68,7 @@ public abstract class DataFile implements Updatable, Undoable {
             }
             fileReader.reset();
             if (n == 5 && buffer[0] == '<' && buffer[1] == '?' && buffer[2] == 'x' && buffer[3] == 'm' && buffer[4] == 'l') {
-                throw new IOException("The old xml format from versions 4.18 and earlier cannot be read by this version of GCS");
+                throw new IOException("The old xml format from versions prior to GCS v4.20 cannot be read by this version of GCS");
             } else {
                 load(Json.asMap(Json.parse(fileReader)), new LoadState());
             }

@@ -57,9 +57,8 @@ import javax.swing.ToolTipManager;
 
 /** Provides the implementation of preferences. Note: not all preferences emit notifications. */
 public class Preferences {
-    private static final int CURRENT_VERSION        = 2;
-    private static final int VERSION_AS_OF_GCS_4_18 = 2;
-    private static final int MINIMUM_VERSION        = 1;
+    private static final int CURRENT_VERSION = 2;
+    private static final int MINIMUM_VERSION = 1;
 
     private static final String AUTO_NAME_NEW_CHARACTERS        = "auto_name_new_characters";
     private static final String BASE_WILL_AND_PER_ON_10         = "base_will_and_per_on_10";
@@ -102,11 +101,6 @@ public class Preferences {
     private static final String USER_DESCRIPTION_DISPLAY        = "user_description_display";
     private static final String VERSION                         = "version";
     private static final String WINDOW_POSITIONS                = "window_positions";
-
-    // No longer used as of the 4.18 release -- remove at some point in the future
-    private static final String LAST_GCS_VERSION    = "last_gcs_version";
-    private static final String MASTER_LIBRARY_PATH = "master_library_path";
-    private static final String USER_LIBRARY_PATH   = "user_library_path";
 
     public static final String KEY_PREFIX           = "prefs.";
     public static final String KEY_PER_SHEET_PREFIX = KEY_PREFIX + "sheet.";
@@ -273,25 +267,15 @@ public class Preferences {
                     int version = m.getInt(VERSION);
                     if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION) {
                         mID = UUID.fromString(m.getStringWithDefault(ID, mID.toString()));
-                        Version loadVersion;
-                        if (version >= VERSION_AS_OF_GCS_4_18) {
-                            loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION));
-                        } else {
-                            loadVersion = new Version(m.getString(LAST_GCS_VERSION));
-                        }
+                        Version loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION));
                         if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
                             mLastSeenGCSVersion = loadVersion;
                         }
-                        if (version >= VERSION_AS_OF_GCS_4_18) {
-                            if (m.has(LIBRARIES)) {
-                                JsonMap m2 = m.getMap(LIBRARIES);
-                                for (String key : m2.keySet()) {
-                                    Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key)));
-                                }
+                        if (m.has(LIBRARIES)) {
+                            JsonMap m2 = m.getMap(LIBRARIES);
+                            for (String key : m2.keySet()) {
+                                Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key)));
                             }
-                        } else {
-                            Library.MASTER.setPath(Paths.get(m.getStringWithDefault(MASTER_LIBRARY_PATH, Library.MASTER.getPathNoCreate().toString())));
-                            Library.USER.setPath(Paths.get(m.getStringWithDefault(USER_LIBRARY_PATH, Library.USER.getPathNoCreate().toString())));
                         }
                         mInitialPoints = m.getIntWithDefault(INITIAL_POINTS, mInitialPoints);
                         mToolTipTimeout = m.getIntWithDefault(TOOLTIP_TIMEOUT, mToolTipTimeout);
@@ -317,9 +301,6 @@ public class Preferences {
                             mBlockLayout = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
                                 mBlockLayout.add(a.getString(i));
-                            }
-                            if (version < VERSION_AS_OF_GCS_4_18) {
-                                mBlockLayout.add(0, CharacterSheet.REACTIONS_KEY);
                             }
                         }
                         if (m.has(RECENT_FILES)) {
@@ -446,8 +427,6 @@ public class Preferences {
                         lib.toJSON(w);
                     }
                     w.endMap();
-                    w.keyValue(MASTER_LIBRARY_PATH, Library.MASTER.getPathNoCreate().toString());
-                    w.keyValue(USER_LIBRARY_PATH, Library.USER.getPathNoCreate().toString());
                     w.keyValue(INITIAL_POINTS, mInitialPoints);
                     w.keyValue(TOOLTIP_TIMEOUT, mToolTipTimeout);
                     w.key(LIBRARY_EXPLORER);
