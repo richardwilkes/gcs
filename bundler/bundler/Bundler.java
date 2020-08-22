@@ -664,7 +664,7 @@ public class Bundler {
         }
         args.add("--icon");
         args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
-        if (OS != LINUX || !noInstaller) {
+        if (OS.equals(MACOS) || !noInstaller) {
             for (String ext : new String[]{"adm", "adq", "eqm", "eqp", "gcs", "gct", "not", "skl", "spl"}) {
                 args.add("--file-associations");
                 args.add(Paths.get("artifacts", "file_associations", OS, ext + "_ext.properties").toString());
@@ -714,17 +714,17 @@ public class Bundler {
         case WINDOWS -> {
             args.add("--java-options");
             args.add("-Dsun.java2d.dpiaware=false");
-            args.add("--win-menu");
-            args.add("--win-menu-group");
-            args.add("Roleplaying");
-            args.add("--win-shortcut");
             if (!noInstaller) {
+                args.add("--win-menu");
+                args.add("--win-menu-group");
+                args.add("Roleplaying");
+                args.add("--win-shortcut");
                 args.add("--type");
                 args.add("msi");
+                args.add("--win-dir-chooser");
+                args.add("--win-upgrade-uuid");
+                args.add("E71F99DA-AD84-4E6E-9bE7-4E65421752E1");
             }
-            args.add("--win-dir-chooser");
-            args.add("--win-upgrade-uuid");
-            args.add("E71F99DA-AD84-4E6E-9bE7-4E65421752E1");
             Path propsFile = BUILD_DIR.resolve("console.properties");
             try (PrintWriter out = new PrintWriter(Files.newBufferedWriter(propsFile))) {
                 out.println("win-console=true");
