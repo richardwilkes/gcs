@@ -59,6 +59,7 @@ public class Bundler {
     private static final char[] HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     private static       String OS;
     private static       Path   PKG;
+    private static       Path   NO_INSTALLER_PKG;
     private static       Path   JPACKAGE_15;
     private static       String ICON_TYPE;
 
@@ -70,8 +71,9 @@ public class Bundler {
     public static void main(String[] args) {
         checkPlatform();
 
-        boolean sign     = false;
-        boolean notarize = false;
+        boolean sign        = false;
+        boolean notarize    = false;
+        boolean noInstaller = false;
         for (String arg : args) {
             if (MACOS.equals(OS)) {
                 if ("-s".equals(arg) || "--sign".equals(arg)) {
@@ -89,13 +91,25 @@ public class Bundler {
                     continue;
                 }
             }
+            if ("-u".equals(arg) || "--unpackaged".equals(arg)) {
+                if (!noInstaller) {
+                    noInstaller = true;
+                    System.out.println("Will not package the application for distribution");
+                }
+                continue;
+            }
             if ("-h".equals(arg) || "--help".equals(arg)) {
-                System.out.println("-h, --help      This help");
-                System.out.println("-n, --notarize  Enable notarization of the application (macOS only)");
-                System.out.println("-s, --sign      Enable signing of the application (macOS only)");
+                System.out.println("-h, --help        This help");
+                System.out.println("-n, --notarize    Enable notarization of the application (macOS only)");
+                System.out.println("-s, --sign        Enable signing of the application (macOS only)");
+                System.out.println("-u, --unpackaged  Don't package the app into a platform-specific installer");
                 System.exit(0);
             }
             System.out.println("Ignoring argument: " + arg);
+        }
+        if (noInstaller && (sign || notarize)) {
+            System.out.println("--unpackaged is not compatible with --sign or --notarize");
+            System.exit(1);
         }
 
         checkJDK();
@@ -104,7 +118,7 @@ public class Bundler {
         copyResources();
         createModules();
         extractLocalizationTemplate();
-        packageApp(sign);
+        packageApp(noInstaller, sign);
 
         if (notarize) {
             notarizeApp();
@@ -113,7 +127,11 @@ public class Bundler {
         System.out.println("Finished!");
         System.out.println();
         System.out.println("Package can be found at:");
-        System.out.println(PKG.toAbsolutePath().toString());
+        if (noInstaller) {
+            System.out.println(NO_INSTALLER_PKG.toAbsolutePath().toString());
+        } else {
+            System.out.println(PKG.toAbsolutePath().toString());
+        }
     }
 
     private static void checkPlatform() {
@@ -121,14 +139,17 @@ public class Bundler {
         if (osName.startsWith("Mac")) {
             OS = MACOS;
             PKG = Paths.get("GCS-" + GCS_VERSION + ".dmg");
+            NO_INSTALLER_PKG = Paths.get("GCS.app");
             ICON_TYPE = "icns";
         } else if (osName.startsWith("Win")) {
             OS = WINDOWS;
             PKG = Paths.get("GCS-" + GCS_VERSION + ".msi");
+            NO_INSTALLER_PKG = Paths.get("GCS");
             ICON_TYPE = "ico";
         } else if (osName.startsWith("Linux")) {
             OS = LINUX;
             PKG = Paths.get("gcs-" + GCS_VERSION + "-1_amd64.deb");
+            NO_INSTALLER_PKG = Paths.get("gcs");
             ICON_TYPE = "png";
         } else {
             System.err.println("Unsupported platform: " + osName);
@@ -211,6 +232,9 @@ public class Bundler {
             Files.createDirectories(EXTRA_DIR);
             Files.createDirectories(I18N_DIR);
             Files.deleteIfExists(PKG);
+            if (Files.exists(NO_INSTALLER_PKG)) {
+                Files.walkFileTree(NO_INSTALLER_PKG, new RecursiveDirectoryRemover());
+            }
         } catch (IOException exception) {
             System.out.println();
             exception.printStackTrace(System.err);
@@ -600,7 +624,7 @@ public class Bundler {
         return false;
     }
 
-    private static void packageApp(boolean sign) {
+    private static void packageApp(boolean noInstaller, boolean sign) {
         System.out.print("Packaging the application... ");
         System.out.flush();
         long         timing = System.nanoTime();
@@ -634,8 +658,10 @@ public class Bundler {
         args.add("Richard A. Wilkes");
         args.add("--description");
         args.add("GCS (GURPS Character Sheet) is a stand-alone, interactive, character sheet editor that allows you to build characters for the GURPS 4th Edition roleplaying game system.");
-        args.add("--license-file");
-        args.add("LICENSE");
+        if (!noInstaller) {
+            args.add("--license-file");
+            args.add("LICENSE");
+        }
         args.add("--icon");
         args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
         for (String ext : new String[]{"adm", "adq", "eqm", "eqp", "gcs", "gct", "not", "skl", "spl"}) {
@@ -648,6 +674,10 @@ public class Bundler {
         args.add(JRE.toString());
         args.add("--java-options");
         args.add("-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1");
+        if (noInstaller) {
+            args.add("--type");
+            args.add("app-image");
+        }
         switch (OS) {
         case MACOS -> {
             args.add("--mac-package-name");
@@ -684,8 +714,10 @@ public class Bundler {
             args.add("--win-menu-group");
             args.add("Roleplaying");
             args.add("--win-shortcut");
-            args.add("--type");
-            args.add("msi");
+            if (!noInstaller) {
+                args.add("--type");
+                args.add("msi");
+            }
             args.add("--win-dir-chooser");
             args.add("--win-upgrade-uuid");
             args.add("E71F99DA-AD84-4E6E-9bE7-4E65421752E1");
