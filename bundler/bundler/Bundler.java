@@ -664,9 +664,11 @@ public class Bundler {
         }
         args.add("--icon");
         args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
-        for (String ext : new String[]{"adm", "adq", "eqm", "eqp", "gcs", "gct", "not", "skl", "spl"}) {
-            args.add("--file-associations");
-            args.add(Paths.get("artifacts", "file_associations", OS, ext + "_ext.properties").toString());
+        if (OS != LINUX || !noInstaller) {
+            for (String ext : new String[]{"adm", "adq", "eqm", "eqp", "gcs", "gct", "not", "skl", "spl"}) {
+                args.add("--file-associations");
+                args.add(Paths.get("artifacts", "file_associations", OS, ext + "_ext.properties").toString());
+            }
         }
         args.add("--input");
         args.add(EXTRA_DIR.toString());
@@ -691,21 +693,23 @@ public class Bundler {
             }
         }
         case LINUX -> {
-            args.add("--linux-package-name");
-            args.add("gcs");
-            args.add("--linux-deb-maintainer");
-            args.add("wilkes@me.com");
-            args.add("--linux-menu-group");
-            args.add("Roleplaying");
-            args.add("--linux-app-category");
-            args.add("Roleplaying");
-            args.add("--linux-rpm-license-type");
-            args.add("MPLv2.0");
-            args.add("--linux-shortcut");
-            args.add("--linux-app-release");
-            args.add("1");
-            args.add("--linux-package-deps");
-            args.add("");
+            if (!noInstaller) {
+                args.add("--linux-package-name");
+                args.add("gcs");
+                args.add("--linux-deb-maintainer");
+                args.add("wilkes@me.com");
+                args.add("--linux-menu-group");
+                args.add("Roleplaying");
+                args.add("--linux-app-category");
+                args.add("Roleplaying");
+                args.add("--linux-rpm-license-type");
+                args.add("MPLv2.0");
+                args.add("--linux-shortcut");
+                args.add("--linux-app-release");
+                args.add("1");
+                args.add("--linux-package-deps");
+                args.add("");
+            }
         }
         case WINDOWS -> {
             args.add("--java-options");
