@@ -15,6 +15,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
+import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Desktop;
@@ -54,7 +55,16 @@ public class PDFServer {
             SERVER = server;
             PORT = server.getAddress().getPort();
         }
-        URI uri = new URI("http://127.0.0.1:" + PORT + "/web/viewer.html?file=" + encodeQueryParam(path.normalize().toAbsolutePath().toString()) + "#page=" + page);
+        String p = path.normalize().toAbsolutePath().toString();
+        if (Platform.isWindows()) {
+            p = p.replace('\\', '/');
+            if (p.startsWith("//")) {
+                p = "/unc" + p.substring(1);
+            } else if (p.length() > 1 && p.charAt(1) == ':') {
+                p = "/" + p.charAt(0) + p.substring(2);
+            }
+        }
+        URI uri = new URI("http://127.0.0.1:" + PORT + "/web/viewer.html?file=" + encodeQueryParam(p) + "#page=" + page);
         Desktop.getDesktop().browse(uri);
     }
 
@@ -65,7 +75,18 @@ public class PDFServer {
             Path   p           = Path.of(requestURI.getPath()).normalize();
             String contentType = contentType(PathUtils.getExtension(p));
             if ("application/pdf".equals(contentType)) {
-                p = Path.of(URLDecoder.decode(requestURI.getPath(), StandardCharsets.UTF_8)).normalize();
+                String path = URLDecoder.decode(requestURI.getPath(), StandardCharsets.UTF_8);
+                if (Platform.isWindows()) {
+                    if (path.startsWith("/unc/")) {
+                        path = "/" + path.substring(4);
+                    } else if (path.length() > 2 && path.charAt(0) == '/' && path.charAt(2) == '/') {
+                        char ch = path.charAt(1);
+                        if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+                            path = ch + ":" + path.substring(2);
+                        }
+                    }
+                }
+                p = Path.of(path).normalize();
                 if (!Files.isRegularFile(p) || !Files.isReadable(p)) {
                     notFound(httpExchange);
                     return;
@@ -96,12 +117,15 @@ public class PDFServer {
                 return;
             }
             String path = p.toString();
+            if (Platform.isWindows()) {
+                path = path.replace('\\', '/');
+            }
             byte[] data;
             synchronized (CACHE) {
                 data = CACHE.get(path);
                 if (data == null) {
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    try (InputStream in = PDFServer.class.getModule().getResourceAsStream("/pdfjs" + p.toString())) {
+                    try (InputStream in = PDFServer.class.getModule().getResourceAsStream("/pdfjs" + path)) {
                         in.transferTo(out);
                     } catch (IOException ioe) {
                         out = null;
