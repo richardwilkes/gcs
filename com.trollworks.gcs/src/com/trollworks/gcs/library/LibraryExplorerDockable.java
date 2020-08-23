@@ -25,8 +25,7 @@ import com.trollworks.gcs.modifier.EquipmentModifierList;
 import com.trollworks.gcs.modifier.EquipmentModifiersDockable;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
-import com.trollworks.gcs.pdfview.PdfDockable;
-import com.trollworks.gcs.pdfview.PdfRef;
+import com.trollworks.gcs.pdfview.PDFServer;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
@@ -303,7 +302,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                 } else if (FileType.TEMPLATE.matchExtension(ext)) {
                     proxy = dockTemplate(new TemplateDockable(new Template(path)));
                 } else if (FileType.PDF.matchExtension(ext)) {
-                    proxy = dockPdf(new PdfDockable(new PdfRef(null, path, 0), -1, null));
+                    PDFServer.showPDF(path, 0);
                 }
             } catch (Throwable throwable) {
                 StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
@@ -469,47 +468,6 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
             dock.dock(template, Objects.requireNonNullElse(sheet, this), DockLocation.EAST);
         }
         return template;
-    }
-
-    /**
-     * @param pdf The {@link PdfDockable} to dock.
-     * @return The {@link PdfDockable} that was passed in.
-     */
-    public PdfDockable dockPdf(PdfDockable pdf) {
-        // Order of docking:
-        // 1. Stack with another pdf
-        // 2. Dock to the right of a sheet
-        // 2. Dock to the left of a library or template
-        // 3. Dock to the right of the library explorer
-        Dockable sheet = null;
-        Dockable other = null;
-        Dock     dock  = getDockContainer().getDock();
-        for (Dockable dockable : dock.getDockables()) {
-            if (dockable instanceof PdfDockable) {
-                dockable.getDockContainer().stack(pdf);
-                return pdf;
-            }
-            if (sheet == null && dockable instanceof SheetDockable) {
-                sheet = dockable;
-            }
-            if (other == null && (dockable instanceof TemplateDockable || dockable instanceof LibraryDockable)) {
-                other = dockable;
-            }
-        }
-        if (sheet != null) {
-            dock.dock(pdf, sheet, DockLocation.EAST);
-        } else if (other != null) {
-            DockContainer dc     = other.getDockContainer();
-            DockLayout    layout = dc.getDock().getLayout().findLayout(dc);
-            if (layout.isVertical()) {
-                dock.dock(pdf, layout, DockLocation.WEST);
-            } else {
-                dock.dock(pdf, other, DockLocation.WEST);
-            }
-        } else {
-            dock.dock(pdf, this, DockLocation.EAST);
-        }
-        return pdf;
     }
 
     @Override

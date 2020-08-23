@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.pdfview.PdfRef;
+import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -51,7 +51,7 @@ public class ReferenceLookupPreferences extends PreferencePanel {
         mPanel.setBackground(Color.WHITE);
         Preferences prefs      = Preferences.getInstance();
         Color       background = new Color(255, 255, 224);
-        for (PdfRef ref : prefs.allPdfRefs(false)) {
+        for (PDFRef ref : prefs.allPdfRefs(false)) {
             JButton button = new JButton(I18n.Text("Remove"));
             button.addActionListener(event -> {
                 prefs.removePdfRef(ref);

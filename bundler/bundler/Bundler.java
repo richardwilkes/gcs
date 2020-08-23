@@ -42,9 +42,6 @@ public class Bundler {
     private static final String GCS_VERSION       = "4.23.0";
     private static       String JDK_MAJOR_VERSION = "14";
     private static final String ITEXT_VERSION     = "2.1.7";
-    private static final String LOGGING_VERSION   = "1.2.0";
-    private static final String FONTBOX_VERSION   = "2.0.20";
-    private static final String PDFBOX_VERSION    = "2.0.20";
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
     private static final String WINDOWS           = "windows";
@@ -280,8 +277,6 @@ public class Bundler {
         System.out.flush();
         long timing = System.nanoTime();
         copyResourceTree(Paths.get("com.trollworks.gcs", "resources"), BUILD_DIR.resolve("com.trollworks.gcs"));
-        copyResourceTree(Paths.get("third_party", "org.apache.pdfbox", "resources"), BUILD_DIR.resolve("org.apache.pdfbox"));
-        copyResourceTree(Paths.get("third_party", "org.apache.fontbox", "resources"), BUILD_DIR.resolve("org.apache.fontbox"));
         copyResourceTree(Paths.get("third_party", "com.lowagie.text", "resources"), BUILD_DIR.resolve("com.lowagie.text"));
         showTiming(timing);
     }
@@ -329,9 +324,6 @@ public class Bundler {
         args.add(".");
         runNoOutputCmd(args);
         buildJar("com.lowagie.text", ITEXT_VERSION);
-        buildJar("org.apache.commons.logging", LOGGING_VERSION);
-        buildJar("org.apache.fontbox", FONTBOX_VERSION);
-        buildJar("org.apache.pdfbox", PDFBOX_VERSION);
         showTiming(timing);
     }
 

@@ -15,7 +15,7 @@ import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.pdfview.PdfRef;
+import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.Theme;
 import com.trollworks.gcs.ui.print.PageOrientation;
@@ -169,9 +169,9 @@ public class Preferences {
     private        WeightUnits                      mDefaultWeightUnits;
     private        List<String>                     mBlockLayout;
     private        List<Path>                       mRecentFiles;
-    private        Path                             mLastDir;
-    private        Map<String, PdfRef>              mPdfRefs;
-    private        Map<String, String>              mKeyBindingOverrides;
+    private        Path                mLastDir;
+    private        Map<String, PDFRef> mPdfRefs;
+    private        Map<String, String> mKeyBindingOverrides;
     private        Map<String, Fonts.Info>          mFontInfo;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
     private        PrintManager                     mDefaultPageSettings;
@@ -316,7 +316,7 @@ public class Preferences {
                             JsonMap m2 = m.getMap(PDF_REFS);
                             mPdfRefs = new HashMap<>();
                             for (String key : m2.keySet()) {
-                                mPdfRefs.put(key, new PdfRef(m2.getMap(key)));
+                                mPdfRefs.put(key, new PDFRef(m2.getMap(key)));
                             }
                         }
                         if (m.has(KEY_BINDINGS)) {
@@ -460,7 +460,7 @@ public class Preferences {
                     w.keyValue(LAST_DIR, mLastDir.toString());
                     w.key(PDF_REFS);
                     w.startMap();
-                    for (Map.Entry<String, PdfRef> entry : mPdfRefs.entrySet()) {
+                    for (Map.Entry<String, PDFRef> entry : mPdfRefs.entrySet()) {
                         w.key(entry.getKey());
                         entry.getValue().toJSON(w);
                     }
@@ -759,10 +759,10 @@ public class Preferences {
         mPNGResolution = PNGResolution;
     }
 
-    public List<PdfRef> allPdfRefs(boolean requireExistence) {
-        List<PdfRef> list = new ArrayList<>();
+    public List<PDFRef> allPdfRefs(boolean requireExistence) {
+        List<PDFRef> list = new ArrayList<>();
         for (String key : mPdfRefs.keySet()) {
-            PdfRef ref = lookupPdfRef(key, requireExistence);
+            PDFRef ref = lookupPdfRef(key, requireExistence);
             if (ref != null) {
                 list.add(ref);
             }
@@ -771,8 +771,8 @@ public class Preferences {
         return list;
     }
 
-    public PdfRef lookupPdfRef(String id, boolean requireExistence) {
-        PdfRef ref = mPdfRefs.get(id);
+    public PDFRef lookupPdfRef(String id, boolean requireExistence) {
+        PDFRef ref = mPdfRefs.get(id);
         if (ref == null) {
             return null;
         }
@@ -785,11 +785,11 @@ public class Preferences {
         return ref;
     }
 
-    public void putPdfRef(PdfRef ref) {
+    public void putPdfRef(PDFRef ref) {
         mPdfRefs.put(ref.getID(), ref);
     }
 
-    public void removePdfRef(PdfRef ref) {
+    public void removePdfRef(PDFRef ref) {
         mPdfRefs.remove(ref.getID());
     }
 

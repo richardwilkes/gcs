@@ -1,3 +1,3 @@
 <component name="DependencyValidationManager">
-  <scope name="gcs" pattern="src[com.trollworks*]:*..*||src[gcs]:bundler..*" />
+  <scope name="gcs" pattern="(src[com.trollworks*]:*..*||src[gcs]:bundler..*)&amp;&amp;!file[com.trollworks.gcs]:resources//*" />
 </component>
