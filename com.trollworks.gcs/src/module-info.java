@@ -16,6 +16,5 @@ open module com.trollworks.gcs {
     requires java.management;
     requires java.prefs;
     requires java.xml;
-    requires org.apache.fontbox;
-    requires org.apache.pdfbox;
+    requires jdk.httpserver;
 }

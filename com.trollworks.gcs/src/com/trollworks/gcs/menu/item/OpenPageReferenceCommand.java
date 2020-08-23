@@ -11,13 +11,12 @@
 
 package com.trollworks.gcs.menu.item;
 
-import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.pdfview.PdfDockable;
-import com.trollworks.gcs.pdfview.PdfRef;
+import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
@@ -25,6 +24,7 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ReverseListIterator;
+import com.trollworks.gcs.pdfview.PDFServer;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -107,27 +107,19 @@ public class OpenPageReferenceCommand extends Command {
                 return; // Has no page number, so bail
             }
             Preferences prefs = Preferences.getInstance();
-            PdfRef      ref   = prefs.lookupPdfRef(id, true);
+            PDFRef      ref   = prefs.lookupPdfRef(id, true);
             if (ref == null) {
                 Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.Text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
                 if (path != null) {
-                    ref = new PdfRef(id, path, 0);
+                    ref = new PDFRef(id, path, 0);
                     prefs.putPdfRef(ref);
                 }
             }
             if (ref != null) {
-                Path                    path    = ref.getPath();
-                LibraryExplorerDockable library = LibraryExplorerDockable.get();
-                if (library != null) {
-                    PdfDockable dockable = (PdfDockable) library.getDockableFor(path);
-                    if (dockable != null) {
-                        dockable.goToPage(ref, page, highlight);
-                        dockable.getDockContainer().setCurrentDockable(dockable);
-                    } else {
-                        dockable = new PdfDockable(ref, page, highlight);
-                        library.dockPdf(dockable);
-                        library.open(path);
-                    }
+                try {
+                    PDFServer.showPDF(ref.getPath(), page + ref.getPageToIndexOffset());
+                } catch (Exception exception) {
+                    WindowUtils.showError(null, exception.getMessage());
                 }
             }
         }

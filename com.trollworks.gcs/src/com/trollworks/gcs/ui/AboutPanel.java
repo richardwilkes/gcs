@@ -28,7 +28,7 @@ import javax.swing.UIManager;
 
 /** The about box contents. */
 public class AboutPanel extends JPanel {
-    private static final int HMARGIN = 4;
+    private static final int MARGIN = 8;
 
     /** Creates a new about panel. */
     public AboutPanel() {
@@ -52,8 +52,8 @@ public class AboutPanel extends JPanel {
         Font baseFont = UIManager.getFont("TextField.font");
         gc.setFont(baseFont.deriveFont(10.0f));
         gc.setColor(Color.WHITE);
-        int right = getWidth() - HMARGIN;
-        int y     = draw(gc, I18n.Text("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games.\nThe iText Library is licensed under LGPL 2.1 by Bruno Lowagie and Paulo Soares.\nThe Trove Library is licensed under LGPL 2.1 by Eric D. Friedman and Rob Eden.\nThe PDFBox and FontBox libraries are licensed under the Apache License v2 by the Apache Software Foundation."), getHeight() - HMARGIN, right, true, true);
+        int right = getWidth() - MARGIN;
+        int y     = draw(gc, I18n.Text("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games."), getHeight() - MARGIN, right, true, true);
         int y2    = draw(gc, GCS.COPYRIGHT + "\nAll rights reserved", y, right, false, true);
         draw(gc, String.format(I18n.Text("%s %s\n%s Architecture\nJava %s"), System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"), System.getProperty("java.version")), y, right, false, false);  //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         gc.setFont(baseFont.deriveFont(Font.BOLD, 12.0f));
@@ -66,7 +66,7 @@ public class AboutPanel extends JPanel {
         FontMetrics fm      = gc.getFontMetrics();
         int         fHeight = fm.getAscent() + fm.getDescent();
         for (int i = one.length - 1; i >= 0; i--) {
-            gc.drawString(one[i], onLeft ? HMARGIN : right - fm.stringWidth(one[i]), y);
+            gc.drawString(one[i], onLeft ? MARGIN : right - fm.stringWidth(one[i]), y);
             y -= fHeight;
         }
         if (addGap) {
