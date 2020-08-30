@@ -28,7 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable extends CollectedListsDockable {
+public class SheetDockable extends CollectedOutlinesDockable {
     private static SheetDockable               LAST_ACTIVATED;
     private        CharacterSheet              mSheet;
     private        JComboBox<HitLocationTable> mHitLocationTableCombo;
@@ -67,7 +67,7 @@ public class SheetDockable extends CollectedListsDockable {
     }
 
     @Override
-    public CollectedLists getCollectedLists() {
+    public CollectedOutlines getCollectedOutlines() {
         return mSheet;
     }
 

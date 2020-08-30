@@ -44,7 +44,7 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
         super(null);
         mOutline = useProxy ? new OutlineProxy(outline) : outline;
         mHeader = mOutline.getHeaderPanel();
-        CharacterSheet.prepOutline(mOutline);
+        CollectedOutlines.prepOutline(mOutline);
         add(mHeader);
         add(mOutline);
         setBorder(getTitledBorder());

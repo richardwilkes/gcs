@@ -49,11 +49,11 @@ import javax.swing.JComboBox;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
-public abstract class CollectedListsDockable extends DataFileDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
+public abstract class CollectedOutlinesDockable extends DataFileDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
     private JComboBox<Scales> mScaleCombo;
     private Search            mSearch;
 
-    public CollectedListsDockable(DataFile dataFile) {
+    public CollectedOutlinesDockable(DataFile dataFile) {
         super(dataFile);
     }
 
@@ -66,7 +66,7 @@ public abstract class CollectedListsDockable extends DataFileDockable implements
             if (scale == null) {
                 scale = Scales.ACTUAL_SIZE;
             }
-            getCollectedLists().setScale(scale.getScale());
+            getCollectedOutlines().setScale(scale.getScale());
         });
         toolbar.add(mScaleCombo);
         mSearch = new Search(this);
@@ -75,7 +75,7 @@ public abstract class CollectedListsDockable extends DataFileDockable implements
         return toolbar;
     }
 
-    public abstract CollectedLists getCollectedLists();
+    public abstract CollectedOutlines getCollectedOutlines();
 
     @Override
     public boolean isJumpToSearchAvailable() {
@@ -96,13 +96,13 @@ public abstract class CollectedListsDockable extends DataFileDockable implements
     public List<Object> search(String filter) {
         List<Object> list = new ArrayList<>();
         filter = filter.toLowerCase();
-        CollectedLists lists = getCollectedLists();
-        searchOne(lists.getAdvantageOutline(), filter, list);
-        searchOne(lists.getSkillOutline(), filter, list);
-        searchOne(lists.getSpellOutline(), filter, list);
-        searchOne(lists.getEquipmentOutline(), filter, list);
-        searchOne(lists.getOtherEquipmentOutline(), filter, list);
-        searchOne(lists.getNoteOutline(), filter, list);
+        CollectedOutlines outlines = getCollectedOutlines();
+        searchOne(outlines.getAdvantageOutline(), filter, list);
+        searchOne(outlines.getSkillOutline(), filter, list);
+        searchOne(outlines.getSpellOutline(), filter, list);
+        searchOne(outlines.getEquipmentOutline(), filter, list);
+        searchOne(outlines.getOtherEquipmentOutline(), filter, list);
+        searchOne(outlines.getNoteOutline(), filter, list);
         return list;
     }
 
@@ -116,17 +116,17 @@ public abstract class CollectedListsDockable extends DataFileDockable implements
 
     @Override
     public void searchSelect(List<Object> selection) {
-        CollectedLists               lists   = getCollectedLists();
-        Map<OutlineModel, List<Row>> map     = new HashMap<>();
-        Outline                      primary = null;
+        CollectedOutlines            outlines = getCollectedOutlines();
+        Map<OutlineModel, List<Row>> map      = new HashMap<>();
+        Outline                      primary  = null;
         List<Row>                    list;
 
-        lists.getAdvantageOutline().getModel().deselect();
-        lists.getSkillOutline().getModel().deselect();
-        lists.getSpellOutline().getModel().deselect();
-        lists.getEquipmentOutline().getModel().deselect();
-        lists.getOtherEquipmentOutline().getModel().deselect();
-        lists.getNoteOutline().getModel().deselect();
+        outlines.getAdvantageOutline().getModel().deselect();
+        outlines.getSkillOutline().getModel().deselect();
+        outlines.getSpellOutline().getModel().deselect();
+        outlines.getEquipmentOutline().getModel().deselect();
+        outlines.getOtherEquipmentOutline().getModel().deselect();
+        outlines.getNoteOutline().getModel().deselect();
 
         for (Object obj : selection) {
             Row          row    = (Row) obj;
@@ -147,17 +147,17 @@ public abstract class CollectedListsDockable extends DataFileDockable implements
                 list.add(row);
             }
             if (primary == null) {
-                primary = lists.getAdvantageOutline();
+                primary = outlines.getAdvantageOutline();
                 if (model != primary.getModel()) {
-                    primary = lists.getSkillOutline();
+                    primary = outlines.getSkillOutline();
                     if (model != primary.getModel()) {
-                        primary = lists.getSpellOutline();
+                        primary = outlines.getSpellOutline();
                         if (model != primary.getModel()) {
-                            primary = lists.getEquipmentOutline();
+                            primary = outlines.getEquipmentOutline();
                             if (model != primary.getModel()) {
-                                primary = lists.getOtherEquipmentOutline();
+                                primary = outlines.getOtherEquipmentOutline();
                                 if (model != primary.getModel()) {
-                                    primary = lists.getNoteOutline();
+                                    primary = outlines.getNoteOutline();
                                     if (model != primary.getModel()) {
                                         primary = null;
                                     }
@@ -186,7 +186,7 @@ public abstract class CollectedListsDockable extends DataFileDockable implements
      * @param rows The rows to add.
      */
     public void addRows(List<Row> rows) {
-        CollectedLists              lists       = getCollectedLists();
+        CollectedOutlines           outlines    = getCollectedOutlines();
         Map<ListOutline, StateEdit> map         = new HashMap<>();
         Map<Outline, List<Row>>     selMap      = new HashMap<>();
         Map<Outline, List<ListRow>> nameMap     = new HashMap<>();
@@ -194,49 +194,49 @@ public abstract class CollectedListsDockable extends DataFileDockable implements
         String                      addRowsText = I18n.Text("Add Rows");
         for (Row row : rows) {
             if (row instanceof Advantage) {
-                outline = lists.getAdvantageOutline();
+                outline = outlines.getAdvantageOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Advantage(getDataFile(), (Advantage) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Technique) {
-                outline = lists.getSkillOutline();
+                outline = outlines.getSkillOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Technique(getDataFile(), (Technique) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Skill) {
-                outline = lists.getSkillOutline();
+                outline = outlines.getSkillOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Skill(getDataFile(), (Skill) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof RitualMagicSpell) {
-                outline = lists.getSpellOutline();
+                outline = outlines.getSpellOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new RitualMagicSpell(getDataFile(), (RitualMagicSpell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Spell) {
-                outline = lists.getSpellOutline();
+                outline = outlines.getSpellOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Spell(getDataFile(), (Spell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Equipment) {
-                outline = row.getOwner().getProperty(EquipmentList.TAG_OTHER_ROOT) != null ? lists.getOtherEquipmentOutline() : lists.getEquipmentOutline();
+                outline = row.getOwner().getProperty(EquipmentList.TAG_OTHER_ROOT) != null ? outlines.getOtherEquipmentOutline() : outlines.getEquipmentOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Equipment(getDataFile(), (Equipment) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Note) {
-                outline = lists.getNoteOutline();
+                outline = outlines.getNoteOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }

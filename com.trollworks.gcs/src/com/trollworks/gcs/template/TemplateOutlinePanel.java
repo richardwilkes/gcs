@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.template;
 
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
@@ -42,7 +43,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
         super(null, title, false);
         mOutline = outline;
         mHeader = mOutline.getHeaderPanel();
-        TemplateSheet.prepOutline(mOutline);
+        CollectedOutlines.prepOutline(mOutline);
         add(mHeader);
         add(mOutline);
         setBorder(new TitledBorder());

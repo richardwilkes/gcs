@@ -12,8 +12,8 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.character.CollectedLists;
-import com.trollworks.gcs.character.CollectedListsDockable;
+import com.trollworks.gcs.character.CollectedOutlinesDockable;
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -29,7 +29,7 @@ import java.awt.Component;
 import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
-public class TemplateDockable extends CollectedListsDockable {
+public class TemplateDockable extends CollectedOutlinesDockable {
     private static TemplateDockable LAST_ACTIVATED;
     private        TemplateSheet    mTemplate;
 
@@ -51,7 +51,7 @@ public class TemplateDockable extends CollectedListsDockable {
     }
 
     @Override
-    public CollectedLists getCollectedLists() {
+    public CollectedOutlines getCollectedOutlines() {
         return mTemplate;
     }
 
@@ -111,13 +111,8 @@ public class TemplateDockable extends CollectedListsDockable {
     @Override
     public void handleNotification(Object producer, String name, Object data) {
         if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
+            mTemplate.updateRowHeights();
             mTemplate.revalidate();
-            mTemplate.getAdvantageOutline().updateRowHeights();
-            mTemplate.getSkillOutline().updateRowHeights();
-            mTemplate.getSpellOutline().updateRowHeights();
-            mTemplate.getEquipmentOutline().updateRowHeights();
-            mTemplate.getOtherEquipmentOutline().updateRowHeights();
-            mTemplate.getNoteOutline().updateRowHeights();
         } else {
             getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
         }
