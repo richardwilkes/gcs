@@ -14,6 +14,7 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.preferences.Preferences;
@@ -160,6 +161,8 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
             mTemplate.getSkillOutline().updateRowHeights();
             mTemplate.getSpellOutline().updateRowHeights();
             mTemplate.getEquipmentOutline().updateRowHeights();
+            mTemplate.getOtherEquipmentOutline().updateRowHeights();
+            mTemplate.getNoteOutline().updateRowHeights();
         } else {
             getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
         }
@@ -188,6 +191,8 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
         searchOne(mTemplate.getSkillOutline(), filter, list);
         searchOne(mTemplate.getSpellOutline(), filter, list);
         searchOne(mTemplate.getEquipmentOutline(), filter, list);
+        searchOne(mTemplate.getOtherEquipmentOutline(), filter, list);
+        searchOne(mTemplate.getNoteOutline(), filter, list);
         return list;
     }
 
@@ -209,6 +214,8 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
         mTemplate.getSkillOutline().getModel().deselect();
         mTemplate.getSpellOutline().getModel().deselect();
         mTemplate.getEquipmentOutline().getModel().deselect();
+        mTemplate.getOtherEquipmentOutline().getModel().deselect();
+        mTemplate.getNoteOutline().getModel().deselect();
 
         for (Object obj : selection) {
             Row          row    = (Row) obj;
@@ -236,6 +243,15 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
                         primary = mTemplate.getSpellOutline();
                         if (model != primary.getModel()) {
                             primary = mTemplate.getEquipmentOutline();
+                            if (model != primary.getModel()) {
+                                primary = mTemplate.getOtherEquipmentOutline();
+                                if (model != primary.getModel()) {
+                                    primary = mTemplate.getNoteOutline();
+                                    if (model != primary.getModel()) {
+                                        primary = null;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -301,7 +317,7 @@ public class TemplateDockable extends DataFileDockable implements NotifierTarget
                 row = new Spell(getDataFile(), (Spell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Equipment) {
-                outline = mTemplate.getEquipmentOutline();
+                outline = row.getOwner().getProperty(EquipmentList.TAG_OTHER_ROOT) != null ? mTemplate.getOtherEquipmentOutline() : mTemplate.getEquipmentOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }

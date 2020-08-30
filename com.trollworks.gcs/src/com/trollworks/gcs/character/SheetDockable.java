@@ -247,9 +247,12 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
                         if (model != primary.getModel()) {
                             primary = mSheet.getEquipmentOutline();
                             if (model != primary.getModel()) {
-                                primary = mSheet.getNoteOutline();
+                                primary = mSheet.getOtherEquipmentOutline();
                                 if (model != primary.getModel()) {
-                                    primary = null;
+                                    primary = mSheet.getNoteOutline();
+                                    if (model != primary.getModel()) {
+                                        primary = null;
+                                    }
                                 }
                             }
                         }
