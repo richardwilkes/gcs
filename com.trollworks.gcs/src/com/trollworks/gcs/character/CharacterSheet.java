@@ -47,7 +47,6 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.scale.ScaleRoot;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
@@ -119,7 +118,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
-public class CharacterSheet extends JPanel implements ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener, ScaleRoot {
+public class CharacterSheet extends JPanel implements CollectedLists, ChangeListener, Scrollable, BatchNotifierTarget, PageOwner, PrintProxy, ActionListener, Runnable, DropTargetListener {
     private static final int              GAP                 = 2;
     public static final  String           REACTIONS_KEY       = "reactions";
     public static final  String           MELEE_KEY           = "melee";
@@ -552,7 +551,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private void createEquipmentOutline() {
         if (mEquipmentOutline == null) {
-            mEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getEquipmentRoot());
+            mEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getEquipmentModel());
             initOutline(mEquipmentOutline);
         }
         resetOutline(mEquipmentOutline);
@@ -565,7 +564,7 @@ public class CharacterSheet extends JPanel implements ChangeListener, Scrollable
 
     private void createOtherEquipmentOutline() {
         if (mOtherEquipmentOutline == null) {
-            mOtherEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getOtherEquipmentRoot());
+            mOtherEquipmentOutline = new EquipmentOutline(mCharacter, mCharacter.getOtherEquipmentModel());
             initOutline(mOtherEquipmentOutline);
         }
         resetOutline(mOtherEquipmentOutline);

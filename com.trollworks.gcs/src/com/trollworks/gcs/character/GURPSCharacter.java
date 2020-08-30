@@ -13,13 +13,8 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
-import com.trollworks.gcs.advantage.AdvantageList;
-import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.BonusAttributeType;
@@ -35,22 +30,16 @@ import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
-import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
-import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
@@ -74,12 +63,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /** A GURPS character. */
-public class GURPSCharacter extends DataFile {
+public class GURPSCharacter extends CollectedModels {
     private static final int                                 CURRENT_JSON_VERSION                 = 1;
     private static final int                                 CURRENT_VERSION                      = 5;
     /**
@@ -112,12 +99,6 @@ public class GURPSCharacter extends DataFile {
     private static final String                              KEY_PER_ADJ                          = "per_adj";
     private static final String                              KEY_SPEED_ADJ                        = "speed_adj";
     private static final String                              KEY_MOVE_ADJ                         = "move_adj";
-    public static final  String                              KEY_ADVANTAGES                       = "advantages";
-    public static final  String                              KEY_SKILLS                           = "skills";
-    public static final  String                              KEY_SPELLS                           = "spells";
-    public static final  String                              KEY_EQUIPMENT                        = "equipment";
-    public static final  String                              KEY_OTHER_EQUIPMENT                  = "other_equipment";
-    public static final  String                              KEY_NOTES                            = "notes";
     /** The prefix for all character IDs. */
     public static final  String                              CHARACTER_PREFIX                     = "gcs.";
     /** The field ID for last modified date changes. */
@@ -296,12 +277,6 @@ public class GURPSCharacter extends DataFile {
     private              Settings                            mSettings;
     private              Profile                             mProfile;
     private              Armor                               mArmor;
-    private              OutlineModel                        mAdvantages;
-    private              OutlineModel                        mSkills;
-    private              OutlineModel                        mSpells;
-    private              OutlineModel                        mEquipment;
-    private              OutlineModel                        mOtherEquipment;
-    private              OutlineModel                        mNotes;
     private              WeightValue                         mCachedWeightCarried;
     private              WeightValue                         mCachedWeightCarriedForSkills;
     private              Fixed6                              mCachedWealthCarried;
@@ -338,19 +313,13 @@ public class GURPSCharacter extends DataFile {
      *                     sheet.
      */
     public GURPSCharacter(Path path) throws IOException {
+        this();
         load(path);
     }
 
     private void characterInitialize(boolean full) {
         mSettings = new Settings(this);
         mFeatureMap = new HashMap<>();
-        mAdvantages = new OutlineModel();
-        mSkills = new OutlineModel();
-        mSpells = new OutlineModel();
-        mEquipment = new OutlineModel();
-        mOtherEquipment = new OutlineModel();
-        mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
-        mNotes = new OutlineModel();
         mTotalPoints = Preferences.getInstance().getInitialPoints();
         mStrength = 10;
         mDexterity = 10;
@@ -439,12 +408,7 @@ public class GURPSCharacter extends DataFile {
         mPerAdj = m.getInt(KEY_PER_ADJ);
         mSpeedAdj = m.getDouble(KEY_SPEED_ADJ);
         mMoveAdj = m.getInt(KEY_MOVE_ADJ);
-        AdvantageList.loadIntoModel(this, m.getArray(KEY_ADVANTAGES), mAdvantages, state);
-        SkillList.loadIntoModel(this, m.getArray(KEY_SKILLS), mSkills, state);
-        SpellList.loadIntoModel(this, m.getArray(KEY_SPELLS), mSpells, state);
-        EquipmentList.loadIntoModel(this, m.getArray(KEY_EQUIPMENT), mEquipment, state);
-        EquipmentList.loadIntoModel(this, m.getArray(KEY_OTHER_EQUIPMENT), mOtherEquipment, state);
-        NoteList.loadIntoModel(this, m.getArray(KEY_NOTES), mNotes, state);
+        loadModels(m, state);
         if (mPageSettings != null && m.has(PrintManager.TAG_ROOT)) {
             mPageSettings = new PrintManager(m.getMap(PrintManager.TAG_ROOT));
             mPageSettingsString = mPageSettings.toString();
@@ -480,12 +444,7 @@ public class GURPSCharacter extends DataFile {
         w.keyValueNot(KEY_PER_ADJ, mPerAdj, 0);
         w.keyValueNot(KEY_SPEED_ADJ, mSpeedAdj, 0);
         w.keyValueNot(KEY_MOVE_ADJ, mMoveAdj, 0);
-        ListRow.saveList(w, KEY_ADVANTAGES, mAdvantages.getTopLevelRows(), saveType);
-        ListRow.saveList(w, KEY_SKILLS, mSkills.getTopLevelRows(), saveType);
-        ListRow.saveList(w, KEY_SPELLS, mSpells.getTopLevelRows(), saveType);
-        ListRow.saveList(w, KEY_EQUIPMENT, mEquipment.getTopLevelRows(), saveType);
-        ListRow.saveList(w, KEY_OTHER_EQUIPMENT, mOtherEquipment.getTopLevelRows(), saveType);
-        ListRow.saveList(w, KEY_NOTES, mNotes.getTopLevelRows(), saveType);
+        saveModels(w, saveType);
         if (saveType != SaveType.HASH && mPageSettings != null) {
             w.key(PrintManager.TAG_ROOT);
             mPageSettings.save(w, LengthUnits.IN);
@@ -1427,7 +1386,7 @@ public class GURPSCharacter extends DataFile {
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, defaultWeightUnits());
         mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, defaultWeightUnits());
         mCachedWealthCarried = Fixed6.ZERO;
-        for (Row one : mEquipment.getTopLevelRows()) {
+        for (Row one : getEquipmentModel().getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
             WeightValue weight    = new WeightValue(equipment.getExtendedWeight(false));
             if (useSimpleMetricConversions()) {
@@ -1461,7 +1420,7 @@ public class GURPSCharacter extends DataFile {
     public void calculateWealthNotCarried(boolean notify) {
         Fixed6 savedWealth = mCachedWealthNotCarried;
         mCachedWealthNotCarried = Fixed6.ZERO;
-        for (Row one : mOtherEquipment.getTopLevelRows()) {
+        for (Row one : getOtherEquipmentModel().getTopLevelRows()) {
             mCachedWealthNotCarried = mCachedWealthNotCarried.add(((Equipment) one).getExtendedValue());
         }
         if (notify) {
@@ -1790,7 +1749,7 @@ public class GURPSCharacter extends DataFile {
         mCachedDisadvantagePoints = 0;
         mCachedRacePoints = 0;
         mCachedQuirkPoints = 0;
-        for (Advantage advantage : new FilteredIterator<>(mAdvantages.getTopLevelRows(), Advantage.class)) {
+        for (Advantage advantage : new FilteredIterator<>(getAdvantagesModel().getTopLevelRows(), Advantage.class)) {
             calculateSingleAdvantagePoints(advantage);
         }
     }
@@ -2324,22 +2283,6 @@ public class GURPSCharacter extends DataFile {
         return mArmor;
     }
 
-    /** @return The outline model for the character's advantages. */
-    public OutlineModel getAdvantagesModel() {
-        return mAdvantages;
-    }
-
-    /**
-     * @param includeDisabled {@code true} if disabled entries should be included.
-     * @return A recursive iterator over the character's advantages.
-     */
-    public RowIterator<Advantage> getAdvantagesIterator(boolean includeDisabled) {
-        if (includeDisabled) {
-            return new RowIterator<>(mAdvantages);
-        }
-        return new RowIterator<>(mAdvantages, (row) -> row.isEnabled());
-    }
-
     /**
      * Searches the character's current advantages list for the specified name.
      *
@@ -2363,16 +2306,6 @@ public class GURPSCharacter extends DataFile {
      */
     public boolean hasAdvantageNamed(String name) {
         return getAdvantageNamed(name) != null;
-    }
-
-    /** @return The outline model for the character's skills. */
-    public OutlineModel getSkillsRoot() {
-        return mSkills;
-    }
-
-    /** @return A recursive iterable for the character's skills. */
-    public RowIterator<Skill> getSkillsIterator() {
-        return new RowIterator<>(mSkills);
     }
 
     /**
@@ -2428,46 +2361,6 @@ public class GURPSCharacter extends DataFile {
             }
         }
         return best;
-    }
-
-    /** @return The outline model for the character's spells. */
-    public OutlineModel getSpellsRoot() {
-        return mSpells;
-    }
-
-    /** @return A recursive iterator over the character's spells. */
-    public RowIterator<Spell> getSpellsIterator() {
-        return new RowIterator<>(mSpells);
-    }
-
-    /** @return The outline model for the character's equipment. */
-    public OutlineModel getEquipmentRoot() {
-        return mEquipment;
-    }
-
-    /** @return A recursive iterator over the character's equipment. */
-    public RowIterator<Equipment> getEquipmentIterator() {
-        return new RowIterator<>(mEquipment);
-    }
-
-    /** @return The outline model for the character's other equipment. */
-    public OutlineModel getOtherEquipmentRoot() {
-        return mOtherEquipment;
-    }
-
-    /** @return A recursive iterator over the character's other equipment. */
-    public RowIterator<Equipment> getOtherEquipmentIterator() {
-        return new RowIterator<>(mOtherEquipment);
-    }
-
-    /** @return The outline model for the character's notes. */
-    public OutlineModel getNotesRoot() {
-        return mNotes;
-    }
-
-    /** @return A recursive iterator over the character's notes. */
-    public RowIterator<Note> getNoteIterator() {
-        return new RowIterator<>(mNotes);
     }
 
     public boolean processFeaturesAndPrereqs() {
@@ -2957,15 +2850,5 @@ public class GURPSCharacter extends DataFile {
     @Override
     public DisplayOption notesDisplay() {
         return mSettings.notesDisplay();
-    }
-
-    @Override
-    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
-        ListFile.getContainedUpdatables(mAdvantages, updatables);
-        ListFile.getContainedUpdatables(mSkills, updatables);
-        ListFile.getContainedUpdatables(mSpells, updatables);
-        ListFile.getContainedUpdatables(mEquipment, updatables);
-        ListFile.getContainedUpdatables(mOtherEquipment, updatables);
-        ListFile.getContainedUpdatables(mNotes, updatables);
     }
 }

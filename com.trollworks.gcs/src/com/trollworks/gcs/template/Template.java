@@ -12,84 +12,54 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.advantage.AdvantageList;
-import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.datafile.Updatable;
-import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.equipment.EquipmentList;
-import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.OutlineModel;
-import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
-import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.UUID;
 
 /** A template. */
-public class Template extends DataFile {
-    private static final int          CURRENT_JSON_VERSION   = 1;
-    private static final int          CURRENT_VERSION        = 2;
-    private static final String       TAG_ROOT               = "template";
-    private static final String       TAG_OLD_NOTES          = "notes";
+public class Template extends CollectedModels {
+    private static final int     CURRENT_JSON_VERSION   = 1;
+    private static final int     CURRENT_VERSION        = 2;
+    private static final String  TAG_ROOT               = "template";
     /** The prefix for all template IDs. */
-    public static final  String       TEMPLATE_PREFIX        = "gct.";
+    public static final  String  TEMPLATE_PREFIX        = "gct.";
     /**
      * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
      */
-    public static final  String       POINTS_PREFIX          = TEMPLATE_PREFIX + "points.";
+    public static final  String  POINTS_PREFIX          = TEMPLATE_PREFIX + "points.";
     /** The field ID for point total changes. */
-    public static final  String       ID_TOTAL_POINTS        = POINTS_PREFIX + "Total";
+    public static final  String  ID_TOTAL_POINTS        = POINTS_PREFIX + "Total";
     /** The field ID for advantage point summary changes. */
-    public static final  String       ID_ADVANTAGE_POINTS    = POINTS_PREFIX + "Advantages";
+    public static final  String  ID_ADVANTAGE_POINTS    = POINTS_PREFIX + "Advantages";
     /** The field ID for disadvantage point summary changes. */
-    public static final  String       ID_DISADVANTAGE_POINTS = POINTS_PREFIX + "Disadvantages";
+    public static final  String  ID_DISADVANTAGE_POINTS = POINTS_PREFIX + "Disadvantages";
     /** The field ID for quirk point summary changes. */
-    public static final  String       ID_QUIRK_POINTS        = POINTS_PREFIX + "Quirks";
+    public static final  String  ID_QUIRK_POINTS        = POINTS_PREFIX + "Quirks";
     /** The field ID for skill point summary changes. */
-    public static final  String       ID_SKILL_POINTS        = POINTS_PREFIX + "Skills";
+    public static final  String  ID_SKILL_POINTS        = POINTS_PREFIX + "Skills";
     /** The field ID for spell point summary changes. */
-    public static final  String       ID_SPELL_POINTS        = POINTS_PREFIX + "Spells";
-    private              OutlineModel mAdvantages;
-    private              OutlineModel mSkills;
-    private              OutlineModel mSpells;
-    private              OutlineModel mEquipment;
-    private              OutlineModel mOtherEquipment;
-    private              OutlineModel mNotes;
-    private              boolean      mNeedAdvantagesPointCalculation;
-    private              boolean      mNeedSkillPointCalculation;
-    private              boolean      mNeedSpellPointCalculation;
-    private              int          mCachedAdvantagePoints;
-    private              int          mCachedDisadvantagePoints;
-    private              int          mCachedQuirkPoints;
-    private              int          mCachedSkillPoints;
-    private              int          mCachedSpellPoints;
+    public static final  String  ID_SPELL_POINTS        = POINTS_PREFIX + "Spells";
+    private              boolean mNeedAdvantagesPointCalculation;
+    private              boolean mNeedSkillPointCalculation;
+    private              boolean mNeedSpellPointCalculation;
+    private              int     mCachedAdvantagePoints;
+    private              int     mCachedDisadvantagePoints;
+    private              int     mCachedQuirkPoints;
+    private              int     mCachedSkillPoints;
+    private              int     mCachedSpellPoints;
 
     /** Creates a new character with only default values set. */
     public Template() {
-        mAdvantages = new OutlineModel();
-        mSkills = new OutlineModel();
-        mSpells = new OutlineModel();
-        mEquipment = new OutlineModel();
-        mOtherEquipment = new OutlineModel();
-        mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
-        mNotes = new OutlineModel();
     }
 
     /**
@@ -136,12 +106,7 @@ public class Template extends DataFile {
 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
-        AdvantageList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_ADVANTAGES), mAdvantages, state);
-        SkillList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_SKILLS), mSkills, state);
-        SpellList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_SPELLS), mSpells, state);
-        EquipmentList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_EQUIPMENT), mEquipment, state);
-        EquipmentList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_OTHER_EQUIPMENT), mOtherEquipment, state);
-        NoteList.loadIntoModel(this, m.getArray(GURPSCharacter.KEY_NOTES), mNotes, state);
+        loadModels(m, state);
         calculateAdvantagePoints();
         calculateSkillPoints();
         calculateSpellPoints();
@@ -149,12 +114,7 @@ public class Template extends DataFile {
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
-        ListRow.saveList(w, GURPSCharacter.KEY_ADVANTAGES, mAdvantages.getTopLevelRows(), saveType);
-        ListRow.saveList(w, GURPSCharacter.KEY_SKILLS, mSkills.getTopLevelRows(), saveType);
-        ListRow.saveList(w, GURPSCharacter.KEY_SPELLS, mSpells.getTopLevelRows(), saveType);
-        ListRow.saveList(w, GURPSCharacter.KEY_EQUIPMENT, mEquipment.getTopLevelRows(), saveType);
-        ListRow.saveList(w, GURPSCharacter.KEY_OTHER_EQUIPMENT, mOtherEquipment.getTopLevelRows(), saveType);
-        ListRow.saveList(w, GURPSCharacter.KEY_NOTES, mNotes.getTopLevelRows(), saveType);
+        saveModels(w, saveType);
     }
 
     /**
@@ -242,7 +202,7 @@ public class Template extends DataFile {
         mCachedDisadvantagePoints = 0;
         mCachedQuirkPoints = 0;
 
-        for (Advantage advantage : getAdvantagesIterator()) {
+        for (Advantage advantage : getAdvantagesIterator(true)) {
             if (!advantage.canHaveChildren()) {
                 int pts = advantage.getAdjustedPoints();
 
@@ -264,7 +224,7 @@ public class Template extends DataFile {
 
     private void calculateSkillPoints() {
         mCachedSkillPoints = 0;
-        for (Skill skill : getSkillsIterable()) {
+        for (Skill skill : getSkillsIterator()) {
             if (!skill.canHaveChildren()) {
                 mCachedSkillPoints += skill.getPoints();
             }
@@ -283,75 +243,5 @@ public class Template extends DataFile {
                 mCachedSpellPoints += spell.getPoints();
             }
         }
-    }
-
-    /** @return The outline model for the advantages. */
-    public OutlineModel getAdvantagesModel() {
-        return mAdvantages;
-    }
-
-    /** @return A recursive iterator over the advantages. */
-    public RowIterator<Advantage> getAdvantagesIterator() {
-        return new RowIterator<>(mAdvantages);
-    }
-
-    /** @return The outline model for the skills. */
-    public OutlineModel getSkillsModel() {
-        return mSkills;
-    }
-
-    /** @return A recursive iterable for the template's skills. */
-    public Iterable<Skill> getSkillsIterable() {
-        return new FilteredIterator<>(new RowIterator<ListRow>(mSkills), Skill.class);
-    }
-
-    /** @return The outline model for the spells. */
-    public OutlineModel getSpellsModel() {
-        return mSpells;
-    }
-
-    /** @return A recursive iterator over the spells. */
-    public RowIterator<Spell> getSpellsIterator() {
-        return new RowIterator<>(mSpells);
-    }
-
-    /** @return The outline model for the equipment. */
-    public OutlineModel getEquipmentModel() {
-        return mEquipment;
-    }
-
-    /** @return A recursive iterator over the equipment. */
-    public RowIterator<Equipment> getEquipmentIterator() {
-        return new RowIterator<>(mEquipment);
-    }
-
-    /** @return The outline model for the other equipment. */
-    public OutlineModel getOtherEquipmentModel() {
-        return mOtherEquipment;
-    }
-
-    /** @return A recursive iterator over the other equipment. */
-    public RowIterator<Equipment> getOtherEquipmentIterator() {
-        return new RowIterator<>(mOtherEquipment);
-    }
-
-    /** @return The outline model for the notes. */
-    public OutlineModel getNotesModel() {
-        return mNotes;
-    }
-
-    /** @return A recursive iterator over the notes. */
-    public RowIterator<Note> getNoteIterator() {
-        return new RowIterator<>(mNotes);
-    }
-
-    @Override
-    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
-        ListFile.getContainedUpdatables(mAdvantages, updatables);
-        ListFile.getContainedUpdatables(mSkills, updatables);
-        ListFile.getContainedUpdatables(mSpells, updatables);
-        ListFile.getContainedUpdatables(mEquipment, updatables);
-        ListFile.getContainedUpdatables(mOtherEquipment, updatables);
-        ListFile.getContainedUpdatables(mNotes, updatables);
     }
 }

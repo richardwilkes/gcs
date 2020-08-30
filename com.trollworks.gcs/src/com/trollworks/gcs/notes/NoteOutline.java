@@ -30,7 +30,7 @@ import java.util.List;
 public class NoteOutline extends ListOutline {
     private static OutlineModel extractModel(DataFile dataFile) {
         if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getNotesRoot();
+            return ((GURPSCharacter) dataFile).getNotesModel();
         }
         if (dataFile instanceof Template) {
             return ((Template) dataFile).getNotesModel();

@@ -38,7 +38,7 @@ import java.util.List;
 public class SpellOutline extends ListOutline implements Incrementable, TechLevelIncrementable, SkillLevelIncrementable {
     private static OutlineModel extractModel(DataFile dataFile) {
         if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getSpellsRoot();
+            return ((GURPSCharacter) dataFile).getSpellsModel();
         }
         if (dataFile instanceof Template) {
             return ((Template) dataFile).getSpellsModel();

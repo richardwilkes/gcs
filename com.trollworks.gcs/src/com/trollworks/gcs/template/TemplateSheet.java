@@ -13,6 +13,7 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageOutline;
+import com.trollworks.gcs.character.CollectedLists;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -28,7 +29,6 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.scale.ScaleRoot;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
@@ -58,7 +58,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
 /** The template sheet. */
-public class TemplateSheet extends JPanel implements Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener, ScaleRoot {
+public class TemplateSheet extends JPanel implements CollectedLists, Scrollable, BatchNotifierTarget, DropTargetListener, ActionListener {
     private static final EmptyBorder      NORMAL_BORDER = new EmptyBorder(5);
     private              Scale            mScale;
     private              boolean          mBatchMode;

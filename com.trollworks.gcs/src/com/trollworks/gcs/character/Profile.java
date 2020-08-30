@@ -103,7 +103,6 @@ public class Profile {
     private static final String           TAG_TECH_LEVEL   = "tech_level";
     private static final String           TAG_RELIGION     = "religion";
     private static final String           TAG_PORTRAIT     = "portrait";
-    private static final String           TAG_OLD_NOTES    = "notes";
     private static final String           TAG_BODY_TYPE    = "body_type";
     private static final Random           RANDOM           = new Random();
     private              GURPSCharacter   mCharacter;

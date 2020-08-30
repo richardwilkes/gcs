@@ -280,8 +280,8 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
             OutlineModel uncarriedModel;
             if (mDataFile instanceof GURPSCharacter) {
                 GURPSCharacter character = (GURPSCharacter) mDataFile;
-                carriedModel = character.getEquipmentRoot();
-                uncarriedModel = character.getOtherEquipmentRoot();
+                carriedModel = character.getEquipmentModel();
+                uncarriedModel = character.getOtherEquipmentModel();
             } else {
                 Template tmpl = (Template) mDataFile;
                 carriedModel = tmpl.getEquipmentModel();

@@ -38,7 +38,7 @@ import java.util.List;
 public class SkillOutline extends ListOutline implements Incrementable, TechLevelIncrementable, SkillLevelIncrementable {
     private static OutlineModel extractModel(DataFile dataFile) {
         if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getSkillsRoot();
+            return ((GURPSCharacter) dataFile).getSkillsModel();
         }
         if (dataFile instanceof Template) {
             return ((Template) dataFile).getSkillsModel();
