@@ -100,7 +100,7 @@ public class WeaponBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        IntegerCriteria levelCriteria = bonus.getLevelCriteria();
+        IntegerCriteria levelCriteria = bonus.getRelativeLevelCriteria();
         row.add(addNumericCompareCombo(levelCriteria, I18n.Text("and relative skill level ")));
         row.add(addNumericCompareField(levelCriteria, -999, 999, true));
         row.add(new FlexSpacer(0, 0, true, false));

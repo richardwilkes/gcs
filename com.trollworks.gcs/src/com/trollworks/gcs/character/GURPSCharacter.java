@@ -2580,22 +2580,19 @@ public class GURPSCharacter extends CollectedModels {
     public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         int               rsl     = Integer.MIN_VALUE;
-
         for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
             int srsl = skill.getRelativeLevel();
-
             if (srsl > rsl) {
                 rsl = srsl;
             }
         }
-
         if (rsl != Integer.MIN_VALUE) {
             List<Feature> list = mFeatureMap.get(id.toLowerCase());
             if (list != null) {
                 for (Feature feature : list) {
                     if (feature instanceof WeaponBonus) {
                         WeaponBonus bonus = (WeaponBonus) feature;
-                        if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
+                        if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getRelativeLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
                             bonuses.add(bonus);
                             bonus.addToToolTip(toolTip);
                         }

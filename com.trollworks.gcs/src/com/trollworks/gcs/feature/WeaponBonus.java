@@ -40,7 +40,7 @@ public class WeaponBonus extends Bonus {
     private              WeaponSelectionType mWeaponSelectionType;
     private              StringCriteria      mNameCriteria;
     private              StringCriteria      mSpecializationCriteria;
-    private              IntegerCriteria     mLevelCriteria;
+    private              IntegerCriteria     mRelativeLevelCriteria;
     private              StringCriteria      mCategoryCriteria;
 
     /** Creates a new skill bonus. */
@@ -49,7 +49,7 @@ public class WeaponBonus extends Bonus {
         mWeaponSelectionType = WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
         mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
-        mLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
+        mRelativeLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
         mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
@@ -68,7 +68,7 @@ public class WeaponBonus extends Bonus {
         mWeaponSelectionType = other.mWeaponSelectionType;
         mNameCriteria = new StringCriteria(other.mNameCriteria);
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
-        mLevelCriteria = new IntegerCriteria(other.mLevelCriteria);
+        mRelativeLevelCriteria = new IntegerCriteria(other.mRelativeLevelCriteria);
         mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
     }
 
@@ -79,7 +79,7 @@ public class WeaponBonus extends Bonus {
         }
         if (obj instanceof WeaponBonus && super.equals(obj)) {
             WeaponBonus wb = (WeaponBonus) obj;
-            return mWeaponSelectionType == wb.mWeaponSelectionType && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mLevelCriteria.equals(wb.mLevelCriteria) && mCategoryCriteria.equals(wb.mCategoryCriteria);
+            return mWeaponSelectionType == wb.mWeaponSelectionType && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mRelativeLevelCriteria.equals(wb.mRelativeLevelCriteria) && mCategoryCriteria.equals(wb.mCategoryCriteria);
         }
         return false;
     }
@@ -140,7 +140,7 @@ public class WeaponBonus extends Bonus {
         case WEAPONS_WITH_REQUIRED_SKILL:
             mNameCriteria.load(m.getMap(TAG_NAME));
             mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
-            mLevelCriteria.load(m.getMap(TAG_LEVEL));
+            mRelativeLevelCriteria.load(m.getMap(TAG_LEVEL));
             mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
             break;
         }
@@ -162,7 +162,7 @@ public class WeaponBonus extends Bonus {
         case WEAPONS_WITH_REQUIRED_SKILL:
             mNameCriteria.save(w, TAG_NAME);
             mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
-            mLevelCriteria.save(w, TAG_LEVEL);
+            mRelativeLevelCriteria.save(w, TAG_LEVEL);
             mCategoryCriteria.save(w, TAG_CATEGORY);
             break;
         }
@@ -191,8 +191,8 @@ public class WeaponBonus extends Bonus {
     }
 
     /** @return The level criteria. */
-    public IntegerCriteria getLevelCriteria() {
-        return mLevelCriteria;
+    public IntegerCriteria getRelativeLevelCriteria() {
+        return mRelativeLevelCriteria;
     }
 
     /** @return The category criteria. */

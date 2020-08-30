@@ -22,6 +22,7 @@ import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
+import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -169,17 +170,7 @@ public class WeaponDamage {
     }
 
     public void setValuesFromFreeformDamageString(String text) {
-        // Fix up some known bad data file input
         text = text.trim();
-        switch (text) {
-        case "1d (+1d) burn" -> text = "1d burn";
-        case "Sw cut -1" -> text = "sw-1 cut";
-        case "Thr imp +1" -> text = "thr+1 imp";
-        case "Thr +1" -> text = "thr+1";
-        case "th-1 imp" -> text = "thr-1 imp";
-        case "40mm warhead" -> text = "2d [2d] cr ex";
-        case "3d cr (x5)" -> text = "3dx5 cr";
-        }
         String saved = text;
 
         // Find and remove first occurrence of 'sw' or 'thr'
@@ -359,13 +350,26 @@ public class WeaponDamage {
                 int              maxST      = mOwner.getMinStrengthValue() * 3;
                 int              st         = character.getStrength() + character.getStrikingStrengthBonus();
                 Dice             base       = new Dice(0, 0);
-                for (SkillDefault one : mOwner.getDefaults()) {
-                    if (one.getType().isSkillBased()) {
-                        String name           = one.getName();
-                        String specialization = one.getSpecialization();
-                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, toolTip));
-                        bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, toolTip));
+
+                // Determine which skill default was used
+                int          best        = Integer.MIN_VALUE;
+                SkillDefault bestDefault = null;
+                for (SkillDefault skillDefault : mOwner.getDefaults()) {
+                    SkillDefaultType type = skillDefault.getType();
+                    if (type.isSkillBased()) {
+                        int level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+                        if (level > best) {
+                            best = level;
+                            bestDefault = skillDefault;
+                        }
                     }
+                }
+
+                if (bestDefault != null) {
+                    String name           = bestDefault.getName();
+                    String specialization = bestDefault.getSpecialization();
+                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, toolTip));
+                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, toolTip));
                 }
                 String nameQualifier  = mOwner.toString();
                 String usageQualifier = mOwner.getUsage();
