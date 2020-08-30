@@ -194,6 +194,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
         searchOne(mSheet.getSkillOutline(), filter, list);
         searchOne(mSheet.getSpellOutline(), filter, list);
         searchOne(mSheet.getEquipmentOutline(), filter, list);
+        searchOne(mSheet.getOtherEquipmentOutline(), filter, list);
         searchOne(mSheet.getNoteOutline(), filter, list);
         return list;
     }
@@ -216,6 +217,7 @@ public class SheetDockable extends DataFileDockable implements SearchTarget, Ret
         mSheet.getSkillOutline().getModel().deselect();
         mSheet.getSpellOutline().getModel().deselect();
         mSheet.getEquipmentOutline().getModel().deselect();
+        mSheet.getOtherEquipmentOutline().getModel().deselect();
         mSheet.getNoteOutline().getModel().deselect();
 
         for (Object obj : selection) {
