@@ -150,14 +150,17 @@ public class MultiCell implements Cell {
         String  notes  = getSecondaryText(theRow);
         if (!notes.trim().isEmpty()) {
             int notesWidth = TextDrawing.getWidth(scale.scale(getSecondaryFont()), notes);
-
             if (notesWidth > width) {
                 width = notesWidth;
             }
         }
-        width += scale.scale(H_MARGIN) * 2;
-        int scaledMax = scale.scale(mMaxPreferredWidth);
-        return mMaxPreferredWidth != -1 && scaledMax < width ? scaledMax : width;
+        if (mMaxPreferredWidth > 0) {
+            int scaledMax = scale.scale(mMaxPreferredWidth);
+            if (scaledMax < width) {
+                width = scaledMax;
+            }
+        }
+        return width + scale.scale(H_MARGIN) * 2;
     }
 
     @Override
@@ -177,7 +180,7 @@ public class MultiCell implements Cell {
     private String wrap(Scale scale, ListRow row, Column column, String text, Font font) {
         int width = column.getWidth();
         if (width == -1) {
-            if (mMaxPreferredWidth == -1) {
+            if (mMaxPreferredWidth < 1) {
                 return text;
             }
             width = scale.scale(mMaxPreferredWidth);

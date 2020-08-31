@@ -349,7 +349,7 @@ public final class PrecisionLayout implements LayoutManager2 {
         addLayoutComponent(comp, name);
     }
 
-    public PrecisionLayoutData getGridData(Component comp) {
+    public PrecisionLayoutData getLayoutData(Component comp) {
         return mConstraints.get(comp);
     }
 

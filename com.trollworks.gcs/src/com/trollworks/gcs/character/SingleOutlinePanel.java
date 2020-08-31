@@ -87,7 +87,6 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
         bounds.y += height;
         bounds.height -= height;
         mOutline.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
-        ColumnUtils.pack(mOutline, bounds.width);
     }
 
     @Override

@@ -12,8 +12,8 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.Page;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.layout.RowDistribution;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.Wrapper;
 
@@ -55,8 +55,10 @@ public class PageAssembler {
             mContentWidth = size.width - (insets.left + insets.right);
             mContentHeight = size.height - (insets.top + insets.bottom);
         }
-        mContent = new Wrapper(new ColumnLayout(1, GAP, GAP, RowDistribution.GIVE_EXCESS_TO_LAST));
-        mContent.setAlignmentY(-1.0f);
+        if (mContent != null) {
+            ((PrecisionLayout) mContent.getLayout()).getLayoutData(mContent.getComponent(mContent.getComponentCount() - 1)).setFillVerticalAlignment().setGrabVerticalSpace(true);
+        }
+        mContent = new Wrapper(new PrecisionLayout().setFillAlignment().setMargins(0, 0, 0, 0).setSpacing(GAP, GAP));
         mRemaining = mContentHeight;
         page.add(mContent);
     }
@@ -71,9 +73,9 @@ public class PageAssembler {
      */
     public boolean addToContent(Container panel, OutlineInfo leftInfo, OutlineInfo rightInfo) {
         boolean isOutline = panel instanceof SingleOutlinePanel || panel instanceof DoubleOutlinePanel;
-        int     height    = 0;
         int     minLeft   = 0;
         int     minRight  = 0;
+        int     height;
 
         if (mContent.getComponentCount() > 0) {
             mRemaining -= Scale.get(mContent).scale(GAP);
@@ -82,23 +84,21 @@ public class PageAssembler {
         if (isOutline) {
             minLeft = leftInfo.getMinimumHeight();
             if (panel instanceof SingleOutlinePanel) {
-                height += minLeft;
+                height = minLeft;
             } else {
                 minRight = rightInfo.getMinimumHeight();
-                height += Math.max(minLeft, minRight);
+                height = Math.max(minLeft, minRight);
             }
         } else {
-            height += panel.getPreferredSize().height;
+            height = panel.getPreferredSize().height;
         }
         if (mRemaining < height) {
             addPageInternal();
         }
-        mContent.add(panel);
+        mContent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (isOutline) {
-            int     savedRemaining = mRemaining;
             boolean hasMore;
-
             if (panel instanceof SingleOutlinePanel) {
                 int startIndex = leftInfo.getRowIndex() + 1;
                 int amt        = leftInfo.determineHeightForOutline(mRemaining);
@@ -106,7 +106,7 @@ public class PageAssembler {
                 if (amt < minLeft) {
                     amt = minLeft;
                 }
-                mRemaining = savedRemaining - amt;
+                mRemaining -= amt;
                 hasMore = leftInfo.hasMore();
             } else {
                 DoubleOutlinePanel panel2      = (DoubleOutlinePanel) panel;
@@ -114,7 +114,6 @@ public class PageAssembler {
                 int                leftHeight  = leftInfo.determineHeightForOutline(mRemaining);
                 int                rightStart  = rightInfo.getRowIndex() + 1;
                 int                rightHeight = rightInfo.determineHeightForOutline(mRemaining);
-
                 panel2.setOutlineRowRange(false, leftStart, leftInfo.getRowIndex());
                 panel2.setOutlineRowRange(true, rightStart, rightInfo.getRowIndex());
                 if (leftHeight < minLeft) {
@@ -123,7 +122,7 @@ public class PageAssembler {
                 if (rightHeight < minRight) {
                     rightHeight = minRight;
                 }
-                mRemaining = leftHeight < rightHeight ? savedRemaining - rightHeight : savedRemaining - leftHeight;
+                mRemaining -= leftHeight < rightHeight ? rightHeight : leftHeight;
                 hasMore = leftInfo.hasMore() || rightInfo.hasMore();
             }
             if (hasMore) {
@@ -143,6 +142,9 @@ public class PageAssembler {
 
     @SuppressWarnings("static-method")
     public void finish() {
+        if (mContent != null) {
+            ((PrecisionLayout) mContent.getLayout()).getLayoutData(mContent.getComponent(mContent.getComponentCount() - 1)).setFillVerticalAlignment().setGrabVerticalSpace(true);
+        }
         Scale.setOverride(null);
     }
 }

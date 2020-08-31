@@ -52,9 +52,6 @@ public class OutlineInfo {
         for (int i = 0; i < count; i++) {
             Row row = outlineModel.getRowAtIndex(i);
             mHeights[i] = row.getHeight();
-            if (mHeights[i] == -1) {
-                mHeights[i] = row.getPreferredHeight(outline, columns);
-            }
             if (hasRowDividers) {
                 mHeights[i] += one;
             }
@@ -70,24 +67,21 @@ public class OutlineInfo {
      */
     public int determineHeightForOutline(int remaining) {
         int total  = mOverheadHeight;
-        int start  = mRowIndex++;
+        int start  = ++mRowIndex;
         int length = mHeights.length;
         while (true) {
-            if (!(mRowIndex < length)) {
-                break;
-            }
-            int tmp = total + mHeights[mRowIndex];
-            if (tmp > remaining) {
-                if (--mRowIndex == start) {
-                    mRowIndex++;
-                    return tmp;
-                }
+            if (mRowIndex >= length) {
                 return total;
             }
-            total = tmp;
+            total += mHeights[mRowIndex];
+            if (total > remaining) {
+                if (mRowIndex == start) {
+                    return total;
+                }
+                return total - mHeights[mRowIndex--];
+            }
             mRowIndex++;
         }
-        return total;
     }
 
     /** @return Whether more rows need to be placed on a page or not. */
