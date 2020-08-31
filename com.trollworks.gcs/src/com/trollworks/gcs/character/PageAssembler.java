@@ -122,7 +122,7 @@ public class PageAssembler {
                 if (rightHeight < minRight) {
                     rightHeight = minRight;
                 }
-                mRemaining -= leftHeight < rightHeight ? rightHeight : leftHeight;
+                mRemaining -= Math.max(leftHeight, rightHeight);
                 hasMore = leftInfo.hasMore() || rightInfo.hasMore();
             }
             if (hasMore) {

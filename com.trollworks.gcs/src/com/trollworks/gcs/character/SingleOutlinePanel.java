@@ -14,7 +14,6 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.Column;
-import com.trollworks.gcs.ui.widget.outline.ColumnUtils;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
