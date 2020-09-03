@@ -66,34 +66,6 @@ public class JsonMap extends JsonCollection {
     /**
      * @param key The key to retrieve.
      * @return The value associated with the key or zero if no key matches or the value cannot be
-     *         converted to a byte.
-     */
-    public byte getByte(String key) {
-        return Json.asByte(get(key));
-    }
-
-    public byte getByteWithDefault(String key, byte def) {
-        Object value = get(key);
-        return value != null ? Json.asByte(value) : def;
-    }
-
-    /**
-     * @param key The key to retrieve.
-     * @return The value associated with the key or zero if no key matches or the value cannot be
-     *         converted to a char.
-     */
-    public char getChar(String key) {
-        return Json.asChar(get(key));
-    }
-
-    public char getCharWithDefault(String key, char def) {
-        Object value = get(key);
-        return value != null ? Json.asChar(value) : def;
-    }
-
-    /**
-     * @param key The key to retrieve.
-     * @return The value associated with the key or zero if no key matches or the value cannot be
      *         converted to an integer.
      */
     public int getInt(String key) {
@@ -112,25 +84,6 @@ public class JsonMap extends JsonCollection {
      */
     public long getLong(String key) {
         return Json.asLong(get(key));
-    }
-
-    public long getLongWithDefault(String key, long def) {
-        Object value = get(key);
-        return value != null ? Json.asLong(value) : def;
-    }
-
-    /**
-     * @param key The key to retrieve.
-     * @return The value associated with the key or zero if no key matches or the value cannot be
-     *         converted to a float.
-     */
-    public float getFloat(String key) {
-        return Json.asFloat(get(key));
-    }
-
-    public float getFloatWithDefault(String key, float def) {
-        Object value = get(key);
-        return value != null ? Json.asFloat(value) : def;
     }
 
     /**
@@ -184,75 +137,6 @@ public class JsonMap extends JsonCollection {
         if (key != null) {
             mMap.put(key, Json.wrap(value));
         }
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, boolean value) {
-        put(key, Boolean.valueOf(value));
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, byte value) {
-        put(key, Byte.valueOf(value));
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, char value) {
-        put(key, Character.valueOf(value));
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, short value) {
-        put(key, Short.valueOf(value));
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, int value) {
-        put(key, Integer.valueOf(value));
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, long value) {
-        put(key, Long.valueOf(value));
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, float value) {
-        put(key, Float.valueOf(value));
-    }
-
-    /**
-     * @param key   The key to store the value with.
-     * @param value The value to store.
-     */
-    public void put(String key, double value) {
-        put(key, Double.valueOf(value));
-    }
-
-    /** @param key The key to remove from the map. */
-    public Object remove(String key) {
-        return mMap.remove(key);
     }
 
     @Override

@@ -36,7 +36,6 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
     public static final String                            CMD      = "AddNaturalAttacksAdvantage";
     /** The "Add Natural Attacks Advantage" command. */
     public static final AddNaturalAttacksAdvantageCommand INSTANCE = new AddNaturalAttacksAdvantageCommand();
-    private             boolean                           mContainer;
 
     private AddNaturalAttacksAdvantageCommand() {
         super(I18n.Text("Add Natural Attacks Advantage"), CMD);

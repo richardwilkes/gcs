@@ -11,9 +11,7 @@
 
 package com.trollworks.gcs.utility;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -59,31 +57,5 @@ public class UrlUtils {
             break;
         }
         return conn;
-    }
-
-    /**
-     * @param uri The URI to retrieve.
-     * @return The contents of what the URI points to.
-     */
-    public static final String get(String uri) throws IOException {
-        return get(new URL(uri));
-    }
-
-    /**
-     * @param url The URL to retrieve.
-     * @return The contents of what the URL points to.
-     */
-    public static final String get(URL url) throws IOException {
-        StringBuilder buffer = new StringBuilder();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(setupConnection(url).getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (buffer.length() > 0) {
-                    buffer.append('\n');
-                }
-                buffer.append(line);
-            }
-        }
-        return buffer.toString();
     }
 }

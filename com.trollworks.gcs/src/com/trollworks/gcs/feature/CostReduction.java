@@ -95,11 +95,6 @@ public class CostReduction extends Feature {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getKey() {
         return GURPSCharacter.ATTRIBUTES_PREFIX + mAttribute.name();
     }

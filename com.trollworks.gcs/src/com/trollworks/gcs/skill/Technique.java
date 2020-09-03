@@ -174,11 +174,6 @@ public class Technique extends Skill {
     }
 
     @Override
-    public String getXMLTagName() {
-        return TAG_TECHNIQUE;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Technique");
     }

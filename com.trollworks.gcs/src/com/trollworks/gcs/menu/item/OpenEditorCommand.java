@@ -26,7 +26,6 @@ public class OpenEditorCommand extends Command {
     public static final String            CMD_OPEN_EDITOR = "OpenEditor";
     /** The singleton {@link OpenEditorCommand}. */
     public static final OpenEditorCommand INSTANCE        = new OpenEditorCommand();
-    private             ListOutline       mOutline;
 
     private OpenEditorCommand() {
         super(I18n.Text("Open Detail Editor"), CMD_OPEN_EDITOR, KeyEvent.VK_I);
@@ -60,16 +59,13 @@ public class OpenEditorCommand extends Command {
     }
 
     private ListOutline getOutline() {
-        ListOutline outline = mOutline;
-        if (outline == null) {
-            Component comp = getFocusOwner();
-            if (comp instanceof OutlineProxy) {
-                comp = ((OutlineProxy) comp).getRealOutline();
-            }
-            if (comp instanceof ListOutline) {
-                outline = (ListOutline) comp;
-            }
+        Component comp = getFocusOwner();
+        if (comp instanceof OutlineProxy) {
+            comp = ((OutlineProxy) comp).getRealOutline();
         }
-        return outline;
+        if (comp instanceof ListOutline) {
+            return (ListOutline) comp;
+        }
+        return null;
     }
 }

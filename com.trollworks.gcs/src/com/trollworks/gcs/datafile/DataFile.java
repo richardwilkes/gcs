@@ -164,22 +164,6 @@ public abstract class DataFile implements Updatable, Undoable {
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
 
-    /** @return The most recent version of the XML tag this object knows how to load. */
-    public abstract int getXMLTagVersion();
-
-    /** @return The XML root container tag name for this particular file. */
-    public abstract String getXMLTagName();
-
-    /**
-     * Called to match an XML tag name with the root tag for this data file.
-     *
-     * @param name The tag name to check.
-     * @return Whether it matches the root tag or not.
-     */
-    public boolean matchesRootTag(String name) {
-        return getXMLTagName().equals(name);
-    }
-
     /** @return The {@link FileType}. */
     public abstract FileType getFileType();
 

@@ -100,7 +100,6 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         return false;
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void decrement() {
         List<RowUndo> undos = new ArrayList<>();
@@ -122,7 +121,6 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         }
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void increment() {
         List<RowUndo> undos = new ArrayList<>();
@@ -161,7 +159,6 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         return canDecrement();
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void incrementSkillLevel() {
         List<RowUndo> undos = new ArrayList<>();
@@ -193,7 +190,6 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         }
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void decrementSkillLevel() {
         List<RowUndo> undos = new ArrayList<>();
@@ -260,7 +256,6 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         return -1;
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void incrementTechLevel() {
         List<RowUndo> undos = new ArrayList<>();
@@ -282,7 +277,6 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         }
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void decrementTechLevel() {
         List<RowUndo> undos = new ArrayList<>();

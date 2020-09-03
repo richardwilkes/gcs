@@ -831,7 +831,6 @@ public class Bundler {
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.redirectOutput(Redirect.PIPE).redirectErrorStream(true);
         try {
-            boolean hadMsg  = false;
             Process process = builder.start();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line = in.readLine();

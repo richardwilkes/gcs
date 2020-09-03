@@ -20,13 +20,11 @@ import com.trollworks.gcs.utility.text.Enums;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
@@ -122,14 +120,6 @@ public class Fonts {
 
     /**
      * @param font The font to work on.
-     * @return The specified font as a canonical string.
-     */
-    public static String getStringValue(Font font) {
-        return font.getName() + "," + font.getStyle() + "," + font.getSize();
-    }
-
-    /**
-     * @param font The font to work on.
      * @return The font metrics for the specified font.
      */
     public static FontMetrics getFontMetrics(Font font) {
@@ -137,67 +127,6 @@ public class Fonts {
         FontMetrics fm  = g2d.getFontMetrics(font);
         g2d.dispose();
         return fm;
-    }
-
-    /**
-     * @param buffer       The string to create the font from.
-     * @param defaultValue The value to use if the string is invalid.
-     * @return A font created from the specified string.
-     */
-    public static Font create(String buffer, Font defaultValue) {
-        if (defaultValue == null) {
-            defaultValue = getDefaultFont();
-        }
-        String name  = defaultValue.getName();
-        int    style = defaultValue.getStyle();
-        int    size  = defaultValue.getSize();
-        if (buffer != null && !buffer.isEmpty()) {
-            StringTokenizer tokenizer = new StringTokenizer(buffer, ",");
-            if (tokenizer.hasMoreTokens()) {
-                name = tokenizer.nextToken();
-                if (!isValidFontName(name)) {
-                    name = defaultValue.getName();
-                }
-                if (tokenizer.hasMoreTokens()) {
-                    buffer = tokenizer.nextToken();
-                    try {
-                        style = Integer.parseInt(buffer);
-                    } catch (NumberFormatException nfe1) {
-                        // We'll use the default style instead
-                    }
-                    if (style < 0 || style > 3) {
-                        style = defaultValue.getStyle();
-                    }
-                    if (tokenizer.hasMoreTokens()) {
-                        buffer = tokenizer.nextToken();
-                        try {
-                            size = Integer.parseInt(buffer);
-                        } catch (NumberFormatException nfe1) {
-                            // We'll use the default size instead
-                        }
-                        if (size < 1) {
-                            size = 1;
-                        } else if (size > 200) {
-                            size = 200;
-                        }
-                    }
-                }
-            }
-        }
-        return new Font(name, style, size);
-    }
-
-    /**
-     * @param name The name to check.
-     * @return {@code true} if the specified name is a valid font name.
-     */
-    public static boolean isValidFontName(String name) {
-        for (String element : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
-            if (element.equalsIgnoreCase(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Cause font change listeners to be notified. */
@@ -211,17 +140,20 @@ public class Fonts {
             public String toString() {
                 return I18n.Text("Plain");
             }
-        }, BOLD {
+        },
+        BOLD {
             @Override
             public String toString() {
                 return I18n.Text("Bold");
             }
-        }, ITALIC {
+        },
+        ITALIC {
             @Override
             public String toString() {
                 return I18n.Text("Italic");
             }
-        }, BOLD_ITALIC {
+        },
+        BOLD_ITALIC {
             @Override
             public String toString() {
                 return I18n.Text("Bold Italic");
@@ -235,10 +167,9 @@ public class Fonts {
     }
 
     public static class Info {
-        private static final String    NAME   = "name";
-        private static final String    STYLE  = "style";
-        private static final String    SIZE   = "size";
-        public static final  String[]  STYLES = {"plain", "bold", "italic", "Bold Italic"};
+        private static final String    NAME  = "name";
+        private static final String    STYLE = "style";
+        private static final String    SIZE  = "size";
         public               String    mName;
         public               FontStyle mStyle;
         public               int       mSize;

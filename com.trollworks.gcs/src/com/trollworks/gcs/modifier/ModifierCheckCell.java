@@ -51,7 +51,6 @@ public class ModifierCheckCell extends TextCell {
         return ((ListRow) row).getReasonForUnsatisfied();
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
         if (row instanceof Modifier) {

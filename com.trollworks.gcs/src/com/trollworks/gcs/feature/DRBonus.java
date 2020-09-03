@@ -63,11 +63,6 @@ public class DRBonus extends Bonus {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getKey() {
         return Armor.DR_PREFIX + mLocation.name();
     }

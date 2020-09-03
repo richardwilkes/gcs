@@ -58,11 +58,6 @@ public class ReactionBonus extends Bonus {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getKey() {
         return REACTION_KEY;
     }

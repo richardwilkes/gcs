@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -62,112 +61,12 @@ public class Json {
     }
 
     /**
-     * @param string A {@link String} to load JSON data from.
-     * @return The result of loading the data.
-     */
-    public static final Object parse(String string) throws IOException {
-        return parse(new StringReader(string));
-    }
-
-    /**
      * @param obj An object to process.
      * @return The value associated with the object or {@code false} if the object is {@code null}
      *         or the value cannot be converted to a boolean.
      */
     public static final boolean asBoolean(Object obj) {
         return Boolean.TRUE.equals(obj) || obj instanceof String && Boolean.TRUE.toString().equalsIgnoreCase((String) obj);
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code false} if the object is {@code null}
-     *         or the value cannot be converted to a {@link Boolean}.
-     */
-    public static final Boolean asBooleanObject(Object obj) {
-        return asBoolean(obj) ? Boolean.TRUE : Boolean.FALSE;
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a byte.
-     */
-    public static final byte asByte(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number) obj).byteValue();
-        }
-        if (obj instanceof String) {
-            try {
-                return Byte.parseByte((String) obj);
-            } catch (Exception exception) {
-                return 0;
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a {@link Byte}.
-     */
-    public static final Byte asByteObject(Object obj) {
-        return Byte.valueOf(asByte(obj));
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a char.
-     */
-    public static final char asChar(Object obj) {
-        if (obj instanceof Number) {
-            return (char) ((Number) obj).intValue();
-        }
-        if (obj instanceof String) {
-            String str = (String) obj;
-            if (!str.isEmpty()) {
-                return str.charAt(0);
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a {@link Character}.
-     */
-    public static final Character asCharObject(Object obj) {
-        return Character.valueOf(asChar(obj));
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a short.
-     */
-    public static final short asShort(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number) obj).shortValue();
-        }
-        if (obj instanceof String) {
-            try {
-                return Short.parseShort((String) obj);
-            } catch (Exception exception) {
-                return 0;
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a {@link Short}.
-     */
-    public static final Short asShortObject(Object obj) {
-        return Short.valueOf(asShort(obj));
     }
 
     /**
@@ -192,15 +91,6 @@ public class Json {
     /**
      * @param obj An object to process.
      * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to an {@link Integer}.
-     */
-    public static final Integer asIntObject(Object obj) {
-        return Integer.valueOf(asInt(obj));
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
      *         the value cannot be converted to a long.
      */
     public static final long asLong(Object obj) {
@@ -220,43 +110,6 @@ public class Json {
     /**
      * @param obj An object to process.
      * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a {@link Long}.
-     */
-    public static final Long asLongObject(Object obj) {
-        return Long.valueOf(asLong(obj));
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a float.
-     */
-    public static final float asFloat(Object obj) {
-        if (obj instanceof Number) {
-            return ((Number) obj).floatValue();
-        }
-        if (obj instanceof String) {
-            try {
-                return Float.parseFloat((String) obj);
-            } catch (Exception exception) {
-                return 0;
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a {@link Float}.
-     */
-    public static final Float asFloatObject(Object obj) {
-        return Float.valueOf(asFloat(obj));
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
      *         the value cannot be converted to a double.
      */
     public static final double asDouble(Object obj) {
@@ -271,15 +124,6 @@ public class Json {
             }
         }
         return 0;
-    }
-
-    /**
-     * @param obj An object to process.
-     * @return The value associated with the object or {@code 0} if the object is {@code null} or
-     *         the value cannot be converted to a {@link Double}.
-     */
-    public static final Double asDoubleObject(Object obj) {
-        return Double.valueOf(asDouble(obj));
     }
 
     /**

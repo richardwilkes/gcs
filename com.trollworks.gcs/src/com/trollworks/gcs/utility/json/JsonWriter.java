@@ -117,39 +117,6 @@ public class JsonWriter extends FilterWriter {
         write(Json.quote(value));
     }
 
-    public void value(Number value) throws IOException {
-        commaIfNeeded();
-        write(Json.toString(value));
-    }
-
-    public void value(boolean value) throws IOException {
-        commaIfNeeded();
-        write(value ? "true" : "false");
-    }
-
-    public void value(short value) throws IOException {
-        commaIfNeeded();
-        write(Short.toString(value));
-    }
-
-    public void value(int value) throws IOException {
-        commaIfNeeded();
-        write(Integer.toString(value));
-    }
-
-    public void value(long value) throws IOException {
-        commaIfNeeded();
-        write(Long.toString(value));
-    }
-
-    public void value(float value) throws IOException {
-        value(Float.valueOf(value));
-    }
-
-    public void value(double value) throws IOException {
-        value(Double.valueOf(value));
-    }
-
     public void keyValue(String key, String value) throws IOException {
         key(key);
         write(Json.quote(value));
@@ -170,14 +137,6 @@ public class JsonWriter extends FilterWriter {
         mNeedComma = true;
     }
 
-    public void keyValueNot(String key, Number value, Number not) throws IOException {
-        if (!Objects.equals(value, not)) {
-            key(key);
-            write(Json.toString(value));
-            mNeedComma = true;
-        }
-    }
-
     public void keyValue(String key, boolean value) throws IOException {
         key(key);
         write(value ? "true" : "false");
@@ -188,20 +147,6 @@ public class JsonWriter extends FilterWriter {
         if (value != not) {
             key(key);
             write(value ? "true" : "false");
-            mNeedComma = true;
-        }
-    }
-
-    public void keyValue(String key, short value) throws IOException {
-        key(key);
-        write(Short.toString(value));
-        mNeedComma = true;
-    }
-
-    public void keyValueNot(String key, short value, short not) throws IOException {
-        if (value != not) {
-            key(key);
-            write(Short.toString(value));
             mNeedComma = true;
         }
     }
@@ -224,24 +169,6 @@ public class JsonWriter extends FilterWriter {
         key(key);
         write(Long.toString(value));
         mNeedComma = true;
-    }
-
-    public void keyValueNot(String key, long value, long not) throws IOException {
-        if (value != not) {
-            key(key);
-            write(Long.toString(value));
-            mNeedComma = true;
-        }
-    }
-
-    public void keyValue(String key, float value) throws IOException {
-        keyValue(key, Float.valueOf(value));
-    }
-
-    public void keyValueNot(String key, float value, float not) throws IOException {
-        if (value != not) {
-            keyValue(key, Float.valueOf(value));
-        }
     }
 
     public void keyValue(String key, double value) throws IOException {

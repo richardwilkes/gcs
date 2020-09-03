@@ -39,7 +39,6 @@ import javax.swing.border.CompoundBorder;
 public class DropPanel extends JPanel {
     private Map<Component, Color> mHorizontalBackgrounds = new HashMap<>();
     private Map<Component, Color> mVerticalBackgrounds   = new HashMap<>();
-    private boolean               mPaintVerticalFirst;
     private TitledBorder          mTitledBorder;
     private boolean               mOnlyReportPreferredSize;
 
@@ -184,13 +183,8 @@ public class DropPanel extends JPanel {
         localBounds.y = insets.top;
         localBounds.width -= insets.left + insets.right;
         localBounds.height -= insets.top + insets.bottom;
-        if (mPaintVerticalFirst) {
-            paintVerticalBackgrounds(gc, localBounds);
-            paintHorizontalBackgrounds(gc, localBounds);
-        } else {
-            paintHorizontalBackgrounds(gc, localBounds);
-            paintVerticalBackgrounds(gc, localBounds);
-        }
+        paintHorizontalBackgrounds(gc, localBounds);
+        paintVerticalBackgrounds(gc, localBounds);
     }
 
     private void paintHorizontalBackgrounds(Graphics gc, Rectangle localBounds) {
@@ -221,16 +215,6 @@ public class DropPanel extends JPanel {
                 gc.fillRect(bounds.x, localBounds.y, bounds.width, localBounds.height);
             }
         }
-    }
-
-    /** @return Whether or not to paint the vertical backgrounds first. */
-    public final boolean isPaintVerticalFirst() {
-        return mPaintVerticalFirst;
-    }
-
-    /** @param first Whether or not to paint the vertical backgrounds first. */
-    public final void setPaintVerticalFirst(boolean first) {
-        mPaintVerticalFirst = first;
     }
 
     /** @return The {@link TitledBorder}. */
@@ -268,36 +252,6 @@ public class DropPanel extends JPanel {
     protected PageField createLabelAndDisabledField(Container parent, CharacterSheet sheet, String key, String title, String tooltip, int alignment) {
         PageField field = new PageField(sheet, key, alignment, false, tooltip);
         parent.add(new PageLabel(title, field));
-        parent.add(field);
-        return field;
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
-     */
-    @SuppressWarnings("static-method")
-    protected PageField createField(Container parent, CharacterSheet sheet, String key, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, true, tooltip);
-        parent.add(field);
-        return field;
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
-     */
-    @SuppressWarnings("static-method")
-    protected PageField createDisabledField(Container parent, CharacterSheet sheet, String key, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, false, tooltip);
         parent.add(field);
         return field;
     }

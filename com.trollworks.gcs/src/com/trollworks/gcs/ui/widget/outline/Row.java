@@ -329,7 +329,7 @@ public abstract class Row {
     }
 
     /** @return The string to display as tooltip. Defaults to {@code null}. */
-    @SuppressWarnings({"static-method", "unused"})
+    @SuppressWarnings("static-method")
     public String getToolTip(Column column) {
         return null;
     }

@@ -349,15 +349,4 @@ public class Dice implements Cloneable {
         // Specifically want identity comparison
         return super.hashCode();
     }
-
-    /**
-     * @param count  The number of dice.
-     * @param sides  The number of sides per die.
-     * @param target The minimum value on one die to be considered a success.
-     * @return The probability that at least one die will be equal to or greater than the target
-     *         value.
-     */
-    public static double getDicePoolProbability(int count, int sides, int target) {
-        return 1 - Math.pow(1 - (1 + sides - target) / (double) sides, count);
-    }
 }

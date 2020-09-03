@@ -141,9 +141,6 @@ public abstract class WeaponStats {
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
 
-    /** @return The root XML tag to use when saving. */
-    protected abstract String getRootTag();
-
     /** @param m The {@link JsonMap} to load from. */
     protected void loadSelf(JsonMap m) throws IOException {
         mDamage = new WeaponDamage(m.getMap(WeaponDamage.TAG_ROOT), this);

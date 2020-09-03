@@ -27,7 +27,6 @@ public class CheckCell extends ListTextCell {
 
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
         if (row instanceof Equipment) {

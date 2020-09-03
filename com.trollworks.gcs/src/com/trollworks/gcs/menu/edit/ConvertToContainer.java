@@ -50,7 +50,6 @@ public class ConvertToContainer extends Command {
         setEnabled(!model.isLocked() && model.getSelectionCount() == 1 && !model.getSelectionAsList().get(0).canHaveChildren());
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();

@@ -87,8 +87,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     public static final  String            CMD_SELECTION_CHANGED             = "Outline.SelectionChanged";
     /** The default potential content size change action command. */
     public static final  String            CMD_POTENTIAL_CONTENT_SIZE_CHANGE = "Outline.ContentSizeMayHaveChanged";
-    /** The column visibility command. */
-    public static final  String            CMD_TOGGLE_COLUMN_VISIBILITY      = "Outline.ToggleColumnVisibility";
     private static final int               DIVIDER_HIT_SLOP                  = 2;
     private static final int               AUTO_SCROLL_MARGIN                = 10;
     private              OutlineModel      mModel;
@@ -106,7 +104,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     private              boolean           mAllowColumnResize;
     private              boolean           mAllowColumnDrag;
     private              boolean           mAllowRowDrag;
-    private              String            mDefaultConfig;
     private              boolean           mUseBanding;
     private              List<Column>      mSavedColumns;
     private              Row               mRollRow;
@@ -2003,48 +2000,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     }
 
     /**
-     * Creates a configuration that can be applied to an outline.
-     *
-     * @param configSpec The column configuration spec for each column.
-     * @return The configuration.
-     */
-    public static String createConfig(ColumnConfig[] configSpec) {
-        return createConfig(configSpec, 0, 0);
-    }
-
-    /**
-     * Creates a configuration that can be applied to an outline.
-     *
-     * @param configSpec The column configuration spec for each column.
-     * @param hSplit     The position of the horizontal splitter.
-     * @param vSplit     The position of the vertical splitter.
-     * @return The configuration.
-     */
-    public static String createConfig(ColumnConfig[] configSpec, int hSplit, int vSplit) {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(OutlineModel.CONFIG_VERSION);
-        buffer.append('\t');
-        buffer.append(configSpec.length);
-        for (ColumnConfig element : configSpec) {
-            buffer.append('\t');
-            buffer.append(element.mID);
-            buffer.append('\t');
-            buffer.append(element.mVisible);
-            buffer.append('\t');
-            buffer.append(element.mWidth);
-            buffer.append('\t');
-            buffer.append(element.mSortSequence);
-            buffer.append('\t');
-            buffer.append(element.mSortAscending);
-        }
-        buffer.append('\t');
-        buffer.append(hSplit);
-        buffer.append('\t');
-        buffer.append(vSplit);
-        return buffer.toString();
-    }
-
-    /**
      * @return A configuration string that can be used to restore the current column configuration
      *         and splitter settings (if the outline is embedded in a scroll panel).
      */
@@ -2119,19 +2074,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         }
 
         revalidateView();
-    }
-
-    /** @return The default configuration. */
-    public String getDefaultConfig() {
-        if (mDefaultConfig == null) {
-            mDefaultConfig = getConfig();
-        }
-        return mDefaultConfig;
-    }
-
-    /** @param config The configuration to set as the default. */
-    public void setDefaultConfig(String config) {
-        mDefaultConfig = config;
     }
 
     @Override
@@ -2431,7 +2373,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     }
 
     @SuppressWarnings("static-method")
-    protected boolean isDragToRowAcceptable(@SuppressWarnings("unused") Row parentRow) {
+    protected boolean isDragToRowAcceptable(Row parentRow) {
         return true;
     }
 

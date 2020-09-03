@@ -103,11 +103,6 @@ public class SpellPrereq extends HasPrereq {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public Prereq clone(PrereqList parent) {
         return new SpellPrereq(parent, this);
     }

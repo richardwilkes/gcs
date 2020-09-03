@@ -86,11 +86,6 @@ public class MeleeWeaponStats extends WeaponStats {
     }
 
     @Override
-    protected String getRootTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getJSONTypeName() {
         return TAG_ROOT;
     }

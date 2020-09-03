@@ -32,7 +32,6 @@ import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
     private static final int                         CURRENT_JSON_VERSION   = 1;
-    private static final int                         CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                      TAG_MODIFIER           = "eqp_modifier";
     /** The root tag for containers. */
@@ -227,16 +226,6 @@ public class EquipmentModifier extends Modifier {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override

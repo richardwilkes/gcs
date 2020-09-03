@@ -20,7 +20,6 @@ import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.criteria.WeightCriteria;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.WeightFormatter;
 import com.trollworks.gcs.utility.units.WeightValue;
@@ -147,21 +146,6 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     protected EditorField addNumericCompareField(IntegerCriteria compare, int min, int max, boolean forceSign) {
         EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, forceSign)), this, SwingConstants.LEFT, Integer.valueOf(compare.getQualifier()), Integer.valueOf(max), null);
         field.putClientProperty(IntegerCriteria.class, compare);
-        UIUtilities.setToPreferredSizeOnly(field);
-        add(field);
-        return field;
-    }
-
-    /**
-     * @param compare   The current compare object.
-     * @param min       The minimum value to allow.
-     * @param max       The maximum value to allow.
-     * @param forceSign Whether to force the sign to be visible.
-     * @return The {@link EditorField} that allows a double comparison to be changed.
-     */
-    protected EditorField addNumericCompareField(DoubleCriteria compare, double min, double max, boolean forceSign) {
-        EditorField field = new EditorField(new DefaultFormatterFactory(new DoubleFormatter(min, max, forceSign)), this, SwingConstants.LEFT, Double.valueOf(compare.getQualifier()), Double.valueOf(max), null);
-        field.putClientProperty(DoubleCriteria.class, compare);
         UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         return field;

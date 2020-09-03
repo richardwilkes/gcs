@@ -25,7 +25,6 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 import com.trollworks.gcs.ui.widget.outline.Row;
-import com.trollworks.gcs.ui.widget.outline.RowUndo;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.undo.MultipleUndo;
 
@@ -63,7 +62,6 @@ public class MoveEquipmentCommand extends Command {
         }
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();
@@ -89,7 +87,6 @@ public class MoveEquipmentCommand extends Command {
                 if (other != null) {
                     MultipleUndo undo = new MultipleUndo(getTitle());
                     outline.postUndo(undo);
-                    List<RowUndo> undos   = new ArrayList<>();
                     List<Row>     rows    = new ArrayList<>();
                     List<ListRow> topRows = new ArrayList<>();
                     OutlineModel  target  = other.getModel();

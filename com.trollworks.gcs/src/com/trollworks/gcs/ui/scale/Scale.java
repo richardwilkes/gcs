@@ -106,14 +106,6 @@ public class Scale {
      * @param value The value to scale.
      * @return The scaled value.
      */
-    public float scale(float value) {
-        return (float) (value * mScale);
-    }
-
-    /**
-     * @param value The value to scale.
-     * @return The scaled value.
-     */
     public double scale(double value) {
         return value * mScale;
     }

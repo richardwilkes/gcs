@@ -49,14 +49,6 @@ public class EmptyBorder implements Border {
     }
 
     /**
-     * @param edge The edge to query.
-     * @return The thickness being used for the specified edge.
-     */
-    public int getThickness(Edge edge) {
-        return mThickness[edge.ordinal()];
-    }
-
-    /**
      * @param edge      The edge to set.
      * @param thickness The thickness to use for the specified edge.
      */

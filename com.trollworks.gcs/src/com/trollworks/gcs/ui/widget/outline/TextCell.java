@@ -101,28 +101,21 @@ public class TextCell implements Cell {
         Font  font      = scale.scale(getFont(row, column));
         int   minHeight = TextDrawing.getPreferredSize(font, "Mg").height;
         int   height    = TextDrawing.getPreferredSize(font, getPresentationText(outline, row, column)).height;
-        if (row == null) {
-            height = adjustHeight(scale, column.getIcon(), height);
-        } else {
-            height = adjustHeight(scale, Icons.getDisclosure(true, true), height);
-            height = adjustHeight(scale, row.getIcon(column), height);
+        if (row != null) {
+            RetinaIcon icon = Icons.getDisclosure(true, true);
+            if (icon != null) {
+                int iconHeight = scale.scale(icon.getIconHeight());
+                if (height < iconHeight) {
+                    height = iconHeight;
+                }
+            }
         }
         return Math.max(minHeight, height);
     }
 
-    private static int adjustHeight(Scale scale, RetinaIcon icon, int height) {
-        if (icon != null) {
-            int iconHeight = scale.scale(icon.getIconHeight());
-            if (height < iconHeight) {
-                height = iconHeight;
-            }
-        }
-        return height;
-    }
-
     @SuppressWarnings("static-method")
     public RetinaIcon getIcon(Row row, Column column) {
-        return row == null ? column.getIcon() : row.getIcon(column);
+        return row == null ? null : row.getIcon(column);
     }
 
     @Override

@@ -24,7 +24,6 @@ import java.awt.print.PrinterGraphics;
 /** Provides general graphics settings and manipulation. */
 public class GraphicsUtilities {
     private static boolean       HEADLESS_PRINT_MODE;
-    private static int           HEADLESS_CHECK_RESULT;
     private static BufferedImage FALLBACK_GRAPHICS_BACKING_STORE;
 
     /** @return Whether the headless print mode is enabled. */

@@ -23,9 +23,6 @@ public abstract class Feature {
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
 
-    /** @return The XML tag representing this feature. */
-    public abstract String getXMLTag();
-
     /** @return The feature key used in the feature map. */
     public abstract String getKey();
 

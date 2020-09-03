@@ -52,7 +52,6 @@ import java.util.Set;
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
     private static final int                        CURRENT_JSON_VERSION       = 1;
-    private static final int                        CURRENT_VERSION            = 4;
     /** The XML tag used for items. */
     public static final  String                     TAG_ADVANTAGE              = "advantage";
     /** The XML tag used for containers. */
@@ -61,7 +60,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String                     TAG_BASE_POINTS            = "base_points";
     private static final String                     TAG_POINTS_PER_LEVEL       = "points_per_level";
     private static final String                     TAG_LEVELS                 = "levels";
-    private static final String                     TAG_TYPE                   = "type";
     private static final String                     TAG_NAME                   = "name";
     private static final String                     TAG_CR                     = "cr";
     private static final String                     TAG_USER_DESC              = "userdesc";
@@ -73,7 +71,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String                     ATTR_DISABLED              = "disabled";
     private static final String                     ATTR_ROUND_COST_DOWN       = "round_down";
     private static final String                     ATTR_ALLOW_HALF_LEVELS     = "allow_half_levels";
-    private static final String                     ATTR_HALF_LEVEL            = "half_level";
     private static final String                     KEY_CONTAINER_TYPE         = "container_type";
     private static final String                     KEY_WEAPONS                = "weapons";
     private static final String                     KEY_MODIFIERS              = "modifiers";
@@ -247,16 +244,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override
@@ -842,26 +829,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             return true;
         }
         return super.contains(text, lowerCaseOnly);
-    }
-
-    private static int getTypeFromText(String text) {
-        int type = 0;
-        if (text.contains(TYPE_MENTAL)) {
-            type |= TYPE_MASK_MENTAL;
-        }
-        if (text.contains(TYPE_PHYSICAL)) {
-            type |= TYPE_MASK_PHYSICAL;
-        }
-        if (text.contains(TYPE_SOCIAL)) {
-            type |= TYPE_MASK_SOCIAL;
-        }
-        if (text.contains(TYPE_EXOTIC)) {
-            type |= TYPE_MASK_EXOTIC;
-        }
-        if (text.contains(TYPE_SUPERNATURAL)) {
-            type |= TYPE_MASK_SUPERNATURAL;
-        }
-        return type;
     }
 
     /** @return The type as a text string. */

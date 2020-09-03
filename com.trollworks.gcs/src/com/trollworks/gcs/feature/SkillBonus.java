@@ -88,11 +88,6 @@ public class SkillBonus extends Bonus {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getKey() {
         return switch (mSkillSelectionType) {
             case WEAPONS_WITH_NAME -> buildKey(WeaponBonus.WEAPON_NAMED_ID_PREFIX);

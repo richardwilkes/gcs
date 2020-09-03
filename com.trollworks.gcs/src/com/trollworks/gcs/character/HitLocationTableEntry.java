@@ -63,14 +63,6 @@ public class HitLocationTableEntry {
         return mLowRoll != 0;
     }
 
-    public int getLowRoll() {
-        return mLowRoll;
-    }
-
-    public int getHighRoll() {
-        return mHighRoll;
-    }
-
     public String getRoll() {
         if (hasRoll()) {
             if (mLowRoll == mHighRoll) {

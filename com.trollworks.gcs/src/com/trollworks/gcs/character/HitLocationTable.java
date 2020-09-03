@@ -287,11 +287,6 @@ public class HitLocationTable implements Comparable<HitLocationTable> {
         return mKey;
     }
 
-    /** @return The name. */
-    public String getName() {
-        return mName;
-    }
-
     @Override
     public String toString() {
         return mName;

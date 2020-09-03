@@ -12,8 +12,8 @@
 package com.trollworks.gcs.menu.edit;
 
 /**
- * Focusable controls and windows that want to participate in {@link OpenItemCommand} processing
- * must implement this interface.
+ * Focusable controls and windows that want to participate in opening a selection must implement
+ * this interface.
  */
 public interface Openable {
     /** @return Whether the selection can be opened. */

@@ -68,27 +68,12 @@ import java.util.Set;
 /** A GURPS character. */
 public class GURPSCharacter extends CollectedModels {
     private static final int                                 CURRENT_JSON_VERSION                 = 1;
-    private static final int                                 CURRENT_VERSION                      = 5;
-    /**
-     * The version where equipment was separated out into different lists based on carried/not
-     * carried status.
-     */
-    public static final  int                                 SEPARATED_EQUIPMENT_VERSION          = 4;
-    /**
-     * The version where HP and FP damage tracking was introduced, rather than a free-form text
-     * field.
-     */
-    public static final  int                                 HP_FP_DAMAGE_TRACKING                = 5;
     private static final String                              TAG_ROOT                             = "character";
     private static final String                              TAG_CREATED_DATE                     = "created_date";
     private static final String                              TAG_MODIFIED_DATE                    = "modified_date";
     private static final String                              TAG_HP_DAMAGE                        = "hp_damage";
     private static final String                              TAG_FP_DAMAGE                        = "fp_damage";
-    private static final String                              TAG_UNSPENT_POINTS                   = "unspent_points";
     private static final String                              TAG_TOTAL_POINTS                     = "total_points";
-    private static final String                              TAG_INCLUDE_PUNCH                    = "include_punch";
-    private static final String                              TAG_INCLUDE_KICK                     = "include_kick";
-    private static final String                              TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";
     private static final String                              KEY_HP_ADJ                           = "HP_adj";
     private static final String                              KEY_FP_ADJ                           = "FP_adj";
     private static final String                              KEY_ST                               = "ST";
@@ -367,16 +352,6 @@ public class GURPSCharacter extends CollectedModels {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
         return TAG_ROOT;
     }
 

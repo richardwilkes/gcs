@@ -12,7 +12,6 @@
 package com.trollworks.gcs.ui.image;
 
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.utility.UrlUtils;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -28,7 +27,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -58,16 +56,6 @@ public class Img extends BufferedImage implements Icon {
      */
     public static Img create(File file) throws IOException {
         try (InputStream in = new FileInputStream(file)) {
-            return create(in);
-        }
-    }
-
-    /**
-     * @param url The URL to load the image from.
-     * @return The image.
-     */
-    public static Img create(URL url) throws IOException {
-        try (InputStream in = UrlUtils.setupConnection(url).getInputStream()) {
             return create(in);
         }
     }
@@ -181,33 +169,5 @@ public class Img extends BufferedImage implements Icon {
             mDerived.put(key, img);
         }
         return img;
-    }
-
-
-    /**
-     * Creates a new image by superimposing an image centered on top of this one.
-     *
-     * @param image The image to superimpose.
-     * @return The new image.
-     */
-    public Img superimpose(Img image) {
-        int width       = getWidth();
-        int height      = getHeight();
-        int otherWidth  = image.getWidth();
-        int otherHeight = image.getHeight();
-        int x           = (width - otherWidth) / 2;
-        if (x + otherWidth > width) {
-            width = x + otherWidth;
-        }
-        int y = (height - otherHeight) / 2;
-        if (y + otherHeight > height) {
-            height = y + otherHeight;
-        }
-        Img        buffer = create(width, height, getTransparency());
-        Graphics2D gc     = buffer.getGraphics();
-        gc.drawImage(this, 0, 0, null);
-        gc.drawImage(image, x, y, null);
-        gc.dispose();
-        return buffer;
     }
 }

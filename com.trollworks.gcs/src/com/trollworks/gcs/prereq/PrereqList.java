@@ -110,11 +110,6 @@ public class PrereqList extends Prereq {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
         mAll = m.getBoolean(ATTRIBUTE_ALL);
         if (m.has(TAG_WHEN_TL)) {

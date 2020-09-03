@@ -25,11 +25,10 @@ import javax.swing.JComboBox;
 
 /** A standard font selection panel. */
 public class FontPanel extends ActionPanel implements ActionListener {
-    public static final String[]                   STYLES = {I18n.Text("Plain"), I18n.Text("Bold"), I18n.Text("Italic"), I18n.Text("Bold Italic")};
-    private             JComboBox<Integer>         mFontSizeMenu;
-    private             JComboBox<String>          mFontNameMenu;
-    private             JComboBox<Fonts.FontStyle> mFontStyleMenu;
-    private             boolean                    mNoNotify;
+    private JComboBox<Integer>         mFontSizeMenu;
+    private JComboBox<String>          mFontNameMenu;
+    private JComboBox<Fonts.FontStyle> mFontStyleMenu;
+    private boolean                    mNoNotify;
 
     /**
      * Creates a new font panel.

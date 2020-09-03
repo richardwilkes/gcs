@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -42,7 +41,6 @@ public class EquipmentModifierEnabler extends JPanel {
     private Equipment           mEquipment;
     private JCheckBox[]         mEnabled;
     private EquipmentModifier[] mModifiers;
-    private JComboBox<String>   mCRCombo;
 
     /**
      * Brings up a modal dialog that allows {@link EquipmentModifier}s to be enabled or disabled for

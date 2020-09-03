@@ -50,7 +50,6 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      * @param list  The rows to edit.
      * @return Whether anything was modified.
      */
-    @SuppressWarnings("unused")
     public static boolean edit(Component owner, List<? extends ListRow> list) {
         ArrayList<RowUndo> undos = new ArrayList<>();
         ListRow[]          rows  = list.toArray(new ListRow[0]);

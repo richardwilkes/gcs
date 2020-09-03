@@ -33,7 +33,6 @@ public class AttributePrereq extends HasPrereq {
     public static final  String               TAG_ROOT                = "attribute_prereq";
     private static final String               ATTRIBUTE_WHICH         = "which";
     private static final String               ATTRIBUTE_COMBINED_WITH = "combined_with";
-    private static final String               ATTRIBUTE_COMPARE       = "compare";
     private static final String               KEY_QUALIFIER           = "qualifier";
     private              BonusAttributeType   mWhich;
     private              BonusAttributeType   mCombinedWith;
@@ -94,11 +93,6 @@ public class AttributePrereq extends HasPrereq {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
-    }
-
-    @Override
-    public String getXMLTag() {
         return TAG_ROOT;
     }
 

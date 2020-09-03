@@ -83,7 +83,6 @@ import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
-import java.io.File;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -125,7 +124,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private              boolean          mIsPrinting;
     private              boolean          mSyncWeapons;
     private              boolean          mReloadSpellColumns;
-    private              boolean          mDisposed;
 
     /**
      * Creates a new character sheet display. {@link #rebuild()} must be called prior to the first
@@ -151,22 +149,11 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     public void dispose() {
         Preferences.getInstance().getNotifier().remove(this);
         mCharacter.resetNotifier();
-        mDisposed = true;
-    }
-
-    /** @return Whether the sheet has had {@link #dispose()} called on it. */
-    public boolean hasBeenDisposed() {
-        return mDisposed;
     }
 
     @Override
     protected void scaleChanged() {
         markForRebuild();
-    }
-
-    /** @return Whether a rebuild is pending. */
-    public boolean isRebuildPending() {
-        return mRebuildPending;
     }
 
     /** Synchronizes the display with the underlying model. */
@@ -440,10 +427,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             }
         }
         super.createOutlines(models);
-    }
-
-    public ReactionsOutline getReactionsOutline() {
-        return mReactionsOutline;
     }
 
     private void createReactionsOutline() {
@@ -1028,8 +1011,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             setPrinting(true);
 
             while (true) {
-                File pngFile;
-
                 Graphics2D gc = buffer.getGraphics();
                 if (print(gc, format, pageNum) == NO_SUCH_PAGE) {
                     gc.dispose();

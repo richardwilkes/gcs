@@ -23,7 +23,6 @@ import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultiCell;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
-import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightValue;
@@ -539,10 +538,6 @@ public enum EquipmentColumn {
 
     public static String getDisplayWeight(DataFile df, WeightValue weight) {
         return getConvertedWeight(df, weight).toString();
-    }
-
-    public static Fixed6 getNormalizedDisplayWeight(DataFile df, WeightValue weight) {
-        return getConvertedWeight(df, weight).getNormalizedValue();
     }
 
     public static WeightValue getConvertedWeight(DataFile df, WeightValue weight) {

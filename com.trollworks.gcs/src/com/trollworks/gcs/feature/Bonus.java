@@ -23,11 +23,9 @@ import java.util.Set;
 
 /** Describes a bonus. */
 public abstract class Bonus extends Feature {
-    /** The "amount" tag. */
-    public static final String        TAG_AMOUNT = "amount";
-    private             LeveledAmount mAmount;
+    private LeveledAmount mAmount;
     // The "parent" item that is providing this particular bonus (for information only).
-    private             ListRow       mParent;
+    private ListRow       mParent;
 
     /**
      * Creates a new bonus.
@@ -97,10 +95,6 @@ public abstract class Bonus extends Feature {
 
     public void setParent(ListRow parent) {
         mParent = parent;
-    }
-
-    public ListRow getParent() {
-        return mParent;
     }
 
     public String getParentName() {

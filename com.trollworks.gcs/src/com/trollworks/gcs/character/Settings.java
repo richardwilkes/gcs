@@ -28,7 +28,6 @@ import java.util.List;
 public class Settings {
     private static final int            CURRENT_JSON_VERSION                = 1;
     private static final int            CURRENT_VERSION                     = 1;
-    private static final int            VERSION_REACTIONS                   = 1;
     private static final int            MINIMUM_VERSION                     = 0;
     public static final  String         TAG_ROOT                            = "settings";
     public static final  String         TAG_DEFAULT_LENGTH_UNITS            = "default_length_units";

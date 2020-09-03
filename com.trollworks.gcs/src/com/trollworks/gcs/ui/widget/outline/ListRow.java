@@ -60,7 +60,6 @@ public abstract class ListRow extends Row implements Updatable {
     private static final String             ATTRIBUTE_OPEN    = "open";
     private static final String             TAG_NOTES         = "notes";
     private static final String             TAG_CATEGORIES    = "categories";
-    private static final String             TAG_CATEGORY      = "category";
     private static final String             KEY_ID            = "id";
     private static final String             KEY_BASED_ON_ID   = "based_on_id";
     private static final String             KEY_BASED_ON_HASH = "based_on_hash";
@@ -266,12 +265,6 @@ public abstract class ListRow extends Row implements Updatable {
 
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
-
-    /** @return The XML root container tag name for this particular row. */
-    public abstract String getXMLTagName();
-
-    /** @return The most recent version of the XML tag this object knows how to load. */
-    public abstract int getXMLTagVersion();
 
     /** @return The type of row. */
     public abstract String getRowType();

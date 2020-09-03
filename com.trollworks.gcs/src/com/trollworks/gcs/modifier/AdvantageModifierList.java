@@ -17,7 +17,6 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
-import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -28,25 +27,8 @@ import java.io.IOException;
 /** Data Object to hold several {@link AdvantageModifier}s */
 public class AdvantageModifierList extends ListFile {
     private static final int    CURRENT_JSON_VERSION = 1;
-    private static final int    CURRENT_VERSION      = 1;
     /** The XML tag for advantage modifier lists. */
     public static final  String TAG_ROOT             = "modifier_list";
-
-    /** Creates new {@link AdvantageModifierList}. */
-    public AdvantageModifierList() {
-    }
-
-    /**
-     * Creates a new {@link AdvantageModifierList}.
-     *
-     * @param modifiers The {@link AdvantageModifierList} to clone.
-     */
-    public AdvantageModifierList(AdvantageModifierList modifiers) {
-        this();
-        for (Row Row : modifiers.getModel().getRows()) {
-            getModel().getRows().add(Row);
-        }
-    }
 
     @Override
     public int getJSONVersion() {
@@ -55,16 +37,6 @@ public class AdvantageModifierList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
         return TAG_ROOT;
     }
 

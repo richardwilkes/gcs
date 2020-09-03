@@ -31,15 +31,12 @@ import java.io.IOException;
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
     private static final int                       CURRENT_JSON_VERSION   = 1;
-    private static final int                       CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                    TAG_MODIFIER           = "modifier";
     /** The root tag for containers. */
     public static final  String                    TAG_MODIFIER_CONTAINER = "modifier_container";
     /** The tag for the base cost. */
     public static final  String                    TAG_COST               = "cost";
-    /** The attribute for the cost type. */
-    public static final  String                    ATTRIBUTE_COST_TYPE    = "type";
     private static final String                    KEY_COST_TYPE          = "cost_type";
     /** The tag for the cost per level. */
     public static final  String                    TAG_LEVELS             = "levels";
@@ -227,16 +224,6 @@ public class AdvantageModifier extends Modifier {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override

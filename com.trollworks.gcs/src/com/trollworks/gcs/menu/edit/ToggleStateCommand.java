@@ -64,7 +64,6 @@ public class ToggleStateCommand extends Command {
         setEnabled(false);
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();

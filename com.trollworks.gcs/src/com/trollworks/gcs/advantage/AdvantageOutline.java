@@ -175,7 +175,6 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
         return false;
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void increment() {
         ArrayList<RowUndo> undos = new ArrayList<>();
@@ -194,7 +193,6 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
         }
     }
 
-    @SuppressWarnings("unused")
     @Override
     public void decrement() {
         ArrayList<RowUndo> undos = new ArrayList<>();

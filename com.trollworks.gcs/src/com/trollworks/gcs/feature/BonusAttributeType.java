@@ -154,15 +154,6 @@ public enum BonusAttributeType {
         }
     };
 
-    private String mTag;
-
-    BonusAttributeType() {
-        mTag = name();
-        if (mTag.length() > 2) {
-            mTag = mTag.toLowerCase();
-        }
-    }
-
     /** @return The presentation name. */
     public String getPresentationName() {
         String name = name();
@@ -176,10 +167,5 @@ public enum BonusAttributeType {
     @SuppressWarnings("static-method")
     public boolean isIntegerOnly() {
         return true;
-    }
-
-    /** @return The XML tag to use for this {@link BonusAttributeType}. */
-    public String getXMLTag() {
-        return mTag;
     }
 }

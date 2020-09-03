@@ -20,21 +20,17 @@ import com.trollworks.gcs.preferences.MenuKeyPreferences;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.utility.FileProxy;
-import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.AWTEvent;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
@@ -46,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 
 /** Provides a base OS-level window. */
@@ -89,27 +84,6 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
             mWasAlive = true;
         }
         super.setVisible(visible);
-    }
-
-    /** Call to create the toolbar for this window. */
-    protected final void createToolBar() {
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        FlexRow row = new FlexRow();
-        row.setInsets(new Insets(2, 5, 2, 5));
-        createToolBarContents(toolbar, row);
-        row.apply(toolbar);
-        add(toolbar, BorderLayout.NORTH);
-    }
-
-    /**
-     * Called to create the toolbar contents for this window.
-     *
-     * @param toolbar The {@link JToolBar} to add items to.
-     * @param row     The {@link FlexRow} layout to add items to.
-     */
-    protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
-        // Does nothing by default.
     }
 
     @Override
@@ -325,21 +299,6 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
             }
         }
         return windows;
-    }
-
-    /**
-     * @param windowClass The window class to return.
-     * @param <T>         The window type.
-     * @return The current visible windows, in order from top to bottom.
-     */
-    public static <T extends BaseWindow> ArrayList<T> getActiveWindows(Class<T> windowClass) {
-        ArrayList<T> list = new ArrayList<>();
-        for (T window : new FilteredIterator<>(WINDOW_LIST, windowClass)) {
-            if (window.isShowing()) {
-                list.add(window);
-            }
-        }
-        return list;
     }
 
     /** @return A list of all {@link BaseWindow}s created by this application. */

@@ -45,7 +45,6 @@ import java.util.Set;
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
     private static final int               CURRENT_JSON_VERSION     = 1;
-    private static final int               CURRENT_VERSION          = 4;
     /** The XML tag used for items. */
     public static final  String            TAG_SKILL                = "skill";
     /** The XML tag used for containers. */
@@ -238,16 +237,6 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_SKILL_CONTAINER : TAG_SKILL;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override

@@ -141,11 +141,6 @@ public class ContainedWeightReduction extends Feature {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getKey() {
         return Equipment.ID_EXTENDED_WEIGHT;
     }

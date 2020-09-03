@@ -37,13 +37,11 @@ public class FileType {
     public static final FileType                  JPEG               = new FileType(I18n.Text("JPEG Files"), Images.FILE, false, false, "jpg", "jpeg");
     public static final FileType                  GIF                = new FileType(I18n.Text("GIF Files"), Images.FILE, false, false, "gif");
     public static final FileNameExtensionFilter[] IMAGE_FILTERS      = createFileFilters(I18n.Text("Image Files"), PNG, JPEG, GIF);
-    private             String                    mDescription;
     private             RetinaIcon                mIcon;
     private             String                    mPrimaryExtension;
     private             FileNameExtensionFilter   mFilter;
 
     public FileType(String description, RetinaIcon icon, boolean owned, boolean openable, String... extension) {
-        mDescription = description;
         mIcon = icon;
         mPrimaryExtension = extension[0];
         mFilter = new FileNameExtensionFilter(description, extension);
@@ -53,11 +51,6 @@ public class FileType {
             }
             ALL_OPENABLE.add(this);
         }
-    }
-
-    /** @return A short description for the file type. */
-    public String getDescription() {
-        return mDescription;
     }
 
     /** @return The icon representing the file. */

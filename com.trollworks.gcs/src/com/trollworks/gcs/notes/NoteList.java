@@ -27,8 +27,6 @@ import java.io.IOException;
 /** A list of notes. */
 public class NoteList extends ListFile {
     private static final int    CURRENT_JSON_VERSION = 1;
-    /** The current version. */
-    public static final  int    CURRENT_VERSION      = 1;
     /** The XML tag for {@link NoteList}s. */
     public static final  String TAG_ROOT             = "note_list";
 
@@ -39,16 +37,6 @@ public class NoteList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
         return TAG_ROOT;
     }
 

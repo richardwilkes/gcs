@@ -485,13 +485,7 @@ public class Preferences {
                         BaseWindow.Position info = entry.getValue();
                         if (info.mLastUpdated > cutoff) {
                             w.key(entry.getKey());
-                            w.startMap();
-                            w.keyValue("x", info.mBounds.x);
-                            w.keyValue("y", info.mBounds.y);
-                            w.keyValue("width", info.mBounds.width);
-                            w.keyValue("height", info.mBounds.height);
-                            w.keyValue("last_updated", info.mLastUpdated);
-                            w.endMap();
+                            info.toJSON(w);
                         }
                     }
                     w.endMap();

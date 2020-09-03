@@ -37,8 +37,6 @@ import java.awt.event.ActionEvent;
 /** The template sheet. */
 public class TemplateSheet extends CollectedOutlines {
     private static final EmptyBorder NORMAL_BORDER = new EmptyBorder(5);
-    /** Used to determine whether an edit cell is pending. */
-    protected            boolean     mStartEditingPending;
     /** Used to determine whether a resize action is pending. */
     protected            boolean     mSizePending;
 

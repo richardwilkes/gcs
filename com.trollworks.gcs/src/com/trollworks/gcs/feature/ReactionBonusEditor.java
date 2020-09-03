@@ -24,8 +24,7 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 public class ReactionBonusEditor extends FeatureEditor {
-    private static final String      CHANGE_SITUATION = "ChangeSituation";
-    private              EditorField mSituationField;
+    private EditorField mSituationField;
 
     public ReactionBonusEditor(ListRow row, ReactionBonus bonus) {
         super(row, bonus);

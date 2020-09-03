@@ -371,11 +371,8 @@ public class WindowUtils {
     /** @return A {@link Frame} to use when a valid frame of any sort is all that is needed. */
     public static Frame getAnyFrame() {
         Frame frame = BaseWindow.getTopWindow();
-
         if (frame == null) {
-            Frame[] frames = Frame.getFrames();
-
-            for (Frame element : frames) {
+            for (Frame element : Frame.getFrames()) {
                 if (element.isDisplayable()) {
                     return element;
                 }

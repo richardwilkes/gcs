@@ -23,6 +23,7 @@ import java.util.Date;
 
 /** Provides standardized logging. */
 public class Log {
+    private static final String           GCS_LOG_ENV  = "GCS_LOG";
     private static final String           GCS_LOG_FILE = "gcs.log";
     private static final String           SEPARATOR    = " | ";
     private static final SimpleDateFormat FORMAT       = new SimpleDateFormat("yyyy.MM.dd" + SEPARATOR + "HH:mm:ss.SSS");
@@ -31,7 +32,7 @@ public class Log {
     static {
         OUT = System.out;
         Path   path     = null;
-        String property = Debug.getPropertyOrEnvironmentSetting("GCS_LOG");
+        String property = System.getProperty(GCS_LOG_ENV, System.getenv(GCS_LOG_ENV));
         if (property != null && !property.isBlank()) {
             path = Paths.get(property);
         } else if (!GCS.VERSION.isZero()) { // When running a dev version, assume the console is always appropriate, since you're likely running from an IDE

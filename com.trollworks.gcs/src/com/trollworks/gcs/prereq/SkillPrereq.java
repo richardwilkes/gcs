@@ -93,11 +93,6 @@ public class SkillPrereq extends NameLevelPrereq {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public Prereq clone(PrereqList parent) {
         return new SkillPrereq(parent, this);
     }

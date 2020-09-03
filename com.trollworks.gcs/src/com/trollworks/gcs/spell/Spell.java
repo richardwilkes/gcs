@@ -47,7 +47,6 @@ import java.util.Set;
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
     private static final   int               CURRENT_JSON_VERSION     = 1;
-    private static final   int               CURRENT_VERSION          = 5;
     /** The XML tag used for items. */
     public static final    String            TAG_SPELL                = "spell";
     /** The XML tag used for containers. */
@@ -66,7 +65,6 @@ public class Spell extends ListRow implements HasSourceReference {
     private static final   String            TAG_REFERENCE            = "reference";
     private static final   String            TAG_ATTRIBUTE            = "attribute";
     private static final   String            TAG_DIFFICULTY           = "difficulty";
-    private static final   String            ATTRIBUTE_VERY_HARD      = "very_hard";
     private static final   String            KEY_WEAPONS              = "weapons";
     /** The prefix used in front of all IDs for the spells. */
     public static final    String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
@@ -231,16 +229,6 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_SPELL_CONTAINER : TAG_SPELL;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override

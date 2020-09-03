@@ -33,7 +33,6 @@ import java.util.Set;
 /** A note. */
 public class Note extends ListRow implements HasSourceReference {
     private static final int    CURRENT_JSON_VERSION = 1;
-    private static final int    CURRENT_VERSION      = 1;
     /** The XML tag used for items. */
     public static final  String TAG_NOTE             = "note";
     /** The XML tag used for containers. */
@@ -117,16 +116,6 @@ public class Note extends ListRow implements HasSourceReference {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_NOTE_CONTAINER : TAG_NOTE;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override

@@ -36,7 +36,6 @@ public class WeaponBonus extends Bonus {
     private static final String              TAG_SPECIALIZATION     = "specialization";
     private static final String              TAG_LEVEL              = "level";
     private static final String              TAG_CATEGORY           = "category";
-    private static final String              TAG_PARENT_ONLY        = "parent_only";
     private              WeaponSelectionType mWeaponSelectionType;
     private              StringCriteria      mNameCriteria;
     private              StringCriteria      mSpecializationCriteria;
@@ -91,11 +90,6 @@ public class WeaponBonus extends Bonus {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
-    }
-
-    @Override
-    public String getXMLTag() {
         return TAG_ROOT;
     }
 

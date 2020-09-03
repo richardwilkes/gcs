@@ -29,8 +29,6 @@ public class MarkdownDocument extends DefaultStyledDocument {
         Iterator<String> iterator = markdown.lines().iterator();
         while (iterator.hasNext()) {
             String line  = iterator.next();
-            Style  charStyle;
-            Style  paraStyle;
             Style  style = null;
             for (int i = 1; i < 5; i++) {
                 if (line.startsWith("#".repeat(i) + " ")) {

@@ -25,7 +25,6 @@ import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -96,7 +95,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         super(createTitle(character));
         mCharacter = character;
         mSettings = character.getSettings();
-        Container content = getContentPane();
         addTopPanel();
         addResetPanel();
         adjustResetButton();

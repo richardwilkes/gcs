@@ -32,7 +32,6 @@ import java.awt.Window;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -251,64 +250,6 @@ public class UIUtilities {
     }
 
     /**
-     * Clones a {@link MouseEvent}.
-     *
-     * @param event The event to clone.
-     * @return The new {@link MouseEvent}.
-     */
-    public static final MouseEvent cloneMouseEvent(MouseEvent event) {
-        if (event instanceof MouseWheelEvent) {
-            MouseWheelEvent old = (MouseWheelEvent) event;
-            return new MouseWheelEvent((Component) old.getSource(), old.getID(), System.currentTimeMillis(), old.getModifiersEx(), old.getX(), old.getY(), old.getClickCount(), old.isPopupTrigger(), old.getScrollType(), old.getScrollAmount(), old.getWheelRotation());
-        }
-        return new MouseEvent((Component) event.getSource(), event.getID(), System.currentTimeMillis(), event.getModifiersEx(), event.getX(), event.getY(), event.getClickCount(), event.isPopupTrigger());
-    }
-
-    /**
-     * Clones a {@link MouseEvent}.
-     *
-     * @param event       The event to clone.
-     * @param refreshTime Pass in {@code true} to generate a new time stamp.
-     * @return The new {@link MouseEvent}.
-     */
-    public static final MouseEvent cloneMouseEvent(MouseEvent event, boolean refreshTime) {
-        if (event instanceof MouseWheelEvent) {
-            MouseWheelEvent old = (MouseWheelEvent) event;
-            return new MouseWheelEvent((Component) old.getSource(), old.getID(), refreshTime ? System.currentTimeMillis() : event.getWhen(), old.getModifiersEx(), old.getX(), old.getY(), old.getClickCount(), old.isPopupTrigger(), old.getScrollType(), old.getScrollAmount(), old.getWheelRotation());
-        }
-        return new MouseEvent((Component) event.getSource(), event.getID(), refreshTime ? System.currentTimeMillis() : event.getWhen(), event.getModifiersEx(), event.getX(), event.getY(), event.getClickCount(), event.isPopupTrigger());
-    }
-
-    /**
-     * Clones a {@link MouseEvent}.
-     *
-     * @param event       The event to clone.
-     * @param source      Pass in a new source.
-     * @param where       Pass in a new location.
-     * @param refreshTime Pass in {@code true} to generate a new time stamp.
-     * @return The new {@link MouseEvent}.
-     */
-    public static final MouseEvent cloneMouseEvent(MouseEvent event, Component source, Point where, boolean refreshTime) {
-        if (event instanceof MouseWheelEvent) {
-            MouseWheelEvent old = (MouseWheelEvent) event;
-            return new MouseWheelEvent(source, old.getID(), refreshTime ? System.currentTimeMillis() : event.getWhen(), old.getModifiersEx(), where.x, where.y, old.getClickCount(), old.isPopupTrigger(), old.getScrollType(), old.getScrollAmount(), old.getWheelRotation());
-        }
-        return new MouseEvent(source, event.getID(), refreshTime ? System.currentTimeMillis() : event.getWhen(), event.getModifiersEx(), where.x, where.y, event.getClickCount(), event.isPopupTrigger());
-    }
-
-    /**
-     * Forwards a {@link MouseEvent} from one component to another.
-     *
-     * @param event The event to forward.
-     * @param from  The component that originally received the event.
-     * @param to    The component the event should be forwarded to.
-     */
-    public static void forwardMouseEvent(MouseEvent event, Component from, Component to) {
-        translateMouseEvent(event, from, to);
-        to.dispatchEvent(event);
-    }
-
-    /**
      * Translates a {@link MouseEvent} from one component to another.
      *
      * @param event The event that will be forwarded.
@@ -460,12 +401,6 @@ public class UIUtilities {
 
     public static void updateDropTargetDragPointTo(DropTargetDragEvent dtde, Component comp) {
         convertPoint(dtde.getLocation(), dtde.getDropTargetContext().getComponent(), comp);
-    }
-
-    public static Point convertDropTargetDropPointTo(DropTargetDropEvent dtde, Component comp) {
-        Point pt = dtde.getLocation();
-        convertPoint(pt, dtde.getDropTargetContext().getComponent(), comp);
-        return pt;
     }
 
     public static void updateDropTargetDropPointTo(DropTargetDropEvent dtde, Component comp) {

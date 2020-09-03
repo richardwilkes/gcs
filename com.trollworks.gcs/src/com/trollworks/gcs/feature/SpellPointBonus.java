@@ -92,11 +92,6 @@ public class SpellPointBonus extends Bonus {
         return TAG_ROOT;
     }
 
-    @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
     public boolean matchesCategories(Set<String> categories) {
         return matchesCategories(mCategoryCriteria, categories);
     }

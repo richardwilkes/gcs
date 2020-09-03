@@ -51,9 +51,6 @@ public abstract class Prereq {
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
 
-    /** @return The XML tag representing this prereq. */
-    public abstract String getXMLTag();
-
     /**
      * Loads the prerequisite.
      *

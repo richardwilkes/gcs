@@ -98,11 +98,6 @@ public class AdvantagePrereq extends NameLevelPrereq {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public Prereq clone(PrereqList parent) {
         return new AdvantagePrereq(parent, this);
     }

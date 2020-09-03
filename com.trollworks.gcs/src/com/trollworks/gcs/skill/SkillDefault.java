@@ -23,8 +23,6 @@ import java.util.Set;
 
 /** Describes a skill default. */
 public class SkillDefault {
-    /** The XML tag. */
-    public static final String           TAG_ROOT           = "default";
     /** The tag used for the type. */
     public static final String           TAG_TYPE           = "type";
     /** The tag used for the skill name. */

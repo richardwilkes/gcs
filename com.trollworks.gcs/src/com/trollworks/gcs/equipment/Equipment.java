@@ -55,8 +55,6 @@ import java.util.Set;
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
     private static final int                     CURRENT_JSON_VERSION         = 1;
-    private static final int                     CURRENT_VERSION              = 7;
-    private static final int                     EQUIPMENT_SPLIT_VERSION      = 6;
     private static final String                  DEFAULT_LEGALITY_CLASS       = "4";
     /** The XML tag used for items. */
     public static final  String                  TAG_EQUIPMENT                = "equipment";
@@ -246,16 +244,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_EQUIPMENT_CONTAINER : TAG_EQUIPMENT;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Equipment");
     }
@@ -365,11 +353,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     public void update() {
         updateExtendedValue(true);
         updateExtendedWeight(true);
-    }
-
-    public void updateNoNotify() {
-        updateExtendedValue(false);
-        updateExtendedWeight(false);
     }
 
     /** @return The quantity. */
