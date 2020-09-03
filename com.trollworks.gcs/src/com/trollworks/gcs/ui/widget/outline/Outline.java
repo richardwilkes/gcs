@@ -1520,10 +1520,27 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             switch (event.getKeyCode()) {
             case KeyEvent.VK_LEFT:
                 index = selection.firstSelectedIndex();
-                while (index >= 0) {
-                    mModel.getRowAtIndex(index).setOpen(false);
-                    index = selection.nextSelectedIndex(index + 1);
-                    repaintSelection();
+                if (index >= 0) {
+                    if (selection.getCount() == 1) {
+                        Row row = mModel.getRowAtIndex(index);
+                        if (row.canHaveChildren() && row.isOpen()) {
+                            row.setOpen(false);
+                            repaintSelection();
+                        } else {
+                            Row parentRow = row.getParent();
+                            if (parentRow != null) {
+                                index = getModel().getIndexOfRow(parentRow);
+                                selection.select(index, false);
+                                keyScroll(index);
+                            }
+                        }
+                    } else {
+                        while (index >= 0) {
+                            mModel.getRowAtIndex(index).setOpen(false);
+                            index = selection.nextSelectedIndex(index + 1);
+                            repaintSelection();
+                        }
+                    }
                 }
                 break;
             case KeyEvent.VK_RIGHT:

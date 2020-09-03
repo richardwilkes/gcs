@@ -1734,7 +1734,23 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
             switch (event.getKeyCode()) {
             case KeyEvent.VK_LEFT:
-                setOpen(false, getTreeContainerRows(mSelectedRows, event.isAltDown()));
+                if (mSelectedRows.size() == 1) {
+                    TreeRow row = mSelectedRows.iterator().next();
+                    if (row instanceof TreeContainerRow) {
+                        TreeContainerRow cRow = (TreeContainerRow)row;
+                        if (isOpen(cRow)) {
+                            setOpen(false, cRow);
+                            break;
+                        }
+                    }
+                    TreeContainerRow parentRow = row.getParent();
+                    if (parentRow != null && parentRow != getRoot()) {
+                        select(parentRow, false);
+                        keyScroll(parentRow);
+                    }
+                } else {
+                    setOpen(false, getTreeContainerRows(mSelectedRows, event.isAltDown()));
+                }
                 break;
             case KeyEvent.VK_RIGHT:
                 setOpen(true, getTreeContainerRows(mSelectedRows, event.isAltDown()));
