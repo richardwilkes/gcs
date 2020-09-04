@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Bundler {
+public final class Bundler {
     private static final String GCS_VERSION       = "4.24.0";
     private static       String JDK_MAJOR_VERSION = "15";
     private static final String ITEXT_VERSION     = "2.1.7";
@@ -58,6 +58,9 @@ public class Bundler {
     private static       Path   PKG;
     private static       Path   NO_INSTALLER_PKG;
     private static       String ICON_TYPE;
+
+    private Bundler() {
+    }
 
     /**
      * The main entry point for bundling GCS.

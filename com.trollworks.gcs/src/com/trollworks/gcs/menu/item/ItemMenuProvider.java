@@ -22,7 +22,10 @@ import java.util.List;
 import javax.swing.JMenu;
 
 /** Provides the "Item" menu. */
-public class ItemMenuProvider {
+public final class ItemMenuProvider {
+    private ItemMenuProvider() {
+    }
+
     public static List<Command> getModifiableCommands() {
         List<Command> cmds = new ArrayList<>();
         cmds.add(OpenEditorCommand.INSTANCE);

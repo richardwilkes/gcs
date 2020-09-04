@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /** Provides standardized logging. */
-public class Log {
+public final class Log {
     private static final String           GCS_LOG_ENV  = "GCS_LOG";
     private static final String           GCS_LOG_FILE = "gcs.log";
     private static final String           SEPARATOR    = " | ";
@@ -57,12 +57,15 @@ public class Log {
         }
     }
 
+    private Log() {
+    }
+
     /**
      * Logs an error.
      *
      * @param msg The message to log.
      */
-    public static final void error(String msg) {
+    public static void error(String msg) {
         error(msg, null);
     }
 
@@ -71,7 +74,7 @@ public class Log {
      *
      * @param throwable The {@link Throwable} to log.
      */
-    public static final void error(Throwable throwable) {
+    public static void error(Throwable throwable) {
         error(null, throwable);
     }
 
@@ -81,7 +84,7 @@ public class Log {
      * @param msg       The message to log.
      * @param throwable The {@link Throwable} to log.
      */
-    public static final void error(String msg, Throwable throwable) {
+    public static void error(String msg, Throwable throwable) {
         post('E', msg, throwable);
     }
 
@@ -90,7 +93,7 @@ public class Log {
      *
      * @param msg The message to log.
      */
-    public static final void warn(String msg) {
+    public static void warn(String msg) {
         warn(msg, null);
     }
 
@@ -99,7 +102,7 @@ public class Log {
      *
      * @param throwable The {@link Throwable} to log.
      */
-    public static final void warn(Throwable throwable) {
+    public static void warn(Throwable throwable) {
         warn(null, throwable);
     }
 
@@ -109,7 +112,7 @@ public class Log {
      * @param msg       The message to log.
      * @param throwable The {@link Throwable} to log.
      */
-    public static final void warn(String msg, Throwable throwable) {
+    public static void warn(String msg, Throwable throwable) {
         post('W', msg, throwable);
     }
 

@@ -15,7 +15,10 @@ import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 
 /** Commonly used icons. */
-public class Icons {
+public final class Icons {
+    private Icons() {
+    }
+
     /**
      * @param open {@code true} for the 'open' version.
      * @param roll {@code true} for the highlighted version.

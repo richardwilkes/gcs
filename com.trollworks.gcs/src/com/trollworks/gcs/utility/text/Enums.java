@@ -12,8 +12,11 @@
 package com.trollworks.gcs.utility.text;
 
 /** A utility for consistent extraction of an {@link Enum} value from a text buffer. */
-public class Enums {
-    public static final String toId(Enum<?> value) {
+public final class Enums {
+    private Enums() {
+    }
+
+    public static String toId(Enum<?> value) {
         return value.name().toLowerCase();
     }
 
@@ -24,7 +27,7 @@ public class Enums {
      * @param defaultValue The default value to use in case of no match.
      * @return The {@link Enum} representing the buffer.
      */
-    public static final <T extends Enum<?>> T extract(String buffer, T[] values, T defaultValue) {
+    public static <T extends Enum<?>> T extract(String buffer, T[] values, T defaultValue) {
         T value = extract(buffer, values);
         return value != null ? value : defaultValue;
     }
@@ -36,7 +39,7 @@ public class Enums {
      * @return The {@link Enum} representing the buffer, or {@code null} if a match could not be
      *         found.
      */
-    public static final <T extends Enum<?>> T extract(String buffer, T[] values) {
+    public static <T extends Enum<?>> T extract(String buffer, T[] values) {
         if (buffer != null) {
             for (T type : values) {
                 String name = type.name();

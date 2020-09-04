@@ -14,7 +14,10 @@ package com.trollworks.gcs.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
-public class MenuHelpers {
+public final class MenuHelpers {
+    private MenuHelpers() {
+    }
+
     public static JMenu createSubMenu(String name, Action... actions) {
         JMenu menu = new JMenu(name);
         for (Action action : actions) {

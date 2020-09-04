@@ -14,7 +14,10 @@ package com.trollworks.gcs.utility;
 import java.awt.Rectangle;
 
 /** Provides geometry-related utilities. */
-public class Geometry {
+public final class Geometry {
+    private Geometry() {
+    }
+
     /**
      * Intersects two {@link Rectangle}s, producing a third. Unlike the {@link
      * Rectangle#intersection(Rectangle)} method, the resulting {@link Rectangle}'s width & height
@@ -67,7 +70,7 @@ public class Geometry {
      * @param bounds The {@link Rectangle} to inset.
      * @return The {@link Rectangle} that was passed in.
      */
-    public static final Rectangle inset(int amount, Rectangle bounds) {
+    public static Rectangle inset(int amount, Rectangle bounds) {
         bounds.x += amount;
         bounds.y += amount;
         bounds.width -= amount * 2;

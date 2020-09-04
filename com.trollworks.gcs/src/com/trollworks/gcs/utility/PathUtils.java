@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /** Provides standard file path manipulation facilities. */
-public class PathUtils {
+public final class PathUtils {
     private static final char[]         INVALID_CHARACTERS;
     private static final Set<Character> INVALID_CHARACTER_SET;
     private static final String[]       INVALID_BASENAMES;
@@ -45,6 +45,9 @@ public class PathUtils {
         INVALID_CHARACTER_SET = exclude;
     }
 
+    private PathUtils() {
+    }
+
     /**
      * Ensures that the passed in string has the specified extension on it.
      *
@@ -52,7 +55,7 @@ public class PathUtils {
      * @param extension The desired extension.
      * @return A new string with the specified extension.
      */
-    public static final String enforceExtension(String name, String extension) {
+    public static String enforceExtension(String name, String extension) {
         return enforceExtension(name, extension, false);
     }
 
@@ -65,7 +68,7 @@ public class PathUtils {
      *                          acceptable.
      * @return A new string with the specified extension.
      */
-    public static final String enforceExtension(String name, String extension, boolean onlyIfNoExtension) {
+    public static String enforceExtension(String name, String extension, boolean onlyIfNoExtension) {
         name = name.replace('\\', '/');
         if (extension.charAt(0) != '.') {
             extension = '.' + extension;
@@ -101,7 +104,7 @@ public class PathUtils {
      * @param path The path to operate on.
      * @return The extension of the path name, excluding the initial ".".
      */
-    public static final String getExtension(String path) {
+    public static String getExtension(String path) {
         path = getLeafName(path);
         if (path != null) {
             int dot = path.lastIndexOf('.');
@@ -116,7 +119,7 @@ public class PathUtils {
      * @param file The file to operate on.
      * @return A full path from a file.
      */
-    public static final String getFullPath(File file) {
+    public static String getFullPath(File file) {
         if (file != null) {
             return normalizeFullPath(file.getAbsolutePath().replace('\\', '/'));
         }
@@ -128,7 +131,7 @@ public class PathUtils {
      * @return The leaf portion of the path name (everything to the right of the last path
      *         separator).
      */
-    public static final String getLeafName(String path) {
+    public static String getLeafName(String path) {
         return getLeafName(path, true);
     }
 
@@ -139,7 +142,7 @@ public class PathUtils {
      * @return The leaf portion of the path name (everything to the right of the last path
      *         separator).
      */
-    public static final String getLeafName(Path path, boolean includeExtension) {
+    public static String getLeafName(Path path, boolean includeExtension) {
         return getLeafName(path.getFileName().toString(), includeExtension);
     }
 
@@ -150,7 +153,7 @@ public class PathUtils {
      * @return The leaf portion of the path name (everything to the right of the last path
      *         separator).
      */
-    public static final String getLeafName(String path, boolean includeExtension) {
+    public static String getLeafName(String path, boolean includeExtension) {
         if (path != null) {
             int index;
 
@@ -180,7 +183,7 @@ public class PathUtils {
      * @param path The path to operate on.
      * @return The normalized path.
      */
-    public static final String normalizeFullPath(String path) {
+    public static String normalizeFullPath(String path) {
         if (path != null) {
             int           index;
             StringBuilder buffer;
@@ -250,7 +253,7 @@ public class PathUtils {
      * @param name The name to check. This should be just the name and no path components.
      * @return {@code true} if the name is valid as a file name on your platform.
      */
-    public static final boolean isNameValidForFile(String name) {
+    public static boolean isNameValidForFile(String name) {
         if (name == null || name.isEmpty() || ".".equals(name) || "..".equals(name)) {
             return false;
         }

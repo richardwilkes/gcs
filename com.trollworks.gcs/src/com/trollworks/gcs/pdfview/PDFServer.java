@@ -38,12 +38,15 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class PDFServer {
+public final class PDFServer {
     private static       HttpServer          SERVER;
     private static final DateTimeFormatter   DATE_TIME_FORMATTER    = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
     private static final Date                RESOURCE_LAST_MODIIFED = new Date();
     private static final Map<String, byte[]> CACHE                  = new HashMap<>();
     private static       int                 PORT;
+
+    private PDFServer() {
+    }
 
     public static synchronized void showPDF(Path path, int page) throws IOException, URISyntaxException {
         if (SERVER == null) {

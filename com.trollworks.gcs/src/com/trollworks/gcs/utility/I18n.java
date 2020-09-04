@@ -24,8 +24,11 @@ import java.util.Locale;
 import java.util.Map;
 
 /** Provides localization support via a single directory of translation files. */
-public class I18n {
+public final class I18n {
     private static Map<String, Map<Integer, String>> TRANSLATIONS;
+
+    private I18n() {
+    }
 
     /**
      * NOTE: The name of this class and function MUST be exactly "I18n.Text" (case-sensitive), as

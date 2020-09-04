@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-public class Images {
+public final class Images {
     public static final List<Img>  APP_ICON_LIST         = Arrays.asList(get("app_1024"), get("app_512"), get("app_256"), get("app_128"), get("app_64"), get("app_32"), get("app_16"));
     public static final RetinaIcon ABOUT                 = getRetina("about");
     public static final RetinaIcon ADD                   = getRetina("add");
@@ -67,7 +67,10 @@ public class Images {
     public static final RetinaIcon UNLOCKED              = getRetina("unlocked");
     public static final Img        DEFAULT_PORTRAIT      = get("default_portrait");
 
-    static final synchronized Img get(String name) {
+    private Images() {
+    }
+
+    static synchronized Img get(String name) {
         name += ".png";
         try (InputStream in = Img.class.getModule().getResourceAsStream("/images/" + name)) {
             return Img.create(in);
@@ -77,7 +80,7 @@ public class Images {
         }
     }
 
-    static final RetinaIcon getRetina(String name) {
+    static RetinaIcon getRetina(String name) {
         return new RetinaIcon(get(name), get(name + "@2x"));
     }
 }

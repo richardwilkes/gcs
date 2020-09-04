@@ -44,8 +44,11 @@ import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 
 /** Utilities for use with windows. */
-public class WindowUtils {
+public final class WindowUtils {
     private static Frame HIDDEN_FRAME;
+
+    private WindowUtils() {
+    }
 
     /**
      * @param comp The {@link Component} to use for determining the parent {@link Frame} or {@link

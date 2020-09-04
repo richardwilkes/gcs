@@ -15,9 +15,12 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
 
-public class Cursors {
+public final class Cursors {
     public static final Cursor HORIZONTAL_RESIZE = create("horizontal_resize_cursor");
     public static final Cursor VERTICAL_RESIZE   = create("vertical_resize_cursor");
+
+    private Cursors() {
+    }
 
     private static Cursor create(String name) {
         Img img = Images.get(name);

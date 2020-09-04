@@ -13,7 +13,10 @@ package com.trollworks.gcs.utility.task;
 
 import java.util.concurrent.TimeUnit;
 
-public class Tasks {
+public final class Tasks {
+    private Tasks() {
+    }
+
     /**
      * Execute a {@link Runnable} on a background thread.
      *
@@ -49,7 +52,7 @@ public class Tasks {
      *                 there isn't one with the same key already scheduled.
      * @return The {@link Task}.
      */
-    public static final Task scheduleRepeatedlyOnBackgroundThread(Runnable runnable, long period, TimeUnit units, Object key) {
+    public static Task scheduleRepeatedlyOnBackgroundThread(Runnable runnable, long period, TimeUnit units, Object key) {
         Task task = new Task(runnable, key);
         task.schedulePeriodic(period, units);
         return task;
@@ -65,7 +68,7 @@ public class Tasks {
      *                 there isn't one with the same key already scheduled.
      * @return The {@link Task}.
      */
-    public static final Task scheduleOnUIThread(Runnable runnable, long delay, TimeUnit units, Object key) {
+    public static Task scheduleOnUIThread(Runnable runnable, long delay, TimeUnit units, Object key) {
         Task task = new UITask(runnable, key);
         task.schedule(delay, units);
         return task;
@@ -81,7 +84,7 @@ public class Tasks {
      *                 there isn't one with the same key already scheduled.
      * @return The {@link Task}.
      */
-    public static final Task scheduleRepeatedlyOnUIThread(Runnable runnable, long period, TimeUnit units, Object key) {
+    public static Task scheduleRepeatedlyOnUIThread(Runnable runnable, long period, TimeUnit units, Object key) {
         Task task = new UITask(runnable, key);
         task.schedulePeriodic(period, units);
         return task;

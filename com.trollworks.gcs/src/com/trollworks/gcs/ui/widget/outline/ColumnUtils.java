@@ -17,7 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Utilities for columns. */
-public class ColumnUtils {
+public final class ColumnUtils {
+    private ColumnUtils() {
+    }
+
     /**
      * Packs the columns to their preferred sizes.
      *

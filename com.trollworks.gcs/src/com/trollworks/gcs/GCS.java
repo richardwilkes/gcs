@@ -46,7 +46,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /** The main entry point for the character sheet. */
-public class GCS {
+public final class GCS {
     public static final String  WEB_SITE = "https://gurpscharactersheet.com";
     public static final Version VERSION  = new Version();
     public static final String  COPYRIGHT;
@@ -100,6 +100,9 @@ public class GCS {
         }
         buffer.append(". All rights reserved.");
         APP_BANNER = buffer.toString();
+    }
+
+    private GCS() {
     }
 
     /**

@@ -29,7 +29,10 @@ import java.text.MessageFormat;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Provides standard file dialog handling. */
-public class StdFileDialog {
+public final class StdFileDialog {
+    private StdFileDialog() {
+    }
+
     /**
      * Creates a new {@link StdFileDialog}.
      *

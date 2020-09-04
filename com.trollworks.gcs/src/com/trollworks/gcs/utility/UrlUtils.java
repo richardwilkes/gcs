@@ -21,13 +21,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Utilities for working with URLs. */
-public class UrlUtils {
+public final class UrlUtils {
+    private UrlUtils() {
+    }
+
     /**
      * @param uri The URI to setup a connection for.
      * @return A {@link URLConnection} configured with a 10 second timeout for connecting and
      *         reading data.
      */
-    public static final URLConnection setupConnection(String uri) throws IOException {
+    public static URLConnection setupConnection(String uri) throws IOException {
         return setupConnection(new URL(uri));
     }
 
@@ -36,7 +39,7 @@ public class UrlUtils {
      * @return A {@link URLConnection} configured with a 10 second timeout for connecting and
      *         reading data.
      */
-    public static final URLConnection setupConnection(URL url) throws IOException {
+    public static URLConnection setupConnection(URL url) throws IOException {
         Map<String, Integer> visited = new HashMap<>();
         HttpURLConnection    conn;
         while (true) {

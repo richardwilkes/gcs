@@ -22,7 +22,10 @@ import java.util.List;
 import javax.swing.JMenu;
 
 /** Provides the standard "File" menu. */
-public class FileMenuProvider {
+public final class FileMenuProvider {
+    private FileMenuProvider() {
+    }
+
     public static List<Command> getModifiableCommands() {
         List<Command> cmds = new ArrayList<>();
         cmds.add(NewCharacterSheetCommand.INSTANCE);

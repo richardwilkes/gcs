@@ -25,16 +25,19 @@ import java.util.StringTokenizer;
 import javax.swing.SwingConstants;
 
 /** General text drawing utilities. */
-public class TextDrawing {
+public final class TextDrawing {
     private static Map<Font, Map<Character, Integer>> WIDTH_MAP  = new HashMap<>();
     private static Map<Font, Integer>                 HEIGHT_MAP = new HashMap<>();
+
+    private TextDrawing() {
+    }
 
     /**
      * @param font The {@link Font} to measure with.
      * @param ch   The character to measure.
      * @return The width, in pixels.
      */
-    public static final int getWidth(Font font, char ch) {
+    public static int getWidth(Font font, char ch) {
         return getCharWidth(font, ch, getWidthMap(font));
     }
 
@@ -52,7 +55,7 @@ public class TextDrawing {
      * @param text The text to measure.
      * @return The width, in pixels.
      */
-    public static final int getSimpleWidth(Font font, String text) {
+    public static int getSimpleWidth(Font font, String text) {
         Map<Character, Integer> map   = getWidthMap(font);
         int                     total = 0;
         int                     count = text.length();
@@ -87,7 +90,7 @@ public class TextDrawing {
      *               SwingConstants#CENTER}, or {@link SwingConstants#RIGHT}.
      * @return The bottom of the drawn text.
      */
-    public static final int draw(Graphics gc, Rectangle bounds, String text, int hAlign, int vAlign) {
+    public static int draw(Graphics gc, Rectangle bounds, String text, int hAlign, int vAlign) {
         return draw(gc, bounds, text, hAlign, vAlign, null, 0);
     }
 
@@ -106,7 +109,7 @@ public class TextDrawing {
      * @param strikeThruSize  The line width to use when drawing the strike-thru.
      * @return The bottom of the drawn text.
      */
-    public static final int draw(Graphics gc, Rectangle bounds, String text, int hAlign, int vAlign, Color strikeThruColor, int strikeThruSize) {
+    public static int draw(Graphics gc, Rectangle bounds, String text, int hAlign, int vAlign, Color strikeThruColor, int strikeThruSize) {
         int y = bounds.y;
         if (!text.isEmpty()) {
             List<String> list    = new ArrayList<>();
@@ -184,7 +187,7 @@ public class TextDrawing {
      * @param text The text to calculate a size for.
      * @return The preferred size of the text in the specified font.
      */
-    public static final Dimension getPreferredSize(Font font, String text) {
+    public static Dimension getPreferredSize(Font font, String text) {
         int width  = 0;
         int height = 0;
         int length = text.length();
@@ -218,7 +221,7 @@ public class TextDrawing {
         return new Dimension(width, height);
     }
 
-    public static final int getFontHeight(Font font) {
+    public static int getFontHeight(Font font) {
         Integer height = HEIGHT_MAP.get(font);
         if (height == null) {
             FontMetrics fm = Fonts.getFontMetrics(font);
@@ -236,7 +239,7 @@ public class TextDrawing {
      * @param text The text to calculate a size for.
      * @return The preferred height of the text in the specified font.
      */
-    public static final int getPreferredHeight(Font font, String text) {
+    public static int getPreferredHeight(Font font, String text) {
         int height = 0;
         int length = text.length();
         if (length > 0) {
@@ -260,7 +263,7 @@ public class TextDrawing {
      * @param text The text to calculate a size for.
      * @return The width of the text in the specified font.
      */
-    public static final int getWidth(Font font, String text) {
+    public static int getWidth(Font font, String text) {
         StringTokenizer tokenizer = new StringTokenizer(text, "\n", true);
         boolean         veryFirst = true;
         boolean         first     = true;
@@ -296,7 +299,7 @@ public class TextDrawing {
      *                         {@link SwingConstants#RIGHT}.
      * @return The adjusted text.
      */
-    public static final String truncateIfNecessary(Font font, String text, int width, int truncationPolicy) {
+    public static String truncateIfNecessary(Font font, String text, int width, int truncationPolicy) {
         if (getSimpleWidth(font, text) > width) {
             StringBuilder buffer = new StringBuilder(text);
             int           max    = buffer.length();

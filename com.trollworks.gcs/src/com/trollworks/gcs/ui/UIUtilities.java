@@ -41,7 +41,10 @@ import javax.swing.RepaintManager;
 import javax.swing.UIManager;
 
 /** Various utility methods for the UI. */
-public class UIUtilities {
+public final class UIUtilities {
+    private UIUtilities() {
+    }
+
     /** Initialize the UI. */
     public static void initialize() {
         System.setProperty("apple.laf.useScreenMenuBar", Boolean.TRUE.toString());

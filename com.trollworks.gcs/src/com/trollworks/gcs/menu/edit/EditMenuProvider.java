@@ -22,7 +22,10 @@ import java.util.List;
 import javax.swing.JMenu;
 
 /** Provides the standard "Edit" menu. */
-public class EditMenuProvider {
+public final class EditMenuProvider {
+    private EditMenuProvider() {
+    }
+
     public static List<Command> getModifiableCommands() {
         List<Command> cmds = new ArrayList<>();
         cmds.add(UndoCommand.INSTANCE);

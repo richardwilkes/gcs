@@ -17,7 +17,7 @@ import java.util.Map;
 import javax.swing.UIManager;
 
 /** Provides standardized color access. */
-public class Colors {
+public final class Colors {
     public static final  Color               TRANSPARENT = new Color(0, 0, 0, 0);
     private static final Map<String, String> NAME_TO_RGB = new HashMap<>();
     private static final Map<String, String> RGB_TO_NAME = new HashMap<>();
@@ -173,12 +173,15 @@ public class Colors {
         add("YellowGreen", "154,205,50");
     }
 
+    private Colors() {
+    }
+
     private static void add(String name, String rgb) {
         NAME_TO_RGB.put(name.toLowerCase(), rgb);
         RGB_TO_NAME.put(rgb, name);
     }
 
-    public static final String encode(Color color) {
+    public static String encode(Color color) {
         StringBuilder buffer = new StringBuilder();
         buffer.append(color.getRed());
         buffer.append(',');
@@ -195,7 +198,7 @@ public class Colors {
         return substitute != null ? substitute : result;
     }
 
-    public static final Color decode(String buffer) {
+    public static Color decode(String buffer) {
         int red   = 0;
         int green = 0;
         int blue  = 0;
@@ -301,7 +304,7 @@ public class Colors {
      * @param percentage How much of the second color to use.
      * @return A color that is a blended version of the two passed in.
      */
-    public static final Color blend(Color color1, Color color2, int percentage) {
+    public static Color blend(Color color1, Color color2, int percentage) {
         int remaining = 100 - percentage;
         return new Color((color1.getRed() * remaining + color2.getRed() * percentage) / 100, (color1.getGreen() * remaining + color2.getGreen() * percentage) / 100, (color1.getBlue() * remaining + color2.getBlue() * percentage) / 100);
     }
@@ -311,7 +314,7 @@ public class Colors {
      * @param amount The amount to adjust the saturation by, in the range -1 to 1.
      * @return The adjusted color.
      */
-    public static final Color adjustSaturation(Color color, float amount) {
+    public static Color adjustSaturation(Color color, float amount) {
         float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
         return new Color(Color.HSBtoRGB(hsb[0], Math.max(Math.min(hsb[1] + amount, 1.0f), 0.0f), hsb[2]));
     }
@@ -321,7 +324,7 @@ public class Colors {
      * @param amount The amount to adjust the brightness by, in the range -1 to 1.
      * @return The adjusted color.
      */
-    public static final Color adjustBrightness(Color color, float amount) {
+    public static Color adjustBrightness(Color color, float amount) {
         float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
         return new Color(Color.HSBtoRGB(hsb[0], hsb[1], Math.max(Math.min(hsb[2] + amount, 1.0f), 0.0f)));
     }
@@ -331,7 +334,7 @@ public class Colors {
      * @param amount The amount to adjust the hue by, in the range -1 to 1.
      * @return The adjusted color.
      */
-    public static final Color adjustHue(Color color, float amount) {
+    public static Color adjustHue(Color color, float amount) {
         float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
         return new Color(Color.HSBtoRGB(Math.max(Math.min(hsb[0] + amount, 1.0f), 0.0f), hsb[1], hsb[2]));
     }
@@ -341,7 +344,7 @@ public class Colors {
      * @param alpha The alpha to use.
      * @return A new {@link Color} with the specified alpha.
      */
-    public static final Color getWithAlpha(Color color, int alpha) {
+    public static Color getWithAlpha(Color color, int alpha) {
         return new Color(color.getRGB() & 0x00FFFFFF | alpha << 24, true);
     }
 

@@ -35,7 +35,10 @@ import javax.print.attribute.standard.PrinterResolution;
 import javax.print.attribute.standard.Sides;
 
 /** Provides access to various print settings. */
-public class PrintUtilities {
+public final class PrintUtilities {
+    private PrintUtilities() {
+    }
+
     /**
      * @param component The {@link Component} to check.
      * @return If the {@link Component} or one of its ancestors is currently printing.

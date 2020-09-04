@@ -20,7 +20,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /** Provides the standard "Help" menu. */
-public class HelpMenuProvider {
+public final class HelpMenuProvider {
+    private HelpMenuProvider() {
+    }
+
     public static JMenu createMenu() {
         JMenu menu = new JMenu(I18n.Text("Help"));
         if (!Platform.isMacintosh()) {

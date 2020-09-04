@@ -15,8 +15,11 @@ import java.util.StringTokenizer;
 import javax.swing.SwingConstants;
 
 /** Provides text manipulation. */
-public class Text {
+public final class Text {
     public static final char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+    private Text() {
+    }
 
     /**
      * @param ch the digit to convert.
@@ -45,7 +48,7 @@ public class Text {
      *                         {@link SwingConstants#RIGHT}.
      * @return The adjusted text.
      */
-    public static final String truncateIfNecessary(String text, int count, int truncationPolicy) {
+    public static String truncateIfNecessary(String text, int count, int truncationPolicy) {
         int tCount = text.length();
         count = tCount - count;
         if (count > 0) {
@@ -79,7 +82,7 @@ public class Text {
      * @param data The text to convert.
      * @return The converted text.
      */
-    public static final String standardizeLineEndings(String data) {
+    public static String standardizeLineEndings(String data) {
         int           length   = data.length();
         StringBuilder buffer   = new StringBuilder(length);
         char          ignoreCh = 0;

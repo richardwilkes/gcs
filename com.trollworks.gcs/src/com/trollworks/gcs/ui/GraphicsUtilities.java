@@ -22,9 +22,12 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PrinterGraphics;
 
 /** Provides general graphics settings and manipulation. */
-public class GraphicsUtilities {
+public final class GraphicsUtilities {
     private static boolean       HEADLESS_PRINT_MODE;
     private static BufferedImage FALLBACK_GRAPHICS_BACKING_STORE;
+
+    private GraphicsUtilities() {
+    }
 
     /** @return Whether the headless print mode is enabled. */
     public static boolean inHeadlessPrintMode() {

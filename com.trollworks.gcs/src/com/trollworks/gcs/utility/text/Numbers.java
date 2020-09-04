@@ -18,7 +18,7 @@ import java.text.NumberFormat;
 import java.util.regex.Pattern;
 
 /** Various number utilities. */
-public class Numbers {
+public final class Numbers {
     public static final  String        YES                               = "yes";
     public static final  String        NO                                = "no";
     public static final  String        LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
@@ -32,6 +32,9 @@ public class Numbers {
 
         NUMBER_PLUS_FORMAT = (DecimalFormat) NUMBER_FORMAT.clone();
         NUMBER_PLUS_FORMAT.setPositivePrefix("+");
+    }
+
+    private Numbers() {
     }
 
     /**
@@ -57,7 +60,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final int extractInteger(String buffer, int def, boolean localized) {
+    public static int extractInteger(String buffer, int def, boolean localized) {
         buffer = normalizeNumber(buffer, localized);
         if (hasDecimalSeparator(buffer, localized)) {
             return (int) extractDouble(buffer, def, localized);
@@ -104,7 +107,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final int extractInteger(String buffer, int def, int min, int max, boolean localized) {
+    public static int extractInteger(String buffer, int def, int min, int max, boolean localized) {
         return Math.min(Math.max(extractInteger(buffer, def, localized), min), max);
     }
 
@@ -122,7 +125,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final long extractLong(String buffer, long def, boolean localized) {
+    public static long extractLong(String buffer, long def, boolean localized) {
         buffer = normalizeNumber(buffer, localized);
         if (hasDecimalSeparator(buffer, localized)) {
             return (int) extractDouble(buffer, def, localized);
@@ -169,7 +172,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final long extractLong(String buffer, long def, long min, long max, boolean localized) {
+    public static long extractLong(String buffer, long def, long min, long max, boolean localized) {
         return Math.min(Math.max(extractLong(buffer, def, localized), min), max);
     }
 
@@ -187,7 +190,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final double extractDouble(String buffer, double def, boolean localized) {
+    public static double extractDouble(String buffer, double def, boolean localized) {
         buffer = normalizeNumber(buffer, localized);
         double multiplier = 1;
         if (hasBillionsSuffix(buffer)) {
@@ -239,7 +242,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final double extractDouble(String buffer, double def, double min, double max, boolean localized) {
+    public static double extractDouble(String buffer, double def, double min, double max, boolean localized) {
         return Math.min(Math.max(extractDouble(buffer, def, localized), min), max);
     }
 
@@ -289,7 +292,7 @@ public class Numbers {
      *         result would end with a '.' (or the localized equivalent, if {@code localized} is
      *         {@code true}), then the '.' is removed as well.
      */
-    public static final String trimTrailingZeroes(String text, boolean localized) {
+    public static String trimTrailingZeroes(String text, boolean localized) {
         if (text == null) {
             return null;
         }
@@ -345,7 +348,7 @@ public class Numbers {
      * @param value The value to format.
      * @return The formatted value.
      */
-    public static final String format(boolean value) {
+    public static String format(boolean value) {
         return value ? YES : NO;
     }
 
