@@ -421,7 +421,7 @@ public class Skill extends ListRow implements HasSourceReference {
             String        name    = getName();
             character.getSkillPointComparedIntegerBonusFor(ID_POINTS + "*", name, getSpecialization(), getCategories(), tooltip);
             character.getIntegerBonusFor(ID_POINTS + "/" + name.toLowerCase(), tooltip);
-            if (tooltip.length() > 0) {
+            if (!tooltip.isEmpty()) {
                 return I18n.Text("Includes modifiers from") + tooltip;
             }
         }
@@ -659,7 +659,7 @@ public class Skill extends ListRow implements HasSourceReference {
         StringBuilder buffer = new StringBuilder(super.getModifierNotes());
         Skill         skill  = getDefaultSkill();
         if (skill != null && mDefaultedFrom != null) {
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append(' ');
             }
             buffer.append(I18n.Text("Default: "));

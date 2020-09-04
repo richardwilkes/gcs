@@ -57,6 +57,7 @@ public enum WeightUnits implements Units {
     },
     /** Kilograms. */
     KG(new Fixed6("2.205", Fixed6.ZERO, false), true) { // entered as text to ensure precision
+
         @Override
         public String getLocalizedName() {
             return I18n.Text("Kilograms");
@@ -64,14 +65,15 @@ public enum WeightUnits implements Units {
     },
     /** Grams. Must come after Kilograms since it's abbreviation is a subset. */
     G(new Fixed6("0.002205", Fixed6.ZERO, false), true) { // entered as text to ensure precision
+
         @Override
         public String getLocalizedName() {
             return I18n.Text("Grams");
         }
     };
 
-    private Fixed6  mFactor;
-    private boolean mIsMetric;
+    private final Fixed6  mFactor;
+    private final boolean mIsMetric;
 
     WeightUnits(Fixed6 factor, boolean isMetric) {
         mFactor = factor;

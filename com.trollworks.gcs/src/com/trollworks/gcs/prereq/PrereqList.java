@@ -247,7 +247,7 @@ public class PrereqList extends Prereq {
                 satisfiedCount++;
             }
         }
-        if (localBuilder != null && localBuilder.length() > 0) {
+        if (localBuilder != null && !localBuilder.isEmpty()) {
             localBuilder.insert(0, "<ul>");
             localBuilder.append("</ul>");
         }

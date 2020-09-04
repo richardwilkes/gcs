@@ -359,7 +359,7 @@ public class Technique extends Skill {
     @Override
     public String getModifierNotes() {
         StringBuilder buffer = new StringBuilder(super.getModifierNotes());
-        if (buffer.length() > 0) {
+        if (!buffer.isEmpty()) {
             buffer.append(' ');
         }
         buffer.append(I18n.Text("Default: "));

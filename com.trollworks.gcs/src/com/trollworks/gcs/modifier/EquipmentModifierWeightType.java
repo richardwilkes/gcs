@@ -77,7 +77,7 @@ public enum EquipmentModifierWeightType {
         }
     };
 
-    private ModifierWeightValueType[] mPermittedTypes;
+    private final ModifierWeightValueType[] mPermittedTypes;
 
     EquipmentModifierWeightType(ModifierWeightValueType... permittedTypes) {
         mPermittedTypes = permittedTypes;

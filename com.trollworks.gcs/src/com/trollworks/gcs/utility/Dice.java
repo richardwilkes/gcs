@@ -144,12 +144,12 @@ public class Dice implements Cloneable {
     }
 
     private static char nextChar(StringBuilder buffer) {
-        return buffer.length() > 0 ? buffer.charAt(0) : 0;
+        return buffer.isEmpty() ? 0 : buffer.charAt(0);
     }
 
     private static int extractValue(StringBuilder buffer) {
         int value = 0;
-        while (buffer.length() > 0) {
+        while (!buffer.isEmpty()) {
             char ch = buffer.charAt(0);
             if (ch >= '0' && ch <= '9') {
                 value *= 10;
@@ -302,7 +302,7 @@ public class Dice implements Cloneable {
             buffer.append('x');
             buffer.append(mMultiplier);
         }
-        if (buffer.length() == 0) {
+        if (buffer.isEmpty()) {
             buffer.append('0');
         }
         return buffer.toString();

@@ -129,7 +129,7 @@ public class TextDrawing {
                     buffer.setLength(0);
                 } else {
                     width = getSimpleWidth(font, buffer + token);
-                    if (width > bounds.width && buffer.length() > 0) {
+                    if (width > bounds.width && !buffer.isEmpty()) {
                         text = buffer.toString();
                         textHeight += fHeight;
                         list.add(text);
@@ -141,7 +141,7 @@ public class TextDrawing {
                     buffer.append(token);
                 }
             }
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 text = buffer.toString();
                 textHeight += fHeight;
                 list.add(text);

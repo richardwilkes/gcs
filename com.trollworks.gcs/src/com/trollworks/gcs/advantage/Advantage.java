@@ -841,25 +841,25 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 buffer.append(TYPE_MENTAL);
             }
             if ((type & TYPE_MASK_PHYSICAL) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append("/");
                 }
                 buffer.append(TYPE_PHYSICAL);
             }
             if ((type & TYPE_MASK_SOCIAL) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append(separator);
                 }
                 buffer.append(TYPE_SOCIAL);
             }
             if ((type & TYPE_MASK_EXOTIC) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append(separator);
                 }
                 buffer.append(TYPE_EXOTIC);
             }
             if ((type & TYPE_MASK_SUPERNATURAL) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append(separator);
                 }
                 buffer.append(TYPE_SUPERNATURAL);
@@ -1008,7 +1008,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 builder.append(MODIFIER_SEPARATOR);
             }
         }
-        if (builder.length() > 0) {
+        if (!builder.isEmpty()) {
             // Remove the trailing MODIFIER_SEPARATOR
             builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
         }
@@ -1032,7 +1032,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         String txt = super.getSecondaryText();
         if (!txt.isBlank()) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append("\n");
             }
             builder.append(super.getSecondaryText());

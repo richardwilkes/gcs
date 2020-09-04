@@ -13,10 +13,13 @@ package com.trollworks.gcs.ui.scale;
 
 /** Some standard scales. */
 public enum Scales {
-    ACTUAL_SIZE(1, "100%"), QUARTER_AGAIN_SIZE(1.25, "125%"), HALF_AGAIN_SIZE(1.5, "150%"), DOUBLE_SIZE(2, "200%");
+    ACTUAL_SIZE(1, "100%"),
+    QUARTER_AGAIN_SIZE(1.25, "125%"),
+    HALF_AGAIN_SIZE(1.5, "150%"),
+    DOUBLE_SIZE(2, "200%");
 
-    private Scale  mScale;
-    private String mTitle;
+    private final Scale  mScale;
+    private final String mTitle;
 
     Scales(double scale, String title) {
         mScale = new Scale(scale);

@@ -996,7 +996,7 @@ public class Equipment extends ListRow implements HasSourceReference {
                 builder.append(MODIFIER_SEPARATOR);
             }
         }
-        if (builder.length() > 0) {
+        if (!builder.isEmpty()) {
             // Remove the trailing MODIFIER_SEPARATOR
             builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
         }

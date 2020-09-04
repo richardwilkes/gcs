@@ -660,7 +660,7 @@ public class Preferences {
     public static String linesToString(List<String> lines) {
         StringBuilder buffer = new StringBuilder();
         for (String line : lines) {
-            if (buffer.length() != 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append('\n');
             }
             buffer.append(line);

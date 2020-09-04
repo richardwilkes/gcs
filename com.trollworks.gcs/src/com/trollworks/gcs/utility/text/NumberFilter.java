@@ -100,14 +100,14 @@ public class NumberFilter implements KeyListener {
                         }
                     }
                     if (ch == GROUP_CHAR || ch >= '0' && ch <= '9') {
-                        if (mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
+                        if (mAllowSign && start == 0 && !buffer.isEmpty() && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
                             filter(event);
                         }
                     } else if (ch == '-' || ch == '+') {
                         if (start != 0) {
                             filter(event);
                         }
-                    } else if (buffer.indexOf("" + DECIMAL_CHAR) != -1 || mAllowSign && start == 0 && buffer.length() > 0 && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
+                    } else if (buffer.indexOf("" + DECIMAL_CHAR) != -1 || mAllowSign && start == 0 && !buffer.isEmpty() && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
                         filter(event);
                     }
                 } else {

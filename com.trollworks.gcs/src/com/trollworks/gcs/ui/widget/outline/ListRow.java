@@ -535,7 +535,7 @@ public abstract class ListRow extends Row implements Updatable {
         if (df.notesDisplay().inline()) {
             String txt = getNotes();
             if (!txt.isBlank()) {
-                if (builder.length() > 0) {
+                if (!builder.isEmpty()) {
                     builder.append('\n');
                 }
                 builder.append(txt);
@@ -575,7 +575,7 @@ public abstract class ListRow extends Row implements Updatable {
     public String getCategoriesAsString() {
         StringBuilder buffer = new StringBuilder();
         for (String category : mCategories) {
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append(",");
                 buffer.append(" ");
             }

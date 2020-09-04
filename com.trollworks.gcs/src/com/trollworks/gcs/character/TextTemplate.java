@@ -330,7 +330,7 @@ public class TextTemplate {
                             }
                         }
                     }
-                    if (keyBuffer.length() != 0) {
+                    if (!keyBuffer.isEmpty()) {
                         emitKey(in, out, keyBuffer.toString(), exportTo);
                     }
                 }
@@ -614,7 +614,7 @@ public class TextTemplate {
         case KEY_NOTES:
             StringBuilder buffer = new StringBuilder();
             for (Note note : gurpsCharacter.getNoteIterator()) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append("\n\n");
                 }
                 buffer.append(note.getDescription());
@@ -1101,12 +1101,12 @@ public class TextTemplate {
                 style.append("px;");
             }
             if (!row.isSatisfied()) {
-                if (style.length() == 0) {
+                if (style.isEmpty()) {
                     style.append(" style=\"");
                 }
                 style.append(" color: red;");
             }
-            if (style.length() > 0) {
+            if (!style.isEmpty()) {
                 style.append("\" ");
                 out.write(style.toString());
             }

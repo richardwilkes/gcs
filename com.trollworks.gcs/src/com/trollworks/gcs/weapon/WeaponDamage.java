@@ -247,7 +247,7 @@ public class WeaponDamage {
     public String getDamageToolTip() {
         StringBuilder toolTip = new StringBuilder();
         getResolvedDamage(toolTip);
-        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip : I18n.Text("No additional modifiers");
+        return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
     }
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
@@ -431,7 +431,7 @@ public class WeaponDamage {
         if (mBase != null) {
             String base = mBase.toString(convertModifiersToExtraDice);
             if (!"0".equals(base)) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     char ch = base.charAt(0);
                     if (ch != '+' && ch != '-') {
                         buffer.append("+");
@@ -446,7 +446,7 @@ public class WeaponDamage {
             buffer.append(")");
         }
         if (mModifierPerDie != 0) {
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append(" ");
             }
             buffer.append("(");

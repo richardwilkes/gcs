@@ -87,7 +87,7 @@ public class Notifier implements Comparator<NotifierTarget> {
         StringTokenizer tokenizer = new StringTokenizer(name, SEPARATOR);
         StringBuilder   builder   = new StringBuilder();
         while (tokenizer.hasMoreTokens()) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append(SEPARATOR);
             }
             builder.append(tokenizer.nextToken());

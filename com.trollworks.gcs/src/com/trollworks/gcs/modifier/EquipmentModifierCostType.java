@@ -77,7 +77,7 @@ public enum EquipmentModifierCostType {
         }
     };
 
-    private ModifierCostValueType[] mPermittedTypes;
+    private final ModifierCostValueType[] mPermittedTypes;
 
     EquipmentModifierCostType(ModifierCostValueType... permittedTypes) {
         mPermittedTypes = permittedTypes;

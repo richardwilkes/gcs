@@ -42,7 +42,7 @@ public enum Encumbrance {
         }
     };
 
-    private int mMultiplier;
+    private final int mMultiplier;
 
     Encumbrance(int multiplier) {
         mMultiplier = multiplier;
