@@ -30,7 +30,6 @@ import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
 import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.AlphaComposite;
@@ -71,7 +70,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -1997,83 +1995,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     /** @param useBanding Whether to use background banding or not. */
     public void setUseBanding(boolean useBanding) {
         mUseBanding = useBanding;
-    }
-
-    /**
-     * @return A configuration string that can be used to restore the current column configuration
-     *         and splitter settings (if the outline is embedded in a scroll panel).
-     */
-    public String getConfig() {
-        StringBuilder buffer = new StringBuilder();
-        int           count  = mModel.getColumnCount();
-        buffer.append(OutlineModel.CONFIG_VERSION);
-        buffer.append('\t');
-        buffer.append(count);
-        for (int i = 0; i < count; i++) {
-            Column column = mModel.getColumnAtIndex(i);
-            buffer.append('\t');
-            buffer.append(column.getID());
-            buffer.append('\t');
-            buffer.append(column.isVisible());
-            buffer.append('\t');
-            buffer.append(column.getWidth());
-            buffer.append('\t');
-            buffer.append(column.getSortSequence());
-            buffer.append('\t');
-            buffer.append(column.isSortAscending());
-        }
-        return buffer.toString();
-    }
-
-    private static int getInteger(StringTokenizer tokenizer, int def) {
-        try {
-            return Integer.parseInt(tokenizer.nextToken().trim());
-        } catch (Exception exception) {
-            return def;
-        }
-    }
-
-    /**
-     * Attempts to restore the specified column configuration.
-     *
-     * @param config The configuration to restore.
-     */
-    public void applyConfig(String config) {
-        try {
-            StringTokenizer tokenizer = new StringTokenizer(config, "\t");
-            if (getInteger(tokenizer, 0) == OutlineModel.CONFIG_VERSION) {
-                int          count    = getInteger(tokenizer, 0);
-                List<Column> columns  = mModel.getColumns();
-                boolean      needSort = false;
-                Column       column;
-                int          i;
-
-                mModel.clearSort();
-
-                for (i = 0; i < count; i++) {
-                    column = mModel.getColumnWithID(getInteger(tokenizer, 0));
-                    if (column == null) {
-                        throw new Exception();
-                    }
-                    columns.remove(column);
-                    columns.add(i, column);
-                    column.setVisible(Numbers.extractBoolean(tokenizer.nextToken()));
-                    column.setWidth(this, getInteger(tokenizer, column.getWidth()));
-                    column.setSortCriteria(getInteger(tokenizer, -1), Numbers.extractBoolean(tokenizer.nextToken()));
-                    if (column.getSortSequence() != -1) {
-                        needSort = true;
-                    }
-                }
-                if (needSort) {
-                    mModel.sort();
-                }
-                updateRowHeightsIfNeeded(columns);
-            }
-        } catch (Exception exception) {
-            // Nothing can be done, so allow the view to restore itself
-        }
-
-        revalidateView();
     }
 
     @Override

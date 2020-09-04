@@ -13,10 +13,8 @@ package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -242,13 +240,5 @@ public abstract class FlexContainer extends FlexCell {
         }
         buffer.append(']');
         return buffer.toString();
-    }
-
-    @Override
-    public void draw(Graphics gc, Color color) {
-        super.draw(gc, Color.RED);
-        for (FlexCell child : mChildren) {
-            child.draw(gc, Color.BLUE);
-        }
     }
 }

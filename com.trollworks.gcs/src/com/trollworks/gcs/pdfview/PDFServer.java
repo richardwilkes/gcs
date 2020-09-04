@@ -13,7 +13,6 @@ package com.trollworks.gcs.pdfview;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.text.Text;
@@ -42,7 +41,6 @@ import java.util.Map;
 public class PDFServer {
     private static       HttpServer          SERVER;
     private static final DateTimeFormatter   DATE_TIME_FORMATTER    = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
-    private static final Path                ROOT_PATH              = Path.of("/");
     private static final Date                RESOURCE_LAST_MODIIFED = new Date();
     private static final Map<String, byte[]> CACHE                  = new HashMap<>();
     private static       int                 PORT;
@@ -162,7 +160,6 @@ public class PDFServer {
     private static String encodeQueryParam(String str) {
         StringBuilder buffer = new StringBuilder();
         byte[]        bytes  = str.getBytes(StandardCharsets.UTF_8);
-        int           max    = bytes.length;
         for (byte b : bytes) {
             if ((b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == '-' || b == '_' || b == '.' || b == '~' || b == '/') {
                 buffer.append((char) b);
@@ -175,10 +172,6 @@ public class PDFServer {
             }
         }
         return buffer.toString();
-    }
-
-    private static boolean shouldEscape(char ch) {
-        return !((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '-' || ch == '_' || ch == '.' || ch == '~' || ch == '/');
     }
 
     private static String contentType(String extension) {
@@ -195,20 +188,6 @@ public class PDFServer {
             case "bcmap", "cur" -> "application/octet-stream";
             default -> "text/plain; charset=UTF-8";
         };
-    }
-
-
-    private static Path resolveWebFile(URI uri) {
-        try {
-            Path in = Path.of(uri.getPath()).normalize();
-            if (in.isAbsolute()) {
-                in = ROOT_PATH.relativize(in);
-            }
-            return ROOT_PATH.resolve(in).normalize();
-        } catch (Exception ex) {
-            Log.error(ex);
-            return null;
-        }
     }
 
     private static void notFound(HttpExchange httpExchange) throws IOException {
@@ -234,36 +213,6 @@ public class PDFServer {
         try (OutputStream out = httpExchange.getResponseBody()) {
             if (!isHead && body != null) {
                 out.write(body);
-            }
-        }
-    }
-
-    private static void respondWithFile(HttpExchange httpExchange, Path path) throws IOException {
-        if (!Files.isRegularFile(path) || !Files.isReadable(path)) {
-            notFound(httpExchange);
-            return;
-        }
-        long    size;
-        Instant instant;
-        try {
-            size = Files.size(path);
-            instant = Files.getLastModifiedTime(path).toInstant();
-        } catch (IOException ex) {
-            notFound(httpExchange);
-            return;
-        }
-        int expiresInSeconds = 12 * 60 * 60; // 12 hours
-        httpExchange.getResponseHeaders().add("Content-Type", contentType(PathUtils.getExtension(path)));
-        httpExchange.getResponseHeaders().add("Content-Length", Long.toString(size));
-        httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(instant));
-        httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(new Date().toInstant().plusSeconds(expiresInSeconds)));
-        httpExchange.getResponseHeaders().add("Cache-Control", "max-age=" + expiresInSeconds);
-        httpExchange.sendResponseHeaders(200, size);
-        if ("HEAD".equals(httpExchange.getRequestMethod())) {
-            httpExchange.getResponseBody().close();
-        } else {
-            try (OutputStream out = httpExchange.getResponseBody()) {
-                Files.copy(path, out);
             }
         }
     }

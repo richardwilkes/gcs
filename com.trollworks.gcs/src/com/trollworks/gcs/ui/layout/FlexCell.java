@@ -13,10 +13,8 @@ package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 
@@ -25,10 +23,6 @@ public abstract class FlexCell {
     private Alignment mHorizontalAlignment = Alignment.LEFT_TOP;
     private Alignment mVerticalAlignment   = Alignment.CENTER;
     private Insets    mInsets              = new Insets(0, 0, 0, 0);
-    private int       mX;
-    private int       mY;
-    private int       mWidth;
-    private int       mHeight;
 
     /**
      * Creates a new {@link FlexLayout} with this cell as its root cell and applies it to the
@@ -38,17 +32,6 @@ public abstract class FlexCell {
      */
     public void apply(Container container) {
         container.setLayout(new FlexLayout(this));
-    }
-
-    /**
-     * Draws the borders of this cell. Useful for debugging.
-     *
-     * @param gc    The {@link Graphics} context to use.
-     * @param color The {@link Color} to use.
-     */
-    public void draw(Graphics gc, Color color) {
-        gc.setColor(color);
-        gc.drawRect(mX, mY, mWidth, mHeight);
     }
 
     /**
@@ -63,10 +46,6 @@ public abstract class FlexCell {
         bounds.y += insets.top;
         bounds.width -= insets.left + insets.right;
         bounds.height -= insets.top + insets.bottom;
-        mX = bounds.x;
-        mY = bounds.y;
-        mWidth = bounds.width;
-        mHeight = bounds.height;
         layoutSelf(scale, bounds);
     }
 

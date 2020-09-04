@@ -192,7 +192,6 @@ public abstract class ListRow extends Row implements Updatable {
         mCategories = new TreeSet<>(rowToClone.mCategories);
         try {
             MessageDigest         digest = MessageDigest.getInstance("SHA3-256");
-            StringBuilder         buffer = new StringBuilder();
             ByteArrayOutputStream baos   = new ByteArrayOutputStream();
             try (JsonWriter w = new JsonWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8), "")) {
                 rowToClone.save(w, SaveType.HASH);

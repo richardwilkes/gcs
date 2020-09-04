@@ -31,7 +31,6 @@ import java.awt.Transparency;
 import java.awt.Window;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
-import java.awt.event.MouseEvent;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -247,21 +246,6 @@ public class UIUtilities {
             }
         }
         return -1;
-    }
-
-    /**
-     * Translates a {@link MouseEvent} from one component to another.
-     *
-     * @param event The event that will be forwarded.
-     * @param from  The component that originally received the event.
-     * @param to    The component the event should be forwarded to.
-     */
-    public static void translateMouseEvent(MouseEvent event, Component from, Component to) {
-        Point evtPt = event.getPoint();
-        Point pt    = new Point(evtPt);
-        convertPoint(pt, from, to);
-        event.setSource(to);
-        event.translatePoint(pt.x - evtPt.x, pt.y - evtPt.y);
     }
 
     /**
