@@ -11,28 +11,18 @@
 
 package com.trollworks.gcs.utility.text;
 
-import com.trollworks.gcs.utility.I18n;
-
-import java.text.DateFormat;
-import java.text.MessageFormat;
 import java.text.ParseException;
-import java.util.Date;
 import javax.swing.JFormattedTextField;
 
 /** Provides date field conversion. */
 public class DateTimeFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
     public Object stringToValue(String text) throws ParseException {
-        return Long.valueOf(Numbers.extractDateTime(text));
+        return Long.valueOf(Numbers.extractDateTime(Numbers.DATE_AT_TIME_FORMAT, text));
     }
 
     @Override
     public String valueToString(Object value) throws ParseException {
-        return getFormattedDateTime(((Long) value).longValue());
-    }
-
-    public static String getFormattedDateTime(long dateTime) {
-        Date date = new Date(dateTime);
-        return MessageFormat.format(I18n.Text("{0} at {1}"), DateFormat.getDateInstance(DateFormat.MEDIUM).format(date), DateFormat.getTimeInstance(DateFormat.SHORT).format(date));
+        return Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, ((Long) value).longValue());
     }
 }

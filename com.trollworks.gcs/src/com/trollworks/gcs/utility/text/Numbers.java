@@ -11,20 +11,36 @@
 
 package com.trollworks.gcs.utility.text;
 
-import java.text.DateFormat;
+import com.trollworks.gcs.utility.I18n;
+import static java.time.format.TextStyle.SHORT;
+import static java.time.temporal.ChronoField.AMPM_OF_DAY;
+import static java.time.temporal.ChronoField.CLOCK_HOUR_OF_AMPM;
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
+import static java.time.temporal.ChronoField.YEAR;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
 import java.util.regex.Pattern;
 
 /** Various number utilities. */
 public final class Numbers {
-    public static final  String        YES                               = "yes";
-    public static final  String        NO                                = "no";
-    public static final  String        LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
-    private static final String        SAFE_LOCALIZED_GROUPING_SEPARATOR = Pattern.quote(Character.toString(DecimalFormatSymbols.getInstance().getGroupingSeparator()));
-    private static final DecimalFormat NUMBER_FORMAT;
-    private static final DecimalFormat NUMBER_PLUS_FORMAT;
+    public static final  String            YES                               = "yes";
+    public static final  String            NO                                = "no";
+    public static final  DateTimeFormatter DATE_AT_TIME_FORMAT               = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, SHORT).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(", ").appendValue(YEAR, 4).appendLiteral(I18n.Text(" at ")).appendValue(CLOCK_HOUR_OF_AMPM, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(':').appendValue(MINUTE_OF_HOUR, 2).appendLiteral(' ').appendText(AMPM_OF_DAY, SHORT).toFormatter();
+    public static final  DateTimeFormatter DATE_TIME_STORED_FORMAT           = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, SHORT).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(", ").appendValue(YEAR, 4).appendLiteral(", ").appendValue(CLOCK_HOUR_OF_AMPM, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(':').appendValue(MINUTE_OF_HOUR, 2).appendLiteral(' ').appendText(AMPM_OF_DAY, SHORT).toFormatter();
+    public static final  String            LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
+    private static final String            SAFE_LOCALIZED_GROUPING_SEPARATOR = Pattern.quote(Character.toString(DecimalFormatSymbols.getInstance().getGroupingSeparator()));
+    private static final DecimalFormat     NUMBER_FORMAT;
+    private static final DecimalFormat     NUMBER_PLUS_FORMAT;
 
     static {
         NUMBER_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance();
@@ -247,42 +263,28 @@ public final class Numbers {
     }
 
     /**
+     * @param formatter The date/time formatter to use.
      * @param buffer The string to convert.
      * @return The number of milliseconds since midnight, January 1, 1970.
      */
-    public static long extractDate(String buffer) {
+    public static long extractDateTime(DateTimeFormatter formatter, String buffer) {
         if (buffer != null) {
-            buffer = buffer.trim();
-            for (int i = DateFormat.FULL; i <= DateFormat.SHORT; i++) {
-                try {
-                    return DateFormat.getDateInstance(i).parse(buffer).getTime();
-                } catch (Exception exception) {
-                    // Ignore
-                }
+            try {
+                return Instant.from(formatter.withZone(ZoneId.systemDefault()).parse(buffer.trim(), ZonedDateTime::from)).toEpochMilli();
+            } catch (Exception exception) {
+                // Ignore
             }
         }
         return System.currentTimeMillis();
     }
 
     /**
-     * @param buffer The string to convert.
-     * @return The number of milliseconds since midnight, January 1, 1970.
+     * @param formatter The date/time formatter to use.
+     * @param dateTime The number of milliseconds since midnight, January 1, 1970.
+     * @return The formatted string representing the date/time.
      */
-    public static long extractDateTime(String buffer) {
-        if (buffer != null) {
-            buffer = buffer.trim();
-            for (int i = DateFormat.FULL; i <= DateFormat.SHORT; i++) {
-                for (int j = DateFormat.FULL; j <= DateFormat.SHORT; j++) {
-                    try {
-                        return DateFormat.getDateTimeInstance(i, j).parse(buffer).getTime();
-                    } catch (Exception exception) {
-                        // Ignore
-                    }
-                }
-            }
-            return extractDate(buffer);
-        }
-        return System.currentTimeMillis();
+    public static String formatDateTime(DateTimeFormatter formatter, long dateTime) {
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(dateTime), ZoneId.systemDefault()).format(formatter);
     }
 
     /**

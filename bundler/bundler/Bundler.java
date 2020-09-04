@@ -30,9 +30,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -385,7 +385,7 @@ public final class Bundler {
                 }
             });
             try (PrintStream out = new PrintStream(Files.newOutputStream(I18N_DIR.resolve("template.i18n")), true, StandardCharsets.UTF_8)) {
-                out.println("# Generated on " + new Date());
+                out.println("# Generated on " + ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME));
                 out.println("#");
                 out.println("# This file consists of UTF-8 text. Do not save it as anything else.");
                 out.println("#");

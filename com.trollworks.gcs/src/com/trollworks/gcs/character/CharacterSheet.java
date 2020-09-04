@@ -58,7 +58,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
-import com.trollworks.gcs.utility.text.DateTimeFormatter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
@@ -767,7 +766,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         FontMetrics fm1        = gc.getFontMetrics(font1);
         FontMetrics fm2        = gc.getFontMetrics(font2);
         int         y          = bounds.y + bounds.height + fm2.getAscent();
-        String      modified   = String.format("Modified %s", DateTimeFormatter.getFormattedDateTime(mCharacter.getModifiedOn()));
+        String      modified   = String.format("Modified %s", Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, mCharacter.getModifiedOn()));
         String      left;
         String      right;
 

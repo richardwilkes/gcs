@@ -31,7 +31,6 @@ import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.text.DateTimeFormatter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
@@ -383,10 +382,10 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSettings().optionsCode());
             break;
         case KEY_CREATED_ON:
-            writeEncodedText(out, DateTimeFormatter.getFormattedDateTime(gurpsCharacter.getCreatedOn()));
+            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn()));
             break;
         case KEY_MODIFIED_ON:
-            writeEncodedText(out, DateTimeFormatter.getFormattedDateTime(gurpsCharacter.getModifiedOn()));
+            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn()));
             break;
         case KEY_TOTAL_POINTS:
             writeEncodedText(out, Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));

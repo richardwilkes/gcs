@@ -57,9 +57,7 @@ import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -368,7 +366,7 @@ public class GURPSCharacter extends CollectedModels {
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         characterInitialize(false);
         mSettings.load(m.getMap(Settings.TAG_ROOT));
-        mCreatedOn = Numbers.extractDateTime(m.getString(TAG_CREATED_DATE));
+        mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_CREATED_DATE));
         mProfile.load(m.getMap(Profile.TAG_ROOT));
         mHitPointsAdj = m.getInt(KEY_HP_ADJ);
         mHitPointsDamage = m.getInt(TAG_HP_DAMAGE);
@@ -395,15 +393,15 @@ public class GURPSCharacter extends CollectedModels {
             skill.updateLevel(false);
         }
         calculateAll();
-        mModifiedOn = Numbers.extractDateTime(m.getString(TAG_MODIFIED_DATE)); // Must be last
+        mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_MODIFIED_DATE)); // Must be last
     }
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.key(Settings.TAG_ROOT);
         mSettings.save(w);
-        w.keyValue(TAG_CREATED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mCreatedOn)));
-        w.keyValue(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mModifiedOn)));
+        w.keyValue(TAG_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn));
+        w.keyValue(TAG_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn));
         w.key(Profile.TAG_ROOT);
         mProfile.save(w);
         w.keyValueNot(KEY_HP_ADJ, mHitPointsAdj, 0);

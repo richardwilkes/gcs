@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -41,7 +40,7 @@ import java.util.Map;
 public final class PDFServer {
     private static       HttpServer          SERVER;
     private static final DateTimeFormatter   DATE_TIME_FORMATTER    = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
-    private static final Date                RESOURCE_LAST_MODIIFED = new Date();
+    private static final Instant             RESOURCE_LAST_MODIFIED = Instant.now();
     private static final Map<String, byte[]> CACHE                  = new HashMap<>();
     private static       int                 PORT;
 
@@ -105,7 +104,7 @@ public final class PDFServer {
                 httpExchange.getResponseHeaders().add("Content-Type", contentType);
                 httpExchange.getResponseHeaders().add("Content-Length", Long.toString(size));
                 httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(instant));
-                httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(new Date().toInstant().plusSeconds(expiresInSeconds)));
+                httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(Instant.now().plusSeconds(expiresInSeconds)));
                 httpExchange.getResponseHeaders().add("Cache-Control", "max-age=" + expiresInSeconds);
                 httpExchange.sendResponseHeaders(200, size);
                 if ("HEAD".equals(httpExchange.getRequestMethod())) {
@@ -144,8 +143,8 @@ public final class PDFServer {
             int expiresInSeconds = 12 * 60 * 60; // 12 hours
             httpExchange.getResponseHeaders().add("Content-Type", contentType);
             httpExchange.getResponseHeaders().add("Content-Length", Integer.toString(data.length));
-            httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(RESOURCE_LAST_MODIIFED.toInstant()));
-            httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(new Date().toInstant().plusSeconds(expiresInSeconds)));
+            httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(RESOURCE_LAST_MODIFIED));
+            httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(Instant.now().plusSeconds(expiresInSeconds)));
             httpExchange.getResponseHeaders().add("Cache-Control", "public, immutable, max-age=" + expiresInSeconds);
             httpExchange.sendResponseHeaders(200, data.length);
             OutputStream body = httpExchange.getResponseBody();

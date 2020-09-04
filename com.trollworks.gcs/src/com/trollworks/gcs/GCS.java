@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.UpdateChecker;
 import com.trollworks.gcs.utility.Version;
