@@ -116,7 +116,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mSearch = new Search(this);
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         toolbar.add(new IconButton(Images.TOGGLE_OPEN, I18n.Text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
-        toolbar.add(new IconButton(Images.REFRESH, I18n.Text("Refresh"), () -> refresh()));
+        toolbar.add(new IconButton(Images.REFRESH, I18n.Text("Refresh"), this::refresh));
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
         List<String> openRowKeys = Preferences.getInstance().getLibraryExplorerOpenRowKeys();

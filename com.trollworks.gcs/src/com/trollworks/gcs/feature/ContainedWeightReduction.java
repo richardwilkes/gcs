@@ -44,7 +44,7 @@ public class ContainedWeightReduction extends Feature {
         mValue = other.mValue instanceof WeightValue ? new WeightValue((WeightValue) other.mValue) : other.mValue;
     }
 
-    public ContainedWeightReduction(JsonMap m) throws IOException {
+    public ContainedWeightReduction(JsonMap m) {
         this();
         load(m);
     }
@@ -150,7 +150,7 @@ public class ContainedWeightReduction extends Feature {
         return new ContainedWeightReduction(this);
     }
 
-    protected void load(JsonMap m) throws IOException {
+    protected void load(JsonMap m) {
         String value = m.getString(KEY_REDUCTION).trim();
         mValue = value.endsWith("%") ? Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false)) : WeightValue.extract(value, false);
     }
@@ -161,7 +161,7 @@ public class ContainedWeightReduction extends Feature {
         if (mValue instanceof Integer) {
             int percentage = ((Integer) mValue).intValue();
             if (percentage != 0) {
-                text = Integer.toString(percentage) + "%";
+                text = percentage + "%";
             }
         } else if (mValue instanceof WeightValue) {
             WeightValue weight = (WeightValue) mValue;

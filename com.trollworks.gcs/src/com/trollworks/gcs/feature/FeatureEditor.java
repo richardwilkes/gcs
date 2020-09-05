@@ -83,11 +83,11 @@ public abstract class FeatureEditor extends EditorPanel {
         FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
-            IconButton button = new IconButton(Images.REMOVE, I18n.Text("Remove this feature"), () -> removeFeature());
+            IconButton button = new IconButton(Images.REMOVE, I18n.Text("Remove this feature"), this::removeFeature);
             add(button);
             right.add(button);
         }
-        IconButton button = new IconButton(Images.ADD, I18n.Text("Add a feature"), () -> addFeature());
+        IconButton button = new IconButton(Images.ADD, I18n.Text("Add a feature"), this::addFeature);
         add(button);
         right.add(button);
         grid.add(right, 0, 1);

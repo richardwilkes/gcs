@@ -122,7 +122,7 @@ public class LibraryFields implements DocumentListener {
         mComps.add(wrapper);
     }
 
-    private JButton addLocateButton() {
+    private void addLocateButton() {
         JButton button = new JButton(I18n.Text("Locate"));
         button.addActionListener(e -> {
             String       path    = mPath.getText();
@@ -138,7 +138,6 @@ public class LibraryFields implements DocumentListener {
         });
         mOwner.add(button);
         mComps.add(button);
-        return button;
     }
 
     private void addUseDefaultButton() {

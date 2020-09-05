@@ -38,10 +38,7 @@ public class TreeRow implements Cloneable {
 
     /** @return The index of this {@link TreeRow} within its parent, or -1 if it has no parent. */
     public int getIndex() {
-        if (mParent != null) {
-            return mIndex;
-        }
-        return -1;
+        return mParent == null ? -1 : mIndex;
     }
 
     void setIndex(int index) {

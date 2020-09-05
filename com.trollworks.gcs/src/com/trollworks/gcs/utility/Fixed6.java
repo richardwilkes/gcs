@@ -214,7 +214,7 @@ public class Fixed6 implements Comparable<Fixed6> {
         if (whole == 0 && mRawValue < 0) {
             buffer.append('-');
         }
-        buffer.append(Long.toString(whole));
+        buffer.append(whole);
         buffer.append('.');
         buffer.append(str.substring(1));
         return buffer.toString();

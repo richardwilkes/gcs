@@ -30,13 +30,13 @@ public class NewAdvantageCommand extends Command {
     /** The action command this command will issue. */
     public static final String              CMD_NEW_ADVANTAGE_CONTAINER = "NewAdvantageContainer";
     /** The "New Advantage" command. */
-    public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, I18n.Text("New Advantage"), CMD_NEW_ADVANTAGE, KeyEvent.VK_D, COMMAND_MODIFIER);
+    public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, I18n.Text("New Advantage"), CMD_NEW_ADVANTAGE, COMMAND_MODIFIER);
     /** The "New Advantage Container" command. */
-    public static final NewAdvantageCommand CONTAINER_INSTANCE          = new NewAdvantageCommand(true, I18n.Text("New Advantage Container"), CMD_NEW_ADVANTAGE_CONTAINER, KeyEvent.VK_D, SHIFTED_COMMAND_MODIFIER);
+    public static final NewAdvantageCommand CONTAINER_INSTANCE          = new NewAdvantageCommand(true, I18n.Text("New Advantage Container"), CMD_NEW_ADVANTAGE_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     private             boolean             mContainer;
 
-    private NewAdvantageCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
-        super(title, cmd, keyCode, modifiers);
+    private NewAdvantageCommand(boolean container, String title, String cmd, int modifiers) {
+        super(title, cmd, KeyEvent.VK_D, modifiers);
         mContainer = container;
     }
 
@@ -46,8 +46,7 @@ public class NewAdvantageCommand extends Command {
         if (adq != null) {
             setEnabled(!adq.getOutline().getModel().isLocked());
         } else {
-            SheetDockable sheet = getTarget(SheetDockable.class);
-            if (sheet != null) {
+            if (getTarget(SheetDockable.class) != null) {
                 setEnabled(true);
             } else {
                 setEnabled(getTarget(TemplateDockable.class) != null);

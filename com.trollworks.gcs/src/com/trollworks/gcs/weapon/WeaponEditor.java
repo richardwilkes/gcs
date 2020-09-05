@@ -81,7 +81,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         super(new BorderLayout());
         mOwner = owner;
         mWeaponClass = weaponClass;
-        mAddButton = new IconButton(Images.ADD, I18n.Text("Add an attack"), () -> addWeapon());
+        mAddButton = new IconButton(Images.ADD, I18n.Text("Add an attack"), this::addWeapon);
         mDeleteButton = new IconButton(Images.REMOVE, I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
         Panel top  = new Panel(new BorderLayout());

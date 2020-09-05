@@ -79,7 +79,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mWeightUnitsCombo = addCombo(WeightUnits.values(), prefs.getDefaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
 
         addLabel(I18n.Text("Tooltip Timeout (seconds)"));
-        mToolTipTimeout = addTextField(Integer.valueOf(prefs.getToolTipTimeout()).toString(), null);
+        mToolTipTimeout = addTextField(Integer.valueOf(prefs.getToolTipTimeout()).toString());
 
         addLabel(I18n.Text("Show User Description *"));
         mUserDescriptionDisplayCombo = addCombo(DisplayOption.values(), prefs.getUserDescriptionDisplay(), I18n.Text("Where to display this information"));
@@ -102,11 +102,10 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         add(label, new PrecisionLayoutData().setHorizontalSpan(2).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
     }
 
-    private JLabel addLabel(String title) {
+    private void addLabel(String title) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        return label;
     }
 
     private JCheckBox addCheckBox(String title, boolean checked) {
@@ -117,9 +116,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         return checkbox;
     }
 
-    private JTextField addTextField(String value, String tooltip) {
+    private JTextField addTextField(String value) {
         JTextField field = new JTextField(value);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.getDocument().addDocumentListener(this);
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         return field;

@@ -87,7 +87,7 @@ public class TemplateSheet extends CollectedOutlines {
     private void adjustSize() {
         if (!mSizePending) {
             mSizePending = true;
-            EventQueue.invokeLater(() -> runAdjustSize());
+            EventQueue.invokeLater(this::runAdjustSize);
         }
     }
 

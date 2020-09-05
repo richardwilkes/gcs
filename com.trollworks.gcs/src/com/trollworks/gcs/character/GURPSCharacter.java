@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /** A GURPS character. */
 public class GURPSCharacter extends CollectedModels {
@@ -217,6 +218,7 @@ public class GURPSCharacter extends CollectedModels {
     public static final  String                              ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";
     /** The field ID for unconscious fatigue point changes. */
     public static final  String                              ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";
+    private static final Pattern                             UL_PATTERN                           = Pattern.compile("<ul>");
     private              long                                mModifiedOn;
     private              long                                mCreatedOn;
     private              HashMap<String, ArrayList<Feature>> mFeatureMap;
@@ -2446,7 +2448,7 @@ public class GURPSCharacter extends CollectedModels {
             if (!satisfied) {
                 builder.insert(0, "<html><body>" + I18n.Text("Reason:") + "<ul>");
                 builder.append("</ul></body></html>");
-                row.setReasonForUnsatisfied(builder.toString().replaceAll("<ul>", "<ul style='margin-top: 0; margin-bottom: 0;'>"));
+                row.setReasonForUnsatisfied(UL_PATTERN.matcher(builder.toString()).replaceAll("<ul style='margin-top: 0; margin-bottom: 0;'>"));
             }
         }
         return needRepaint;

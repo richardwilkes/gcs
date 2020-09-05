@@ -180,13 +180,8 @@ public final class I18n {
     }
 
     private static void addContextValue(StringBuilder keyBuilder, int context, StringBuilder valueBuilder) {
-        String               key = keyBuilder.toString();
-        Map<Integer, String> m   = TRANSLATIONS.get(key);
-        if (m == null) {
-            m = new HashMap<>();
-            TRANSLATIONS.put(key, m);
-        }
-        Integer ctxKey = Integer.valueOf(context);
+        Map<Integer, String> m      = TRANSLATIONS.computeIfAbsent(keyBuilder.toString(), k -> new HashMap<>());
+        Integer              ctxKey = Integer.valueOf(context);
         if (!m.containsKey(ctxKey)) {
             m.put(ctxKey, valueBuilder.toString());
         }

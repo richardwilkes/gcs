@@ -86,10 +86,10 @@ public class ListPrereqEditor extends PrereqEditor {
 
         grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-        IconButton button = new IconButton(Images.MORE, I18n.Text("Add a prerequisite list to this list"), () -> addPrereqList());
+        IconButton button = new IconButton(Images.MORE, I18n.Text("Add a prerequisite list to this list"), this::addPrereqList);
         add(button);
         right.add(button);
-        button = new IconButton(Images.ADD, I18n.Text("Add a prerequisite to this list"), () -> addPrereq());
+        button = new IconButton(Images.ADD, I18n.Text("Add a prerequisite to this list"), this::addPrereq);
         add(button);
         right.add(button);
     }

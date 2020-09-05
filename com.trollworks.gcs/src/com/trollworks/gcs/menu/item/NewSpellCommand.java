@@ -33,24 +33,22 @@ public class NewSpellCommand extends Command {
     /** The action command this command will issue. */
     public static final String          CMD_RITUAL_MAGIC_SPELL = "NewRitualMagicSpell";
     /** The "New Spell" command. */
-    public static final NewSpellCommand INSTANCE               = new NewSpellCommand(false, false, I18n.Text("New Spell"), CMD_SPELL, KeyEvent.VK_B, COMMAND_MODIFIER);
+    public static final NewSpellCommand INSTANCE               = new NewSpellCommand(false, I18n.Text("New Spell"), CMD_SPELL, COMMAND_MODIFIER);
     /** The "New Spell Container" command. */
-    public static final NewSpellCommand CONTAINER_INSTANCE     = new NewSpellCommand(true, false, I18n.Text("New Spell Container"), CMD_SPELL_CONTAINER, KeyEvent.VK_B, SHIFTED_COMMAND_MODIFIER);
+    public static final NewSpellCommand CONTAINER_INSTANCE     = new NewSpellCommand(true, I18n.Text("New Spell Container"), CMD_SPELL_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     /** The "New Technique" command. */
-    public static final NewSpellCommand RITUAL_MAGIC_INSTANCE  = new NewSpellCommand(false, true, I18n.Text("New Ritual Magic Spell"), CMD_RITUAL_MAGIC_SPELL);
+    public static final NewSpellCommand RITUAL_MAGIC_INSTANCE  = new NewSpellCommand();
     private             boolean         mContainer;
     private             boolean         mRitualMagic;
 
-    private NewSpellCommand(boolean container, boolean isRitualMagic, String title, String cmd) {
-        super(title, cmd);
-        mContainer = container;
-        mRitualMagic = isRitualMagic;
+    private NewSpellCommand() {
+        super(I18n.Text("New Ritual Magic Spell"), CMD_RITUAL_MAGIC_SPELL);
+        mRitualMagic = true;
     }
 
-    private NewSpellCommand(boolean container, boolean isRitualMagic, String title, String cmd, int keyCode, int modifiers) {
-        super(title, cmd, keyCode, modifiers);
+    private NewSpellCommand(boolean container, String title, String cmd, int modifiers) {
+        super(title, cmd, KeyEvent.VK_B, modifiers);
         mContainer = container;
-        mRitualMagic = isRitualMagic;
     }
 
     @Override
@@ -59,8 +57,7 @@ public class NewSpellCommand extends Command {
         if (spells != null) {
             setEnabled(!spells.getOutline().getModel().isLocked());
         } else {
-            SheetDockable sheet = getTarget(SheetDockable.class);
-            if (sheet != null) {
+            if (getTarget(SheetDockable.class) != null) {
                 setEnabled(true);
             } else {
                 setEnabled(getTarget(TemplateDockable.class) != null);

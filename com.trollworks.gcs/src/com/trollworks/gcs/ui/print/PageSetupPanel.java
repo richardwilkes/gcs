@@ -363,10 +363,10 @@ public class PageSetupPanel extends JPanel implements ActionListener {
         int           x      = res.getCrossFeedResolution(ResolutionSyntax.DPI);
         int           y      = res.getFeedResolution(ResolutionSyntax.DPI);
 
-        buffer.append(Integer.toString(x));
+        buffer.append(x);
         if (x != y) {
             buffer.append(" x ");
-            buffer.append(Integer.toString(y));
+            buffer.append(y);
         }
         buffer.append(I18n.Text(" dpi"));
         return buffer.toString();

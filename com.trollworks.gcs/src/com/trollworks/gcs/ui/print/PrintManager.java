@@ -168,15 +168,13 @@ public class PrintManager {
      * Presents the page setup dialog and allows the user to change the settings.
      *
      * @param proxy The {@link PrintProxy} representing the information that would be printed.
-     * @return Whether the user canceled (or an error occurred).
      */
-    public boolean pageSetup(PrintProxy proxy) {
+    public void pageSetup(PrintProxy proxy) {
         if (Preferences.getInstance().useNativePrintDialogs()) {
             PageFormat format = mJob.pageDialog(createPageFormat());
             if (format != null) {
                 adjustSettingsToPageFormat(format);
                 proxy.adjustToPageSetupChanges(false);
-                return true;
             }
         } else {
             PageSetupPanel panel = new PageSetupPanel(getPrintService(), mSet);
@@ -187,13 +185,11 @@ public class PrintManager {
                         mJob.setPrintService(service);
                     }
                     proxy.adjustToPageSetupChanges(false);
-                    return true;
                 } catch (PrinterException exception) {
                     WindowUtils.showError(UIUtilities.getComponentForDialog(proxy), I18n.Text("Unable to switch printers!"));
                 }
             }
         }
-        return false;
     }
 
     /**
@@ -203,8 +199,7 @@ public class PrintManager {
      */
     public void print(PrintProxy proxy) {
         if (proxy != null) {
-            PrintService service = getPrintService();
-            if (service != null) {
+            if (getPrintService() != null) {
                 if (Preferences.getInstance().useNativePrintDialogs()) {
                     mJob.setJobName(proxy.getPrintJobTitle());
                     if (mJob.printDialog()) {
@@ -358,10 +353,10 @@ public class PrintManager {
             StringBuilder buffer = new StringBuilder();
             int           x      = res.getCrossFeedResolution(1);
             int           y      = res.getFeedResolution(1);
-            buffer.append(Integer.toString(x));
+            buffer.append(x);
             if (x != y) {
                 buffer.append("x");
-                buffer.append(Integer.toString(y));
+                buffer.append(y);
             }
             return buffer.toString();
         }

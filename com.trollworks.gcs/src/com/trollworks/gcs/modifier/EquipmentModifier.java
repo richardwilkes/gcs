@@ -109,7 +109,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     private String getDefaultWeightAmount() {
-        return "+" + new WeightValue(Fixed6.ZERO, getDataFile().defaultWeightUnits()).toString();
+        return "+" + new WeightValue(Fixed6.ZERO, getDataFile().defaultWeightUnits());
     }
 
     @Override
@@ -296,7 +296,7 @@ public class EquipmentModifier extends Modifier {
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();
-        builder.append(toString());
+        builder.append(this);
         if (!modNote.isEmpty()) {
             builder.append(" (");
             builder.append(modNote);

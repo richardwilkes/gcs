@@ -19,18 +19,20 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
+import java.util.regex.Pattern;
 
 /** Represents a single column within a {@link Outline} panel. */
 public class Column implements Transferable {
     /** The data flavor for this class. */
-    public static final DataFlavor DATA_FLAVOR = new DataFlavor(Column.class, "Outline Column");
-    private             HeaderCell mHeaderCell;
-    private             Cell       mRowCell;
-    private             boolean    mVisible;
-    private             int        mWidth;
-    private             String     mName;
-    private             int        mID;
-    private             String     mToolTipText;
+    public static final  DataFlavor DATA_FLAVOR       = new DataFlavor(Column.class, "Outline Column");
+    private static final Pattern    LINE_FEED_PATTERN = Pattern.compile("\n");
+    private              HeaderCell mHeaderCell;
+    private              Cell       mRowCell;
+    private              boolean    mVisible;
+    private              int        mWidth;
+    private              String     mName;
+    private              int        mID;
+    private              String     mToolTipText;
 
     /**
      * Create a new outline column.
@@ -195,7 +197,7 @@ public class Column implements Transferable {
 
     /** @return The name of this column, with any new lines replaced with spaces. */
     public String getSanitizedName() {
-        return mName.replaceAll("\n", " ");
+        return LINE_FEED_PATTERN.matcher(mName).replaceAll(" ");
     }
 
     /**

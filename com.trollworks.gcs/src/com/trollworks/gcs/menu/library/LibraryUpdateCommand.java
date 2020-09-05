@@ -56,11 +56,11 @@ public class LibraryUpdateCommand extends Command {
         Version versionOnDisk    = mLibrary.getVersionOnDisk();
         Version availableVersion = upgrade.getVersion();
         if (availableVersion.equals(versionOnDisk)) {
-            setTitle(String.format(I18n.Text("%s is up to date (re-download v%s)"), title, versionOnDisk.toString()));
+            setTitle(String.format(I18n.Text("%s is up to date (re-download v%s)"), title, versionOnDisk));
             setEnabled(true);
             return;
         }
-        setTitle(String.format(I18n.Text("Update %s to v%s"), title, availableVersion.toString()));
+        setTitle(String.format(I18n.Text("Update %s to v%s"), title, availableVersion));
         setEnabled(true);
     }
 

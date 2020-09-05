@@ -623,15 +623,10 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         }
     }
 
-    /**
-     * Repaints the current selection.
-     *
-     * @return The bounding rectangle of the repainted selection.
-     */
-    protected Rectangle repaintSelectionInternal() {
+    /** Repaints the current selection. */
+    protected void repaintSelectionInternal() {
         Scale        scale   = Scale.get(this);
         int          one     = scale.scale(1);
-        Rectangle    area    = new Rectangle();
         Insets       insets  = getInsets();
         Rectangle    bounds  = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         int          last    = getLastRowToDisplay();
@@ -650,12 +645,10 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 if (mModel.isRowSelected(row)) {
                     bounds.height = height;
                     repaint(bounds);
-                    area = Geometry.union(area, bounds);
                 }
                 bounds.y += height;
             }
         }
-        return area;
     }
 
     /**
@@ -1452,8 +1445,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 mSelectOnMouseUp = -1;
                 if (mDividerDrag != null && allowColumnResize()) {
                     dragColumnDivider(x);
-                    JScrollPane scrollPane = UIUtilities.getAncestorOfType(this, JScrollPane.class);
-                    if (scrollPane != null) {
+                    if (UIUtilities.getAncestorOfType(this, JScrollPane.class) != null) {
                         Point pt = event.getPoint();
                         if (!(event.getSource() instanceof Outline)) {
                             // Column resizing is occurring in the header, most likely
@@ -2726,8 +2718,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     }
 
     @Override
-    public void sorted(OutlineModel model, boolean restoring) {
-        if (!restoring && isFocusOwner()) {
+    public void sorted(OutlineModel model) {
+        if (isFocusOwner()) {
             scrollSelectionIntoView();
         }
         repaintView();

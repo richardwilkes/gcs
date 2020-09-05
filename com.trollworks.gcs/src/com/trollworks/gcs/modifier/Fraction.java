@@ -64,7 +64,7 @@ public class Fraction {
         if (mDenominator.equals(Fixed6.ONE)) {
             return mNumerator.toString();
         }
-        return mNumerator.toString() + "/" + mDenominator.toString();
+        return mNumerator + "/" + mDenominator;
     }
 
     public static Fixed6 extractFixed6(String in, boolean localized) {

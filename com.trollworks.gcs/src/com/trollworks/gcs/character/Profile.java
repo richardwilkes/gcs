@@ -155,7 +155,7 @@ public class Profile {
         mHitLocationTable = HitLocationTable.HUMANOID;
     }
 
-    void load(JsonMap m) throws IOException {
+    void load(JsonMap m) {
         mPlayerName = m.getString(TAG_PLAYER_NAME);
         mName = m.getString(TAG_NAME);
         mTitle = m.getString(TAG_TITLE);
@@ -398,15 +398,11 @@ public class Profile {
 
     /** @return A random age. */
     public int getRandomAge() {
-        Advantage lifespan = mCharacter.getAdvantageNamed("Unaging");
-        int       base     = 16;
-        int       mod      = 7;
-        int       levels;
-
-        if (lifespan != null) {
+        if (mCharacter.getAdvantageNamed("Unaging") != null) {
             return 18 + RANDOM.nextInt(7);
         }
 
+        int mod  = 7;
         if (RANDOM.nextInt(3) == 1) {
             mod += 7;
             if (RANDOM.nextInt(4) == 1) {
@@ -414,7 +410,9 @@ public class Profile {
             }
         }
 
-        lifespan = mCharacter.getAdvantageNamed("Short Lifespan");
+        int base = 16;
+        int levels;
+        Advantage lifespan = mCharacter.getAdvantageNamed("Short Lifespan");
         if (lifespan != null) {
             levels = lifespan.getLevels();
             base >>= levels;

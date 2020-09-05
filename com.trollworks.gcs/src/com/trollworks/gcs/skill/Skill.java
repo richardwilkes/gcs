@@ -741,20 +741,11 @@ public class Skill extends ListRow implements HasSourceReference {
         return new SkillLevel(level, relativeLevel, toolTip);
     }
 
-    /**
-     * Tries to switch defaults with its current default keeping skill level, by adding and freeing
-     * points as necessary. Freed points are kept in former default skill, added points are taken
-     * from unspent points.
-     *
-     * @return extra points spent to keep minimum levels.
-     */
-    public int swapDefault() {
-        int   extraPointsSpent = 0;
-        Skill baseSkill        = getDefaultSkill();
+    /** Swaps the default to an alternate, if possible. */
+    public void swapDefault() {
+        Skill baseSkill = getDefaultSkill();
         if (baseSkill != null) {
-            // Find alternative default
             mDefaultedFrom = getBestDefaultWithPoints(mDefaultedFrom);
-
             startNotify();
             baseSkill.updateLevel(true);
             updateLevel(true);
@@ -762,7 +753,6 @@ public class Skill extends ListRow implements HasSourceReference {
             baseSkill.notify(ID_NAME, baseSkill);
             endNotify();
         }
-        return extraPointsSpent;
     }
 
     /**

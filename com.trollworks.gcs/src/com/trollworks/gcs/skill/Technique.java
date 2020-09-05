@@ -373,9 +373,8 @@ public class Technique extends Skill {
     }
 
     @Override
-    public int swapDefault() {
+    public void swapDefault() {
         // Do nothing: Default is fixed
-        return 0;
     }
 
     @Override

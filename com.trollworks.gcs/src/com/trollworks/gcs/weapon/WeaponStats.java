@@ -191,16 +191,11 @@ public abstract class WeaponStats {
         return Collections.unmodifiableList(mDefaults);
     }
 
-    /**
-     * @param defaults The new defaults for this weapon.
-     * @return Whether there was a change or not.
-     */
-    public boolean setDefaults(List<SkillDefault> defaults) {
+    /** @param defaults The new defaults for this weapon. */
+    public void setDefaults(List<SkillDefault> defaults) {
         if (!mDefaults.equals(defaults)) {
             mDefaults = new ArrayList<>(defaults);
-            return true;
         }
-        return false;
     }
 
     /** @param id The ID to use for notification. */

@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.lowagie.text.Document;
 import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
@@ -92,6 +93,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.RepaintManager;
 import javax.swing.UIManager;
@@ -111,6 +113,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     public static final  String           OTHER_EQUIPMENT_KEY = "other_equipment";
     public static final  String           NOTES_KEY           = "notes";
     private static final String[]         ALL_KEYS            = {REACTIONS_KEY, MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY};
+    private static final Pattern          SCHEME_PATTERN      = Pattern.compile(".*://");
     private              GURPSCharacter   mCharacter;
     private              int              mLastPage;
     private              WeaponOutline    mMeleeWeaponOutline;
@@ -803,7 +806,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         gc.drawString(left, bounds.x, y);
         gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
         // Trim off the leading URI scheme and authority path component. (http://, https://, ...)
-        String webSite = GCS.WEB_SITE.replaceAll(".*://", "");
+        String webSite = SCHEME_PATTERN.matcher(GCS.WEB_SITE).replaceAll("");
         gc.drawString(webSite, bounds.x + (bounds.width - (int) fm1.getStringBounds(webSite, gc).getWidth()) / 2, y);
 
         gc.setFont(savedFont);
@@ -951,7 +954,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             adjustToPageSetupChanges(true);
             setPrinting(true);
 
-            com.lowagie.text.Document pdfDoc = new com.lowagie.text.Document(new com.lowagie.text.Rectangle(width, height));
+            Document pdfDoc = new Document(new com.lowagie.text.Rectangle(width, height));
             try (OutputStream out = Files.newOutputStream(path)) {
                 PdfWriter      writer  = PdfWriter.getInstance(pdfDoc, out);
                 int            pageNum = 0;

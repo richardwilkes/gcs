@@ -94,9 +94,4 @@ public class LengthValue extends UnitsValue<LengthUnits> {
         }
         return obj instanceof LengthValue && super.equals(obj);
     }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
 }

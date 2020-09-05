@@ -199,7 +199,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      * Loads an equipment and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param m        The {@JsonMap} to load from.
+     * @param m        The {@link JsonMap} to load from.
      * @param state    The {@link LoadState} to use.
      */
     public Equipment(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
@@ -957,19 +957,14 @@ public class Equipment extends ListRow implements HasSourceReference {
         return Collections.unmodifiableList(mModifiers);
     }
 
-    /**
-     * @param modifiers The value to set for modifiers.
-     * @return {@code true} if modifiers changed
-     */
-    public boolean setModifiers(List<? extends Modifier> modifiers) {
+    /** @param modifiers The value to set for modifiers. */
+    public void setModifiers(List<? extends Modifier> modifiers) {
         List<EquipmentModifier> in = new FilteredList<>(modifiers, EquipmentModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
             update();
-            return true;
         }
-        return false;
     }
 
     /**

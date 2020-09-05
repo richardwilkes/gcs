@@ -37,8 +37,7 @@ public class UpdateCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        DataFileDockable df = getTarget(DataFileDockable.class);
-        if (df != null) {
+        if (getTarget(DataFileDockable.class) != null) {
             try {
                 long        start   = System.currentTimeMillis();
                 DataUpdater du      = new DataUpdater();

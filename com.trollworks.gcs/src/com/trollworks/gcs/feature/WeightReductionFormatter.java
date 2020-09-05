@@ -15,13 +15,12 @@ import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightValue;
 
-import java.text.ParseException;
 import javax.swing.JFormattedTextField;
 
 /** Provides weight reduction field conversion. */
 public class WeightReductionFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
-    public Object stringToValue(String text) throws ParseException {
+    public Object stringToValue(String text) {
         text = text != null ? text.trim() : "";
         if (text.endsWith("%")) {
             return Integer.valueOf(Numbers.extractInteger(text.substring(0, text.length() - 1), 0, true));
@@ -30,7 +29,7 @@ public class WeightReductionFormatter extends JFormattedTextField.AbstractFormat
     }
 
     @Override
-    public String valueToString(Object value) throws ParseException {
+    public String valueToString(Object value) {
         if (value instanceof Integer) {
             int percentage = ((Integer) value).intValue();
             if (percentage != 0) {

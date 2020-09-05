@@ -27,6 +27,7 @@ import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.regex.Pattern;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -35,7 +36,8 @@ import javax.swing.border.CompoundBorder;
 
 /** Displays and captures keystrokes typed. */
 public class KeyStrokeDisplay extends JLabel implements KeyListener {
-    private KeyStroke mKeyStroke;
+    private static final Pattern   PLUS_PATTERN = Pattern.compile("\\+");
+    private              KeyStroke mKeyStroke;
 
     /**
      * Creates a new {@link KeyStrokeDisplay}.
@@ -89,7 +91,7 @@ public class KeyStrokeDisplay extends JLabel implements KeyListener {
             if (modifiers > 0) {
                 String modifierText = InputEvent.getModifiersExText(modifiers);
                 if (Platform.isMacintosh()) {
-                    buffer.append(modifierText.replaceAll("\\+", ""));
+                    buffer.append(PLUS_PATTERN.matcher(modifierText).replaceAll(""));
                 } else {
                     buffer.append(modifierText);
                     String delimiter = UIManager.getString("MenuItem.acceleratorDelimiter");

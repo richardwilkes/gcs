@@ -442,7 +442,7 @@ public class Json {
             }
             case ']', ')' -> {
                 if (q != c) {
-                    throw syntaxError("expected a '" + Character.toString(q) + "'");
+                    throw syntaxError("expected a '" + q + "'");
                 }
                 return array;
             }
@@ -515,7 +515,7 @@ public class Json {
                 case 'n' -> buffer.append('\n');
                 case 'f' -> buffer.append('\f');
                 case 'r' -> buffer.append('\r');
-                case 'u' -> buffer.append((char) Integer.parseInt(next(4), 16));
+                case 'u' -> buffer.append((char) Integer.parseInt(next4(), 16));
                 case '"', '\'', '\\', '/' -> buffer.append(c);
                 default -> throw syntaxError("illegal escape");
                 }
@@ -540,13 +540,10 @@ public class Json {
         mEOF = false;
     }
 
-    private String next(int n) throws IOException {
-        if (n == 0) {
-            return "";
-        }
-        char[] buffer = new char[n];
+    private String next4() throws IOException {
+        char[] buffer = new char[4];
         int    pos    = 0;
-        while (pos < n) {
+        while (pos < 4) {
             buffer[pos] = next();
             if (mEOF && !mUsePrevious) {
                 throw syntaxError("substring bounds error");
@@ -557,7 +554,7 @@ public class Json {
     }
 
     private IOException syntaxError(String message) {
-        return new IOException(message + toString());
+        return new IOException(message + this);
     }
 
     @Override

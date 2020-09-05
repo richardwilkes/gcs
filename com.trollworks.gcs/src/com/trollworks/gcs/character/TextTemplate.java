@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 
 /** Provides text template output. */
@@ -282,6 +283,7 @@ public class TextTemplate {
     private static final String         KEY_EARNED_POINTS_DEPRECATED          = "EARNED_POINTS";
     private static final String         KEY_CAMPAIGN_DEPRECATED               = "CAMPAIGN";
     private static final String         KEY_RACE_DEPRECATED                   = "RACE";
+    private static final Pattern        NOT_NUMBER_PATTERN                    = Pattern.compile("[^0-9]");
     private              CharacterSheet mSheet;
     private              boolean        mEncodeText                           = true;
     private              boolean        mEnhancedKeyParsing;
@@ -533,10 +535,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel(false))));
             break;
         case KEY_BEST_CURRENT_PARRY:
-            writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedParry());
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParry);
             break;
         case KEY_BEST_CURRENT_BLOCK:
-            writeBestWeaponDefense(out, (weapon) -> weapon.getResolvedBlock());
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlock);
             break;
         case KEY_FP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getCurrentFatiguePoints()));
@@ -1302,7 +1304,7 @@ public class TextTemplate {
                 writeEncodedText(out, weapon.getStrength());
                 break;
             case KEY_WEAPON_STRENGTH_NUM:
-                writeEncodedText(out, weapon.getStrength().replaceAll("[^0-9]", ""));
+                writeEncodedText(out, NOT_NUMBER_PATTERN.matcher(weapon.getStrength()).replaceAll(""));
                 break;
             case KEY_ID:
                 writeEncodedText(out, Integer.toString(counter));
@@ -1352,14 +1354,10 @@ public class TextTemplate {
         Map<String, ArrayList<MeleeWeaponStats>> weaponsMap = new HashMap<>();
         Map<String, MeleeWeaponStats>            weapons    = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-            MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
-            weapons.put(weapon.getDescription(), weapon);
-            ArrayList<MeleeWeaponStats> attackModes = weaponsMap.get(weapon.getDescription());
-            if (attackModes == null) {
-                attackModes = new ArrayList<>();
-                weaponsMap.put(weapon.getDescription(), attackModes);
-            }
-            attackModes.add(weapon);
+            MeleeWeaponStats weapon      = (MeleeWeaponStats) row.getWeapon();
+            String           description = weapon.getDescription();
+            weapons.put(description, weapon);
+            weaponsMap.computeIfAbsent(description, k -> new ArrayList<>()).add(weapon);
         }
         for (MeleeWeaponStats weapon : weapons.values()) {
             mCurrentId++;
@@ -1402,14 +1400,10 @@ public class TextTemplate {
         Map<String, ArrayList<RangedWeaponStats>> weaponsMap = new HashMap<>();
         Map<String, RangedWeaponStats>            weapons    = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-            RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
-            weapons.put(weapon.getDescription(), weapon);
-            ArrayList<RangedWeaponStats> attackModes = weaponsMap.get(weapon.getDescription());
-            if (attackModes == null) {
-                attackModes = new ArrayList<>();
-                weaponsMap.put(weapon.getDescription(), attackModes);
-            }
-            attackModes.add(weapon);
+            RangedWeaponStats weapon      = (RangedWeaponStats) row.getWeapon();
+            String            description = weapon.getDescription();
+            weapons.put(description, weapon);
+            weaponsMap.computeIfAbsent(description, k -> new ArrayList<>()).add(weapon);
         }
         for (RangedWeaponStats weapon : weapons.values()) {
             mCurrentId++;
@@ -1832,49 +1826,57 @@ public class TextTemplate {
                 return includeByCategories(advantage, included, excluded);
             }
 
-        }, ADS {
+        },
+        ADS {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getAdjustedPoints() > 1 && includeByCategories(advantage, included, excluded);
             }
 
-        }, ADS_ALL {
+        },
+        ADS_ALL {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getAdjustedPoints() > 0 && includeByCategories(advantage, included, excluded);
             }
 
-        }, DISADS {
+        },
+        DISADS {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getAdjustedPoints() < -1 && includeByCategories(advantage, included, excluded);
             }
 
-        }, DISADS_ALL {
+        },
+        DISADS_ALL {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getAdjustedPoints() < 0 && includeByCategories(advantage, included, excluded);
             }
 
-        }, PERKS {
+        },
+        PERKS {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getAdjustedPoints() == 1 && includeByCategories(advantage, included, excluded);
             }
 
-        }, QUIRKS {
+        },
+        QUIRKS {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getAdjustedPoints() == -1 && includeByCategories(advantage, included, excluded);
             }
 
-        }, LANGUAGES {
+        },
+        LANGUAGES {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getCategories().contains("Language") && includeByCategories(advantage, included, excluded);
             }
 
-        }, CULTURAL_FAMILIARITIES {
+        },
+        CULTURAL_FAMILIARITIES {
             @Override
             public boolean shouldInclude(Advantage advantage, Set<String> included, Set<String> excluded) {
                 return advantage.getName().startsWith("Cultural Familiarity (") && includeByCategories(advantage, included, excluded);

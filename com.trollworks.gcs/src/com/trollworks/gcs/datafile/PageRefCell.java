@@ -17,15 +17,18 @@ import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.I18n;
 
+import java.util.regex.Pattern;
 import javax.swing.SwingConstants;
 
 public class PageRefCell extends ListTextCell {
+    public static final Pattern SEPARATORS_PATTERN = Pattern.compile("[, ;]");
+
     public static final String getStdToolTip(String type) {
         return String.format(I18n.Text("A reference to the book and page this %s appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), type);
     }
 
     public static final String getStdCellToolTip(String text) {
-        return (text.split("[, ]", 2).length == 1) ? null : text;
+        return (SEPARATORS_PATTERN.split(text, 2).length == 1) ? null : text;
     }
 
     public PageRefCell() {
@@ -34,11 +37,7 @@ public class PageRefCell extends ListTextCell {
 
     @Override
     protected String getPresentationText(Outline outline, Row row, Column column) {
-        String   text  = getData(row, column, false);
-        String[] parts = text.split("[, ]", 2);
-        if (parts.length == 1) {
-            return parts[0];
-        }
-        return parts[0] + "+";
+        String[] parts = SEPARATORS_PATTERN.split(getData(row, column), 2);
+        return parts.length == 1 ? parts[0] : parts[0] + "+";
     }
 }

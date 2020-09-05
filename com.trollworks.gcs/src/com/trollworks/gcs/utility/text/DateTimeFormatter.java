@@ -11,18 +11,17 @@
 
 package com.trollworks.gcs.utility.text;
 
-import java.text.ParseException;
 import javax.swing.JFormattedTextField;
 
 /** Provides date field conversion. */
 public class DateTimeFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
-    public Object stringToValue(String text) throws ParseException {
+    public Object stringToValue(String text) {
         return Long.valueOf(Numbers.extractDateTime(Numbers.DATE_AT_TIME_FORMAT, text));
     }
 
     @Override
-    public String valueToString(Object value) throws ParseException {
+    public String valueToString(Object value) {
         return Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, ((Long) value).longValue());
     }
 }

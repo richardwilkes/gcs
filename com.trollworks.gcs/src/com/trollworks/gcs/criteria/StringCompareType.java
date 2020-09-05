@@ -129,7 +129,7 @@ public enum StringCompareType {
      * @return The description of this comparison type.
      */
     public String describe(String qualifier) {
-        return toString() + " \"" + qualifier + '"';
+        return this + " \"" + qualifier + '"';
     }
 
     /**

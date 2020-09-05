@@ -47,7 +47,7 @@ public class CostReduction extends Feature {
         mPercentage = other.mPercentage;
     }
 
-    public CostReduction(JsonMap m) throws IOException {
+    public CostReduction(JsonMap m) {
         this();
         load(m);
     }
@@ -104,7 +104,7 @@ public class CostReduction extends Feature {
         return new CostReduction(this);
     }
 
-    protected void load(JsonMap m) throws IOException {
+    protected void load(JsonMap m) {
         setAttribute(Enums.extract(m.getString(TAG_ATTRIBUTE), TYPES, BonusAttributeType.ST));
         setPercentage(m.getInt(TAG_PERCENTAGE));
     }

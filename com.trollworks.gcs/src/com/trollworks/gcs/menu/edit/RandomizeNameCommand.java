@@ -27,12 +27,12 @@ public class RandomizeNameCommand extends Command {
     /** The action command this command will issue. */
     public static final String               CMD_GENERATE_RANDOM_FEMALE_NAME = "GenerateRandomFemaleName";
     /** The male {@link RandomizeNameCommand}. */
-    public static final RandomizeNameCommand MALE_INSTANCE                   = new RandomizeNameCommand(I18n.Text("Male"), CMD_GENERATE_RANDOM_MALE_NAME, KeyEvent.VK_V, Command.SHIFTED_COMMAND_MODIFIER);
+    public static final RandomizeNameCommand MALE_INSTANCE                   = new RandomizeNameCommand(I18n.Text("Male"), CMD_GENERATE_RANDOM_MALE_NAME, KeyEvent.VK_V);
     /** The female {@link RandomizeNameCommand}. */
-    public static final RandomizeNameCommand FEMALE_INSTANCE                 = new RandomizeNameCommand(I18n.Text("Female"), CMD_GENERATE_RANDOM_FEMALE_NAME, KeyEvent.VK_I, Command.SHIFTED_COMMAND_MODIFIER);
+    public static final RandomizeNameCommand FEMALE_INSTANCE                 = new RandomizeNameCommand(I18n.Text("Female"), CMD_GENERATE_RANDOM_FEMALE_NAME, KeyEvent.VK_I);
 
-    private RandomizeNameCommand(String type, String cmd, int keyCode, int modifiers) {
-        super(MessageFormat.format(I18n.Text("Generate Random {0} Name"), type), cmd, keyCode, modifiers);
+    private RandomizeNameCommand(String type, String cmd, int keyCode) {
+        super(MessageFormat.format(I18n.Text("Generate Random {0} Name"), type), cmd, keyCode, Command.SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override

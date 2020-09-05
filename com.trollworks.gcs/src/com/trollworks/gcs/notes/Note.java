@@ -131,7 +131,7 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+    protected void loadSelf(JsonMap m, LoadState state) {
         mText = m.getString(TAG_TEXT);
         mReference = m.getString(TAG_REFERENCE);
     }

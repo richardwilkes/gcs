@@ -184,7 +184,7 @@ public class TextCell implements Cell {
      * @return The data of this cell as a string that is prepared for display.
      */
     protected String getPresentationText(Outline outline, Row row, Column column) {
-        String text = getData(row, column, false);
+        String text = getData(row, column);
         if (!mWrapped || row == null) {
             return text;
         }
@@ -211,17 +211,13 @@ public class TextCell implements Cell {
     /**
      * @param row    The row.
      * @param column The column.
-     * @param nullOK {@code true} if {@code null} may be returned.
      * @return The data of this cell as a string.
      */
     @SuppressWarnings("static-method")
-    protected String getData(Row row, Column column, boolean nullOK) {
+    protected final String getData(Row row, Column column) {
         if (row != null) {
             String text = row.getDataAsText(column);
-            if (text == null) {
-                return nullOK ? null : "";
-            }
-            return text;
+            return text == null ? "" : text;
         }
         return column.toString();
     }

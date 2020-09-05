@@ -16,8 +16,6 @@ import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
-import javax.swing.SwingConstants;
-
 /** The miscellaneous info panel. */
 public class MiscPanel extends DropPanel {
     /**
@@ -27,8 +25,8 @@ public class MiscPanel extends DropPanel {
      */
     public MiscPanel(CharacterSheet sheet) {
         super(new ColumnLayout(2, 2, 0), I18n.Text("Miscellaneous"), true);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_CREATED, I18n.Text("Created:"), null, SwingConstants.LEFT);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_MODIFIED, I18n.Text("Modified:"), null, SwingConstants.LEFT);
-        createLabelAndDisabledField(this, sheet, Settings.PREFIX, I18n.Text("Options:"), Text.wrapPlainTextForToolTip(I18n.Text("Each letter represents an optional rule. A uppercase letter indicates the rule is in use while a lowercase letter indicates the rule is not in use.")), SwingConstants.LEFT);
+        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_CREATED, I18n.Text("Created:"), null);
+        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_MODIFIED, I18n.Text("Modified:"), null);
+        createLabelAndDisabledField(this, sheet, Settings.PREFIX, I18n.Text("Options:"), Text.wrapPlainTextForToolTip(I18n.Text("Each letter represents an optional rule. A uppercase letter indicates the rule is in use while a lowercase letter indicates the rule is not in use.")));
     }
 }

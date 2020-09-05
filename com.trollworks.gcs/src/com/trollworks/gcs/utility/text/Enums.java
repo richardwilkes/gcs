@@ -11,8 +11,12 @@
 
 package com.trollworks.gcs.utility.text;
 
+import java.util.regex.Pattern;
+
 /** A utility for consistent extraction of an {@link Enum} value from a text buffer. */
 public final class Enums {
+    private static final Pattern UNDERSCORE_PATTERN = Pattern.compile("_");
+
     private Enums() {
     }
 
@@ -43,7 +47,7 @@ public final class Enums {
         if (buffer != null) {
             for (T type : values) {
                 String name = type.name();
-                if (name.equalsIgnoreCase(buffer) || name.replace('_', ' ').equalsIgnoreCase(buffer) || name.replace('_', ',').equalsIgnoreCase(buffer) || name.replace('_', '-').equalsIgnoreCase(buffer) || name.replaceAll("_", "").equalsIgnoreCase(buffer)) {
+                if (name.equalsIgnoreCase(buffer) || name.replace('_', ' ').equalsIgnoreCase(buffer) || name.replace('_', ',').equalsIgnoreCase(buffer) || name.replace('_', '-').equalsIgnoreCase(buffer) || UNDERSCORE_PATTERN.matcher(name).replaceAll("").equalsIgnoreCase(buffer)) {
                     return type;
                 }
             }

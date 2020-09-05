@@ -99,7 +99,7 @@ public abstract class PrereqEditor extends EditorPanel {
         grid.add(left, 0, 0);
         rebuildSelf(left, grid, right);
         if (mDepth > 0) {
-            IconButton button = new IconButton(Images.REMOVE, mPrereq instanceof PrereqList ? I18n.Text("Remove this prerequisite list") : I18n.Text("Remove this prerequisite"), () -> remove());
+            IconButton button = new IconButton(Images.REMOVE, mPrereq instanceof PrereqList ? I18n.Text("Remove this prerequisite list") : I18n.Text("Remove this prerequisite"), this::remove);
             add(button);
             right.add(button);
         }

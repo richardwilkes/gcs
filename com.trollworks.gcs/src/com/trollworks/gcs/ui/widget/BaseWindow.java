@@ -20,7 +20,6 @@ import com.trollworks.gcs.preferences.MenuKeyPreferences;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -37,7 +36,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
@@ -88,7 +86,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
 
     @Override
     public void toFront() {
-        if (!isClosed()) {
+        if (!mIsClosed) {
             if (getExtendedState() == ICONIFIED) {
                 setExtendedState(NORMAL);
             }
@@ -106,10 +104,8 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
 
     @Override
     public void dispose() {
-        if (!isClosed()) {
-            WINDOW_LIST.remove(this);
-        }
         if (!mIsClosed) {
+            WINDOW_LIST.remove(this);
             try {
                 saveBounds();
                 super.dispose();
@@ -304,26 +300,6 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
     /** @return A list of all {@link BaseWindow}s created by this application. */
     public static List<BaseWindow> getAllAppWindows() {
         return getWindows(BaseWindow.class);
-    }
-
-    /**
-     * @param path The backing file to look for.
-     * @return The {@link FileProxy} associated with the specified backing file.
-     */
-    public static FileProxy findFileProxy(Path path) {
-        path = path.normalize().toAbsolutePath();
-        for (BaseWindow window : getAllAppWindows()) {
-            if (window instanceof FileProxy) {
-                FileProxy proxy = (FileProxy) window;
-                Path      wPath = proxy.getBackingFile();
-                if (wPath != null) {
-                    if (wPath.normalize().toAbsolutePath().equals(path)) {
-                        return proxy;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     /**

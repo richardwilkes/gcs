@@ -55,7 +55,7 @@ public class AttributeBonusEditor extends FeatureEditor {
         int      length = BonusAttributeType.values().length;
         String[] names  = new String[length];
         for (int i = 0; i < length; i++) {
-            names[i] = I18n.Text("to ") + BonusAttributeType.values()[i].toString();
+            names[i] = I18n.Text("to ") + BonusAttributeType.values()[i];
         }
         row.add(addComboBox(CHANGE_ATTRIBUTE, names, names[attribute.ordinal()]));
         if (BonusAttributeType.ST == attribute) {

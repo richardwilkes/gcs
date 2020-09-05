@@ -76,11 +76,6 @@ public class AdvantagePrereq extends NameLevelPrereq {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
         mNotesCriteria.load(m.getMap(TAG_NOTES));

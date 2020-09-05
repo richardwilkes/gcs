@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.menu.file;
 
+import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.print.PrintManager;
-import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.I18n;
@@ -85,7 +85,8 @@ public class PrintCommand extends Command implements PrintFilesHandler {
 
         @Override
         public void run() {
-            FileProxy proxy = BaseWindow.findFileProxy(mPath);
+            LibraryExplorerDockable library = LibraryExplorerDockable.get();
+            FileProxy               proxy   = library == null ? null : (FileProxy)library.getDockableFor(mPath);
             if (proxy != null) {
                 print(proxy.getPrintProxy());
             } else if (System.currentTimeMillis() - mStart < TimeUnit.MILLISECONDS.convert(2, TimeUnit.MINUTES)) {

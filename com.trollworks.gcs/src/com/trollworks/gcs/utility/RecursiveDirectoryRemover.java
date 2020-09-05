@@ -40,7 +40,7 @@ public class RecursiveDirectoryRemover implements FileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         return FileVisitResult.CONTINUE;
     }
 
@@ -51,7 +51,7 @@ public class RecursiveDirectoryRemover implements FileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exception) {
         Log.error(exception);
         return FileVisitResult.CONTINUE;
     }

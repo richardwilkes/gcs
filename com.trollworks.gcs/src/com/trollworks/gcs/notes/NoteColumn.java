@@ -53,7 +53,7 @@ public enum NoteColumn {
         public String getDataAsText(Note note) {
             StringBuilder builder = new StringBuilder();
             String        notes   = note.getNotes();
-            builder.append(note.toString());
+            builder.append(note);
             if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);

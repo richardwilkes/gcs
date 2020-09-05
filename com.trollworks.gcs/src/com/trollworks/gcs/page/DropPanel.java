@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 
@@ -228,15 +229,12 @@ public class DropPanel extends JPanel {
      * @param key       The notification ID to use.
      * @param title     The title to use.
      * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
      */
     @SuppressWarnings("static-method")
-    protected PageField createLabelAndField(Container parent, CharacterSheet sheet, String key, String title, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, true, tooltip);
+    protected void createLabelAndField(Container parent, CharacterSheet sheet, String key, String title, String tooltip) {
+        PageField field = new PageField(sheet, key, SwingConstants.LEFT, true, tooltip);
         parent.add(new PageLabel(title, field));
         parent.add(field);
-        return field;
     }
 
     /**
@@ -245,15 +243,12 @@ public class DropPanel extends JPanel {
      * @param key       The notification ID to use.
      * @param title     The title to use.
      * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
      */
     @SuppressWarnings("static-method")
-    protected PageField createLabelAndDisabledField(Container parent, CharacterSheet sheet, String key, String title, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, false, tooltip);
+    protected void createLabelAndDisabledField(Container parent, CharacterSheet sheet, String key, String title, String tooltip) {
+        PageField field = new PageField(sheet, key, SwingConstants.LEFT, false, tooltip);
         parent.add(new PageLabel(title, field));
         parent.add(field);
-        return field;
     }
 
     /**

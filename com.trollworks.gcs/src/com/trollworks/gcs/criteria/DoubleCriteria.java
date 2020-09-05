@@ -53,11 +53,6 @@ public class DoubleCriteria extends NumericCriteria {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public void load(JsonMap m) throws IOException {
         super.load(m);
         setQualifier(m.getDouble(KEY_QUALIFIER));

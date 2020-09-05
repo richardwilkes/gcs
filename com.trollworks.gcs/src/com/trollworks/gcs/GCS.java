@@ -23,7 +23,6 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.UpdateChecker;
 import com.trollworks.gcs.utility.Version;
@@ -45,15 +44,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 /** The main entry point for the character sheet. */
 public final class GCS {
-    public static final String  WEB_SITE = "https://gurpscharactersheet.com";
-    public static final Version VERSION  = new Version();
-    public static final String  COPYRIGHT;
-    public static final String  COPYRIGHT_FOOTER;
-    public static final String  APP_BANNER;
-    private static      boolean NOTIFICATION_ALLOWED;
+    public static final  String  WEB_SITE          = "https://gurpscharactersheet.com";
+    public static final  Version VERSION           = new Version();
+    public static final  String  COPYRIGHT;
+    public static final  String  COPYRIGHT_FOOTER;
+    public static final  String  APP_BANNER;
+    private static final Pattern COPYRIGHT_PATTERN = Pattern.compile("©");
+    private static       boolean NOTIFICATION_ALLOWED;
 
     static {
         // Fix the current working directory, as bundled apps break the normal logic.
@@ -95,7 +96,7 @@ public final class GCS {
         if (Platform.isWindows()) {
             // The windows command prompt doesn't understand the copyright symbol, so translate it
             // to something it can deal with.
-            buffer.append(COPYRIGHT.replaceAll("©", "(c)"));
+            buffer.append(COPYRIGHT_PATTERN.matcher(COPYRIGHT).replaceAll("(c)"));
         } else {
             buffer.append(COPYRIGHT);
         }

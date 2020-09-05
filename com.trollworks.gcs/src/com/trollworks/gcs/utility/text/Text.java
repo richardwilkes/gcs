@@ -12,11 +12,13 @@
 package com.trollworks.gcs.utility.text;
 
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import javax.swing.SwingConstants;
 
 /** Provides text manipulation. */
 public final class Text {
-    public static final char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    public static final  char[]  HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\n");
 
     private Text() {
     }
@@ -167,7 +169,7 @@ public final class Text {
 
     public static String wrapPlainTextForToolTip(String text) {
         if (text != null && !text.isEmpty() && !text.startsWith("<html>")) {
-            return "<html><body>" + htmlEscape(wrapToCharacterCount(text, 40)).replaceAll("\n", "<br>") + "</body></html>";
+            return "<html><body>" + LINE_FEED_PATTERN.matcher(htmlEscape(wrapToCharacterCount(text, 40))).replaceAll("<br>") + "</body></html>";
         }
         return text;
     }

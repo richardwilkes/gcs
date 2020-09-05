@@ -14,7 +14,6 @@ package com.trollworks.gcs.utility.text;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.units.LengthValue;
 
-import java.text.ParseException;
 import javax.swing.JFormattedTextField;
 
 /** Provides height field conversion. */
@@ -30,12 +29,12 @@ public class HeightFormatter extends JFormattedTextField.AbstractFormatter {
     }
 
     @Override
-    public Object stringToValue(String text) throws ParseException {
+    public Object stringToValue(String text) {
         return LengthValue.extract(text, true);
     }
 
     @Override
-    public String valueToString(Object value) throws ParseException {
+    public String valueToString(Object value) {
         LengthValue length = (LengthValue) value;
         if (mBlankOnZero && length.getValue().equals(Fixed6.ZERO)) {
             return "";

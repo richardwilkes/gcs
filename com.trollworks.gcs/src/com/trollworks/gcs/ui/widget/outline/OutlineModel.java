@@ -116,9 +116,9 @@ public class OutlineModel implements SelectionOwner, StateEditable {
         }
     }
 
-    private void notifyOfSort(boolean restoring) {
+    private void notifyOfSort() {
         for (OutlineModelListener listener : getCurrentListeners()) {
-            listener.sorted(this, restoring);
+            listener.sorted(this);
         }
     }
 
@@ -546,19 +546,19 @@ public class OutlineModel implements SelectionOwner, StateEditable {
 
     /** Sorts the model, if needed. */
     public void sortIfNeeded() {
-        sortInternal(false);
+        sortInternal();
     }
 
     /** Sorts the model. */
     public void sort() {
-        sortInternal(false);
+        sortInternal();
     }
 
-    private void sortInternal(boolean restoring) {
+    private void sortInternal() {
         preserveSelection();
         RowSorter.sort(mColumns, mRows, true);
         restoreSelection();
-        notifyOfSort(restoring);
+        notifyOfSort();
     }
 
     /**
@@ -1072,7 +1072,7 @@ public class OutlineModel implements SelectionOwner, StateEditable {
             sortCleared = true;
         } else if (result == 1) {
             sortCleared = false;
-            notifyOfSort(false);
+            notifyOfSort();
         }
         if (sortCleared) {
             notifyOfSortCleared();

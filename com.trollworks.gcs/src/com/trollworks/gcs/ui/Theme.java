@@ -133,9 +133,8 @@ public class Theme {
      * Creates a new {@link Theme} from a JsonMap.
      *
      * @param m The map to load the colors from.
-     * @throws IOException
      */
-    public Theme(JsonMap m) throws IOException {
+    public Theme(JsonMap m) {
         this(DEFAULT);
         for (ThemeColor one : ThemeColor.ALL) {
             String str = m.getString(one.getKey());
@@ -175,7 +174,6 @@ public class Theme {
      * Save the {@link Theme} to a JsonWriter.
      *
      * @param w The JsonWriter to write to.
-     * @throws IOException
      */
     public void save(JsonWriter w) throws IOException {
         w.startMap();

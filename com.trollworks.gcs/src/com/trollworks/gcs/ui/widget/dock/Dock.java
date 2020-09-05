@@ -469,7 +469,7 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        getLayout().forEachDockContainer((dc) -> dc.updateActiveHighlight());
+        getLayout().forEachDockContainer(DockContainer::updateActiveHighlight);
     }
 
     /** @return The {@link DockContainer} with the current keyboard focus, or {@code null}. */

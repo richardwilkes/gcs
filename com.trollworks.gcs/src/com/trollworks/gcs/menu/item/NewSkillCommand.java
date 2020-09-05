@@ -53,8 +53,7 @@ public class NewSkillCommand extends Command {
         if (skills != null) {
             setEnabled(!skills.getOutline().getModel().isLocked());
         } else {
-            SheetDockable sheet = getTarget(SheetDockable.class);
-            if (sheet != null) {
+            if (getTarget(SheetDockable.class) != null) {
                 setEnabled(true);
             } else {
                 setEnabled(getTarget(TemplateDockable.class) != null);

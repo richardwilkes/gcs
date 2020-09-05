@@ -76,11 +76,6 @@ public class ContainedQuantityPrereq extends HasPrereq {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public String getJSONTypeName() {
         return TAG_ROOT;
     }

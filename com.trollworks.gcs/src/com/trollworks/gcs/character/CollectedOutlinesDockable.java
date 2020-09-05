@@ -174,8 +174,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         }
 
         if (primary != null) {
-            Outline outline = primary;
-            EventQueue.invokeLater(() -> outline.scrollSelectionIntoView());
+            EventQueue.invokeLater(primary::scrollSelectionIntoView);
             primary.requestFocus();
         }
     }
@@ -247,12 +246,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
             }
             //noinspection ConstantConditions
             if (row instanceof ListRow) {
-                List<ListRow> process = nameMap.get(outline);
-                if (process == null) {
-                    process = new ArrayList<>();
-                    nameMap.put(outline, process);
-                }
-                addRowsToBeProcessed(process, (ListRow) row);
+                addRowsToBeProcessed(nameMap.computeIfAbsent(outline, k -> new ArrayList<>()), (ListRow) row);
             }
         }
         for (Map.Entry<ListOutline, StateEdit> entry : map.entrySet()) {

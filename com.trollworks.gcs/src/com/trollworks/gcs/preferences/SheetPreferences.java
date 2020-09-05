@@ -90,12 +90,11 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         add(label, new PrecisionLayoutData().setHorizontalSpan(3).setAlignment(PrecisionLayoutAlignment.MIDDLE, PrecisionLayoutAlignment.END).setGrabVerticalSpace(true));
     }
 
-    private JLabel addLabel(String title, String tooltip) {
+    private void addLabel(String title, String tooltip) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        return label;
     }
 
     private JTextField addTextField(String tooltip, String value) {

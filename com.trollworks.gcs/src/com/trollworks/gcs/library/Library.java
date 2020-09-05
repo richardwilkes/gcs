@@ -228,7 +228,7 @@ public class Library implements Comparable<Library> {
                     }
                 }
             }
-            Files.writeString(root.resolve(RELEASE_FILE), release.getVersion().toString() + "\n");
+            Files.writeString(root.resolve(RELEASE_FILE), release.getVersion() + "\n");
         }
     }
 

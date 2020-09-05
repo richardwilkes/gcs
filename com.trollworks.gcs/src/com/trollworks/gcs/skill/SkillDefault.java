@@ -80,7 +80,7 @@ public class SkillDefault {
      * @param m    The {@link JsonMap} to load data from.
      * @param full {@code true} if all fields should be loaded.
      */
-    public SkillDefault(JsonMap m, boolean full) throws IOException {
+    public SkillDefault(JsonMap m, boolean full) {
         mType = SkillDefaultType.getByName(m.getString(DataFile.KEY_TYPE));
         mName = m.getString(TAG_NAME);
         mSpecialization = m.getString(TAG_SPECIALIZATION);

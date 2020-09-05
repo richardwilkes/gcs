@@ -59,7 +59,7 @@ public enum SpellColumn {
             StringBuilder builder = new StringBuilder();
             String        notes   = spell.getNotes();
 
-            builder.append(spell.toString());
+            builder.append(spell);
             if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);

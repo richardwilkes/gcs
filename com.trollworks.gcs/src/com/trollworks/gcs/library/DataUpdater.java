@@ -82,20 +82,14 @@ public class DataUpdater {
     }
 
     private void addList(Map<UUID, Path> uuidToPathMap, Path path, Updatable updatable) throws IOException {
-        ((DataFile)updatable).load(path);
+        ((DataFile) updatable).load(path);
         add(uuidToPathMap, path, updatable);
     }
 
     private void add(Map<UUID, Path> uuidToPathMap, Path path, Updatable updatable) {
         UUID id = updatable.getID();
         if (uuidToPathMap.containsKey(id)) {
-            Path       acceptedPath = uuidToPathMap.get(id);
-            List<Path> list         = ignoreMap.get(acceptedPath);
-            if (list == null) {
-                list = new ArrayList<>();
-                ignoreMap.put(acceptedPath, list);
-            }
-            list.add(path);
+            ignoreMap.computeIfAbsent(uuidToPathMap.get(id), k -> new ArrayList<>()).add(path);
         } else {
             uuidToPathMap.put(id, path);
             updatables.put(updatable.getID(), updatable);

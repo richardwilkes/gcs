@@ -65,7 +65,7 @@ public class WeaponDamage {
         mArmorDivisor = 1;
     }
 
-    public WeaponDamage(JsonMap m, WeaponStats owner) throws IOException {
+    public WeaponDamage(JsonMap m, WeaponStats owner) {
         mOwner = owner;
         mType = m.getString(DataFile.KEY_TYPE);
         mST = Enums.extract(m.getString(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);

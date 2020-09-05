@@ -79,7 +79,7 @@ public class LeveledAmount {
         return super.hashCode();
     }
 
-    public final void load(JsonMap m) throws IOException {
+    public final void load(JsonMap m) {
         mAmount = m.getDouble(KEY_AMOUNT);
         if (mInteger) {
             mAmount = Math.round(mAmount);

@@ -46,6 +46,7 @@ import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -54,7 +55,8 @@ import javax.swing.event.HyperlinkEvent;
 
 public class ExportToGURPSCalculatorCommand extends Command {
     /** The singleton {@link ExportToGURPSCalculatorCommand}. */
-    public static final ExportToGURPSCalculatorCommand INSTANCE = new ExportToGURPSCalculatorCommand();
+    public static final  ExportToGURPSCalculatorCommand INSTANCE     = new ExportToGURPSCalculatorCommand();
+    private static final Pattern                        UUID_PATTERN = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
 
     private ExportToGURPSCalculatorCommand() {
         super(I18n.Text("Export to GURPS Calculator…"), "ExportToGURPSCalculator", KeyEvent.VK_L);
@@ -146,7 +148,7 @@ public class ExportToGURPSCalculatorCommand extends Command {
     private void showResult(boolean success) {
         String message = success ? I18n.Text("Export to GURPS Calculator was successful.") : I18n.Text("There was an error exporting to GURPS Calculator. Please try again later.");
         String key     = Preferences.getInstance().getGURPSCalculatorKey();
-        if (key == null || !key.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")) {
+        if (key == null || !UUID_PATTERN.matcher(key).matches()) {
             message = String.format(I18n.Text("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information."), OutputPreferences.GURPS_CALCULATOR_URL);
         }
         JLabel      styleLabel  = new JLabel();

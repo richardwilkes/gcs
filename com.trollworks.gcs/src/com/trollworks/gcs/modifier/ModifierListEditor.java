@@ -69,7 +69,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     protected abstract void addColumns(Outline outline);
 
     private Component createOutline(List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
-        mAddButton = new IconButton(Images.ADD, I18n.Text("Add a modifier"), () -> addModifier());
+        mAddButton = new IconButton(Images.ADD, I18n.Text("Add a modifier"), this::addModifier);
 
         mOutline = new ModifierOutline();
         OutlineModel model = mOutline.getModel();

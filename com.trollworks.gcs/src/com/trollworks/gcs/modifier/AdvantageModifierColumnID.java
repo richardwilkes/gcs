@@ -74,7 +74,7 @@ public enum AdvantageModifierColumnID {
         public String getDataAsText(AdvantageModifier modifier) {
             StringBuilder builder = new StringBuilder();
             String        notes   = modifier.getNotes();
-            builder.append(modifier.toString());
+            builder.append(modifier);
             if (!notes.isEmpty()) {
                 builder.append(" (");
                 builder.append(notes);

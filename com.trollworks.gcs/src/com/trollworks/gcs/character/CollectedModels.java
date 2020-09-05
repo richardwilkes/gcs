@@ -91,7 +91,7 @@ public abstract class CollectedModels extends DataFile {
         if (includeDisabled) {
             return new RowIterator<>(mAdvantages);
         }
-        return new RowIterator<>(mAdvantages, (row) -> row.isEnabled());
+        return new RowIterator<>(mAdvantages, Advantage::isEnabled);
     }
 
     /** @return The outline model for the skills. */

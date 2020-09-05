@@ -303,7 +303,7 @@ public class AdvantageModifier extends Modifier {
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();
-        builder.append(toString());
+        builder.append(this);
         if (!modNote.isEmpty()) {
             builder.append(" (");
             builder.append(modNote);

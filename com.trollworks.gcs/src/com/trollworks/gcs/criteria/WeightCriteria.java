@@ -54,11 +54,6 @@ public class WeightCriteria extends NumericCriteria {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public void load(JsonMap m) throws IOException {
         super.load(m);
         setQualifier(WeightValue.extract(m.getString(KEY_QUALIFIER), false));

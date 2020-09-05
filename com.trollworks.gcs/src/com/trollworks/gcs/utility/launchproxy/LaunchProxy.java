@@ -70,7 +70,7 @@ public class LaunchProxy {
                                             OpenDataFileCommand.open(Paths.get(file));
                                         }
                                     } else {
-                                        EventQueue.invokeLater(() -> OpenCommand.open());
+                                        EventQueue.invokeLater(OpenCommand::open);
                                     }
                                 }
                             }

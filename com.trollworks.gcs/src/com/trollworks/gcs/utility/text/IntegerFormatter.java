@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.utility.text;
 
-import java.text.ParseException;
 import javax.swing.JFormattedTextField;
 
 /** Provides integer field conversion. */
@@ -58,12 +57,12 @@ public class IntegerFormatter extends JFormattedTextField.AbstractFormatter {
     }
 
     @Override
-    public Object stringToValue(String text) throws ParseException {
+    public Object stringToValue(String text) {
         return Integer.valueOf(Math.min(Math.max(Numbers.extractInteger(text, mMinValue <= 0 && mMaxValue >= 0 ? 0 : mMinValue, true), mMinValue), mMaxValue));
     }
 
     @Override
-    public String valueToString(Object value) throws ParseException {
+    public String valueToString(Object value) {
         int val = value == null ? 0 : ((Integer) value).intValue();
         if (mBlankOnZero && val == 0) {
             return "";

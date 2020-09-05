@@ -31,13 +31,13 @@ public class NewNoteCommand extends Command {
     /** The action command this command will issue. */
     public static final String         CMD_NEW_NOTE_CONTAINER = "NewNoteContainer";
     /** The "New Note" command. */
-    public static final NewNoteCommand INSTANCE               = new NewNoteCommand(false, I18n.Text("New Note"), CMD_NEW_NOTE, KeyEvent.VK_N, SHIFTED_COMMAND_MODIFIER);
+    public static final NewNoteCommand INSTANCE               = new NewNoteCommand(false, I18n.Text("New Note"), CMD_NEW_NOTE, SHIFTED_COMMAND_MODIFIER);
     /** The "New Note Container" command. */
-    public static final NewNoteCommand CONTAINER_INSTANCE     = new NewNoteCommand(true, I18n.Text("New Note Container"), CMD_NEW_NOTE_CONTAINER, KeyEvent.VK_N, COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
+    public static final NewNoteCommand CONTAINER_INSTANCE     = new NewNoteCommand(true, I18n.Text("New Note Container"), CMD_NEW_NOTE_CONTAINER, COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
     private             boolean        mContainer;
 
-    private NewNoteCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
-        super(title, cmd, keyCode, modifiers);
+    private NewNoteCommand(boolean container, String title, String cmd, int modifiers) {
+        super(title, cmd, KeyEvent.VK_N, modifiers);
         mContainer = container;
     }
 
@@ -47,8 +47,7 @@ public class NewNoteCommand extends Command {
         if (note != null) {
             setEnabled(!note.getOutline().getModel().isLocked());
         } else {
-            SheetDockable sheet = getTarget(SheetDockable.class);
-            if (sheet != null) {
+            if (getTarget(SheetDockable.class) != null) {
                 setEnabled(true);
             } else {
                 setEnabled(getTarget(TemplateDockable.class) != null);

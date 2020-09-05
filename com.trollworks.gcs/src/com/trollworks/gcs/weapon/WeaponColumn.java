@@ -53,7 +53,7 @@ public enum WeaponColumn {
             StringBuilder builder = new StringBuilder();
             String        notes   = weapon.getNotes();
 
-            builder.append(weapon.toString());
+            builder.append(weapon);
             if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);

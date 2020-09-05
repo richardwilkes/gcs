@@ -15,8 +15,6 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.utility.I18n;
 
-import javax.swing.SwingConstants;
-
 /** The character identity panel. */
 public class IdentityPanel extends DropPanel {
     /**
@@ -26,8 +24,8 @@ public class IdentityPanel extends DropPanel {
      */
     public IdentityPanel(CharacterSheet sheet) {
         super(new ColumnLayout(2, 2, 0), I18n.Text("Identity"));
-        createLabelAndField(this, sheet, Profile.ID_NAME, I18n.Text("Name:"), null, SwingConstants.LEFT);
-        createLabelAndField(this, sheet, Profile.ID_TITLE, I18n.Text("Title:"), null, SwingConstants.LEFT);
-        createLabelAndField(this, sheet, Profile.ID_PLAYER_NAME, I18n.Text("Player:"), null, SwingConstants.LEFT);
+        createLabelAndField(this, sheet, Profile.ID_NAME, I18n.Text("Name:"), null);
+        createLabelAndField(this, sheet, Profile.ID_TITLE, I18n.Text("Title:"), null);
+        createLabelAndField(this, sheet, Profile.ID_PLAYER_NAME, I18n.Text("Player:"), null);
     }
 }

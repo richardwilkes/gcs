@@ -55,11 +55,6 @@ public class IntegerCriteria extends NumericCriteria {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public void load(JsonMap m) throws IOException {
         super.load(m);
         setQualifier(m.getInt(KEY_QUALIFIER));

@@ -575,39 +575,33 @@ public class Preferences {
         return mUserDescriptionDisplay;
     }
 
-    public boolean setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
+    public void setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
         if (mUserDescriptionDisplay != userDescriptionDisplay) {
             mUserDescriptionDisplay = userDescriptionDisplay;
             mNotifier.notify(this, KEY_USER_DESCRIPTION_DISPLAY);
-            return true;
         }
-        return false;
     }
 
     public DisplayOption getModifiersDisplay() {
         return mModifiersDisplay;
     }
 
-    public boolean setModifiersDisplay(DisplayOption modifiersDisplay) {
+    public void setModifiersDisplay(DisplayOption modifiersDisplay) {
         if (mModifiersDisplay != modifiersDisplay) {
             mModifiersDisplay = modifiersDisplay;
             mNotifier.notify(this, KEY_MODIFIERS_DISPLAY);
-            return true;
         }
-        return false;
     }
 
     public DisplayOption getNotesDisplay() {
         return mNotesDisplay;
     }
 
-    public boolean setNotesDisplay(DisplayOption notesDisplay) {
+    public void setNotesDisplay(DisplayOption notesDisplay) {
         if (mNotesDisplay != notesDisplay) {
             mNotesDisplay = notesDisplay;
             mNotifier.notify(this, KEY_NOTES_DISPLAY);
-            return true;
         }
-        return false;
     }
 
     public Scales getInitialUIScale() {
@@ -622,39 +616,33 @@ public class Preferences {
         return mDefaultLengthUnits;
     }
 
-    public boolean setDefaultLengthUnits(LengthUnits defaultLengthUnits) {
+    public void setDefaultLengthUnits(LengthUnits defaultLengthUnits) {
         if (mDefaultLengthUnits != defaultLengthUnits) {
             mDefaultLengthUnits = defaultLengthUnits;
             mNotifier.notify(this, KEY_DEFAULT_LENGTH_UNITS);
-            return true;
         }
-        return false;
     }
 
     public WeightUnits getDefaultWeightUnits() {
         return mDefaultWeightUnits;
     }
 
-    public boolean setDefaultWeightUnits(WeightUnits defaultWeightUnits) {
+    public void setDefaultWeightUnits(WeightUnits defaultWeightUnits) {
         if (mDefaultWeightUnits != defaultWeightUnits) {
             mDefaultWeightUnits = defaultWeightUnits;
             mNotifier.notify(this, KEY_DEFAULT_WEIGHT_UNITS);
-            return true;
         }
-        return false;
     }
 
     public List<String> getBlockLayout() {
         return mBlockLayout;
     }
 
-    public boolean setBlockLayout(List<String> blockLayout) {
+    public void setBlockLayout(List<String> blockLayout) {
         if (!mBlockLayout.equals(blockLayout)) {
             mBlockLayout = new ArrayList<>(blockLayout);
             mNotifier.notify(this, KEY_BLOCK_LAYOUT);
-            return true;
         }
-        return false;
     }
 
     public static String linesToString(List<String> lines) {
@@ -835,13 +823,11 @@ public class Preferences {
         return mIncludeUnspentPointsInTotal;
     }
 
-    public boolean setIncludeUnspentPointsInTotal(boolean includeUnspentPointsInTotal) {
+    public void setIncludeUnspentPointsInTotal(boolean includeUnspentPointsInTotal) {
         if (mIncludeUnspentPointsInTotal != includeUnspentPointsInTotal) {
             mIncludeUnspentPointsInTotal = includeUnspentPointsInTotal;
             mNotifier.notify(this, KEY_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether Will and Perception should be based on 10 rather than IQ. */
@@ -849,13 +835,11 @@ public class Preferences {
         return mBaseWillAndPerOn10;
     }
 
-    public boolean setBaseWillAndPerOn10(boolean baseWillAndPerOn10) {
+    public void setBaseWillAndPerOn10(boolean baseWillAndPerOn10) {
         if (mBaseWillAndPerOn10 != baseWillAndPerOn10) {
             mBaseWillAndPerOn10 = baseWillAndPerOn10;
             mNotifier.notify(this, KEY_BASE_WILL_AND_PER_ON_10);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to show the college column in the sheet display. */
@@ -863,13 +847,11 @@ public class Preferences {
         return mShowCollegeInSheetSpells;
     }
 
-    public boolean setShowCollegeInSheetSpells(boolean show) {
+    public void setShowCollegeInSheetSpells(boolean show) {
         if (mShowCollegeInSheetSpells != show) {
             mShowCollegeInSheetSpells = show;
             mNotifier.notify(this, KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to show the title in the page footer (rather than the name). */
@@ -877,13 +859,11 @@ public class Preferences {
         return mUseTitleInFooter;
     }
 
-    public boolean setUseTitleInFooter(boolean show) {
+    public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
             mNotifier.notify(this, KEY_USE_TITLE_IN_FOOTER);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the multiplicative modifier rules from PW102. */
@@ -891,13 +871,11 @@ public class Preferences {
         return mUseMultiplicativeModifiers;
     }
 
-    public boolean setUseMultiplicativeModifiers(boolean useMultiplicativeModifiers) {
+    public void setUseMultiplicativeModifiers(boolean useMultiplicativeModifiers) {
         if (mUseMultiplicativeModifiers != useMultiplicativeModifiers) {
             mUseMultiplicativeModifiers = useMultiplicativeModifiers;
             mNotifier.notify(this, KEY_USE_MULTIPLICATIVE_MODIFIERS);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the dice modification rules from B269. */
@@ -905,13 +883,11 @@ public class Preferences {
         return mUseModifyingDicePlusAdds;
     }
 
-    public boolean setUseModifyingDicePlusAdds(boolean useModifyingDicePlusAdds) {
+    public void setUseModifyingDicePlusAdds(boolean useModifyingDicePlusAdds) {
         if (mUseModifyingDicePlusAdds != useModifyingDicePlusAdds) {
             mUseModifyingDicePlusAdds = useModifyingDicePlusAdds;
             mNotifier.notify(this, KEY_USE_MODIFYING_DICE_PLUS_ADDS);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the Know Your Own Strength rules from PY83. */
@@ -919,13 +895,11 @@ public class Preferences {
         return mUseKnowYourOwnStrength;
     }
 
-    public boolean setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
+    public void setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
         if (mUseKnowYourOwnStrength != useKnowYourOwnStrength) {
             mUseKnowYourOwnStrength = useKnowYourOwnStrength;
             mNotifier.notify(this, KEY_USE_KNOW_YOUR_OWN_STRENGTH);
-            return true;
         }
-        return false;
     }
 
     /**
@@ -936,13 +910,11 @@ public class Preferences {
         return mUseReducedSwing;
     }
 
-    public boolean setUseReducedSwing(boolean useReducedSwing) {
+    public void setUseReducedSwing(boolean useReducedSwing) {
         if (mUseReducedSwing != useReducedSwing) {
             mUseReducedSwing = useReducedSwing;
             mNotifier.notify(this, KEY_USE_REDUCED_SWING);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to set thrust damage to swing-2. */
@@ -950,13 +922,11 @@ public class Preferences {
         return mUseThrustEqualsSwingMinus2;
     }
 
-    public boolean setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
+    public void setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
         if (mUseThrustEqualsSwingMinus2 != useThrustEqualsSwingMinus2) {
             mUseThrustEqualsSwingMinus2 = useThrustEqualsSwingMinus2;
             mNotifier.notify(this, KEY_USE_THRUST_EQUALS_SWING_MINUS_2);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the simple metric conversion rules from B9. */
@@ -964,13 +934,11 @@ public class Preferences {
         return mUseSimpleMetricConversions;
     }
 
-    public boolean setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
+    public void setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
         if (mUseSimpleMetricConversions != useSimpleMetricConversions) {
             mUseSimpleMetricConversions = useSimpleMetricConversions;
             mNotifier.notify(this, KEY_USE_SIMPLE_METRIC_CONVERSIONS);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether a new character should be automatically named. */

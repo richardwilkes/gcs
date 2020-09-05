@@ -62,7 +62,7 @@ public enum SkillColumn {
             StringBuilder builder = new StringBuilder();
             String        notes   = skill.getNotes();
 
-            builder.append(skill.toString());
+            builder.append(skill);
             if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);

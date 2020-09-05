@@ -156,7 +156,7 @@ public enum SelfControlRoll {
 
     /** @return The description, along with the cost. */
     public String getDescriptionWithCost() {
-        return toString() + ", x" + getMultiplier();
+        return this + ", x" + getMultiplier();
     }
 
     /** @return The cost multiplier. */

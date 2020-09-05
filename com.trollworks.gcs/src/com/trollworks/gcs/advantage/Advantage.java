@@ -530,24 +530,20 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return false;
     }
 
-    /**
-     * @param factor The number of levels or half levels to set.
-     * @return Whether it was modified.
-     */
-    public boolean adjustLevel(int factor) {
-        if (factor == 0) {
-            return false;
+    /** @param factor The number of levels or half levels to set. */
+    public void adjustLevel(int factor) {
+        if (factor != 0) {
+            if (mAllowHalfLevels) {
+                int halfLevels = mLevels * 2 + (mHalfLevel ? 1 : 0) + factor;
+                if (halfLevels < 0) {
+                    halfLevels = 0;
+                }
+                setHalfLevel((halfLevels & 1) == 1);
+                setLevels(halfLevels / 2);
+            } else {
+                setLevels(Math.max(mLevels + factor, 0));
+            }
         }
-        if (!mAllowHalfLevels) {
-            return setLevels(Math.max(mLevels + factor, 0));
-        }
-        int halfLevels = mLevels * 2 + (mHalfLevel ? 1 : 0) + factor;
-        if (halfLevels < 0) {
-            halfLevels = 0;
-        }
-        boolean modified = setHalfLevel((halfLevels & 1) == 1);
-        modified |= setLevels(halfLevels / 2);
-        return modified;
     }
 
     /** @return The total points, taking levels into account. */
@@ -961,19 +957,14 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return Collections.unmodifiableList(allModifiers);
     }
 
-    /**
-     * @param modifiers The value to set for modifiers.
-     * @return {@code true} if modifiers changed
-     */
-    public boolean setModifiers(List<? extends Modifier> modifiers) {
+    /** @param modifiers The value to set for modifiers. */
+    public void setModifiers(List<? extends Modifier> modifiers) {
         List<AdvantageModifier> in = new FilteredList<>(modifiers, AdvantageModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
             update();
-            return true;
         }
-        return false;
     }
 
     /**

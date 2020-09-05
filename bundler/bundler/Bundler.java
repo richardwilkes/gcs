@@ -127,9 +127,9 @@ public final class Bundler {
         System.out.println();
         System.out.println("Package can be found at:");
         if (noInstaller) {
-            System.out.println(NO_INSTALLER_PKG.toAbsolutePath().toString());
+            System.out.println(NO_INSTALLER_PKG.toAbsolutePath());
         } else {
-            System.out.println(PKG.toAbsolutePath().toString());
+            System.out.println(PKG.toAbsolutePath());
         }
     }
 
@@ -222,7 +222,7 @@ public final class Bundler {
         Path javacInput = BUILD_DIR.resolve("javac.input");
         try (PrintWriter out = new PrintWriter(Files.newBufferedWriter(javacInput))) {
             out.println("-d");
-            out.println(BUILD_DIR.toString());
+            out.println(BUILD_DIR);
             out.println("--release");
             out.println(JDK_MAJOR_VERSION);
             out.println("-encoding");
@@ -231,7 +231,7 @@ public final class Bundler {
             out.printf(".%1$s*%1$ssrc%2$sthird_party%1$s*%1$ssrc\n", File.separator, File.pathSeparator);
             FileScanner.walk(Paths.get("."), (path) -> {
                 if (path.getFileName().toString().endsWith(".java") && !path.startsWith(Paths.get(".", "bundler"))) {
-                    out.println(path.toString());
+                    out.println(path);
                 }
             });
         } catch (IOException exception) {
@@ -239,7 +239,7 @@ public final class Bundler {
             exception.printStackTrace(System.err);
             System.exit(1);
         }
-        runNoOutputCmd("javac", "@" + javacInput.toString());
+        runNoOutputCmd("javac", "@" + javacInput);
         showTiming(timing);
     }
 
@@ -255,21 +255,15 @@ public final class Bundler {
     private static void copyResourceTree(Path src, Path dst) {
         FileScanner.walk(src, (path) -> {
             Path target = dst.resolve(src.relativize(path));
-            try {
-                Files.createDirectories(target.getParent());
-                try (InputStream in = Files.newInputStream(path)) {
-                    try (OutputStream out = Files.newOutputStream(target)) {
-                        byte[] data = new byte[8192];
-                        int    amt;
-                        while ((amt = in.read(data)) != -1) {
-                            out.write(data, 0, amt);
-                        }
+            Files.createDirectories(target.getParent());
+            try (InputStream in = Files.newInputStream(path)) {
+                try (OutputStream out = Files.newOutputStream(target)) {
+                    byte[] data = new byte[8192];
+                    int    amt;
+                    while ((amt = in.read(data)) != -1) {
+                        out.write(data, 0, amt);
                     }
                 }
-            } catch (IOException exception) {
-                System.out.println();
-                exception.printStackTrace(System.err);
-                System.exit(1);
             }
         });
     }
@@ -693,7 +687,7 @@ public final class Bundler {
                 System.exit(1);
             }
             args.add("--add-launcher");
-            args.add("GCScmdline=" + propsFile.toString());
+            args.add("GCScmdline=" + propsFile);
         }
         }
         runNoOutputCmd(args);
@@ -849,7 +843,7 @@ public final class Bundler {
 
     static class RecursiveDirectoryRemover implements FileVisitor<Path> {
         @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
         }
 
@@ -860,7 +854,7 @@ public final class Bundler {
         }
 
         @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException {
+        public FileVisitResult visitFileFailed(Path file, IOException exception) {
             System.out.println();
             exception.printStackTrace(System.err);
             System.exit(1);
@@ -909,7 +903,7 @@ public final class Bundler {
         }
 
         @Override
-        public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) {
             if (shouldSkip(path)) {
                 return FileVisitResult.SKIP_SUBTREE;
             }
@@ -925,7 +919,7 @@ public final class Bundler {
         }
 
         @Override
-        public FileVisitResult visitFileFailed(Path path, IOException exception) throws IOException {
+        public FileVisitResult visitFileFailed(Path path, IOException exception) {
             System.out.println();
             exception.printStackTrace(System.err);
             System.exit(1);
@@ -933,7 +927,7 @@ public final class Bundler {
         }
 
         @Override
-        public FileVisitResult postVisitDirectory(Path path, IOException exception) throws IOException {
+        public FileVisitResult postVisitDirectory(Path path, IOException exception) {
             if (exception != null) {
                 System.out.println();
                 exception.printStackTrace(System.err);

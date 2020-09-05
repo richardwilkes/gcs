@@ -153,11 +153,10 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         getContentPane().add(panel, BorderLayout.SOUTH);
     }
 
-    private JLabel addLabel(JPanel panel, String title) {
+    private void addLabel(JPanel panel, String title) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         panel.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        return label;
     }
 
     private <E> JComboBox<E> addCombo(JPanel panel, E[] values, E choice, String tooltip) {

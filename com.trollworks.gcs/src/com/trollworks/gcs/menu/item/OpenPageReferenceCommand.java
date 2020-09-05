@@ -11,8 +11,10 @@
 
 package com.trollworks.gcs.menu.item;
 
+import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.pdfview.PDFRef;
+import com.trollworks.gcs.pdfview.PDFServer;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
@@ -24,7 +26,6 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ReverseListIterator;
-import com.trollworks.gcs.pdfview.PDFServer;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -36,13 +37,13 @@ import java.util.List;
 /** Provides the "Open Page Reference" command. */
 public class OpenPageReferenceCommand extends Command {
     /** The singleton {@link OpenPageReferenceCommand} for opening a single page reference. */
-    public static final OpenPageReferenceCommand OPEN_ONE_INSTANCE  = new OpenPageReferenceCommand(true, KeyEvent.VK_G, COMMAND_MODIFIER);
+    public static final OpenPageReferenceCommand OPEN_ONE_INSTANCE  = new OpenPageReferenceCommand(true, COMMAND_MODIFIER);
     /** The singleton {@link OpenPageReferenceCommand} for opening all page references. */
-    public static final OpenPageReferenceCommand OPEN_EACH_INSTANCE = new OpenPageReferenceCommand(false, KeyEvent.VK_G, SHIFTED_COMMAND_MODIFIER);
+    public static final OpenPageReferenceCommand OPEN_EACH_INSTANCE = new OpenPageReferenceCommand(false, SHIFTED_COMMAND_MODIFIER);
     private             ListOutline              mOutline;
 
-    private OpenPageReferenceCommand(boolean one, int key, int modifiers) {
-        super(getTitle(one), getCmd(one), key, modifiers);
+    private OpenPageReferenceCommand(boolean one, int modifiers) {
+        super(getTitle(one), getCmd(one), KeyEvent.VK_G, modifiers);
     }
 
     /**
@@ -155,7 +156,7 @@ public class OpenPageReferenceCommand extends Command {
     private static List<String> getReferences(HasSourceReference ref) {
         List<String> list = new ArrayList<>();
         if (ref != null) {
-            String[] refs = ref.getReference().split("[,;]");
+            String[] refs = PageRefCell.SEPARATORS_PATTERN.split(ref.getReference());
             if (refs.length > 0) {
                 for (String one : refs) {
                     String trimmed = one.trim();

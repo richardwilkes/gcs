@@ -21,22 +21,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 /** A grid within a {@link FlexLayout}. */
 public class FlexGrid extends FlexContainer {
-    private Map<FlexCell, FlexGridData>               mData    = new HashMap<>();
-    private int                                       mColumns = 1;
-    private int                                       mRows    = 1;
-    private FlexGridData[][]                          mGrid;
-    private int[]                                     mColumnWidths;
-    private int[]                                     mMinColumnWidths;
-    private int[]                                     mMaxColumnWidths;
-    private int[]                                     mRowHeights;
-    private int[]                                     mMinRowHeights;
-    private int[]                                     mMaxRowHeights;
-    private TreeMap<Integer, ArrayList<FlexGridData>> mRowSpanMap;
-    private TreeMap<Integer, ArrayList<FlexGridData>> mColumnSpanMap;
+    private Map<FlexCell, FlexGridData>                 mData    = new HashMap<>();
+    private int                                         mColumns = 1;
+    private int                                         mRows    = 1;
+    private FlexGridData[][]                            mGrid;
+    private int[]                                       mColumnWidths;
+    private int[]                                       mMinColumnWidths;
+    private int[]                                       mMaxColumnWidths;
+    private int[]                                       mRowHeights;
+    private int[]                                       mMinRowHeights;
+    private int[]                                       mMaxRowHeights;
+    private SortedMap<Integer, ArrayList<FlexGridData>> mRowSpanMap;
+    private SortedMap<Integer, ArrayList<FlexGridData>> mColumnSpanMap;
 
     /** @return The column count. */
     public int getColumnCount() {
@@ -423,15 +424,9 @@ public class FlexGrid extends FlexContainer {
         }
     }
 
-    private static void addToSpanMap(int span, TreeMap<Integer, ArrayList<FlexGridData>> map, FlexGridData data) {
+    private static void addToSpanMap(int span, Map<Integer, ArrayList<FlexGridData>> map, FlexGridData data) {
         if (span > 1) {
-            Integer                 key = Integer.valueOf(span);
-            ArrayList<FlexGridData> set = map.get(key);
-            if (set == null) {
-                set = new ArrayList<>();
-                map.put(key, set);
-            }
-            set.add(data);
+            map.computeIfAbsent(Integer.valueOf(span), k -> new ArrayList<>()).add(data);
         }
     }
 

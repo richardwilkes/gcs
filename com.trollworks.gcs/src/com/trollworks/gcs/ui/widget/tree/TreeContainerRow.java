@@ -124,12 +124,7 @@ public class TreeContainerRow extends TreeRow {
             List<TreeRow>                       list   = new ArrayList<>();
             for (TreeRow row : rows) {
                 if (row.mParent != null) {
-                    Set<TreeRow> set = map.get(row.mParent);
-                    if (set == null) {
-                        set = new HashSet<>();
-                        map.put(row.mParent, set);
-                    }
-                    set.add(row);
+                    map.computeIfAbsent(row.mParent, k -> new HashSet<>()).add(row);
                 }
                 if (!exists.contains(row)) {
                     exists.add(row);
