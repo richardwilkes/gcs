@@ -37,6 +37,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public final class Bundler {
     private static final String GCS_VERSION       = "4.24.0";
@@ -326,13 +327,13 @@ public final class Bundler {
         System.out.flush();
         long        timing = System.nanoTime();
         Set<String> keys   = new HashSet<>();
-        try {
-            Files.walk(Paths.get("com.trollworks.gcs", "src")).filter(path -> {
+        try (Stream<Path> srcTree = Files.walk(Paths.get("com.trollworks.gcs", "src"))) {
+            srcTree.filter(path -> {
                 String lower = path.getFileName().toString().toLowerCase();
                 return lower.endsWith(".java") && !lower.endsWith("i18n.java") && Files.isRegularFile(path) && Files.isReadable(path);
             }).distinct().forEach(path -> {
-                try {
-                    Files.lines(path).forEachOrdered(line -> {
+                try (Stream<String> lines = Files.lines(path)) {
+                    lines.forEachOrdered(line -> {
                         while (!line.isEmpty()) {
                             boolean needContext = true;
                             String  lookFor     = "I18n.Text(";
