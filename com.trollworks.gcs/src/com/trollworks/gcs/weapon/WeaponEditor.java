@@ -118,7 +118,6 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         mOutline = new WeaponOutline();
         OutlineModel model = mOutline.getModel();
         WeaponColumn.addColumns(mOutline, weaponClass, true);
-        mOutline.setAllowColumnDrag(false);
         mOutline.setAllowColumnResize(false);
         mOutline.setAllowRowDrag(false);
 

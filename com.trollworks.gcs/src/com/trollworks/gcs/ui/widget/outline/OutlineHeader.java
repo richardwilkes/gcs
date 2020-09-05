@@ -16,30 +16,12 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -49,7 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.ToolTipManager;
 
 /** A header panel for use with {@link Outline}. */
-public class OutlineHeader extends JPanel implements DragGestureListener, DropTargetListener, DragSourceListener, MouseListener, MouseMotionListener {
+public class OutlineHeader extends JPanel implements MouseListener, MouseMotionListener {
     private Outline mOwner;
     private Column  mSortColumn;
     private boolean mResizeOK;
@@ -68,10 +50,6 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
         addMouseMotionListener(this);
         setAutoscrolls(true);
         ToolTipManager.sharedInstance().registerComponent(this);
-        if (!GraphicsUtilities.inHeadlessPrintMode() && !GraphicsEnvironment.isHeadless()) {
-            DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
-            setDropTarget(new DropTarget(this, this));
-        }
     }
 
     /** @return The top divider color. */
@@ -205,16 +183,7 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
             if (col.isVisible()) {
                 bounds.width = col.getWidth();
                 if (clip.intersects(bounds)) {
-                    boolean   dragging       = mOwner.getSourceDragColumn() == col;
-                    Composite savedComposite = null;
-                    if (dragging) {
-                        savedComposite = ((Graphics2D) gc).getComposite();
-                        ((Graphics2D) gc).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-                    }
                     col.drawHeaderCell(mOwner, gc, bounds);
-                    if (dragging) {
-                        ((Graphics2D) gc).setComposite(savedComposite);
-                    }
                 }
                 bounds.x += bounds.width;
                 if (drawDividers && i < maxDivider) {
@@ -264,59 +233,6 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
     }
 
     @Override
-    public void dragGestureRecognized(DragGestureEvent dge) {
-        if (mSortColumn != null && mOwner.allowColumnDrag()) {
-            mOwner.setSourceDragColumn(mSortColumn);
-            if (DragSource.isDragImageSupported()) {
-                Point pt = dge.getDragOrigin();
-                dge.startDrag(null, mOwner.getColumnDragImage(mSortColumn), new Point(-(pt.x - mOwner.getColumnStart(mSortColumn)), -pt.y), mSortColumn, this);
-            } else {
-                dge.startDrag(null, mSortColumn, this);
-            }
-            mSortColumn = null;
-        }
-    }
-
-    @Override
-    public void dragEnter(DropTargetDragEvent dtde) {
-        if (mOwner.getSourceDragColumn() != null) {
-            mOwner.dragEnter(dtde);
-        } else {
-            dtde.rejectDrag();
-        }
-    }
-
-    @Override
-    public void dragOver(DropTargetDragEvent dtde) {
-        if (mOwner.getSourceDragColumn() != null) {
-            mOwner.dragOver(dtde);
-        } else {
-            dtde.rejectDrag();
-        }
-    }
-
-    @Override
-    public void dropActionChanged(DropTargetDragEvent dtde) {
-        if (mOwner.getSourceDragColumn() != null) {
-            mOwner.dropActionChanged(dtde);
-        } else {
-            dtde.rejectDrag();
-        }
-    }
-
-    @Override
-    public void dragExit(DropTargetEvent dte) {
-        if (mOwner.getSourceDragColumn() != null) {
-            mOwner.dragExit(dte);
-        }
-    }
-
-    @Override
-    public void drop(DropTargetDropEvent dtde) {
-        mOwner.drop(dtde);
-    }
-
-    @Override
     public void setBounds(int x, int y, int width, int height) {
         if (mIgnoreResizeOK || mResizeOK) {
             super.setBounds(x, y, width, height);
@@ -331,30 +247,5 @@ public class OutlineHeader extends JPanel implements DragGestureListener, DropTa
     /** @param ignoreResizeOK Whether {@link #setResizeOK(boolean)} is ignored. */
     public void setIgnoreResizeOK(boolean ignoreResizeOK) {
         mIgnoreResizeOK = ignoreResizeOK;
-    }
-
-    @Override
-    public void dragEnter(DragSourceDragEvent dsde) {
-        // Nothing to do...
-    }
-
-    @Override
-    public void dragOver(DragSourceDragEvent dsde) {
-        // Nothing to do...
-    }
-
-    @Override
-    public void dropActionChanged(DragSourceDragEvent dsde) {
-        // Nothing to do...
-    }
-
-    @Override
-    public void dragDropEnd(DragSourceDropEvent dsde) {
-        mOwner.setSourceDragColumn(null);
-    }
-
-    @Override
-    public void dragExit(DragSourceEvent dse) {
-        // Nothing to do...
     }
 }

@@ -159,7 +159,6 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     class ModifierOutline extends Outline {
         ModifierOutline() {
             super(false);
-            setAllowColumnDrag(false);
             setAllowColumnResize(false);
             setAllowRowDrag(false);
         }

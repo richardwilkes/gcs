@@ -16,7 +16,6 @@ import com.trollworks.gcs.ui.widget.outline.Outline;
 class WeaponOutline extends Outline {
     WeaponOutline() {
         super(false);
-        setAllowColumnDrag(false);
         setAllowColumnResize(false);
         setAllowRowDrag(false);
     }

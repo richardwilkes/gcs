@@ -40,7 +40,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.Transparency;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
@@ -100,7 +99,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              int                       mAllowedRowDropTypes    = DnDConstants.ACTION_COPY_OR_MOVE;
     private              TreeSorter                mSorter                 = new TreeSorter();
     private              TreeColumn                mSortColumn;
-    private              TreeColumn                mSourceDragColumn;
     private              TreeDragState             mDragState;
     private              TreeRow                   mAnchorRow;
     private              TreeRow                   mRowToSelectOnMouseUp;
@@ -109,7 +107,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              boolean                   mShowDisclosureControls = true;
     private              boolean                   mUseBanding             = true;
     private              boolean                   mAllowColumnResize      = true;
-    private              boolean                   mAllowColumnDrag        = true;
     private              boolean                   mAllowColumnContextMenu = true;
     private              boolean                   mAllowRowDropFromExternal;
     private              boolean                   mUserSortable           = true;
@@ -416,16 +413,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     /** @param allow Whether or not context menus on the column header are permitted. */
     public final void setAllowColumnContextMenu(boolean allow) {
         mAllowColumnContextMenu = allow;
-    }
-
-    /** @return Whether or not column dragging by the user is permitted. */
-    public final boolean allowColumnDrag() {
-        return mAllowColumnDrag;
-    }
-
-    /** @param allow Whether or not column dragging by the user is permitted. */
-    public final void setAllowColumnDrag(boolean allow) {
-        mAllowColumnDrag = allow;
     }
 
     /** @return The types of row dragging permitted to be initiated. */
@@ -892,11 +879,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
             if (x + colWidth > left && x < right) {
                 int tmpX = x;
                 gc.clipRect(x, top, colWidth, height);
-                Composite savedComposite = null;
-                if (mSourceDragColumn == column) {
-                    savedComposite = gc.getComposite();
-                    gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, DRAG_OPACITY));
-                }
                 if (i == 0) {
                     int depth  = row.getDepth();
                     int indent = INDENT * depth;
@@ -941,9 +923,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                     }
                 }
                 column.draw(gc, this, row, position, top, tmpX, colWidth, selected, active);
-                if (mSourceDragColumn == column) {
-                    gc.setComposite(savedComposite);
-                }
                 gc.setClip(clip);
             }
             x += column.getWidth() + columnDividerWidth;
@@ -1881,22 +1860,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         }
     }
 
-    /** @return The source {@link TreeColumn} being dragged. */
-    public TreeColumn getSourceDragColumn() {
-        return mSourceDragColumn;
-    }
-
-    /** @param column The source {@link TreeColumn} being dragged. */
-    protected void setSourceDragColumn(TreeColumn column) {
-        if (mSourceDragColumn != null) {
-            repaintColumn(mSourceDragColumn);
-        }
-        mSourceDragColumn = column;
-        if (mSourceDragColumn != null) {
-            repaintColumn(mSourceDragColumn);
-        }
-    }
-
     /** @param column The {@link TreeColumn} to repaint. */
     public void repaintColumn(TreeColumn column) {
         Point pt    = fromHeaderView(new Point(getColumnStart(column), 0));
@@ -1907,32 +1870,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         }
         Rectangle bounds = new Rectangle(pt.x, 0, width, getHeight());
         repaint(bounds);
-    }
-
-    private Img createColumnDragImage(TreeColumn column) {
-        Graphics2D gc   = null;
-        Img        off1 = createImage();
-        Img        off2;
-        try {
-            int width  = column.getWidth();
-            int height = getHeight();
-            off2 = Img.create(getGraphicsConfiguration(), width, height, Transparency.TRANSLUCENT);
-            gc = off2.getGraphics();
-            gc.setClip(new Rectangle(0, 0, width, height));
-            gc.setBackground(new Color(0, true));
-            gc.clearRect(0, 0, width, height);
-            gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, DRAG_OPACITY));
-            Point pt = fromHeaderView(new Point());
-            gc.drawImage(off1, -(getColumnStart(column) + pt.x), 0, this);
-        } catch (Exception paintException) {
-            Log.error(paintException);
-            off2 = null;
-        } finally {
-            if (gc != null) {
-                gc.dispose();
-            }
-        }
-        return off2 != null ? off2 : off1;
     }
 
     @Override
@@ -1956,14 +1893,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
             }
             break;
         case HEADER:
-            if (mAllowColumnDrag && dragAction == DnDConstants.ACTION_MOVE && mSortColumn != null) {
-                setSourceDragColumn(mSortColumn);
-                if (DragSource.isDragImageSupported()) {
-                    event.startDrag(null, createColumnDragImage(mSortColumn), new Point(-(where.x - getColumnStart(mSortColumn)), -where.y), mSortColumn, this);
-                } else {
-                    event.startDrag(null, mSortColumn, this);
-                }
-            }
             mSortColumn = null;
             break;
         default:
@@ -2124,7 +2053,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 }
             }
         }
-        setSourceDragColumn(null);
     }
 
     /**
