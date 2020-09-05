@@ -107,7 +107,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              boolean                   mShowDisclosureControls = true;
     private              boolean                   mUseBanding             = true;
     private              boolean                   mAllowColumnResize      = true;
-    private              boolean                   mAllowColumnContextMenu = true;
     private              boolean                   mAllowRowDropFromExternal;
     private              boolean                   mUserSortable           = true;
     private              boolean                   mShowColumnDivider      = true;
@@ -210,13 +209,13 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
             if (setColumnDividerHighlight(dragStart.x)) {
                 mDragColumnDivider = mMouseOverColumnDivider;
             } else {
-                boolean isPopupTrigger = event.isPopupTrigger();
                 switch (mViewArea) {
                 case CONTENT:
                     TreeContainerRow disclosureRow = overDisclosureControl(dragStart.x, dragStart.y);
                     if (disclosureRow != null) {
                         setOpen(!isOpen(disclosureRow), disclosureRow);
                     } else {
+                        boolean isPopupTrigger = event.isPopupTrigger();
                         boolean handled = false;
                         TreeRow row     = overRow(dragStart.y);
                         if (row != null) {
@@ -252,13 +251,8 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                     }
                     break;
                 case HEADER:
-                    TreeColumn column = overColumn(where.x);
-                    if (isPopupTrigger) {
-                        if (column != null && mAllowColumnContextMenu) {
-                            showContextMenuForColumn(where, column);
-                        }
-                    } else if (mUserSortable) {
-                        mSortColumn = column;
+                    if (mUserSortable) {
+                        mSortColumn = overColumn(where.x);
                     }
                     break;
                 default:
@@ -266,16 +260,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 }
             }
         }
-    }
-
-    /**
-     * Called to display a context menu for a {@link TreeColumn}.
-     *
-     * @param where  The point that was clicked, in header area coordinates.
-     * @param column The {@link TreeColumn} that was clicked on.
-     */
-    protected void showContextMenuForColumn(Point where, TreeColumn column) {
-        // Does nothing by default.
     }
 
     /**
@@ -403,16 +387,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     /** @param allow Whether or not column resizing by the user is permitted. */
     public final void setAllowColumnResize(boolean allow) {
         mAllowColumnResize = allow;
-    }
-
-    /** @return Whether or not context menus on the column header are permitted. */
-    public final boolean allowColumnContextMenu() {
-        return mAllowColumnContextMenu;
-    }
-
-    /** @param allow Whether or not context menus on the column header are permitted. */
-    public final void setAllowColumnContextMenu(boolean allow) {
-        mAllowColumnContextMenu = allow;
     }
 
     /** @return The types of row dragging permitted to be initiated. */

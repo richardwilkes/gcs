@@ -97,7 +97,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     private              int               mColumnStart;
     private              String            mSelectionChangedCommand;
     private              String            mPotentialContentSizeChangeCommand;
-    private              boolean           mAllowColumnContextMenu;
     private              boolean           mAllowColumnResize;
     private              boolean           mAllowRowDrag;
     private              boolean           mUseBanding;
@@ -156,7 +155,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         mModel = model;
         mProxies = new HashSet<>();
         mUserSortable = true;
-        mAllowColumnContextMenu = true;
         mAllowColumnResize = true;
         mAllowRowDrag = true;
         mDrawRowDividers = true;
@@ -1796,16 +1794,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     /** @param allow Whether row dragging is on or off. */
     public void setAllowRowDrag(boolean allow) {
         mAllowRowDrag = allow;
-    }
-
-    /** @return {@code true} if the column context menu is allowed. */
-    public boolean allowColumnContextMenu() {
-        return mAllowColumnContextMenu;
-    }
-
-    /** @param allow Whether the column context menu is on or off. */
-    public void setAllowColumnContextMenu(boolean allow) {
-        mAllowColumnContextMenu = allow;
     }
 
     /** Revalidates the view and header panel if it exists. */

@@ -118,7 +118,6 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
         OutlineHeader header = outline.getHeaderPanel();
         outline.setDynamicRowHeight(true);
         outline.setAllowColumnResize(false);
-        outline.setAllowColumnContextMenu(false);
         header.setIgnoreResizeOK(true);
         header.setBackground(ThemeColor.HEADER);
         header.setTopDividerColor(ThemeColor.HEADER);
