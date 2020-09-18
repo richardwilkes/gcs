@@ -694,8 +694,12 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 markForRebuild();
             } else if (type.startsWith(Skill.PREFIX)) {
                 OutlineSyncer.add(getSkillOutline());
+                mSyncWeapons = true;
+                markForRebuild();
             } else if (type.startsWith(Spell.PREFIX)) {
                 OutlineSyncer.add(getSpellOutline());
+                mSyncWeapons = true;
+                markForRebuild();
             } else if (type.startsWith(Equipment.PREFIX)) {
                 OutlineSyncer.add(getEquipmentOutline());
                 OutlineSyncer.add(getOtherEquipmentOutline());
@@ -704,6 +708,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 markForRebuild();
             } else if (type.startsWith(Note.PREFIX)) {
                 OutlineSyncer.add(getNoteOutline());
+                markForRebuild();
             }
 
             if (MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.contains(type)) {
@@ -712,6 +717,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             } else if (GURPSCharacter.ID_PARRY_BONUS.equals(type) || Skill.ID_LEVEL.equals(type)) {
                 OutlineSyncer.add(mMeleeWeaponOutline);
                 OutlineSyncer.add(mRangedWeaponOutline);
+                markForRebuild();
             } else if (GURPSCharacter.ID_CARRIED_WEIGHT.equals(type) || GURPSCharacter.ID_CARRIED_WEALTH.equals(type)) {
                 Column column = getEquipmentOutline().getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
                 column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
