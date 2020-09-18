@@ -599,7 +599,7 @@ public final class Bundler {
         args.add("--strip-native-commands");
         args.add("--add-modules");
         args.add("com.trollworks.gcs");
-        runNoOutputCmd("jlink", "--module-path", MODULE_DIR.toString(), "--output", JRE.toString(), "--compress=2", "--no-header-files", "--no-man-pages", "--strip-debug", "--strip-native-commands", "--add-modules", "com.trollworks.gcs");
+        runNoOutputCmd(args);
         args.clear();
         args.add("jpackage");
         args.add("--module");
