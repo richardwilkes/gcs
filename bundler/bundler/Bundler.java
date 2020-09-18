@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class Bundler {
-    private static final String GCS_VERSION       = "4.24.0";
+    private static final String GCS_VERSION       = "4.24.1";
     private static       String JDK_MAJOR_VERSION = "15";
     private static final String ITEXT_VERSION     = "2.1.7";
     private static final String LINUX             = "linux";
@@ -592,7 +592,10 @@ public final class Bundler {
         args.add(MODULE_DIR.toString());
         args.add("--output");
         args.add(JRE.toString());
-        args.add("--compress=2");
+        if (!OS.equals(WINDOWS)) {
+            // Don't know why, but as of JDK 15, this flag cause *some* Windows machines to be unable to launch GCS
+            args.add("--compress=2");
+        }
         args.add("--no-header-files");
         args.add("--no-man-pages");
         args.add("--strip-debug");
