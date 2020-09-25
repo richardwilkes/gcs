@@ -84,6 +84,7 @@ public class Preferences {
     private static final String MODIFIERS_DISPLAY               = "modifiers_display";
     private static final String NOTES_DISPLAY                   = "notes_display";
     private static final String OPEN_ROW_KEYS                   = "open_row_keys";
+    private static final String PDF_LAUNCH_STRING               = "pdf_launch_string";
     private static final String PDF_REFS                        = "pdf_refs";
     private static final String PNG_RESOLUTION                  = "png_resolution";
     private static final String RECENT_FILES                    = "recent_files";
@@ -170,6 +171,7 @@ public class Preferences {
     private        List<String>                     mBlockLayout;
     private        List<Path>                       mRecentFiles;
     private        Path                mLastDir;
+    private        String                           mPdfLaunchString;
     private        Map<String, PDFRef> mPdfRefs;
     private        Map<String, String> mKeyBindingOverrides;
     private        Map<String, Fonts.Info>          mFontInfo;
@@ -312,6 +314,7 @@ public class Preferences {
                             }
                         }
                         mLastDir = Paths.get(m.getStringWithDefault(LAST_DIR, mLastDir.toString())).normalize().toAbsolutePath();
+                        mPdfLaunchString = m.getStringWithDefault(PDF_LAUNCH_STRING, "");
                         if (m.has(PDF_REFS)) {
                             JsonMap m2 = m.getMap(PDF_REFS);
                             mPdfRefs = new HashMap<>();
@@ -458,6 +461,8 @@ public class Preferences {
                     }
                     w.endArray();
                     w.keyValue(LAST_DIR, mLastDir.toString());
+
+                    w.keyValue(PDF_LAUNCH_STRING, mPdfLaunchString);
                     w.key(PDF_REFS);
                     w.startMap();
                     for (Map.Entry<String, PDFRef> entry : mPdfRefs.entrySet()) {
@@ -956,5 +961,11 @@ public class Preferences {
 
     public void setUseNativePrintDialogs(boolean useNativePrintDialogs) {
         mUseNativePrintDialogs = useNativePrintDialogs;
+    }
+
+    public String getPdfViewerString() { return mPdfLaunchString; }
+    public void setPdfViewerString(String pdfLaunchString)
+    {
+        mPdfLaunchString = pdfLaunchString;
     }
 }
