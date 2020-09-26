@@ -58,7 +58,7 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
         Preferences prefs = Preferences.getInstance();
 
         //Command line to use to open PDFs
-        String pdfViewerCommandLineTooltip = I18n.Text("The command to launch a PDF viewer to view a page reference.");
+        String pdfViewerCommandLineTooltip = I18n.Text("The command to launch a PDF viewer to view a page reference. %f for file, %p for page.");
         addLabel(I18n.Text("PDF Viewer Launch String"));
         mPdfViewerCommandLine = addTextField(prefs.getPdfViewerString());
 
