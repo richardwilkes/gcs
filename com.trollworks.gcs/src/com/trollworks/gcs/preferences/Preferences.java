@@ -780,6 +780,8 @@ public class Preferences {
         mPdfRefs.remove(ref.getID());
     }
 
+    public void clearPdfLaunchString() { mPdfLaunchString = ""; }
+
     public void clearPdfRefs() {
         mPdfRefs = new HashMap<>();
     }

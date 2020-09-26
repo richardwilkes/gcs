@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -58,9 +59,12 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
         Preferences prefs = Preferences.getInstance();
 
         //Command line to use to open PDFs
-        String pdfViewerCommandLineTooltip = I18n.Text("The command to launch a PDF viewer to view a page reference. %f for file, %p for page.");
-        addLabel(I18n.Text("PDF Viewer Launch String"));
-        mPdfViewerCommandLine = addTextField(prefs.getPdfViewerString());
+        String pdfViewerCommandLineTooltip = I18n.Text("The command to launch a PDF viewer to view a page reference. %f for file, %p for page.") +
+                "\n" + I18n.Text("Example") + ":" +
+                "\"C:\\Program Files\\SumatraPDF\\SumatraPDF.exe\" -page %p \"%f\"\n\n" +
+                I18n.Text("Clear field to revert to default behavior.");
+        addLabel(I18n.Text("PDF Viewer Launch String"), pdfViewerCommandLineTooltip);
+        mPdfViewerCommandLine = addTextField(prefs.getPdfViewerString(), pdfViewerCommandLineTooltip);
 
         //List of page references encountered and set so far
         mPanel = new BandedPanel(I18n.Text("Page References"));
@@ -112,15 +116,17 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
                 .setFillHorizontalAlignment());
     }
 
-    private void addLabel(String title) {
+    private void addLabel(String title, String tooltip) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
+        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
-    private JTextField addTextField(String value) {
+    private JTextField addTextField(String value, String tooltip) {
         JTextField field = new JTextField(value);
         field.getDocument().addDocumentListener(this);
+        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         return field;
     }
@@ -152,6 +158,8 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
 
     @Override
     public void reset() {
+        Preferences.getInstance().clearPdfLaunchString();
+        mPdfViewerCommandLine.setText("");
         Preferences.getInstance().clearPdfRefs();
         mPanel.removeAll();
         mPanel.setSize(mPanel.getPreferredSize());
