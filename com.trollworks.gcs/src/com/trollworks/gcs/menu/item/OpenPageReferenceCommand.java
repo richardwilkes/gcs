@@ -117,25 +117,24 @@ public class OpenPageReferenceCommand extends Command {
                 }
             }
             if (ref != null) {
-                //If the user has specified a custom PDF viewer string, use that
-                String pdfViewerString = prefs.getPdfViewerString();
-                int offsetPage = page + ref.getPageToIndexOffset();
+                String  pdfViewerString = prefs.getPdfViewerString();
+                int     offsetPage      = page + ref.getPageToIndexOffset();
                 boolean useCustomString = !pdfViewerString.isEmpty() && !pdfViewerString.isBlank();
                 try {
-                    if(useCustomString)
-                    {
-                        String modifiedString = pdfViewerString
-                                .replace("%f",ref.getPath().toString())
-                                .replace("%p", Integer.toString(offsetPage));
+                    if (useCustomString) {
+                        String modifiedString = pdfViewerString.replace("%f", ref.getPath().toString()).replace("%p", Integer.toString(offsetPage));
 
                         Runtime rt = Runtime.getRuntime();
-                            Process pr = rt.exec(modifiedString);
+                        Process pr = rt.exec(modifiedString);
+                    } else {
+                        PDFServer.showPDF(ref.getPath(), offsetPage);
                     }
-                    else PDFServer.showPDF(ref.getPath(), offsetPage);
                 } catch (Exception exception) {
-                    if (useCustomString) { WindowUtils.showError(null,
-                            I18n.Text("You've specified a custom PDF viewer, but there was an error when calling it.\n\nOriginal error message:\n") + exception.getMessage()); }
-                    else WindowUtils.showError(null, exception.getMessage());
+                    if (useCustomString) {
+                        WindowUtils.showError(null, I18n.Text("You've specified a custom PDF viewer, but there was an error when calling it.\n\nOriginal error message:\n") + exception.getMessage());
+                    } else {
+                        WindowUtils.showError(null, exception.getMessage());
+                    }
                 }
             }
         }

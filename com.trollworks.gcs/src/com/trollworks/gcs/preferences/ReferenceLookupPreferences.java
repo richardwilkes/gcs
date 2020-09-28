@@ -44,8 +44,8 @@ import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.Document;
 
 /** The page reference lookup preferences panel. */
-public class ReferenceLookupPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    private JTextField mPdfViewerCommandLine;
+public class ReferenceLookupPreferences extends PreferencePanel implements DocumentListener, ItemListener {
+    private JTextField  mPdfViewerCommandLine;
     private BandedPanel mPanel;
 
     /**
@@ -58,15 +58,12 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
         setLayout(new PrecisionLayout().setColumns(2));
         Preferences prefs = Preferences.getInstance();
 
-        //Command line to use to open PDFs
-        String pdfViewerCommandLineTooltip = I18n.Text("The command to launch a PDF viewer to view a page reference. %f for file, %p for page.") +
-                "\n" + I18n.Text("Example") + ":" +
-                "\"C:\\Program Files\\SumatraPDF\\SumatraPDF.exe\" -page %p \"%f\"\n\n" +
-                I18n.Text("Clear field to revert to default behavior.");
+        // Command line to use to open PDFs
+        String pdfViewerCommandLineTooltip = I18n.Text("The command to launch a PDF viewer to view a page reference. %f for file, %p for page.") + "\n" + I18n.Text("Example") + ":" + "\"C:\\Program Files\\SumatraPDF\\SumatraPDF.exe\" -page %p \"%f\"\n\n" + I18n.Text("Clear field to revert to default behavior.");
         addLabel(I18n.Text("PDF Viewer Launch String"), pdfViewerCommandLineTooltip);
         mPdfViewerCommandLine = addTextField(prefs.getPdfViewerString(), pdfViewerCommandLineTooltip);
 
-        //List of page references encountered and set so far
+        // List of page references encountered and set so far
         mPanel = new BandedPanel(I18n.Text("Page References"));
         mPanel.setLayout(new PrecisionLayout().setColumns(4));
         mPanel.setBorder(new EmptyBorder(2, 5, 2, 5));
@@ -96,12 +93,7 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
             idLabel.setOpaque(true);
             idLabel.setBackground(background);
             mPanel.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
-            EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)),
-                                                event -> ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue()),
-                                                SwingConstants.RIGHT,
-                                                Integer.valueOf(ref.getPageToIndexOffset()),
-                                                Integer.valueOf(-9999),
-                                                I18n.Text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
+            EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)), event -> ref.setPageToIndexOffset(((Integer) event.getNewValue()).intValue()), SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()), Integer.valueOf(-9999), I18n.Text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
             mPanel.add(field);
             mPanel.add(new JLabel(ref.getPath().normalize().toAbsolutePath().toString()));
         }
@@ -112,8 +104,7 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
             preferredSize.height = 200;
         }
         scroller.setPreferredSize(preferredSize);
-        add(scroller, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalSpan(2)
-                .setFillHorizontalAlignment());
+        add(scroller, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalSpan(2).setFillHorizontalAlignment());
     }
 
     private void addLabel(String title, String tooltip) {
@@ -163,11 +154,6 @@ public class ReferenceLookupPreferences extends PreferencePanel implements Actio
         Preferences.getInstance().clearPdfRefs();
         mPanel.removeAll();
         mPanel.setSize(mPanel.getPreferredSize());
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        //Not used on this panel, but required by the interfaces.
     }
 
     @Override
