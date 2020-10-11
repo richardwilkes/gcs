@@ -111,6 +111,7 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
     public void updateTitle() {
         mTitle.setText(getFullTitle());
         mTitle.setIcon(mDockable.getTitleIcon());
+        setToolTipText(Text.wrapPlainTextForToolTip(mDockable.getTitleTooltip()));
         mTitle.revalidate();
     }
 
