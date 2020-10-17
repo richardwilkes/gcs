@@ -11,12 +11,17 @@
 
 package com.trollworks.gcs.utility.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Represents an array in JSON. */
 public class JsonArray extends JsonCollection {
     private List<Object> mList = new ArrayList<>();
+
+    public boolean isEmpty() {
+        return mList.isEmpty();
+    }
 
     /**
      * @param index The index to retrieve.
@@ -151,7 +156,7 @@ public class JsonArray extends JsonCollection {
     }
 
     @Override
-    public StringBuilder appendTo(StringBuilder buffer, boolean compact, int depth) {
+    public void appendTo(Appendable buffer, boolean compact, int depth) throws IOException {
         int len = size();
         buffer.append('[');
         depth++;
@@ -175,6 +180,5 @@ public class JsonArray extends JsonCollection {
             indent(buffer, false, depth - 1);
         }
         buffer.append(']');
-        return buffer;
     }
 }
