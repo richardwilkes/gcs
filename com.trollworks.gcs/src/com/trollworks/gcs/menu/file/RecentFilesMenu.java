@@ -18,7 +18,9 @@ import com.trollworks.gcs.utility.PathUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
@@ -52,15 +54,29 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
         if (mLastSeenRecentFilesUpdateCounter != lastRecentFilesUpdateCounter) {
             mLastSeenRecentFilesUpdateCounter = lastRecentFilesUpdateCounter;
             removeAll();
-            List<Path> list = new ArrayList<>();
+            List<Path>  list            = new ArrayList<>();
+            Set<String> set             = new HashSet<>();
+            Set<String> needFullPathSet = new HashSet<>();
             for (Path path : prefs.getRecentFiles()) {
                 if (Files.isReadable(path)) {
                     list.add(path);
-                    add(new JMenuItem(new OpenDataFileCommand(PathUtils.getLeafName(path, false), path)));
+                    String leaf = PathUtils.getLeafName(path, false);
+                    if (set.contains(leaf)) {
+                        needFullPathSet.add(leaf);
+                    } else {
+                        set.add(leaf);
+                    }
                     if (list.size() == Preferences.MAX_RECENT_FILES) {
                         break;
                     }
                 }
+            }
+            for (Path path : list) {
+                String title = PathUtils.getLeafName(path, false);
+                if (needFullPathSet.contains(title)) {
+                    title = path.toAbsolutePath().toString();
+                }
+                add(new JMenuItem(new OpenDataFileCommand(title, path)));
             }
             prefs.setRecentFiles(list);
             if (!list.isEmpty()) {
