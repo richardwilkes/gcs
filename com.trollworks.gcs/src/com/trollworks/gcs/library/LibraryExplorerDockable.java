@@ -485,16 +485,34 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     @Override
     public List<Object> search(String filter) {
-        ArrayList<Object> list = new ArrayList<>();
+        List<LibraryExplorerSearchResult> list = new ArrayList<>();
         filter = filter.toLowerCase();
         collect(mTreePanel.getRoot(), filter, list);
-        return list;
+        Set<String> titles     = new HashSet<>();
+        Set<String> duplicates = new HashSet<>();
+        for (LibraryExplorerSearchResult one : list) {
+            String title = one.getTitle();
+            if (titles.contains(title)) {
+                duplicates.add(title);
+            } else {
+                titles.add(title);
+            }
+        }
+        List<Object> result = new ArrayList<>();
+        for (LibraryExplorerSearchResult one : list) {
+            if (duplicates.contains(one.getTitle())) {
+                one.useFullPath();
+            }
+            result.add(one);
+        }
+        return result;
     }
 
-    private static void collect(TreeRow row, String text, ArrayList<Object> list) {
+    private static void collect(TreeRow row, String text, List<LibraryExplorerSearchResult> list) {
         if (row instanceof LibraryExplorerRow) {
-            if (((LibraryExplorerRow) row).getName().toLowerCase().contains(text)) {
-                list.add(row);
+            LibraryExplorerRow libRow = (LibraryExplorerRow) row;
+            if (libRow.getName().toLowerCase().contains(text)) {
+                list.add(new LibraryExplorerSearchResult(libRow));
             }
         }
         if (row instanceof TreeContainerRow) {
@@ -508,9 +526,11 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public void searchSelect(List<Object> selection) {
         List<TreeRow> list = new ArrayList<>();
         for (Object one : selection) {
-            if (one instanceof TreeRow) {
-                list.add((TreeRow) one);
-
+            if (one instanceof LibraryExplorerSearchResult) {
+                LibraryExplorerRow row = ((LibraryExplorerSearchResult) one).getRow();
+                if (row instanceof TreeRow) {
+                    list.add((TreeRow) row);
+                }
             }
         }
         mTreePanel.setParentsOpen(list);

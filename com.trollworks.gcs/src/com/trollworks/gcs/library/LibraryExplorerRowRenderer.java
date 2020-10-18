@@ -23,10 +23,10 @@ public class LibraryExplorerRowRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         String     title;
         RetinaIcon icon;
-        if (value instanceof LibraryExplorerRow) {
-            LibraryExplorerRow row = (LibraryExplorerRow) value;
-            title = row.getName();
-            icon = row.getIcon();
+        if (value instanceof LibraryExplorerSearchResult) {
+            LibraryExplorerSearchResult row = (LibraryExplorerSearchResult) value;
+            title = row.getTitle();
+            icon = row.getRow().getIcon();
         } else {
             title = value.toString();
             icon = null;
