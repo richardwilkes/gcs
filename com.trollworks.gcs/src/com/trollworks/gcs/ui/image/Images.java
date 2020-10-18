@@ -54,6 +54,7 @@ public final class Images {
     public static final RetinaIcon NOT_MARKER            = getRetina("not_marker");
     public static final RetinaIcon PDF_FILE              = getRetina("pdf_file");
     public static final RetinaIcon PHYSICAL_TYPE         = getRetina("physical_type");
+    public static final RetinaIcon RANDOMIZE             = getRetina("randomize");
     public static final RetinaIcon REFRESH               = getRetina("refresh");
     public static final RetinaIcon REMOVE                = getRetina("remove");
     public static final RetinaIcon SIZE_TO_FIT           = getRetina("size_to_fit");
