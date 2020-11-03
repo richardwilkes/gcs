@@ -49,9 +49,10 @@ public class ListPrereqEditor extends PrereqEditor {
         super(row, prereq, depth);
     }
 
-    private static String mapWhenTLToString(IntegerCriteria criteria) {
-        if (PrereqList.isWhenTLEnabled(criteria)) {
-            return switch (criteria.getType()) {
+    private String mapWhenTLToString() {
+        PrereqList prereqList = (PrereqList) mPrereq;
+        if (prereqList.isWhenTLEnabled()) {
+            return switch (prereqList.getWhenTLCriteria().getType()) {
                 case AT_LEAST -> tlIsAtLeast();
                 case AT_MOST -> tlIsAtMost();
                 default -> tlIs();
@@ -74,11 +75,10 @@ public class ListPrereqEditor extends PrereqEditor {
 
     @Override
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
-        PrereqList      prereqList     = (PrereqList) mPrereq;
-        IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
-        left.add(addComboBox(WHEN_TL, new Object[]{" ", tlIs(), tlIsAtLeast(), tlIsAtMost()}, mapWhenTLToString(whenTLCriteria)));
-        if (PrereqList.isWhenTLEnabled(whenTLCriteria)) {
-            left.add(addNumericCompareField(whenTLCriteria, 0, 99, false));
+        PrereqList prereqList     = (PrereqList) mPrereq;
+        left.add(addComboBox(WHEN_TL, new Object[]{" ", tlIs(), tlIsAtLeast(), tlIsAtMost()}, mapWhenTLToString()));
+        if (prereqList.isWhenTLEnabled()) {
+            left.add(addNumericCompareField(prereqList.getWhenTLCriteria(), 0, 99, false));
         }
         String requiresAll        = I18n.Text("Requires all of:");
         String requiresAtLeastOne = I18n.Text("Requires at least one of:");
@@ -124,24 +124,18 @@ public class ListPrereqEditor extends PrereqEditor {
             PrereqList      prereqList     = (PrereqList) mPrereq;
             IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
             Object          value          = ((JComboBox<?>) event.getSource()).getSelectedItem();
-            if (!mapWhenTLToString(whenTLCriteria).equals(value)) {
+            if (!mapWhenTLToString().equals(value)) {
                 if (tlIs().equals(value)) {
-                    if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
-                        PrereqList.setWhenTLEnabled(whenTLCriteria, true);
-                    }
+                    prereqList.setWhenTLEnabled(true);
                     whenTLCriteria.setType(NumericCompareType.IS);
                 } else if (tlIsAtLeast().equals(value)) {
-                    if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
-                        PrereqList.setWhenTLEnabled(whenTLCriteria, true);
-                    }
+                    prereqList.setWhenTLEnabled(true);
                     whenTLCriteria.setType(NumericCompareType.AT_LEAST);
                 } else if (tlIsAtMost().equals(value)) {
-                    if (!PrereqList.isWhenTLEnabled(whenTLCriteria)) {
-                        PrereqList.setWhenTLEnabled(whenTLCriteria, true);
-                    }
+                    prereqList.setWhenTLEnabled(true);
                     whenTLCriteria.setType(NumericCompareType.AT_MOST);
                 } else {
-                    PrereqList.setWhenTLEnabled(whenTLCriteria, false);
+                    prereqList.setWhenTLEnabled(false);
                 }
                 rebuild();
             }
