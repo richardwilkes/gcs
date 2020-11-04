@@ -138,9 +138,9 @@ public class Profile {
         mTitle = "";
         mAge = full ? Numbers.format(getRandomAge()) : "";
         mBirthday = full ? getRandomMonthAndDay() : "";
-        mEyeColor = full ? getRandomEyeColor() : "";
-        mHair = full ? getRandomHair() : "";
-        mSkinColor = full ? getRandomSkinColor() : "";
+        mEyeColor = full ? getRandomEyeColor("") : "";
+        mHair = full ? getRandomHair("") : "";
+        mSkinColor = full ? getRandomSkinColor("") : "";
         mHandedness = full ? getRandomHandedness() : "";
         Settings settings = mCharacter.getSettings();
         mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(Fixed6.ZERO, settings.defaultLengthUnits());
@@ -402,7 +402,7 @@ public class Profile {
             return 18 + RANDOM.nextInt(7);
         }
 
-        int mod  = 7;
+        int mod = 7;
         if (RANDOM.nextInt(3) == 1) {
             mod += 7;
             if (RANDOM.nextInt(4) == 1) {
@@ -410,8 +410,8 @@ public class Profile {
             }
         }
 
-        int base = 16;
-        int levels;
+        int       base     = 16;
+        int       levels;
         Advantage lifespan = mCharacter.getAdvantageNamed("Short Lifespan");
         if (lifespan != null) {
             levels = lifespan.getLevels();
@@ -695,56 +695,65 @@ public class Profile {
     }
 
     /** @return A random hair color, style & length. */
-    public static String getRandomHair() {
-        if (RANDOM.nextInt(5) == 0) {
-            return I18n.Text("Bald");
-        }
-
-        String color = switch (RANDOM.nextInt(9)) {
-            case 0, 1, 2 -> I18n.Text("Black");
-            case 3, 4 -> I18n.Text("Blond");
-            case 5 -> I18n.Text("Redhead");
-            default -> I18n.Text("Brown");
-        };
-
-        String style = switch (RANDOM.nextInt(3)) {
-            case 0 -> I18n.Text("Curly");
-            case 1 -> I18n.Text("Wavy");
-            default -> I18n.Text("Straight");
-        };
-
-        String length = switch (RANDOM.nextInt(3)) {
-            case 0 -> I18n.Text("Short");
-            case 1 -> I18n.Text("Long");
-            default -> I18n.Text("Medium");
-        };
-
-        return MessageFormat.format("{0}, {1}, {2}", color, style, length);
+    public static String getRandomHair(String not) {
+        String result;
+        do {
+            if (RANDOM.nextInt(7) == 0) {
+                result = I18n.Text("Bald");
+            } else {
+                String color = switch (RANDOM.nextInt(9)) {
+                    case 0, 1, 2 -> I18n.Text("Black");
+                    case 3, 4 -> I18n.Text("Blond");
+                    case 5 -> I18n.Text("Redhead");
+                    default -> I18n.Text("Brown");
+                };
+                String style = switch (RANDOM.nextInt(3)) {
+                    case 0 -> I18n.Text("Curly");
+                    case 1 -> I18n.Text("Wavy");
+                    default -> I18n.Text("Straight");
+                };
+                String length = switch (RANDOM.nextInt(3)) {
+                    case 0 -> I18n.Text("Short");
+                    case 1 -> I18n.Text("Long");
+                    default -> I18n.Text("Medium");
+                };
+                result = MessageFormat.format("{0}, {1}, {2}", color, style, length);
+            }
+        } while (result.equals(not));
+        return result;
     }
 
     /** @return A random eye color. */
-    public static String getRandomEyeColor() {
-        return switch (RANDOM.nextInt(8)) {
-            case 0, 1 -> I18n.Text("Blue");
-            case 2 -> I18n.Text("Green");
-            case 3 -> I18n.Text("Grey");
-            case 4 -> I18n.Text("Violet");
-            default -> I18n.Text("Brown");
-        };
+    public static String getRandomEyeColor(String not) {
+        String result;
+        do {
+            result = switch (RANDOM.nextInt(8)) {
+                case 0, 1 -> I18n.Text("Blue");
+                case 2 -> I18n.Text("Green");
+                case 3 -> I18n.Text("Grey");
+                case 4 -> I18n.Text("Violet");
+                default -> I18n.Text("Brown");
+            };
+        } while (result.equals(not));
+        return result;
     }
 
     /** @return A random sking color. */
-    public static String getRandomSkinColor() {
-        return switch (RANDOM.nextInt(8)) {
-            case 0 -> I18n.Text("Freckled");
-            case 1 -> I18n.Text("Light Tan");
-            case 2 -> I18n.Text("Dark Tan");
-            case 3 -> I18n.Text("Brown");
-            case 4 -> I18n.Text("Light Brown");
-            case 5 -> I18n.Text("Dark Brown");
-            case 6 -> I18n.Text("Pale");
-            default -> I18n.Text("Tan");
-        };
+    public static String getRandomSkinColor(String not) {
+        String result;
+        do {
+            result = switch (RANDOM.nextInt(8)) {
+                case 0 -> I18n.Text("Freckled");
+                case 1 -> I18n.Text("Light Tan");
+                case 2 -> I18n.Text("Dark Tan");
+                case 3 -> I18n.Text("Brown");
+                case 4 -> I18n.Text("Light Brown");
+                case 5 -> I18n.Text("Dark Brown");
+                case 6 -> I18n.Text("Pale");
+                default -> I18n.Text("Tan");
+            };
+        } while (result.equals(not));
+        return result;
     }
 
     /** @return A random handedness. */

@@ -117,6 +117,27 @@ public class JsonWriter extends FilterWriter {
         write(Json.quote(value));
     }
 
+    public void value(JsonCollection value) throws IOException {
+        commaIfNeeded();
+        value.appendTo(this, mCompact, mDepth);
+    }
+
+    public void keyValue(String key, JsonCollection value) throws IOException {
+        key(key);
+        if (value == null) {
+            write("null");
+        } else {
+            value.appendTo(this, mCompact, mDepth);
+        }
+        mNeedComma = true;
+    }
+
+    public void keyValueNotEmpty(String key, JsonCollection value) throws IOException {
+        if (value != null && !value.isEmpty()) {
+            keyValue(key, value);
+        }
+    }
+
     public void keyValue(String key, String value) throws IOException {
         key(key);
         write(Json.quote(value));

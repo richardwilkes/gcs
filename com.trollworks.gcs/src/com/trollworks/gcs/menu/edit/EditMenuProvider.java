@@ -46,9 +46,6 @@ public final class EditMenuProvider {
         cmds.add(TechLevelDecrementCommand.INSTANCE);
         cmds.add(ToggleStateCommand.INSTANCE);
         cmds.add(JumpToSearchCommand.INSTANCE);
-        cmds.add(RandomizeDescriptionCommand.INSTANCE);
-        cmds.add(RandomizeNameCommand.FEMALE_INSTANCE);
-        cmds.add(RandomizeNameCommand.MALE_INSTANCE);
         cmds.add(SwapDefaultsCommand.INSTANCE);
         cmds.add(ConvertToContainer.INSTANCE);
         if (!Platform.isMacintosh()) {
@@ -90,10 +87,6 @@ public final class EditMenuProvider {
         menu.add(stateMenu);
         menu.addSeparator();
         menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
-        menu.addSeparator();
-        menu.add(new DynamicMenuItem(RandomizeDescriptionCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(RandomizeNameCommand.FEMALE_INSTANCE));
-        menu.add(new DynamicMenuItem(RandomizeNameCommand.MALE_INSTANCE));
         if (!Platform.isMacintosh()) {
             menu.addSeparator();
             menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));

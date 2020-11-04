@@ -12,9 +12,14 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.page.PageField;
+import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
+
+import javax.swing.SwingConstants;
 
 /** The miscellaneous info panel. */
 public class MiscPanel extends DropPanel {
@@ -24,9 +29,15 @@ public class MiscPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public MiscPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(2, 2, 0), I18n.Text("Miscellaneous"), true);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_CREATED, I18n.Text("Created:"), null);
-        createLabelAndDisabledField(this, sheet, GURPSCharacter.ID_MODIFIED, I18n.Text("Modified:"), null);
-        createLabelAndDisabledField(this, sheet, Settings.PREFIX, I18n.Text("Options:"), Text.wrapPlainTextForToolTip(I18n.Text("Each letter represents an optional rule. A uppercase letter indicates the rule is in use while a lowercase letter indicates the rule is not in use.")));
+        super(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(4, 0), I18n.Text("Miscellaneous"));
+        createLabelAndDisabledField(sheet, GURPSCharacter.ID_CREATED, I18n.Text("Created:"), null);
+        createLabelAndDisabledField(sheet, GURPSCharacter.ID_MODIFIED, I18n.Text("Modified:"), null);
+        createLabelAndDisabledField(sheet, Settings.PREFIX, I18n.Text("Options:"), Text.wrapPlainTextForToolTip(I18n.Text("Each letter represents an optional rule. A uppercase letter indicates the rule is in use while a lowercase letter indicates the rule is not in use.")));
+    }
+
+    private void createLabelAndDisabledField(CharacterSheet sheet, String key, String title, String tooltip) {
+        PageField field = new PageField(sheet, key, SwingConstants.LEFT, false, tooltip);
+        add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment());
+        add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 }

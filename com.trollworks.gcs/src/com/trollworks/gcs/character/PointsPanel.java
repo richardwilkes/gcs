@@ -52,7 +52,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 
     private void createLabelAndField(CharacterSheet sheet, String key, String title, String tooltip, boolean enabled) {
         PageField field = new PageField(sheet, key, SwingConstants.RIGHT, enabled, Text.wrapPlainTextForToolTip(tooltip));
-        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         add(new PageLabel(title, field));
     }
 

@@ -83,6 +83,7 @@ public class GURPSCharacter extends CollectedModels {
     private static final String                              KEY_PER_ADJ                          = "per_adj";
     private static final String                              KEY_SPEED_ADJ                        = "speed_adj";
     private static final String                              KEY_MOVE_ADJ                         = "move_adj";
+    private static final String                              KEY_THIRD_PARTY_DATA                 = "third_party";
     /** The prefix for all character IDs. */
     public static final  String                              CHARACTER_PREFIX                     = "gcs.";
     /** The field ID for last modified date changes. */
@@ -222,6 +223,7 @@ public class GURPSCharacter extends CollectedModels {
     private              long                                mModifiedOn;
     private              long                                mCreatedOn;
     private              HashMap<String, ArrayList<Feature>> mFeatureMap;
+    private              JsonMap                             mThirdPartyData;
     private              int                                 mStrength;
     private              int                                 mStrengthBonus;
     private              int                                 mLiftingStrengthBonus;
@@ -395,6 +397,7 @@ public class GURPSCharacter extends CollectedModels {
             skill.updateLevel(false);
         }
         calculateAll();
+        mThirdPartyData = m.getMap(KEY_THIRD_PARTY_DATA);
         mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_MODIFIED_DATE)); // Must be last
     }
 
@@ -420,10 +423,13 @@ public class GURPSCharacter extends CollectedModels {
         w.keyValueNot(KEY_SPEED_ADJ, mSpeedAdj, 0);
         w.keyValueNot(KEY_MOVE_ADJ, mMoveAdj, 0);
         saveModels(w, saveType);
-        if (saveType != SaveType.HASH && mPageSettings != null) {
-            w.key(PrintManager.TAG_ROOT);
-            mPageSettings.save(w, LengthUnits.IN);
-            mPageSettingsString = mPageSettings.toString();
+        if (saveType != SaveType.HASH) {
+            if (mPageSettings != null) {
+                w.key(PrintManager.TAG_ROOT);
+                mPageSettings.save(w, LengthUnits.IN);
+                mPageSettingsString = mPageSettings.toString();
+            }
+            w.keyValueNotEmpty(KEY_THIRD_PARTY_DATA, mThirdPartyData);
         }
     }
 

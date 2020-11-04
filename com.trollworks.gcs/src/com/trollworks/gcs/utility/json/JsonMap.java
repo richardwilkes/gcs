@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.utility.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -140,7 +141,7 @@ public class JsonMap extends JsonCollection {
     }
 
     @Override
-    public StringBuilder appendTo(StringBuilder buffer, boolean compact, int depth) {
+    public void appendTo(Appendable buffer, boolean compact, int depth) throws IOException {
         boolean needComma = false;
         buffer.append('{');
         List<String> keys = new ArrayList<>(mMap.keySet());
@@ -174,6 +175,5 @@ public class JsonMap extends JsonCollection {
             indent(buffer, false, depth - 1);
         }
         buffer.append('}');
-        return buffer;
     }
 }

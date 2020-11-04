@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -32,7 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 
@@ -221,46 +219,5 @@ public class DropPanel extends JPanel {
     /** @return The {@link TitledBorder}. */
     public TitledBorder getTitledBorder() {
         return mTitledBorder;
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param title     The title to use.
-     * @param tooltip   The tooltip to use.
-     */
-    @SuppressWarnings("static-method")
-    protected void createLabelAndField(Container parent, CharacterSheet sheet, String key, String title, String tooltip) {
-        PageField field = new PageField(sheet, key, SwingConstants.LEFT, true, tooltip);
-        parent.add(new PageLabel(title, field));
-        parent.add(field);
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param title     The title to use.
-     * @param tooltip   The tooltip to use.
-     */
-    @SuppressWarnings("static-method")
-    protected void createLabelAndDisabledField(Container parent, CharacterSheet sheet, String key, String title, String tooltip) {
-        PageField field = new PageField(sheet, key, SwingConstants.LEFT, false, tooltip);
-        parent.add(new PageLabel(title, field));
-        parent.add(field);
-    }
-
-    /**
-     * @param parent  The parent to use.
-     * @param title   The title to use.
-     * @param tooltip The tooltip to use.
-     * @return The newly created header.
-     */
-    @SuppressWarnings("static-method")
-    protected PageHeader createHeader(Container parent, String title, String tooltip) {
-        PageHeader header = new PageHeader(title, tooltip);
-        parent.add(header);
-        return header;
     }
 }
