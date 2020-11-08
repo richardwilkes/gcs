@@ -92,7 +92,7 @@ public class PageAssembler {
         } else {
             height = panel.getPreferredSize().height;
         }
-        if (mRemaining < height) {
+        if (mRemaining < height && mContent.getComponentCount() > 0) {
             addPageInternal();
         }
         mContent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
