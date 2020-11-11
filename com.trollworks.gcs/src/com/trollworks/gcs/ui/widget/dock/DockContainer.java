@@ -346,10 +346,8 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
     }
 
     private void setupDockablesSwitchKeys() {
-        // Standard modifier for shortcuts _should_ be CTRL on win and linux and CMD on mac
-        int       standardModifier = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-        KeyStroke keyStrokeNext    = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, standardModifier);
-        KeyStroke keyStrokePrev    = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, standardModifier | InputEvent.SHIFT_DOWN_MASK);
+        KeyStroke keyStrokeNext = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK);
+        KeyStroke keyStrokePrev = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
 
         // http://www.davidc.net/programming/java/how-make-ctrl-tab-switch-tabs-jtabbedpane
         Set<AWTKeyStroke> forwardKeys = new HashSet<>(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
