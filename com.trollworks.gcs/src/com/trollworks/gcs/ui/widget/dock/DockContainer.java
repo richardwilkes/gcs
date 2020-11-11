@@ -373,8 +373,6 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
 
 
     static class ShowNextDockableAction extends AbstractAction {
-        private static final long serialVersionUID = 1L;
-
         @Override
         public void actionPerformed(ActionEvent event) {
             DockContainer  container = (DockContainer) event.getSource();
@@ -394,8 +392,6 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
 
 
     static class ShowPrevDockableAction extends AbstractAction {
-        private static final long serialVersionUID = 1L;
-
         @Override
         public void actionPerformed(ActionEvent event) {
             DockContainer  container = (DockContainer) event.getSource();
