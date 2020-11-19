@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.utility.PrintProxy;
 
 import java.awt.Component;
 import java.awt.Graphics;
@@ -39,10 +40,11 @@ public class RetinaIcon implements Icon {
 
     @Override
     public void paintIcon(Component component, Graphics g, int x, int y) {
-        Graphics2D     gc    = (Graphics2D) g;
-        RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
-        Scale          scale = Scale.get(component);
-        Img            img   = mRetina != null && (scale.getScale() > 1 || GraphicsUtilities.isRetinaDisplay(g)) ? mRetina : mNormal;
+        Graphics2D     gc         = (Graphics2D) g;
+        RenderingHints saved      = GraphicsUtilities.setMaximumQualityForGraphics(gc);
+        PrintProxy     printProxy = UIUtilities.getAncestorOfType(component, PrintProxy.class);
+        Scale          scale      = Scale.get(component);
+        Img            img        = mRetina != null && ((printProxy != null && printProxy.isPrinting()) || scale.getScale() > 1 || GraphicsUtilities.isRetinaDisplay(g)) ? mRetina : mNormal;
         gc.drawImage(img, x, y, scale.scale(getIconWidth()), scale.scale(getIconHeight()), component);
         gc.setRenderingHints(saved);
     }
