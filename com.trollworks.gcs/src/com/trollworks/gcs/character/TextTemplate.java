@@ -224,6 +224,8 @@ public class TextTemplate {
     private static final String         KEY_REACH                             = "REACH";
     private static final String         KEY_REACTION_LOOP_END                 = "REACTION_LOOP_END";
     private static final String         KEY_REACTION_LOOP_START               = "REACTION_LOOP_START";
+    private static final String         KEY_CONDITIONAL_MODIFIERS_LOOP_END    = "CONDITIONAL_MODIFIERS_LOOP_END";
+    private static final String         KEY_CONDITIONAL_MODIFIERS_LOOP_START  = "CONDITIONAL_MODIFIERS_LOOP_START";
     private static final String         KEY_RECOIL                            = "RECOIL";
     private static final String         KEY_REELING                           = "REELING";
     private static final String         KEY_REF                               = "REF";
@@ -671,6 +673,8 @@ public class TextTemplate {
                 processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
             } else if (key.startsWith(KEY_REACTION_LOOP_START)) {
                 processReactionLoop(out, extractUpToMarker(in, KEY_REACTION_LOOP_END));
+            } else if (key.startsWith(KEY_CONDITIONAL_MODIFIERS_LOOP_START)) {
+                processConditionalModifiersLoop(out, extractUpToMarker(in, KEY_CONDITIONAL_MODIFIERS_LOOP_END));
             } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
                 setOnlyCategories(key);
             } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
@@ -1809,6 +1813,46 @@ public class TextTemplate {
                         switch (key) {
                         case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(reaction.getTotalAmount()));
                         case KEY_SITUATION -> writeEncodedText(out, reaction.getFrom());
+                        case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                        default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                        }
+                    }
+                }
+            }
+        }
+        mStartId = 0;
+    }
+
+    private void processConditionalModifiersLoop(BufferedWriter out, String contents) throws IOException {
+        int           length           = contents.length();
+        StringBuilder keyBuffer        = new StringBuilder();
+        boolean       lookForKeyMarker = true;
+        mCurrentId = mStartId;
+        List<ConditionalModifierRow> cms = mSheet.collectConditionalModifiers();
+        for (ConditionalModifierRow cm : cms) {
+            mCurrentId++;
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        switch (key) {
+                        case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(cm.getTotalAmount()));
+                        case KEY_SITUATION -> writeEncodedText(out, cm.getFrom());
                         case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
                         default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                         }

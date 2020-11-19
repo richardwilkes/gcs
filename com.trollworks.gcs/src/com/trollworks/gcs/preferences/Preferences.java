@@ -142,7 +142,7 @@ public class Preferences {
     public static final int           DEFAULT_PNG_RESOLUTION                    = 200;
     public static final int           DEFAULT_TOOLTIP_TIMEOUT                   = 60;
     public static final LengthUnits   DEFAULT_DEFAULT_LENGTH_UNITS              = LengthUnits.FT_IN;
-    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of(CharacterSheet.REACTIONS_KEY, CharacterSheet.MELEE_KEY, CharacterSheet.RANGED_KEY, CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY, CharacterSheet.SPELLS_KEY, CharacterSheet.EQUIPMENT_KEY, CharacterSheet.OTHER_EQUIPMENT_KEY, CharacterSheet.NOTES_KEY);
+    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of(CharacterSheet.REACTIONS_KEY + " " + CharacterSheet.CONDITIONAL_MODIFIERS_KEY, CharacterSheet.MELEE_KEY, CharacterSheet.RANGED_KEY, CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY, CharacterSheet.SPELLS_KEY, CharacterSheet.EQUIPMENT_KEY, CharacterSheet.OTHER_EQUIPMENT_KEY, CharacterSheet.NOTES_KEY);
     public static final Scales        DEFAULT_INITIAL_UI_SCALE                  = Scales.QUARTER_AGAIN_SIZE;
     public static final String        DEFAULT_DEFAULT_PLAYER_NAME               = System.getProperty("user.name", "");
     public static final String        DEFAULT_DEFAULT_PORTRAIT_PATH             = "!\000";
@@ -169,9 +169,9 @@ public class Preferences {
     private        WeightUnits                      mDefaultWeightUnits;
     private        List<String>                     mBlockLayout;
     private        List<Path>                       mRecentFiles;
-    private        Path                mLastDir;
-    private        Map<String, PDFRef> mPdfRefs;
-    private        Map<String, String> mKeyBindingOverrides;
+    private        Path                             mLastDir;
+    private        Map<String, PDFRef>              mPdfRefs;
+    private        Map<String, String>              mKeyBindingOverrides;
     private        Map<String, Fonts.Info>          mFontInfo;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
     private        PrintManager                     mDefaultPageSettings;
@@ -445,12 +445,14 @@ public class Preferences {
                     w.keyValue(INITIAL_UI_SCALE, Enums.toId(mInitialUIScale));
                     w.keyValue(DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
                     w.keyValue(DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
-                    w.key(BLOCK_LAYOUT);
-                    w.startArray();
-                    for (String line : mBlockLayout) {
-                        w.value(line);
+                    if (!DEFAULT_BLOCK_LAYOUT.equals(mBlockLayout)) {
+                        w.key(BLOCK_LAYOUT);
+                        w.startArray();
+                        for (String line : mBlockLayout) {
+                            w.value(line);
+                        }
+                        w.endArray();
                     }
-                    w.endArray();
                     w.key(RECENT_FILES);
                     w.startArray();
                     for (Path p : mRecentFiles) {
