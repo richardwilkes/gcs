@@ -13,8 +13,6 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.utility.I18n;
 
-import java.util.ArrayList;
-
 /** Hit locations. */
 public enum HitLocation {
     /** The skull hit location. */
@@ -49,7 +47,7 @@ public enum HitLocation {
     TORSO {
         @Override
         public String toString() {
-            return I18n.Text("to the torso");
+            return I18n.Text("to the torso (including vitals)");
         }
     },
     /** The vitals hit location. */
@@ -57,11 +55,6 @@ public enum HitLocation {
         @Override
         public String toString() {
             return I18n.Text("to the vitals");
-        }
-
-        @Override
-        public boolean isChoosable() {
-            return false;
         }
     },
     /** The groin hit location. */
@@ -141,21 +134,4 @@ public enum HitLocation {
             return I18n.Text("to the full body except the eyes");
         }
     };
-
-    /** @return The hit locations that can be chosen as an armor protection spot. */
-    public static HitLocation[] getChoosableLocations() {
-        ArrayList<HitLocation> list = new ArrayList<>();
-        for (HitLocation one : values()) {
-            if (one.isChoosable()) {
-                list.add(one);
-            }
-        }
-        return list.toArray(new HitLocation[0]);
-    }
-
-    /** @return Whether this location is choosable as an armor protection spot. */
-    @SuppressWarnings("static-method")
-    public boolean isChoosable() {
-        return true;
-    }
 }

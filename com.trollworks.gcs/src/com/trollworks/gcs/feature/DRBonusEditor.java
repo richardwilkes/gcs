@@ -47,7 +47,7 @@ public class DRBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        row.add(addComboBox(CHANGE_LOCATION, HitLocation.getChoosableLocations(), ((DRBonus) getFeature()).getLocation()));
+        row.add(addComboBox(CHANGE_LOCATION, HitLocation.values(), ((DRBonus) getFeature()).getLocation()));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 0);
     }
