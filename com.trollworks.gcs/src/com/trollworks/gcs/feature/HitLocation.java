@@ -133,5 +133,5 @@ public enum HitLocation {
         public String toString() {
             return I18n.Text("to the full body except the eyes");
         }
-    };
+    }
 }

@@ -23,7 +23,6 @@ import java.awt.EventQueue;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
