@@ -592,10 +592,6 @@ public final class Bundler {
         args.add(MODULE_DIR.toString());
         args.add("--output");
         args.add(JRE.toString());
-        if (!OS.equals(WINDOWS)) {
-            // Don't know why, but as of JDK 15, this flag cause *some* Windows machines to be unable to launch GCS
-            args.add("--compress=2");
-        }
         args.add("--no-header-files");
         args.add("--no-man-pages");
         args.add("--strip-debug");
@@ -615,10 +611,6 @@ public final class Bundler {
         args.add("Richard A. Wilkes");
         args.add("--description");
         args.add("GCS (GURPS Character Sheet) is a stand-alone, interactive, character sheet editor that allows you to build characters for the GURPS 4th Edition roleplaying game system.");
-        if (!noInstaller) {
-            args.add("--license-file");
-            args.add("LICENSE");
-        }
         args.add("--icon");
         args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
         if (OS.equals(MACOS) || !noInstaller) {
