@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillPointsTextCell;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.Cell;
@@ -145,7 +146,7 @@ public enum SpellColumn {
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
             if (dataFile instanceof GURPSCharacter) {
-                return ((GURPSCharacter)dataFile).getSettings().showCollegeInSpells();
+                return ((GURPSCharacter) dataFile).getSettings().showCollegeInSpells();
             }
             if (dataFile instanceof Template) {
                 return Preferences.getInstance().showCollegeInSheetSpells();
@@ -338,6 +339,23 @@ public enum SpellColumn {
                         return Integer.MIN_VALUE;
                     }
                     return spell.getRelativeLevel();
+                }
+            } else if (spell.getTemplate() != null) {
+                int points = spell.getPoints();
+                if (points > 0) {
+                    SkillDifficulty difficulty = spell.getDifficulty();
+                    int             level      = difficulty.getBaseRelativeLevel();
+                    if (difficulty == SkillDifficulty.W) {
+                        points /= 3;
+                    }
+                    if (points > 1) {
+                        if (points < 4) {
+                            level++;
+                        } else {
+                            level += 1 + points / 4;
+                        }
+                    }
+                    return level;
                 }
             }
             return Integer.MIN_VALUE;

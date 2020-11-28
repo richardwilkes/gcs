@@ -17,6 +17,7 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
+import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -165,7 +166,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
         for (Spell spell : new FilteredIterator<>(getModel().getSelectionAsList(), Spell.class)) {
             if (!spell.canHaveChildren()) {
                 int     basePoints = spell.getRawPoints() + 1;
-                int     maxPoints  = basePoints + 4;
+                int     maxPoints  = basePoints + (spell.getDifficulty() == SkillDifficulty.W ? 12 : 4);
                 int     oldLevel   = spell.getLevel();
                 RowUndo undo       = new RowUndo(spell);
                 for (int points = basePoints; points < maxPoints; points++) {

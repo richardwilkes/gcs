@@ -419,6 +419,9 @@ public class Spell extends ListRow implements HasSourceReference {
 
         if (character != null) {
             level = attribute.getBaseSkillLevel(character);
+            if (difficulty == SkillDifficulty.W) {
+                points /= 3;
+            }
             if (points < 1) {
                 level = -1;
                 relativeLevel = 0;
