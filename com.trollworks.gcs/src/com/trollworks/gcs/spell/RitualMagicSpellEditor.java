@@ -171,6 +171,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         modified |= mRow.setCastingTime(mCastingTimeField.getText());
         modified |= mRow.setResist(mResistField.getText());
         modified |= mRow.setDuration(mDurationField.getText());
+        modified |= mRow.setDifficulty(getAttribute(), getDifficulty());
         modified |= mRow.setPrerequisiteSpellsCount(getPrerequisiteSpellsCount());
         if (mRow.getCharacter() != null || mRow.getTemplate() != null) {
             modified |= mRow.setRawPoints(getPoints());
