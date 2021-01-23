@@ -179,9 +179,14 @@ public class Spell extends ListRow implements HasSourceReference {
         updateLevel(false);
         if (deep) {
             int count = spell.getChildCount();
-
             for (int i = 0; i < count; i++) {
-                addChild(new Spell(dataFile, (Spell) spell.getChild(i), true, forSheet));
+                Row child = spell.getChild(i);
+                if (child instanceof RitualMagicSpell) {
+                    child = new RitualMagicSpell(dataFile, (RitualMagicSpell) child, true, forSheet);
+                } else {
+                    child = new Spell(dataFile, (Spell) child, true, forSheet);
+                }
+                addChild(child);
             }
         }
     }
