@@ -48,6 +48,7 @@ public final class EditMenuProvider {
         cmds.add(JumpToSearchCommand.INSTANCE);
         cmds.add(SwapDefaultsCommand.INSTANCE);
         cmds.add(ConvertToContainer.INSTANCE);
+        cmds.add(SettingsCommand.INSTANCE);
         if (!Platform.isMacintosh()) {
             cmds.add(PreferencesCommand.INSTANCE);
         }
@@ -87,8 +88,9 @@ public final class EditMenuProvider {
         menu.add(stateMenu);
         menu.addSeparator();
         menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(SettingsCommand.INSTANCE));
         if (!Platform.isMacintosh()) {
-            menu.addSeparator();
             menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
         }
         DynamicMenuEnabler.add(stateMenu);

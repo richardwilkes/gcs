@@ -11,14 +11,17 @@
 
 package com.trollworks.gcs.ui.widget.search;
 
+import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -32,6 +35,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -39,7 +43,7 @@ import javax.swing.event.DocumentListener;
 public class Search extends JPanel implements DocumentListener, KeyListener, FocusListener {
     private SearchTarget   mTarget;
     private JLabel         mHits;
-    private JTextField     mFilterField;
+    private SearchField    mFilterField;
     private SearchDropDown mFloater;
     private String         mFilter;
 
@@ -51,14 +55,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
     public Search(SearchTarget target) {
         mTarget = target;
 
-        mFilterField = new JTextField(10);
-        mFilterField.getDocument().addDocumentListener(this);
-        mFilterField.addKeyListener(this);
-        mFilterField.addFocusListener(this);
-        mFilterField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Enter text here and press RETURN to select all matching items")));
-        // This client property is specific to Mac OS X
-        mFilterField.putClientProperty("JTextField.variant", "search");
-        mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));
+        mFilterField = new SearchField();
         add(mFilterField);
 
         mHits = new JLabel();
@@ -201,6 +198,31 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
             mFloater = null;
             if (rootPane != null) {
                 rootPane.repaint(bounds);
+            }
+        }
+    }
+
+    class SearchField extends JTextField {
+        SearchField() {
+            super(10);
+            getDocument().addDocumentListener(Search.this);
+            addKeyListener(Search.this);
+            addFocusListener(Search.this);
+            setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Enter text here and press RETURN to select all matching items")));
+            // This client property is specific to Mac OS X
+            putClientProperty("JTextField.variant", "search");
+            setMinimumSize(new Dimension(60, getPreferredSize().height));
+        }
+
+        @Override
+        protected void paintComponent(Graphics gc) {
+            super.paintComponent(gc);
+            if (getText().isEmpty()) {
+                Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
+                bounds.x += 4;
+                bounds.width -= 4;
+                gc.setColor(Color.GRAY);
+                TextDrawing.draw(gc, bounds, I18n.Text("Search"), SwingConstants.LEFT, SwingConstants.CENTER);
             }
         }
     }
