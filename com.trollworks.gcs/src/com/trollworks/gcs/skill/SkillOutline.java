@@ -17,7 +17,6 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
-import com.trollworks.gcs.spell.SpellColumn;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
