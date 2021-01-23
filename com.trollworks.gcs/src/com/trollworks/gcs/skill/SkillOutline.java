@@ -17,6 +17,7 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
+import com.trollworks.gcs.spell.SpellColumn;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -64,6 +65,11 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
     public SkillOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Skill.ID_LIST_CHANGED);
         SkillColumn.addColumns(this, dataFile);
+    }
+
+    public void resetColumns() {
+        getModel().removeAllColumns();
+        SkillColumn.addColumns(this, mDataFile);
     }
 
     @Override

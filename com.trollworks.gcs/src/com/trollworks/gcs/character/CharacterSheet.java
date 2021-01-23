@@ -33,6 +33,7 @@ import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.Fonts;
@@ -128,6 +129,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private              boolean                     mOkToPaint                = true;
     private              boolean                     mIsPrinting;
     private              boolean                     mSyncWeapons;
+    private              boolean                     mReloadSkillColumns;
     private              boolean                     mReloadSpellColumns;
 
     /**
@@ -429,6 +431,13 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     protected void createOutlines(CollectedModels models) {
+        if (mReloadSkillColumns) {
+            mReloadSkillColumns = false;
+            SkillOutline skillOutline = getSkillOutline();
+            if (skillOutline != null) {
+                skillOutline.resetColumns();
+            }
+        }
         if (mReloadSpellColumns) {
             mReloadSpellColumns = false;
             SpellOutline spellOutline = getSpellOutline();
@@ -697,6 +706,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_COLLEGE_IN_SPELLS);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_DIFFICULTY);
 
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_DISABLED);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_WEAPON_STATUS_CHANGED);
@@ -738,6 +748,10 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
+        if (Settings.ID_SHOW_DIFFICULTY.equals(type)) {
+            mReloadSkillColumns = true;
+            mReloadSpellColumns = true;
+        }
         if (Settings.ID_SHOW_COLLEGE_IN_SPELLS.equals(type)) {
             mReloadSpellColumns = true;
         }

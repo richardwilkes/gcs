@@ -44,6 +44,7 @@ public class Settings {
     public static final  String         TAG_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     public static final  String         TAG_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
     public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
+    public static final  String         TAG_SHOW_DIFFICULTY                 = "show_difficulty";
     public static final  String         TAG_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     public static final  String         PREFIX                              = GURPSCharacter.CHARACTER_PREFIX + "settings.";
     public static final  String         ID_DEFAULT_LENGTH_UNITS             = PREFIX + TAG_DEFAULT_LENGTH_UNITS;
@@ -60,6 +61,7 @@ public class Settings {
     public static final  String         ID_USE_THRUST_EQUALS_SWING_MINUS_2  = PREFIX + TAG_USE_THRUST_EQUALS_SWING_MINUS_2;
     public static final  String         ID_USE_SIMPLE_METRIC_CONVERSIONS    = PREFIX + TAG_USE_SIMPLE_METRIC_CONVERSIONS;
     public static final  String         ID_SHOW_COLLEGE_IN_SPELLS           = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
+    public static final  String         ID_SHOW_DIFFICULTY                  = PREFIX + TAG_SHOW_DIFFICULTY;
     public static final  String         ID_USE_TITLE_IN_FOOTER              = PREFIX + TAG_USE_TITLE_IN_FOOTER;
     private              GURPSCharacter mCharacter;
     private              LengthUnits    mDefaultLengthUnits;
@@ -76,6 +78,7 @@ public class Settings {
     private              boolean        mUseThrustEqualsSwingMinus2; // Home brew
     private              boolean        mUseSimpleMetricConversions; // B9
     private              boolean        mShowCollegeInSpells;
+    private              boolean        mShowDifficulty;
     private              boolean        mUseTitleInFooter;
 
     public Settings(GURPSCharacter character) {
@@ -95,6 +98,7 @@ public class Settings {
         mUseThrustEqualsSwingMinus2 = prefs.useThrustEqualsSwingMinus2();
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
+        mShowDifficulty = prefs.showDifficulty();
         mUseTitleInFooter = prefs.useTitleInFooter();
     }
 
@@ -119,6 +123,7 @@ public class Settings {
         mUseThrustEqualsSwingMinus2 = m.getBoolean(TAG_USE_THRUST_EQUALS_SWING_MINUS_2);
         mUseSimpleMetricConversions = m.getBoolean(TAG_USE_SIMPLE_METRIC_CONVERSIONS);
         mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
+        mShowDifficulty = m.getBoolean(TAG_SHOW_DIFFICULTY);
         mUseTitleInFooter = m.getBoolean(TAG_USE_TITLE_IN_FOOTER);
         mBlockLayout = new ArrayList<>();
         JsonArray a     = m.getArray(TAG_BLOCK_LAYOUT);
@@ -144,6 +149,7 @@ public class Settings {
         w.keyValue(TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
         w.keyValue(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
+        w.keyValue(TAG_SHOW_DIFFICULTY, mShowDifficulty);
         w.keyValue(TAG_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
         w.key(TAG_BLOCK_LAYOUT);
         w.startArray();
@@ -318,6 +324,17 @@ public class Settings {
         if (mShowCollegeInSpells != show) {
             mShowCollegeInSpells = show;
             mCharacter.notifySingle(ID_SHOW_COLLEGE_IN_SPELLS, Boolean.valueOf(mShowCollegeInSpells));
+        }
+    }
+
+    public boolean showDifficulty() {
+        return mShowDifficulty;
+    }
+
+    public void setShowDifficulty(boolean show) {
+        if (mShowDifficulty != show) {
+            mShowDifficulty = show;
+            mCharacter.notifySingle(ID_SHOW_DIFFICULTY, Boolean.valueOf(mShowDifficulty));
         }
     }
 

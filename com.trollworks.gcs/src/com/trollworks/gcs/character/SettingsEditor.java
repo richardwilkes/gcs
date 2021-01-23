@@ -56,6 +56,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mUseThrustEqualsSwingMinus2;
     private JCheckBox                mUseSimpleMetricConversions;
     private JCheckBox                mShowCollegeInSpells;
+    private JCheckBox                mShowDifficulty;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
@@ -106,6 +107,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private void addTopPanel() {
         JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
         mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
+        mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
         mBaseWillAndPerOn10 = addCheckBox(panel, I18n.Text("Base Will and Perception on 10 and not IQ"), null, mSettings.baseWillAndPerOn10());
         mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
@@ -184,6 +186,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         Object source = event.getSource();
         if (source == mShowCollegeInSpells) {
             mSettings.setShowCollegeInSpells(mShowCollegeInSpells.isSelected());
+        } else if (source == mShowDifficulty) {
+            mSettings.setShowDifficulty(mShowDifficulty.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
         } else if (source == mBaseWillAndPerOn10) {
@@ -212,6 +216,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         Preferences prefs      = Preferences.getInstance();
         boolean     atDefaults = mUseModifyingDicePlusAdds.isSelected() == prefs.useModifyingDicePlusAdds();
         atDefaults = atDefaults && mShowCollegeInSpells.isSelected() == prefs.showCollegeInSheetSpells();
+        atDefaults = atDefaults && mShowDifficulty.isSelected() == prefs.showDifficulty();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
         atDefaults = atDefaults && mBaseWillAndPerOn10.isSelected() == prefs.baseWillAndPerOn10();
         atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
@@ -245,6 +250,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             Preferences prefs = Preferences.getInstance();
             mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
             mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
+            mShowDifficulty.setSelected(prefs.showDifficulty());
             mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
             mBaseWillAndPerOn10.setSelected(prefs.baseWillAndPerOn10());
             mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());

@@ -254,6 +254,42 @@ public enum SpellColumn {
             return "";
         }
     },
+    /** The difficulty. */
+    DIFFICULTY {
+        @Override
+        public String toString() {
+            return I18n.Text("Difficulty");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The difficulty of the spell");
+        }
+
+        @Override
+        public Object getData(Spell spell) {
+            return getDataAsText(spell);
+        }
+
+        @Override
+        public String getDataAsText(Spell spell) {
+            if (!spell.canHaveChildren()) {
+                return spell.getDifficultyAsText(true);
+            }
+            return "";
+        }
+
+        @Override
+        public boolean shouldDisplay(DataFile dataFile) {
+            if (dataFile instanceof GURPSCharacter) {
+                return ((GURPSCharacter) dataFile).getSettings().showDifficulty();
+            }
+            if (dataFile instanceof Template) {
+                return Preferences.getInstance().showDifficulty();
+            }
+            return dataFile instanceof ListFile;
+        }
+    },
     /** The spell level. */
     LEVEL {
         @Override
