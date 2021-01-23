@@ -1771,6 +1771,9 @@ public class TextTemplate {
                             case KEY_ID:
                                 writeEncodedText(out, Integer.toString(mCurrentId));
                                 break;
+                            case KEY_REF:
+                                writeEncodedText(out, note.getReference());
+                                break;
                             default:
                                 writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 break;
