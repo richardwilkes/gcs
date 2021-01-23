@@ -94,6 +94,7 @@ public class TextTemplate {
     private static final String         KEY_BEST_CURRENT_PARRY                = "BEST_CURRENT_PARRY";
     private static final String         KEY_BIRTHDAY                          = "BIRTHDAY";
     private static final String         KEY_BLOCK                             = "BLOCK";
+    private static final String         KEY_BODY_TYPE                         = "BODY_TYPE";
     private static final String         KEY_BULK                              = "BULK";
     private static final String         KEY_CARRIED_STATUS                    = "CARRIED_STATUS";
     private static final String         KEY_CARRIED_VALUE                     = "CARRIED_VALUE";
@@ -629,6 +630,9 @@ public class TextTemplate {
             break;
         case KEY_RACE_DEPRECATED:
         case KEY_CAMPAIGN_DEPRECATED:
+            break;
+        case KEY_BODY_TYPE:
+            writeEncodedText(out, gurpsCharacter.getProfile().getHitLocationTable().toString());
             break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
