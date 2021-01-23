@@ -2556,9 +2556,11 @@ public class GURPSCharacter extends CollectedModels {
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
      * @param categoriesQualifier     The categories qualifier.
+     * @param dieCount                The number of dice for the base weapon damage.
+     * @param toolTip                 A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
+    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         int               rsl     = Integer.MIN_VALUE;
         for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
@@ -2575,7 +2577,11 @@ public class GURPSCharacter extends CollectedModels {
                         WeaponBonus bonus = (WeaponBonus) feature;
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getRelativeLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
                             bonuses.add(bonus);
+                            LeveledAmount amount = bonus.getAmount();
+                            int           level  = amount.getLevel();
+                            amount.setLevel(dieCount);
                             bonus.addToToolTip(toolTip);
+                            amount.setLevel(level);
                         }
                     }
                 }
@@ -2589,9 +2595,11 @@ public class GURPSCharacter extends CollectedModels {
      * @param nameQualifier       The name qualifier.
      * @param usageQualifier      The usage qualifier.
      * @param categoriesQualifier The categories qualifier.
+     * @param dieCount            The number of dice for the base weapon damage.
+     * @param toolTip             A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
+    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
@@ -2600,7 +2608,11 @@ public class GURPSCharacter extends CollectedModels {
                     WeaponBonus bonus = (WeaponBonus) feature;
                     if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
+                        LeveledAmount amount = bonus.getAmount();
+                        int           level  = amount.getLevel();
+                        amount.setLevel(dieCount);
                         bonus.addToToolTip(toolTip);
+                        amount.setLevel(level);
                     }
                 }
             }
