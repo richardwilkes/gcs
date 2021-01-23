@@ -171,11 +171,6 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
         removeFloater();
     }
 
-    /** @return The filter edit field. */
-    public JTextField getFilterField() {
-        return mFilterField;
-    }
-
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
