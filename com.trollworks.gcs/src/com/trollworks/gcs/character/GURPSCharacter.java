@@ -1948,7 +1948,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The will. */
     public int getWillAdj() {
-        return mWillAdj + mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
+        return mWillAdj + mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence());
     }
 
     /** @param willAdj The new will. */
@@ -1956,7 +1956,7 @@ public class GURPSCharacter extends CollectedModels {
         int oldWill = getWillAdj();
         if (oldWill != willAdj) {
             postUndoEdit(I18n.Text("Will Change"), ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(willAdj));
-            updateWillInfo(willAdj - (mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mWillBonus);
+            updateWillInfo(willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence())), mWillBonus);
         }
     }
 
@@ -2097,7 +2097,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The perception (Per). */
     public int getPerAdj() {
-        return mPerAdj + mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
+        return mPerAdj + mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence());
     }
 
     /**
@@ -2109,7 +2109,7 @@ public class GURPSCharacter extends CollectedModels {
         int oldPerception = getPerAdj();
         if (oldPerception != perAdj) {
             postUndoEdit(I18n.Text("Perception Change"), ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
-            updatePerceptionInfo(perAdj - (mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
+            updatePerceptionInfo(perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
         }
     }
 

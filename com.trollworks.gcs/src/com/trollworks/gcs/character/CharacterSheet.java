@@ -808,7 +808,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             } else if (GURPSCharacter.ID_NOT_CARRIED_WEALTH.equals(type)) {
                 Column column = getOtherEquipmentOutline().getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
                 column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
-            } else if (Settings.ID_BASE_WILL_AND_PER_ON_10.equals(type)) {
+            } else if (Settings.ID_BASE_WILL_ON_10.equals(type) || Settings.ID_BASE_PER_ON_10.equals(type)) {
                 mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
             } else if (Settings.ID_USE_MULTIPLICATIVE_MODIFIERS.equals(type)) {
                 mCharacter.notifySingle(Advantage.ID_LIST_CHANGED, null);

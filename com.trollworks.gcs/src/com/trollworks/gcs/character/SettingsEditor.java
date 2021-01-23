@@ -48,7 +48,8 @@ import javax.swing.event.DocumentListener;
 public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, NotifierTarget {
     private GURPSCharacter           mCharacter;
     private Settings                 mSettings;
-    private JCheckBox                mBaseWillAndPerOn10;
+    private JCheckBox                mBaseWillOn10;
+    private JCheckBox                mBasePerOn10;
     private JCheckBox                mUseMultiplicativeModifiers;
     private JCheckBox                mUseModifyingDicePlusAdds;
     private JCheckBox                mUseKnowYourOwnStrength;
@@ -109,7 +110,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
         mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
-        mBaseWillAndPerOn10 = addCheckBox(panel, I18n.Text("Base Will and Perception on 10 and not IQ"), null, mSettings.baseWillAndPerOn10());
+        mBaseWillOn10 = addCheckBox(panel, I18n.Text("Base Will on 10 and not IQ"), null, mSettings.baseWillOn10());
+        mBasePerOn10 = addCheckBox(panel, I18n.Text("Base Perception on 10 and not IQ"), null, mSettings.basePerOn10());
         mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
         mUseModifyingDicePlusAdds = addCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
@@ -190,8 +192,10 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mSettings.setShowDifficulty(mShowDifficulty.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
-        } else if (source == mBaseWillAndPerOn10) {
-            mSettings.setBaseWillAndPerOn10(mBaseWillAndPerOn10.isSelected());
+        } else if (source == mBaseWillOn10) {
+            mSettings.setBaseWillOn10(mBaseWillOn10.isSelected());
+        } else if (source == mBasePerOn10) {
+            mSettings.setBasePerOn10(mBasePerOn10.isSelected());
         } else if (source == mUseMultiplicativeModifiers) {
             mSettings.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
         } else if (source == mUseModifyingDicePlusAdds) {
@@ -218,7 +222,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mShowCollegeInSpells.isSelected() == prefs.showCollegeInSheetSpells();
         atDefaults = atDefaults && mShowDifficulty.isSelected() == prefs.showDifficulty();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
-        atDefaults = atDefaults && mBaseWillAndPerOn10.isSelected() == prefs.baseWillAndPerOn10();
+        atDefaults = atDefaults && mBaseWillOn10.isSelected() == prefs.baseWillOn10();
+        atDefaults = atDefaults && mBasePerOn10.isSelected() == prefs.basePerOn10();
         atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
         atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == prefs.useKnowYourOwnStrength();
         atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == prefs.useThrustEqualsSwingMinus2();
@@ -252,7 +257,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
             mShowDifficulty.setSelected(prefs.showDifficulty());
             mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
-            mBaseWillAndPerOn10.setSelected(prefs.baseWillAndPerOn10());
+            mBaseWillOn10.setSelected(prefs.baseWillOn10());
+            mBasePerOn10.setSelected(prefs.basePerOn10());
             mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
             mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
             mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());
