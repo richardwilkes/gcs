@@ -151,7 +151,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
     private void addResetPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        mResetButton = new JButton(I18n.Text("Reset to Current Preference Values"));
+        mResetButton = new JButton(I18n.Text("Reset to Global Preference Values"));
         mResetButton.addActionListener(this);
         panel.add(mResetButton);
         getContentPane().add(panel, BorderLayout.SOUTH);

@@ -30,7 +30,7 @@ public class PreferencesCommand extends Command implements PreferencesHandler {
     public static final PreferencesCommand INSTANCE = new PreferencesCommand();
 
     private PreferencesCommand() {
-        super(I18n.Text("Preferences…"), CMD_PREFERENCES, KeyEvent.VK_COMMA);
+        super(I18n.Text("Global Preferences…"), CMD_PREFERENCES, KeyEvent.VK_COMMA);
     }
 
     @Override
