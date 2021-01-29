@@ -46,6 +46,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JCheckBox               mUseModifyingDicePlusAdds;
     private JCheckBox               mUseKnowYourOwnStrength;
     private JCheckBox               mUseReducedSwing;
+    private JCheckBox               mUsePhoenixSwing;
     private JCheckBox               mUseThrustEqualsSwingMinus2;
     private JCheckBox               mUseSimpleMetricConversions;
     private JCheckBox               mAutoNameNewCharacters;
@@ -83,6 +84,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseKnowYourOwnStrength = addCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83) *"), null, prefs.useKnowYourOwnStrength());
         mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy *"), "From noschoolgrognard.blogspot.com", prefs.useReducedSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
+        mUsePhoenixSwing = addCheckBox(I18n.Text("Use PhoenixFlame's rescaled Swing Damage*"), null, prefs.usePhoenixSwing());
         mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules from B9 *"), null, prefs.useSimpleMetricConversions());
 
         JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));
@@ -175,6 +177,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
             prefs.setUseKnowYourOwnStrength(mUseKnowYourOwnStrength.isSelected());
         } else if (source == mUseReducedSwing) {
             prefs.setUseReducedSwing(mUseReducedSwing.isSelected());
+        } else if (source == mUsePhoenixSwing) {
+            prefs.setUsePhoenixSwing(mUsePhoenixSwing.isSelected());
         } else if (source == mUseThrustEqualsSwingMinus2) {
             prefs.setUseThrustEqualsSwingMinus2(mUseThrustEqualsSwingMinus2.isSelected());
         } else if (source == mUseSimpleMetricConversions) {
@@ -198,6 +202,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseKnowYourOwnStrength.setSelected(Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH);
         mUseThrustEqualsSwingMinus2.setSelected(Preferences.DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
         mUseReducedSwing.setSelected(Preferences.DEFAULT_USE_REDUCED_SWING);
+        mUsePhoenixSwing.setSelected(Preferences.DEFAULT_USE_PHOENIX_SWING);
         mUseSimpleMetricConversions.setSelected(Preferences.DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
     }
 
@@ -213,6 +218,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.useMultiplicativeModifiers() == Preferences.DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
         atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
+        atDefault = atDefault && prefs.usePhoenix_Swing() == Preferences.DEFAULT_PHOENIX_SWING;
         atDefault = atDefault && prefs.autoNameNewCharacters() == Preferences.DEFAULT_AUTO_NAME_NEW_CHARACTERS;
         return atDefault;
     }

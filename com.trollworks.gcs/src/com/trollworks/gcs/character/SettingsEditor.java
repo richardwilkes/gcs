@@ -54,6 +54,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mUseModifyingDicePlusAdds;
     private JCheckBox                mUseKnowYourOwnStrength;
     private JCheckBox                mUseReducedSwing;
+    private JCheckBox                mUsePhoenixSwing;
     private JCheckBox                mUseThrustEqualsSwingMinus2;
     private JCheckBox                mUseSimpleMetricConversions;
     private JCheckBox                mShowCollegeInSpells;
@@ -114,6 +115,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mUseModifyingDicePlusAdds = addCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
         mUseReducedSwing = addCheckBox(panel, I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
+        mUsePhoenixSwing = addCheckBox(panel, I18n.Text("Use PhoenixFlame's rescaled Swing Damage*"), null, mSettings.mUsePhoenixSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(panel, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
         mUseSimpleMetricConversions = addCheckBox(panel, I18n.Text("Use the simple metric conversion rules from B9"), null, mSettings.useSimpleMetricConversions());
 
@@ -199,6 +201,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mSettings.setUseKnowYourOwnStrength(mUseKnowYourOwnStrength.isSelected());
         } else if (source == mUseReducedSwing) {
             mSettings.setUseReducedSwing(mUseReducedSwing.isSelected());
+        } else if (source == mUsePhoenixSwing) {
+            mSettings.setUsePhoenixSwing(mUsePhoenixSwing.isSelected());
         } else if (source == mUseThrustEqualsSwingMinus2) {
             mSettings.setUseThrustEqualsSwingMinus2(mUseThrustEqualsSwingMinus2.isSelected());
         } else if (source == mUseSimpleMetricConversions) {
@@ -221,6 +225,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == prefs.useKnowYourOwnStrength();
         atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == prefs.useThrustEqualsSwingMinus2();
         atDefaults = atDefaults && mUseReducedSwing.isSelected() == prefs.useReducedSwing();
+        atDefaults = atDefaults && mUsePhoenixSwing.isSelected() == prefs.usePhoenixSwing();
         atDefaults = atDefaults && mUseSimpleMetricConversions.isSelected() == prefs.useSimpleMetricConversions();
         atDefaults = atDefaults && mLengthUnitsCombo.getSelectedItem() == prefs.getDefaultLengthUnits();
         atDefaults = atDefaults && mWeightUnitsCombo.getSelectedItem() == prefs.getDefaultWeightUnits();
@@ -254,6 +259,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
             mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());
             mUseReducedSwing.setSelected(prefs.useReducedSwing());
+            mUsePhoenixSwing.setSelected(prefs.usePhoenixSwing());
             mUseSimpleMetricConversions.setSelected(prefs.useSimpleMetricConversions());
             mLengthUnitsCombo.setSelectedItem(prefs.getDefaultLengthUnits());
             mWeightUnitsCombo.setSelectedItem(prefs.getDefaultWeightUnits());

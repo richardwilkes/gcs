@@ -96,6 +96,7 @@ public class Preferences {
     private static final String USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
     private static final String USE_NATIVE_PRINT_DIALOGS        = "use_native_print_dialogs";
     private static final String USE_REDUCED_SWING               = "use_reduced_swing";
+    private static final String USE_PHOENIX_SWING               = "use_phoenix_swing";
     private static final String USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
     private static final String USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     private static final String USER_DESCRIPTION_DISPLAY        = "user_description_display";
@@ -118,6 +119,7 @@ public class Preferences {
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
     public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
     public static final String KEY_USE_REDUCED_SWING               = KEY_PER_SHEET_PREFIX + USE_REDUCED_SWING;
+    public static final String KEY_USE_PHOENIX_SWING               = KEY_PER_SHEET_PREFIX + USE_PHOENIX_SWING;
     public static final String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = KEY_PER_SHEET_PREFIX + USE_SIMPLE_METRIC_CONVERSIONS;
     public static final String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = KEY_PER_SHEET_PREFIX + USE_THRUST_EQUALS_SWING_MINUS_2;
     public static final String KEY_USER_DESCRIPTION_DISPLAY        = KEY_PER_SHEET_PREFIX + USER_DESCRIPTION_DISPLAY;
@@ -134,6 +136,7 @@ public class Preferences {
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
     public static final boolean       DEFAULT_USE_NATIVE_PRINT_DIALOGS          = false;
     public static final boolean       DEFAULT_USE_REDUCED_SWING                 = false;
+    public static final boolean       DEFAULT_USE_PHOENIX_SWING                 = false;
     public static final boolean       DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS     = true;
     public static final boolean       DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2   = false;
     public static final DisplayOption DEFAULT_MODIFIERS_DISPLAY                 = DisplayOption.INLINE;
@@ -187,6 +190,8 @@ public class Preferences {
     private        boolean                          mUseModifyingDicePlusAdds;
     private        boolean                          mUseKnowYourOwnStrength;
     private        boolean                          mUseReducedSwing;
+    //Phoenixflame's rescaled swing
+    private        boolean                          mUsePhoenixSwing;
     private        boolean                          mUseThrustEqualsSwingMinus2;
     private        boolean                          mUseSimpleMetricConversions;
     private        boolean                          mAutoNameNewCharacters;
@@ -253,6 +258,8 @@ public class Preferences {
         mUseModifyingDicePlusAdds = DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS;
         mUseKnowYourOwnStrength = DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         mUseReducedSwing = DEFAULT_USE_REDUCED_SWING;
+        //Phoenix swing
+        mUsePhoenixSwing = DEFAULT_USE_PHOENIX_SWING;
         mUseThrustEqualsSwingMinus2 = DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2;
         mUseSimpleMetricConversions = DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS;
         mAutoNameNewCharacters = DEFAULT_AUTO_NAME_NEW_CHARACTERS;
@@ -351,6 +358,7 @@ public class Preferences {
                         mUseModifyingDicePlusAdds = m.getBooleanWithDefault(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                         mUseKnowYourOwnStrength = m.getBooleanWithDefault(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
                         mUseReducedSwing = m.getBooleanWithDefault(USE_REDUCED_SWING, mUseReducedSwing);
+                        mUsePhoenixSwing = m.getBooleanWithDefault(USE_PHOENIX_SWING, mUsePhoenixSwing);
                         mUseThrustEqualsSwingMinus2 = m.getBooleanWithDefault(USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
                         mUseSimpleMetricConversions = m.getBooleanWithDefault(USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
                         mAutoNameNewCharacters = m.getBooleanWithDefault(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
@@ -506,6 +514,7 @@ public class Preferences {
                     w.keyValue(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                     w.keyValue(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
                     w.keyValue(USE_REDUCED_SWING, mUseReducedSwing);
+                    w.keyValue(USE_PHOENIX_SWING, mUsePhoenixSwing);
                     w.keyValue(USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
                     w.keyValue(USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
                     w.keyValue(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
@@ -942,6 +951,7 @@ public class Preferences {
         return mUseReducedSwing;
     }
 
+
     public boolean setUseReducedSwing(boolean useReducedSwing) {
         if (mUseReducedSwing != useReducedSwing) {
             mUseReducedSwing = useReducedSwing;
@@ -950,6 +960,21 @@ public class Preferences {
         }
         return false;
     }
+    //Phoenixflame's rescaled swing
+    public boolean usePhoenixSwing() {
+        return mUsePhoenixSwing;
+    }
+    
+
+    public boolean setUsePhoenixSwing(boolean usePhoenixSwing) {
+        if (mUsePhoenixSwing != usePhoenixSwing) {
+            mUsePhoenixSwing = usePhoenixSwing;
+            mNotifier.notify(this, KEY_USE_PHOENIX_SWING);
+            return true;
+        }
+        return false;
+    }
+
 
     /** @return Whether to set thrust damage to swing-2. */
     public boolean useThrustEqualsSwingMinus2() {
