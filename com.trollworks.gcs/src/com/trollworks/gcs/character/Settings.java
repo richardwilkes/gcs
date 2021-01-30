@@ -48,6 +48,7 @@ public class Settings {
     public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS             = "show_college_in_sheet_spells";
     public static final  String         TAG_SHOW_DIFFICULTY                    = "show_difficulty";
     public static final  String         TAG_USE_TITLE_IN_FOOTER                = "use_title_in_footer";
+    private static final String         TAG_EXTRA_SPACE_AROUND_FP              = "extra_space_around_fp";
     public static final  String         PREFIX                                 = GURPSCharacter.CHARACTER_PREFIX + "settings.";
     public static final  String         ID_DEFAULT_LENGTH_UNITS                = PREFIX + TAG_DEFAULT_LENGTH_UNITS;
     public static final  String         ID_DEFAULT_WEIGHT_UNITS                = PREFIX + TAG_DEFAULT_WEIGHT_UNITS;
@@ -66,6 +67,7 @@ public class Settings {
     public static final  String         ID_SHOW_COLLEGE_IN_SPELLS              = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
     public static final  String         ID_SHOW_DIFFICULTY                     = PREFIX + TAG_SHOW_DIFFICULTY;
     public static final  String         ID_USE_TITLE_IN_FOOTER                 = PREFIX + TAG_USE_TITLE_IN_FOOTER;
+    public static final  String         ID_EXTRA_SPACE_AROUND_FP               = PREFIX + TAG_EXTRA_SPACE_AROUND_FP;
     private              GURPSCharacter mCharacter;
     private              LengthUnits    mDefaultLengthUnits;
     private              WeightUnits    mDefaultWeightUnits;
@@ -84,6 +86,7 @@ public class Settings {
     private              boolean        mShowCollegeInSpells;
     private              boolean        mShowDifficulty;
     private              boolean        mUseTitleInFooter;
+    private              boolean        mExtraSpaceAroundFP;
 
     public Settings(GURPSCharacter character) {
         Preferences prefs = Preferences.getInstance();
@@ -105,6 +108,7 @@ public class Settings {
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
         mShowDifficulty = prefs.showDifficulty();
         mUseTitleInFooter = prefs.useTitleInFooter();
+        mExtraSpaceAroundFP = prefs.extraSpaceAroundFP();
     }
 
     void load(JsonMap m) throws IOException {
@@ -136,6 +140,7 @@ public class Settings {
         mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
         mShowDifficulty = m.getBoolean(TAG_SHOW_DIFFICULTY);
         mUseTitleInFooter = m.getBoolean(TAG_USE_TITLE_IN_FOOTER);
+        mExtraSpaceAroundFP = m.getBoolean(TAG_EXTRA_SPACE_AROUND_FP);
         mBlockLayout = new ArrayList<>();
         JsonArray a     = m.getArray(TAG_BLOCK_LAYOUT);
         int       count = a.size();
@@ -163,6 +168,7 @@ public class Settings {
         w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
         w.keyValue(TAG_SHOW_DIFFICULTY, mShowDifficulty);
         w.keyValue(TAG_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+        w.keyValue(TAG_EXTRA_SPACE_AROUND_FP, mExtraSpaceAroundFP);
         w.key(TAG_BLOCK_LAYOUT);
         w.startArray();
         for (String one : mBlockLayout) {
@@ -370,6 +376,17 @@ public class Settings {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
             mCharacter.notifySingle(ID_USE_TITLE_IN_FOOTER, Boolean.valueOf(mUseTitleInFooter));
+        }
+    }
+
+    public boolean extraSpaceAroundFP() {
+        return mExtraSpaceAroundFP;
+    }
+
+    public void setExtraSpaceAroundFP(boolean extraSpaceAroundFP) {
+        if (mExtraSpaceAroundFP != extraSpaceAroundFP) {
+            mExtraSpaceAroundFP = extraSpaceAroundFP;
+            mCharacter.notifySingle(ID_EXTRA_SPACE_AROUND_FP, Boolean.valueOf(mExtraSpaceAroundFP));
         }
     }
 }

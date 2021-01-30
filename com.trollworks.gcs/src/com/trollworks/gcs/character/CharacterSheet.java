@@ -218,17 +218,19 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         wrapper.add(new DescriptionPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setHorizontalSpan(2));
         pageAssembler.addToContent(wrapper, null, null);
 
+        boolean extraSpaceAroundFP = mCharacter.getSettings().extraSpaceAroundFP();
+
         wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
         wrapper.add(new AttributesPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment());
-        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
-        wrapper.add(wrapper2, new PrecisionLayoutData().setFillAlignment());
+        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundFP));
+        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundFP));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(extraSpaceAroundFP).setFillAlignment());
         wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
-        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
-        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
+        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundFP));
+        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundFP));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(!extraSpaceAroundFP).setFillAlignment());
         pageAssembler.addToContent(wrapper, null, null);
 
         // Add the various outline blocks, based on the layout preference.
@@ -707,6 +709,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_COLLEGE_IN_SPELLS);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_DIFFICULTY);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_EXTRA_SPACE_AROUND_FP);
 
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_DISABLED);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_WEAPON_STATUS_CHANGED);
