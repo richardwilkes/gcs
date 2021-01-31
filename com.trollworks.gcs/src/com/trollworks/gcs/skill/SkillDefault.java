@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,8 +23,6 @@ import java.util.Set;
 
 /** Describes a skill default. */
 public class SkillDefault {
-    /** The XML tag. */
-    public static final String           TAG_ROOT           = "default";
     /** The tag used for the type. */
     public static final String           TAG_TYPE           = "type";
     /** The tag used for the skill name. */
@@ -82,7 +80,7 @@ public class SkillDefault {
      * @param m    The {@link JsonMap} to load data from.
      * @param full {@code true} if all fields should be loaded.
      */
-    public SkillDefault(JsonMap m, boolean full) throws IOException {
+    public SkillDefault(JsonMap m, boolean full) {
         mType = SkillDefaultType.getByName(m.getString(DataFile.KEY_TYPE));
         mName = m.getString(TAG_NAME);
         mSpecialization = m.getString(TAG_SPECIALIZATION);

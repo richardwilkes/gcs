@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -36,7 +36,6 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
     public static final String                            CMD      = "AddNaturalAttacksAdvantage";
     /** The "Add Natural Attacks Advantage" command. */
     public static final AddNaturalAttacksAdvantageCommand INSTANCE = new AddNaturalAttacksAdvantageCommand();
-    private             boolean                           mContainer;
 
     private AddNaturalAttacksAdvantageCommand() {
         super(I18n.Text("Add Natural Attacks Advantage"), CMD);
@@ -48,8 +47,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         if (adq != null) {
             setEnabled(!adq.getOutline().getModel().isLocked());
         } else {
-            SheetDockable sheet = getTarget(SheetDockable.class);
-            if (sheet != null) {
+            if (getTarget(SheetDockable.class) != null) {
                 setEnabled(true);
             } else {
                 setEnabled(getTarget(TemplateDockable.class) != null);

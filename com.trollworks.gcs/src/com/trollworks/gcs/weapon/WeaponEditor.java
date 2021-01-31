@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -81,7 +81,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         super(new BorderLayout());
         mOwner = owner;
         mWeaponClass = weaponClass;
-        mAddButton = new IconButton(Images.ADD, I18n.Text("Add an attack"), () -> addWeapon());
+        mAddButton = new IconButton(Images.ADD, I18n.Text("Add an attack"), this::addWeapon);
         mDeleteButton = new IconButton(Images.REMOVE, I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
         Panel top  = new Panel(new BorderLayout());
@@ -118,7 +118,6 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         mOutline = new WeaponOutline();
         OutlineModel model = mOutline.getModel();
         WeaponColumn.addColumns(mOutline, weaponClass, true);
-        mOutline.setAllowColumnDrag(false);
         mOutline.setAllowColumnResize(false);
         mOutline.setAllowRowDrag(false);
 

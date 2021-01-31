@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -163,22 +163,6 @@ public abstract class DataFile implements Updatable, Undoable {
 
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
-
-    /** @return The most recent version of the XML tag this object knows how to load. */
-    public abstract int getXMLTagVersion();
-
-    /** @return The XML root container tag name for this particular file. */
-    public abstract String getXMLTagName();
-
-    /**
-     * Called to match an XML tag name with the root tag for this data file.
-     *
-     * @param name The tag name to check.
-     * @return Whether it matches the root tag or not.
-     */
-    public boolean matchesRootTag(String name) {
-        return getXMLTagName().equals(name);
-    }
 
     /** @return The {@link FileType}. */
     public abstract FileType getFileType();

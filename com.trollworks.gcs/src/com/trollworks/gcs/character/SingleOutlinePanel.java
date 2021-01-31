@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,10 +13,8 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
-import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
 
 import java.awt.Component;
@@ -59,22 +57,6 @@ public class SingleOutlinePanel extends DropPanel implements LayoutManager2 {
     public void setOutlineRowRange(int first, int last) {
         mOutline.setFirstRowToDisplay(first);
         mOutline.setLastRowToDisplay(last);
-    }
-
-    /** @return The preferred width. */
-    public int getPreferredWidth() {
-        Insets       insets       = getInsets();
-        int          width        = insets.left + insets.right;
-        OutlineModel outlineModel = mOutline.getModel();
-        int          count        = outlineModel.getColumnCount();
-        if (mOutline.shouldDrawColumnDividers()) {
-            width += (count - 1) * Scale.get(this).scale(1);
-        }
-        for (int i = 0; i < count; i++) {
-            Column column = outlineModel.getColumnAtIndex(i);
-            width += column.getPreferredWidth(mOutline);
-        }
-        return width;
     }
 
     @Override

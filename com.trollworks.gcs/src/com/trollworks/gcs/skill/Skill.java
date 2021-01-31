@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -45,7 +45,6 @@ import java.util.Set;
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
     private static final int               CURRENT_JSON_VERSION     = 1;
-    private static final int               CURRENT_VERSION          = 4;
     /** The XML tag used for items. */
     public static final  String            TAG_SKILL                = "skill";
     /** The XML tag used for containers. */
@@ -241,16 +240,6 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_SKILL_CONTAINER : TAG_SKILL;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Skill");
     }
@@ -432,7 +421,7 @@ public class Skill extends ListRow implements HasSourceReference {
             String        name    = getName();
             character.getSkillPointComparedIntegerBonusFor(ID_POINTS + "*", name, getSpecialization(), getCategories(), tooltip);
             character.getIntegerBonusFor(ID_POINTS + "/" + name.toLowerCase(), tooltip);
-            if (tooltip.length() > 0) {
+            if (!tooltip.isEmpty()) {
                 return I18n.Text("Includes modifiers from") + tooltip;
             }
         }
@@ -670,7 +659,7 @@ public class Skill extends ListRow implements HasSourceReference {
         StringBuilder buffer = new StringBuilder(super.getModifierNotes());
         Skill         skill  = getDefaultSkill();
         if (skill != null && mDefaultedFrom != null) {
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append(' ');
             }
             buffer.append(I18n.Text("Default: "));
@@ -752,20 +741,11 @@ public class Skill extends ListRow implements HasSourceReference {
         return new SkillLevel(level, relativeLevel, toolTip);
     }
 
-    /**
-     * Tries to switch defaults with its current default keeping skill level, by adding and freeing
-     * points as necessary. Freed points are kept in former default skill, added points are taken
-     * from unspent points.
-     *
-     * @return extra points spent to keep minimum levels.
-     */
-    public int swapDefault() {
-        int   extraPointsSpent = 0;
-        Skill baseSkill        = getDefaultSkill();
+    /** Swaps the default to an alternate, if possible. */
+    public void swapDefault() {
+        Skill baseSkill = getDefaultSkill();
         if (baseSkill != null) {
-            // Find alternative default
             mDefaultedFrom = getBestDefaultWithPoints(mDefaultedFrom);
-
             startNotify();
             baseSkill.updateLevel(true);
             updateLevel(true);
@@ -773,7 +753,6 @@ public class Skill extends ListRow implements HasSourceReference {
             baseSkill.notify(ID_NAME, baseSkill);
             endNotify();
         }
-        return extraPointsSpent;
     }
 
     /**

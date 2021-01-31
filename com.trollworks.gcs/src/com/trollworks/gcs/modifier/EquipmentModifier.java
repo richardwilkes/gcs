@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -32,7 +32,6 @@ import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
     private static final int                         CURRENT_JSON_VERSION   = 1;
-    private static final int                         CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                      TAG_MODIFIER           = "eqp_modifier";
     /** The root tag for containers. */
@@ -110,7 +109,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     private String getDefaultWeightAmount() {
-        return "+" + new WeightValue(Fixed6.ZERO, getDataFile().defaultWeightUnits()).toString();
+        return "+" + new WeightValue(Fixed6.ZERO, getDataFile().defaultWeightUnits());
     }
 
     @Override
@@ -230,16 +229,6 @@ public class EquipmentModifier extends Modifier {
     }
 
     @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
     public Object getData(Column column) {
         return EquipmentModifierColumnID.values()[column.getID()].getData(this);
     }
@@ -307,7 +296,7 @@ public class EquipmentModifier extends Modifier {
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();
-        builder.append(toString());
+        builder.append(this);
         if (!modNote.isEmpty()) {
             builder.append(" (");
             builder.append(modNote);

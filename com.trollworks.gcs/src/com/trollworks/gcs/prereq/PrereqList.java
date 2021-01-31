@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -39,9 +39,10 @@ public class PrereqList extends Prereq {
     private static final String          TAG_WHEN_TL   = "when_tl";
     private static final String          ATTRIBUTE_ALL = "all";
     private static final String          KEY_PREREQS   = "prereqs";
-    private              boolean         mAll;
     private              IntegerCriteria mWhenTLCriteria;
     private              List<Prereq>    mPrereqs;
+    private              boolean         mWhenEnabled;
+    private              boolean         mAll;
 
     /**
      * Creates a new prerequisite list.
@@ -53,7 +54,8 @@ public class PrereqList extends Prereq {
     public PrereqList(PrereqList parent, boolean all) {
         super(parent);
         mAll = all;
-        mWhenTLCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, Integer.MIN_VALUE);
+        mWhenEnabled = false;
+        mWhenTLCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
         mPrereqs = new ArrayList<>();
     }
 
@@ -80,6 +82,7 @@ public class PrereqList extends Prereq {
     public PrereqList(PrereqList parent, PrereqList prereqList) {
         super(parent);
         mAll = prereqList.mAll;
+        mWhenEnabled = prereqList.mWhenEnabled;
         mWhenTLCriteria = new IntegerCriteria(prereqList.mWhenTLCriteria);
         mPrereqs = new ArrayList<>(prereqList.mPrereqs.size());
         for (Prereq prereq : prereqList.mPrereqs) {
@@ -94,7 +97,7 @@ public class PrereqList extends Prereq {
         }
         if (obj instanceof PrereqList) {
             PrereqList list = (PrereqList) obj;
-            return mAll == list.mAll && mWhenTLCriteria.equals(list.mWhenTLCriteria) && mPrereqs.equals(list.mPrereqs);
+            return mAll == list.mAll && mWhenEnabled == list.mWhenEnabled && mWhenTLCriteria.equals(list.mWhenTLCriteria) && mPrereqs.equals(list.mPrereqs);
         }
         return false;
     }
@@ -110,14 +113,10 @@ public class PrereqList extends Prereq {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
         mAll = m.getBoolean(ATTRIBUTE_ALL);
-        if (m.has(TAG_WHEN_TL)) {
+        mWhenEnabled = m.has(TAG_WHEN_TL);
+        if (mWhenEnabled) {
             mWhenTLCriteria.load(m.getMap(TAG_WHEN_TL));
         }
         if (m.has(KEY_PREREQS)) {
@@ -141,7 +140,7 @@ public class PrereqList extends Prereq {
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
         w.keyValue(ATTRIBUTE_ALL, mAll);
-        if (isWhenTLEnabled(mWhenTLCriteria)) {
+        if (mWhenEnabled) {
             mWhenTLCriteria.save(w, TAG_WHEN_TL);
         }
         if (!mPrereqs.isEmpty()) {
@@ -163,22 +162,14 @@ public class PrereqList extends Prereq {
         return mWhenTLCriteria;
     }
 
-    /**
-     * @param criteria The {@link IntegerCriteria} to check.
-     * @return Whether the character's TL criteria check is enabled.
-     */
-    public static boolean isWhenTLEnabled(IntegerCriteria criteria) {
-        return criteria.getType() != NumericCompareType.AT_LEAST || criteria.getQualifier() != Integer.MIN_VALUE;
+    /** @return Whether the character's TL criteria check is enabled. */
+    public boolean isWhenTLEnabled() {
+        return mWhenEnabled;
     }
 
-    /**
-     * @param criteria The {@link IntegerCriteria} to work on.
-     * @param enabled  Whether the character's TL criteria check is enabled.
-     */
-    public static void setWhenTLEnabled(IntegerCriteria criteria, boolean enabled) {
-        if (isWhenTLEnabled(criteria) != enabled) {
-            criteria.setQualifier(enabled ? 0 : Integer.MIN_VALUE);
-        }
+    /** @param enabled  Whether the character's TL criteria check is enabled. */
+    public void setWhenTLEnabled(boolean enabled) {
+        mWhenEnabled = enabled;
     }
 
     /** @return Whether only one criteria in this list has to be met, or all of them must be met. */
@@ -237,7 +228,7 @@ public class PrereqList extends Prereq {
 
     @Override
     public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
-        if (isWhenTLEnabled(mWhenTLCriteria)) {
+        if (mWhenEnabled) {
             if (!mWhenTLCriteria.matches(Numbers.extractInteger(character.getProfile().getTechLevel(), 0, false))) {
                 return true;
             }
@@ -252,7 +243,7 @@ public class PrereqList extends Prereq {
                 satisfiedCount++;
             }
         }
-        if (localBuilder != null && localBuilder.length() > 0) {
+        if (localBuilder != null && !localBuilder.isEmpty()) {
             localBuilder.insert(0, "<ul>");
             localBuilder.append("</ul>");
         }
@@ -260,7 +251,7 @@ public class PrereqList extends Prereq {
         boolean satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
         if (!satisfied && localBuilder != null) {
             builder.append(MessageFormat.format(requiresAll ? I18n.Text("{0}Requires all of:\n") : I18n.Text("{0}Requires at least one of:\n"), prefix));
-            builder.append(localBuilder.toString());
+            builder.append(localBuilder);
         }
         return satisfied;
     }

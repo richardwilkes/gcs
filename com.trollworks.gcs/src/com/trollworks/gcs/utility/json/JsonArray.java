@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,12 +11,17 @@
 
 package com.trollworks.gcs.utility.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Represents an array in JSON. */
 public class JsonArray extends JsonCollection {
     private List<Object> mList = new ArrayList<>();
+
+    public boolean isEmpty() {
+        return mList.isEmpty();
+    }
 
     /**
      * @param index The index to retrieve.
@@ -28,90 +33,10 @@ public class JsonArray extends JsonCollection {
 
     /**
      * @param index The index to retrieve.
-     * @return The value associated with the index or {@code false} if no such index exists or the
-     *         value cannot be converted to a boolean.
-     */
-    public boolean getBoolean(int index) {
-        return Json.asBoolean(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index or zero if no such index exists or the value
-     *         cannot be converted to a byte.
-     */
-    public byte getByte(int index) {
-        return Json.asByte(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index or zero if no such index exists or the value
-     *         cannot be converted to a char.
-     */
-    public char getChar(int index) {
-        return Json.asChar(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index or zero if no such index exists or the value
-     *         cannot be converted to a short.
-     */
-    public short getShort(int index) {
-        return Json.asShort(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index or zero if no such index exists or the value
-     *         cannot be converted to an integer.
-     */
-    public int getInt(int index) {
-        return Json.asInt(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index or zero if no such index exists or the value
-     *         cannot be converted to a long.
-     */
-    public long getLong(int index) {
-        return Json.asLong(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index or zero if no such index exists or the value
-     *         cannot be converted to a float.
-     */
-    public float getFloat(int index) {
-        return Json.asFloat(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index or zero if no such index exists or the value
-     *         cannot be converted to a double.
-     */
-    public double getDouble(int index) {
-        return Json.asDouble(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
      * @return The value associated with the index.
      */
     public String getString(int index) {
         return Json.asString(get(index));
-    }
-
-    /**
-     * @param index The index to retrieve.
-     * @return The value associated with the index.
-     */
-    public JsonArray getArray(int index) {
-        return Json.asArray(get(index));
     }
 
     /**
@@ -230,115 +155,8 @@ public class JsonArray extends JsonCollection {
         }
     }
 
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, boolean value) {
-        put(index, Boolean.valueOf(value));
-    }
-
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, byte value) {
-        put(index, Byte.valueOf(value));
-    }
-
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, char value) {
-        put(index, Character.valueOf(value));
-    }
-
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, short value) {
-        put(index, Short.valueOf(value));
-    }
-
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, int value) {
-        put(index, Integer.valueOf(value));
-    }
-
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, long value) {
-        put(index, Long.valueOf(value));
-    }
-
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, float value) {
-        put(index, Float.valueOf(value));
-    }
-
-    /**
-     * Adds a value to the array.
-     *
-     * @param index The index to insert the value at. Must be greater than or equal to zero. If the
-     *              index is past the end of the current set of values, {@code null}'s will be
-     *              inserted as padding.
-     * @param value The value to store.
-     */
-    public void put(int index, double value) {
-        put(index, Double.valueOf(value));
-    }
-
-    /**
-     * Removes a value from the array.
-     *
-     * @param index The index of the value to remove.
-     */
-    public void remove(int index) {
-        if (index >= 0 && index < mList.size()) {
-            mList.remove(index);
-        }
-    }
-
     @Override
-    public StringBuilder appendTo(StringBuilder buffer, boolean compact, int depth) {
+    public void appendTo(Appendable buffer, boolean compact, int depth) throws IOException {
         int len = size();
         buffer.append('[');
         depth++;
@@ -362,6 +180,5 @@ public class JsonArray extends JsonCollection {
             indent(buffer, false, depth - 1);
         }
         buffer.append(']');
-        return buffer;
     }
 }

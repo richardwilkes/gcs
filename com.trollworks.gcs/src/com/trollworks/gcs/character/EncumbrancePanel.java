@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -50,19 +50,19 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         Dimension     prefSize          = new PageLabel("•", null).getPreferredSize();
         mMarkers = new PageLabel[encumbranceValues.length];
         String     encLevelTooltip = I18n.Text("The encumbrance level");
-        PageHeader bulletHeader    = createHeader(this, "", encLevelTooltip);
+        PageHeader bulletHeader    = createHeader("", encLevelTooltip);
         UIUtilities.setOnlySize(bulletHeader, prefSize);
         addHorizontalBackground(bulletHeader, ThemeColor.HEADER);
-        PageHeader header = createHeader(this, I18n.Text("Level"), encLevelTooltip);
+        PageHeader header = createHeader(I18n.Text("Level"), encLevelTooltip);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         String maxLoadTooltip = I18n.Text("The maximum load a character can carry and still remain within a specific encumbrance level");
-        createHeader(this, I18n.Text("Max Load"), maxLoadTooltip);
+        createHeader(I18n.Text("Max Load"), maxLoadTooltip);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         String moveTooltip = I18n.Text("The character's ground movement rate for a specific encumbrance level");
-        createHeader(this, I18n.Text("Move"), moveTooltip);
+        createHeader(I18n.Text("Move"), moveTooltip);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         String dodgeTooltip = I18n.Text("The character's dodge for a specific encumbrance level");
-        createHeader(this, I18n.Text("Dodge"), dodgeTooltip);
+        createHeader(I18n.Text("Dodge"), dodgeTooltip);
         mFieldsForColorUpdate = new ArrayList<>();
         GURPSCharacter character = mSheet.getCharacter();
         Encumbrance    current   = character.getEncumbranceLevel(false);
@@ -98,6 +98,12 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
         character.addTarget(this, GURPSCharacter.ID_CARRIED_WEIGHT, GURPSCharacter.ID_BASIC_LIFT, GURPSCharacter.ID_CURRENT_HP, GURPSCharacter.ID_CURRENT_FP);
     }
 
+    private PageHeader createHeader(String title, String tooltip) {
+        PageHeader header = new PageHeader(title, tooltip);
+        add(header);
+        return header;
+    }
+
     private void addField(Encumbrance enc, JComponent field) {
         field.putClientProperty(Encumbrance.class, enc);
         add(field);
@@ -119,7 +125,7 @@ public class EncumbrancePanel extends DropPanel implements NotifierTarget {
             character.notifyBasicLift();
         }
         Encumbrance current = character.getEncumbranceLevel(false);
-        boolean band = false;
+        boolean     band    = false;
         for (Encumbrance encumbrance : Encumbrance.values()) {
             int index = encumbrance.ordinal();
             if (encumbrance == current) {

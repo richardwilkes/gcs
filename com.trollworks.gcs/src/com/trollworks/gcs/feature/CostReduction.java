@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -47,7 +47,7 @@ public class CostReduction extends Feature {
         mPercentage = other.mPercentage;
     }
 
-    public CostReduction(JsonMap m) throws IOException {
+    public CostReduction(JsonMap m) {
         this();
         load(m);
     }
@@ -95,11 +95,6 @@ public class CostReduction extends Feature {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getKey() {
         return GURPSCharacter.ATTRIBUTES_PREFIX + mAttribute.name();
     }
@@ -109,7 +104,7 @@ public class CostReduction extends Feature {
         return new CostReduction(this);
     }
 
-    protected void load(JsonMap m) throws IOException {
+    protected void load(JsonMap m) {
         setAttribute(Enums.extract(m.getString(TAG_ATTRIBUTE), TYPES, BonusAttributeType.ST));
         setPercentage(m.getInt(TAG_PERCENTAGE));
     }

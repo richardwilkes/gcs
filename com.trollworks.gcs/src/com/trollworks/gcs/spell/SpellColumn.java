@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillPointsTextCell;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.Cell;
@@ -59,7 +60,7 @@ public enum SpellColumn {
             StringBuilder builder = new StringBuilder();
             String        notes   = spell.getNotes();
 
-            builder.append(spell.toString());
+            builder.append(spell);
             if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);
@@ -145,7 +146,7 @@ public enum SpellColumn {
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
             if (dataFile instanceof GURPSCharacter) {
-                return ((GURPSCharacter)dataFile).getSettings().showCollegeInSpells();
+                return ((GURPSCharacter) dataFile).getSettings().showCollegeInSpells();
             }
             if (dataFile instanceof Template) {
                 return Preferences.getInstance().showCollegeInSheetSpells();
@@ -253,6 +254,42 @@ public enum SpellColumn {
             return "";
         }
     },
+    /** The difficulty. */
+    DIFFICULTY {
+        @Override
+        public String toString() {
+            return I18n.Text("Difficulty");
+        }
+
+        @Override
+        public String getToolTip() {
+            return I18n.Text("The difficulty of the spell");
+        }
+
+        @Override
+        public Object getData(Spell spell) {
+            return getDataAsText(spell);
+        }
+
+        @Override
+        public String getDataAsText(Spell spell) {
+            if (!spell.canHaveChildren()) {
+                return spell.getDifficultyAsText(true);
+            }
+            return "";
+        }
+
+        @Override
+        public boolean shouldDisplay(DataFile dataFile) {
+            if (dataFile instanceof GURPSCharacter) {
+                return ((GURPSCharacter) dataFile).getSettings().showDifficulty();
+            }
+            if (dataFile instanceof Template) {
+                return Preferences.getInstance().showDifficulty();
+            }
+            return dataFile instanceof ListFile;
+        }
+    },
     /** The spell level. */
     LEVEL {
         @Override
@@ -338,6 +375,23 @@ public enum SpellColumn {
                         return Integer.MIN_VALUE;
                     }
                     return spell.getRelativeLevel();
+                }
+            } else if (spell.getTemplate() != null) {
+                int points = spell.getPoints();
+                if (points > 0) {
+                    SkillDifficulty difficulty = spell.getDifficulty();
+                    int             level      = difficulty.getBaseRelativeLevel();
+                    if (difficulty == SkillDifficulty.W) {
+                        points /= 3;
+                    }
+                    if (points > 1) {
+                        if (points < 4) {
+                            level++;
+                        } else {
+                            level += 1 + points / 4;
+                        }
+                    }
+                    return level;
                 }
             }
             return Integer.MIN_VALUE;

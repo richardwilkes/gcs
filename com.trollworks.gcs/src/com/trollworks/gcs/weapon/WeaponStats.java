@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -141,9 +141,6 @@ public abstract class WeaponStats {
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
 
-    /** @return The root XML tag to use when saving. */
-    protected abstract String getRootTag();
-
     /** @param m The {@link JsonMap} to load from. */
     protected void loadSelf(JsonMap m) throws IOException {
         mDamage = new WeaponDamage(m.getMap(WeaponDamage.TAG_ROOT), this);
@@ -194,16 +191,11 @@ public abstract class WeaponStats {
         return Collections.unmodifiableList(mDefaults);
     }
 
-    /**
-     * @param defaults The new defaults for this weapon.
-     * @return Whether there was a change or not.
-     */
-    public boolean setDefaults(List<SkillDefault> defaults) {
+    /** @param defaults The new defaults for this weapon. */
+    public void setDefaults(List<SkillDefault> defaults) {
         if (!mDefaults.equals(defaults)) {
             mDefaults = new ArrayList<>(defaults);
-            return true;
         }
-        return false;
     }
 
     /** @param id The ID to use for notification. */
@@ -280,7 +272,7 @@ public abstract class WeaponStats {
         if (df instanceof GURPSCharacter) {
             getSkillLevel((GURPSCharacter) df, toolTip);
         }
-        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip : I18n.Text("No additional modifiers");
+        return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
     }
 
     /** @return The skill level. */

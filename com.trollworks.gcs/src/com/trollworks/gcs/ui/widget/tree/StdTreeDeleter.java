@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -41,13 +41,7 @@ public class StdTreeDeleter implements Deletable {
         Map<TreeContainerRow, List<TreeRow>> map  = new HashMap<>();
         List<TreeRow>                        rows = mPanel.getSelectedRows();
         for (TreeRow row : rows) {
-            TreeContainerRow parent = row.getParent();
-            List<TreeRow>    list   = map.get(parent);
-            if (list == null) {
-                list = new ArrayList<>();
-                map.put(parent, list);
-            }
-            list.add(row);
+            map.computeIfAbsent(row.getParent(), k -> new ArrayList<>()).add(row);
         }
         for (Map.Entry<TreeContainerRow, List<TreeRow>> entry : map.entrySet()) {
             entry.getKey().removeRow(entry.getValue());

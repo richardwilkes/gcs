@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -30,17 +30,18 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
-public class Bundler {
-    private static final String GCS_VERSION       = "4.23.1";
-    private static       String JDK_MAJOR_VERSION = "14";
+public final class Bundler {
+    private static final String GCS_VERSION       = "4.27.0";
+    private static       String JDK_MAJOR_VERSION = "15";
     private static final String ITEXT_VERSION     = "2.1.7";
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
@@ -57,8 +58,10 @@ public class Bundler {
     private static       String OS;
     private static       Path   PKG;
     private static       Path   NO_INSTALLER_PKG;
-    private static       Path   JPACKAGE_15;
     private static       String ICON_TYPE;
+
+    private Bundler() {
+    }
 
     /**
      * The main entry point for bundling GCS.
@@ -125,9 +128,9 @@ public class Bundler {
         System.out.println();
         System.out.println("Package can be found at:");
         if (noInstaller) {
-            System.out.println(NO_INSTALLER_PKG.toAbsolutePath().toString());
+            System.out.println(NO_INSTALLER_PKG.toAbsolutePath());
         } else {
-            System.out.println(PKG.toAbsolutePath().toString());
+            System.out.println(PKG.toAbsolutePath());
         }
     }
 
@@ -177,37 +180,6 @@ public class Bundler {
             System.err.println("JDK " + JDK_MAJOR_VERSION + " is not installed!");
             emitInstallJDKMessageAndExit();
         }
-
-        if (OS.equals(MACOS)) {
-            boolean failed = false;
-            Path    dir    = Paths.get(System.getProperty("user.home", "."), "jdk-15.jdk").toAbsolutePath();
-            JPACKAGE_15 = dir.resolve(Paths.get("Contents", "Home", "bin", "jpackage"));
-            builder = new ProcessBuilder(JPACKAGE_15.toString(), "--version");
-            builder.redirectOutput(Redirect.PIPE).redirectErrorStream(true);
-            try {
-                String  versionLine = "";
-                Process process     = builder.start();
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                    String prefix = "15";
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        if (line.startsWith(prefix)) {
-                            versionLine = line;
-                        }
-                    }
-                }
-                if (!versionLine.startsWith("15")) {
-                    failed = true;
-                }
-            } catch (IOException exception) {
-                failed = true;
-            }
-            if (failed) {
-                System.err.println("jpackage 15 is not available!");
-                System.err.println("Unpack JDK 15 from http://jdk.java.net/15/ into " + " and try again.");
-                System.exit(1);
-            }
-        }
     }
 
     private static void emitInstallJDKMessageAndExit() {
@@ -251,7 +223,7 @@ public class Bundler {
         Path javacInput = BUILD_DIR.resolve("javac.input");
         try (PrintWriter out = new PrintWriter(Files.newBufferedWriter(javacInput))) {
             out.println("-d");
-            out.println(BUILD_DIR.toString());
+            out.println(BUILD_DIR);
             out.println("--release");
             out.println(JDK_MAJOR_VERSION);
             out.println("-encoding");
@@ -260,7 +232,7 @@ public class Bundler {
             out.printf(".%1$s*%1$ssrc%2$sthird_party%1$s*%1$ssrc\n", File.separator, File.pathSeparator);
             FileScanner.walk(Paths.get("."), (path) -> {
                 if (path.getFileName().toString().endsWith(".java") && !path.startsWith(Paths.get(".", "bundler"))) {
-                    out.println(path.toString());
+                    out.println(path);
                 }
             });
         } catch (IOException exception) {
@@ -268,7 +240,7 @@ public class Bundler {
             exception.printStackTrace(System.err);
             System.exit(1);
         }
-        runNoOutputCmd("javac", "@" + javacInput.toString());
+        runNoOutputCmd("javac", "@" + javacInput);
         showTiming(timing);
     }
 
@@ -284,21 +256,15 @@ public class Bundler {
     private static void copyResourceTree(Path src, Path dst) {
         FileScanner.walk(src, (path) -> {
             Path target = dst.resolve(src.relativize(path));
-            try {
-                Files.createDirectories(target.getParent());
-                try (InputStream in = Files.newInputStream(path)) {
-                    try (OutputStream out = Files.newOutputStream(target)) {
-                        byte[] data = new byte[8192];
-                        int    amt;
-                        while ((amt = in.read(data)) != -1) {
-                            out.write(data, 0, amt);
-                        }
+            Files.createDirectories(target.getParent());
+            try (InputStream in = Files.newInputStream(path)) {
+                try (OutputStream out = Files.newOutputStream(target)) {
+                    byte[] data = new byte[8192];
+                    int    amt;
+                    while ((amt = in.read(data)) != -1) {
+                        out.write(data, 0, amt);
                     }
                 }
-            } catch (IOException exception) {
-                System.out.println();
-                exception.printStackTrace(System.err);
-                System.exit(1);
             }
         });
     }
@@ -361,13 +327,13 @@ public class Bundler {
         System.out.flush();
         long        timing = System.nanoTime();
         Set<String> keys   = new HashSet<>();
-        try {
-            Files.walk(Paths.get("com.trollworks.gcs", "src")).filter(path -> {
+        try (Stream<Path> srcTree = Files.walk(Paths.get("com.trollworks.gcs", "src"))) {
+            srcTree.filter(path -> {
                 String lower = path.getFileName().toString().toLowerCase();
                 return lower.endsWith(".java") && !lower.endsWith("i18n.java") && Files.isRegularFile(path) && Files.isReadable(path);
             }).distinct().forEach(path -> {
-                try {
-                    Files.lines(path).forEachOrdered(line -> {
+                try (Stream<String> lines = Files.lines(path)) {
+                    lines.forEachOrdered(line -> {
                         while (!line.isEmpty()) {
                             boolean needContext = true;
                             String  lookFor     = "I18n.Text(";
@@ -414,7 +380,7 @@ public class Bundler {
                 }
             });
             try (PrintStream out = new PrintStream(Files.newOutputStream(I18N_DIR.resolve("template.i18n")), true, StandardCharsets.UTF_8)) {
-                out.println("# Generated on " + new Date());
+                out.println("# Generated on " + ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME));
                 out.println("#");
                 out.println("# This file consists of UTF-8 text. Do not save it as anything else.");
                 out.println("#");
@@ -626,20 +592,15 @@ public class Bundler {
         args.add(MODULE_DIR.toString());
         args.add("--output");
         args.add(JRE.toString());
-        args.add("--compress=2");
         args.add("--no-header-files");
         args.add("--no-man-pages");
         args.add("--strip-debug");
         args.add("--strip-native-commands");
         args.add("--add-modules");
         args.add("com.trollworks.gcs");
-        runNoOutputCmd("jlink", "--module-path", MODULE_DIR.toString(), "--output", JRE.toString(), "--compress=2", "--no-header-files", "--no-man-pages", "--strip-debug", "--strip-native-commands", "--add-modules", "com.trollworks.gcs");
+        runNoOutputCmd(args);
         args.clear();
-        if (OS.equals(MACOS)) {
-            args.add(JPACKAGE_15.toString());
-        } else {
-            args.add("jpackage");
-        }
+        args.add("jpackage");
         args.add("--module");
         args.add("com.trollworks.gcs/com.trollworks.gcs.GCS");
         args.add("--app-version");
@@ -650,10 +611,6 @@ public class Bundler {
         args.add("Richard A. Wilkes");
         args.add("--description");
         args.add("GCS (GURPS Character Sheet) is a stand-alone, interactive, character sheet editor that allows you to build characters for the GURPS 4th Edition roleplaying game system.");
-        if (!noInstaller) {
-            args.add("--license-file");
-            args.add("LICENSE");
-        }
         args.add("--icon");
         args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
         if (OS.equals(MACOS) || !noInstaller) {
@@ -726,7 +683,7 @@ public class Bundler {
                 System.exit(1);
             }
             args.add("--add-launcher");
-            args.add("GCScmdline=" + propsFile.toString());
+            args.add("GCScmdline=" + propsFile);
         }
         }
         runNoOutputCmd(args);
@@ -831,7 +788,6 @@ public class Bundler {
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.redirectOutput(Redirect.PIPE).redirectErrorStream(true);
         try {
-            boolean hadMsg  = false;
             Process process = builder.start();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line = in.readLine();
@@ -883,7 +839,7 @@ public class Bundler {
 
     static class RecursiveDirectoryRemover implements FileVisitor<Path> {
         @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
         }
 
@@ -894,7 +850,7 @@ public class Bundler {
         }
 
         @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException {
+        public FileVisitResult visitFileFailed(Path file, IOException exception) {
             System.out.println();
             exception.printStackTrace(System.err);
             System.exit(1);
@@ -943,7 +899,7 @@ public class Bundler {
         }
 
         @Override
-        public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) {
             if (shouldSkip(path)) {
                 return FileVisitResult.SKIP_SUBTREE;
             }
@@ -959,7 +915,7 @@ public class Bundler {
         }
 
         @Override
-        public FileVisitResult visitFileFailed(Path path, IOException exception) throws IOException {
+        public FileVisitResult visitFileFailed(Path path, IOException exception) {
             System.out.println();
             exception.printStackTrace(System.err);
             System.exit(1);
@@ -967,7 +923,7 @@ public class Bundler {
         }
 
         @Override
-        public FileVisitResult postVisitDirectory(Path path, IOException exception) throws IOException {
+        public FileVisitResult postVisitDirectory(Path path, IOException exception) {
             if (exception != null) {
                 System.out.println();
                 exception.printStackTrace(System.err);

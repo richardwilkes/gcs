@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -24,8 +24,11 @@ import java.util.Locale;
 import java.util.Map;
 
 /** Provides localization support via a single directory of translation files. */
-public class I18n {
+public final class I18n {
     private static Map<String, Map<Integer, String>> TRANSLATIONS;
+
+    private I18n() {
+    }
 
     /**
      * NOTE: The name of this class and function MUST be exactly "I18n.Text" (case-sensitive), as
@@ -177,13 +180,8 @@ public class I18n {
     }
 
     private static void addContextValue(StringBuilder keyBuilder, int context, StringBuilder valueBuilder) {
-        String               key = keyBuilder.toString();
-        Map<Integer, String> m   = TRANSLATIONS.get(key);
-        if (m == null) {
-            m = new HashMap<>();
-            TRANSLATIONS.put(key, m);
-        }
-        Integer ctxKey = Integer.valueOf(context);
+        Map<Integer, String> m      = TRANSLATIONS.computeIfAbsent(keyBuilder.toString(), k -> new HashMap<>());
+        Integer              ctxKey = Integer.valueOf(context);
         if (!m.containsKey(ctxKey)) {
             m.put(ctxKey, valueBuilder.toString());
         }

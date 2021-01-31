@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -55,8 +55,6 @@ import java.util.Set;
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
     private static final int                     CURRENT_JSON_VERSION         = 1;
-    private static final int                     CURRENT_VERSION              = 7;
-    private static final int                     EQUIPMENT_SPLIT_VERSION      = 6;
     private static final String                  DEFAULT_LEGALITY_CLASS       = "4";
     /** The XML tag used for items. */
     public static final  String                  TAG_EQUIPMENT                = "equipment";
@@ -201,7 +199,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      * Loads an equipment and associates it with the specified data file.
      *
      * @param dataFile The data file to associate it with.
-     * @param m        The {@JsonMap} to load from.
+     * @param m        The {@link JsonMap} to load from.
      * @param state    The {@link LoadState} to use.
      */
     public Equipment(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
@@ -243,16 +241,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_EQUIPMENT_CONTAINER : TAG_EQUIPMENT;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override
@@ -365,11 +353,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     public void update() {
         updateExtendedValue(true);
         updateExtendedWeight(true);
-    }
-
-    public void updateNoNotify() {
-        updateExtendedValue(false);
-        updateExtendedWeight(false);
     }
 
     /** @return The quantity. */
@@ -974,19 +957,14 @@ public class Equipment extends ListRow implements HasSourceReference {
         return Collections.unmodifiableList(mModifiers);
     }
 
-    /**
-     * @param modifiers The value to set for modifiers.
-     * @return {@code true} if modifiers changed
-     */
-    public boolean setModifiers(List<? extends Modifier> modifiers) {
+    /** @param modifiers The value to set for modifiers. */
+    public void setModifiers(List<? extends Modifier> modifiers) {
         List<EquipmentModifier> in = new FilteredList<>(modifiers, EquipmentModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
             update();
-            return true;
         }
-        return false;
     }
 
     /**
@@ -1013,7 +991,7 @@ public class Equipment extends ListRow implements HasSourceReference {
                 builder.append(MODIFIER_SEPARATOR);
             }
         }
-        if (builder.length() > 0) {
+        if (!builder.isEmpty()) {
             // Remove the trailing MODIFIER_SEPARATOR
             builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
         }

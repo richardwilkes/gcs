@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -36,14 +36,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /** Holds damage a weapon does, broken down for easier manipulation. */
 public class WeaponDamage {
     /** The XML tag used for weapon damage. */
     public static final  String         TAG_ROOT                         = "damage";
-    private static final String         ATTR_TYPE                        = "type";
     private static final String         ATTR_ST                          = "st";
     private static final String         ATTR_BASE                        = "base";
     private static final String         ATTR_FRAGMENTATION               = "fragmentation";
@@ -51,16 +48,6 @@ public class WeaponDamage {
     private static final String         ATTR_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
     private static final String         ATTR_FRAGMENTATION_TYPE          = "fragmentation_type";
     private static final String         ATTR_MODIFIER_PER_DIE            = "modifier_per_die";
-    private static final String         DICE_REGEXP_PIECE                = "\\d+[dD]\\d*(\\s*[+-]\\s*\\d+)?(\\s*[xX]\\s*\\d+)?";
-    private static final String         DIVISOR_REGEXP_PIECE             = "\\s*(\\(\\s*(?<divisor>\\d+(\\.\\d+)?|∞)\\s*\\))?";
-    private static final String         FRAG_REGEXP_PIECE                = "\\s*(\\[\\s*(?<frag>" + DICE_REGEXP_PIECE + ")\\s*(\\(\\s*(?<fragDivisor>\\d+(\\.\\d+)?|∞)\\s*\\))?\\s*(?<fragType>cr|cut)?\\])";
-    private static final String         REMAINDER_REGEXP_PIECE           = "(?<remainder>.*)";
-    private static final String         DAMAGE_REGEXP_STR                = "^\\s*\\+?\\s*(?<dice>" + DICE_REGEXP_PIECE + ")" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
-    private static final String         DAMAGE_ALT_REGEX_STR             = "^\\s*(?<dice>[+-]?\\s*\\d+)?(:(?<perDie>[-+]\\d+))?" + DIVISOR_REGEXP_PIECE + FRAG_REGEXP_PIECE + "?\\s*" + REMAINDER_REGEXP_PIECE + "$";
-    private static final String         TRAILING_FRAG_REGEXP_STR         = "^" + REMAINDER_REGEXP_PIECE + FRAG_REGEXP_PIECE + "$";
-    private static final Pattern        DAMAGE_REGEXP                    = Pattern.compile(DAMAGE_REGEXP_STR);
-    private static final Pattern        DAMAGE_ALT_REGEXP                = Pattern.compile(DAMAGE_ALT_REGEX_STR);
-    private static final Pattern        TRAILING_FRAG_REGEXP             = Pattern.compile(TRAILING_FRAG_REGEXP_STR);
     private              WeaponStats    mOwner;
     private              String         mType;
     private              WeaponSTDamage mST;
@@ -78,7 +65,7 @@ public class WeaponDamage {
         mArmorDivisor = 1;
     }
 
-    public WeaponDamage(JsonMap m, WeaponStats owner) throws IOException {
+    public WeaponDamage(JsonMap m, WeaponStats owner) {
         mOwner = owner;
         mType = m.getString(DataFile.KEY_TYPE);
         mST = Enums.extract(m.getString(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
@@ -167,82 +154,6 @@ public class WeaponDamage {
             }
         }
         return false;
-    }
-
-    public void setValuesFromFreeformDamageString(String text) {
-        text = text.trim();
-        String saved = text;
-
-        // Find and remove first occurrence of 'sw' or 'thr'
-        mST = WeaponSTDamage.NONE;
-        for (WeaponSTDamage one : WeaponSTDamage.values()) {
-            if (one != WeaponSTDamage.NONE) {
-                int i = text.indexOf(one.toString());
-                if (i != -1) {
-                    mST = one;
-                    String s = text.substring(i + one.toString().length());
-                    text = i > 0 && text.charAt(i - 1) == '+' ? text.substring(0, i - 1) + s : text.substring(0, i) + s;
-                    break;
-                }
-            }
-        }
-
-        // Match against the input
-        boolean hasPerDie = false;
-        Matcher matcher   = DAMAGE_REGEXP.matcher(text);
-        boolean matches   = matcher.matches();
-        if (!matches) {
-            matcher = DAMAGE_ALT_REGEXP.matcher(text);
-            matches = matcher.matches();
-            hasPerDie = true;
-        }
-        if (matches) {
-            String value = matcher.group("dice");
-            mBase = value != null ? new Dice(value.replaceAll(" ", "").toLowerCase()) : null;
-            value = matcher.group("divisor");
-            mArmorDivisor = value != null ? Numbers.extractDouble(value.replaceAll(" ", ""), 1, false) : 1;
-            extractFragInfo(matcher);
-            if (hasPerDie) {
-                value = matcher.group("perDie");
-                mModifierPerDie = value != null ? Numbers.extractInteger(value.trim(), 0, false) : 0;
-            }
-            mType = matcher.group("remainder");
-            if (mType != null) {
-                matcher = TRAILING_FRAG_REGEXP.matcher(mType);
-                if (matcher.matches()) {
-                    extractFragInfo(matcher);
-                    mType = matcher.group("remainder");
-                }
-            }
-            mType = mType == null ? "" : mType.trim();
-        } else {
-            // No match, just copy the saved text into type and clear the other fields
-            mType = saved;
-            mST = WeaponSTDamage.NONE;
-            mBase = null;
-            mArmorDivisor = 1;
-            mFragmentation = null;
-            mFragmentationArmorDivisor = 0;
-            mFragmentationType = null;
-            mModifierPerDie = 0;
-        }
-    }
-
-    private void extractFragInfo(Matcher matcher) {
-        String value = matcher.group("frag");
-        if (value != null) {
-            mFragmentation = new Dice(value.replaceAll(" ", "").toLowerCase());
-            value = matcher.group("fragDivisor");
-            mFragmentationArmorDivisor = value != null ? Numbers.extractDouble(value.replaceAll(" ", ""), 1, false) : 1;
-            mFragmentationType = matcher.group("fragType");
-            if (mFragmentationType == null) {
-                mFragmentationType = "cut";
-            }
-        } else {
-            mFragmentation = null;
-            mFragmentationArmorDivisor = 0;
-            mFragmentationType = null;
-        }
     }
 
     protected void notifySingle() {
@@ -336,7 +247,7 @@ public class WeaponDamage {
     public String getDamageToolTip() {
         StringBuilder toolTip = new StringBuilder();
         getResolvedDamage(toolTip);
-        return toolTip.length() > 0 ? I18n.Text("Includes modifiers from") + toolTip : I18n.Text("No additional modifiers");
+        return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
     }
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
@@ -351,52 +262,6 @@ public class WeaponDamage {
                 int              st         = character.getStrength() + character.getStrikingStrengthBonus();
                 Dice             base       = new Dice(0, 0);
 
-                // Determine which skill default was used
-                int          best        = Integer.MIN_VALUE;
-                SkillDefault bestDefault = null;
-                for (SkillDefault skillDefault : mOwner.getDefaults()) {
-                    SkillDefaultType type = skillDefault.getType();
-                    if (type.isSkillBased()) {
-                        int level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
-                        if (level > best) {
-                            best = level;
-                            bestDefault = skillDefault;
-                        }
-                    }
-                }
-
-                if (bestDefault != null) {
-                    String name           = bestDefault.getName();
-                    String specialization = bestDefault.getSpecialization();
-                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, toolTip));
-                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, toolTip));
-                }
-                String nameQualifier  = mOwner.toString();
-                String usageQualifier = mOwner.getUsage();
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip));
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip));
-                List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
-                for (Feature feature : mOwner.mOwner.getFeatures()) {
-                    extractWeaponBonus(feature, bonuses, toolTip);
-                }
-                if (mOwner.mOwner instanceof Advantage) {
-                    for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
-                        if (modifier.isEnabled()) {
-                            for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses, toolTip);
-                            }
-                        }
-                    }
-                }
-                if (mOwner.mOwner instanceof Equipment) {
-                    for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
-                        if (modifier.isEnabled()) {
-                            for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses, toolTip);
-                            }
-                        }
-                    }
-                }
                 if (maxST > 0 && maxST < st) {
                     st = maxST;
                 }
@@ -438,6 +303,54 @@ public class WeaponDamage {
                     break;
                 default:
                     break;
+                }
+                int dieCount = base.getDieCount();
+
+                // Determine which skill default was used
+                int          best        = Integer.MIN_VALUE;
+                SkillDefault bestDefault = null;
+                for (SkillDefault skillDefault : mOwner.getDefaults()) {
+                    SkillDefaultType type = skillDefault.getType();
+                    if (type.isSkillBased()) {
+                        int level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+                        if (level > best) {
+                            best = level;
+                            bestDefault = skillDefault;
+                        }
+                    }
+                }
+
+                if (bestDefault != null) {
+                    String name           = bestDefault.getName();
+                    String specialization = bestDefault.getSpecialization();
+                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, dieCount, toolTip));
+                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, dieCount, toolTip));
+                }
+                String nameQualifier  = mOwner.toString();
+                String usageQualifier = mOwner.getUsage();
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, dieCount, toolTip));
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, dieCount, toolTip));
+                List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
+                for (Feature feature : mOwner.mOwner.getFeatures()) {
+                    extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                }
+                if (mOwner.mOwner instanceof Advantage) {
+                    for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                            }
+                        }
+                    }
+                }
+                if (mOwner.mOwner instanceof Equipment) {
+                    for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                            }
+                        }
+                    }
                 }
                 for (WeaponBonus bonus : bonuses) {
                     LeveledAmount lvlAmt = bonus.getAmount();
@@ -484,9 +397,12 @@ public class WeaponDamage {
         return toString();
     }
 
-    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list, StringBuilder toolTip) {
+    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list, int dieCount, StringBuilder toolTip) {
         if (feature instanceof WeaponBonus) {
             WeaponBonus wb = (WeaponBonus) feature;
+            LeveledAmount amount = wb.getAmount();
+            int           level  = amount.getLevel();
+            amount.setLevel(dieCount);
             switch (wb.getWeaponSelectionType()) {
             case THIS_WEAPON:
             default:
@@ -503,6 +419,7 @@ public class WeaponDamage {
                 // Already handled
                 break;
             }
+            amount.setLevel(level);
         }
     }
 
@@ -520,7 +437,7 @@ public class WeaponDamage {
         if (mBase != null) {
             String base = mBase.toString(convertModifiersToExtraDice);
             if (!"0".equals(base)) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     char ch = base.charAt(0);
                     if (ch != '+' && ch != '-') {
                         buffer.append("+");
@@ -535,7 +452,7 @@ public class WeaponDamage {
             buffer.append(")");
         }
         if (mModifierPerDie != 0) {
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append(" ");
             }
             buffer.append("(");

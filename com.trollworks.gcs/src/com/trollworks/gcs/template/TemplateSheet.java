@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -37,8 +37,6 @@ import java.awt.event.ActionEvent;
 /** The template sheet. */
 public class TemplateSheet extends CollectedOutlines {
     private static final EmptyBorder NORMAL_BORDER = new EmptyBorder(5);
-    /** Used to determine whether an edit cell is pending. */
-    protected            boolean     mStartEditingPending;
     /** Used to determine whether a resize action is pending. */
     protected            boolean     mSizePending;
 
@@ -89,7 +87,7 @@ public class TemplateSheet extends CollectedOutlines {
     private void adjustSize() {
         if (!mSizePending) {
             mSizePending = true;
-            EventQueue.invokeLater(() -> runAdjustSize());
+            EventQueue.invokeLater(this::runAdjustSize);
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,7 +25,6 @@ import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -49,7 +48,8 @@ import javax.swing.event.DocumentListener;
 public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, NotifierTarget {
     private GURPSCharacter           mCharacter;
     private Settings                 mSettings;
-    private JCheckBox                mBaseWillAndPerOn10;
+    private JCheckBox                mBaseWillOn10;
+    private JCheckBox                mBasePerOn10;
     private JCheckBox                mUseMultiplicativeModifiers;
     private JCheckBox                mUseModifyingDicePlusAdds;
     private JCheckBox                mUseKnowYourOwnStrength;
@@ -58,6 +58,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mUseThrustEqualsSwingMinus2;
     private JCheckBox                mUseSimpleMetricConversions;
     private JCheckBox                mShowCollegeInSpells;
+    private JCheckBox                mShowDifficulty;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
@@ -97,7 +98,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         super(createTitle(character));
         mCharacter = character;
         mSettings = character.getSettings();
-        Container content = getContentPane();
         addTopPanel();
         addResetPanel();
         adjustResetButton();
@@ -109,8 +109,10 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private void addTopPanel() {
         JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
         mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
+        mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
-        mBaseWillAndPerOn10 = addCheckBox(panel, I18n.Text("Base Will and Perception on 10 and not IQ"), null, mSettings.baseWillAndPerOn10());
+        mBaseWillOn10 = addCheckBox(panel, I18n.Text("Base Will on 10 and not IQ"), null, mSettings.baseWillOn10());
+        mBasePerOn10 = addCheckBox(panel, I18n.Text("Base Perception on 10 and not IQ"), null, mSettings.basePerOn10());
         mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
         mUseModifyingDicePlusAdds = addCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
@@ -151,17 +153,16 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
     private void addResetPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        mResetButton = new JButton(I18n.Text("Reset to Current Preference Values"));
+        mResetButton = new JButton(I18n.Text("Reset to Global Preference Values"));
         mResetButton.addActionListener(this);
         panel.add(mResetButton);
         getContentPane().add(panel, BorderLayout.SOUTH);
     }
 
-    private JLabel addLabel(JPanel panel, String title) {
+    private void addLabel(JPanel panel, String title) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         panel.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        return label;
     }
 
     private <E> JComboBox<E> addCombo(JPanel panel, E[] values, E choice, String tooltip) {
@@ -189,10 +190,14 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         Object source = event.getSource();
         if (source == mShowCollegeInSpells) {
             mSettings.setShowCollegeInSpells(mShowCollegeInSpells.isSelected());
+        } else if (source == mShowDifficulty) {
+            mSettings.setShowDifficulty(mShowDifficulty.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
-        } else if (source == mBaseWillAndPerOn10) {
-            mSettings.setBaseWillAndPerOn10(mBaseWillAndPerOn10.isSelected());
+        } else if (source == mBaseWillOn10) {
+            mSettings.setBaseWillOn10(mBaseWillOn10.isSelected());
+        } else if (source == mBasePerOn10) {
+            mSettings.setBasePerOn10(mBasePerOn10.isSelected());
         } else if (source == mUseMultiplicativeModifiers) {
             mSettings.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
         } else if (source == mUseModifyingDicePlusAdds) {
@@ -219,8 +224,10 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         Preferences prefs      = Preferences.getInstance();
         boolean     atDefaults = mUseModifyingDicePlusAdds.isSelected() == prefs.useModifyingDicePlusAdds();
         atDefaults = atDefaults && mShowCollegeInSpells.isSelected() == prefs.showCollegeInSheetSpells();
+        atDefaults = atDefaults && mShowDifficulty.isSelected() == prefs.showDifficulty();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
-        atDefaults = atDefaults && mBaseWillAndPerOn10.isSelected() == prefs.baseWillAndPerOn10();
+        atDefaults = atDefaults && mBaseWillOn10.isSelected() == prefs.baseWillOn10();
+        atDefaults = atDefaults && mBasePerOn10.isSelected() == prefs.basePerOn10();
         atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
         atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == prefs.useKnowYourOwnStrength();
         atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == prefs.useThrustEqualsSwingMinus2();
@@ -253,8 +260,10 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             Preferences prefs = Preferences.getInstance();
             mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
             mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
+            mShowDifficulty.setSelected(prefs.showDifficulty());
             mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
-            mBaseWillAndPerOn10.setSelected(prefs.baseWillAndPerOn10());
+            mBaseWillOn10.setSelected(prefs.baseWillOn10());
+            mBasePerOn10.setSelected(prefs.basePerOn10());
             mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
             mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
             mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,12 +26,12 @@ import java.awt.event.KeyEvent;
 public class NewAdvantageModifierCommand extends Command {
     public static final String                      CMD_NEW_ADVANTAGE_MODIFIER           = "NewAdvantageModifier";
     public static final String                      CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER = "NewAdvantageModifierContainer";
-    public static final NewAdvantageModifierCommand INSTANCE                             = new NewAdvantageModifierCommand(false, I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, KeyEvent.VK_M, COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
-    public static final NewAdvantageModifierCommand CONTAINER_INSTANCE                   = new NewAdvantageModifierCommand(true, I18n.Text("New Advantage Modifier Container"), CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER, KeyEvent.VK_M, SHIFTED_COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
+    public static final NewAdvantageModifierCommand INSTANCE                             = new NewAdvantageModifierCommand(false, I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, COMMAND_MODIFIER);
+    public static final NewAdvantageModifierCommand CONTAINER_INSTANCE                   = new NewAdvantageModifierCommand(true, I18n.Text("New Advantage Modifier Container"), CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     private             boolean                     mContainer;
 
-    private NewAdvantageModifierCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
-        super(title, cmd, keyCode, modifiers);
+    private NewAdvantageModifierCommand(boolean container, String title, String cmd, int modifiers) {
+        super(title, cmd, KeyEvent.VK_M, modifiers | InputEvent.ALT_DOWN_MASK);
         mContainer = container;
     }
 

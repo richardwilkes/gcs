@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,8 +12,6 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.utility.I18n;
-
-import java.util.ArrayList;
 
 /** Hit locations. */
 public enum HitLocation {
@@ -49,7 +47,7 @@ public enum HitLocation {
     TORSO {
         @Override
         public String toString() {
-            return I18n.Text("to the torso");
+            return I18n.Text("to the torso (including vitals)");
         }
     },
     /** The vitals hit location. */
@@ -57,11 +55,6 @@ public enum HitLocation {
         @Override
         public String toString() {
             return I18n.Text("to the vitals");
-        }
-
-        @Override
-        public boolean isChoosable() {
-            return false;
         }
     },
     /** The groin hit location. */
@@ -140,22 +133,5 @@ public enum HitLocation {
         public String toString() {
             return I18n.Text("to the full body except the eyes");
         }
-    };
-
-    /** @return The hit locations that can be chosen as an armor protection spot. */
-    public static HitLocation[] getChoosableLocations() {
-        ArrayList<HitLocation> list = new ArrayList<>();
-        for (HitLocation one : values()) {
-            if (one.isChoosable()) {
-                list.add(one);
-            }
-        }
-        return list.toArray(new HitLocation[0]);
-    }
-
-    /** @return Whether this location is choosable as an armor protection spot. */
-    @SuppressWarnings("static-method")
-    public boolean isChoosable() {
-        return true;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,6 +16,7 @@ import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.library.LibraryUpdateCommand;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.MarkdownDocument;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.task.Tasks;
 
@@ -154,6 +155,7 @@ public class UpdateChecker implements Runnable {
             mMode = Mode.DONE;
             if (isNewAppVersionAvailable()) {
                 JTextPane   markdown = new JTextPane(new MarkdownDocument(getAppReleaseNotes()));
+                markdown.setBorder(new EmptyBorder(4));
                 Dimension   size     = markdown.getPreferredSize();
                 JScrollPane scroller = new JScrollPane(markdown);
                 int         maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
@@ -163,6 +165,7 @@ public class UpdateChecker implements Runnable {
                     size.width = maxWidth;
                     markdown.setPreferredSize(size);
                 }
+                markdown.setEditable(false);
                 if (WindowUtils.showOptionDialog(null, scroller, getAppResult(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.Text("Ignore")}, update) == JOptionPane.OK_OPTION) {
                     goToUpdate();
                 }

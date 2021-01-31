@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,7 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Utilities for columns. */
-public class ColumnUtils {
+public final class ColumnUtils {
+    private ColumnUtils() {
+    }
+
     /**
      * Packs the columns to their preferred sizes.
      *

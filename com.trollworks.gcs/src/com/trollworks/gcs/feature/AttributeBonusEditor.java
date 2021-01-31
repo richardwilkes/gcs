@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -55,7 +55,7 @@ public class AttributeBonusEditor extends FeatureEditor {
         int      length = BonusAttributeType.values().length;
         String[] names  = new String[length];
         for (int i = 0; i < length; i++) {
-            names[i] = I18n.Text("to ") + BonusAttributeType.values()[i].toString();
+            names[i] = I18n.Text("to ") + BonusAttributeType.values()[i];
         }
         row.add(addComboBox(CHANGE_ATTRIBUTE, names, names[attribute.ordinal()]));
         if (BonusAttributeType.ST == attribute) {

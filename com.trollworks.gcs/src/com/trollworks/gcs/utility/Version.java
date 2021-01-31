@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -37,7 +37,7 @@ public class Version implements Comparable<Version> {
         extract(buffer);
     }
 
-    public boolean extract(String buffer) {
+    public void extract(String buffer) {
         try {
             String[] parts = buffer.split("\\.", 3);
             switch (parts.length) {
@@ -50,12 +50,10 @@ public class Version implements Comparable<Version> {
             default:
                 major = Integer.parseInt(parts[0]);
             }
-            return true;
         } catch (NumberFormatException nfe) {
             major = 0;
             minor = 0;
             bugfix = 0;
-            return false;
         }
     }
 

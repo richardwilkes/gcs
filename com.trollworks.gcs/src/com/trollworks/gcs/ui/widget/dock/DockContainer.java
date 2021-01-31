@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget.dock;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.UIUtilities;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -22,9 +23,18 @@ import java.awt.EventQueue;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 
 /**
  * All {@link Dockable}s are wrapped in a {@link DockContainer} when placed within a {@link Dock}.
@@ -53,6 +63,7 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
         mDockables.add(dockable);
         mHeader.addTab(dockable, 0);
         setMinimumSize(new Dimension(0, 0));
+        setupDockablesSwitchKeys();
     }
 
     /** @return The {@link Dock} this {@link DockContainer} resides in. */
@@ -112,7 +123,7 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
             focusOwner = focusOwner.getParent();
         }
         if (focusOwner == null) {
-            EventQueue.invokeLater(() -> transferFocus());
+            EventQueue.invokeLater(this::transferFocus);
         }
     }
 
@@ -330,6 +341,68 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
                 remaining = 0;
             }
             current.setBounds(insets.left, insets.top + height, width, remaining);
+        }
+    }
+
+    private void setupDockablesSwitchKeys() {
+        KeyStroke keyStrokeNext = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK);
+        KeyStroke keyStrokePrev = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
+
+        // http://www.davidc.net/programming/java/how-make-ctrl-tab-switch-tabs-jtabbedpane
+        Set<AWTKeyStroke> forwardKeys = new HashSet<>(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+        forwardKeys.remove(keyStrokeNext);
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, forwardKeys);
+
+        Set<AWTKeyStroke> backwardKeys = new HashSet<>(getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
+        backwardKeys.remove(keyStrokePrev);
+        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, backwardKeys);
+
+        // Map keystrokes to action names
+        InputMap inputMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(keyStrokeNext, "ShowNextDockable");
+        inputMap.put(keyStrokePrev, "ShowPrevDockable");
+
+        // Map action names to actions
+        ActionMap actionMap = getActionMap();
+        actionMap.put("ShowNextDockable", new ShowNextDockableAction());
+        actionMap.put("ShowPrevDockable", new ShowPrevDockableAction());
+    }
+
+
+    static class ShowNextDockableAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            DockContainer  container = (DockContainer) event.getSource();
+            List<Dockable> dockables = container.getDockables();
+
+            if (dockables.size() < 2) {
+                return;
+            }
+            int next = container.getCurrentTabIndex() + 1;
+            if (next >= dockables.size()) {
+                next = 0;
+            }
+            Dockable dockable = dockables.get(next);
+            container.setCurrentDockable(dockable);
+        }
+    }
+
+
+    static class ShowPrevDockableAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            DockContainer  container = (DockContainer) event.getSource();
+            List<Dockable> dockables = container.getDockables();
+
+            if (dockables.size() < 2) {
+                return;
+            }
+            int prev = container.getCurrentTabIndex() - 1;
+            if (prev < 0) {
+                prev = dockables.size() - 1;
+            }
+            Dockable dockable = dockables.get(prev);
+            container.setCurrentDockable(dockable);
         }
     }
 }

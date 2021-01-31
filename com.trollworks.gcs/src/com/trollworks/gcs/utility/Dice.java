@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -144,12 +144,12 @@ public class Dice implements Cloneable {
     }
 
     private static char nextChar(StringBuilder buffer) {
-        return buffer.length() > 0 ? buffer.charAt(0) : 0;
+        return buffer.isEmpty() ? 0 : buffer.charAt(0);
     }
 
     private static int extractValue(StringBuilder buffer) {
         int value = 0;
-        while (buffer.length() > 0) {
+        while (!buffer.isEmpty()) {
             char ch = buffer.charAt(0);
             if (ch >= '0' && ch <= '9') {
                 value *= 10;
@@ -302,7 +302,7 @@ public class Dice implements Cloneable {
             buffer.append('x');
             buffer.append(mMultiplier);
         }
-        if (buffer.length() == 0) {
+        if (buffer.isEmpty()) {
             buffer.append('0');
         }
         return buffer.toString();
@@ -348,16 +348,5 @@ public class Dice implements Cloneable {
     public int hashCode() {
         // Specifically want identity comparison
         return super.hashCode();
-    }
-
-    /**
-     * @param count  The number of dice.
-     * @param sides  The number of sides per die.
-     * @param target The minimum value on one die to be considered a success.
-     * @return The probability that at least one die will be equal to or greater than the target
-     *         value.
-     */
-    public static double getDicePoolProbability(int count, int sides, int target) {
-        return 1 - Math.pow(1 - (1 + sides - target) / (double) sides, count);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -52,7 +52,6 @@ import java.util.Set;
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
     private static final int                        CURRENT_JSON_VERSION       = 1;
-    private static final int                        CURRENT_VERSION            = 4;
     /** The XML tag used for items. */
     public static final  String                     TAG_ADVANTAGE              = "advantage";
     /** The XML tag used for containers. */
@@ -61,7 +60,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String                     TAG_BASE_POINTS            = "base_points";
     private static final String                     TAG_POINTS_PER_LEVEL       = "points_per_level";
     private static final String                     TAG_LEVELS                 = "levels";
-    private static final String                     TAG_TYPE                   = "type";
     private static final String                     TAG_NAME                   = "name";
     private static final String                     TAG_CR                     = "cr";
     private static final String                     TAG_USER_DESC              = "userdesc";
@@ -73,7 +71,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String                     ATTR_DISABLED              = "disabled";
     private static final String                     ATTR_ROUND_COST_DOWN       = "round_down";
     private static final String                     ATTR_ALLOW_HALF_LEVELS     = "allow_half_levels";
-    private static final String                     ATTR_HALF_LEVEL            = "half_level";
     private static final String                     KEY_CONTAINER_TYPE         = "container_type";
     private static final String                     KEY_WEAPONS                = "weapons";
     private static final String                     KEY_MODIFIERS              = "modifiers";
@@ -247,16 +244,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override
@@ -543,24 +530,20 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return false;
     }
 
-    /**
-     * @param factor The number of levels or half levels to set.
-     * @return Whether it was modified.
-     */
-    public boolean adjustLevel(int factor) {
-        if (factor == 0) {
-            return false;
+    /** @param factor The number of levels or half levels to set. */
+    public void adjustLevel(int factor) {
+        if (factor != 0) {
+            if (mAllowHalfLevels) {
+                int halfLevels = mLevels * 2 + (mHalfLevel ? 1 : 0) + factor;
+                if (halfLevels < 0) {
+                    halfLevels = 0;
+                }
+                setHalfLevel((halfLevels & 1) == 1);
+                setLevels(halfLevels / 2);
+            } else {
+                setLevels(Math.max(mLevels + factor, 0));
+            }
         }
-        if (!mAllowHalfLevels) {
-            return setLevels(Math.max(mLevels + factor, 0));
-        }
-        int halfLevels = mLevels * 2 + (mHalfLevel ? 1 : 0) + factor;
-        if (halfLevels < 0) {
-            halfLevels = 0;
-        }
-        boolean modified = setHalfLevel((halfLevels & 1) == 1);
-        modified |= setLevels(halfLevels / 2);
-        return modified;
     }
 
     /** @return The total points, taking levels into account. */
@@ -844,26 +827,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return super.contains(text, lowerCaseOnly);
     }
 
-    private static int getTypeFromText(String text) {
-        int type = 0;
-        if (text.contains(TYPE_MENTAL)) {
-            type |= TYPE_MASK_MENTAL;
-        }
-        if (text.contains(TYPE_PHYSICAL)) {
-            type |= TYPE_MASK_PHYSICAL;
-        }
-        if (text.contains(TYPE_SOCIAL)) {
-            type |= TYPE_MASK_SOCIAL;
-        }
-        if (text.contains(TYPE_EXOTIC)) {
-            type |= TYPE_MASK_EXOTIC;
-        }
-        if (text.contains(TYPE_SUPERNATURAL)) {
-            type |= TYPE_MASK_SUPERNATURAL;
-        }
-        return type;
-    }
-
     /** @return The type as a text string. */
     public String getTypeAsText() {
         if (!canHaveChildren()) {
@@ -874,25 +837,25 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 buffer.append(TYPE_MENTAL);
             }
             if ((type & TYPE_MASK_PHYSICAL) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append("/");
                 }
                 buffer.append(TYPE_PHYSICAL);
             }
             if ((type & TYPE_MASK_SOCIAL) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append(separator);
                 }
                 buffer.append(TYPE_SOCIAL);
             }
             if ((type & TYPE_MASK_EXOTIC) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append(separator);
                 }
                 buffer.append(TYPE_EXOTIC);
             }
             if ((type & TYPE_MASK_SUPERNATURAL) != 0) {
-                if (buffer.length() > 0) {
+                if (!buffer.isEmpty()) {
                     buffer.append(separator);
                 }
                 buffer.append(TYPE_SUPERNATURAL);
@@ -994,19 +957,14 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return Collections.unmodifiableList(allModifiers);
     }
 
-    /**
-     * @param modifiers The value to set for modifiers.
-     * @return {@code true} if modifiers changed
-     */
-    public boolean setModifiers(List<? extends Modifier> modifiers) {
+    /** @param modifiers The value to set for modifiers. */
+    public void setModifiers(List<? extends Modifier> modifiers) {
         List<AdvantageModifier> in = new FilteredList<>(modifiers, AdvantageModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifySingle(ID_MODIFIER_STATUS_CHANGED);
             update();
-            return true;
         }
-        return false;
     }
 
     /**
@@ -1041,7 +999,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 builder.append(MODIFIER_SEPARATOR);
             }
         }
-        if (builder.length() > 0) {
+        if (!builder.isEmpty()) {
             // Remove the trailing MODIFIER_SEPARATOR
             builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
         }
@@ -1065,7 +1023,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         String txt = super.getSecondaryText();
         if (!txt.isBlank()) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append("\n");
             }
             builder.append(super.getSecondaryText());

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -101,9 +101,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel = new TreePanel(root);
         mTreePanel.setShowHeader(false);
         mTreePanel.addColumn(new TextTreeColumn(I18n.Text("Library Explorer"), this, this));
-        mTreePanel.setAllowColumnDrag(false);
         mTreePanel.setAllowColumnResize(false);
-        mTreePanel.setAllowColumnContextMenu(false);
         mTreePanel.setAllowRowDropFromExternal(false);
         mTreePanel.setAllowedRowDragTypes(0); // Turns off row dragging
         mTreePanel.setShowRowDivider(false);
@@ -116,7 +114,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mSearch = new Search(this);
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         toolbar.add(new IconButton(Images.TOGGLE_OPEN, I18n.Text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
-        toolbar.add(new IconButton(Images.REFRESH, I18n.Text("Refresh"), () -> refresh()));
+        toolbar.add(new IconButton(Images.REFRESH, I18n.Text("Refresh"), this::refresh));
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
         List<String> openRowKeys = Preferences.getInstance().getLibraryExplorerOpenRowKeys();
@@ -487,16 +485,34 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     @Override
     public List<Object> search(String filter) {
-        ArrayList<Object> list = new ArrayList<>();
+        List<LibraryExplorerSearchResult> list = new ArrayList<>();
         filter = filter.toLowerCase();
         collect(mTreePanel.getRoot(), filter, list);
-        return list;
+        Set<String> titles     = new HashSet<>();
+        Set<String> duplicates = new HashSet<>();
+        for (LibraryExplorerSearchResult one : list) {
+            String title = one.getTitle();
+            if (titles.contains(title)) {
+                duplicates.add(title);
+            } else {
+                titles.add(title);
+            }
+        }
+        List<Object> result = new ArrayList<>();
+        for (LibraryExplorerSearchResult one : list) {
+            if (duplicates.contains(one.getTitle())) {
+                one.useFullPath();
+            }
+            result.add(one);
+        }
+        return result;
     }
 
-    private static void collect(TreeRow row, String text, ArrayList<Object> list) {
+    private static void collect(TreeRow row, String text, List<LibraryExplorerSearchResult> list) {
         if (row instanceof LibraryExplorerRow) {
-            if (((LibraryExplorerRow) row).getName().toLowerCase().contains(text)) {
-                list.add(row);
+            LibraryExplorerRow libRow = (LibraryExplorerRow) row;
+            if (libRow.getName().toLowerCase().contains(text)) {
+                list.add(new LibraryExplorerSearchResult(libRow));
             }
         }
         if (row instanceof TreeContainerRow) {
@@ -510,9 +526,11 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public void searchSelect(List<Object> selection) {
         List<TreeRow> list = new ArrayList<>();
         for (Object one : selection) {
-            if (one instanceof TreeRow) {
-                list.add((TreeRow) one);
-
+            if (one instanceof LibraryExplorerSearchResult) {
+                LibraryExplorerRow row = ((LibraryExplorerSearchResult) one).getRow();
+                if (row instanceof TreeRow) {
+                    list.add((TreeRow) row);
+                }
             }
         }
         mTreePanel.setParentsOpen(list);

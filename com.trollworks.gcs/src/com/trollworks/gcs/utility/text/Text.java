@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,11 +12,16 @@
 package com.trollworks.gcs.utility.text;
 
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import javax.swing.SwingConstants;
 
 /** Provides text manipulation. */
-public class Text {
-    public static final char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+public final class Text {
+    public static final  char[]  HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\n");
+
+    private Text() {
+    }
 
     /**
      * @param ch the digit to convert.
@@ -45,7 +50,7 @@ public class Text {
      *                         {@link SwingConstants#RIGHT}.
      * @return The adjusted text.
      */
-    public static final String truncateIfNecessary(String text, int count, int truncationPolicy) {
+    public static String truncateIfNecessary(String text, int count, int truncationPolicy) {
         int tCount = text.length();
         count = tCount - count;
         if (count > 0) {
@@ -79,7 +84,7 @@ public class Text {
      * @param data The text to convert.
      * @return The converted text.
      */
-    public static final String standardizeLineEndings(String data) {
+    public static String standardizeLineEndings(String data) {
         int           length   = data.length();
         StringBuilder buffer   = new StringBuilder(length);
         char          ignoreCh = 0;
@@ -164,7 +169,7 @@ public class Text {
 
     public static String wrapPlainTextForToolTip(String text) {
         if (text != null && !text.isEmpty() && !text.startsWith("<html>")) {
-            return "<html><body>" + htmlEscape(wrapToCharacterCount(text, 40)).replaceAll("\n", "<br>") + "</body></html>";
+            return "<html><body>" + LINE_FEED_PATTERN.matcher(htmlEscape(wrapToCharacterCount(text, 40))).replaceAll("<br>") + "</body></html>";
         }
         return text;
     }

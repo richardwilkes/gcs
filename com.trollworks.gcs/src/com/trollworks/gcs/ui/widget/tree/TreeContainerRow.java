@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -124,12 +124,7 @@ public class TreeContainerRow extends TreeRow {
             List<TreeRow>                       list   = new ArrayList<>();
             for (TreeRow row : rows) {
                 if (row.mParent != null) {
-                    Set<TreeRow> set = map.get(row.mParent);
-                    if (set == null) {
-                        set = new HashSet<>();
-                        map.put(row.mParent, set);
-                    }
-                    set.add(row);
+                    map.computeIfAbsent(row.mParent, k -> new HashSet<>()).add(row);
                 }
                 if (!exists.contains(row)) {
                     exists.add(row);

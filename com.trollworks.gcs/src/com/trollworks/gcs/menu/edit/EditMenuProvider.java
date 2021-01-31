@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -22,7 +22,10 @@ import java.util.List;
 import javax.swing.JMenu;
 
 /** Provides the standard "Edit" menu. */
-public class EditMenuProvider {
+public final class EditMenuProvider {
+    private EditMenuProvider() {
+    }
+
     public static List<Command> getModifiableCommands() {
         List<Command> cmds = new ArrayList<>();
         cmds.add(UndoCommand.INSTANCE);
@@ -43,11 +46,9 @@ public class EditMenuProvider {
         cmds.add(TechLevelDecrementCommand.INSTANCE);
         cmds.add(ToggleStateCommand.INSTANCE);
         cmds.add(JumpToSearchCommand.INSTANCE);
-        cmds.add(RandomizeDescriptionCommand.INSTANCE);
-        cmds.add(RandomizeNameCommand.FEMALE_INSTANCE);
-        cmds.add(RandomizeNameCommand.MALE_INSTANCE);
         cmds.add(SwapDefaultsCommand.INSTANCE);
         cmds.add(ConvertToContainer.INSTANCE);
+        cmds.add(SettingsCommand.INSTANCE);
         if (!Platform.isMacintosh()) {
             cmds.add(PreferencesCommand.INSTANCE);
         }
@@ -88,11 +89,8 @@ public class EditMenuProvider {
         menu.addSeparator();
         menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
         menu.addSeparator();
-        menu.add(new DynamicMenuItem(RandomizeDescriptionCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(RandomizeNameCommand.FEMALE_INSTANCE));
-        menu.add(new DynamicMenuItem(RandomizeNameCommand.MALE_INSTANCE));
+        menu.add(new DynamicMenuItem(SettingsCommand.INSTANCE));
         if (!Platform.isMacintosh()) {
-            menu.addSeparator();
             menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
         }
         DynamicMenuEnabler.add(stateMenu);

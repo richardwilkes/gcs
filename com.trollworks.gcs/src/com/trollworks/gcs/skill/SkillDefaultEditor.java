@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -111,10 +111,10 @@ public class SkillDefaultEditor extends EditorPanel {
 
             row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-            IconButton button = new IconButton(Images.REMOVE, I18n.Text("Remove this default"), () -> removeDefault());
+            IconButton button = new IconButton(Images.REMOVE, I18n.Text("Remove this default"), this::removeDefault);
             add(button);
             row.add(button);
-            button = new IconButton(Images.ADD, I18n.Text("Add a default"), () -> addDefault());
+            button = new IconButton(Images.ADD, I18n.Text("Add a default"), this::addDefault);
             add(button);
             row.add(button);
             grid.add(row, 0, 2);
@@ -123,7 +123,7 @@ public class SkillDefaultEditor extends EditorPanel {
             FlexRow row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
             row.add(new FlexSpacer(0, 0, true, false));
-            IconButton button = new IconButton(Images.ADD, I18n.Text("Add a default"), () -> addDefault());
+            IconButton button = new IconButton(Images.ADD, I18n.Text("Add a default"), this::addDefault);
             add(button);
             row.add(button);
             row.apply(this);

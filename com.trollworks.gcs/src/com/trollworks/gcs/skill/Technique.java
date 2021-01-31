@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -170,11 +170,6 @@ public class Technique extends Skill {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_TECHNIQUE;
-    }
-
-    @Override
-    public String getXMLTagName() {
         return TAG_TECHNIQUE;
     }
 
@@ -364,7 +359,7 @@ public class Technique extends Skill {
     @Override
     public String getModifierNotes() {
         StringBuilder buffer = new StringBuilder(super.getModifierNotes());
-        if (buffer.length() > 0) {
+        if (!buffer.isEmpty()) {
             buffer.append(' ');
         }
         buffer.append(I18n.Text("Default: "));
@@ -378,9 +373,8 @@ public class Technique extends Skill {
     }
 
     @Override
-    public int swapDefault() {
+    public void swapDefault() {
         // Do nothing: Default is fixed
-        return 0;
     }
 
     @Override

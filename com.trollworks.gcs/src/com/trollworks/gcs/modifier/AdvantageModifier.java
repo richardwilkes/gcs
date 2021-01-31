@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -31,15 +31,12 @@ import java.io.IOException;
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
     private static final int                       CURRENT_JSON_VERSION   = 1;
-    private static final int                       CURRENT_VERSION        = 2;
     /** The root tag. */
     public static final  String                    TAG_MODIFIER           = "modifier";
     /** The root tag for containers. */
     public static final  String                    TAG_MODIFIER_CONTAINER = "modifier_container";
     /** The tag for the base cost. */
     public static final  String                    TAG_COST               = "cost";
-    /** The attribute for the cost type. */
-    public static final  String                    ATTRIBUTE_COST_TYPE    = "type";
     private static final String                    KEY_COST_TYPE          = "cost_type";
     /** The tag for the cost per level. */
     public static final  String                    TAG_LEVELS             = "levels";
@@ -230,16 +227,6 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mCostType = AdvantageModifierCostType.PERCENTAGE;
@@ -316,7 +303,7 @@ public class AdvantageModifier extends Modifier {
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();
-        builder.append(toString());
+        builder.append(this);
         if (!modNote.isEmpty()) {
             builder.append(" (");
             builder.append(modNote);

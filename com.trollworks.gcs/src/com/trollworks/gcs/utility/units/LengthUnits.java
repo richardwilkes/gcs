@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -86,6 +86,7 @@ public enum LengthUnits implements Units {
     },
     /** Millimeters. */
     MM(new Fixed6("0.1", Fixed6.ZERO, false).div(LengthValue.METRIC_CONVERSION_FACTOR), true) { // entered as text to ensure precision
+
         @Override
         public String getLocalizedName() {
             return I18n.Text("Millimeters");
@@ -113,8 +114,8 @@ public enum LengthUnits implements Units {
         }
     };
 
-    private Fixed6  mFactor;
-    private boolean mIsMetric;
+    private final Fixed6  mFactor;
+    private final boolean mIsMetric;
 
     LengthUnits(Fixed6 factor, boolean isMetric) {
         mFactor = factor;

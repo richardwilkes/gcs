@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,7 +14,7 @@ package com.trollworks.gcs.ui.widget.tree;
 import com.trollworks.gcs.utility.notification.Notifier;
 
 /** Defines the various notification keys sent out by the {@link TreeRoot}. */
-public class TreeNotificationKeys {
+public final class TreeNotificationKeys {
     /** The base prefix used on all of these notifications. */
     public static final String PREFIX         = "tree" + Notifier.SEPARATOR;
     /** The prefix used on all notifications regarding {@link TreeRow}s. */
@@ -90,4 +90,7 @@ public class TreeNotificationKeys {
      * visible.
      */
     public static final String COLUMN_DIVIDER = COLUMN_PREFIX + "divider";
+
+    private TreeNotificationKeys() {
+    }
 }

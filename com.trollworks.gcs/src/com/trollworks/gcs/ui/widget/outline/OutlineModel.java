@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -116,9 +116,9 @@ public class OutlineModel implements SelectionOwner, StateEditable {
         }
     }
 
-    private void notifyOfSort(boolean restoring) {
+    private void notifyOfSort() {
         for (OutlineModelListener listener : getCurrentListeners()) {
-            listener.sorted(this, restoring);
+            listener.sorted(this);
         }
     }
 
@@ -546,19 +546,19 @@ public class OutlineModel implements SelectionOwner, StateEditable {
 
     /** Sorts the model, if needed. */
     public void sortIfNeeded() {
-        sortInternal(false);
+        sortInternal();
     }
 
     /** Sorts the model. */
     public void sort() {
-        sortInternal(false);
+        sortInternal();
     }
 
-    private void sortInternal(boolean restoring) {
+    private void sortInternal() {
         preserveSelection();
         RowSorter.sort(mColumns, mRows, true);
         restoreSelection();
-        notifyOfSort(restoring);
+        notifyOfSort();
     }
 
     /**
@@ -1072,7 +1072,7 @@ public class OutlineModel implements SelectionOwner, StateEditable {
             sortCleared = true;
         } else if (result == 1) {
             sortCleared = false;
-            notifyOfSort(false);
+            notifyOfSort();
         }
         if (sortCleared) {
             notifyOfSortCleared();

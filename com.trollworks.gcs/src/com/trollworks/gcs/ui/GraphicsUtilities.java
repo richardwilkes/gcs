@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -22,10 +22,12 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PrinterGraphics;
 
 /** Provides general graphics settings and manipulation. */
-public class GraphicsUtilities {
+public final class GraphicsUtilities {
     private static boolean       HEADLESS_PRINT_MODE;
-    private static int           HEADLESS_CHECK_RESULT;
     private static BufferedImage FALLBACK_GRAPHICS_BACKING_STORE;
+
+    private GraphicsUtilities() {
+    }
 
     /** @return Whether the headless print mode is enabled. */
     public static boolean inHeadlessPrintMode() {

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Graphics;
@@ -20,74 +19,20 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
+import java.util.regex.Pattern;
 
 /** Represents a single column within a {@link Outline} panel. */
 public class Column implements Transferable {
     /** The data flavor for this class. */
-    public static final DataFlavor DATA_FLAVOR = new DataFlavor(Column.class, "Outline Column");
-    private             HeaderCell mHeaderCell;
-    private             Cell       mRowCell;
-    private             boolean    mVisible;
-    private             int        mWidth;
-    private             String     mName;
-    private             RetinaIcon mIcon;
-    private             int        mID;
-    private             String     mToolTipText;
-
-    /**
-     * Create a new outline column.
-     *
-     * @param id   The user-supplied ID.
-     * @param name The name of the column.
-     */
-    public Column(int id, String name) {
-        this(id, name, (RetinaIcon) null);
-    }
-
-    /**
-     * Create a new outline column.
-     *
-     * @param id      The user-supplied ID.
-     * @param name    The name of the column.
-     * @param rowCell The cell to use for rows.
-     */
-    public Column(int id, String name, Cell rowCell) {
-        this(id, name, null, null, rowCell);
-    }
-
-    /**
-     * Create a new outline column.
-     *
-     * @param id   The user-supplied ID.
-     * @param name The name of the column.
-     * @param icon The icon to use in the header of the column, if any.
-     */
-    public Column(int id, String name, RetinaIcon icon) {
-        this(id, name, icon, name);
-    }
-
-    /**
-     * Create a new outline column.
-     *
-     * @param id          The user-supplied ID.
-     * @param name        The name of the column.
-     * @param toolTipText The tooltip text to use for this column.
-     */
-    public Column(int id, String name, String toolTipText) {
-        this(id, name, null, toolTipText);
-    }
-
-    /**
-     * Create a new outline column.
-     *
-     * @param id          The user-supplied ID.
-     * @param name        The name of the column.
-     * @param icon        The icon to use in the header of the column, if any.
-     * @param toolTipText The tooltip text to use for this column.
-     */
-    public Column(int id, String name, RetinaIcon icon, String toolTipText) {
-        this(id, name, icon, toolTipText, new TextCell());
-    }
+    public static final  DataFlavor DATA_FLAVOR       = new DataFlavor(Column.class, "Outline Column");
+    private static final Pattern    LINE_FEED_PATTERN = Pattern.compile("\n");
+    private              HeaderCell mHeaderCell;
+    private              Cell       mRowCell;
+    private              boolean    mVisible;
+    private              int        mWidth;
+    private              String     mName;
+    private              int        mID;
+    private              String     mToolTipText;
 
     /**
      * Create a new outline column.
@@ -98,21 +43,7 @@ public class Column implements Transferable {
      * @param rowCell     The cell to use for rows.
      */
     public Column(int id, String name, String toolTipText, Cell rowCell) {
-        this(id, name, null, toolTipText, rowCell);
-    }
-
-    /**
-     * Create a new outline column.
-     *
-     * @param id          The user-supplied ID.
-     * @param name        The name of the column.
-     * @param icon        The icon to use in the header of the column, if any.
-     * @param toolTipText The tooltip text to use for this column.
-     * @param rowCell     The cell to use for rows.
-     */
-    public Column(int id, String name, RetinaIcon icon, String toolTipText, Cell rowCell) {
         mName = name == null || name.isEmpty() ? " " : name;
-        mIcon = icon;
         mToolTipText = toolTipText;
         mHeaderCell = new HeaderCell();
         mRowCell = rowCell;
@@ -124,11 +55,6 @@ public class Column implements Transferable {
     /** @return The user-supplied ID. */
     public int getID() {
         return mID;
-    }
-
-    /** @param id The user-supplied ID. */
-    public void setID(int id) {
-        mID = id;
     }
 
     /**
@@ -195,11 +121,6 @@ public class Column implements Transferable {
      */
     public Cell getRowCell(Row row) {
         return mRowCell;
-    }
-
-    /** @param cell The cell used for rows. */
-    public void setRowCell(Cell cell) {
-        mRowCell = cell;
     }
 
     /** @return {@code true} if this column is visible. */
@@ -276,22 +197,7 @@ public class Column implements Transferable {
 
     /** @return The name of this column, with any new lines replaced with spaces. */
     public String getSanitizedName() {
-        return mName.replaceAll("\n", " ");
-    }
-
-    /** @return The icon used in the header of this column, if any. */
-    public RetinaIcon getIcon() {
-        return mIcon;
-    }
-
-    /** @param icon The icon used in the header of this column. */
-    public void setIcon(RetinaIcon icon) {
-        mIcon = icon;
-    }
-
-    /** @param text The tooltip text for this column. */
-    public void setToolTipText(String text) {
-        mToolTipText = text;
+        return LINE_FEED_PATTERN.matcher(mName).replaceAll(" ");
     }
 
     /**

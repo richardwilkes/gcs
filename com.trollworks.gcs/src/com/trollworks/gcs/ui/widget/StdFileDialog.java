@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,7 +15,6 @@ import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.NewerDataFileVersionException;
 import com.trollworks.gcs.utility.PathUtils;
 
 import java.awt.Component;
@@ -30,7 +29,10 @@ import java.text.MessageFormat;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Provides standard file dialog handling. */
-public class StdFileDialog {
+public final class StdFileDialog {
+    private StdFileDialog() {
+    }
+
     /**
      * Creates a new {@link StdFileDialog}.
      *
@@ -88,12 +90,10 @@ public class StdFileDialog {
      * @param throwable The {@link Throwable}, if any, that caused the failure.
      */
     public static void showCannotOpenMsg(Component comp, String name, Throwable throwable) {
-        if (throwable instanceof NewerDataFileVersionException) {
+        if (throwable != null) {
+            Log.error(throwable);
             WindowUtils.showError(comp, MessageFormat.format(I18n.Text("Unable to open \"{0}\"\n{1}"), name, throwable.getMessage()));
         } else {
-            if (throwable != null) {
-                Log.error(throwable);
-            }
             WindowUtils.showError(comp, MessageFormat.format(I18n.Text("Unable to open \"{0}\"."), name));
         }
     }

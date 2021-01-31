@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -154,15 +154,6 @@ public enum BonusAttributeType {
         }
     };
 
-    private String mTag;
-
-    BonusAttributeType() {
-        mTag = name();
-        if (mTag.length() > 2) {
-            mTag = mTag.toLowerCase();
-        }
-    }
-
     /** @return The presentation name. */
     public String getPresentationName() {
         String name = name();
@@ -176,10 +167,5 @@ public enum BonusAttributeType {
     @SuppressWarnings("static-method")
     public boolean isIntegerOnly() {
         return true;
-    }
-
-    /** @return The XML tag to use for this {@link BonusAttributeType}. */
-    public String getXMLTag() {
-        return mTag;
     }
 }

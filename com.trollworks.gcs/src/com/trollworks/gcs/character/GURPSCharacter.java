@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -57,38 +57,22 @@ import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /** A GURPS character. */
 public class GURPSCharacter extends CollectedModels {
     private static final int                                 CURRENT_JSON_VERSION                 = 1;
-    private static final int                                 CURRENT_VERSION                      = 5;
-    /**
-     * The version where equipment was separated out into different lists based on carried/not
-     * carried status.
-     */
-    public static final  int                                 SEPARATED_EQUIPMENT_VERSION          = 4;
-    /**
-     * The version where HP and FP damage tracking was introduced, rather than a free-form text
-     * field.
-     */
-    public static final  int                                 HP_FP_DAMAGE_TRACKING                = 5;
     private static final String                              TAG_ROOT                             = "character";
     private static final String                              TAG_CREATED_DATE                     = "created_date";
     private static final String                              TAG_MODIFIED_DATE                    = "modified_date";
     private static final String                              TAG_HP_DAMAGE                        = "hp_damage";
     private static final String                              TAG_FP_DAMAGE                        = "fp_damage";
-    private static final String                              TAG_UNSPENT_POINTS                   = "unspent_points";
     private static final String                              TAG_TOTAL_POINTS                     = "total_points";
-    private static final String                              TAG_INCLUDE_PUNCH                    = "include_punch";
-    private static final String                              TAG_INCLUDE_KICK                     = "include_kick";
-    private static final String                              TAG_INCLUDE_BOOTS                    = "include_kick_with_boots";
     private static final String                              KEY_HP_ADJ                           = "HP_adj";
     private static final String                              KEY_FP_ADJ                           = "FP_adj";
     private static final String                              KEY_ST                               = "ST";
@@ -99,6 +83,7 @@ public class GURPSCharacter extends CollectedModels {
     private static final String                              KEY_PER_ADJ                          = "per_adj";
     private static final String                              KEY_SPEED_ADJ                        = "speed_adj";
     private static final String                              KEY_MOVE_ADJ                         = "move_adj";
+    private static final String                              KEY_THIRD_PARTY_DATA                 = "third_party";
     /** The prefix for all character IDs. */
     public static final  String                              CHARACTER_PREFIX                     = "gcs.";
     /** The field ID for last modified date changes. */
@@ -234,9 +219,11 @@ public class GURPSCharacter extends CollectedModels {
     public static final  String                              ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";
     /** The field ID for unconscious fatigue point changes. */
     public static final  String                              ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";
+    private static final Pattern                             UL_PATTERN                           = Pattern.compile("<ul>");
     private              long                                mModifiedOn;
     private              long                                mCreatedOn;
     private              HashMap<String, ArrayList<Feature>> mFeatureMap;
+    private              JsonMap                             mThirdPartyData;
     private              int                                 mStrength;
     private              int                                 mStrengthBonus;
     private              int                                 mLiftingStrengthBonus;
@@ -370,16 +357,6 @@ public class GURPSCharacter extends CollectedModels {
         return TAG_ROOT;
     }
 
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return TAG_ROOT;
-    }
-
     private void calculateAll() {
         calculateAttributePoints();
         calculateAdvantagePoints();
@@ -393,7 +370,7 @@ public class GURPSCharacter extends CollectedModels {
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         characterInitialize(false);
         mSettings.load(m.getMap(Settings.TAG_ROOT));
-        mCreatedOn = Numbers.extractDateTime(m.getString(TAG_CREATED_DATE));
+        mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_CREATED_DATE));
         mProfile.load(m.getMap(Profile.TAG_ROOT));
         mHitPointsAdj = m.getInt(KEY_HP_ADJ);
         mHitPointsDamage = m.getInt(TAG_HP_DAMAGE);
@@ -420,15 +397,16 @@ public class GURPSCharacter extends CollectedModels {
             skill.updateLevel(false);
         }
         calculateAll();
-        mModifiedOn = Numbers.extractDateTime(m.getString(TAG_MODIFIED_DATE)); // Must be last
+        mThirdPartyData = m.getMap(KEY_THIRD_PARTY_DATA);
+        mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_MODIFIED_DATE)); // Must be last
     }
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.key(Settings.TAG_ROOT);
         mSettings.save(w);
-        w.keyValue(TAG_CREATED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mCreatedOn)));
-        w.keyValue(TAG_MODIFIED_DATE, DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(mModifiedOn)));
+        w.keyValue(TAG_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn));
+        w.keyValue(TAG_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn));
         w.key(Profile.TAG_ROOT);
         mProfile.save(w);
         w.keyValueNot(KEY_HP_ADJ, mHitPointsAdj, 0);
@@ -445,10 +423,13 @@ public class GURPSCharacter extends CollectedModels {
         w.keyValueNot(KEY_SPEED_ADJ, mSpeedAdj, 0);
         w.keyValueNot(KEY_MOVE_ADJ, mMoveAdj, 0);
         saveModels(w, saveType);
-        if (saveType != SaveType.HASH && mPageSettings != null) {
-            w.key(PrintManager.TAG_ROOT);
-            mPageSettings.save(w, LengthUnits.IN);
-            mPageSettingsString = mPageSettings.toString();
+        if (saveType != SaveType.HASH) {
+            if (mPageSettings != null) {
+                w.key(PrintManager.TAG_ROOT);
+                mPageSettings.save(w, LengthUnits.IN);
+                mPageSettingsString = mPageSettings.toString();
+            }
+            w.keyValueNotEmpty(KEY_THIRD_PARTY_DATA, mThirdPartyData);
         }
     }
 
@@ -1977,7 +1958,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The will. */
     public int getWillAdj() {
-        return mWillAdj + mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
+        return mWillAdj + mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence());
     }
 
     /** @param willAdj The new will. */
@@ -1985,7 +1966,7 @@ public class GURPSCharacter extends CollectedModels {
         int oldWill = getWillAdj();
         if (oldWill != willAdj) {
             postUndoEdit(I18n.Text("Will Change"), ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(willAdj));
-            updateWillInfo(willAdj - (mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mWillBonus);
+            updateWillInfo(willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence())), mWillBonus);
         }
     }
 
@@ -2126,7 +2107,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The perception (Per). */
     public int getPerAdj() {
-        return mPerAdj + mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
+        return mPerAdj + mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence());
     }
 
     /**
@@ -2138,7 +2119,7 @@ public class GURPSCharacter extends CollectedModels {
         int oldPerception = getPerAdj();
         if (oldPerception != perAdj) {
             postUndoEdit(I18n.Text("Perception Change"), ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
-            updatePerceptionInfo(perAdj - (mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
+            updatePerceptionInfo(perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
         }
     }
 
@@ -2483,7 +2464,7 @@ public class GURPSCharacter extends CollectedModels {
             if (!satisfied) {
                 builder.insert(0, "<html><body>" + I18n.Text("Reason:") + "<ul>");
                 builder.append("</ul></body></html>");
-                row.setReasonForUnsatisfied(builder.toString().replaceAll("<ul>", "<ul style='margin-top: 0; margin-bottom: 0;'>"));
+                row.setReasonForUnsatisfied(UL_PATTERN.matcher(builder.toString()).replaceAll("<ul style='margin-top: 0; margin-bottom: 0;'>"));
             }
         }
         return needRepaint;
@@ -2585,9 +2566,11 @@ public class GURPSCharacter extends CollectedModels {
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
      * @param categoriesQualifier     The categories qualifier.
+     * @param dieCount                The number of dice for the base weapon damage.
+     * @param toolTip                 A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
+    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         int               rsl     = Integer.MIN_VALUE;
         for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
@@ -2604,7 +2587,11 @@ public class GURPSCharacter extends CollectedModels {
                         WeaponBonus bonus = (WeaponBonus) feature;
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getRelativeLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
                             bonuses.add(bonus);
+                            LeveledAmount amount = bonus.getAmount();
+                            int           level  = amount.getLevel();
+                            amount.setLevel(dieCount);
                             bonus.addToToolTip(toolTip);
+                            amount.setLevel(level);
                         }
                     }
                 }
@@ -2618,9 +2605,11 @@ public class GURPSCharacter extends CollectedModels {
      * @param nameQualifier       The name qualifier.
      * @param usageQualifier      The usage qualifier.
      * @param categoriesQualifier The categories qualifier.
+     * @param dieCount            The number of dice for the base weapon damage.
+     * @param toolTip             A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
+    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
@@ -2629,7 +2618,11 @@ public class GURPSCharacter extends CollectedModels {
                     WeaponBonus bonus = (WeaponBonus) feature;
                     if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
+                        LeveledAmount amount = bonus.getAmount();
+                        int           level  = amount.getLevel();
+                        amount.setLevel(dieCount);
                         bonus.addToToolTip(toolTip);
+                        amount.setLevel(level);
                     }
                 }
             }

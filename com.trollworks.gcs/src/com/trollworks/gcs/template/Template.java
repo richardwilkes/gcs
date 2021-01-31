@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -29,7 +29,6 @@ import java.nio.file.Path;
 /** A template. */
 public class Template extends CollectedModels {
     private static final int     CURRENT_JSON_VERSION   = 1;
-    private static final int     CURRENT_VERSION        = 2;
     private static final String  TAG_ROOT               = "template";
     /** The prefix for all template IDs. */
     public static final  String  TEMPLATE_PREFIX        = "gct.";
@@ -82,16 +81,6 @@ public class Template extends CollectedModels {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return TAG_ROOT;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 public class DisplayPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
     private JCheckBox                mIncludeUnspentPointsInTotal;
     private JCheckBox                mShowCollegeInSheetSpells;
+    private JCheckBox                mShowDifficulty;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JComboBox<Scales>        mUIScaleCombo;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
@@ -67,6 +68,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
 
         mIncludeUnspentPointsInTotal = addCheckBox(I18n.Text("Character point total display includes unspent points"), prefs.includeUnspentPointsInTotal());
         mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column in character sheet spells list *"), prefs.showCollegeInSheetSpells());
+        mShowDifficulty = addCheckBox(I18n.Text("Show the Difficulty column in character sheet skills and spells lists *"), prefs.showDifficulty());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets *"), prefs.useTitleInFooter());
 
         addLabel(I18n.Text("Initial Scale"));
@@ -79,7 +81,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mWeightUnitsCombo = addCombo(WeightUnits.values(), prefs.getDefaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
 
         addLabel(I18n.Text("Tooltip Timeout (seconds)"));
-        mToolTipTimeout = addTextField(Integer.valueOf(prefs.getToolTipTimeout()).toString(), null);
+        mToolTipTimeout = addTextField(Integer.valueOf(prefs.getToolTipTimeout()).toString());
 
         addLabel(I18n.Text("Show User Description *"));
         mUserDescriptionDisplayCombo = addCombo(DisplayOption.values(), prefs.getUserDescriptionDisplay(), I18n.Text("Where to display this information"));
@@ -91,7 +93,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mNotesDisplayCombo = addCombo(DisplayOption.values(), prefs.getNotesDisplay(), I18n.Text("Where to display this information"));
 
         String tooltip = I18n.Text("Specifies the layout of the various blocks of data on the character sheet");
-        JLabel label = new JLabel(I18n.Text("Block Layout *"));
+        JLabel label   = new JLabel(I18n.Text("Block Layout *"));
         label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         label.setOpaque(false);
         add(label, new PrecisionLayoutData().setHorizontalSpan(2));
@@ -102,11 +104,10 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         add(label, new PrecisionLayoutData().setHorizontalSpan(2).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
     }
 
-    private JLabel addLabel(String title) {
+    private void addLabel(String title) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        return label;
     }
 
     private JCheckBox addCheckBox(String title, boolean checked) {
@@ -117,9 +118,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         return checkbox;
     }
 
-    private JTextField addTextField(String value, String tooltip) {
+    private JTextField addTextField(String value) {
         JTextField field = new JTextField(value);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.getDocument().addDocumentListener(this);
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         return field;
@@ -195,6 +195,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
             Preferences.getInstance().setIncludeUnspentPointsInTotal(mIncludeUnspentPointsInTotal.isSelected());
         } else if (source == mShowCollegeInSheetSpells) {
             Preferences.getInstance().setShowCollegeInSheetSpells(mShowCollegeInSheetSpells.isSelected());
+        } else if (source == mShowDifficulty) {
+            Preferences.getInstance().setShowDifficulty(mShowDifficulty.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             Preferences.getInstance().setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
         }
@@ -205,6 +207,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     public void reset() {
         mIncludeUnspentPointsInTotal.setSelected(Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
         mShowCollegeInSheetSpells.setSelected(Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS);
+        mShowDifficulty.setSelected(Preferences.DEFAULT_SHOW_DIFFICULTY);
         mShowTitleInsteadOfNameInPageFooter.setSelected(Preferences.DEFAULT_USE_TITLE_IN_FOOTER);
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
         mLengthUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
@@ -221,6 +224,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         Preferences prefs     = Preferences.getInstance();
         boolean     atDefault = prefs.includeUnspentPointsInTotal() == Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
         atDefault = atDefault && prefs.showCollegeInSheetSpells() == Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
+        atDefault = atDefault && prefs.showDifficulty() == Preferences.DEFAULT_SHOW_DIFFICULTY;
         atDefault = atDefault && prefs.getInitialUIScale() == Preferences.DEFAULT_INITIAL_UI_SCALE;
         atDefault = atDefault && prefs.getDefaultLengthUnits() == Preferences.DEFAULT_DEFAULT_LENGTH_UNITS;
         atDefault = atDefault && prefs.getDefaultWeightUnits() == Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS;

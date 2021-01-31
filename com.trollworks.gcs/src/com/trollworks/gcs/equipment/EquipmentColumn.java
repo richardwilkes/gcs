@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,7 +23,6 @@ import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultiCell;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
-import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightValue;
@@ -127,10 +126,10 @@ public enum EquipmentColumn {
                     builder.append('\n');
                 }
             }
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.setLength(builder.length() - 1);   // Remove the last '\n'
             }
-            return builder.length() == 0 ? null : builder.toString();
+            return builder.isEmpty() ? null : builder.toString();
         }
 
         @Override
@@ -539,10 +538,6 @@ public enum EquipmentColumn {
 
     public static String getDisplayWeight(DataFile df, WeightValue weight) {
         return getConvertedWeight(df, weight).toString();
-    }
-
-    public static Fixed6 getNormalizedDisplayWeight(DataFile df, WeightValue weight) {
-        return getConvertedWeight(df, weight).getNormalizedValue();
     }
 
     public static WeightValue getConvertedWeight(DataFile df, WeightValue weight) {

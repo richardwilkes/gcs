@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -33,7 +33,6 @@ import java.util.Set;
 /** A note. */
 public class Note extends ListRow implements HasSourceReference {
     private static final int    CURRENT_JSON_VERSION = 1;
-    private static final int    CURRENT_VERSION      = 1;
     /** The XML tag used for items. */
     public static final  String TAG_NOTE             = "note";
     /** The XML tag used for containers. */
@@ -120,16 +119,6 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_NOTE_CONTAINER : TAG_NOTE;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Note");
     }
@@ -142,7 +131,7 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    protected void loadSelf(JsonMap m, LoadState state) throws IOException {
+    protected void loadSelf(JsonMap m, LoadState state) {
         mText = m.getString(TAG_TEXT);
         mReference = m.getString(TAG_REFERENCE);
     }

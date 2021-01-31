@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -20,7 +20,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /** Provides the standard "Help" menu. */
-public class HelpMenuProvider {
+public final class HelpMenuProvider {
+    private HelpMenuProvider() {
+    }
+
     public static JMenu createMenu() {
         JMenu menu = new JMenu(I18n.Text("Help"));
         if (!Platform.isMacintosh()) {

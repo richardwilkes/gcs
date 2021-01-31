@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -363,10 +363,10 @@ public class PageSetupPanel extends JPanel implements ActionListener {
         int           x      = res.getCrossFeedResolution(ResolutionSyntax.DPI);
         int           y      = res.getFeedResolution(ResolutionSyntax.DPI);
 
-        buffer.append(Integer.toString(x));
+        buffer.append(x);
         if (x != y) {
             buffer.append(" x ");
-            buffer.append(Integer.toString(y));
+            buffer.append(y);
         }
         buffer.append(I18n.Text(" dpi"));
         return buffer.toString();

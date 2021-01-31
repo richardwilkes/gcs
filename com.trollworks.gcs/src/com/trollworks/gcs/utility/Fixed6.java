@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -20,8 +20,6 @@ import java.math.BigInteger;
 public class Fixed6 implements Comparable<Fixed6> {
     public static final  Fixed6     ZERO       = new Fixed6(0);
     public static final  Fixed6     ONE        = new Fixed6(1);
-    public static final  Fixed6     MIN        = new Fixed6(Long.MAX_VALUE, true);
-    public static final  Fixed6     MAX        = new Fixed6(Long.MIN_VALUE, true);
     private static final long       FACTOR     = 1000000;
     public static final  BigInteger BIG_FACTOR = BigInteger.valueOf(FACTOR);
     private              long       mRawValue;
@@ -216,7 +214,7 @@ public class Fixed6 implements Comparable<Fixed6> {
         if (whole == 0 && mRawValue < 0) {
             buffer.append('-');
         }
-        buffer.append(Long.toString(whole));
+        buffer.append(whole);
         buffer.append('.');
         buffer.append(str.substring(1));
         return buffer.toString();

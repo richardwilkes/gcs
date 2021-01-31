@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -20,33 +20,26 @@ import com.trollworks.gcs.preferences.MenuKeyPreferences;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.layout.FlexRow;
-import com.trollworks.gcs.utility.FileProxy;
-import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.AWTEvent;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JToolBar;
 import javax.swing.WindowConstants;
 
 /** Provides a base OS-level window. */
@@ -91,30 +84,9 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         super.setVisible(visible);
     }
 
-    /** Call to create the toolbar for this window. */
-    protected final void createToolBar() {
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        FlexRow row = new FlexRow();
-        row.setInsets(new Insets(2, 5, 2, 5));
-        createToolBarContents(toolbar, row);
-        row.apply(toolbar);
-        add(toolbar, BorderLayout.NORTH);
-    }
-
-    /**
-     * Called to create the toolbar contents for this window.
-     *
-     * @param toolbar The {@link JToolBar} to add items to.
-     * @param row     The {@link FlexRow} layout to add items to.
-     */
-    protected void createToolBarContents(JToolBar toolbar, FlexRow row) {
-        // Does nothing by default.
-    }
-
     @Override
     public void toFront() {
-        if (!isClosed()) {
+        if (!mIsClosed) {
             if (getExtendedState() == ICONIFIED) {
                 setExtendedState(NORMAL);
             }
@@ -132,10 +104,8 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
 
     @Override
     public void dispose() {
-        if (!isClosed()) {
-            WINDOW_LIST.remove(this);
-        }
         if (!mIsClosed) {
+            WINDOW_LIST.remove(this);
             try {
                 saveBounds();
                 super.dispose();
@@ -327,44 +297,9 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         return windows;
     }
 
-    /**
-     * @param windowClass The window class to return.
-     * @param <T>         The window type.
-     * @return The current visible windows, in order from top to bottom.
-     */
-    public static <T extends BaseWindow> ArrayList<T> getActiveWindows(Class<T> windowClass) {
-        ArrayList<T> list = new ArrayList<>();
-        for (T window : new FilteredIterator<>(WINDOW_LIST, windowClass)) {
-            if (window.isShowing()) {
-                list.add(window);
-            }
-        }
-        return list;
-    }
-
     /** @return A list of all {@link BaseWindow}s created by this application. */
     public static List<BaseWindow> getAllAppWindows() {
         return getWindows(BaseWindow.class);
-    }
-
-    /**
-     * @param path The backing file to look for.
-     * @return The {@link FileProxy} associated with the specified backing file.
-     */
-    public static FileProxy findFileProxy(Path path) {
-        path = path.normalize().toAbsolutePath();
-        for (BaseWindow window : getAllAppWindows()) {
-            if (window instanceof FileProxy) {
-                FileProxy proxy = (FileProxy) window;
-                Path      wPath = proxy.getBackingFile();
-                if (wPath != null) {
-                    if (wPath.normalize().toAbsolutePath().equals(path)) {
-                        return proxy;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     /**

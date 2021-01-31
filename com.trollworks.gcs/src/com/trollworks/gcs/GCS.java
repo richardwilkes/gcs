@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -44,15 +44,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 /** The main entry point for the character sheet. */
-public class GCS {
-    public static final String  WEB_SITE = "https://gurpscharactersheet.com";
-    public static final Version VERSION  = new Version();
-    public static final String  COPYRIGHT;
-    public static final String  COPYRIGHT_FOOTER;
-    public static final String  APP_BANNER;
-    private static      boolean NOTIFICATION_ALLOWED;
+public final class GCS {
+    public static final  String  WEB_SITE          = "https://gurpscharactersheet.com";
+    public static final  Version VERSION           = new Version();
+    public static final  String  COPYRIGHT;
+    public static final  String  COPYRIGHT_FOOTER;
+    public static final  String  APP_BANNER;
+    private static final Pattern COPYRIGHT_PATTERN = Pattern.compile("©");
+    private static       boolean NOTIFICATION_ALLOWED;
 
     static {
         // Fix the current working directory, as bundled apps break the normal logic.
@@ -82,7 +84,7 @@ public class GCS {
 
         // Setup the copyright notices and such that rely on the version and year info
         COPYRIGHT = String.format(I18n.Text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
-        COPYRIGHT_FOOTER = String.format("GCS " + I18n.Text(" is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
+        COPYRIGHT_FOOTER = String.format("GCS " + I18n.Text("is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");
         if (VERSION.isZero()) {
@@ -94,12 +96,15 @@ public class GCS {
         if (Platform.isWindows()) {
             // The windows command prompt doesn't understand the copyright symbol, so translate it
             // to something it can deal with.
-            buffer.append(COPYRIGHT.replaceAll("©", "(c)"));
+            buffer.append(COPYRIGHT_PATTERN.matcher(COPYRIGHT).replaceAll("(c)"));
         } else {
             buffer.append(COPYRIGHT);
         }
         buffer.append(". All rights reserved.");
         APP_BANNER = buffer.toString();
+    }
+
+    private GCS() {
     }
 
     /**

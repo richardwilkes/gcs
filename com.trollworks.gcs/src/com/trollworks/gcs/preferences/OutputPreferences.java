@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -64,12 +64,11 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         mUseNativePrinter = addCheckBox(I18n.Text("Use platform native print dialogs (settings cannot be saved)"), I18n.Text("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>"), prefs.useNativePrintDialogs());
     }
 
-    private JLabel addLabel(String text, String tooltip) {
+    private void addLabel(String text, String tooltip) {
         JLabel label = new JLabel(text, SwingConstants.RIGHT);
         label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         label.setOpaque(false);
         add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        return label;
     }
 
     private JTextField addTextField(String text, String tooltip) {

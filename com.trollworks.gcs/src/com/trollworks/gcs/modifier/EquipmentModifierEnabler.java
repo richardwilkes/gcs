@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -42,7 +41,6 @@ public class EquipmentModifierEnabler extends JPanel {
     private Equipment           mEquipment;
     private JCheckBox[]         mEnabled;
     private EquipmentModifier[] mModifiers;
-    private JComboBox<String>   mCRCombo;
 
     /**
      * Brings up a modal dialog that allows {@link EquipmentModifier}s to be enabled or disabled for

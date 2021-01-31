@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,12 +25,12 @@ import java.awt.event.KeyEvent;
 public class NewEquipmentModifierCommand extends Command {
     public static final String                      CMD_NEW_EQUIPMENT_MODIFIER           = "NewEquipmentModifier";
     public static final String                      CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER = "NewEquipmentModifierContainer";
-    public static final NewEquipmentModifierCommand INSTANCE                             = new NewEquipmentModifierCommand(false, I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, KeyEvent.VK_M, COMMAND_MODIFIER);
-    public static final NewEquipmentModifierCommand CONTAINER_INSTANCE                   = new NewEquipmentModifierCommand(true, I18n.Text("New Equipment Modifier Container"), CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER, KeyEvent.VK_M, SHIFTED_COMMAND_MODIFIER);
+    public static final NewEquipmentModifierCommand INSTANCE                             = new NewEquipmentModifierCommand(false, I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, COMMAND_MODIFIER);
+    public static final NewEquipmentModifierCommand CONTAINER_INSTANCE                   = new NewEquipmentModifierCommand(true, I18n.Text("New Equipment Modifier Container"), CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     private             boolean                     mContainer;
 
-    private NewEquipmentModifierCommand(boolean container, String title, String cmd, int keyCode, int modifiers) {
-        super(title, cmd, keyCode, modifiers);
+    private NewEquipmentModifierCommand(boolean container, String title, String cmd, int modifiers) {
+        super(title, cmd, KeyEvent.VK_M, modifiers);
         mContainer = container;
     }
 

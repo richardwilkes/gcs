@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -47,7 +47,6 @@ import java.util.Set;
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
     private static final   int               CURRENT_JSON_VERSION     = 1;
-    private static final   int               CURRENT_VERSION          = 5;
     /** The XML tag used for items. */
     public static final    String            TAG_SPELL                = "spell";
     /** The XML tag used for containers. */
@@ -66,7 +65,6 @@ public class Spell extends ListRow implements HasSourceReference {
     private static final   String            TAG_REFERENCE            = "reference";
     private static final   String            TAG_ATTRIBUTE            = "attribute";
     private static final   String            TAG_DIFFICULTY           = "difficulty";
-    private static final   String            ATTRIBUTE_VERY_HARD      = "very_hard";
     private static final   String            KEY_WEAPONS              = "weapons";
     /** The prefix used in front of all IDs for the spells. */
     public static final    String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
@@ -181,9 +179,14 @@ public class Spell extends ListRow implements HasSourceReference {
         updateLevel(false);
         if (deep) {
             int count = spell.getChildCount();
-
             for (int i = 0; i < count; i++) {
-                addChild(new Spell(dataFile, (Spell) spell.getChild(i), true, forSheet));
+                Row child = spell.getChild(i);
+                if (child instanceof RitualMagicSpell) {
+                    child = new RitualMagicSpell(dataFile, (RitualMagicSpell) child, true, forSheet);
+                } else {
+                    child = new Spell(dataFile, (Spell) child, true, forSheet);
+                }
+                addChild(child);
             }
         }
     }
@@ -231,16 +234,6 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     public int getJSONVersion() {
         return CURRENT_JSON_VERSION;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return canHaveChildren() ? TAG_SPELL_CONTAINER : TAG_SPELL;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override
@@ -431,6 +424,9 @@ public class Spell extends ListRow implements HasSourceReference {
 
         if (character != null) {
             level = attribute.getBaseSkillLevel(character);
+            if (difficulty == SkillDifficulty.W) {
+                points /= 3;
+            }
             if (points < 1) {
                 level = -1;
                 relativeLevel = 0;
@@ -637,7 +633,7 @@ public class Spell extends ListRow implements HasSourceReference {
             getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, getCollege(), categories, tooltip);
             getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, tooltip);
             getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, tooltip);
-            if (tooltip.length() > 0) {
+            if (!tooltip.isEmpty()) {
                 return I18n.Text("Includes modifiers from") + tooltip;
             }
         }
@@ -749,6 +745,9 @@ public class Spell extends ListRow implements HasSourceReference {
     public String getDifficultyAsText(boolean localized) {
         if (canHaveChildren()) {
             return "";
+        }
+        if (this instanceof RitualMagicSpell) {
+            return (localized ? mDifficulty.toString() : mDifficulty.name());
         }
         return (localized ? mAttribute.toString() : mAttribute.name()) + "/" + (localized ? mDifficulty.toString() : mDifficulty.name());
     }

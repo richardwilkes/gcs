@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -133,9 +133,8 @@ public class Theme {
      * Creates a new {@link Theme} from a JsonMap.
      *
      * @param m The map to load the colors from.
-     * @throws IOException
      */
-    public Theme(JsonMap m) throws IOException {
+    public Theme(JsonMap m) {
         this(DEFAULT);
         for (ThemeColor one : ThemeColor.ALL) {
             String str = m.getString(one.getKey());
@@ -175,7 +174,6 @@ public class Theme {
      * Save the {@link Theme} to a JsonWriter.
      *
      * @param w The JsonWriter to write to.
-     * @throws IOException
      */
     public void save(JsonWriter w) throws IOException {
         w.startMap();

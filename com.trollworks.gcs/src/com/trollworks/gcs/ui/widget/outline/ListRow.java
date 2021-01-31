@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.feature.AttributeBonus;
+import com.trollworks.gcs.feature.ConditionalModifier;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.DRBonus;
@@ -60,7 +61,6 @@ public abstract class ListRow extends Row implements Updatable {
     private static final String             ATTRIBUTE_OPEN    = "open";
     private static final String             TAG_NOTES         = "notes";
     private static final String             TAG_CATEGORIES    = "categories";
-    private static final String             TAG_CATEGORY      = "category";
     private static final String             KEY_ID            = "id";
     private static final String             KEY_BASED_ON_ID   = "based_on_id";
     private static final String             KEY_BASED_ON_HASH = "based_on_hash";
@@ -193,7 +193,6 @@ public abstract class ListRow extends Row implements Updatable {
         mCategories = new TreeSet<>(rowToClone.mCategories);
         try {
             MessageDigest         digest = MessageDigest.getInstance("SHA3-256");
-            StringBuilder         buffer = new StringBuilder();
             ByteArrayOutputStream baos   = new ByteArrayOutputStream();
             try (JsonWriter w = new JsonWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8), "")) {
                 rowToClone.save(w, SaveType.HASH);
@@ -266,12 +265,6 @@ public abstract class ListRow extends Row implements Updatable {
 
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
-
-    /** @return The XML root container tag name for this particular row. */
-    public abstract String getXMLTagName();
-
-    /** @return The most recent version of the XML tag this object knows how to load. */
-    public abstract int getXMLTagVersion();
 
     /** @return The type of row. */
     public abstract String getRowType();
@@ -351,6 +344,7 @@ public abstract class ListRow extends Row implements Updatable {
                 case AttributeBonus.TAG_ROOT -> mFeatures.add(new AttributeBonus(m1));
                 case DRBonus.TAG_ROOT -> mFeatures.add(new DRBonus(m1));
                 case ReactionBonus.TAG_ROOT -> mFeatures.add(new ReactionBonus(m1));
+                case ConditionalModifier.TAG_ROOT -> mFeatures.add(new ConditionalModifier(m1));
                 case SkillBonus.TAG_ROOT -> mFeatures.add(new SkillBonus(m1));
                 case SkillPointBonus.TAG_ROOT -> mFeatures.add(new SkillPointBonus(m1));
                 case SpellBonus.TAG_ROOT -> mFeatures.add(new SpellBonus(m1));
@@ -543,7 +537,7 @@ public abstract class ListRow extends Row implements Updatable {
         if (df.notesDisplay().inline()) {
             String txt = getNotes();
             if (!txt.isBlank()) {
-                if (builder.length() > 0) {
+                if (!builder.isEmpty()) {
                     builder.append('\n');
                 }
                 builder.append(txt);
@@ -583,7 +577,7 @@ public abstract class ListRow extends Row implements Updatable {
     public String getCategoriesAsString() {
         StringBuilder buffer = new StringBuilder();
         for (String category : mCategories) {
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append(",");
                 buffer.append(" ");
             }

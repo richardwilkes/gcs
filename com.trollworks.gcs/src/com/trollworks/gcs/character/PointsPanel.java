@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -52,7 +52,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
 
     private void createLabelAndField(CharacterSheet sheet, String key, String title, String tooltip, boolean enabled) {
         PageField field = new PageField(sheet, key, SwingConstants.RIGHT, enabled, Text.wrapPlainTextForToolTip(tooltip));
-        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         add(new PageLabel(title, field));
     }
 

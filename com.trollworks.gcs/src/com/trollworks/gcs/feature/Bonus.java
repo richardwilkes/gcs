@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,11 +23,9 @@ import java.util.Set;
 
 /** Describes a bonus. */
 public abstract class Bonus extends Feature {
-    /** The "amount" tag. */
-    public static final String        TAG_AMOUNT = "amount";
-    private             LeveledAmount mAmount;
+    private LeveledAmount mAmount;
     // The "parent" item that is providing this particular bonus (for information only).
-    private             ListRow       mParent;
+    private ListRow       mParent;
 
     /**
      * Creates a new bonus.
@@ -97,10 +95,6 @@ public abstract class Bonus extends Feature {
 
     public void setParent(ListRow parent) {
         mParent = parent;
-    }
-
-    public ListRow getParent() {
-        return mParent;
     }
 
     public String getParentName() {

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,20 +11,36 @@
 
 package com.trollworks.gcs.utility.text;
 
-import java.text.DateFormat;
+import com.trollworks.gcs.utility.I18n;
+import static java.time.format.TextStyle.SHORT;
+import static java.time.temporal.ChronoField.AMPM_OF_DAY;
+import static java.time.temporal.ChronoField.CLOCK_HOUR_OF_AMPM;
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
+import static java.time.temporal.ChronoField.YEAR;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
 import java.util.regex.Pattern;
 
 /** Various number utilities. */
-public class Numbers {
-    public static final  String        YES                               = "yes";
-    public static final  String        NO                                = "no";
-    public static final  String        LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
-    private static final String        SAFE_LOCALIZED_GROUPING_SEPARATOR = Pattern.quote(Character.toString(DecimalFormatSymbols.getInstance().getGroupingSeparator()));
-    private static final DecimalFormat NUMBER_FORMAT;
-    private static final DecimalFormat NUMBER_PLUS_FORMAT;
+public final class Numbers {
+    public static final  String            YES                               = "yes";
+    public static final  String            NO                                = "no";
+    public static final  DateTimeFormatter DATE_AT_TIME_FORMAT               = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, SHORT).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(", ").appendValue(YEAR, 4).appendLiteral(I18n.Text(" at ")).appendValue(CLOCK_HOUR_OF_AMPM, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(':').appendValue(MINUTE_OF_HOUR, 2).appendLiteral(' ').appendText(AMPM_OF_DAY, SHORT).toFormatter();
+    public static final  DateTimeFormatter DATE_TIME_STORED_FORMAT           = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, SHORT).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(", ").appendValue(YEAR, 4).appendLiteral(", ").appendValue(CLOCK_HOUR_OF_AMPM, 1, 2, SignStyle.NOT_NEGATIVE).appendLiteral(':').appendValue(MINUTE_OF_HOUR, 2).appendLiteral(' ').appendText(AMPM_OF_DAY, SHORT).toFormatter();
+    public static final  String            LOCALIZED_DECIMAL_SEPARATOR       = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
+    private static final String            SAFE_LOCALIZED_GROUPING_SEPARATOR = Pattern.quote(Character.toString(DecimalFormatSymbols.getInstance().getGroupingSeparator()));
+    private static final DecimalFormat     NUMBER_FORMAT;
+    private static final DecimalFormat     NUMBER_PLUS_FORMAT;
 
     static {
         NUMBER_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance();
@@ -32,6 +48,9 @@ public class Numbers {
 
         NUMBER_PLUS_FORMAT = (DecimalFormat) NUMBER_FORMAT.clone();
         NUMBER_PLUS_FORMAT.setPositivePrefix("+");
+    }
+
+    private Numbers() {
     }
 
     /**
@@ -57,7 +76,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final int extractInteger(String buffer, int def, boolean localized) {
+    public static int extractInteger(String buffer, int def, boolean localized) {
         buffer = normalizeNumber(buffer, localized);
         if (hasDecimalSeparator(buffer, localized)) {
             return (int) extractDouble(buffer, def, localized);
@@ -104,7 +123,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final int extractInteger(String buffer, int def, int min, int max, boolean localized) {
+    public static int extractInteger(String buffer, int def, int min, int max, boolean localized) {
         return Math.min(Math.max(extractInteger(buffer, def, localized), min), max);
     }
 
@@ -122,7 +141,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final long extractLong(String buffer, long def, boolean localized) {
+    public static long extractLong(String buffer, long def, boolean localized) {
         buffer = normalizeNumber(buffer, localized);
         if (hasDecimalSeparator(buffer, localized)) {
             return (int) extractDouble(buffer, def, localized);
@@ -169,7 +188,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final long extractLong(String buffer, long def, long min, long max, boolean localized) {
+    public static long extractLong(String buffer, long def, long min, long max, boolean localized) {
         return Math.min(Math.max(extractLong(buffer, def, localized), min), max);
     }
 
@@ -187,7 +206,7 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final double extractDouble(String buffer, double def, boolean localized) {
+    public static double extractDouble(String buffer, double def, boolean localized) {
         buffer = normalizeNumber(buffer, localized);
         double multiplier = 1;
         if (hasBillionsSuffix(buffer)) {
@@ -239,47 +258,33 @@ public class Numbers {
      * @param localized {@code true} if the text was localized.
      * @return The value.
      */
-    public static final double extractDouble(String buffer, double def, double min, double max, boolean localized) {
+    public static double extractDouble(String buffer, double def, double min, double max, boolean localized) {
         return Math.min(Math.max(extractDouble(buffer, def, localized), min), max);
     }
 
     /**
+     * @param formatter The date/time formatter to use.
      * @param buffer The string to convert.
      * @return The number of milliseconds since midnight, January 1, 1970.
      */
-    public static long extractDate(String buffer) {
+    public static long extractDateTime(DateTimeFormatter formatter, String buffer) {
         if (buffer != null) {
-            buffer = buffer.trim();
-            for (int i = DateFormat.FULL; i <= DateFormat.SHORT; i++) {
-                try {
-                    return DateFormat.getDateInstance(i).parse(buffer).getTime();
-                } catch (Exception exception) {
-                    // Ignore
-                }
+            try {
+                return Instant.from(formatter.withZone(ZoneId.systemDefault()).parse(buffer.trim(), ZonedDateTime::from)).toEpochMilli();
+            } catch (Exception exception) {
+                // Ignore
             }
         }
         return System.currentTimeMillis();
     }
 
     /**
-     * @param buffer The string to convert.
-     * @return The number of milliseconds since midnight, January 1, 1970.
+     * @param formatter The date/time formatter to use.
+     * @param dateTime The number of milliseconds since midnight, January 1, 1970.
+     * @return The formatted string representing the date/time.
      */
-    public static long extractDateTime(String buffer) {
-        if (buffer != null) {
-            buffer = buffer.trim();
-            for (int i = DateFormat.FULL; i <= DateFormat.SHORT; i++) {
-                for (int j = DateFormat.FULL; j <= DateFormat.SHORT; j++) {
-                    try {
-                        return DateFormat.getDateTimeInstance(i, j).parse(buffer).getTime();
-                    } catch (Exception exception) {
-                        // Ignore
-                    }
-                }
-            }
-            return extractDate(buffer);
-        }
-        return System.currentTimeMillis();
+    public static String formatDateTime(DateTimeFormatter formatter, long dateTime) {
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(dateTime), ZoneId.systemDefault()).format(formatter);
     }
 
     /**
@@ -289,7 +294,7 @@ public class Numbers {
      *         result would end with a '.' (or the localized equivalent, if {@code localized} is
      *         {@code true}), then the '.' is removed as well.
      */
-    public static final String trimTrailingZeroes(String text, boolean localized) {
+    public static String trimTrailingZeroes(String text, boolean localized) {
         if (text == null) {
             return null;
         }
@@ -345,7 +350,7 @@ public class Numbers {
      * @param value The value to format.
      * @return The formatted value.
      */
-    public static final String format(boolean value) {
+    public static String format(boolean value) {
         return value ? YES : NO;
     }
 

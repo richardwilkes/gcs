@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -39,7 +38,6 @@ import javax.swing.border.CompoundBorder;
 public class DropPanel extends JPanel {
     private Map<Component, Color> mHorizontalBackgrounds = new HashMap<>();
     private Map<Component, Color> mVerticalBackgrounds   = new HashMap<>();
-    private boolean               mPaintVerticalFirst;
     private TitledBorder          mTitledBorder;
     private boolean               mOnlyReportPreferredSize;
 
@@ -184,13 +182,8 @@ public class DropPanel extends JPanel {
         localBounds.y = insets.top;
         localBounds.width -= insets.left + insets.right;
         localBounds.height -= insets.top + insets.bottom;
-        if (mPaintVerticalFirst) {
-            paintVerticalBackgrounds(gc, localBounds);
-            paintHorizontalBackgrounds(gc, localBounds);
-        } else {
-            paintHorizontalBackgrounds(gc, localBounds);
-            paintVerticalBackgrounds(gc, localBounds);
-        }
+        paintHorizontalBackgrounds(gc, localBounds);
+        paintVerticalBackgrounds(gc, localBounds);
     }
 
     private void paintHorizontalBackgrounds(Graphics gc, Rectangle localBounds) {
@@ -223,95 +216,8 @@ public class DropPanel extends JPanel {
         }
     }
 
-    /** @return Whether or not to paint the vertical backgrounds first. */
-    public final boolean isPaintVerticalFirst() {
-        return mPaintVerticalFirst;
-    }
-
-    /** @param first Whether or not to paint the vertical backgrounds first. */
-    public final void setPaintVerticalFirst(boolean first) {
-        mPaintVerticalFirst = first;
-    }
-
     /** @return The {@link TitledBorder}. */
     public TitledBorder getTitledBorder() {
         return mTitledBorder;
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param title     The title to use.
-     * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
-     */
-    @SuppressWarnings("static-method")
-    protected PageField createLabelAndField(Container parent, CharacterSheet sheet, String key, String title, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, true, tooltip);
-        parent.add(new PageLabel(title, field));
-        parent.add(field);
-        return field;
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param title     The title to use.
-     * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
-     */
-    @SuppressWarnings("static-method")
-    protected PageField createLabelAndDisabledField(Container parent, CharacterSheet sheet, String key, String title, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, false, tooltip);
-        parent.add(new PageLabel(title, field));
-        parent.add(field);
-        return field;
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
-     */
-    @SuppressWarnings("static-method")
-    protected PageField createField(Container parent, CharacterSheet sheet, String key, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, true, tooltip);
-        parent.add(field);
-        return field;
-    }
-
-    /**
-     * @param parent    The parent to use.
-     * @param sheet     The {@link CharacterSheet} to use.
-     * @param key       The notification ID to use.
-     * @param tooltip   The tooltip to use.
-     * @param alignment The horizontal field alignment to use.
-     * @return The newly created field.
-     */
-    @SuppressWarnings("static-method")
-    protected PageField createDisabledField(Container parent, CharacterSheet sheet, String key, String tooltip, int alignment) {
-        PageField field = new PageField(sheet, key, alignment, false, tooltip);
-        parent.add(field);
-        return field;
-    }
-
-    /**
-     * @param parent  The parent to use.
-     * @param title   The title to use.
-     * @param tooltip The tooltip to use.
-     * @return The newly created header.
-     */
-    @SuppressWarnings("static-method")
-    protected PageHeader createHeader(Container parent, String title, String tooltip) {
-        PageHeader header = new PageHeader(title, tooltip);
-        parent.add(header);
-        return header;
     }
 }

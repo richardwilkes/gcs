@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -101,28 +101,21 @@ public class TextCell implements Cell {
         Font  font      = scale.scale(getFont(row, column));
         int   minHeight = TextDrawing.getPreferredSize(font, "Mg").height;
         int   height    = TextDrawing.getPreferredSize(font, getPresentationText(outline, row, column)).height;
-        if (row == null) {
-            height = adjustHeight(scale, column.getIcon(), height);
-        } else {
-            height = adjustHeight(scale, Icons.getDisclosure(true, true), height);
-            height = adjustHeight(scale, row.getIcon(column), height);
+        if (row != null) {
+            RetinaIcon icon = Icons.getDisclosure(true, true);
+            if (icon != null) {
+                int iconHeight = scale.scale(icon.getIconHeight());
+                if (height < iconHeight) {
+                    height = iconHeight;
+                }
+            }
         }
         return Math.max(minHeight, height);
     }
 
-    private static int adjustHeight(Scale scale, RetinaIcon icon, int height) {
-        if (icon != null) {
-            int iconHeight = scale.scale(icon.getIconHeight());
-            if (height < iconHeight) {
-                height = iconHeight;
-            }
-        }
-        return height;
-    }
-
     @SuppressWarnings("static-method")
     public RetinaIcon getIcon(Row row, Column column) {
-        return row == null ? column.getIcon() : row.getIcon(column);
+        return row == null ? null : row.getIcon(column);
     }
 
     @Override
@@ -191,7 +184,7 @@ public class TextCell implements Cell {
      * @return The data of this cell as a string that is prepared for display.
      */
     protected String getPresentationText(Outline outline, Row row, Column column) {
-        String text = getData(row, column, false);
+        String text = getData(row, column);
         if (!mWrapped || row == null) {
             return text;
         }
@@ -218,17 +211,13 @@ public class TextCell implements Cell {
     /**
      * @param row    The row.
      * @param column The column.
-     * @param nullOK {@code true} if {@code null} may be returned.
      * @return The data of this cell as a string.
      */
     @SuppressWarnings("static-method")
-    protected String getData(Row row, Column column, boolean nullOK) {
+    protected final String getData(Row row, Column column) {
         if (row != null) {
             String text = row.getDataAsText(column);
-            if (text == null) {
-                return nullOK ? null : "";
-            }
-            return text;
+            return text == null ? "" : text;
         }
         return column.toString();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -37,8 +37,7 @@ public class UpdateCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        DataFileDockable df = getTarget(DataFileDockable.class);
-        if (df != null) {
+        if (getTarget(DataFileDockable.class) != null) {
             try {
                 long        start   = System.currentTimeMillis();
                 DataUpdater du      = new DataUpdater();

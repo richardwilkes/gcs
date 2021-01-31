@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -60,53 +60,57 @@ public class Preferences {
     private static final int CURRENT_VERSION = 2;
     private static final int MINIMUM_VERSION = 1;
 
-    private static final String AUTO_NAME_NEW_CHARACTERS        = "auto_name_new_characters";
-    private static final String BASE_WILL_AND_PER_ON_10         = "base_will_and_per_on_10";
-    private static final String BLOCK_LAYOUT                    = "block_layout";
-    private static final String DEFAULT_LENGTH_UNITS            = "default_length_units";
-    private static final String DEFAULT_PAGE_SETTINGS           = "default_page_settings";
-    private static final String DEFAULT_PLAYER_NAME             = "default_player_name";
-    private static final String DEFAULT_PORTRAIT_PATH           = "default_portrait_path";
-    private static final String DEFAULT_TECH_LEVEL              = "default_tech_level";
-    private static final String DEFAULT_WEIGHT_UNITS            = "default_weight_units";
-    private static final String DIVIDER_POSITION                = "divider_position";
-    private static final String FONTS                           = "fonts";
-    private static final String GURPS_CALCULATOR_KEY            = "gurps_calculator_key";
-    private static final String ID                              = "id";
-    private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL = "include_unspent_points_in_total";
-    private static final String INITIAL_POINTS                  = "initial_points";
-    private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
-    private static final String KEY_BINDINGS                    = "key_bindings";
-    private static final String LAST_DIR                        = "last_dir";
-    private static final String LAST_SEEN_GCS_VERSION           = "last_seen_gcs_version";
-    private static final String LIBRARIES                       = "libraries";
-    private static final String LIBRARY_EXPLORER                = "library_explorer";
-    private static final String MODIFIERS_DISPLAY               = "modifiers_display";
-    private static final String NOTES_DISPLAY                   = "notes_display";
-    private static final String OPEN_ROW_KEYS                   = "open_row_keys";
-    private static final String PDF_REFS                        = "pdf_refs";
-    private static final String PNG_RESOLUTION                  = "png_resolution";
-    private static final String RECENT_FILES                    = "recent_files";
-    private static final String SHOW_COLLEGE_IN_SHEET_SPELLS    = "show_college_in_sheet_spells";
-    private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
-    private static final String THEME                           = "theme";
-    private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
-    private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
-    private static final String USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
-    private static final String USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
-    private static final String USE_NATIVE_PRINT_DIALOGS        = "use_native_print_dialogs";
-    private static final String USE_REDUCED_SWING               = "use_reduced_swing";
-    private static final String USE_PHOENIX_SWING               = "use_phoenix_swing";
-    private static final String USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
-    private static final String USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
-    private static final String USER_DESCRIPTION_DISPLAY        = "user_description_display";
-    private static final String VERSION                         = "version";
-    private static final String WINDOW_POSITIONS                = "window_positions";
+    private static final String AUTO_NAME_NEW_CHARACTERS           = "auto_name_new_characters";
+    private static final String DEPRECATED_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10";
+    private static final String BASE_WILL_ON_10                    = "base_will_on_10";
+    private static final String BASE_PER_ON_10                     = "base_per_on_10";
+    private static final String BLOCK_LAYOUT                       = "block_layout";
+    private static final String DEFAULT_LENGTH_UNITS               = "default_length_units";
+    private static final String DEFAULT_PAGE_SETTINGS              = "default_page_settings";
+    private static final String DEFAULT_PLAYER_NAME                = "default_player_name";
+    private static final String DEFAULT_PORTRAIT_PATH              = "default_portrait_path";
+    private static final String DEFAULT_TECH_LEVEL                 = "default_tech_level";
+    private static final String DEFAULT_WEIGHT_UNITS               = "default_weight_units";
+    private static final String DIVIDER_POSITION                   = "divider_position";
+    private static final String FONTS                              = "fonts";
+    private static final String GURPS_CALCULATOR_KEY               = "gurps_calculator_key";
+    private static final String ID                                 = "id";
+    private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL    = "include_unspent_points_in_total";
+    private static final String INITIAL_POINTS                     = "initial_points";
+    private static final String INITIAL_UI_SCALE                   = "initial_ui_scale";
+    private static final String KEY_BINDINGS                       = "key_bindings";
+    private static final String LAST_DIR                           = "last_dir";
+    private static final String LAST_SEEN_GCS_VERSION              = "last_seen_gcs_version";
+    private static final String LIBRARIES                          = "libraries";
+    private static final String LIBRARY_EXPLORER                   = "library_explorer";
+    private static final String MODIFIERS_DISPLAY                  = "modifiers_display";
+    private static final String NOTES_DISPLAY                      = "notes_display";
+    private static final String OPEN_ROW_KEYS                      = "open_row_keys";
+    private static final String PDF_REFS                           = "pdf_refs";
+    private static final String PNG_RESOLUTION                     = "png_resolution";
+    private static final String RECENT_FILES                       = "recent_files";
+    private static final String SHOW_COLLEGE_IN_SHEET_SPELLS       = "show_college_in_sheet_spells";
+    private static final String SHOW_DIFFICULTY                    = "show_difficulty";
+    private static final String USE_TITLE_IN_FOOTER                = "use_title_in_footer";
+    private static final String THEME                              = "theme";
+    private static final String TOOLTIP_TIMEOUT                    = "tooltip_timeout";
+    private static final String USE_KNOW_YOUR_OWN_STRENGTH         = "use_know_your_own_strength";
+    private static final String USE_MODIFYING_DICE_PLUS_ADDS       = "use_modifying_dice_plus_adds";
+    private static final String USE_MULTIPLICATIVE_MODIFIERS       = "use_multiplicative_modifiers";
+    private static final String USE_NATIVE_PRINT_DIALOGS           = "use_native_print_dialogs";
+    private static final String USE_REDUCED_SWING                  = "use_reduced_swing";
+    private static final String USE_PHOENIX_SWING                  = "use_phoenix_swing";
+    private static final String USE_SIMPLE_METRIC_CONVERSIONS      = "use_simple_metric_conversions";
+    private static final String USE_THRUST_EQUALS_SWING_MINUS_2    = "use_thrust_equals_swing_minus_2";
+    private static final String USER_DESCRIPTION_DISPLAY           = "user_description_display";
+    private static final String VERSION                            = "version";
+    private static final String WINDOW_POSITIONS                   = "window_positions";
 
     public static final String KEY_PREFIX           = "prefs.";
     public static final String KEY_PER_SHEET_PREFIX = KEY_PREFIX + "sheet.";
 
-    public static final String KEY_BASE_WILL_AND_PER_ON_10         = KEY_PER_SHEET_PREFIX + BASE_WILL_AND_PER_ON_10;
+    public static final String KEY_BASE_WILL_ON_10                 = KEY_PER_SHEET_PREFIX + BASE_WILL_ON_10;
+    public static final String KEY_BASE_PER_ON_10                  = KEY_PER_SHEET_PREFIX + BASE_PER_ON_10;
     public static final String KEY_BLOCK_LAYOUT                    = KEY_PER_SHEET_PREFIX + BLOCK_LAYOUT;
     public static final String KEY_DEFAULT_LENGTH_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_LENGTH_UNITS;
     public static final String KEY_DEFAULT_WEIGHT_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_WEIGHT_UNITS;
@@ -114,6 +118,7 @@ public class Preferences {
     public static final String KEY_MODIFIERS_DISPLAY               = KEY_PER_SHEET_PREFIX + MODIFIERS_DISPLAY;
     public static final String KEY_NOTES_DISPLAY                   = KEY_PER_SHEET_PREFIX + NOTES_DISPLAY;
     public static final String KEY_SHOW_COLLEGE_IN_SHEET_SPELLS    = KEY_PER_SHEET_PREFIX + SHOW_COLLEGE_IN_SHEET_SPELLS;
+    public static final String KEY_SHOW_DIFFICULTY                 = KEY_PER_SHEET_PREFIX + SHOW_DIFFICULTY;
     public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
@@ -125,11 +130,13 @@ public class Preferences {
     public static final String KEY_USER_DESCRIPTION_DISPLAY        = KEY_PER_SHEET_PREFIX + USER_DESCRIPTION_DISPLAY;
 
     public static final boolean       DEFAULT_AUTO_NAME_NEW_CHARACTERS          = true;
-    public static final boolean       DEFAULT_BASE_WILL_AND_PER_ON_10           = false;
+    public static final boolean       DEFAULT_BASE_WILL_ON_10                   = false;
+    public static final boolean       DEFAULT_BASE_PER_ON_10                    = false;
     public static final boolean       DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL   = true;
     public static final int           DEFAULT_INITIAL_POINTS                    = 100;
     public static final int           DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
     public static final boolean       DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS      = false;
+    public static final boolean       DEFAULT_SHOW_DIFFICULTY                   = false;
     public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
@@ -145,7 +152,7 @@ public class Preferences {
     public static final int           DEFAULT_PNG_RESOLUTION                    = 200;
     public static final int           DEFAULT_TOOLTIP_TIMEOUT                   = 60;
     public static final LengthUnits   DEFAULT_DEFAULT_LENGTH_UNITS              = LengthUnits.FT_IN;
-    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of(CharacterSheet.REACTIONS_KEY, CharacterSheet.MELEE_KEY, CharacterSheet.RANGED_KEY, CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY, CharacterSheet.SPELLS_KEY, CharacterSheet.EQUIPMENT_KEY, CharacterSheet.OTHER_EQUIPMENT_KEY, CharacterSheet.NOTES_KEY);
+    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of(CharacterSheet.REACTIONS_KEY + " " + CharacterSheet.CONDITIONAL_MODIFIERS_KEY, CharacterSheet.MELEE_KEY, CharacterSheet.RANGED_KEY, CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY, CharacterSheet.SPELLS_KEY, CharacterSheet.EQUIPMENT_KEY, CharacterSheet.OTHER_EQUIPMENT_KEY, CharacterSheet.NOTES_KEY);
     public static final Scales        DEFAULT_INITIAL_UI_SCALE                  = Scales.QUARTER_AGAIN_SIZE;
     public static final String        DEFAULT_DEFAULT_PLAYER_NAME               = System.getProperty("user.name", "");
     public static final String        DEFAULT_DEFAULT_PORTRAIT_PATH             = "!\000";
@@ -172,9 +179,9 @@ public class Preferences {
     private        WeightUnits                      mDefaultWeightUnits;
     private        List<String>                     mBlockLayout;
     private        List<Path>                       mRecentFiles;
-    private        Path                mLastDir;
-    private        Map<String, PDFRef> mPdfRefs;
-    private        Map<String, String> mKeyBindingOverrides;
+    private        Path                             mLastDir;
+    private        Map<String, PDFRef>              mPdfRefs;
+    private        Map<String, String>              mKeyBindingOverrides;
     private        Map<String, Fonts.Info>          mFontInfo;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
     private        PrintManager                     mDefaultPageSettings;
@@ -185,7 +192,8 @@ public class Preferences {
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
     private        boolean                          mIncludeUnspentPointsInTotal;
-    private        boolean                          mBaseWillAndPerOn10;
+    private        boolean                          mBaseWillOn10;
+    private        boolean                          mBasePerOn10;
     private        boolean                          mUseMultiplicativeModifiers;
     private        boolean                          mUseModifyingDicePlusAdds;
     private        boolean                          mUseKnowYourOwnStrength;
@@ -197,6 +205,7 @@ public class Preferences {
     private        boolean                          mAutoNameNewCharacters;
     private        boolean                          mUseNativePrintDialogs;
     private        boolean                          mShowCollegeInSheetSpells;
+    private        boolean                          mShowDifficulty;
     private        boolean                          mUseTitleInFooter;
 
     public static synchronized Preferences getInstance() {
@@ -253,7 +262,8 @@ public class Preferences {
             mDefaultPageSettings = null;
         }
         mIncludeUnspentPointsInTotal = DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
-        mBaseWillAndPerOn10 = DEFAULT_BASE_WILL_AND_PER_ON_10;
+        mBaseWillOn10 = DEFAULT_BASE_WILL_ON_10;
+        mBasePerOn10 = DEFAULT_BASE_PER_ON_10;
         mUseMultiplicativeModifiers = DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
         mUseModifyingDicePlusAdds = DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS;
         mUseKnowYourOwnStrength = DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
@@ -265,6 +275,7 @@ public class Preferences {
         mAutoNameNewCharacters = DEFAULT_AUTO_NAME_NEW_CHARACTERS;
         mUseNativePrintDialogs = DEFAULT_USE_NATIVE_PRINT_DIALOGS;
         mShowCollegeInSheetSpells = DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
+        mShowDifficulty = DEFAULT_SHOW_DIFFICULTY;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
@@ -353,7 +364,13 @@ public class Preferences {
                         mDefaultPortraitPath = m.getStringWithDefault(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                         mPNGResolution = m.getIntWithDefault(PNG_RESOLUTION, mPNGResolution);
                         mIncludeUnspentPointsInTotal = m.getBooleanWithDefault(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                        mBaseWillAndPerOn10 = m.getBooleanWithDefault(BASE_WILL_AND_PER_ON_10, mBaseWillAndPerOn10);
+                        if (m.has(DEPRECATED_BASE_WILL_AND_PER_ON_10)) {
+                            mBaseWillOn10 = m.getBooleanWithDefault(DEPRECATED_BASE_WILL_AND_PER_ON_10, mBaseWillOn10);
+                            mBasePerOn10 = m.getBooleanWithDefault(DEPRECATED_BASE_WILL_AND_PER_ON_10, mBasePerOn10);
+                        } else {
+                            mBaseWillOn10 = m.getBooleanWithDefault(BASE_WILL_ON_10, mBaseWillOn10);
+                            mBasePerOn10 = m.getBooleanWithDefault(BASE_PER_ON_10, mBasePerOn10);
+                        }
                         mUseMultiplicativeModifiers = m.getBooleanWithDefault(USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
                         mUseModifyingDicePlusAdds = m.getBooleanWithDefault(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                         mUseKnowYourOwnStrength = m.getBooleanWithDefault(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -364,6 +381,7 @@ public class Preferences {
                         mAutoNameNewCharacters = m.getBooleanWithDefault(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                         mUseNativePrintDialogs = m.getBooleanWithDefault(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
+                        mShowDifficulty = m.getBooleanWithDefault(SHOW_DIFFICULTY, mShowDifficulty);
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                         if (m.has(THEME)) {
                             Theme.set(new Theme(m.getMap(THEME)));
@@ -453,12 +471,14 @@ public class Preferences {
                     w.keyValue(INITIAL_UI_SCALE, Enums.toId(mInitialUIScale));
                     w.keyValue(DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
                     w.keyValue(DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
-                    w.key(BLOCK_LAYOUT);
-                    w.startArray();
-                    for (String line : mBlockLayout) {
-                        w.value(line);
+                    if (!DEFAULT_BLOCK_LAYOUT.equals(mBlockLayout)) {
+                        w.key(BLOCK_LAYOUT);
+                        w.startArray();
+                        for (String line : mBlockLayout) {
+                            w.value(line);
+                        }
+                        w.endArray();
                     }
-                    w.endArray();
                     w.key(RECENT_FILES);
                     w.startArray();
                     for (Path p : mRecentFiles) {
@@ -493,13 +513,7 @@ public class Preferences {
                         BaseWindow.Position info = entry.getValue();
                         if (info.mLastUpdated > cutoff) {
                             w.key(entry.getKey());
-                            w.startMap();
-                            w.keyValue("x", info.mBounds.x);
-                            w.keyValue("y", info.mBounds.y);
-                            w.keyValue("width", info.mBounds.width);
-                            w.keyValue("height", info.mBounds.height);
-                            w.keyValue("last_updated", info.mLastUpdated);
-                            w.endMap();
+                            info.toJSON(w);
                         }
                     }
                     w.endMap();
@@ -509,7 +523,8 @@ public class Preferences {
                     w.keyValue(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                     w.keyValue(PNG_RESOLUTION, mPNGResolution);
                     w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                    w.keyValue(BASE_WILL_AND_PER_ON_10, mBaseWillAndPerOn10);
+                    w.keyValue(BASE_WILL_ON_10, mBaseWillOn10);
+                    w.keyValue(BASE_PER_ON_10, mBasePerOn10);
                     w.keyValue(USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
                     w.keyValue(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                     w.keyValue(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -518,6 +533,7 @@ public class Preferences {
                     w.keyValue(USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
                     w.keyValue(USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
                     w.keyValue(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
+                    w.keyValue(SHOW_DIFFICULTY, mShowDifficulty);
                     w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                     w.keyValue(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                     w.key(THEME);
@@ -590,39 +606,33 @@ public class Preferences {
         return mUserDescriptionDisplay;
     }
 
-    public boolean setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
+    public void setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
         if (mUserDescriptionDisplay != userDescriptionDisplay) {
             mUserDescriptionDisplay = userDescriptionDisplay;
             mNotifier.notify(this, KEY_USER_DESCRIPTION_DISPLAY);
-            return true;
         }
-        return false;
     }
 
     public DisplayOption getModifiersDisplay() {
         return mModifiersDisplay;
     }
 
-    public boolean setModifiersDisplay(DisplayOption modifiersDisplay) {
+    public void setModifiersDisplay(DisplayOption modifiersDisplay) {
         if (mModifiersDisplay != modifiersDisplay) {
             mModifiersDisplay = modifiersDisplay;
             mNotifier.notify(this, KEY_MODIFIERS_DISPLAY);
-            return true;
         }
-        return false;
     }
 
     public DisplayOption getNotesDisplay() {
         return mNotesDisplay;
     }
 
-    public boolean setNotesDisplay(DisplayOption notesDisplay) {
+    public void setNotesDisplay(DisplayOption notesDisplay) {
         if (mNotesDisplay != notesDisplay) {
             mNotesDisplay = notesDisplay;
             mNotifier.notify(this, KEY_NOTES_DISPLAY);
-            return true;
         }
-        return false;
     }
 
     public Scales getInitialUIScale() {
@@ -637,45 +647,39 @@ public class Preferences {
         return mDefaultLengthUnits;
     }
 
-    public boolean setDefaultLengthUnits(LengthUnits defaultLengthUnits) {
+    public void setDefaultLengthUnits(LengthUnits defaultLengthUnits) {
         if (mDefaultLengthUnits != defaultLengthUnits) {
             mDefaultLengthUnits = defaultLengthUnits;
             mNotifier.notify(this, KEY_DEFAULT_LENGTH_UNITS);
-            return true;
         }
-        return false;
     }
 
     public WeightUnits getDefaultWeightUnits() {
         return mDefaultWeightUnits;
     }
 
-    public boolean setDefaultWeightUnits(WeightUnits defaultWeightUnits) {
+    public void setDefaultWeightUnits(WeightUnits defaultWeightUnits) {
         if (mDefaultWeightUnits != defaultWeightUnits) {
             mDefaultWeightUnits = defaultWeightUnits;
             mNotifier.notify(this, KEY_DEFAULT_WEIGHT_UNITS);
-            return true;
         }
-        return false;
     }
 
     public List<String> getBlockLayout() {
         return mBlockLayout;
     }
 
-    public boolean setBlockLayout(List<String> blockLayout) {
+    public void setBlockLayout(List<String> blockLayout) {
         if (!mBlockLayout.equals(blockLayout)) {
             mBlockLayout = new ArrayList<>(blockLayout);
             mNotifier.notify(this, KEY_BLOCK_LAYOUT);
-            return true;
         }
-        return false;
     }
 
     public static String linesToString(List<String> lines) {
         StringBuilder buffer = new StringBuilder();
         for (String line : lines) {
-            if (buffer.length() != 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append('\n');
             }
             buffer.append(line);
@@ -850,27 +854,35 @@ public class Preferences {
         return mIncludeUnspentPointsInTotal;
     }
 
-    public boolean setIncludeUnspentPointsInTotal(boolean includeUnspentPointsInTotal) {
+    public void setIncludeUnspentPointsInTotal(boolean includeUnspentPointsInTotal) {
         if (mIncludeUnspentPointsInTotal != includeUnspentPointsInTotal) {
             mIncludeUnspentPointsInTotal = includeUnspentPointsInTotal;
             mNotifier.notify(this, KEY_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
-            return true;
         }
-        return false;
     }
 
-    /** @return Whether Will and Perception should be based on 10 rather than IQ. */
-    public boolean baseWillAndPerOn10() {
-        return mBaseWillAndPerOn10;
+    /** @return Whether Will should be based on 10 rather than IQ. */
+    public boolean baseWillOn10() {
+        return mBaseWillOn10;
     }
 
-    public boolean setBaseWillAndPerOn10(boolean baseWillAndPerOn10) {
-        if (mBaseWillAndPerOn10 != baseWillAndPerOn10) {
-            mBaseWillAndPerOn10 = baseWillAndPerOn10;
-            mNotifier.notify(this, KEY_BASE_WILL_AND_PER_ON_10);
-            return true;
+    public void setBaseWillOn10(boolean baseWillOn10) {
+        if (mBaseWillOn10 != baseWillOn10) {
+            mBaseWillOn10 = baseWillOn10;
+            mNotifier.notify(this, KEY_BASE_WILL_ON_10);
         }
-        return false;
+    }
+
+    /** @return Whether Per should be based on 10 rather than IQ. */
+    public boolean basePerOn10() {
+        return mBasePerOn10;
+    }
+
+    public void setBasePerOn10(boolean basePerOn10) {
+        if (mBasePerOn10 != basePerOn10) {
+            mBasePerOn10 = basePerOn10;
+            mNotifier.notify(this, KEY_BASE_PER_ON_10);
+        }
     }
 
     /** @return Whether to show the college column in the sheet display. */
@@ -878,13 +890,23 @@ public class Preferences {
         return mShowCollegeInSheetSpells;
     }
 
-    public boolean setShowCollegeInSheetSpells(boolean show) {
+    public void setShowCollegeInSheetSpells(boolean show) {
         if (mShowCollegeInSheetSpells != show) {
             mShowCollegeInSheetSpells = show;
             mNotifier.notify(this, KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
-            return true;
         }
-        return false;
+    }
+
+    /** @return Whether to show the difficulty column in the sheet display. */
+    public boolean showDifficulty() {
+        return mShowDifficulty;
+    }
+
+    public void setShowDifficulty(boolean show) {
+        if (mShowDifficulty != show) {
+            mShowDifficulty = show;
+            mNotifier.notify(this, KEY_SHOW_DIFFICULTY);
+        }
     }
 
     /** @return Whether to show the title in the page footer (rather than the name). */
@@ -892,13 +914,11 @@ public class Preferences {
         return mUseTitleInFooter;
     }
 
-    public boolean setUseTitleInFooter(boolean show) {
+    public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
             mNotifier.notify(this, KEY_USE_TITLE_IN_FOOTER);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the multiplicative modifier rules from PW102. */
@@ -906,13 +926,11 @@ public class Preferences {
         return mUseMultiplicativeModifiers;
     }
 
-    public boolean setUseMultiplicativeModifiers(boolean useMultiplicativeModifiers) {
+    public void setUseMultiplicativeModifiers(boolean useMultiplicativeModifiers) {
         if (mUseMultiplicativeModifiers != useMultiplicativeModifiers) {
             mUseMultiplicativeModifiers = useMultiplicativeModifiers;
             mNotifier.notify(this, KEY_USE_MULTIPLICATIVE_MODIFIERS);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the dice modification rules from B269. */
@@ -920,13 +938,11 @@ public class Preferences {
         return mUseModifyingDicePlusAdds;
     }
 
-    public boolean setUseModifyingDicePlusAdds(boolean useModifyingDicePlusAdds) {
+    public void setUseModifyingDicePlusAdds(boolean useModifyingDicePlusAdds) {
         if (mUseModifyingDicePlusAdds != useModifyingDicePlusAdds) {
             mUseModifyingDicePlusAdds = useModifyingDicePlusAdds;
             mNotifier.notify(this, KEY_USE_MODIFYING_DICE_PLUS_ADDS);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the Know Your Own Strength rules from PY83. */
@@ -934,13 +950,11 @@ public class Preferences {
         return mUseKnowYourOwnStrength;
     }
 
-    public boolean setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
+    public void setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
         if (mUseKnowYourOwnStrength != useKnowYourOwnStrength) {
             mUseKnowYourOwnStrength = useKnowYourOwnStrength;
             mNotifier.notify(this, KEY_USE_KNOW_YOUR_OWN_STRENGTH);
-            return true;
         }
-        return false;
     }
 
     /**
@@ -951,14 +965,11 @@ public class Preferences {
         return mUseReducedSwing;
     }
 
-
-    public boolean setUseReducedSwing(boolean useReducedSwing) {
+    public void setUseReducedSwing(boolean useReducedSwing) {
         if (mUseReducedSwing != useReducedSwing) {
             mUseReducedSwing = useReducedSwing;
             mNotifier.notify(this, KEY_USE_REDUCED_SWING);
-            return true;
         }
-        return false;
     }
     //Phoenixflame's rescaled swing
     public boolean usePhoenixSwing() {
@@ -966,13 +977,11 @@ public class Preferences {
     }
     
 
-    public boolean setUsePhoenixSwing(boolean usePhoenixSwing) {
+    public void setUsePhoenixSwing(boolean usePhoenixSwing) {
         if (mUsePhoenixSwing != usePhoenixSwing) {
             mUsePhoenixSwing = usePhoenixSwing;
             mNotifier.notify(this, KEY_USE_PHOENIX_SWING);
-            return true;
         }
-        return false;
     }
 
 
@@ -981,13 +990,11 @@ public class Preferences {
         return mUseThrustEqualsSwingMinus2;
     }
 
-    public boolean setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
+    public void setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
         if (mUseThrustEqualsSwingMinus2 != useThrustEqualsSwingMinus2) {
             mUseThrustEqualsSwingMinus2 = useThrustEqualsSwingMinus2;
             mNotifier.notify(this, KEY_USE_THRUST_EQUALS_SWING_MINUS_2);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether to use the simple metric conversion rules from B9. */
@@ -995,13 +1002,11 @@ public class Preferences {
         return mUseSimpleMetricConversions;
     }
 
-    public boolean setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
+    public void setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
         if (mUseSimpleMetricConversions != useSimpleMetricConversions) {
             mUseSimpleMetricConversions = useSimpleMetricConversions;
             mNotifier.notify(this, KEY_USE_SIMPLE_METRIC_CONVERSIONS);
-            return true;
         }
-        return false;
     }
 
     /** @return Whether a new character should be automatically named. */

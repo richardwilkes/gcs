@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -38,10 +38,7 @@ public class TreeRow implements Cloneable {
 
     /** @return The index of this {@link TreeRow} within its parent, or -1 if it has no parent. */
     public int getIndex() {
-        if (mParent != null) {
-            return mIndex;
-        }
-        return -1;
+        return mParent == null ? -1 : mIndex;
     }
 
     void setIndex(int index) {

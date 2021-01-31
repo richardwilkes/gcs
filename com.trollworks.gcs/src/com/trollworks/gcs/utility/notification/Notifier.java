@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -56,11 +56,7 @@ public class Notifier implements Comparator<NotifierTarget> {
      *               "foo.bart.a".
      */
     public synchronized void add(NotifierTarget target, String... names) {
-        Set<String> normalizedNames = mNameMap.get(target);
-        if (normalizedNames == null) {
-            normalizedNames = new HashSet<>();
-            mNameMap.put(target, normalizedNames);
-        }
+        Set<String> normalizedNames = mNameMap.computeIfAbsent(target, k -> new HashSet<>());
         if (target instanceof BatchNotifierTarget) {
             mBatchTargets.add((BatchNotifierTarget) target);
         }
@@ -68,12 +64,7 @@ public class Notifier implements Comparator<NotifierTarget> {
             for (String name : names) {
                 name = normalizeName(name);
                 if (!name.isEmpty()) {
-                    Set<NotifierTarget> set = mProductionMap.get(name);
-                    if (set == null) {
-                        set = new HashSet<>();
-                        mProductionMap.put(name, set);
-                    }
-                    set.add(target);
+                    mProductionMap.computeIfAbsent(name, k -> new HashSet<>()).add(target);
                     normalizedNames.add(name);
                 }
             }
@@ -87,7 +78,7 @@ public class Notifier implements Comparator<NotifierTarget> {
         StringTokenizer tokenizer = new StringTokenizer(name, SEPARATOR);
         StringBuilder   builder   = new StringBuilder();
         while (tokenizer.hasMoreTokens()) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append(SEPARATOR);
             }
             builder.append(tokenizer.nextToken());

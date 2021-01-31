@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -28,9 +28,8 @@ import java.text.MessageFormat;
 /** An equipment contained quantity prerequisite. */
 public class ContainedQuantityPrereq extends HasPrereq {
     /** The XML tag for this class. */
-    public static final  String          TAG_ROOT          = "contained_quantity_prereq";
-    private static final String          ATTRIBUTE_COMPARE = "compare";
-    private static final String          KEY_QUALIFIER     = "qualifier";
+    public static final  String          TAG_ROOT      = "contained_quantity_prereq";
+    private static final String          KEY_QUALIFIER = "qualifier";
     private              IntegerCriteria mQuantityCompare;
 
     /**
@@ -77,17 +76,7 @@ public class ContainedQuantityPrereq extends HasPrereq {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
-    }
-
-    @Override
-    public String getXMLTag() {
         return TAG_ROOT;
     }
 

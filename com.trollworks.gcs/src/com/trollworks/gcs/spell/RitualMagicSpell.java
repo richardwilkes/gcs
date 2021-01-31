@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -41,8 +41,6 @@ import java.util.Set;
  * spell.
  */
 public class RitualMagicSpell extends Spell {
-    private static final int    CURRENT_VERSION         = 1;
-    /** The XML tag used for items. */
     public static final  String TAG_RITUAL_MAGIC_SPELL  = "ritual_magic_spell";
     private static final String TAG_BASE_SKILL_NAME     = "base_skill";
     private static final String TAG_PREREQ_COUNT        = "prereq_count";
@@ -176,16 +174,6 @@ public class RitualMagicSpell extends Spell {
     @Override
     public String getJSONTypeName() {
         return TAG_RITUAL_MAGIC_SPELL;
-    }
-
-    @Override
-    public String getXMLTagName() {
-        return TAG_RITUAL_MAGIC_SPELL;
-    }
-
-    @Override
-    public int getXMLTagVersion() {
-        return CURRENT_VERSION;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -46,14 +46,6 @@ public class EmptyBorder implements Border {
         setThickness(Edge.LEFT, left);
         setThickness(Edge.BOTTOM, bottom);
         setThickness(Edge.RIGHT, right);
-    }
-
-    /**
-     * @param edge The edge to query.
-     * @return The thickness being used for the specified edge.
-     */
-    public int getThickness(Edge edge) {
-        return mThickness[edge.ordinal()];
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -68,7 +68,7 @@ public class OpenDataFileCommand extends Command implements Runnable {
      * @param path  The file to open.
      */
     public OpenDataFileCommand(String title, Path path) {
-        super(title, CMD_PREFIX + path.toString() + CMD_POSTFIX, FileType.getIconForFileName(path.getFileName().toString()));
+        super(title, CMD_PREFIX + path + CMD_POSTFIX, FileType.getIconForFileName(path.getFileName().toString()));
         mPath = path;
     }
 
@@ -79,7 +79,7 @@ public class OpenDataFileCommand extends Command implements Runnable {
      * @param path The file to open.
      */
     public OpenDataFileCommand(Path path) {
-        super(path.getFileName().toString(), CMD_PREFIX + path.toString() + CMD_POSTFIX);
+        super(path.getFileName().toString(), CMD_PREFIX + path + CMD_POSTFIX);
         mPath = path;
         mVerify = true;
     }

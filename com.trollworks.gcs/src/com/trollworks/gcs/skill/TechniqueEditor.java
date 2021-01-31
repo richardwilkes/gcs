@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -166,7 +166,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
             mDefaultSpecializationField = createField(null, mDefaultPanel, null, def.getSpecialization(), I18n.Text("The specialization of the skill, if any, this technique defaults from"), 0);
             mDefaultPanelLabel.setLink(mDefaultNameField);
         }
-        mDefaultModifierField = createNumberField(null, mDefaultPanel, null, I18n.Text("The amount to adjust the default skill level by"), def.getModifier(), 2);
+        mDefaultModifierField = createNumberField(mDefaultPanel, I18n.Text("The amount to adjust the default skill level by"), def.getModifier());
         if (!skillBased) {
             mDefaultPanel.add(new JPanel());
             mDefaultPanel.add(new JPanel());
@@ -182,7 +182,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         mLimitCheckbox.addActionListener(this);
         mLimitCheckbox.setEnabled(mIsEditable);
 
-        mLimitField = createNumberField(null, wrapper, null, I18n.Text("The maximum amount above the default skill level that this technique can be raised"), mRow.getLimitModifier(), 2);
+        mLimitField = createNumberField(wrapper, I18n.Text("The maximum amount above the default skill level that this technique can be raised"), mRow.getLimitModifier());
         mLimitField.setEnabled(mIsEditable && mLimitCheckbox.isSelected());
         mLimitField.addActionListener(this);
 
@@ -237,9 +237,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         return field;
     }
 
-    private JTextField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxDigits) {
-        JTextField field = createField(labelParent, fieldParent, title, Numbers.formatWithForcedSign(value), tooltip, maxDigits + 1);
-        NumberFilter.apply(field, false, true, false, maxDigits);
+    private JTextField createNumberField(Container fieldParent, String tooltip, int value) {
+        JTextField field = createField(null, fieldParent, null, Numbers.formatWithForcedSign(value), tooltip, 3);
+        NumberFilter.apply(field, false, true, false, 2);
         return field;
     }
 

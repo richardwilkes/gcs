@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -69,7 +69,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     protected abstract void addColumns(Outline outline);
 
     private Component createOutline(List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
-        mAddButton = new IconButton(Images.ADD, I18n.Text("Add a modifier"), () -> addModifier());
+        mAddButton = new IconButton(Images.ADD, I18n.Text("Add a modifier"), this::addModifier);
 
         mOutline = new ModifierOutline();
         OutlineModel model = mOutline.getModel();
@@ -159,7 +159,6 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     class ModifierOutline extends Outline {
         ModifierOutline() {
             super(false);
-            setAllowColumnDrag(false);
             setAllowColumnResize(false);
             setAllowRowDrag(false);
         }

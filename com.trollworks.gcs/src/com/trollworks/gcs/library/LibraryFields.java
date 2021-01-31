@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -122,7 +122,7 @@ public class LibraryFields implements DocumentListener {
         mComps.add(wrapper);
     }
 
-    private JButton addLocateButton() {
+    private void addLocateButton() {
         JButton button = new JButton(I18n.Text("Locate"));
         button.addActionListener(e -> {
             String       path    = mPath.getText();
@@ -138,7 +138,6 @@ public class LibraryFields implements DocumentListener {
         });
         mOwner.add(button);
         mComps.add(button);
-        return button;
     }
 
     private void addUseDefaultButton() {

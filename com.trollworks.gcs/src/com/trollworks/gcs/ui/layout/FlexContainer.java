@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,10 +13,8 @@ package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -242,13 +240,5 @@ public abstract class FlexContainer extends FlexCell {
         }
         buffer.append(']');
         return buffer.toString();
-    }
-
-    @Override
-    public void draw(Graphics gc, Color color) {
-        super.draw(gc, Color.RED);
-        for (FlexCell child : mChildren) {
-            child.draw(gc, Color.BLUE);
-        }
     }
 }

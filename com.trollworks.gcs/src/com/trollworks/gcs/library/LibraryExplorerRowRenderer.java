@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,10 +23,10 @@ public class LibraryExplorerRowRenderer extends DefaultListCellRenderer {
     public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         String     title;
         RetinaIcon icon;
-        if (value instanceof LibraryExplorerRow) {
-            LibraryExplorerRow row = (LibraryExplorerRow) value;
-            title = row.getName();
-            icon = row.getIcon();
+        if (value instanceof LibraryExplorerSearchResult) {
+            LibraryExplorerSearchResult row = (LibraryExplorerSearchResult) value;
+            title = row.getTitle();
+            icon = row.getRow().getIcon();
         } else {
             title = value.toString();
             icon = null;

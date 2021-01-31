@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,7 +14,10 @@ package com.trollworks.gcs.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
-public class MenuHelpers {
+public final class MenuHelpers {
+    private MenuHelpers() {
+    }
+
     public static JMenu createSubMenu(String name, Action... actions) {
         JMenu menu = new JMenu(name);
         for (Action action : actions) {

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -44,7 +44,7 @@ public class ContainedWeightReduction extends Feature {
         mValue = other.mValue instanceof WeightValue ? new WeightValue((WeightValue) other.mValue) : other.mValue;
     }
 
-    public ContainedWeightReduction(JsonMap m) throws IOException {
+    public ContainedWeightReduction(JsonMap m) {
         this();
         load(m);
     }
@@ -141,11 +141,6 @@ public class ContainedWeightReduction extends Feature {
     }
 
     @Override
-    public String getXMLTag() {
-        return TAG_ROOT;
-    }
-
-    @Override
     public String getKey() {
         return Equipment.ID_EXTENDED_WEIGHT;
     }
@@ -155,7 +150,7 @@ public class ContainedWeightReduction extends Feature {
         return new ContainedWeightReduction(this);
     }
 
-    protected void load(JsonMap m) throws IOException {
+    protected void load(JsonMap m) {
         String value = m.getString(KEY_REDUCTION).trim();
         mValue = value.endsWith("%") ? Integer.valueOf(Numbers.extractInteger(value.substring(0, value.length() - 1), 0, false)) : WeightValue.extract(value, false);
     }
@@ -166,7 +161,7 @@ public class ContainedWeightReduction extends Feature {
         if (mValue instanceof Integer) {
             int percentage = ((Integer) mValue).intValue();
             if (percentage != 0) {
-                text = Integer.toString(percentage) + "%";
+                text = percentage + "%";
             }
         } else if (mValue instanceof WeightValue) {
             WeightValue weight = (WeightValue) mValue;

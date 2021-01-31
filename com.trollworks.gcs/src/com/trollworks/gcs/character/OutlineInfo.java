@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,14 +13,12 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ColumnUtils;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 
 import java.awt.Insets;
-import java.util.List;
 
 /** Holds information about the outline relevant for page layout. */
 public class OutlineInfo {
@@ -40,7 +38,6 @@ public class OutlineInfo {
         Insets       insets         = new TitledBorder().getBorderInsets(outline);
         OutlineModel outlineModel   = outline.getModel();
         int          count          = outlineModel.getRowCount();
-        List<Column> columns        = outlineModel.getColumns();
         boolean      hasRowDividers = outline.shouldDrawRowDividers();
 
         ColumnUtils.pack(outline, contentWidth - (insets.left + insets.right));

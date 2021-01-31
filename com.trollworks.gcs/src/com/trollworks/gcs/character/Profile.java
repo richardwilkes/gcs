@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -29,6 +29,9 @@ import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
+import static java.time.format.TextStyle.FULL;
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 
 import java.awt.Graphics2D;
 import java.awt.Transparency;
@@ -37,94 +40,96 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
 import java.util.Base64;
-import java.util.Date;
 import java.util.Random;
 import javax.imageio.ImageIO;
 
 /** Holds the character profile. */
 public class Profile {
     /** The root XML tag. */
-    public static final  String           TAG_ROOT         = "profile";
-    private static final String           KEY_SM           = "SM";
+    public static final  String            TAG_ROOT             = "profile";
+    private static final String            KEY_SM               = "SM";
     /** The prefix used in front of all IDs for profile. */
-    public static final  String           PROFILE_PREFIX   = GURPSCharacter.CHARACTER_PREFIX + "pi.";
+    public static final  String            PROFILE_PREFIX       = GURPSCharacter.CHARACTER_PREFIX + "pi.";
     /** The field ID for portrait changes. */
-    public static final  String           ID_PORTRAIT      = PROFILE_PREFIX + "Portrait";
+    public static final  String            ID_PORTRAIT          = PROFILE_PREFIX + "Portrait";
     /** The field ID for name changes. */
-    public static final  String           ID_NAME          = PROFILE_PREFIX + "Name";
+    public static final  String            ID_NAME              = PROFILE_PREFIX + "Name";
     /** The field ID for title changes. */
-    public static final  String           ID_TITLE         = PROFILE_PREFIX + "Title";
+    public static final  String            ID_TITLE             = PROFILE_PREFIX + "Title";
     /** The field ID for age changes. */
-    public static final  String           ID_AGE           = PROFILE_PREFIX + "Age";
+    public static final  String            ID_AGE               = PROFILE_PREFIX + "Age";
     /** The field ID for birthday changes. */
-    public static final  String           ID_BIRTHDAY      = PROFILE_PREFIX + "Birthday";
+    public static final  String            ID_BIRTHDAY          = PROFILE_PREFIX + "Birthday";
     /** The field ID for eye color changes. */
-    public static final  String           ID_EYE_COLOR     = PROFILE_PREFIX + "EyeColor";
+    public static final  String            ID_EYE_COLOR         = PROFILE_PREFIX + "EyeColor";
     /** The field ID for hair color changes. */
-    public static final  String           ID_HAIR          = PROFILE_PREFIX + "Hair";
+    public static final  String            ID_HAIR              = PROFILE_PREFIX + "Hair";
     /** The field ID for skin color changes. */
-    public static final  String           ID_SKIN_COLOR    = PROFILE_PREFIX + "SkinColor";
+    public static final  String            ID_SKIN_COLOR        = PROFILE_PREFIX + "SkinColor";
     /** The field ID for handedness changes. */
-    public static final  String           ID_HANDEDNESS    = PROFILE_PREFIX + "Handedness";
+    public static final  String            ID_HANDEDNESS        = PROFILE_PREFIX + "Handedness";
     /** The field ID for height changes. */
-    public static final  String           ID_HEIGHT        = PROFILE_PREFIX + "Height";
+    public static final  String            ID_HEIGHT            = PROFILE_PREFIX + "Height";
     /** The field ID for weight changes. */
-    public static final  String           ID_WEIGHT        = PROFILE_PREFIX + "Weight";
+    public static final  String            ID_WEIGHT            = PROFILE_PREFIX + "Weight";
     /** The field ID for gender changes. */
-    public static final  String           ID_GENDER        = PROFILE_PREFIX + "Gender";
+    public static final  String            ID_GENDER            = PROFILE_PREFIX + "Gender";
     /** The field ID for religion changes. */
-    public static final  String           ID_RELIGION      = PROFILE_PREFIX + "Religion";
+    public static final  String            ID_RELIGION          = PROFILE_PREFIX + "Religion";
     /** The field ID for player name changes. */
-    public static final  String           ID_PLAYER_NAME   = PROFILE_PREFIX + "PlayerName";
+    public static final  String            ID_PLAYER_NAME       = PROFILE_PREFIX + "PlayerName";
     /** The field ID for tech level changes. */
-    public static final  String           ID_TECH_LEVEL    = PROFILE_PREFIX + "TechLevel";
+    public static final  String            ID_TECH_LEVEL        = PROFILE_PREFIX + "TechLevel";
     /** The field ID for size modifier changes. */
-    public static final  String           ID_SIZE_MODIFIER = PROFILE_PREFIX + BonusAttributeType.SM.name();
+    public static final  String            ID_SIZE_MODIFIER     = PROFILE_PREFIX + BonusAttributeType.SM.name();
     /** The field ID for body type changes. */
-    public static final  String           ID_BODY_TYPE     = PROFILE_PREFIX + "BodyType";
+    public static final  String            ID_BODY_TYPE         = PROFILE_PREFIX + "BodyType";
     /** The height, in 1/72nds of an inch, of the portrait. */
-    public static final  int              PORTRAIT_HEIGHT  = 96;
+    public static final  int               PORTRAIT_HEIGHT      = 96;
     /** The width, in 1/72nds of an inch, of the portrait. */
-    public static final  int              PORTRAIT_WIDTH   = 3 * PORTRAIT_HEIGHT / 4;
-    private static final String           TAG_PLAYER_NAME  = "player_name";
-    private static final String           TAG_NAME         = "name";
-    private static final String           TAG_TITLE        = "title";
-    private static final String           TAG_AGE          = "age";
-    private static final String           TAG_BIRTHDAY     = "birthday";
-    private static final String           TAG_EYES         = "eyes";
-    private static final String           TAG_HAIR         = "hair";
-    private static final String           TAG_SKIN         = "skin";
-    private static final String           TAG_HANDEDNESS   = "handedness";
-    private static final String           TAG_HEIGHT       = "height";
-    private static final String           TAG_WEIGHT       = "weight";
-    private static final String           TAG_GENDER       = "gender";
-    private static final String           TAG_TECH_LEVEL   = "tech_level";
-    private static final String           TAG_RELIGION     = "religion";
-    private static final String           TAG_PORTRAIT     = "portrait";
-    private static final String           TAG_BODY_TYPE    = "body_type";
-    private static final Random           RANDOM           = new Random();
-    private              GURPSCharacter   mCharacter;
-    private              boolean          mCustomPortrait;
-    private              RetinaIcon       mPortrait;
-    private              String           mName;
-    private              String           mTitle;
-    private              String              mAge;
-    private              String           mBirthday;
-    private              String           mEyeColor;
-    private              String           mHair;
-    private              String           mSkinColor;
-    private              String           mHandedness;
-    private              LengthValue      mHeight;
-    private              WeightValue      mWeight;
-    private              int              mSizeModifier;
-    private              int              mSizeModifierBonus;
-    private              String           mGender;
-    private              String           mReligion;
-    private              String           mPlayerName;
-    private              String           mTechLevel;
-    private              HitLocationTable mHitLocationTable;
+    public static final  int               PORTRAIT_WIDTH       = 3 * PORTRAIT_HEIGHT / 4;
+    private static final DateTimeFormatter MONTH_AND_DAY_FORMAT = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, FULL).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).toFormatter();
+    private static final String            TAG_PLAYER_NAME      = "player_name";
+    private static final String            TAG_NAME             = "name";
+    private static final String            TAG_TITLE            = "title";
+    private static final String            TAG_AGE              = "age";
+    private static final String            TAG_BIRTHDAY         = "birthday";
+    private static final String            TAG_EYES             = "eyes";
+    private static final String            TAG_HAIR             = "hair";
+    private static final String            TAG_SKIN             = "skin";
+    private static final String            TAG_HANDEDNESS       = "handedness";
+    private static final String            TAG_HEIGHT           = "height";
+    private static final String            TAG_WEIGHT           = "weight";
+    private static final String            TAG_GENDER           = "gender";
+    private static final String            TAG_TECH_LEVEL       = "tech_level";
+    private static final String            TAG_RELIGION         = "religion";
+    private static final String            TAG_PORTRAIT         = "portrait";
+    private static final String            TAG_BODY_TYPE        = "body_type";
+    private static final Random            RANDOM               = new Random();
+    private              GURPSCharacter    mCharacter;
+    private              boolean           mCustomPortrait;
+    private              RetinaIcon        mPortrait;
+    private              String            mName;
+    private              String            mTitle;
+    private              String            mAge;
+    private              String            mBirthday;
+    private              String            mEyeColor;
+    private              String            mHair;
+    private              String            mSkinColor;
+    private              String            mHandedness;
+    private              LengthValue       mHeight;
+    private              WeightValue       mWeight;
+    private              int               mSizeModifier;
+    private              int               mSizeModifierBonus;
+    private              String            mGender;
+    private              String            mReligion;
+    private              String            mPlayerName;
+    private              String            mTechLevel;
+    private              HitLocationTable  mHitLocationTable;
 
     Profile(GURPSCharacter character, boolean full) {
         mCharacter = character;
@@ -133,9 +138,9 @@ public class Profile {
         mTitle = "";
         mAge = full ? Numbers.format(getRandomAge()) : "";
         mBirthday = full ? getRandomMonthAndDay() : "";
-        mEyeColor = full ? getRandomEyeColor() : "";
-        mHair = full ? getRandomHair() : "";
-        mSkinColor = full ? getRandomSkinColor() : "";
+        mEyeColor = full ? getRandomEyeColor("") : "";
+        mHair = full ? getRandomHair("") : "";
+        mSkinColor = full ? getRandomSkinColor("") : "";
         mHandedness = full ? getRandomHandedness() : "";
         Settings settings = mCharacter.getSettings();
         mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(Fixed6.ZERO, settings.defaultLengthUnits());
@@ -150,7 +155,7 @@ public class Profile {
         mHitLocationTable = HitLocationTable.HUMANOID;
     }
 
-    void load(JsonMap m) throws IOException {
+    void load(JsonMap m) {
         mPlayerName = m.getString(TAG_PLAYER_NAME);
         mName = m.getString(TAG_NAME);
         mTitle = m.getString(TAG_TITLE);
@@ -393,15 +398,11 @@ public class Profile {
 
     /** @return A random age. */
     public int getRandomAge() {
-        Advantage lifespan = mCharacter.getAdvantageNamed("Unaging");
-        int       base     = 16;
-        int       mod      = 7;
-        int       levels;
-
-        if (lifespan != null) {
+        if (mCharacter.getAdvantageNamed("Unaging") != null) {
             return 18 + RANDOM.nextInt(7);
         }
 
+        int mod = 7;
         if (RANDOM.nextInt(3) == 1) {
             mod += 7;
             if (RANDOM.nextInt(4) == 1) {
@@ -409,7 +410,9 @@ public class Profile {
             }
         }
 
-        lifespan = mCharacter.getAdvantageNamed("Short Lifespan");
+        int       base     = 16;
+        int       levels;
+        Advantage lifespan = mCharacter.getAdvantageNamed("Short Lifespan");
         if (lifespan != null) {
             levels = lifespan.getLevels();
             base >>= levels;
@@ -692,56 +695,65 @@ public class Profile {
     }
 
     /** @return A random hair color, style & length. */
-    public static String getRandomHair() {
-        if (RANDOM.nextInt(5) == 0) {
-            return I18n.Text("Bald");
-        }
-
-        String color = switch (RANDOM.nextInt(9)) {
-            case 0, 1, 2 -> I18n.Text("Black");
-            case 3, 4 -> I18n.Text("Blond");
-            case 5 -> I18n.Text("Redhead");
-            default -> I18n.Text("Brown");
-        };
-
-        String style = switch (RANDOM.nextInt(3)) {
-            case 0 -> I18n.Text("Curly");
-            case 1 -> I18n.Text("Wavy");
-            default -> I18n.Text("Straight");
-        };
-
-        String length = switch (RANDOM.nextInt(3)) {
-            case 0 -> I18n.Text("Short");
-            case 1 -> I18n.Text("Long");
-            default -> I18n.Text("Medium");
-        };
-
-        return MessageFormat.format("{0}, {1}, {2}", color, style, length);
+    public static String getRandomHair(String not) {
+        String result;
+        do {
+            if (RANDOM.nextInt(7) == 0) {
+                result = I18n.Text("Bald");
+            } else {
+                String color = switch (RANDOM.nextInt(9)) {
+                    case 0, 1, 2 -> I18n.Text("Black");
+                    case 3, 4 -> I18n.Text("Blond");
+                    case 5 -> I18n.Text("Redhead");
+                    default -> I18n.Text("Brown");
+                };
+                String style = switch (RANDOM.nextInt(3)) {
+                    case 0 -> I18n.Text("Curly");
+                    case 1 -> I18n.Text("Wavy");
+                    default -> I18n.Text("Straight");
+                };
+                String length = switch (RANDOM.nextInt(3)) {
+                    case 0 -> I18n.Text("Short");
+                    case 1 -> I18n.Text("Long");
+                    default -> I18n.Text("Medium");
+                };
+                result = MessageFormat.format("{0}, {1}, {2}", color, style, length);
+            }
+        } while (result.equals(not));
+        return result;
     }
 
     /** @return A random eye color. */
-    public static String getRandomEyeColor() {
-        return switch (RANDOM.nextInt(8)) {
-            case 0, 1 -> I18n.Text("Blue");
-            case 2 -> I18n.Text("Green");
-            case 3 -> I18n.Text("Grey");
-            case 4 -> I18n.Text("Violet");
-            default -> I18n.Text("Brown");
-        };
+    public static String getRandomEyeColor(String not) {
+        String result;
+        do {
+            result = switch (RANDOM.nextInt(8)) {
+                case 0, 1 -> I18n.Text("Blue");
+                case 2 -> I18n.Text("Green");
+                case 3 -> I18n.Text("Grey");
+                case 4 -> I18n.Text("Violet");
+                default -> I18n.Text("Brown");
+            };
+        } while (result.equals(not));
+        return result;
     }
 
     /** @return A random sking color. */
-    public static String getRandomSkinColor() {
-        return switch (RANDOM.nextInt(8)) {
-            case 0 -> I18n.Text("Freckled");
-            case 1 -> I18n.Text("Light Tan");
-            case 2 -> I18n.Text("Dark Tan");
-            case 3 -> I18n.Text("Brown");
-            case 4 -> I18n.Text("Light Brown");
-            case 5 -> I18n.Text("Dark Brown");
-            case 6 -> I18n.Text("Pale");
-            default -> I18n.Text("Tan");
-        };
+    public static String getRandomSkinColor(String not) {
+        String result;
+        do {
+            result = switch (RANDOM.nextInt(8)) {
+                case 0 -> I18n.Text("Freckled");
+                case 1 -> I18n.Text("Light Tan");
+                case 2 -> I18n.Text("Dark Tan");
+                case 3 -> I18n.Text("Brown");
+                case 4 -> I18n.Text("Light Brown");
+                case 5 -> I18n.Text("Dark Brown");
+                case 6 -> I18n.Text("Pale");
+                default -> I18n.Text("Tan");
+            };
+        } while (result.equals(not));
+        return result;
     }
 
     /** @return A random handedness. */
@@ -762,8 +774,7 @@ public class Profile {
 
     /** @return A random month and day. */
     public static String getRandomMonthAndDay() {
-        SimpleDateFormat formatter = new SimpleDateFormat(I18n.Text("MMMM d"));
-        return formatter.format(new Date(RANDOM.nextLong()));
+        return Numbers.formatDateTime(MONTH_AND_DAY_FORMAT, RANDOM.nextLong());
     }
 
     /**

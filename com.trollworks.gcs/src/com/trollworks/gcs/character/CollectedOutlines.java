@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -117,9 +117,7 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     public static void prepOutline(Outline outline) {
         OutlineHeader header = outline.getHeaderPanel();
         outline.setDynamicRowHeight(true);
-        outline.setAllowColumnDrag(false);
         outline.setAllowColumnResize(false);
-        outline.setAllowColumnContextMenu(false);
         header.setIgnoreResizeOK(true);
         header.setBackground(ThemeColor.HEADER);
         header.setTopDividerColor(ThemeColor.HEADER);
