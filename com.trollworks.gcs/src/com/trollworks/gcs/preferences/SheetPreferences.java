@@ -218,7 +218,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.useMultiplicativeModifiers() == Preferences.DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
         atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
-        atDefault = atDefault && prefs.usePhoenix_Swing() == Preferences.DEFAULT_PHOENIX_SWING;
+        atDefault = atDefault && prefs.usePhoenixSwing() == Preferences.DEFAULT_USE_PHOENIX_SWING;
         atDefault = atDefault && prefs.autoNameNewCharacters() == Preferences.DEFAULT_AUTO_NAME_NEW_CHARACTERS;
         return atDefault;
     }

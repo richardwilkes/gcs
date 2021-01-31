@@ -957,14 +957,14 @@ public class GURPSCharacter extends CollectedModels {
      */
     public Dice getSwing(int strength) {
         if(mSettings.usePhoenixSwing()){
-            Dice dice =getThrust(strength);
+            Dice x =getThrust(strength);
             /** Strength is equal to thrust plus two per die, plus 1 for even levels after 10.**/
-            int adds = dice.getDieCount()*2;
+            int adds = x.getDieCount()*2;
             if (strength > 10){
-                adds += 1- strength % 2
+                adds += 1- strength % 2;
             };
-            dice.add(adds);
-            return dice
+            x.add(adds);
+            return x;
         }
         if (mSettings.useReducedSwing()) {
             if (strength < 10) {

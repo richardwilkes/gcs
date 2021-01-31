@@ -59,6 +59,7 @@ public class Settings {
     public static final  String         ID_USE_MODIFYING_DICE_PLUS_ADDS     = PREFIX + TAG_USE_MODIFYING_DICE_PLUS_ADDS;
     public static final  String         ID_USE_KNOW_YOUR_OWN_STRENGTH       = PREFIX + TAG_USE_KNOW_YOUR_OWN_STRENGTH;
     public static final  String         ID_USE_REDUCED_SWING                = PREFIX + TAG_USE_REDUCED_SWING;
+    public static final  String         ID_USE_PHOENIX_SWING                = PREFIX + TAG_USE_PHOENIX_SWING;
     public static final  String         ID_USE_THRUST_EQUALS_SWING_MINUS_2  = PREFIX + TAG_USE_THRUST_EQUALS_SWING_MINUS_2;
     public static final  String         ID_USE_SIMPLE_METRIC_CONVERSIONS    = PREFIX + TAG_USE_SIMPLE_METRIC_CONVERSIONS;
     public static final  String         ID_SHOW_COLLEGE_IN_SPELLS           = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
@@ -75,6 +76,7 @@ public class Settings {
     private              boolean        mUseModifyingDicePlusAdds; // B269
     private              boolean        mUseKnowYourOwnStrength; // PY83
     private              boolean        mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
+    private              boolean        mUsePhoenixSwing;
     private              boolean        mUseThrustEqualsSwingMinus2; // Home brew
     private              boolean        mUseSimpleMetricConversions; // B9
     private              boolean        mShowCollegeInSpells;
@@ -94,6 +96,7 @@ public class Settings {
         mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
         mUseKnowYourOwnStrength = prefs.useKnowYourOwnStrength();
         mUseReducedSwing = prefs.useReducedSwing();
+        mUsePhoenixSwing = prefs.usePhoenixSwing();
         mUseThrustEqualsSwingMinus2 = prefs.useThrustEqualsSwingMinus2();
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
@@ -118,6 +121,7 @@ public class Settings {
         mUseModifyingDicePlusAdds = m.getBoolean(TAG_USE_MODIFYING_DICE_PLUS_ADDS);
         mUseKnowYourOwnStrength = m.getBoolean(TAG_USE_KNOW_YOUR_OWN_STRENGTH);
         mUseReducedSwing = m.getBoolean(TAG_USE_REDUCED_SWING);
+        mUsePhoenixSwing = m.getBoolean(TAG_USE_PHOENIX_SWING);
         mUseThrustEqualsSwingMinus2 = m.getBoolean(TAG_USE_THRUST_EQUALS_SWING_MINUS_2);
         mUseSimpleMetricConversions = m.getBoolean(TAG_USE_SIMPLE_METRIC_CONVERSIONS);
         mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
@@ -143,6 +147,7 @@ public class Settings {
         w.keyValue(TAG_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(TAG_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
         w.keyValue(TAG_USE_REDUCED_SWING, mUseReducedSwing);
+        w.keyValue(TAG_USE_PHOENIX_SWING, mUsePhoenixSwing);
         w.keyValue(TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
         w.keyValue(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
@@ -164,6 +169,7 @@ public class Settings {
         buffer.append(mUseModifyingDicePlusAdds ? 'D' : 'd');
         buffer.append(mUseKnowYourOwnStrength ? 'K' : 'k');
         buffer.append(mUseReducedSwing ? 'S' : 's');
+        buffer.append(mUsePhoenixSwing ? 'P' : 'p');
         buffer.append(mUseThrustEqualsSwingMinus2 ? 'T' : 't');
         buffer.append(mUseSimpleMetricConversions ? 'C' : 'c');
         return buffer.toString();
@@ -289,6 +295,16 @@ public class Settings {
             mCharacter.notifySingle(ID_USE_REDUCED_SWING, Boolean.valueOf(mUseReducedSwing));
         }
     }
+    public boolean usePhoenixSwing() {
+        return mUseReducedSwing;
+    }
+
+    public void setUsePhoenixSwing(boolean usePhoenixSwing) {
+        if (mUsePhoenixSwing != usePhoenixSwing) {
+            mUsePhoenixSwing = usePhoenixSwing;
+            mCharacter.notifySingle(ID_USE_PHOENIX_SWING, Boolean.valueOf(mUsePhoenixSwing));
+        }
+    }
 
     public boolean useThrustEqualsSwingMinus2() {
         return mUseThrustEqualsSwingMinus2;
@@ -334,3 +350,4 @@ public class Settings {
         }
     }
 }
+
