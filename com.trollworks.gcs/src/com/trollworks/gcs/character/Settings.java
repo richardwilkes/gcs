@@ -43,6 +43,7 @@ public class Settings {
     public static final  String         TAG_USE_MODIFYING_DICE_PLUS_ADDS       = "use_modifying_dice_plus_adds";
     public static final  String         TAG_USE_KNOW_YOUR_OWN_STRENGTH         = "use_know_your_own_strength";
     public static final  String         TAG_USE_REDUCED_SWING                  = "use_reduced_swing";
+    public static final  String         TAG_USE_PHOENIX_SWING                  = "use_phoenix_swing";
     public static final  String         TAG_USE_THRUST_EQUALS_SWING_MINUS_2    = "use_thrust_equals_swing_minus_2";
     public static final  String         TAG_USE_SIMPLE_METRIC_CONVERSIONS      = "use_simple_metric_conversions";
     public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS             = "show_college_in_sheet_spells";
