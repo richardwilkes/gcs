@@ -86,7 +86,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseKnowYourOwnStrength = addCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83) *"), null, prefs.useKnowYourOwnStrength());
         mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy *"), "From noschoolgrognard.blogspot.com", prefs.useReducedSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
-        mUsePhoenixSwing = addCheckBox(I18n.Text("Use PhoenixFlame's rescaled Swing Damage*"), null, prefs.usePhoenixSwing());
+        mUsePhoenixSwing = addCheckBox(I18n.Text("Use PhoenixFlame's rescaled Swing Damage"), null, prefs.usePhoenixSwing());
         mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules from B9 *"), null, prefs.useSimpleMetricConversions());
 
         JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));

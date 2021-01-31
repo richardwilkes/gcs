@@ -325,7 +325,7 @@ public class Settings {
         }
     }
     public boolean usePhoenixSwing() {
-        return mUseReducedSwing;
+        return mUsePhoenixSwing;
     }
 
     public void setUsePhoenixSwing(boolean usePhoenixSwing) {
