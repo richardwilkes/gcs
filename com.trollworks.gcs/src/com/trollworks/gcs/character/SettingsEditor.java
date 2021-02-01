@@ -59,7 +59,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mShowCollegeInSpells;
     private JCheckBox                mShowDifficulty;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
-    private JCheckBox                mExtraSpaceAroundFP;
+    private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
     private JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
@@ -111,7 +111,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
         mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
-        mExtraSpaceAroundFP = addCheckBox(panel, I18n.Text("Add extra space around FP/HP table rather than around Encumbrance table"), null, mSettings.extraSpaceAroundFP());
+        mExtraSpaceAroundEncumbrance = addCheckBox(panel, I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table"), null, mSettings.extraSpaceAroundEncumbrance());
         mBaseWillOn10 = addCheckBox(panel, I18n.Text("Base Will on 10 and not IQ"), null, mSettings.baseWillOn10());
         mBasePerOn10 = addCheckBox(panel, I18n.Text("Base Perception on 10 and not IQ"), null, mSettings.basePerOn10());
         mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
@@ -194,8 +194,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mSettings.setShowDifficulty(mShowDifficulty.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
-        } else if (source == mExtraSpaceAroundFP) {
-            mSettings.setExtraSpaceAroundFP(mExtraSpaceAroundFP.isSelected());
+        } else if (source == mExtraSpaceAroundEncumbrance) {
+            mSettings.setExtraSpaceAroundEncumbrance(mExtraSpaceAroundEncumbrance.isSelected());
         } else if (source == mBaseWillOn10) {
             mSettings.setBaseWillOn10(mBaseWillOn10.isSelected());
         } else if (source == mBasePerOn10) {
@@ -226,7 +226,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mShowCollegeInSpells.isSelected() == prefs.showCollegeInSheetSpells();
         atDefaults = atDefaults && mShowDifficulty.isSelected() == prefs.showDifficulty();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
-        atDefaults = atDefaults && mExtraSpaceAroundFP.isSelected() == prefs.extraSpaceAroundFP();
+        atDefaults = atDefaults && mExtraSpaceAroundEncumbrance.isSelected() == prefs.extraSpaceAroundEncumbrance();
         atDefaults = atDefaults && mBaseWillOn10.isSelected() == prefs.baseWillOn10();
         atDefaults = atDefaults && mBasePerOn10.isSelected() == prefs.basePerOn10();
         atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
@@ -262,7 +262,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
             mShowDifficulty.setSelected(prefs.showDifficulty());
             mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
-            mExtraSpaceAroundFP.setSelected(prefs.extraSpaceAroundFP());
+            mExtraSpaceAroundEncumbrance.setSelected(prefs.extraSpaceAroundEncumbrance());
             mBaseWillOn10.setSelected(prefs.baseWillOn10());
             mBasePerOn10.setSelected(prefs.basePerOn10());
             mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
