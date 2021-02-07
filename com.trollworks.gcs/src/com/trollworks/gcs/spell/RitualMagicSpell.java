@@ -269,4 +269,15 @@ public class RitualMagicSpell extends Spell {
         }
         return false;
     }
+
+    /** @param text The combined attribute/difficulty to set. */
+    public void setDifficultyFromText(String text) {
+        String input = text.trim();
+        for (SkillDifficulty difficulty : SkillDifficulty.values()) {
+            if (difficulty.name().equalsIgnoreCase(input)) {
+                setDifficulty(getAttribute(), difficulty);
+                return;
+            }
+        }
+    }
 }
