@@ -271,6 +271,8 @@ public class TextTemplate {
     private static final String         KEY_TYPE                              = "TYPE";
     private static final String         KEY_UNCONSCIOUS                       = "UNCONSCIOUS";
     private static final String         KEY_USAGE                             = "USAGE";
+    private static final String         KEY_USES                              = "USES";
+    private static final String         KEY_MAX_USES                          = "MAX_USES";
     private static final String         KEY_VISION                            = "VISION";
     private static final String         KEY_WEAPON_STRENGTH                   = "STRENGTH";
     private static final String         KEY_WEAPON_STRENGTH_NUM               = "WEAPON_STRENGTH";
@@ -1701,6 +1703,12 @@ public class TextTemplate {
                                             writeEncodedText(out, parents.get(j).getDescription());
                                         }
                                     }
+                                    break;
+                                case KEY_USES:
+                                    writeEncodedText(out, Integer.valueOf(equipment.getUses()).toString());
+                                    break;
+                                case KEY_MAX_USES:
+                                    writeEncodedText(out, Integer.valueOf(equipment.getMaxUses()).toString());
                                     break;
                                 default:
                                     if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
