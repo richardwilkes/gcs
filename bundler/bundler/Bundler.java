@@ -746,9 +746,11 @@ public final class Bundler {
                 line = line.trim();
                 if ("Status: invalid".equals(line)) {
                     failWithLines("Notarization failed. Response follows:", lines);
+                    break;
                 }
                 if ("Status: success".equals(line)) {
                     success = true;
+                    break;
                 }
             }
             System.out.print(".");
@@ -765,6 +767,7 @@ public final class Bundler {
             line = line.trim();
             if ("The staple and validate action worked!".equals(line)) {
                 success = true;
+                break;
             }
         }
         if (!success) {
