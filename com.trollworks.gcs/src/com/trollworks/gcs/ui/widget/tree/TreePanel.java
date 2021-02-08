@@ -1221,7 +1221,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
             notify(open ? TreeNotificationKeys.ROW_OPENED : TreeNotificationKeys.ROW_CLOSED, data);
             if (!selectionRemoved.isEmpty()) {
                 TreeRow[] oldSelection = mSelectedRows.toArray(new TreeRow[0]);
-                mSelectedRows.removeAll(selectionRemoved);
+                selectionRemoved.forEach(mSelectedRows::remove);
                 if (mAnchorRow != null && !mSelectedRows.contains(mAnchorRow)) {
                     mAnchorRow = getFirstSelectedRow();
                 }
