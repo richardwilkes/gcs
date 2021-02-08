@@ -92,6 +92,7 @@ public class Preferences {
     private static final String SHOW_COLLEGE_IN_SHEET_SPELLS       = "show_college_in_sheet_spells";
     private static final String SHOW_DIFFICULTY                    = "show_difficulty";
     private static final String USE_TITLE_IN_FOOTER                = "use_title_in_footer";
+    private static final String EXTRA_SPACE_AROUND_ENCUMBRANCE     = "extra_space_around_fp";
     private static final String THEME                              = "theme";
     private static final String TOOLTIP_TIMEOUT                    = "tooltip_timeout";
     private static final String USE_KNOW_YOUR_OWN_STRENGTH         = "use_know_your_own_strength";
@@ -119,6 +120,7 @@ public class Preferences {
     public static final String KEY_SHOW_COLLEGE_IN_SHEET_SPELLS    = KEY_PER_SHEET_PREFIX + SHOW_COLLEGE_IN_SHEET_SPELLS;
     public static final String KEY_SHOW_DIFFICULTY                 = KEY_PER_SHEET_PREFIX + SHOW_DIFFICULTY;
     public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
+    public static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = KEY_PER_SHEET_PREFIX + EXTRA_SPACE_AROUND_ENCUMBRANCE;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
     public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
@@ -136,6 +138,7 @@ public class Preferences {
     public static final boolean       DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS      = false;
     public static final boolean       DEFAULT_SHOW_DIFFICULTY                   = false;
     public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
+    public static final boolean       DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE    = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
@@ -202,6 +205,7 @@ public class Preferences {
     private        boolean                          mShowCollegeInSheetSpells;
     private        boolean                          mShowDifficulty;
     private        boolean                          mUseTitleInFooter;
+    private        boolean                          mExtraSpaceAroundEncumbrance;
 
     public static synchronized Preferences getInstance() {
         if (INSTANCE == null) {
@@ -270,6 +274,7 @@ public class Preferences {
         mShowCollegeInSheetSpells = DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
         mShowDifficulty = DEFAULT_SHOW_DIFFICULTY;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
+        mExtraSpaceAroundEncumbrance = DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -375,6 +380,7 @@ public class Preferences {
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
                         mShowDifficulty = m.getBooleanWithDefault(SHOW_DIFFICULTY, mShowDifficulty);
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+                        mExtraSpaceAroundEncumbrance = m.getBooleanWithDefault(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                         if (m.has(THEME)) {
                             Theme.set(new Theme(m.getMap(THEME)));
                         }
@@ -526,6 +532,7 @@ public class Preferences {
                     w.keyValue(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
                     w.keyValue(SHOW_DIFFICULTY, mShowDifficulty);
                     w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+                    w.keyValue(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                     w.keyValue(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
                     w.key(THEME);
                     Theme.current().save(w);
@@ -909,6 +916,18 @@ public class Preferences {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
             mNotifier.notify(this, KEY_USE_TITLE_IN_FOOTER);
+        }
+    }
+
+    /** @return Whether or not to add extra space around FP/HP table. */
+    public boolean extraSpaceAroundEncumbrance() {
+        return mExtraSpaceAroundEncumbrance;
+    }
+
+    public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
+        if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
+            mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
+            mNotifier.notify(this, KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         }
     }
 

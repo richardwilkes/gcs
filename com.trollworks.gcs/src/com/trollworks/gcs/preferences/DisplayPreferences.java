@@ -47,6 +47,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JCheckBox                mShowCollegeInSheetSpells;
     private JCheckBox                mShowDifficulty;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
+    private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<Scales>        mUIScaleCombo;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
@@ -70,6 +71,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column in character sheet spells list *"), prefs.showCollegeInSheetSpells());
         mShowDifficulty = addCheckBox(I18n.Text("Show the Difficulty column in character sheet skills and spells lists *"), prefs.showDifficulty());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets *"), prefs.useTitleInFooter());
+        mExtraSpaceAroundEncumbrance = addCheckBox(I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table *"), prefs.extraSpaceAroundEncumbrance());
 
         addLabel(I18n.Text("Initial Scale"));
         mUIScaleCombo = addCombo(Scales.values(), prefs.getInitialUIScale(), null);
@@ -199,6 +201,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
             Preferences.getInstance().setShowDifficulty(mShowDifficulty.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             Preferences.getInstance().setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
+        } else if (source == mExtraSpaceAroundEncumbrance) {
+            Preferences.getInstance().setExtraSpaceAroundEncumbrance(mExtraSpaceAroundEncumbrance.isSelected());
         }
         adjustResetButton();
     }
@@ -209,6 +213,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mShowCollegeInSheetSpells.setSelected(Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS);
         mShowDifficulty.setSelected(Preferences.DEFAULT_SHOW_DIFFICULTY);
         mShowTitleInsteadOfNameInPageFooter.setSelected(Preferences.DEFAULT_USE_TITLE_IN_FOOTER);
+        mExtraSpaceAroundEncumbrance.setSelected(Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
         mLengthUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
         mWeightUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
@@ -225,6 +230,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         boolean     atDefault = prefs.includeUnspentPointsInTotal() == Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
         atDefault = atDefault && prefs.showCollegeInSheetSpells() == Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
         atDefault = atDefault && prefs.showDifficulty() == Preferences.DEFAULT_SHOW_DIFFICULTY;
+        atDefault = atDefault && prefs.extraSpaceAroundEncumbrance() == Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         atDefault = atDefault && prefs.getInitialUIScale() == Preferences.DEFAULT_INITIAL_UI_SCALE;
         atDefault = atDefault && prefs.getDefaultLengthUnits() == Preferences.DEFAULT_DEFAULT_LENGTH_UNITS;
         atDefault = atDefault && prefs.getDefaultWeightUnits() == Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS;
