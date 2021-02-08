@@ -71,7 +71,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column in character sheet spells list *"), prefs.showCollegeInSheetSpells());
         mShowDifficulty = addCheckBox(I18n.Text("Show the Difficulty column in character sheet skills and spells lists *"), prefs.showDifficulty());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets *"), prefs.useTitleInFooter());
-        mExtraSpaceAroundEncumbrance = addCheckBox(I18n.Text("Add extra space around Encumrance table rather than around FP/HP table *"), prefs.extraSpaceAroundEncumbrance());
+        mExtraSpaceAroundEncumbrance = addCheckBox(I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table *"), prefs.extraSpaceAroundEncumbrance());
 
         addLabel(I18n.Text("Initial Scale"));
         mUIScaleCombo = addCombo(Scales.values(), prefs.getInitialUIScale(), null);
