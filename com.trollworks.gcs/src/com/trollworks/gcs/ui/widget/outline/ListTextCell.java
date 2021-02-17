@@ -37,11 +37,11 @@ public class ListTextCell extends TextCell {
     }
 
     @Override
-    public Color getColor(boolean selected, boolean active, Row row, Column column) {
+    public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (row instanceof ListRow && !((ListRow) row).isSatisfied()) {
             return Color.red;
         }
-        return super.getColor(selected, active, row, column);
+        return super.getColor(outline, row, column, selected, active);
     }
 
     @Override

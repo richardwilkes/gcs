@@ -13,11 +13,15 @@ package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.ui.widget.outline.Outline;
 
+import java.awt.Color;
+
 class WeaponOutline extends Outline {
     WeaponOutline() {
         super(false);
         setAllowColumnResize(false);
         setAllowRowDrag(false);
+        setBackground(Color.WHITE);
+        setForeground(Color.BLACK);
     }
 
     @Override

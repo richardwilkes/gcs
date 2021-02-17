@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -72,15 +71,19 @@ public class TextCell implements Cell {
     }
 
     /**
-     * @param selected Whether or not the selected version of the color is needed.
-     * @param active   Whether or not the active version of the color is needed.
+     * @param outline  The outline.
      * @param row      The row.
      * @param column   The column.
+     * @param selected Whether or not the selected version of the color is needed.
+     * @param active   Whether or not the active version of the color is needed.
      * @return The foreground color.
      */
     @SuppressWarnings("static-method")
-    public Color getColor(boolean selected, boolean active, Row row, Column column) {
-        return Colors.getListForeground(selected, active);
+    public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
+        if (selected) {
+            return UIManager.getColor("List.selectionForeground");
+        }
+        return outline.getForeground();
     }
 
     @Override
@@ -171,7 +174,7 @@ public class TextCell implements Cell {
                     }
                     y += vDelta;
                 }
-                gc.setColor(getColor(selected, active, row, column));
+                gc.setColor(getColor(outline, row, column, selected, active));
                 gc.drawString(text, x, y);
             }
         }

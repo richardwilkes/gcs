@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
@@ -59,10 +60,10 @@ public class ListHeaderCell extends HeaderCell {
     }
 
     @Override
-    public Color getColor(boolean selected, boolean active, Row row, Column column) {
+    public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (mForSheet) {
-            return Color.white;
+            return ThemeColor.ON_HEADER;
         }
-        return super.getColor(selected, active, row, column);
+        return super.getColor(outline, row, column, selected, active);
     }
 }

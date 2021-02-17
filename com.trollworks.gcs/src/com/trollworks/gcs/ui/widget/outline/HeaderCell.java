@@ -95,7 +95,7 @@ public class HeaderCell extends TextCell {
             x = bounds.x + bounds.width - (three + three);
             y = bounds.y + bounds.height / 2 - 1;
 
-            gc.setColor(SORTER_COLOR);
+            gc.setColor(getColor(outline, null, null, false, active));
             int count = 0;
             for (Column one : outline.getModel().getColumns()) {
                 if (one.getSortSequence() >= 0) {

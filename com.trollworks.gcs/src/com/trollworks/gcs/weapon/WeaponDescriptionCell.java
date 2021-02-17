@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -62,7 +61,7 @@ public class WeaponDescriptionCell implements Cell {
         Rectangle        insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
         String           notes       = getSecondaryText(theRow);
         Font             font        = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY));
-        gc.setColor(Colors.getListForeground(selected, active));
+        gc.setColor(selected ? UIManager.getColor("List.selectionForeground") : outline.getForeground());
         gc.setFont(font);
         int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
         if (!notes.trim().isEmpty()) {
