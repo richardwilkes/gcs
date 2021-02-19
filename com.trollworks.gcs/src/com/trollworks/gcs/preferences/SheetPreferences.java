@@ -63,7 +63,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
         mPortrait = new PortraitPreferencePanel(Profile.getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         mPortrait.addActionListener(this);
-        add(mPortrait, new PrecisionLayoutData().setVerticalSpan(11).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        add(mPortrait, new PrecisionLayoutData().setVerticalSpan(12).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         String playerTooltip = I18n.Text("The player name to use when a new character sheet is created");
         addLabel(I18n.Text("Player"), playerTooltip);
