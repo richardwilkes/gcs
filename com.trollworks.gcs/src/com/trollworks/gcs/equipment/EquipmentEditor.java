@@ -122,13 +122,13 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
         mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
         mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-        mTabPanel.addTab(mMeleeWeapons.getName(), mMeleeWeapons);
-        mTabPanel.addTab(mRangedWeapons.getName(), mRangedWeapons);
+        addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
+        addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
         Component panel = embedEditor(mPrereqs);
-        mTabPanel.addTab(panel.getName(), panel);
+        addTab(panel.getName(), panel);
         panel = embedEditor(mFeatures);
-        mTabPanel.addTab(panel.getName(), panel);
-        mTabPanel.addTab(mModifiers.getName(), mModifiers);
+        addTab(panel.getName(), panel);
+        addTab(mModifiers.getName(), mModifiers);
         if (!mIsEditable) {
             UIUtilities.disableControls(mMeleeWeapons);
             UIUtilities.disableControls(mRangedWeapons);
@@ -136,6 +136,11 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         }
         UIUtilities.selectTab(mTabPanel, getLastTabName());
         add(mTabPanel);
+    }
+
+    private void addTab(String title, Component panel) {
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     private boolean showEquipmentState() {

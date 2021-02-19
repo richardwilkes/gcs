@@ -100,10 +100,15 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             mTabPanel = new JTabbedPane();
             mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
             Component panel = embedEditor(mFeatures);
-            mTabPanel.addTab(panel.getName(), panel);
+            addTab(panel.getName(), panel);
             UIUtilities.selectTab(mTabPanel, getLastTabName());
             add(mTabPanel);
         }
+    }
+
+    private void addTab(String title, Component panel) {
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     @Override
