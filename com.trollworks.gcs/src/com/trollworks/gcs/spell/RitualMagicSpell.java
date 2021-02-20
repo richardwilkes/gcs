@@ -129,13 +129,13 @@ public class RitualMagicSpell extends Spell {
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
         skillLevel.mRelativeLevel += def.getModifier();
 
-        SkillDefault def2        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : baseSkillName, null, -(6 + prereqSpellsCount));
-        SkillLevel   skillLevel2 = Technique.calculateTechniqueLevel(character, name, college, categories, def2, difficulty, points, false, true, 0);
+        SkillDefault fallbackDef        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : baseSkillName, null, -(6 + prereqSpellsCount));
+        SkillLevel   fallbackSkillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, fallbackDef, difficulty, points, false, true, 0);
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
-        skillLevel2.mRelativeLevel += def2.getModifier();
+        fallbackSkillLevel.mRelativeLevel += fallbackDef.getModifier();
 
-        if (skillLevel.mLevel < skillLevel2.mLevel) {
-            skillLevel = skillLevel2;
+        if (skillLevel.mLevel < fallbackSkillLevel.mLevel) {
+            skillLevel = fallbackSkillLevel;
         }
 
         // And then apply bonuses for spells
