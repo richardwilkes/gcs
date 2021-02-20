@@ -124,9 +124,6 @@ public enum SelfControlRoll {
         }
     };
 
-    /** The attribute tag use for {@link SelfControlRollAdjustments}. */
-    public static final String ATTR_ADJUSTMENT = "adj";
-
     /**
      * @param tagValue The value within a tag representing a SelfControlRoll.
      * @return The actual SelfControlRoll.
