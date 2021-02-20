@@ -35,6 +35,7 @@ public final class Images {
     public static final RetinaIcon DOCK_CLOSE            = getRetina("dock_close");
     public static final RetinaIcon DOCK_MAXIMIZE         = getRetina("dock_maximize");
     public static final RetinaIcon DOCK_RESTORE          = getRetina("dock_restore");
+    public static final RetinaIcon DUPLICATE             = getRetina("duplicate");
     public static final RetinaIcon EQM_FILE              = getRetina("eqm_file");
     public static final RetinaIcon EQM_MARKER            = getRetina("eqm_marker");
     public static final RetinaIcon EQP_FILE              = getRetina("eqp_file");

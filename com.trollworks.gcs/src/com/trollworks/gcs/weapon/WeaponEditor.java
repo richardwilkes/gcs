@@ -56,6 +56,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     private WeaponOutline                mOutline;
     private IconButton                   mAddButton;
     private IconButton                   mDeleteButton;
+    private IconButton                   mDuplicateButton;
     private EditorField                  mUsage;
     private EditorField                  mStrength;
     private JComboBox<WeaponSTDamage>    mDamageSTCombo;
@@ -85,9 +86,12 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         mAddButton = new IconButton(Images.ADD, I18n.Text("Add an attack"), this::addWeapon);
         mDeleteButton = new IconButton(Images.REMOVE, I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
+        mDuplicateButton = new IconButton(Images.DUPLICATE, I18n.Text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
+        mDuplicateButton.setEnabled(false);
         Panel left = new Panel(new PrecisionLayout());
         left.add(mAddButton);
         left.add(mDeleteButton);
+        left.add(mDuplicateButton);
         Panel top = new Panel(new PrecisionLayout().setColumns(2));
         top.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         top.add(createOutline(weapons, weaponClass), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
@@ -116,7 +120,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     }
 
     private Component createOutline(List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
-        mOutline = new WeaponOutline();
+        mOutline = new WeaponOutline(mOwner);
         OutlineModel model = mOutline.getModel();
         WeaponColumn.addColumns(mOutline, weaponClass, true);
         mOutline.setAllowColumnResize(false);
@@ -329,6 +333,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
                 setWeapon(null);
             }
             mDeleteButton.setEnabled(count > 0);
+            mDuplicateButton.setEnabled(count > 0);
         }
     }
 
