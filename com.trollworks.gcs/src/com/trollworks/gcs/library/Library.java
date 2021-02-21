@@ -170,9 +170,11 @@ public class Library implements Comparable<Library> {
             }
         }
         mAvailableUpgrade = new Release(availableUpgrades);
-        Version version = mAvailableUpgrade.getVersion();
+    }
+
+    public synchronized void setLastSeen(Version version) {
         if (!version.isZero()) {
-            mLastSeen = new Version(mAvailableUpgrade.getVersion());
+            mLastSeen = new Version(version);
         }
     }
 
