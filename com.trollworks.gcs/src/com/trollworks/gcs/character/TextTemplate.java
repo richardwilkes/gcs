@@ -539,10 +539,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel(false))));
             break;
         case KEY_BEST_CURRENT_PARRY:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParry);
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParryNoToolTip);
             break;
         case KEY_BEST_CURRENT_BLOCK:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlock);
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
             break;
         case KEY_FP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getCurrentFatiguePoints()));
@@ -1229,11 +1229,11 @@ public class TextTemplate {
     private int processMeleeWeaponKeys(BufferedWriter out, String key, int counter, MeleeWeaponStats weapon, int index, String contents, List<MeleeWeaponStats> attackModes) throws IOException {
         switch (key) {
         case KEY_PARRY -> {
-            writeEncodedText(out, weapon.getResolvedParry());
+            writeEncodedText(out, weapon.getResolvedParryNoToolTip());
             return index;
         }
         case KEY_BLOCK -> {
-            writeEncodedText(out, weapon.getResolvedBlock());
+            writeEncodedText(out, weapon.getResolvedBlockNoToolTip());
             return index;
         }
         case KEY_REACH -> {

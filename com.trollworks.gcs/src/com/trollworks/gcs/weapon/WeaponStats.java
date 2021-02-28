@@ -275,6 +275,14 @@ public abstract class WeaponStats {
         return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
     }
 
+    public String getParryToolTip() {
+        return "";
+    }
+
+    public String getBlockToolTip() {
+        return "";
+    }
+
     /** @return The skill level. */
     public int getSkillLevel() {
         DataFile df = mOwner.getDataFile();
@@ -285,65 +293,94 @@ public abstract class WeaponStats {
     }
 
     private int getSkillLevel(GURPSCharacter character, StringBuilder toolTip) {
-        int best = Integer.MIN_VALUE;
+        StringBuilder primaryToolTip = toolTip != null ? new StringBuilder() : null;
+        int           preAdj         = getSkillLevelBaseAdjustment(character, primaryToolTip);
+        int           postAdj        = getSkillLevelPostAdjustment(character, primaryToolTip);
+        int           best           = Integer.MIN_VALUE;
         for (SkillDefault skillDefault : getDefaults()) {
             SkillDefaultType type  = skillDefault.getType();
             int              level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
-            if (level > best) {
-                best = level;
+            if (level != Integer.MIN_VALUE) {
+                level += preAdj;
+                level += postAdj;
+                if (level > best) {
+                    best = level;
+                }
             }
         }
         if (best == Integer.MIN_VALUE) {
             best = 0;
         } else {
-            int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
-            if (minST > 0) {
-                best -= minST;
-            }
-            if (this instanceof MeleeWeaponStats) {
-                if (((MeleeWeaponStats) this).getParry().contains("F")) {
-                    best += character.getEncumbranceLevel(true).getEncumbrancePenalty();
+            if (toolTip != null) {
+                if (!primaryToolTip.isEmpty()) {
+                    if (!toolTip.isEmpty()) {
+                        toolTip.append('\n');
+                    }
+                    toolTip.append(primaryToolTip);
                 }
             }
             if (best < 0) {
                 best = 0;
-            } else {
-                String      nameQualifier  = toString();
-                String      usageQualifier = getUsage();
-                Set<String> categories     = getCategories();
-                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip)) {
-                    best += bonus.getAmount().getIntegerAdjustedAmount();
-                }
-                for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip)) {
-                    best += bonus.getAmount().getIntegerAdjustedAmount();
-                }
-                for (Feature feature : mOwner.getFeatures()) {
-                    best += extractSkillBonus(feature, toolTip);
-                }
-                if (mOwner instanceof Advantage) {
-                    for (AdvantageModifier modifier : ((Advantage) mOwner).getModifiers()) {
-                        if (modifier.isEnabled()) {
-                            for (Feature feature : modifier.getFeatures()) {
-                                best += extractSkillBonus(feature, toolTip);
-                            }
-                        }
-                    }
-                }
-                if (mOwner instanceof Equipment) {
-                    for (EquipmentModifier modifier : ((Equipment) mOwner).getModifiers()) {
-                        if (modifier.isEnabled()) {
-                            for (Feature feature : modifier.getFeatures()) {
-                                best += extractSkillBonus(feature, toolTip);
-                            }
-                        }
-                    }
-                }
-                if (best < 0) {
-                    best = 0;
-                }
             }
         }
         return best;
+    }
+
+    protected int getSkillLevelBaseAdjustment(GURPSCharacter character, StringBuilder toolTip) {
+        int adj   = 0;
+        int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
+        if (minST > 0) {
+            adj -= minST;
+        }
+        String      nameQualifier  = toString();
+        String      usageQualifier = getUsage();
+        Set<String> categories     = getCategories();
+        for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip)) {
+            adj += bonus.getAmount().getIntegerAdjustedAmount();
+        }
+        for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip)) {
+            adj += bonus.getAmount().getIntegerAdjustedAmount();
+        }
+        for (Feature feature : mOwner.getFeatures()) {
+            adj += extractSkillBonus(feature, toolTip);
+        }
+        if (mOwner instanceof Advantage) {
+            for (AdvantageModifier modifier : ((Advantage) mOwner).getModifiers()) {
+                if (modifier.isEnabled()) {
+                    for (Feature feature : modifier.getFeatures()) {
+                        adj += extractSkillBonus(feature, toolTip);
+                    }
+                }
+            }
+        }
+        if (mOwner instanceof Equipment) {
+            for (EquipmentModifier modifier : ((Equipment) mOwner).getModifiers()) {
+                if (modifier.isEnabled()) {
+                    for (Feature feature : modifier.getFeatures()) {
+                        adj += extractSkillBonus(feature, toolTip);
+                    }
+                }
+            }
+        }
+        return adj;
+    }
+
+    protected int getSkillLevelPostAdjustment(GURPSCharacter character, StringBuilder toolTip) {
+        int adj = 0;
+        if (this instanceof MeleeWeaponStats) {
+            if (((MeleeWeaponStats) this).getParry().contains("F")) {
+                adj += getEncumbrancePenalty(character, toolTip);
+            }
+        }
+        return adj;
+    }
+
+    protected int getEncumbrancePenalty(GURPSCharacter character, StringBuilder toolTip) {
+        int penalty = character.getEncumbranceLevel(true).getEncumbrancePenalty();
+        if (penalty != 0 && toolTip != null) {
+            toolTip.append("\nEncumbrance [").append(Numbers.formatWithForcedSign(penalty)).append("]");
+        }
+        return penalty;
     }
 
     private int extractSkillBonus(Feature feature, StringBuilder toolTip) {
