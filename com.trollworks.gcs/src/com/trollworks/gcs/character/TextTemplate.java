@@ -63,6 +63,7 @@ import javax.imageio.ImageIO;
 public class TextTemplate {
     private static final String         UNIDENTIFIED_KEY                      = "Unidentified key: '%s'";
     private static final String         CURRENT                               = "current";
+    private static final String         GROUP                                 = "GROUP";
     private static final String         ITEM                                  = "ITEM";
     private static final String         ONE                                   = "1";
     private static final String         UNDERSCORE                            = "_";
@@ -1095,6 +1096,7 @@ public class TextTemplate {
                                         out.write(parent.getID().toString());
                                     }
                                 }
+                                case KEY_TYPE -> writeEncodedText(out, skill.canHaveChildren() ? GROUP : ITEM);
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
@@ -1181,6 +1183,7 @@ public class TextTemplate {
                                         out.write(parent.getID().toString());
                                     }
                                 }
+                                case KEY_TYPE -> writeEncodedText(out, spell.canHaveChildren() ? GROUP : ITEM);
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
@@ -1688,6 +1691,9 @@ public class TextTemplate {
                                         out.write(parent.getID().toString());
                                     }
                                     break;
+                                case KEY_TYPE:
+                                    writeEncodedText(out, equipment.canHaveChildren() ? GROUP : ITEM);
+                                    break;
                                 case KEY_TL:
                                     writeEncodedText(out, equipment.getTechLevel());
                                     break;
@@ -1791,6 +1797,9 @@ public class TextTemplate {
                                 if (parent != null) {
                                     out.write(parent.getID().toString());
                                 }
+                                break;
+                            case KEY_TYPE:
+                                writeEncodedText(out, note.canHaveChildren() ? GROUP : ITEM);
                                 break;
                             case KEY_REF:
                                 writeEncodedText(out, note.getReference());
