@@ -104,8 +104,8 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         bite.setDamage(damage);
         bite.setUsage(I18n.Text("Bite"));
         bite.setReach("C");
-        bite.setParry("No");
-        bite.setBlock("No");
+        bite.setParry(I18n.Text("No"));
+        bite.setBlock(I18n.Text("No"));
         bite.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, 0), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, 0)));
         return bite;
     }
@@ -132,7 +132,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         kick.setDamage(damage);
         kick.setUsage(I18n.Text("Kick"));
         kick.setReach("C,1");
-        kick.setParry("No");
+        kick.setParry(I18n.Text("No"));
         kick.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, -2), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, -2), new SkillDefault(SkillDefaultType.Skill, "Karate", null, -2)));
         return kick;
     }
