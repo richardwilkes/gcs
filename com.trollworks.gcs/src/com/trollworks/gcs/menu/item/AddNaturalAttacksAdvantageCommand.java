@@ -98,11 +98,11 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
     private WeaponStats createBite(Advantage owner) {
         MeleeWeaponStats bite   = new MeleeWeaponStats(owner);
         WeaponDamage     damage = new WeaponDamage(bite);
-        damage.setType("cr");
+        damage.setType(I18n.Text("cr"));
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
         bite.setDamage(damage);
-        bite.setUsage("Bite");
+        bite.setUsage(I18n.Text("Bite"));
         bite.setReach("C");
         bite.setParry("No");
         bite.setBlock("No");
@@ -113,11 +113,11 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
     private WeaponStats createPunch(Advantage owner) {
         MeleeWeaponStats punch  = new MeleeWeaponStats(owner);
         WeaponDamage     damage = new WeaponDamage(punch);
-        damage.setType("cr");
+        damage.setType(I18n.Text("cr"));
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
         punch.setDamage(damage);
-        punch.setUsage("Punch");
+        punch.setUsage(I18n.Text("Punch"));
         punch.setReach("C");
         punch.setParry("0");
         punch.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, 0), new SkillDefault(SkillDefaultType.Skill, "Boxing", null, 0), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, 0), new SkillDefault(SkillDefaultType.Skill, "Karate", null, 0)));
@@ -127,10 +127,10 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
     private WeaponStats createKick(Advantage owner) {
         MeleeWeaponStats kick   = new MeleeWeaponStats(owner);
         WeaponDamage     damage = new WeaponDamage(kick);
-        damage.setType("cr");
+        damage.setType(I18n.Text("cr"));
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         kick.setDamage(damage);
-        kick.setUsage("Kick");
+        kick.setUsage(I18n.Text("Kick"));
         kick.setReach("C,1");
         kick.setParry("No");
         kick.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, -2), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, -2), new SkillDefault(SkillDefaultType.Skill, "Karate", null, -2)));
