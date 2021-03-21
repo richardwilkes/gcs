@@ -129,6 +129,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private              boolean                     mOkToPaint                = true;
     private              boolean                     mIsPrinting;
     private              boolean                     mSyncWeapons;
+    private              boolean                     mSyncReactions;
+    private              boolean                     mSyncConditionalModifiers;
     private              boolean                     mReloadSkillColumns;
     private              boolean                     mReloadSpellColumns;
 
@@ -765,6 +767,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 OutlineSyncer.add(getAdvantageOutline());
                 OutlineSyncer.add(mReactionsOutline);
                 OutlineSyncer.add(mConditionalModifiersOutline);
+                mSyncReactions = true;
+                mSyncConditionalModifiers = true;
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (Settings.ID_USER_DESCRIPTION_DISPLAY.equals(type) || Settings.ID_MODIFIERS_DISPLAY.equals(type) || Settings.ID_NOTES_DISPLAY.equals(type)) {
@@ -788,6 +792,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 OutlineSyncer.add(getOtherEquipmentOutline());
                 OutlineSyncer.add(mReactionsOutline);
                 OutlineSyncer.add(mConditionalModifiersOutline);
+                mSyncReactions = true;
+                mSyncConditionalModifiers = true;
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (type.startsWith(Note.PREFIX)) {
@@ -944,7 +950,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     private void syncRoots() {
-        if (mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
+        if (mSyncReactions || mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
             OutlineModel outlineModel = mReactionsOutline.getModel();
             String       sortConfig   = outlineModel.getSortConfig();
             outlineModel.removeAllRows();
@@ -953,7 +959,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             }
             outlineModel.applySortConfig(sortConfig);
         }
-        if (mRootsToSync.contains(mConditionalModifiersOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
+        if (mSyncConditionalModifiers || mRootsToSync.contains(mConditionalModifiersOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
             OutlineModel outlineModel = mConditionalModifiersOutline.getModel();
             String       sortConfig   = outlineModel.getSortConfig();
             outlineModel.removeAllRows();
@@ -981,6 +987,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             }
             outlineModel.applySortConfig(sortConfig);
         }
+        mSyncReactions = false;
+        mSyncConditionalModifiers = true;
         mSyncWeapons = false;
         mRootsToSync.clear();
     }
