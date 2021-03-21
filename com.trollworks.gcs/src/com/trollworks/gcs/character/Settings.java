@@ -47,6 +47,8 @@ public class Settings {
     public static final  String         TAG_USE_SIMPLE_METRIC_CONVERSIONS      = "use_simple_metric_conversions";
     public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS             = "show_college_in_sheet_spells";
     public static final  String         TAG_SHOW_DIFFICULTY                    = "show_difficulty";
+    public static final  String         TAG_SHOW_ADVANTAGE_MODIFIER_ADJ        = "show_advantage_modifier_adj";
+    public static final  String         TAG_SHOW_EQUIPMENT_MODIFIER_ADJ        = "show_equipment_modifier_adj";
     public static final  String         TAG_USE_TITLE_IN_FOOTER                = "use_title_in_footer";
     private static final String         TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE     = "extra_space_around_encumbrance";
     public static final  String         PREFIX                                 = GURPSCharacter.CHARACTER_PREFIX + "settings.";
@@ -66,6 +68,8 @@ public class Settings {
     public static final  String         ID_USE_SIMPLE_METRIC_CONVERSIONS       = PREFIX + TAG_USE_SIMPLE_METRIC_CONVERSIONS;
     public static final  String         ID_SHOW_COLLEGE_IN_SPELLS              = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
     public static final  String         ID_SHOW_DIFFICULTY                     = PREFIX + TAG_SHOW_DIFFICULTY;
+    public static final  String         ID_SHOW_ADVANTAGE_MODIFIER_ADJ         = PREFIX + TAG_SHOW_ADVANTAGE_MODIFIER_ADJ;
+    public static final  String         ID_SHOW_EQUIPMENT_MODIFIER_ADJ         = PREFIX + TAG_SHOW_EQUIPMENT_MODIFIER_ADJ;
     public static final  String         ID_USE_TITLE_IN_FOOTER                 = PREFIX + TAG_USE_TITLE_IN_FOOTER;
     public static final  String         ID_EXTRA_SPACE_AROUND_ENCUMBRANCE      = PREFIX + TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE;
     private              GURPSCharacter mCharacter;
@@ -85,6 +89,8 @@ public class Settings {
     private              boolean        mUseSimpleMetricConversions; // B9
     private              boolean        mShowCollegeInSpells;
     private              boolean        mShowDifficulty;
+    private              boolean        mShowAdvantageModifierAdj;
+    private              boolean        mShowEquipmentModifierAdj;
     private              boolean        mUseTitleInFooter;
     private              boolean        mExtraSpaceAroundEncumbrance;
 
@@ -107,6 +113,8 @@ public class Settings {
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
         mShowDifficulty = prefs.showDifficulty();
+        mShowAdvantageModifierAdj = prefs.showAdvantageModifierAdj();
+        mShowEquipmentModifierAdj = prefs.showEquipmentModifierAdj();
         mUseTitleInFooter = prefs.useTitleInFooter();
         mExtraSpaceAroundEncumbrance = prefs.extraSpaceAroundEncumbrance();
     }
@@ -139,6 +147,8 @@ public class Settings {
         mUseSimpleMetricConversions = m.getBoolean(TAG_USE_SIMPLE_METRIC_CONVERSIONS);
         mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
         mShowDifficulty = m.getBoolean(TAG_SHOW_DIFFICULTY);
+        mShowAdvantageModifierAdj = m.getBoolean(TAG_SHOW_ADVANTAGE_MODIFIER_ADJ);
+        mShowEquipmentModifierAdj = m.getBoolean(TAG_SHOW_EQUIPMENT_MODIFIER_ADJ);
         mUseTitleInFooter = m.getBoolean(TAG_USE_TITLE_IN_FOOTER);
         mExtraSpaceAroundEncumbrance = m.getBoolean(TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mBlockLayout = new ArrayList<>();
@@ -167,6 +177,8 @@ public class Settings {
         w.keyValue(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
         w.keyValue(TAG_SHOW_DIFFICULTY, mShowDifficulty);
+        w.keyValue(TAG_SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
+        w.keyValue(TAG_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         w.keyValue(TAG_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
         w.keyValue(TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
         w.key(TAG_BLOCK_LAYOUT);
@@ -365,6 +377,28 @@ public class Settings {
         if (mShowDifficulty != show) {
             mShowDifficulty = show;
             mCharacter.notifySingle(ID_SHOW_DIFFICULTY, Boolean.valueOf(mShowDifficulty));
+        }
+    }
+
+    public boolean showAdvantageModifierAdj() {
+        return mShowAdvantageModifierAdj;
+    }
+
+    public void setShowAdvantageModifierAdj(boolean show) {
+        if (mShowAdvantageModifierAdj != show) {
+            mShowAdvantageModifierAdj = show;
+            mCharacter.notifySingle(ID_SHOW_ADVANTAGE_MODIFIER_ADJ, Boolean.valueOf(mShowAdvantageModifierAdj));
+        }
+    }
+
+    public boolean showEquipmentModifierAdj() {
+        return mShowEquipmentModifierAdj;
+    }
+
+    public void setShowEquipmentModifierAdj(boolean show) {
+        if (mShowEquipmentModifierAdj != show) {
+            mShowEquipmentModifierAdj = show;
+            mCharacter.notifySingle(ID_SHOW_EQUIPMENT_MODIFIER_ADJ, Boolean.valueOf(mShowEquipmentModifierAdj));
         }
     }
 

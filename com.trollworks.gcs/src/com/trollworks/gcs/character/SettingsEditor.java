@@ -58,6 +58,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mUseSimpleMetricConversions;
     private JCheckBox                mShowCollegeInSpells;
     private JCheckBox                mShowDifficulty;
+    private JCheckBox                mShowAdvantageModifierAdj;
+    private JCheckBox                mShowEquipmentModifierAdj;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
@@ -110,6 +112,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
         mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
         mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
+        mShowAdvantageModifierAdj = addCheckBox(panel, I18n.Text("Show the advantage modifier cost adjustments in the advantage list"), null, mSettings.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj = addCheckBox(panel, I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists"), null, mSettings.showEquipmentModifierAdj());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
         mExtraSpaceAroundEncumbrance = addCheckBox(panel, I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table"), null, mSettings.extraSpaceAroundEncumbrance());
         mBaseWillOn10 = addCheckBox(panel, I18n.Text("Base Will on 10 and not IQ"), null, mSettings.baseWillOn10());
@@ -192,6 +196,10 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mSettings.setShowCollegeInSpells(mShowCollegeInSpells.isSelected());
         } else if (source == mShowDifficulty) {
             mSettings.setShowDifficulty(mShowDifficulty.isSelected());
+        } else if (source == mShowAdvantageModifierAdj) {
+            mSettings.setShowAdvantageModifierAdj(mShowAdvantageModifierAdj.isSelected());
+        } else if (source == mShowEquipmentModifierAdj) {
+            mSettings.setShowEquipmentModifierAdj(mShowEquipmentModifierAdj.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
         } else if (source == mExtraSpaceAroundEncumbrance) {
@@ -225,6 +233,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         boolean     atDefaults = mUseModifyingDicePlusAdds.isSelected() == prefs.useModifyingDicePlusAdds();
         atDefaults = atDefaults && mShowCollegeInSpells.isSelected() == prefs.showCollegeInSheetSpells();
         atDefaults = atDefaults && mShowDifficulty.isSelected() == prefs.showDifficulty();
+        atDefaults = atDefaults && mShowAdvantageModifierAdj.isSelected() == prefs.showAdvantageModifierAdj();
+        atDefaults = atDefaults && mShowEquipmentModifierAdj.isSelected() == prefs.showEquipmentModifierAdj();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
         atDefaults = atDefaults && mExtraSpaceAroundEncumbrance.isSelected() == prefs.extraSpaceAroundEncumbrance();
         atDefaults = atDefaults && mBaseWillOn10.isSelected() == prefs.baseWillOn10();
@@ -261,6 +271,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
             mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
             mShowDifficulty.setSelected(prefs.showDifficulty());
+            mShowAdvantageModifierAdj.setSelected(prefs.showAdvantageModifierAdj());
+            mShowEquipmentModifierAdj.setSelected(prefs.showEquipmentModifierAdj());
             mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
             mExtraSpaceAroundEncumbrance.setSelected(prefs.extraSpaceAroundEncumbrance());
             mBaseWillOn10.setSelected(prefs.baseWillOn10());

@@ -302,6 +302,21 @@ public class EquipmentModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
+        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter)mDataFile).getSettings().showEquipmentModifierAdj()) {
+            String costDesc = getCostDescription();
+            String weightDesc = getWeightDescription();
+            if (!costDesc.isEmpty() || !weightDesc.isEmpty()) {
+                builder.append(" [");
+                builder.append(costDesc);
+                if (!weightDesc.isEmpty()) {
+                    if (!costDesc.isEmpty()) {
+                        builder.append("; ");
+                    }
+                    builder.append(weightDesc);
+                }
+                builder.append(']');
+            }
+        }
         return builder.toString();
     }
 

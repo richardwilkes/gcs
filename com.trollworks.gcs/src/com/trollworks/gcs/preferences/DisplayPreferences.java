@@ -46,6 +46,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JCheckBox                mIncludeUnspentPointsInTotal;
     private JCheckBox                mShowCollegeInSheetSpells;
     private JCheckBox                mShowDifficulty;
+    private JCheckBox                mShowAdvantageModifierAdj;
+    private JCheckBox                mShowEquipmentModifierAdj;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<Scales>        mUIScaleCombo;
@@ -70,6 +72,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mIncludeUnspentPointsInTotal = addCheckBox(I18n.Text("Character point total display includes unspent points"), prefs.includeUnspentPointsInTotal());
         mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column in character sheet spells list *"), prefs.showCollegeInSheetSpells());
         mShowDifficulty = addCheckBox(I18n.Text("Show the Difficulty column in character sheet skills and spells lists *"), prefs.showDifficulty());
+        mShowAdvantageModifierAdj = addCheckBox(I18n.Text("Show the advantage modifier cost adjustments in the advantage list *"), prefs.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj = addCheckBox(I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists *"), prefs.showEquipmentModifierAdj());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets *"), prefs.useTitleInFooter());
         mExtraSpaceAroundEncumbrance = addCheckBox(I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table *"), prefs.extraSpaceAroundEncumbrance());
 
@@ -199,6 +203,10 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
             Preferences.getInstance().setShowCollegeInSheetSpells(mShowCollegeInSheetSpells.isSelected());
         } else if (source == mShowDifficulty) {
             Preferences.getInstance().setShowDifficulty(mShowDifficulty.isSelected());
+        } else if (source == mShowAdvantageModifierAdj) {
+            Preferences.getInstance().setShowAdvantageModifierAdj(mShowAdvantageModifierAdj.isSelected());
+        } else if (source == mShowEquipmentModifierAdj) {
+            Preferences.getInstance().setShowEquipmentModifierAdj(mShowEquipmentModifierAdj.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             Preferences.getInstance().setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
         } else if (source == mExtraSpaceAroundEncumbrance) {
@@ -212,6 +220,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mIncludeUnspentPointsInTotal.setSelected(Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
         mShowCollegeInSheetSpells.setSelected(Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS);
         mShowDifficulty.setSelected(Preferences.DEFAULT_SHOW_DIFFICULTY);
+        mShowAdvantageModifierAdj.setSelected(Preferences.DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ);
+        mShowEquipmentModifierAdj.setSelected(Preferences.DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ);
         mShowTitleInsteadOfNameInPageFooter.setSelected(Preferences.DEFAULT_USE_TITLE_IN_FOOTER);
         mExtraSpaceAroundEncumbrance.setSelected(Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
@@ -230,6 +240,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         boolean     atDefault = prefs.includeUnspentPointsInTotal() == Preferences.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
         atDefault = atDefault && prefs.showCollegeInSheetSpells() == Preferences.DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
         atDefault = atDefault && prefs.showDifficulty() == Preferences.DEFAULT_SHOW_DIFFICULTY;
+        atDefault = atDefault && prefs.showAdvantageModifierAdj() == Preferences.DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ;
+        atDefault = atDefault && prefs.showEquipmentModifierAdj() == Preferences.DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ;
         atDefault = atDefault && prefs.extraSpaceAroundEncumbrance() == Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         atDefault = atDefault && prefs.getInitialUIScale() == Preferences.DEFAULT_INITIAL_UI_SCALE;
         atDefault = atDefault && prefs.getDefaultLengthUnits() == Preferences.DEFAULT_DEFAULT_LENGTH_UNITS;

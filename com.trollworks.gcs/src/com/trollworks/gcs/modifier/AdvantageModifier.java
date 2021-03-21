@@ -309,6 +309,11 @@ public class AdvantageModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
+        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter)mDataFile).getSettings().showAdvantageModifierAdj()) {
+            builder.append(" [");
+            builder.append(getCostDescription());
+            builder.append(']');
+        }
         return builder.toString();
     }
 
