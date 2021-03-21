@@ -169,8 +169,9 @@ public final class PDFServer {
                 buffer.append('+');
             } else {
                 buffer.append('%');
-                buffer.append(Text.HEX_DIGITS[b >> 4]);
-                buffer.append(Text.HEX_DIGITS[b & 15]);
+                int bint = b & 0xff;
+                buffer.append(Text.HEX_DIGITS[bint >> 4]);
+                buffer.append(Text.HEX_DIGITS[bint & 15]);
             }
         }
         return buffer.toString();
