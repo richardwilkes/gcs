@@ -366,20 +366,27 @@ public class WeaponDamage {
                 }
                 boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
                 StringBuilder buffer                      = new StringBuilder();
-                buffer.append(base.toString(convertModifiersToExtraDice));
+                if (!base.equals(new Dice(0, 0))) {
+                    buffer.append(base.toString(convertModifiersToExtraDice));
+                }
                 if (mArmorDivisor != 1) {
                     buffer.append("(");
                     buffer.append(Numbers.format(mArmorDivisor));
                     buffer.append(")");
                 }
                 if (!mType.isBlank()) {
-                    buffer.append(" ");
+                    if (!buffer.isEmpty()) {
+                        buffer.append(" ");
+                    }
                     buffer.append(mType);
                 }
                 if (mFragmentation != null) {
                     String frag = mFragmentation.toString(convertModifiersToExtraDice);
                     if (!"0".equals(frag)) {
-                        buffer.append(" [");
+                        if (!buffer.isEmpty()) {
+                            buffer.append(" ");
+                        }
+                        buffer.append("[");
                         buffer.append(frag);
                         if (mFragmentationArmorDivisor != 1) {
                             buffer.append("(");
@@ -399,7 +406,7 @@ public class WeaponDamage {
 
     private void extractWeaponBonus(Feature feature, List<WeaponBonus> list, int dieCount, StringBuilder toolTip) {
         if (feature instanceof WeaponBonus) {
-            WeaponBonus wb = (WeaponBonus) feature;
+            WeaponBonus   wb     = (WeaponBonus) feature;
             LeveledAmount amount = wb.getAmount();
             int           level  = amount.getLevel();
             amount.setLevel(dieCount);
