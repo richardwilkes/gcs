@@ -288,7 +288,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
-        characterInitialize(true);
+        characterInitialize(Preferences.getInstance().autoFillProfile());
         calculateAll();
     }
 
