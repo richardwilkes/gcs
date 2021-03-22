@@ -60,6 +60,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mShowDifficulty;
     private JCheckBox                mShowAdvantageModifierAdj;
     private JCheckBox                mShowEquipmentModifierAdj;
+    private JCheckBox                mShowSpellAdj;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
@@ -114,6 +115,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
         mShowAdvantageModifierAdj = addCheckBox(panel, I18n.Text("Show the advantage modifier cost adjustments in the advantage list"), null, mSettings.showAdvantageModifierAdj());
         mShowEquipmentModifierAdj = addCheckBox(panel, I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists"), null, mSettings.showEquipmentModifierAdj());
+        mShowSpellAdj = addCheckBox(panel, I18n.Text("Show the spell ritual, cost and time adjustments in the spell list"), null, mSettings.showSpellAdj());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
         mExtraSpaceAroundEncumbrance = addCheckBox(panel, I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table"), null, mSettings.extraSpaceAroundEncumbrance());
         mBaseWillOn10 = addCheckBox(panel, I18n.Text("Base Will on 10 and not IQ"), null, mSettings.baseWillOn10());
@@ -200,6 +202,8 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mSettings.setShowAdvantageModifierAdj(mShowAdvantageModifierAdj.isSelected());
         } else if (source == mShowEquipmentModifierAdj) {
             mSettings.setShowEquipmentModifierAdj(mShowEquipmentModifierAdj.isSelected());
+        } else if (source == mShowSpellAdj) {
+            mSettings.setShowSpellAdj(mShowSpellAdj.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
         } else if (source == mExtraSpaceAroundEncumbrance) {
@@ -235,6 +239,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mShowDifficulty.isSelected() == prefs.showDifficulty();
         atDefaults = atDefaults && mShowAdvantageModifierAdj.isSelected() == prefs.showAdvantageModifierAdj();
         atDefaults = atDefaults && mShowEquipmentModifierAdj.isSelected() == prefs.showEquipmentModifierAdj();
+        atDefaults = atDefaults && mShowSpellAdj.isSelected() == prefs.showSpellAdj();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
         atDefaults = atDefaults && mExtraSpaceAroundEncumbrance.isSelected() == prefs.extraSpaceAroundEncumbrance();
         atDefaults = atDefaults && mBaseWillOn10.isSelected() == prefs.baseWillOn10();
@@ -273,6 +278,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mShowDifficulty.setSelected(prefs.showDifficulty());
             mShowAdvantageModifierAdj.setSelected(prefs.showAdvantageModifierAdj());
             mShowEquipmentModifierAdj.setSelected(prefs.showEquipmentModifierAdj());
+            mShowSpellAdj.setSelected(prefs.showSpellAdj());
             mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
             mExtraSpaceAroundEncumbrance.setSelected(prefs.extraSpaceAroundEncumbrance());
             mBaseWillOn10.setSelected(prefs.baseWillOn10());

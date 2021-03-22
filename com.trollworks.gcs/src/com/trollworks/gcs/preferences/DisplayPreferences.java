@@ -48,6 +48,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JCheckBox                mShowDifficulty;
     private JCheckBox                mShowAdvantageModifierAdj;
     private JCheckBox                mShowEquipmentModifierAdj;
+    private JCheckBox                mShowSpellAdj;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
     private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<Scales>        mUIScaleCombo;
@@ -74,6 +75,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mShowDifficulty = addCheckBox(I18n.Text("Show the Difficulty column in character sheet skills and spells lists *"), prefs.showDifficulty());
         mShowAdvantageModifierAdj = addCheckBox(I18n.Text("Show the advantage modifier cost adjustments in the advantage list *"), prefs.showAdvantageModifierAdj());
         mShowEquipmentModifierAdj = addCheckBox(I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists *"), prefs.showEquipmentModifierAdj());
+        mShowSpellAdj = addCheckBox(I18n.Text("Show the spell ritual, cost and time adjustments in the spell list *"), prefs.showSpellAdj());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets *"), prefs.useTitleInFooter());
         mExtraSpaceAroundEncumbrance = addCheckBox(I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table *"), prefs.extraSpaceAroundEncumbrance());
 
@@ -207,6 +209,8 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
             Preferences.getInstance().setShowAdvantageModifierAdj(mShowAdvantageModifierAdj.isSelected());
         } else if (source == mShowEquipmentModifierAdj) {
             Preferences.getInstance().setShowEquipmentModifierAdj(mShowEquipmentModifierAdj.isSelected());
+        } else if (source == mShowSpellAdj) {
+            Preferences.getInstance().setShowSpellAdj(mShowSpellAdj.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             Preferences.getInstance().setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
         } else if (source == mExtraSpaceAroundEncumbrance) {
@@ -222,6 +226,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mShowDifficulty.setSelected(Preferences.DEFAULT_SHOW_DIFFICULTY);
         mShowAdvantageModifierAdj.setSelected(Preferences.DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ);
         mShowEquipmentModifierAdj.setSelected(Preferences.DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ);
+        mShowSpellAdj.setSelected(Preferences.DEFAULT_SHOW_SPELL_ADJ);
         mShowTitleInsteadOfNameInPageFooter.setSelected(Preferences.DEFAULT_USE_TITLE_IN_FOOTER);
         mExtraSpaceAroundEncumbrance.setSelected(Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
@@ -242,6 +247,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         atDefault = atDefault && prefs.showDifficulty() == Preferences.DEFAULT_SHOW_DIFFICULTY;
         atDefault = atDefault && prefs.showAdvantageModifierAdj() == Preferences.DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ;
         atDefault = atDefault && prefs.showEquipmentModifierAdj() == Preferences.DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ;
+        atDefault = atDefault && prefs.showSpellAdj() == Preferences.DEFAULT_SHOW_SPELL_ADJ;
         atDefault = atDefault && prefs.extraSpaceAroundEncumbrance() == Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         atDefault = atDefault && prefs.getInitialUIScale() == Preferences.DEFAULT_INITIAL_UI_SCALE;
         atDefault = atDefault && prefs.getDefaultLengthUnits() == Preferences.DEFAULT_DEFAULT_LENGTH_UNITS;

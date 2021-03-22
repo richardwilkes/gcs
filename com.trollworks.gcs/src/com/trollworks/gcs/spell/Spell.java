@@ -896,4 +896,48 @@ public class Spell extends ListRow implements HasSourceReference {
         return mLevel.getToolTip();
     }
 
+    @Override
+    public String getSecondaryText() {
+        StringBuilder builder = new StringBuilder(super.getSecondaryText());
+        String        rituals = getRituals();
+        if (!rituals.isEmpty()) {
+            if (!builder.isEmpty()) {
+                builder.append("\n");
+            }
+            builder.append(rituals);
+        }
+        return builder.toString();
+    }
+
+    public String getRituals() {
+        if (!((mDataFile instanceof GURPSCharacter) && ((GURPSCharacter) mDataFile).getSettings().showSpellAdj())) {
+            return "";
+        }
+        int level = mLevel.getLevel();
+        if (level < 10) {
+            return I18n.Text("Ritual: need both hands and feet free and must speak; Time: 2x");
+        }
+        if (level < 15) {
+            return I18n.Text("Ritual: speak quietly and make a gesture");
+        }
+        String ritual;
+        String time = "";
+        String cost = "";
+        if (level < 20) {
+            ritual = I18n.Text("speak a word or two OR make a small gesture"); // ; may move 1 yard per second while concentrating");
+            if (!mSpellClass.toLowerCase().contains("blocking")) {
+                cost = I18n.Text("; Cost: -1");
+            }
+        } else {
+            ritual = I18n.Text("none");
+            int adj = (level - 15) / 5;
+            if (!mSpellClass.toLowerCase().contains("missile")) {
+                time = String.format(I18n.Text("; Time: x1/%d, rounded up, min 1 sec"), Integer.valueOf(1 << adj));
+            }
+            if (!mSpellClass.toLowerCase().contains("blocking")) {
+                cost = String.format(I18n.Text("; Cost: -%d"), Integer.valueOf(adj + 1));
+            }
+        }
+        return I18n.Text("Ritual: ") + ritual + time + cost;
+    }
 }

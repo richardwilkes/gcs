@@ -95,6 +95,7 @@ public class Preferences {
     private static final String SHOW_DIFFICULTY                 = "show_difficulty";
     private static final String SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
     private static final String SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
+    private static final String SHOW_SPELL_ADJ               = "show_spell_adj";
     private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     private static final String EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_fp";
     private static final String THEME                           = "theme";
@@ -125,6 +126,7 @@ public class Preferences {
     public static final String KEY_SHOW_DIFFICULTY                 = KEY_PER_SHEET_PREFIX + SHOW_DIFFICULTY;
     public static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_ADVANTAGE_MODIFIER_ADJ;
     public static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_EQUIPMENT_MODIFIER_ADJ;
+    public static final String KEY_SHOW_SPELL_ADJ                 = KEY_PER_SHEET_PREFIX + SHOW_SPELL_ADJ;
     public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
     public static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = KEY_PER_SHEET_PREFIX + EXTRA_SPACE_AROUND_ENCUMBRANCE;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
@@ -145,6 +147,7 @@ public class Preferences {
     public static final boolean       DEFAULT_SHOW_DIFFICULTY                   = false;
     public static final boolean       DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ       = false;
     public static final boolean       DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ       = false;
+    public static final boolean       DEFAULT_SHOW_SPELL_ADJ                   = true;
     public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
     public static final boolean       DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE    = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
@@ -214,6 +217,7 @@ public class Preferences {
     private        boolean                          mShowDifficulty;
     private        boolean                          mShowAdvantageModifierAdj;
     private        boolean                          mShowEquipmentModifierAdj;
+    private        boolean                          mShowSpellAdj;
     private        boolean                          mUseTitleInFooter;
     private        boolean                          mExtraSpaceAroundEncumbrance;
 
@@ -285,6 +289,7 @@ public class Preferences {
         mShowDifficulty = DEFAULT_SHOW_DIFFICULTY;
         mShowAdvantageModifierAdj = DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ;
         mShowEquipmentModifierAdj = DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ;
+        mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         mExtraSpaceAroundEncumbrance = DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         Path path = getPreferencesPath();
@@ -397,6 +402,7 @@ public class Preferences {
                         mShowDifficulty = m.getBooleanWithDefault(SHOW_DIFFICULTY, mShowDifficulty);
                         mShowAdvantageModifierAdj = m.getBooleanWithDefault(SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
                         mShowEquipmentModifierAdj = m.getBooleanWithDefault(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
+                        mShowSpellAdj = m.getBooleanWithDefault(SHOW_SPELL_ADJ, mShowSpellAdj);
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                         mExtraSpaceAroundEncumbrance = m.getBooleanWithDefault(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                         if (m.has(THEME)) {
@@ -551,6 +557,7 @@ public class Preferences {
                     w.keyValue(SHOW_DIFFICULTY, mShowDifficulty);
                     w.keyValue(SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
                     w.keyValue(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
+                    w.keyValue(SHOW_SPELL_ADJ, mShowSpellAdj);
                     w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                     w.keyValue(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
@@ -948,6 +955,18 @@ public class Preferences {
         if (mShowEquipmentModifierAdj != show) {
             mShowEquipmentModifierAdj = show;
             mNotifier.notify(this, KEY_SHOW_EQUIPMENT_MODIFIER_ADJ);
+        }
+    }
+
+    /** @return Whether to show the spell rituals, cost & time adjustments in the spell list display. */
+    public boolean showSpellAdj() {
+        return mShowSpellAdj;
+    }
+
+    public void setShowSpellAdj(boolean show) {
+        if (mShowSpellAdj != show) {
+            mShowSpellAdj= show;
+            mNotifier.notify(this, KEY_SHOW_SPELL_ADJ);
         }
     }
 

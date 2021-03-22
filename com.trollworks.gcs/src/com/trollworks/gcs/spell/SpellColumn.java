@@ -58,9 +58,8 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             StringBuilder builder = new StringBuilder();
-            String        notes   = spell.getNotes();
-
             builder.append(spell);
+            String notes = spell.getNotes();
             if (!notes.isEmpty()) {
                 builder.append(" - ");
                 builder.append(notes);
