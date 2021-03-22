@@ -152,12 +152,12 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public boolean canIncrementSkillLevel() {
-        return canIncrement();
+        return (mDataFile instanceof GURPSCharacter) && selectionHasLeafRows(false);
     }
 
     @Override
     public boolean canDecrementSkillLevel() {
-        return canDecrement();
+        return (mDataFile instanceof GURPSCharacter) && selectionHasLeafRows(true);
     }
 
     @Override
