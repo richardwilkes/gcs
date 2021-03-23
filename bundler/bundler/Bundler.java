@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class Bundler {
-    private static final String GCS_VERSION       = "4.28.0";
+    private static final String GCS_VERSION       = "4.29.0";
     private static       String JDK_MAJOR_VERSION = "15";
     private static final String ITEXT_VERSION     = "2.1.7";
     private static final String LINUX             = "linux";
