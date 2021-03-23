@@ -36,7 +36,7 @@ public class HitLocationPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), I18n.Text("Hit Locations"));
+        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), String.format(I18n.Text("%s Locations"), sheet.getCharacter().getProfile().getHitLocationTable().toString()));
 
         addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.HEADER);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
