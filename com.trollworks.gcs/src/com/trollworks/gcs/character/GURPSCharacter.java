@@ -938,10 +938,10 @@ public class GURPSCharacter extends CollectedModels {
      */
     public Dice getSwing(int strength) {
         if(mSettings.usePhoenixSwing()){
-            if(strength > 10 & strength < 100){
-                int adds =1- strength % 2;
+            if(strength > 12 & strength < 100){
+                int adds =(1- strength % 2);
                 if (strength < 19){
-                    return new Dice(1,(-(6 - (strength - 1) / 2))+adds+2);
+                    return new Dice(1,(-(6 - (strength - 1) / 2))+2);
                 }
                 int value = strength -= 11;
                 if (strength > 50) {
@@ -951,7 +951,7 @@ public class GURPSCharacter extends CollectedModels {
                     }
                 }
                 int ndice = value / 8 + 1;
-                return new Dice(ndice, (value % 8 / 2 - 1)+(ndice*2)+adds);
+                return new Dice(ndice, (value % 8 / 2 - 1)+Math.max(ndice,4)+adds);
             }
         }
         if (mSettings.useReducedSwing()) {
