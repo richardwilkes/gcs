@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class Bundler {
-    private static final String GCS_VERSION       = "4.27.0";
+    private static final String GCS_VERSION       = "4.29.0";
     private static       String JDK_MAJOR_VERSION = "15";
     private static final String ITEXT_VERSION     = "2.1.7";
     private static final String LINUX             = "linux";
@@ -746,9 +746,11 @@ public final class Bundler {
                 line = line.trim();
                 if ("Status: invalid".equals(line)) {
                     failWithLines("Notarization failed. Response follows:", lines);
+                    break;
                 }
                 if ("Status: success".equals(line)) {
                     success = true;
+                    break;
                 }
             }
             System.out.print(".");
@@ -765,6 +767,7 @@ public final class Bundler {
             line = line.trim();
             if ("The staple and validate action worked!".equals(line)) {
                 success = true;
+                break;
             }
         }
         if (!success) {

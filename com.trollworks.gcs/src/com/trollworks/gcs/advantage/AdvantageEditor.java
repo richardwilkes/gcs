@@ -239,12 +239,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
             Component panel = embedEditor(mPrereqs);
-            mTabPanel.addTab(panel.getName(), panel);
+            addTab(panel.getName(), panel);
             panel = embedEditor(mFeatures);
-            mTabPanel.addTab(panel.getName(), panel);
-            mTabPanel.addTab(mModifiers.getName(), mModifiers);
-            mTabPanel.addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
-            mTabPanel.addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
+            addTab(panel.getName(), panel);
+            addTab(mModifiers.getName(), mModifiers);
+            addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
+            addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
 
             if (!mIsEditable) {
                 UIUtilities.disableControls(mMeleeWeapons);
@@ -252,12 +252,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             }
             updatePoints();
         } else {
-            mTabPanel.addTab(mModifiers.getName(), mModifiers);
+            addTab(mModifiers.getName(), mModifiers);
         }
 
         if (mRow.getDataFile() instanceof GURPSCharacter) {
             mUserDesc = mRow.getUserDesc();
-            mTabPanel.addTab(I18n.Text("User Description"), createUserDescEditor());
+            addTab(I18n.Text("User Description"), createUserDescEditor());
         }
 
         if (!mIsEditable) {
@@ -267,6 +267,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         UIUtilities.selectTab(mTabPanel, getLastTabName());
 
         add(mTabPanel, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true).setMinimumHeight(32));
+    }
+
+    private void addTab(String title, Component panel) {
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     private JScrollPane createUserDescEditor() {

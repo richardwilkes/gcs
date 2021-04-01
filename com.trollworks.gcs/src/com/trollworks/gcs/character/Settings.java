@@ -48,7 +48,11 @@ public class Settings {
     public static final  String         TAG_USE_SIMPLE_METRIC_CONVERSIONS      = "use_simple_metric_conversions";
     public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS             = "show_college_in_sheet_spells";
     public static final  String         TAG_SHOW_DIFFICULTY                    = "show_difficulty";
+    public static final  String         TAG_SHOW_ADVANTAGE_MODIFIER_ADJ        = "show_advantage_modifier_adj";
+    public static final  String         TAG_SHOW_EQUIPMENT_MODIFIER_ADJ        = "show_equipment_modifier_adj";
+    public static final  String         TAG_SHOW_SPELL_ADJ                    = "show_spell_adj";
     public static final  String         TAG_USE_TITLE_IN_FOOTER                = "use_title_in_footer";
+    private static final String         TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE     = "extra_space_around_encumbrance";
     public static final  String         PREFIX                                 = GURPSCharacter.CHARACTER_PREFIX + "settings.";
     public static final  String         ID_DEFAULT_LENGTH_UNITS                = PREFIX + TAG_DEFAULT_LENGTH_UNITS;
     public static final  String         ID_DEFAULT_WEIGHT_UNITS                = PREFIX + TAG_DEFAULT_WEIGHT_UNITS;
@@ -67,7 +71,11 @@ public class Settings {
     public static final  String         ID_USE_SIMPLE_METRIC_CONVERSIONS       = PREFIX + TAG_USE_SIMPLE_METRIC_CONVERSIONS;
     public static final  String         ID_SHOW_COLLEGE_IN_SPELLS              = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
     public static final  String         ID_SHOW_DIFFICULTY                     = PREFIX + TAG_SHOW_DIFFICULTY;
+    public static final  String         ID_SHOW_ADVANTAGE_MODIFIER_ADJ         = PREFIX + TAG_SHOW_ADVANTAGE_MODIFIER_ADJ;
+    public static final  String         ID_SHOW_EQUIPMENT_MODIFIER_ADJ         = PREFIX + TAG_SHOW_EQUIPMENT_MODIFIER_ADJ;
+    public static final  String         ID_SHOW_SPELL_ADJ                     = PREFIX + TAG_SHOW_SPELL_ADJ;
     public static final  String         ID_USE_TITLE_IN_FOOTER                 = PREFIX + TAG_USE_TITLE_IN_FOOTER;
+    public static final  String         ID_EXTRA_SPACE_AROUND_ENCUMBRANCE      = PREFIX + TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE;
     private              GURPSCharacter mCharacter;
     private              LengthUnits    mDefaultLengthUnits;
     private              WeightUnits    mDefaultWeightUnits;
@@ -86,7 +94,11 @@ public class Settings {
     private              boolean        mUseSimpleMetricConversions; // B9
     private              boolean        mShowCollegeInSpells;
     private              boolean        mShowDifficulty;
+    private              boolean        mShowAdvantageModifierAdj;
+    private              boolean        mShowEquipmentModifierAdj;
+    private              boolean        mShowSpellAdj;
     private              boolean        mUseTitleInFooter;
+    private              boolean        mExtraSpaceAroundEncumbrance;
 
     public Settings(GURPSCharacter character) {
         Preferences prefs = Preferences.getInstance();
@@ -108,7 +120,11 @@ public class Settings {
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
         mShowDifficulty = prefs.showDifficulty();
+        mShowAdvantageModifierAdj = prefs.showAdvantageModifierAdj();
+        mShowEquipmentModifierAdj = prefs.showEquipmentModifierAdj();
+        mShowSpellAdj = prefs.showSpellAdj();
         mUseTitleInFooter = prefs.useTitleInFooter();
+        mExtraSpaceAroundEncumbrance = prefs.extraSpaceAroundEncumbrance();
     }
 
     void load(JsonMap m) throws IOException {
@@ -140,7 +156,15 @@ public class Settings {
         mUseSimpleMetricConversions = m.getBoolean(TAG_USE_SIMPLE_METRIC_CONVERSIONS);
         mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
         mShowDifficulty = m.getBoolean(TAG_SHOW_DIFFICULTY);
+        mShowAdvantageModifierAdj = m.getBoolean(TAG_SHOW_ADVANTAGE_MODIFIER_ADJ);
+        mShowEquipmentModifierAdj = m.getBoolean(TAG_SHOW_EQUIPMENT_MODIFIER_ADJ);
+        if (m.has(TAG_SHOW_SPELL_ADJ)) {
+            mShowSpellAdj = m.getBoolean(TAG_SHOW_SPELL_ADJ);
+        } else {
+            mShowSpellAdj = Preferences.DEFAULT_SHOW_SPELL_ADJ;
+        }
         mUseTitleInFooter = m.getBoolean(TAG_USE_TITLE_IN_FOOTER);
+        mExtraSpaceAroundEncumbrance = m.getBoolean(TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mBlockLayout = new ArrayList<>();
         JsonArray a     = m.getArray(TAG_BLOCK_LAYOUT);
         int       count = a.size();
@@ -168,7 +192,11 @@ public class Settings {
         w.keyValue(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
         w.keyValue(TAG_SHOW_DIFFICULTY, mShowDifficulty);
+        w.keyValue(TAG_SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
+        w.keyValue(TAG_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
+        w.keyValue(TAG_SHOW_SPELL_ADJ, mShowSpellAdj);
         w.keyValue(TAG_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+        w.keyValue(TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
         w.key(TAG_BLOCK_LAYOUT);
         w.startArray();
         for (String one : mBlockLayout) {
@@ -379,6 +407,39 @@ public class Settings {
         }
     }
 
+    public boolean showAdvantageModifierAdj() {
+        return mShowAdvantageModifierAdj;
+    }
+
+    public void setShowAdvantageModifierAdj(boolean show) {
+        if (mShowAdvantageModifierAdj != show) {
+            mShowAdvantageModifierAdj = show;
+            mCharacter.notifySingle(ID_SHOW_ADVANTAGE_MODIFIER_ADJ, Boolean.valueOf(mShowAdvantageModifierAdj));
+        }
+    }
+
+    public boolean showEquipmentModifierAdj() {
+        return mShowEquipmentModifierAdj;
+    }
+
+    public void setShowEquipmentModifierAdj(boolean show) {
+        if (mShowEquipmentModifierAdj != show) {
+            mShowEquipmentModifierAdj = show;
+            mCharacter.notifySingle(ID_SHOW_EQUIPMENT_MODIFIER_ADJ, Boolean.valueOf(mShowEquipmentModifierAdj));
+        }
+    }
+
+    public boolean showSpellAdj() {
+        return mShowSpellAdj;
+    }
+
+    public void setShowSpellAdj(boolean show) {
+        if (mShowSpellAdj != show) {
+            mShowSpellAdj = show;
+            mCharacter.notifySingle(ID_SHOW_SPELL_ADJ, Boolean.valueOf(mShowSpellAdj));
+        }
+    }
+
     public boolean useTitleInFooter() {
         return mUseTitleInFooter;
     }
@@ -387,6 +448,17 @@ public class Settings {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
             mCharacter.notifySingle(ID_USE_TITLE_IN_FOOTER, Boolean.valueOf(mUseTitleInFooter));
+        }
+    }
+
+    public boolean extraSpaceAroundEncumbrance() {
+        return mExtraSpaceAroundEncumbrance;
+    }
+
+    public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
+        if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
+            mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
+            mCharacter.notifySingle(ID_EXTRA_SPACE_AROUND_ENCUMBRANCE, Boolean.valueOf(mExtraSpaceAroundEncumbrance));
         }
     }
 }

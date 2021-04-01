@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.Log;
@@ -699,7 +700,7 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
                 offscreen = Img.create(getGraphicsConfiguration(), width, height, Transparency.TRANSLUCENT);
                 g2d = offscreen.getGraphics();
                 Color saved = g2d.getBackground();
-                g2d.setBackground(new Color(0, true));
+                g2d.setBackground(Colors.TRANSPARENT);
                 g2d.clearRect(0, 0, width, height);
                 g2d.setBackground(saved);
                 Insets insets = getInsets();
@@ -756,7 +757,7 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
             off2 = Img.create(getGraphicsConfiguration(), mDragClip.width, mDragClip.height, Transparency.TRANSLUCENT);
             gc = off2.getGraphics();
             gc.setClip(new Rectangle(0, 0, mDragClip.width, mDragClip.height));
-            gc.setBackground(new Color(0, true));
+            gc.setBackground(Colors.TRANSPARENT);
             gc.clearRect(0, 0, mDragClip.width, mDragClip.height);
             gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             Point pt = toContentView(new Point(mHeaderBounds.x, mHeaderBounds.y));

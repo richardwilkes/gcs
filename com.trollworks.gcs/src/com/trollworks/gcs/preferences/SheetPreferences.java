@@ -50,7 +50,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JCheckBox               mUsePhoenixSwing;
     private JCheckBox               mUseThrustEqualsSwingMinus2;
     private JCheckBox               mUseSimpleMetricConversions;
-    private JCheckBox               mAutoNameNewCharacters;
+    private JCheckBox               mAutoFillProfile;
 
     /**
      * Creates a new {@link SheetPreferences}.
@@ -64,7 +64,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
         mPortrait = new PortraitPreferencePanel(Profile.getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         mPortrait.addActionListener(this);
-        add(mPortrait, new PrecisionLayoutData().setVerticalSpan(11).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        add(mPortrait, new PrecisionLayoutData().setVerticalSpan(12).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         String playerTooltip = I18n.Text("The player name to use when a new character sheet is created");
         addLabel(I18n.Text("Player"), playerTooltip);
@@ -78,7 +78,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         addLabel(I18n.Text("Initial Points"), initialPointsTooltip);
         mInitialPoints = addTextField(initialPointsTooltip, Integer.toString(prefs.getInitialPoints()));
 
-        mAutoNameNewCharacters = addCheckBox(I18n.Text("Automatically name new characters"), null, prefs.autoNameNewCharacters());
+        mAutoFillProfile = addCheckBox(I18n.Text("Automatically fill in new character identity and description information with randomized choices"), null, prefs.autoFillProfile());
         mBaseWillOn10 = addCheckBox(I18n.Text("Base Will on 10 and not IQ *"), null, prefs.baseWillOn10());
         mBasePerOn10 = addCheckBox(I18n.Text("Base Perception on 10 and not IQ *"), null, prefs.basePerOn10());
         mUseMultiplicativeModifiers = addCheckBox(I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value) *"), null, prefs.useMultiplicativeModifiers());
@@ -186,8 +186,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
             prefs.setUseThrustEqualsSwingMinus2(mUseThrustEqualsSwingMinus2.isSelected());
         } else if (source == mUseSimpleMetricConversions) {
             prefs.setUseSimpleMetricConversions(mUseSimpleMetricConversions.isSelected());
-        } else if (source == mAutoNameNewCharacters) {
-            prefs.setAutoNameNewCharacters(mAutoNameNewCharacters.isSelected());
+        } else if (source == mAutoFillProfile) {
+            prefs.setAutoFillProfile(mAutoFillProfile.isSelected());
         }
         adjustResetButton();
     }
@@ -198,7 +198,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mTechLevel.setText(Preferences.DEFAULT_DEFAULT_TECH_LEVEL);
         mInitialPoints.setText(Integer.toString(Preferences.DEFAULT_INITIAL_POINTS));
         setPortrait(Preferences.DEFAULT_DEFAULT_PORTRAIT_PATH);
-        mAutoNameNewCharacters.setSelected(Preferences.DEFAULT_AUTO_NAME_NEW_CHARACTERS);
+        mAutoFillProfile.setSelected(Preferences.DEFAULT_AUTO_FILL_PROFILE);
         mUseModifyingDicePlusAdds.setSelected(Preferences.DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS);
         mBaseWillOn10.setSelected(Preferences.DEFAULT_BASE_WILL_ON_10);
         mBasePerOn10.setSelected(Preferences.DEFAULT_BASE_PER_ON_10);
@@ -224,7 +224,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
         atDefault = atDefault && prefs.usePhoenixSwing() == Preferences.DEFAULT_USE_PHOENIX_SWING;
-        atDefault = atDefault && prefs.autoNameNewCharacters() == Preferences.DEFAULT_AUTO_NAME_NEW_CHARACTERS;
+        atDefault = atDefault && prefs.autoFillProfile() == Preferences.DEFAULT_AUTO_FILL_PROFILE;
         return atDefault;
     }
 }

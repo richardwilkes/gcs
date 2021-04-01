@@ -309,7 +309,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         if (m.has(TAG_CR)) {
             mCR = SelfControlRoll.getByCRValue(m.getInt(TAG_CR));
             if (m.has(KEY_CR_ADJ)) {
-                mCRAdj = Enums.extract(m.getString(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
+                mCRAdj = Enums.extract(m.getString(KEY_CR_ADJ), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
             }
         }
         if (m.has(KEY_MODIFIERS)) {

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -110,15 +111,20 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
         mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
         Component panel = embedEditor(mPrereqs);
-        mTabPanel.addTab(panel.getName(), panel);
-        mTabPanel.addTab(mMeleeWeapons.getName(), mMeleeWeapons);
-        mTabPanel.addTab(mRangedWeapons.getName(), mRangedWeapons);
+        addTab(panel.getName(), panel);
+        addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
+        addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
         if (!mIsEditable) {
             UIUtilities.disableControls(mMeleeWeapons);
             UIUtilities.disableControls(mRangedWeapons);
         }
         UIUtilities.selectTab(mTabPanel, getLastTabName());
         add(mTabPanel);
+    }
+
+    private void addTab(String title, Component panel) {
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     protected Container createPointsFields() {

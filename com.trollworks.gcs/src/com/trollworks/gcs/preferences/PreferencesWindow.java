@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -66,7 +67,9 @@ public class PreferencesWindow extends BaseWindow implements ActionListener, Cha
     }
 
     private void addTab(PreferencePanel panel) {
-        mTabPanel.addTab(panel.toString(), panel);
+        String title = panel.toString();
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     @Override

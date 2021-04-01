@@ -157,8 +157,13 @@ public enum WeaponColumn {
         }
 
         @Override
+        public String getToolTip(WeaponDisplayRow weapon) {
+            return weapon.getParryToolTip();
+        }
+
+        @Override
         public String getDataAsText(WeaponStats weapon) {
-            return ((MeleeWeaponStats) weapon).getResolvedParry();
+            return ((MeleeWeaponStats) weapon).getResolvedParry(null);
         }
 
         @Override
@@ -179,8 +184,13 @@ public enum WeaponColumn {
         }
 
         @Override
+        public String getToolTip(WeaponDisplayRow weapon) {
+            return weapon.getBlockToolTip();
+        }
+
+        @Override
         public String getDataAsText(WeaponStats weapon) {
-            return ((MeleeWeaponStats) weapon).getResolvedBlock();
+            return ((MeleeWeaponStats) weapon).getResolvedBlock(null);
         }
 
         @Override

@@ -18,6 +18,8 @@ import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.layout.RowDistribution;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
@@ -44,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
@@ -55,6 +56,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     private WeaponOutline                mOutline;
     private IconButton                   mAddButton;
     private IconButton                   mDeleteButton;
+    private IconButton                   mDuplicateButton;
     private EditorField                  mUsage;
     private EditorField                  mStrength;
     private JComboBox<WeaponSTDamage>    mDamageSTCombo;
@@ -78,20 +80,23 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
      * @param weaponClass The {@link Class} of weapons.
      */
     public WeaponEditor(ListRow owner, List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
-        super(new BorderLayout());
+        super(new PrecisionLayout());
         mOwner = owner;
         mWeaponClass = weaponClass;
         mAddButton = new IconButton(Images.ADD, I18n.Text("Add an attack"), this::addWeapon);
         mDeleteButton = new IconButton(Images.REMOVE, I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
-        Panel top  = new Panel(new BorderLayout());
+        mDuplicateButton = new IconButton(Images.DUPLICATE, I18n.Text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
+        mDuplicateButton.setEnabled(false);
         Panel left = new Panel(new PrecisionLayout());
         left.add(mAddButton);
         left.add(mDeleteButton);
-        top.add(left, BorderLayout.WEST);
-        top.add(createOutline(weapons, weaponClass), BorderLayout.CENTER);
-        add(top, BorderLayout.NORTH);
-        add(createEditorPanel(), BorderLayout.CENTER);
+        left.add(mDuplicateButton);
+        Panel top = new Panel(new PrecisionLayout().setColumns(2));
+        top.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        top.add(createOutline(weapons, weaponClass), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
+        add(top, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        add(createEditorPanel(), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
         setName(toString());
     }
 
@@ -115,7 +120,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     }
 
     private Component createOutline(List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
-        mOutline = new WeaponOutline();
+        mOutline = new WeaponOutline(mOwner);
         OutlineModel model = mOutline.getModel();
         WeaponColumn.addColumns(mOutline, weaponClass, true);
         mOutline.setAllowColumnResize(false);
@@ -134,9 +139,10 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
             mOutline.setMinimumSize(size);
         }
 
-        JScrollPane scroller = new JScrollPane(mOutline);
-        scroller.setColumnHeaderView(mOutline.getHeaderPanel());
-        return scroller;
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(mOutline.getHeaderPanel(), BorderLayout.NORTH);
+        panel.add(mOutline, BorderLayout.CENTER);
+        return panel;
     }
 
     private Container createEditorPanel() {
@@ -206,14 +212,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         mDefaults = new Defaults(new ArrayList<>());
         mDefaults.removeAll();
         mDefaults.addActionListener(this);
-        JScrollPane scrollPanel = new JScrollPane(mDefaults);
-        Dimension   size        = mDefaults.getMinimumSize();
-        if (size.height < 50) {
-            size.height = 50;
-            mDefaults.setMinimumSize(size);
-        }
-        scrollPanel.setPreferredSize(new Dimension(50, 50));
-        parent.add(scrollPanel);
+        parent.add(mDefaults);
     }
 
     /**
@@ -334,6 +333,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
                 setWeapon(null);
             }
             mDeleteButton.setEnabled(count > 0);
+            mDuplicateButton.setEnabled(count > 0);
         }
     }
 

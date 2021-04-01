@@ -63,6 +63,7 @@ import javax.imageio.ImageIO;
 public class TextTemplate {
     private static final String         UNIDENTIFIED_KEY                      = "Unidentified key: '%s'";
     private static final String         CURRENT                               = "current";
+    private static final String         GROUP                                 = "GROUP";
     private static final String         ITEM                                  = "ITEM";
     private static final String         ONE                                   = "1";
     private static final String         UNDERSCORE                            = "_";
@@ -271,6 +272,8 @@ public class TextTemplate {
     private static final String         KEY_TYPE                              = "TYPE";
     private static final String         KEY_UNCONSCIOUS                       = "UNCONSCIOUS";
     private static final String         KEY_USAGE                             = "USAGE";
+    private static final String         KEY_USES                              = "USES";
+    private static final String         KEY_MAX_USES                          = "MAX_USES";
     private static final String         KEY_VISION                            = "VISION";
     private static final String         KEY_WEAPON_STRENGTH                   = "STRENGTH";
     private static final String         KEY_WEAPON_STRENGTH_NUM               = "WEAPON_STRENGTH";
@@ -537,10 +540,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel(false))));
             break;
         case KEY_BEST_CURRENT_PARRY:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParry);
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParryNoToolTip);
             break;
         case KEY_BEST_CURRENT_BLOCK:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlock);
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
             break;
         case KEY_FP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getCurrentFatiguePoints()));
@@ -1093,6 +1096,7 @@ public class TextTemplate {
                                         out.write(parent.getID().toString());
                                     }
                                 }
+                                case KEY_TYPE -> writeEncodedText(out, skill.canHaveChildren() ? GROUP : ITEM);
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
@@ -1179,6 +1183,7 @@ public class TextTemplate {
                                         out.write(parent.getID().toString());
                                     }
                                 }
+                                case KEY_TYPE -> writeEncodedText(out, spell.canHaveChildren() ? GROUP : ITEM);
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
@@ -1227,11 +1232,11 @@ public class TextTemplate {
     private int processMeleeWeaponKeys(BufferedWriter out, String key, int counter, MeleeWeaponStats weapon, int index, String contents, List<MeleeWeaponStats> attackModes) throws IOException {
         switch (key) {
         case KEY_PARRY -> {
-            writeEncodedText(out, weapon.getResolvedParry());
+            writeEncodedText(out, weapon.getResolvedParryNoToolTip());
             return index;
         }
         case KEY_BLOCK -> {
-            writeEncodedText(out, weapon.getResolvedBlock());
+            writeEncodedText(out, weapon.getResolvedBlockNoToolTip());
             return index;
         }
         case KEY_REACH -> {
@@ -1686,6 +1691,9 @@ public class TextTemplate {
                                         out.write(parent.getID().toString());
                                     }
                                     break;
+                                case KEY_TYPE:
+                                    writeEncodedText(out, equipment.canHaveChildren() ? GROUP : ITEM);
+                                    break;
                                 case KEY_TL:
                                     writeEncodedText(out, equipment.getTechLevel());
                                     break;
@@ -1701,6 +1709,12 @@ public class TextTemplate {
                                             writeEncodedText(out, parents.get(j).getDescription());
                                         }
                                     }
+                                    break;
+                                case KEY_USES:
+                                    writeEncodedText(out, Integer.valueOf(equipment.getUses()).toString());
+                                    break;
+                                case KEY_MAX_USES:
+                                    writeEncodedText(out, Integer.valueOf(equipment.getMaxUses()).toString());
                                     break;
                                 default:
                                     if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
@@ -1783,6 +1797,9 @@ public class TextTemplate {
                                 if (parent != null) {
                                     out.write(parent.getID().toString());
                                 }
+                                break;
+                            case KEY_TYPE:
+                                writeEncodedText(out, note.canHaveChildren() ? GROUP : ITEM);
                                 break;
                             case KEY_REF:
                                 writeEncodedText(out, note.getReference());

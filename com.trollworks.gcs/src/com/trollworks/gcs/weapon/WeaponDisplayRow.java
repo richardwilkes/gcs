@@ -56,6 +56,14 @@ public class WeaponDisplayRow extends Row {
         return mWeapon.getSkillLevelToolTip();
     }
 
+    public String getParryToolTip() {
+        return mWeapon.getParryToolTip();
+    }
+
+    public String getBlockToolTip() {
+        return mWeapon.getBlockToolTip();
+    }
+
     public String getDamageToolTip() {
         return mWeapon.getDamage().getDamageToolTip();
     }

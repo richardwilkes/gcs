@@ -104,13 +104,18 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
         mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
         Component panel = embedEditor(mPrereqs);
-        mTabPanel.addTab(panel.getName(), panel);
+        addTab(panel.getName(), panel);
         panel = embedEditor(mFeatures);
-        mTabPanel.addTab(panel.getName(), panel);
-        mTabPanel.addTab(mMeleeWeapons.getName(), mMeleeWeapons);
-        mTabPanel.addTab(mRangedWeapons.getName(), mRangedWeapons);
+        addTab(panel.getName(), panel);
+        addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
+        addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
         UIUtilities.selectTab(mTabPanel, getLastTabName());
         add(mTabPanel);
+    }
+
+    private void addTab(String title, Component panel) {
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     private void createDefaults(Container parent) {

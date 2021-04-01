@@ -129,6 +129,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private              boolean                     mOkToPaint                = true;
     private              boolean                     mIsPrinting;
     private              boolean                     mSyncWeapons;
+    private              boolean                     mSyncReactions;
+    private              boolean                     mSyncConditionalModifiers;
     private              boolean                     mReloadSkillColumns;
     private              boolean                     mReloadSpellColumns;
 
@@ -218,17 +220,19 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         wrapper.add(new DescriptionPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setHorizontalSpan(2));
         pageAssembler.addToContent(wrapper, null, null);
 
+        boolean extraSpaceAroundEncumbrance = mCharacter.getSettings().extraSpaceAroundEncumbrance();
+
         wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
         wrapper.add(new AttributesPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(true));
-        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
-        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
+        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundEncumbrance));
+        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundEncumbrance));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(!extraSpaceAroundEncumbrance).setFillAlignment());
         wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
-        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
-        wrapper.add(wrapper2, new PrecisionLayoutData().setFillAlignment());
+        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundEncumbrance));
+        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundEncumbrance));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(extraSpaceAroundEncumbrance).setFillAlignment());
         pageAssembler.addToContent(wrapper, null, null);
 
         // Add the various outline blocks, based on the layout preference.
@@ -708,6 +712,10 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_COLLEGE_IN_SPELLS);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_DIFFICULTY);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_ADVANTAGE_MODIFIER_ADJ);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_EQUIPMENT_MODIFIER_ADJ);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_SPELL_ADJ);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_EXTRA_SPACE_AROUND_ENCUMBRANCE);
 
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_DISABLED);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_WEAPON_STATUS_CHANGED);
@@ -763,6 +771,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 OutlineSyncer.add(getAdvantageOutline());
                 OutlineSyncer.add(mReactionsOutline);
                 OutlineSyncer.add(mConditionalModifiersOutline);
+                mSyncReactions = true;
+                mSyncConditionalModifiers = true;
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (Settings.ID_USER_DESCRIPTION_DISPLAY.equals(type) || Settings.ID_MODIFIERS_DISPLAY.equals(type) || Settings.ID_NOTES_DISPLAY.equals(type)) {
@@ -786,6 +796,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 OutlineSyncer.add(getOtherEquipmentOutline());
                 OutlineSyncer.add(mReactionsOutline);
                 OutlineSyncer.add(mConditionalModifiersOutline);
+                mSyncReactions = true;
+                mSyncConditionalModifiers = true;
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (type.startsWith(Note.PREFIX)) {
@@ -942,7 +954,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     private void syncRoots() {
-        if (mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
+        if (mSyncReactions || mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
             OutlineModel outlineModel = mReactionsOutline.getModel();
             String       sortConfig   = outlineModel.getSortConfig();
             outlineModel.removeAllRows();
@@ -951,7 +963,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             }
             outlineModel.applySortConfig(sortConfig);
         }
-        if (mRootsToSync.contains(mConditionalModifiersOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
+        if (mSyncConditionalModifiers || mRootsToSync.contains(mConditionalModifiersOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
             OutlineModel outlineModel = mConditionalModifiersOutline.getModel();
             String       sortConfig   = outlineModel.getSortConfig();
             outlineModel.removeAllRows();
@@ -979,6 +991,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             }
             outlineModel.applySortConfig(sortConfig);
         }
+        mSyncReactions = false;
+        mSyncConditionalModifiers = true;
         mSyncWeapons = false;
         mRootsToSync.clear();
     }
