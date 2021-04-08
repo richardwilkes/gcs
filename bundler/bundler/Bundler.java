@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -40,8 +40,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class Bundler {
-    private static final String GCS_VERSION       = "4.25.1";
-    private static       String JDK_MAJOR_VERSION = "15";
+    private static final String GCS_VERSION       = "4.29.0";
+    private static       String JDK_MAJOR_VERSION = "16";
     private static final String ITEXT_VERSION     = "2.1.7";
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
@@ -592,10 +592,6 @@ public final class Bundler {
         args.add(MODULE_DIR.toString());
         args.add("--output");
         args.add(JRE.toString());
-        if (!OS.equals(WINDOWS)) {
-            // Don't know why, but as of JDK 15, this flag cause *some* Windows machines to be unable to launch GCS
-            args.add("--compress=2");
-        }
         args.add("--no-header-files");
         args.add("--no-man-pages");
         args.add("--strip-debug");
@@ -615,10 +611,6 @@ public final class Bundler {
         args.add("Richard A. Wilkes");
         args.add("--description");
         args.add("GCS (GURPS Character Sheet) is a stand-alone, interactive, character sheet editor that allows you to build characters for the GURPS 4th Edition roleplaying game system.");
-        if (!noInstaller) {
-            args.add("--license-file");
-            args.add("LICENSE");
-        }
         args.add("--icon");
         args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
         if (OS.equals(MACOS) || !noInstaller) {
@@ -754,9 +746,11 @@ public final class Bundler {
                 line = line.trim();
                 if ("Status: invalid".equals(line)) {
                     failWithLines("Notarization failed. Response follows:", lines);
+                    break;
                 }
                 if ("Status: success".equals(line)) {
                     success = true;
+                    break;
                 }
             }
             System.out.print(".");
@@ -773,6 +767,7 @@ public final class Bundler {
             line = line.trim();
             if ("The staple and validate action worked!".equals(line)) {
                 success = true;
+                break;
             }
         }
         if (!success) {

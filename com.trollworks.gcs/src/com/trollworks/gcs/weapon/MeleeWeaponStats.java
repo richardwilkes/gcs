@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -111,11 +112,16 @@ public class MeleeWeaponStats extends WeaponStats {
     }
 
     /** @return The parry, fully resolved for the user's skills, if possible. */
-    public String getResolvedParry() {
-        return getResolvedValue(mParry, SkillDefaultType.Parry);
+    public String getResolvedParryNoToolTip() {
+        return getResolvedParry(null);
     }
 
-    private String getResolvedValue(String input, SkillDefaultType baseDefaultType) {
+    /** @return The parry, fully resolved for the user's skills, if possible. */
+    public String getResolvedParry(StringBuilder toolTip) {
+        return getResolvedValue(mParry, SkillDefaultType.Parry, toolTip);
+    }
+
+    private String getResolvedValue(String input, SkillDefaultType baseDefaultType, StringBuilder toolTip) {
         DataFile df = getOwner().getDataFile();
         if (df instanceof GURPSCharacter) {
             GURPSCharacter  character  = (GURPSCharacter) df;
@@ -153,22 +159,52 @@ public class MeleeWeaponStats extends WeaponStats {
 
                         if (found) {
                             String num;
-
                             if (skillLevel == Integer.MAX_VALUE) {
-                                int best = Integer.MIN_VALUE;
+                                StringBuilder primaryToolTip   = toolTip != null ? new StringBuilder() : null;
+                                StringBuilder secondaryToolTip = null;
+                                int           preAdj           = getSkillLevelBaseAdjustment(character, primaryToolTip);
+                                int           postAdj          = getSkillLevelPostAdjustment(character, primaryToolTip);
+                                int           adj              = 3 + (baseDefaultType == SkillDefaultType.Parry ? character.getParryBonus() : character.getBlockBonus());
+                                int           best             = Integer.MIN_VALUE;
                                 for (SkillDefault skillDefault : getDefaults()) {
                                     SkillDefaultType type  = skillDefault.getType();
                                     int              level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
-                                    if (level != Integer.MIN_VALUE && type != baseDefaultType) {
-                                        level = level / 2 + 3 + (baseDefaultType == SkillDefaultType.Parry ? character.getParryBonus() : character.getBlockBonus());
-                                    }
-                                    if (level > best) {
-                                        best = level;
+                                    if (level != Integer.MIN_VALUE) {
+                                        level += preAdj;
+                                        if (type != baseDefaultType) {
+                                            level = level / 2 + adj;
+                                        }
+                                        level += postAdj;
+                                        StringBuilder possibleToolTip = null;
+                                        if (type == SkillDefaultType.Skill && "Karate".equals(skillDefault.getName())) {
+                                            if (toolTip != null) {
+                                                possibleToolTip = new StringBuilder();
+                                            }
+                                            level += getEncumbrancePenalty(character, possibleToolTip);
+                                        }
+                                        if (level > best) {
+                                            best = level;
+                                            secondaryToolTip = possibleToolTip;
+                                        }
                                     }
                                 }
-                                skillLevel = best == Integer.MIN_VALUE ? 0 : best;
+                                if (best != Integer.MIN_VALUE && toolTip != null) {
+                                    if (!primaryToolTip.isEmpty()) {
+                                        if (!toolTip.isEmpty()) {
+                                            toolTip.append('\n');
+                                        }
+                                        toolTip.append(primaryToolTip);
+                                    }
+                                    if (secondaryToolTip != null && !secondaryToolTip.isEmpty()) {
+                                        if (!toolTip.isEmpty()) {
+                                            toolTip.append('\n');
+                                        }
+                                        toolTip.append(secondaryToolTip);
+                                    }
+                                }
+                                skillLevel = Math.max(best, 0);
                             }
-                            num = Numbers.format(skillLevel + (neg ? -modifier : modifier) + (token.contains("F") ? character.getEncumbranceLevel(true).getEncumbrancePenalty() : 0));
+                            num = Numbers.format(skillLevel + (neg ? -modifier : modifier));
                             if (i < max) {
                                 buffer.append(num);
                                 token = token.substring(i);
@@ -204,8 +240,13 @@ public class MeleeWeaponStats extends WeaponStats {
     }
 
     /** @return The block, fully resolved for the user's skills, if possible. */
-    public String getResolvedBlock() {
-        return getResolvedValue(mBlock, SkillDefaultType.Block);
+    public String getResolvedBlockNoToolTip() {
+        return getResolvedBlock(null);
+    }
+
+    /** @return The block, fully resolved for the user's skills, if possible. */
+    public String getResolvedBlock(StringBuilder toolTip) {
+        return getResolvedValue(mBlock, SkillDefaultType.Block, toolTip);
     }
 
     /**
@@ -249,5 +290,21 @@ public class MeleeWeaponStats extends WeaponStats {
             return mReach.equals(mws.mReach) && mParry.equals(mws.mParry) && mBlock.equals(mws.mBlock);
         }
         return false;
+    }
+
+    public String getParryToolTip() {
+        StringBuilder toolTip = new StringBuilder();
+        if (mOwner.getDataFile() instanceof GURPSCharacter) {
+            getResolvedParry(toolTip);
+        }
+        return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
+    }
+
+    public String getBlockToolTip() {
+        StringBuilder toolTip = new StringBuilder();
+        if (mOwner.getDataFile() instanceof GURPSCharacter) {
+            getResolvedBlock(toolTip);
+        }
+        return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
     }
 }

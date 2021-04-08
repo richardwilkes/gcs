@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -84,11 +85,17 @@ public enum SkillColumn {
 
         @Override
         public Cell getCell() {
-            return new ListTextCell(SwingConstants.RIGHT, false);
+            return new ListTextCell(SwingConstants.LEFT, false);
         }
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
+            if (dataFile instanceof GURPSCharacter) {
+                return ((GURPSCharacter) dataFile).getSettings().showDifficulty();
+            }
+            if (dataFile instanceof Template) {
+                return Preferences.getInstance().showDifficulty();
+            }
             return dataFile instanceof ListFile;
         }
 

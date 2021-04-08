@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.UIManager;
 
 /** Provides standardized color access. */
 public final class Colors {
@@ -346,37 +345,5 @@ public final class Colors {
      */
     public static Color getWithAlpha(Color color, int alpha) {
         return new Color(color.getRGB() & 0x00FFFFFF | alpha << 24, true);
-    }
-
-    /**
-     * @param selected Whether or not the selected version of the color is needed.
-     * @param active   Whether or not the active version of the color is needed.
-     * @return The background color.
-     */
-    public static Color getListBackground(boolean selected, boolean active) {
-        if (selected) {
-            Color color = UIManager.getColor("List.selectionBackground");
-            if (!active) {
-                Color previous = color;
-                color = adjustSaturation(color, -0.5f);
-                if (previous.getRGB() == color.getRGB()) {
-                    color = adjustBrightness(color, 0.2f);
-                }
-            }
-            return color;
-        }
-        return UIManager.getColor("List.background");
-    }
-
-    /**
-     * @param selected Whether or not the selected version of the color is needed.
-     * @param active   Whether or not the active version of the color is needed.
-     * @return The foreground color.
-     */
-    public static Color getListForeground(boolean selected, boolean active) {
-        if (selected) {
-            return UIManager.getColor("List.selectionForeground");
-        }
-        return UIManager.getColor("List.foreground");
     }
 }

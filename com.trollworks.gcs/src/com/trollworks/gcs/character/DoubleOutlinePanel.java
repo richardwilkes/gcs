@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -39,7 +39,7 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
      */
     public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
         setLayout(this);
-        setBackground(Color.WHITE);
+        setBackground(ThemeColor.PAGE);
         mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
         mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
         add(mLeftPanel);

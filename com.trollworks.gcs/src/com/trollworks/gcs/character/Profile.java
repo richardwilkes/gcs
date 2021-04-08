@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -136,23 +136,38 @@ public class Profile {
         mCustomPortrait = false;
         mPortrait = null;
         mTitle = "";
-        mAge = full ? Numbers.format(getRandomAge()) : "";
-        mBirthday = full ? getRandomMonthAndDay() : "";
-        mEyeColor = full ? getRandomEyeColor("") : "";
-        mHair = full ? getRandomHair("") : "";
-        mSkinColor = full ? getRandomSkinColor("") : "";
-        mHandedness = full ? getRandomHandedness() : "";
-        Settings settings = mCharacter.getSettings();
-        mHeight = full ? getRandomHeight(mCharacter.getStrength(), getSizeModifier()) : new LengthValue(Fixed6.ZERO, settings.defaultLengthUnits());
-        mWeight = full ? getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE) : new WeightValue(Fixed6.ZERO, settings.defaultWeightUnits());
-        mGender = full ? getRandomGender() : "";
-        Preferences prefs = Preferences.getInstance();
-        mName = full && prefs.autoNameNewCharacters() ? USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender)) : "";
-        mTechLevel = full ? prefs.getDefaultTechLevel() : "";
         mReligion = "";
-        mPlayerName = full ? prefs.getDefaultPlayerName() : "";
-        mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         mHitLocationTable = HitLocationTable.HUMANOID;
+        Preferences prefs = Preferences.getInstance();
+        mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
+        if (full) {
+            mAge = Numbers.format(getRandomAge());
+            mBirthday = getRandomMonthAndDay();
+            mEyeColor = getRandomEyeColor("");
+            mHair = getRandomHair("");
+            mSkinColor = getRandomSkinColor("");
+            mHandedness = getRandomHandedness();
+            mHeight = getRandomHeight(mCharacter.getStrength(), getSizeModifier());
+            mWeight = getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE);
+            mGender = getRandomGender();
+            mName = USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender));
+            mTechLevel = prefs.getDefaultTechLevel();
+            mPlayerName = prefs.getDefaultPlayerName();
+        } else {
+            mAge = "";
+            mBirthday = "";
+            mEyeColor = "";
+            mHair = "";
+            mSkinColor = "";
+            mHandedness = "";
+            Settings settings = mCharacter.getSettings();
+            mHeight = new LengthValue(Fixed6.ZERO, settings.defaultLengthUnits());
+            mWeight = new WeightValue(Fixed6.ZERO, settings.defaultWeightUnits());
+            mGender = "";
+            mName = "";
+            mTechLevel = "";
+            mPlayerName = "";
+        }
     }
 
     void load(JsonMap m) {

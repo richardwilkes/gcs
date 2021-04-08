@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -63,6 +63,7 @@ import javax.imageio.ImageIO;
 public class TextTemplate {
     private static final String         UNIDENTIFIED_KEY                      = "Unidentified key: '%s'";
     private static final String         CURRENT                               = "current";
+    private static final String         GROUP                                 = "GROUP";
     private static final String         ITEM                                  = "ITEM";
     private static final String         ONE                                   = "1";
     private static final String         UNDERSCORE                            = "_";
@@ -94,6 +95,7 @@ public class TextTemplate {
     private static final String         KEY_BEST_CURRENT_PARRY                = "BEST_CURRENT_PARRY";
     private static final String         KEY_BIRTHDAY                          = "BIRTHDAY";
     private static final String         KEY_BLOCK                             = "BLOCK";
+    private static final String         KEY_BODY_TYPE                         = "BODY_TYPE";
     private static final String         KEY_BULK                              = "BULK";
     private static final String         KEY_CARRIED_STATUS                    = "CARRIED_STATUS";
     private static final String         KEY_CARRIED_VALUE                     = "CARRIED_VALUE";
@@ -202,6 +204,7 @@ public class TextTemplate {
     private static final String         KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
     private static final String         KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
     private static final String         KEY_OTHER_VALUE                       = "OTHER_EQUIPMENT_VALUE";
+    private static final String         KEY_PARENT_ID                         = "PARENT_ID";
     private static final String         KEY_PARRY                             = "PARRY";
     private static final String         KEY_PENALTY                           = "PENALTY";
     private static final String         KEY_PERCEPTION                        = "PERCEPTION";
@@ -224,6 +227,8 @@ public class TextTemplate {
     private static final String         KEY_REACH                             = "REACH";
     private static final String         KEY_REACTION_LOOP_END                 = "REACTION_LOOP_END";
     private static final String         KEY_REACTION_LOOP_START               = "REACTION_LOOP_START";
+    private static final String         KEY_CONDITIONAL_MODIFIERS_LOOP_END    = "CONDITIONAL_MODIFIERS_LOOP_END";
+    private static final String         KEY_CONDITIONAL_MODIFIERS_LOOP_START  = "CONDITIONAL_MODIFIERS_LOOP_START";
     private static final String         KEY_RECOIL                            = "RECOIL";
     private static final String         KEY_REELING                           = "REELING";
     private static final String         KEY_REF                               = "REF";
@@ -267,6 +272,8 @@ public class TextTemplate {
     private static final String         KEY_TYPE                              = "TYPE";
     private static final String         KEY_UNCONSCIOUS                       = "UNCONSCIOUS";
     private static final String         KEY_USAGE                             = "USAGE";
+    private static final String         KEY_USES                              = "USES";
+    private static final String         KEY_MAX_USES                          = "MAX_USES";
     private static final String         KEY_VISION                            = "VISION";
     private static final String         KEY_WEAPON_STRENGTH                   = "STRENGTH";
     private static final String         KEY_WEAPON_STRENGTH_NUM               = "WEAPON_STRENGTH";
@@ -287,8 +294,6 @@ public class TextTemplate {
     private              CharacterSheet mSheet;
     private              boolean        mEncodeText                           = true;
     private              boolean        mEnhancedKeyParsing;
-    private              int            mCurrentId;
-    private              int            mStartId;
     private              Set<String>    mOnlyCategories                       = new HashSet<>();
     private              Set<String>    mExcludedCategories                   = new HashSet<>();
 
@@ -535,10 +540,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel(false))));
             break;
         case KEY_BEST_CURRENT_PARRY:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParry);
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParryNoToolTip);
             break;
         case KEY_BEST_CURRENT_BLOCK:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlock);
+            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
             break;
         case KEY_FP:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getCurrentFatiguePoints()));
@@ -622,11 +627,13 @@ public class TextTemplate {
             }
             writeEncodedText(out, buffer.toString());
             break;
-        case KEY_CONTINUE_ID:
-            mStartId = mCurrentId;
+        case KEY_CONTINUE_ID: // No-op... here so that old files don't choke
             break;
         case KEY_RACE_DEPRECATED:
         case KEY_CAMPAIGN_DEPRECATED:
+            break;
+        case KEY_BODY_TYPE:
+            writeEncodedText(out, gurpsCharacter.getProfile().getHitLocationTable().toString());
             break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
@@ -671,6 +678,8 @@ public class TextTemplate {
                 processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
             } else if (key.startsWith(KEY_REACTION_LOOP_START)) {
                 processReactionLoop(out, extractUpToMarker(in, KEY_REACTION_LOOP_END));
+            } else if (key.startsWith(KEY_CONDITIONAL_MODIFIERS_LOOP_START)) {
+                processConditionalModifiersLoop(out, extractUpToMarker(in, KEY_CONDITIONAL_MODIFIERS_LOOP_END));
             } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
                 setOnlyCategories(key);
             } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
@@ -845,14 +854,14 @@ public class TextTemplate {
     }
 
     private void processHitLocationLoop(BufferedWriter out, String contents) throws IOException {
-        GURPSCharacter gurpsCharacter   = mSheet.getCharacter();
-        int            length           = contents.length();
-        StringBuilder  keyBuffer        = new StringBuilder();
-        boolean        lookForKeyMarker = true;
-        mCurrentId = mStartId;
-        HitLocationTable table = gurpsCharacter.getProfile().getHitLocationTable();
+        GURPSCharacter   gurpsCharacter   = mSheet.getCharacter();
+        int              length           = contents.length();
+        StringBuilder    keyBuffer        = new StringBuilder();
+        boolean          lookForKeyMarker = true;
+        int              currentID        = 0;
+        HitLocationTable table            = gurpsCharacter.getProfile().getHitLocationTable();
         for (HitLocationTableEntry entry : table.getEntries()) {
-            mCurrentId++;
+            currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -877,7 +886,7 @@ public class TextTemplate {
                         case KEY_WHERE -> writeEncodedText(out, entry.getName());
                         case KEY_PENALTY -> writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
                         case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
-                        case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                        case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         // Show the equipment that is providing the DR bonus
                         case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
                         case KEY_EQUIPMENT_FORMATTED -> {
@@ -892,7 +901,6 @@ public class TextTemplate {
                 }
             }
         }
-        mStartId = 0;
     }
 
     /* A kludgy method to relate a hitlocation to the armor that is providing the DR for that hit location. */
@@ -929,10 +937,8 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
         for (Advantage advantage : mSheet.getCharacter().getAdvantagesIterator(false)) {
             if (loopType.shouldInclude(advantage, mOnlyCategories, mExcludedCategories)) {
-                mCurrentId++;
                 for (int i = 0; i < length; i++) {
                     char ch = contents.charAt(i);
                     if (lookForKeyMarker) {
@@ -962,7 +968,13 @@ public class TextTemplate {
                                         writeEncodedText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
                                         break;
                                     case KEY_ID:
-                                        writeEncodedText(out, Integer.toString(mCurrentId));
+                                        writeEncodedText(out, advantage.getID().toString());
+                                        break;
+                                    case KEY_PARENT_ID:
+                                        ListRow parent = (ListRow) advantage.getParent();
+                                        if (parent != null) {
+                                            out.write(parent.getID().toString());
+                                        }
                                         break;
                                     case KEY_TYPE:
                                         writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
@@ -998,7 +1010,6 @@ public class TextTemplate {
         }
         mOnlyCategories.clear();
         mExcludedCategories.clear();
-        mStartId = 0;
     }
 
     private boolean processDescription(String key, BufferedWriter out, ListRow row) throws IOException {
@@ -1050,9 +1061,7 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
         for (Skill skill : mSheet.getCharacter().getSkillsIterator()) {
-            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1080,7 +1089,14 @@ public class TextTemplate {
                                 case KEY_DIFFICULTY -> writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
                                 case KEY_POINTS -> writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
                                 case KEY_REF -> writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
-                                case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                                case KEY_ID -> writeEncodedText(out, skill.getID().toString());
+                                case KEY_PARENT_ID -> {
+                                    ListRow parent = (ListRow) skill.getParent();
+                                    if (parent != null) {
+                                        out.write(parent.getID().toString());
+                                    }
+                                }
+                                case KEY_TYPE -> writeEncodedText(out, skill.canHaveChildren() ? GROUP : ITEM);
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
@@ -1089,7 +1105,6 @@ public class TextTemplate {
                 }
             }
         }
-        mStartId = 0;
     }
 
     private static boolean processStyleIndentWarning(String key, BufferedWriter out, ListRow row) throws IOException {
@@ -1126,9 +1141,7 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
         for (Spell spell : mSheet.getCharacter().getSpellsIterator()) {
-            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1163,7 +1176,14 @@ public class TextTemplate {
                                 case KEY_DIFFICULTY -> writeEncodedText(out, spell.getDifficultyAsText());
                                 case KEY_POINTS -> writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
                                 case KEY_REF -> writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
-                                case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                                case KEY_ID -> writeEncodedText(out, spell.getID().toString());
+                                case KEY_PARENT_ID -> {
+                                    ListRow parent = (ListRow) spell.getParent();
+                                    if (parent != null) {
+                                        out.write(parent.getID().toString());
+                                    }
+                                }
+                                case KEY_TYPE -> writeEncodedText(out, spell.canHaveChildren() ? GROUP : ITEM);
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
@@ -1172,16 +1192,15 @@ public class TextTemplate {
                 }
             }
         }
-        mStartId = 0;
     }
 
     private void processMeleeLoop(BufferedWriter out, String contents) throws IOException {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
+        int           currentID        = 0;
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-            mCurrentId++;
+            currentID++;
             MeleeWeaponStats weapon = (MeleeWeaponStats) row.getWeapon();
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -1202,23 +1221,22 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i = processMeleeWeaponKeys(out, key, mCurrentId, weapon, i, contents, null);
+                        i = processMeleeWeaponKeys(out, key, currentID, weapon, i, contents, null);
                     }
                 }
             }
         }
-        mStartId = 0;
     }
 
     /* Handle keys specific to MeleeWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
     private int processMeleeWeaponKeys(BufferedWriter out, String key, int counter, MeleeWeaponStats weapon, int index, String contents, List<MeleeWeaponStats> attackModes) throws IOException {
         switch (key) {
         case KEY_PARRY -> {
-            writeEncodedText(out, weapon.getResolvedParry());
+            writeEncodedText(out, weapon.getResolvedParryNoToolTip());
             return index;
         }
         case KEY_BLOCK -> {
-            writeEncodedText(out, weapon.getResolvedBlock());
+            writeEncodedText(out, weapon.getResolvedBlockNoToolTip());
             return index;
         }
         case KEY_REACH -> {
@@ -1347,12 +1365,12 @@ public class TextTemplate {
      * e.g. Weapon Name: Spear, attack modes "1 Handed" and "2 Handed"
      */
     private void processHierarchicalMeleeLoop(BufferedWriter out, String contents) throws IOException {
-        int           length           = contents.length();
-        StringBuilder keyBuffer        = new StringBuilder();
-        boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
-        Map<String, ArrayList<MeleeWeaponStats>> weaponsMap = new HashMap<>();
-        Map<String, MeleeWeaponStats>            weapons    = new HashMap<>();
+        int                                      length           = contents.length();
+        StringBuilder                            keyBuffer        = new StringBuilder();
+        boolean                                  lookForKeyMarker = true;
+        int                                      currentID        = 0;
+        Map<String, ArrayList<MeleeWeaponStats>> weaponsMap       = new HashMap<>();
+        Map<String, MeleeWeaponStats>            weapons          = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getMeleeWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             MeleeWeaponStats weapon      = (MeleeWeaponStats) row.getWeapon();
             String           description = weapon.getDescription();
@@ -1360,7 +1378,7 @@ public class TextTemplate {
             weaponsMap.computeIfAbsent(description, k -> new ArrayList<>()).add(weapon);
         }
         for (MeleeWeaponStats weapon : weapons.values()) {
-            mCurrentId++;
+            currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1380,12 +1398,11 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i = processMeleeWeaponKeys(out, key, mCurrentId, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
+                        i = processMeleeWeaponKeys(out, key, currentID, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
                     }
                 }
             }
         }
-        mStartId = 0;
     }
 
     /* Process the weapons in a hierarchical format.   One time for each weapon with a unique name,
@@ -1393,12 +1410,12 @@ public class TextTemplate {
      * e.g. Weapon Name: Atlatl, attack modes "Shoot Dart" and "Shoot Javelin"
      */
     private void processHierarchicalRangedLoop(BufferedWriter out, String contents) throws IOException {
-        int           length           = contents.length();
-        StringBuilder keyBuffer        = new StringBuilder();
-        boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
-        Map<String, ArrayList<RangedWeaponStats>> weaponsMap = new HashMap<>();
-        Map<String, RangedWeaponStats>            weapons    = new HashMap<>();
+        int                                       length           = contents.length();
+        StringBuilder                             keyBuffer        = new StringBuilder();
+        boolean                                   lookForKeyMarker = true;
+        int                                       currentID        = 0;
+        Map<String, ArrayList<RangedWeaponStats>> weaponsMap       = new HashMap<>();
+        Map<String, RangedWeaponStats>            weapons          = new HashMap<>();
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
             RangedWeaponStats weapon      = (RangedWeaponStats) row.getWeapon();
             String            description = weapon.getDescription();
@@ -1406,7 +1423,7 @@ public class TextTemplate {
             weaponsMap.computeIfAbsent(description, k -> new ArrayList<>()).add(weapon);
         }
         for (RangedWeaponStats weapon : weapons.values()) {
-            mCurrentId++;
+            currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1426,12 +1443,11 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i = processRangedWeaponKeys(out, key, mCurrentId, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
+                        i = processRangedWeaponKeys(out, key, currentID, weapon, i, contents, weaponsMap.get(weapon.getDescription()));
                     }
                 }
             }
         }
-        mStartId = 0;
     }
 
     /* Loop through all of the attackModes for a particular weapon.   We need to make melee/ranged specific
@@ -1551,9 +1567,9 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
+        int           currentID        = 0;
         for (WeaponDisplayRow row : new FilteredIterator<>(mSheet.getRangedWeaponOutline().getModel().getRows(), WeaponDisplayRow.class)) {
-            mCurrentId++;
+            currentID++;
             RangedWeaponStats weapon = (RangedWeaponStats) row.getWeapon();
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -1574,19 +1590,17 @@ public class TextTemplate {
                         }
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
-                        i = processRangedWeaponKeys(out, key, mCurrentId, weapon, i, contents, null);
+                        i = processRangedWeaponKeys(out, key, currentID, weapon, i, contents, null);
                     }
                 }
             }
         }
-        mStartId = 0;
     }
 
     private void processEquipmentLoop(BufferedWriter out, String contents, boolean carried) throws IOException {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
         // Create child-to-parent maps to determine where items are being stored.
         // Used by KEY_LOCATION
         List<List<Row>>        children      = new ArrayList<>();
@@ -1603,7 +1617,6 @@ public class TextTemplate {
             }
         }
         for (Equipment equipment : equipmentList) {
-            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1670,7 +1683,16 @@ public class TextTemplate {
                                     writeEncodedText(out, equipment.getReference());
                                     break;
                                 case KEY_ID:
-                                    writeEncodedText(out, Integer.toString(mCurrentId));
+                                    writeEncodedText(out, equipment.getID().toString());
+                                    break;
+                                case KEY_PARENT_ID:
+                                    ListRow parent = (ListRow) equipment.getParent();
+                                    if (parent != null) {
+                                        out.write(parent.getID().toString());
+                                    }
+                                    break;
+                                case KEY_TYPE:
+                                    writeEncodedText(out, equipment.canHaveChildren() ? GROUP : ITEM);
                                     break;
                                 case KEY_TL:
                                     writeEncodedText(out, equipment.getTechLevel());
@@ -1687,6 +1709,12 @@ public class TextTemplate {
                                             writeEncodedText(out, parents.get(j).getDescription());
                                         }
                                     }
+                                    break;
+                                case KEY_USES:
+                                    writeEncodedText(out, Integer.valueOf(equipment.getUses()).toString());
+                                    break;
+                                case KEY_MAX_USES:
+                                    writeEncodedText(out, Integer.valueOf(equipment.getMaxUses()).toString());
                                     break;
                                 default:
                                     if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
@@ -1707,7 +1735,6 @@ public class TextTemplate {
         }
         mOnlyCategories.clear();
         mExcludedCategories.clear();
-        mStartId = 0;
     }
 
     private boolean shouldInclude(Equipment equipment) {
@@ -1732,9 +1759,7 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
         for (Note note : mSheet.getCharacter().getNoteIterator()) {
-            mCurrentId++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1765,7 +1790,19 @@ public class TextTemplate {
                                 }
                                 break;
                             case KEY_ID:
-                                writeEncodedText(out, Integer.toString(mCurrentId));
+                                writeEncodedText(out, note.getID().toString());
+                                break;
+                            case KEY_PARENT_ID:
+                                ListRow parent = (ListRow) note.getParent();
+                                if (parent != null) {
+                                    out.write(parent.getID().toString());
+                                }
+                                break;
+                            case KEY_TYPE:
+                                writeEncodedText(out, note.canHaveChildren() ? GROUP : ITEM);
+                                break;
+                            case KEY_REF:
+                                writeEncodedText(out, note.getReference());
                                 break;
                             default:
                                 writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
@@ -1776,17 +1813,16 @@ public class TextTemplate {
                 }
             }
         }
-        mStartId = 0;
     }
 
     private void processReactionLoop(BufferedWriter out, String contents) throws IOException {
-        int           length           = contents.length();
-        StringBuilder keyBuffer        = new StringBuilder();
-        boolean       lookForKeyMarker = true;
-        mCurrentId = mStartId;
-        List<ReactionRow> reactions = mSheet.collectReactions();
+        int               length           = contents.length();
+        StringBuilder     keyBuffer        = new StringBuilder();
+        boolean           lookForKeyMarker = true;
+        int               currentID        = 0;
+        List<ReactionRow> reactions        = mSheet.collectReactions();
         for (ReactionRow reaction : reactions) {
-            mCurrentId++;
+            currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
@@ -1809,14 +1845,51 @@ public class TextTemplate {
                         switch (key) {
                         case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(reaction.getTotalAmount()));
                         case KEY_SITUATION -> writeEncodedText(out, reaction.getFrom());
-                        case KEY_ID -> writeEncodedText(out, Integer.toString(mCurrentId));
+                        case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                         }
                     }
                 }
             }
         }
-        mStartId = 0;
+    }
+
+    private void processConditionalModifiersLoop(BufferedWriter out, String contents) throws IOException {
+        int                          length           = contents.length();
+        StringBuilder                keyBuffer        = new StringBuilder();
+        boolean                      lookForKeyMarker = true;
+        int                          currentID        = 0;
+        List<ConditionalModifierRow> cms              = mSheet.collectConditionalModifiers();
+        for (ConditionalModifierRow cm : cms) {
+            for (int i = 0; i < length; i++) {
+                char ch = contents.charAt(i);
+                if (lookForKeyMarker) {
+                    if (ch == '@') {
+                        lookForKeyMarker = false;
+                    } else {
+                        out.append(ch);
+                    }
+                } else {
+                    if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                        keyBuffer.append(ch);
+                    } else {
+                        String key = keyBuffer.toString();
+                        i--;
+                        if (mEnhancedKeyParsing && ch == '@') {
+                            i++;        // Allow KEYs to be surrounded by @KEY@
+                        }
+                        keyBuffer.setLength(0);
+                        lookForKeyMarker = true;
+                        switch (key) {
+                        case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(cm.getTotalAmount()));
+                        case KEY_SITUATION -> writeEncodedText(out, cm.getFrom());
+                        case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
+                        default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private enum AdvantagesLoopType {

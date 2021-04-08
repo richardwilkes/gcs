@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -20,6 +20,7 @@ import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.edit.ConvertToContainer;
+import com.trollworks.gcs.menu.edit.Duplicatable;
 import com.trollworks.gcs.menu.edit.MoveEquipmentCommand;
 import com.trollworks.gcs.menu.item.ApplyTemplateCommand;
 import com.trollworks.gcs.menu.item.CopyToSheetCommand;
@@ -48,7 +49,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.undo.StateEdit;
 
 /** Base outline class. */
-public class ListOutline extends Outline implements Runnable, ActionListener {
+public class ListOutline extends Outline implements Runnable, ActionListener, Duplicatable {
     public static final String   OWNING_LIST = "owning_list";
     /** The owning data file. */
     protected           DataFile mDataFile;
@@ -343,6 +344,35 @@ public class ListOutline extends Outline implements Runnable, ActionListener {
             menu.add(new OpenPageReferenceCommand(this, false));
             Command.adjustMenuTree(menu);
             menu.show(event.getComponent(), event.getX(), event.getY());
+        }
+    }
+
+    @Override
+    public boolean canDuplicateSelection() {
+        OutlineModel model = getModel();
+        return !model.isLocked() && model.hasSelection();
+    }
+
+    @Override
+    public void duplicateSelection() {
+        OutlineModel model = getModel();
+        if (!model.isLocked() && model.hasSelection()) {
+            List<Row>     rows     = new ArrayList<>();
+            List<ListRow> topRows  = new ArrayList<>();
+            DataFile      dataFile = getDataFile();
+            dataFile.startNotify();
+            model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));
+            convertDragRowsToSelf(rows);
+            model.setDragRows(null);
+            for (Row row : rows) {
+                if (row.getDepth() == 0 && row instanceof ListRow) {
+                    topRows.add((ListRow) row);
+                }
+            }
+            addRow(topRows.toArray(new ListRow[0]), I18n.Text("Duplicate Rows"), true);
+            dataFile.endNotify();
+            model.select(topRows, false);
+            scrollSelectionIntoView();
         }
     }
 }

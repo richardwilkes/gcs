@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -60,8 +60,12 @@ public class Preferences {
     private static final int CURRENT_VERSION = 2;
     private static final int MINIMUM_VERSION = 1;
 
-    private static final String AUTO_NAME_NEW_CHARACTERS        = "auto_name_new_characters";
-    private static final String BASE_WILL_AND_PER_ON_10         = "base_will_and_per_on_10";
+    private static final String DEPRECATED_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021
+    private static final String DEPRECATED_BASE_WILL_AND_PER_ON_10  = "base_will_and_per_on_10"; // January 23, 2021
+
+    private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
+    private static final String BASE_WILL_ON_10                 = "base_will_on_10";
+    private static final String BASE_PER_ON_10                  = "base_per_on_10";
     private static final String BLOCK_LAYOUT                    = "block_layout";
     private static final String DEFAULT_LENGTH_UNITS            = "default_length_units";
     private static final String DEFAULT_PAGE_SETTINGS           = "default_page_settings";
@@ -89,7 +93,12 @@ public class Preferences {
     private static final String PNG_RESOLUTION                  = "png_resolution";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHOW_COLLEGE_IN_SHEET_SPELLS    = "show_college_in_sheet_spells";
+    private static final String SHOW_DIFFICULTY                 = "show_difficulty";
+    private static final String SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
+    private static final String SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
+    private static final String SHOW_SPELL_ADJ               = "show_spell_adj";
     private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
+    private static final String EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_fp";
     private static final String THEME                           = "theme";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
     private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
@@ -106,7 +115,8 @@ public class Preferences {
     public static final String KEY_PREFIX           = "prefs.";
     public static final String KEY_PER_SHEET_PREFIX = KEY_PREFIX + "sheet.";
 
-    public static final String KEY_BASE_WILL_AND_PER_ON_10         = KEY_PER_SHEET_PREFIX + BASE_WILL_AND_PER_ON_10;
+    public static final String KEY_BASE_WILL_ON_10                 = KEY_PER_SHEET_PREFIX + BASE_WILL_ON_10;
+    public static final String KEY_BASE_PER_ON_10                  = KEY_PER_SHEET_PREFIX + BASE_PER_ON_10;
     public static final String KEY_BLOCK_LAYOUT                    = KEY_PER_SHEET_PREFIX + BLOCK_LAYOUT;
     public static final String KEY_DEFAULT_LENGTH_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_LENGTH_UNITS;
     public static final String KEY_DEFAULT_WEIGHT_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_WEIGHT_UNITS;
@@ -114,7 +124,12 @@ public class Preferences {
     public static final String KEY_MODIFIERS_DISPLAY               = KEY_PER_SHEET_PREFIX + MODIFIERS_DISPLAY;
     public static final String KEY_NOTES_DISPLAY                   = KEY_PER_SHEET_PREFIX + NOTES_DISPLAY;
     public static final String KEY_SHOW_COLLEGE_IN_SHEET_SPELLS    = KEY_PER_SHEET_PREFIX + SHOW_COLLEGE_IN_SHEET_SPELLS;
+    public static final String KEY_SHOW_DIFFICULTY                 = KEY_PER_SHEET_PREFIX + SHOW_DIFFICULTY;
+    public static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_ADVANTAGE_MODIFIER_ADJ;
+    public static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_EQUIPMENT_MODIFIER_ADJ;
+    public static final String KEY_SHOW_SPELL_ADJ                 = KEY_PER_SHEET_PREFIX + SHOW_SPELL_ADJ;
     public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
+    public static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = KEY_PER_SHEET_PREFIX + EXTRA_SPACE_AROUND_ENCUMBRANCE;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
     public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
@@ -123,13 +138,19 @@ public class Preferences {
     public static final String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = KEY_PER_SHEET_PREFIX + USE_THRUST_EQUALS_SWING_MINUS_2;
     public static final String KEY_USER_DESCRIPTION_DISPLAY        = KEY_PER_SHEET_PREFIX + USER_DESCRIPTION_DISPLAY;
 
-    public static final boolean       DEFAULT_AUTO_NAME_NEW_CHARACTERS          = true;
-    public static final boolean       DEFAULT_BASE_WILL_AND_PER_ON_10           = false;
+    public static final boolean       DEFAULT_AUTO_FILL_PROFILE                 = true;
+    public static final boolean       DEFAULT_BASE_WILL_ON_10                   = false;
+    public static final boolean       DEFAULT_BASE_PER_ON_10                    = false;
     public static final boolean       DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL   = true;
     public static final int           DEFAULT_INITIAL_POINTS                    = 100;
     public static final int           DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
     public static final boolean       DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS      = false;
+    public static final boolean       DEFAULT_SHOW_DIFFICULTY                   = false;
+    public static final boolean       DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ       = false;
+    public static final boolean       DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ       = false;
+    public static final boolean       DEFAULT_SHOW_SPELL_ADJ                   = true;
     public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
+    public static final boolean       DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE    = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
@@ -143,7 +164,7 @@ public class Preferences {
     public static final int           DEFAULT_PNG_RESOLUTION                    = 200;
     public static final int           DEFAULT_TOOLTIP_TIMEOUT                   = 60;
     public static final LengthUnits   DEFAULT_DEFAULT_LENGTH_UNITS              = LengthUnits.FT_IN;
-    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of(CharacterSheet.REACTIONS_KEY, CharacterSheet.MELEE_KEY, CharacterSheet.RANGED_KEY, CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY, CharacterSheet.SPELLS_KEY, CharacterSheet.EQUIPMENT_KEY, CharacterSheet.OTHER_EQUIPMENT_KEY, CharacterSheet.NOTES_KEY);
+    public static final List<String>  DEFAULT_BLOCK_LAYOUT                      = List.of(CharacterSheet.REACTIONS_KEY + " " + CharacterSheet.CONDITIONAL_MODIFIERS_KEY, CharacterSheet.MELEE_KEY, CharacterSheet.RANGED_KEY, CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY, CharacterSheet.SPELLS_KEY, CharacterSheet.EQUIPMENT_KEY, CharacterSheet.OTHER_EQUIPMENT_KEY, CharacterSheet.NOTES_KEY);
     public static final Scales        DEFAULT_INITIAL_UI_SCALE                  = Scales.QUARTER_AGAIN_SIZE;
     public static final String        DEFAULT_DEFAULT_PLAYER_NAME               = System.getProperty("user.name", "");
     public static final String        DEFAULT_DEFAULT_PORTRAIT_PATH             = "!\000";
@@ -170,10 +191,10 @@ public class Preferences {
     private        WeightUnits                      mDefaultWeightUnits;
     private        List<String>                     mBlockLayout;
     private        List<Path>                       mRecentFiles;
-    private        Path                mLastDir;
+    private        Path                             mLastDir;
     private        String                           mPdfLaunchString;
-    private        Map<String, PDFRef> mPdfRefs;
-    private        Map<String, String> mKeyBindingOverrides;
+    private        Map<String, PDFRef>              mPdfRefs;
+    private        Map<String, String>              mKeyBindingOverrides;
     private        Map<String, Fonts.Info>          mFontInfo;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
     private        PrintManager                     mDefaultPageSettings;
@@ -184,17 +205,23 @@ public class Preferences {
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
     private        boolean                          mIncludeUnspentPointsInTotal;
-    private        boolean                          mBaseWillAndPerOn10;
+    private        boolean                          mBaseWillOn10;
+    private        boolean                          mBasePerOn10;
     private        boolean                          mUseMultiplicativeModifiers;
     private        boolean                          mUseModifyingDicePlusAdds;
     private        boolean                          mUseKnowYourOwnStrength;
     private        boolean                          mUseReducedSwing;
     private        boolean                          mUseThrustEqualsSwingMinus2;
     private        boolean                          mUseSimpleMetricConversions;
-    private        boolean                          mAutoNameNewCharacters;
+    private        boolean                          mAutoFillProfile;
     private        boolean                          mUseNativePrintDialogs;
     private        boolean                          mShowCollegeInSheetSpells;
+    private        boolean                          mShowDifficulty;
+    private        boolean                          mShowAdvantageModifierAdj;
+    private        boolean                          mShowEquipmentModifierAdj;
+    private        boolean                          mShowSpellAdj;
     private        boolean                          mUseTitleInFooter;
+    private        boolean                          mExtraSpaceAroundEncumbrance;
 
     public static synchronized Preferences getInstance() {
         if (INSTANCE == null) {
@@ -250,17 +277,23 @@ public class Preferences {
             mDefaultPageSettings = null;
         }
         mIncludeUnspentPointsInTotal = DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
-        mBaseWillAndPerOn10 = DEFAULT_BASE_WILL_AND_PER_ON_10;
+        mBaseWillOn10 = DEFAULT_BASE_WILL_ON_10;
+        mBasePerOn10 = DEFAULT_BASE_PER_ON_10;
         mUseMultiplicativeModifiers = DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
         mUseModifyingDicePlusAdds = DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS;
         mUseKnowYourOwnStrength = DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         mUseReducedSwing = DEFAULT_USE_REDUCED_SWING;
         mUseThrustEqualsSwingMinus2 = DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2;
         mUseSimpleMetricConversions = DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS;
-        mAutoNameNewCharacters = DEFAULT_AUTO_NAME_NEW_CHARACTERS;
+        mAutoFillProfile = DEFAULT_AUTO_FILL_PROFILE;
         mUseNativePrintDialogs = DEFAULT_USE_NATIVE_PRINT_DIALOGS;
         mShowCollegeInSheetSpells = DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
+        mShowDifficulty = DEFAULT_SHOW_DIFFICULTY;
+        mShowAdvantageModifierAdj = DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ;
+        mShowEquipmentModifierAdj = DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ;
+        mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
+        mExtraSpaceAroundEncumbrance = DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -349,17 +382,32 @@ public class Preferences {
                         mDefaultPortraitPath = m.getStringWithDefault(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                         mPNGResolution = m.getIntWithDefault(PNG_RESOLUTION, mPNGResolution);
                         mIncludeUnspentPointsInTotal = m.getBooleanWithDefault(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                        mBaseWillAndPerOn10 = m.getBooleanWithDefault(BASE_WILL_AND_PER_ON_10, mBaseWillAndPerOn10);
+                        if (m.has(DEPRECATED_BASE_WILL_AND_PER_ON_10)) {
+                            mBaseWillOn10 = m.getBooleanWithDefault(DEPRECATED_BASE_WILL_AND_PER_ON_10, mBaseWillOn10);
+                            mBasePerOn10 = m.getBooleanWithDefault(DEPRECATED_BASE_WILL_AND_PER_ON_10, mBasePerOn10);
+                        } else {
+                            mBaseWillOn10 = m.getBooleanWithDefault(BASE_WILL_ON_10, mBaseWillOn10);
+                            mBasePerOn10 = m.getBooleanWithDefault(BASE_PER_ON_10, mBasePerOn10);
+                        }
                         mUseMultiplicativeModifiers = m.getBooleanWithDefault(USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
                         mUseModifyingDicePlusAdds = m.getBooleanWithDefault(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                         mUseKnowYourOwnStrength = m.getBooleanWithDefault(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
                         mUseReducedSwing = m.getBooleanWithDefault(USE_REDUCED_SWING, mUseReducedSwing);
                         mUseThrustEqualsSwingMinus2 = m.getBooleanWithDefault(USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
                         mUseSimpleMetricConversions = m.getBooleanWithDefault(USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
-                        mAutoNameNewCharacters = m.getBooleanWithDefault(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
+                        if (m.has(DEPRECATED_AUTO_NAME_NEW_CHARACTERS)) {
+                            mAutoFillProfile = m.getBooleanWithDefault(DEPRECATED_AUTO_NAME_NEW_CHARACTERS, mAutoFillProfile);
+                        } else {
+                            mAutoFillProfile = m.getBooleanWithDefault(AUTO_FILL_PROFILE, mAutoFillProfile);
+                        }
                         mUseNativePrintDialogs = m.getBooleanWithDefault(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
+                        mShowDifficulty = m.getBooleanWithDefault(SHOW_DIFFICULTY, mShowDifficulty);
+                        mShowAdvantageModifierAdj = m.getBooleanWithDefault(SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
+                        mShowEquipmentModifierAdj = m.getBooleanWithDefault(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
+                        mShowSpellAdj = m.getBooleanWithDefault(SHOW_SPELL_ADJ, mShowSpellAdj);
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+                        mExtraSpaceAroundEncumbrance = m.getBooleanWithDefault(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                         if (m.has(THEME)) {
                             Theme.set(new Theme(m.getMap(THEME)));
                         }
@@ -448,12 +496,14 @@ public class Preferences {
                     w.keyValue(INITIAL_UI_SCALE, Enums.toId(mInitialUIScale));
                     w.keyValue(DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
                     w.keyValue(DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
-                    w.key(BLOCK_LAYOUT);
-                    w.startArray();
-                    for (String line : mBlockLayout) {
-                        w.value(line);
+                    if (!DEFAULT_BLOCK_LAYOUT.equals(mBlockLayout)) {
+                        w.key(BLOCK_LAYOUT);
+                        w.startArray();
+                        for (String line : mBlockLayout) {
+                            w.value(line);
+                        }
+                        w.endArray();
                     }
-                    w.endArray();
                     w.key(RECENT_FILES);
                     w.startArray();
                     for (Path p : mRecentFiles) {
@@ -500,7 +550,8 @@ public class Preferences {
                     w.keyValue(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                     w.keyValue(PNG_RESOLUTION, mPNGResolution);
                     w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                    w.keyValue(BASE_WILL_AND_PER_ON_10, mBaseWillAndPerOn10);
+                    w.keyValue(BASE_WILL_ON_10, mBaseWillOn10);
+                    w.keyValue(BASE_PER_ON_10, mBasePerOn10);
                     w.keyValue(USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
                     w.keyValue(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                     w.keyValue(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -508,8 +559,13 @@ public class Preferences {
                     w.keyValue(USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
                     w.keyValue(USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
                     w.keyValue(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
+                    w.keyValue(SHOW_DIFFICULTY, mShowDifficulty);
+                    w.keyValue(SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
+                    w.keyValue(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
+                    w.keyValue(SHOW_SPELL_ADJ, mShowSpellAdj);
                     w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-                    w.keyValue(AUTO_NAME_NEW_CHARACTERS, mAutoNameNewCharacters);
+                    w.keyValue(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
+                    w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
                     w.key(THEME);
                     Theme.current().save(w);
                     w.keyValue(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
@@ -837,15 +893,27 @@ public class Preferences {
         }
     }
 
-    /** @return Whether Will and Perception should be based on 10 rather than IQ. */
-    public boolean baseWillAndPerOn10() {
-        return mBaseWillAndPerOn10;
+    /** @return Whether Will should be based on 10 rather than IQ. */
+    public boolean baseWillOn10() {
+        return mBaseWillOn10;
     }
 
-    public void setBaseWillAndPerOn10(boolean baseWillAndPerOn10) {
-        if (mBaseWillAndPerOn10 != baseWillAndPerOn10) {
-            mBaseWillAndPerOn10 = baseWillAndPerOn10;
-            mNotifier.notify(this, KEY_BASE_WILL_AND_PER_ON_10);
+    public void setBaseWillOn10(boolean baseWillOn10) {
+        if (mBaseWillOn10 != baseWillOn10) {
+            mBaseWillOn10 = baseWillOn10;
+            mNotifier.notify(this, KEY_BASE_WILL_ON_10);
+        }
+    }
+
+    /** @return Whether Per should be based on 10 rather than IQ. */
+    public boolean basePerOn10() {
+        return mBasePerOn10;
+    }
+
+    public void setBasePerOn10(boolean basePerOn10) {
+        if (mBasePerOn10 != basePerOn10) {
+            mBasePerOn10 = basePerOn10;
+            mNotifier.notify(this, KEY_BASE_PER_ON_10);
         }
     }
 
@@ -861,6 +929,54 @@ public class Preferences {
         }
     }
 
+    /** @return Whether to show the difficulty column in the sheet display. */
+    public boolean showDifficulty() {
+        return mShowDifficulty;
+    }
+
+    public void setShowDifficulty(boolean show) {
+        if (mShowDifficulty != show) {
+            mShowDifficulty = show;
+            mNotifier.notify(this, KEY_SHOW_DIFFICULTY);
+        }
+    }
+
+    /** @return Whether to show the advantage modifier adjustments advantage list display. */
+    public boolean showAdvantageModifierAdj() {
+        return mShowAdvantageModifierAdj;
+    }
+
+    public void setShowAdvantageModifierAdj(boolean show) {
+        if (mShowAdvantageModifierAdj != show) {
+            mShowAdvantageModifierAdj = show;
+            mNotifier.notify(this, KEY_SHOW_ADVANTAGE_MODIFIER_ADJ);
+        }
+    }
+
+    /** @return Whether to show the equipment modifier adjustments equipment list display. */
+    public boolean showEquipmentModifierAdj() {
+        return mShowEquipmentModifierAdj;
+    }
+
+    public void setShowEquipmentModifierAdj(boolean show) {
+        if (mShowEquipmentModifierAdj != show) {
+            mShowEquipmentModifierAdj = show;
+            mNotifier.notify(this, KEY_SHOW_EQUIPMENT_MODIFIER_ADJ);
+        }
+    }
+
+    /** @return Whether to show the spell rituals, cost & time adjustments in the spell list display. */
+    public boolean showSpellAdj() {
+        return mShowSpellAdj;
+    }
+
+    public void setShowSpellAdj(boolean show) {
+        if (mShowSpellAdj != show) {
+            mShowSpellAdj= show;
+            mNotifier.notify(this, KEY_SHOW_SPELL_ADJ);
+        }
+    }
+
     /** @return Whether to show the title in the page footer (rather than the name). */
     public boolean useTitleInFooter() {
         return mUseTitleInFooter;
@@ -870,6 +986,18 @@ public class Preferences {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
             mNotifier.notify(this, KEY_USE_TITLE_IN_FOOTER);
+        }
+    }
+
+    /** @return Whether or not to add extra space around FP/HP table. */
+    public boolean extraSpaceAroundEncumbrance() {
+        return mExtraSpaceAroundEncumbrance;
+    }
+
+    public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
+        if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
+            mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
+            mNotifier.notify(this, KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         }
     }
 
@@ -948,13 +1076,16 @@ public class Preferences {
         }
     }
 
-    /** @return Whether a new character should be automatically named. */
-    public boolean autoNameNewCharacters() {
-        return mAutoNameNewCharacters;
+    /**
+     * @return Whether a new character should have various profile information auto-filled
+     *         initially.
+     */
+    public boolean autoFillProfile() {
+        return mAutoFillProfile;
     }
 
-    public void setAutoNameNewCharacters(boolean autoNameNewCharacters) {
-        mAutoNameNewCharacters = autoNameNewCharacters;
+    public void setAutoFillProfile(boolean autoFillProfile) {
+        mAutoFillProfile = autoFillProfile;
     }
 
     public boolean useNativePrintDialogs() {

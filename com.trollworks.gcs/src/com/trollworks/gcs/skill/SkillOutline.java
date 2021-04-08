@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -64,6 +64,11 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
     public SkillOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model, Skill.ID_LIST_CHANGED);
         SkillColumn.addColumns(this, dataFile);
+    }
+
+    public void resetColumns() {
+        getModel().removeAllColumns();
+        SkillColumn.addColumns(this, mDataFile);
     }
 
     @Override
@@ -146,12 +151,12 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public boolean canIncrementSkillLevel() {
-        return canIncrement();
+        return (mDataFile instanceof GURPSCharacter) && selectionHasLeafRows(false);
     }
 
     @Override
     public boolean canDecrementSkillLevel() {
-        return canDecrement();
+        return (mDataFile instanceof GURPSCharacter) && selectionHasLeafRows(true);
     }
 
     @Override

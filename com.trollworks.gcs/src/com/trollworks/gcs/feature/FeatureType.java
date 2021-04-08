@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -41,7 +41,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new AttributeBonus();
         }
-    }, DR_BONUS {
+    },
+    DR_BONUS {
         @Override
         public String toString() {
             return I18n.Text("Gives a DR bonus of");
@@ -64,7 +65,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new DRBonus();
         }
-    }, REACTION_BONUS {
+    },
+    REACTION_BONUS {
         @Override
         public String toString() {
             return I18n.Text("Gives a reaction modifier of");
@@ -87,7 +89,32 @@ public enum FeatureType {
         public Feature createFeature() {
             return new ReactionBonus();
         }
-    }, SKILL_LEVEL_BONUS {
+    },
+    CONDITIONAL_MODIFIER {
+        @Override
+        public String toString() {
+            return I18n.Text("Gives a conditional modifier of");
+        }
+
+        @Override
+        public boolean matches(Feature feature) {
+            return feature instanceof ConditionalModifier;
+        }
+
+        @Override
+        public FeatureEditor createFeatureEditor(ListRow row, Feature feature) {
+            if (matches(feature)) {
+                return new ConditionalModifierEditor(row, (ConditionalModifier) feature);
+            }
+            return null;
+        }
+
+        @Override
+        public Feature createFeature() {
+            return new ConditionalModifier();
+        }
+    },
+    SKILL_LEVEL_BONUS {
         @Override
         public String toString() {
             return I18n.Text("Gives a skill level bonus of");
@@ -110,7 +137,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new SkillBonus();
         }
-    }, SKILL_POINT_BONUS {
+    },
+    SKILL_POINT_BONUS {
         @Override
         public String toString() {
             return I18n.Text("Gives a skill point bonus of");
@@ -133,7 +161,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new SkillPointBonus();
         }
-    }, SPELL_LEVEL_BONUS {
+    },
+    SPELL_LEVEL_BONUS {
         @Override
         public String toString() {
             return I18n.Text("Gives a spell level bonus of");
@@ -156,7 +185,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new SpellBonus();
         }
-    }, SPELL_POINT_BONUS {
+    },
+    SPELL_POINT_BONUS {
         @Override
         public String toString() {
             return I18n.Text("Gives a spell point bonus of");
@@ -179,7 +209,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new SpellPointBonus();
         }
-    }, WEAPON_DAMAGE_BONUS {
+    },
+    WEAPON_DAMAGE_BONUS {
         @Override
         public String toString() {
             return I18n.Text("Gives a weapon damage bonus of");
@@ -202,7 +233,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new WeaponBonus();
         }
-    }, REDUCE_ATTRIBUTE_COST {
+    },
+    REDUCE_ATTRIBUTE_COST {
         @Override
         public String toString() {
             return I18n.Text("Reduces the attribute cost of");
@@ -225,7 +257,8 @@ public enum FeatureType {
         public Feature createFeature() {
             return new CostReduction();
         }
-    }, REDUCE_CONTAINED_WEIGHT {
+    },
+    REDUCE_CONTAINED_WEIGHT {
         @Override
         public String toString() {
             return I18n.Text("Reduces the contained weight by");

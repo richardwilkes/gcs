@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -66,7 +67,9 @@ public class PreferencesWindow extends BaseWindow implements ActionListener, Cha
     }
 
     private void addTab(PreferencePanel panel) {
-        mTabPanel.addTab(panel.toString(), panel);
+        String title = panel.toString();
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,6 +13,7 @@ package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.prereq.PrereqsPanel;
+import com.trollworks.gcs.skill.SkillAttribute;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -66,7 +68,6 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         mNameField = createCorrectableField(wrapper1, wrapper1, I18n.Text("Name"), spell.getName(), I18n.Text("The name of the spell, without any notes"));
         fields.add(wrapper1);
         createTechLevelFields(wrapper1);
-
 
         mBaseSkillNameField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Base Skill"), spell.getBaseSkillName(), I18n.Text("The name of the base skill, such as \"Ritual Magic\" or \"Thaumatology\""));
         mPrerequisiteSpellsCountField = createNumberField(wrapper2, wrapper2, I18n.Text("Prerequisite Count"), I18n.Text("The penalty to skill level based on the number of prerequisite spells"), mRow.getPrerequisiteSpellsCount(), 2);
@@ -110,15 +111,20 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
         mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
         Component panel = embedEditor(mPrereqs);
-        mTabPanel.addTab(panel.getName(), panel);
-        mTabPanel.addTab(mMeleeWeapons.getName(), mMeleeWeapons);
-        mTabPanel.addTab(mRangedWeapons.getName(), mRangedWeapons);
+        addTab(panel.getName(), panel);
+        addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
+        addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
         if (!mIsEditable) {
             UIUtilities.disableControls(mMeleeWeapons);
             UIUtilities.disableControls(mRangedWeapons);
         }
         UIUtilities.selectTab(mTabPanel, getLastTabName());
         add(mTabPanel);
+    }
+
+    private void addTab(String title, Component panel) {
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     protected Container createPointsFields() {
@@ -128,11 +134,12 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         JPanel  panel        = new JPanel(new ColumnLayout(forCharacter ? 10 : columns));
 
         JLabel label = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of the spell")));
+        String difficultyTooltip = I18n.Text("The difficulty of the spell");
+        label.setToolTipText(Text.wrapPlainTextForToolTip(difficultyTooltip));
         panel.add(label);
 
         SkillDifficulty[] allowedDifficulties = {SkillDifficulty.A, SkillDifficulty.H};
-        mDifficultyCombo = createComboBox(panel, allowedDifficulties, mRow.getDifficulty(), I18n.Text("The difficulty of the spell"));
+        mDifficultyCombo = createComboBox(panel, allowedDifficulties, mRow.getDifficulty(), difficultyTooltip);
 
         if (forCharacter || forTemplate) {
             mPointsField = createNumberField(panel, panel, I18n.Text("Points"), I18n.Text("The number of points spent on this spell"), mRow.getRawPoints(), 4);
@@ -171,6 +178,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         modified |= mRow.setCastingTime(mCastingTimeField.getText());
         modified |= mRow.setResist(mResistField.getText());
         modified |= mRow.setDuration(mDurationField.getText());
+        modified |= mRow.setDifficulty(SkillAttribute.IQ, getDifficulty()); // Attribute is not relevant for Ritual Magic
         modified |= mRow.setPrerequisiteSpellsCount(getPrerequisiteSpellsCount());
         if (mRow.getCharacter() != null || mRow.getTemplate() != null) {
             modified |= mRow.setRawPoints(getPoints());

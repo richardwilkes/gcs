@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -47,7 +47,7 @@ public class DRBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        row.add(addComboBox(CHANGE_LOCATION, HitLocation.getChoosableLocations(), ((DRBonus) getFeature()).getLocation()));
+        row.add(addComboBox(CHANGE_LOCATION, HitLocation.values(), ((DRBonus) getFeature()).getLocation()));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 0);
     }

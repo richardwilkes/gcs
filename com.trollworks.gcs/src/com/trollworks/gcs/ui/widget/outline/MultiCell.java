@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -115,7 +114,7 @@ public class MultiCell implements Cell {
         String    notes       = getSecondaryText(theRow);
         Font      font        = scale.scale(getPrimaryFont());
         int       pos;
-        gc.setColor(getColor(selected, active, row, column));
+        gc.setColor(getColor(outline, row, column, selected, active));
         gc.setFont(font);
         Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? Color.RED : null;
         pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru, scale.scale(1));
@@ -128,16 +127,20 @@ public class MultiCell implements Cell {
     }
 
     /**
-     * @param selected Whether or not the selected version of the color is needed.
-     * @param active   Whether or not the active version of the color is needed.
+     * @param outline  The outline.
      * @param row      The row.
      * @param column   The column.
+     * @param selected Whether or not the selected version of the color is needed.
+     * @param active   Whether or not the active version of the color is needed.
      * @return The foreground color.
      */
     @SuppressWarnings("static-method")
-    public Color getColor(boolean selected, boolean active, Row row, Column column) {
+    public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (((ListRow) row).isSatisfied()) {
-            return Colors.getListForeground(selected, active);
+            if (selected) {
+                return UIManager.getColor("List.selectionForeground");
+            }
+            return outline.getForeground();
         }
         return Color.RED;
     }

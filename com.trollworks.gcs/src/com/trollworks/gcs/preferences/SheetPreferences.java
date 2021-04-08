@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -41,14 +41,15 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JTextField              mTechLevel;
     private JTextField              mInitialPoints;
     private PortraitPreferencePanel mPortrait;
-    private JCheckBox               mBaseWillAndPerOn10;
+    private JCheckBox               mBaseWillOn10;
+    private JCheckBox               mBasePerOn10;
     private JCheckBox               mUseMultiplicativeModifiers;
     private JCheckBox               mUseModifyingDicePlusAdds;
     private JCheckBox               mUseKnowYourOwnStrength;
     private JCheckBox               mUseReducedSwing;
     private JCheckBox               mUseThrustEqualsSwingMinus2;
     private JCheckBox               mUseSimpleMetricConversions;
-    private JCheckBox               mAutoNameNewCharacters;
+    private JCheckBox               mAutoFillProfile;
 
     /**
      * Creates a new {@link SheetPreferences}.
@@ -62,7 +63,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
 
         mPortrait = new PortraitPreferencePanel(Profile.getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         mPortrait.addActionListener(this);
-        add(mPortrait, new PrecisionLayoutData().setVerticalSpan(11).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        add(mPortrait, new PrecisionLayoutData().setVerticalSpan(12).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         String playerTooltip = I18n.Text("The player name to use when a new character sheet is created");
         addLabel(I18n.Text("Player"), playerTooltip);
@@ -76,8 +77,9 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         addLabel(I18n.Text("Initial Points"), initialPointsTooltip);
         mInitialPoints = addTextField(initialPointsTooltip, Integer.toString(prefs.getInitialPoints()));
 
-        mAutoNameNewCharacters = addCheckBox(I18n.Text("Automatically name new characters"), null, prefs.autoNameNewCharacters());
-        mBaseWillAndPerOn10 = addCheckBox(I18n.Text("Base Will and Perception on 10 and not IQ *"), null, prefs.baseWillAndPerOn10());
+        mAutoFillProfile = addCheckBox(I18n.Text("Automatically fill in new character identity and description information with randomized choices"), null, prefs.autoFillProfile());
+        mBaseWillOn10 = addCheckBox(I18n.Text("Base Will on 10 and not IQ *"), null, prefs.baseWillOn10());
+        mBasePerOn10 = addCheckBox(I18n.Text("Base Perception on 10 and not IQ *"), null, prefs.basePerOn10());
         mUseMultiplicativeModifiers = addCheckBox(I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value) *"), null, prefs.useMultiplicativeModifiers());
         mUseModifyingDicePlusAdds = addCheckBox(I18n.Text("Use Modifying Dice + Adds from B269 *"), null, prefs.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83) *"), null, prefs.useKnowYourOwnStrength());
@@ -164,8 +166,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     public void itemStateChanged(ItemEvent event) {
         Preferences prefs  = Preferences.getInstance();
         Object      source = event.getSource();
-        if (source == mBaseWillAndPerOn10) {
-            prefs.setBaseWillAndPerOn10(mBaseWillAndPerOn10.isSelected());
+        if (source == mBaseWillOn10) {
+            prefs.setBaseWillOn10(mBaseWillOn10.isSelected());
+        } else if (source == mBasePerOn10) {
+            prefs.setBasePerOn10(mBasePerOn10.isSelected());
         } else if (source == mUseMultiplicativeModifiers) {
             prefs.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
         } else if (source == mUseModifyingDicePlusAdds) {
@@ -178,8 +182,8 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
             prefs.setUseThrustEqualsSwingMinus2(mUseThrustEqualsSwingMinus2.isSelected());
         } else if (source == mUseSimpleMetricConversions) {
             prefs.setUseSimpleMetricConversions(mUseSimpleMetricConversions.isSelected());
-        } else if (source == mAutoNameNewCharacters) {
-            prefs.setAutoNameNewCharacters(mAutoNameNewCharacters.isSelected());
+        } else if (source == mAutoFillProfile) {
+            prefs.setAutoFillProfile(mAutoFillProfile.isSelected());
         }
         adjustResetButton();
     }
@@ -190,9 +194,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mTechLevel.setText(Preferences.DEFAULT_DEFAULT_TECH_LEVEL);
         mInitialPoints.setText(Integer.toString(Preferences.DEFAULT_INITIAL_POINTS));
         setPortrait(Preferences.DEFAULT_DEFAULT_PORTRAIT_PATH);
-        mAutoNameNewCharacters.setSelected(Preferences.DEFAULT_AUTO_NAME_NEW_CHARACTERS);
+        mAutoFillProfile.setSelected(Preferences.DEFAULT_AUTO_FILL_PROFILE);
         mUseModifyingDicePlusAdds.setSelected(Preferences.DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS);
-        mBaseWillAndPerOn10.setSelected(Preferences.DEFAULT_BASE_WILL_AND_PER_ON_10);
+        mBaseWillOn10.setSelected(Preferences.DEFAULT_BASE_WILL_ON_10);
+        mBasePerOn10.setSelected(Preferences.DEFAULT_BASE_PER_ON_10);
         mUseMultiplicativeModifiers.setSelected(Preferences.DEFAULT_USE_MULTIPLICATIVE_MODIFIERS);
         mUseKnowYourOwnStrength.setSelected(Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH);
         mUseThrustEqualsSwingMinus2.setSelected(Preferences.DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
@@ -208,11 +213,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.getDefaultTechLevel().equals(Preferences.DEFAULT_DEFAULT_TECH_LEVEL);
         atDefault = atDefault && prefs.getInitialPoints() == Preferences.DEFAULT_INITIAL_POINTS;
         atDefault = atDefault && prefs.useModifyingDicePlusAdds() == Preferences.DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS;
-        atDefault = atDefault && prefs.baseWillAndPerOn10() == Preferences.DEFAULT_BASE_WILL_AND_PER_ON_10;
+        atDefault = atDefault && prefs.baseWillOn10() == Preferences.DEFAULT_BASE_WILL_ON_10;
+        atDefault = atDefault && prefs.basePerOn10() == Preferences.DEFAULT_BASE_PER_ON_10;
         atDefault = atDefault && prefs.useMultiplicativeModifiers() == Preferences.DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
         atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
-        atDefault = atDefault && prefs.autoNameNewCharacters() == Preferences.DEFAULT_AUTO_NAME_NEW_CHARACTERS;
+        atDefault = atDefault && prefs.autoFillProfile() == Preferences.DEFAULT_AUTO_FILL_PROFILE;
         return atDefault;
     }
 }

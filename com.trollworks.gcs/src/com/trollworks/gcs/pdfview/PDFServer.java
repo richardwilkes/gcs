@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -169,8 +169,9 @@ public final class PDFServer {
                 buffer.append('+');
             } else {
                 buffer.append('%');
-                buffer.append(Text.HEX_DIGITS[b >> 4]);
-                buffer.append(Text.HEX_DIGITS[b & 15]);
+                int bint = b & 0xff;
+                buffer.append(Text.HEX_DIGITS[bint >> 4]);
+                buffer.append(Text.HEX_DIGITS[bint & 15]);
             }
         }
         return buffer.toString();

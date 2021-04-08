@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -102,7 +102,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
         bite.setDamage(damage);
-        bite.setUsage("Bite");
+        bite.setUsage(I18n.Text("Bite"));
         bite.setReach("C");
         bite.setParry("No");
         bite.setBlock("No");
@@ -117,7 +117,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
         punch.setDamage(damage);
-        punch.setUsage("Punch");
+        punch.setUsage(I18n.Text("Punch"));
         punch.setReach("C");
         punch.setParry("0");
         punch.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, 0), new SkillDefault(SkillDefaultType.Skill, "Boxing", null, 0), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, 0), new SkillDefault(SkillDefaultType.Skill, "Karate", null, 0)));
@@ -130,7 +130,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         damage.setType("cr");
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         kick.setDamage(damage);
-        kick.setUsage("Kick");
+        kick.setUsage(I18n.Text("Kick"));
         kick.setReach("C,1");
         kick.setParry("No");
         kick.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, -2), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, -2), new SkillDefault(SkillDefaultType.Skill, "Karate", null, -2)));

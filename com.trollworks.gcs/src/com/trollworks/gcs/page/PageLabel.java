@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,6 +12,7 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Label;
 
@@ -28,10 +29,7 @@ public class PageLabel extends Label {
      * @param field The field.
      */
     public PageLabel(String title, JComponent field) {
-        super(title);
-        setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
-        setRefersTo(field);
-        UIUtilities.setToPreferredSizeOnly(this);
+        this(title, ThemeColor.ON_PAGE, field);
     }
 
     /**

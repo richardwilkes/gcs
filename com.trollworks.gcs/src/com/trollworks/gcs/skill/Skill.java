@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -842,8 +842,10 @@ public class Skill extends ListRow implements HasSourceReference {
                         if (skillDefault.getType().isSkillBased()) {
                             String name  = skillDefault.getName();
                             Skill  skill = character.getBestSkillNamed(name, skillDefault.getSpecialization(), true, excludes);
-                            level -= character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, skillDefault.getSpecialization(), skill.getCategories());
-                            level -= character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase());
+                            if (skill != null) {
+                                level -= character.getSkillComparedIntegerBonusFor(ID_NAME + "*", name, skillDefault.getSpecialization(), skill.getCategories());
+                                level -= character.getIntegerBonusFor(ID_NAME + "/" + name.toLowerCase());
+                            }
                         }
                         if (level > best) {
                             best = level;

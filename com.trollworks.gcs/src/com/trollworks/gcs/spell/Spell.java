@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -179,9 +179,14 @@ public class Spell extends ListRow implements HasSourceReference {
         updateLevel(false);
         if (deep) {
             int count = spell.getChildCount();
-
             for (int i = 0; i < count; i++) {
-                addChild(new Spell(dataFile, (Spell) spell.getChild(i), true, forSheet));
+                Row child = spell.getChild(i);
+                if (child instanceof RitualMagicSpell) {
+                    child = new RitualMagicSpell(dataFile, (RitualMagicSpell) child, true, forSheet);
+                } else {
+                    child = new Spell(dataFile, (Spell) child, true, forSheet);
+                }
+                addChild(child);
             }
         }
     }
@@ -419,6 +424,9 @@ public class Spell extends ListRow implements HasSourceReference {
 
         if (character != null) {
             level = attribute.getBaseSkillLevel(character);
+            if (difficulty == SkillDifficulty.W) {
+                points /= 3;
+            }
             if (points < 1) {
                 level = -1;
                 relativeLevel = 0;
@@ -738,6 +746,9 @@ public class Spell extends ListRow implements HasSourceReference {
         if (canHaveChildren()) {
             return "";
         }
+        if (this instanceof RitualMagicSpell) {
+            return (localized ? mDifficulty.toString() : mDifficulty.name());
+        }
         return (localized ? mAttribute.toString() : mAttribute.name()) + "/" + (localized ? mDifficulty.toString() : mDifficulty.name());
     }
 
@@ -885,4 +896,48 @@ public class Spell extends ListRow implements HasSourceReference {
         return mLevel.getToolTip();
     }
 
+    @Override
+    public String getSecondaryText() {
+        StringBuilder builder = new StringBuilder(super.getSecondaryText());
+        String        rituals = getRituals();
+        if (!rituals.isEmpty()) {
+            if (!builder.isEmpty()) {
+                builder.append("\n");
+            }
+            builder.append(rituals);
+        }
+        return builder.toString();
+    }
+
+    public String getRituals() {
+        if (!((mDataFile instanceof GURPSCharacter) && ((GURPSCharacter) mDataFile).getSettings().showSpellAdj())) {
+            return "";
+        }
+        int level = mLevel.getLevel();
+        if (level < 10) {
+            return I18n.Text("Ritual: need both hands and feet free and must speak; Time: 2x");
+        }
+        if (level < 15) {
+            return I18n.Text("Ritual: speak quietly and make a gesture");
+        }
+        String ritual;
+        String time = "";
+        String cost = "";
+        if (level < 20) {
+            ritual = I18n.Text("speak a word or two OR make a small gesture"); // ; may move 1 yard per second while concentrating");
+            if (!mSpellClass.toLowerCase().contains("blocking")) {
+                cost = I18n.Text("; Cost: -1");
+            }
+        } else {
+            ritual = I18n.Text("none");
+            int adj = (level - 15) / 5;
+            if (!mSpellClass.toLowerCase().contains("missile")) {
+                time = String.format(I18n.Text("; Time: x1/%d, rounded up, min 1 sec"), Integer.valueOf(1 << adj));
+            }
+            if (!mSpellClass.toLowerCase().contains("blocking")) {
+                cost = String.format(I18n.Text("; Cost: -%d"), Integer.valueOf(adj + 1));
+            }
+        }
+        return I18n.Text("Ritual: ") + ritual + time + cost;
+    }
 }

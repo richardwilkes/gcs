@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -32,7 +31,7 @@ public class WrappedCell implements Cell {
     public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
         Scale scale   = Scale.get(outline);
         int   hMargin = scale.scale(H_MARGIN);
-        gc.setColor(Colors.getListForeground(selected, active));
+        gc.setColor(selected ? UIManager.getColor("List.selectionForeground") : outline.getForeground());
         gc.setFont(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)));
         TextDrawing.draw(gc, new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height), row.getDataAsText(column), SwingConstants.LEFT, SwingConstants.TOP);
     }

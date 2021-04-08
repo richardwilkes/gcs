@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -288,7 +288,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
-        characterInitialize(true);
+        characterInitialize(Preferences.getInstance().autoFillProfile());
         calculateAll();
     }
 
@@ -1948,7 +1948,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The will. */
     public int getWillAdj() {
-        return mWillAdj + mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
+        return mWillAdj + mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence());
     }
 
     /** @param willAdj The new will. */
@@ -1956,7 +1956,7 @@ public class GURPSCharacter extends CollectedModels {
         int oldWill = getWillAdj();
         if (oldWill != willAdj) {
             postUndoEdit(I18n.Text("Will Change"), ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(willAdj));
-            updateWillInfo(willAdj - (mWillBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mWillBonus);
+            updateWillInfo(willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence())), mWillBonus);
         }
     }
 
@@ -2097,7 +2097,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The perception (Per). */
     public int getPerAdj() {
-        return mPerAdj + mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence());
+        return mPerAdj + mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence());
     }
 
     /**
@@ -2109,7 +2109,7 @@ public class GURPSCharacter extends CollectedModels {
         int oldPerception = getPerAdj();
         if (oldPerception != perAdj) {
             postUndoEdit(I18n.Text("Perception Change"), ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
-            updatePerceptionInfo(perAdj - (mPerceptionBonus + (mSettings.baseWillAndPerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
+            updatePerceptionInfo(perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
         }
     }
 
@@ -2556,9 +2556,11 @@ public class GURPSCharacter extends CollectedModels {
      * @param nameQualifier           The name qualifier.
      * @param specializationQualifier The specialization qualifier.
      * @param categoriesQualifier     The categories qualifier.
+     * @param dieCount                The number of dice for the base weapon damage.
+     * @param toolTip                 A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
+    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         int               rsl     = Integer.MIN_VALUE;
         for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
@@ -2575,7 +2577,11 @@ public class GURPSCharacter extends CollectedModels {
                         WeaponBonus bonus = (WeaponBonus) feature;
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getRelativeLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
                             bonuses.add(bonus);
+                            LeveledAmount amount = bonus.getAmount();
+                            int           level  = amount.getLevel();
+                            amount.setLevel(dieCount);
                             bonus.addToToolTip(toolTip);
+                            amount.setLevel(level);
                         }
                     }
                 }
@@ -2589,9 +2595,11 @@ public class GURPSCharacter extends CollectedModels {
      * @param nameQualifier       The name qualifier.
      * @param usageQualifier      The usage qualifier.
      * @param categoriesQualifier The categories qualifier.
+     * @param dieCount            The number of dice for the base weapon damage.
+     * @param toolTip             A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, StringBuilder toolTip) {
+    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
         List<WeaponBonus> bonuses = new ArrayList<>();
         List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
@@ -2600,7 +2608,11 @@ public class GURPSCharacter extends CollectedModels {
                     WeaponBonus bonus = (WeaponBonus) feature;
                     if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
+                        LeveledAmount amount = bonus.getAmount();
+                        int           level  = amount.getLevel();
+                        amount.setLevel(dieCount);
                         bonus.addToToolTip(toolTip);
+                        amount.setLevel(level);
                     }
                 }
             }

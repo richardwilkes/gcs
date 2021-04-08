@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -35,6 +35,7 @@ public final class Images {
     public static final RetinaIcon DOCK_CLOSE            = getRetina("dock_close");
     public static final RetinaIcon DOCK_MAXIMIZE         = getRetina("dock_maximize");
     public static final RetinaIcon DOCK_RESTORE          = getRetina("dock_restore");
+    public static final RetinaIcon DUPLICATE             = getRetina("duplicate");
     public static final RetinaIcon EQM_FILE              = getRetina("eqm_file");
     public static final RetinaIcon EQM_MARKER            = getRetina("eqm_marker");
     public static final RetinaIcon EQP_FILE              = getRetina("eqp_file");

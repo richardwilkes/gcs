@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -262,52 +262,6 @@ public class WeaponDamage {
                 int              st         = character.getStrength() + character.getStrikingStrengthBonus();
                 Dice             base       = new Dice(0, 0);
 
-                // Determine which skill default was used
-                int          best        = Integer.MIN_VALUE;
-                SkillDefault bestDefault = null;
-                for (SkillDefault skillDefault : mOwner.getDefaults()) {
-                    SkillDefaultType type = skillDefault.getType();
-                    if (type.isSkillBased()) {
-                        int level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
-                        if (level > best) {
-                            best = level;
-                            bestDefault = skillDefault;
-                        }
-                    }
-                }
-
-                if (bestDefault != null) {
-                    String name           = bestDefault.getName();
-                    String specialization = bestDefault.getSpecialization();
-                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, toolTip));
-                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, toolTip));
-                }
-                String nameQualifier  = mOwner.toString();
-                String usageQualifier = mOwner.getUsage();
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip));
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip));
-                List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
-                for (Feature feature : mOwner.mOwner.getFeatures()) {
-                    extractWeaponBonus(feature, bonuses, toolTip);
-                }
-                if (mOwner.mOwner instanceof Advantage) {
-                    for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
-                        if (modifier.isEnabled()) {
-                            for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses, toolTip);
-                            }
-                        }
-                    }
-                }
-                if (mOwner.mOwner instanceof Equipment) {
-                    for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
-                        if (modifier.isEnabled()) {
-                            for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses, toolTip);
-                            }
-                        }
-                    }
-                }
                 if (maxST > 0 && maxST < st) {
                     st = maxST;
                 }
@@ -350,6 +304,54 @@ public class WeaponDamage {
                 default:
                     break;
                 }
+                int dieCount = base.getDieCount();
+
+                // Determine which skill default was used
+                int          best        = Integer.MIN_VALUE;
+                SkillDefault bestDefault = null;
+                for (SkillDefault skillDefault : mOwner.getDefaults()) {
+                    SkillDefaultType type = skillDefault.getType();
+                    if (type.isSkillBased()) {
+                        int level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+                        if (level > best) {
+                            best = level;
+                            bestDefault = skillDefault;
+                        }
+                    }
+                }
+
+                if (bestDefault != null) {
+                    String name           = bestDefault.getName();
+                    String specialization = bestDefault.getSpecialization();
+                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, dieCount, toolTip));
+                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, dieCount, toolTip));
+                }
+                String nameQualifier  = mOwner.toString();
+                String usageQualifier = mOwner.getUsage();
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, dieCount, toolTip));
+                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, dieCount, toolTip));
+                List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
+                for (Feature feature : mOwner.mOwner.getFeatures()) {
+                    extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                }
+                if (mOwner.mOwner instanceof Advantage) {
+                    for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                            }
+                        }
+                    }
+                }
+                if (mOwner.mOwner instanceof Equipment) {
+                    for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
+                        if (modifier.isEnabled()) {
+                            for (Feature feature : modifier.getFeatures()) {
+                                extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                            }
+                        }
+                    }
+                }
                 for (WeaponBonus bonus : bonuses) {
                     LeveledAmount lvlAmt = bonus.getAmount();
                     int           amt    = lvlAmt.getIntegerAmount();
@@ -364,20 +366,27 @@ public class WeaponDamage {
                 }
                 boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
                 StringBuilder buffer                      = new StringBuilder();
-                buffer.append(base.toString(convertModifiersToExtraDice));
+                if (!base.equals(new Dice(0, 0))) {
+                    buffer.append(base.toString(convertModifiersToExtraDice));
+                }
                 if (mArmorDivisor != 1) {
                     buffer.append("(");
                     buffer.append(Numbers.format(mArmorDivisor));
                     buffer.append(")");
                 }
                 if (!mType.isBlank()) {
-                    buffer.append(" ");
+                    if (!buffer.isEmpty()) {
+                        buffer.append(" ");
+                    }
                     buffer.append(mType);
                 }
                 if (mFragmentation != null) {
                     String frag = mFragmentation.toString(convertModifiersToExtraDice);
                     if (!"0".equals(frag)) {
-                        buffer.append(" [");
+                        if (!buffer.isEmpty()) {
+                            buffer.append(" ");
+                        }
+                        buffer.append("[");
                         buffer.append(frag);
                         if (mFragmentationArmorDivisor != 1) {
                             buffer.append("(");
@@ -395,9 +404,12 @@ public class WeaponDamage {
         return toString();
     }
 
-    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list, StringBuilder toolTip) {
+    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list, int dieCount, StringBuilder toolTip) {
         if (feature instanceof WeaponBonus) {
-            WeaponBonus wb = (WeaponBonus) feature;
+            WeaponBonus   wb     = (WeaponBonus) feature;
+            LeveledAmount amount = wb.getAmount();
+            int           level  = amount.getLevel();
+            amount.setLevel(dieCount);
             switch (wb.getWeaponSelectionType()) {
             case THIS_WEAPON:
             default:
@@ -414,6 +426,7 @@ public class WeaponDamage {
                 // Already handled
                 break;
             }
+            amount.setLevel(level);
         }
     }
 

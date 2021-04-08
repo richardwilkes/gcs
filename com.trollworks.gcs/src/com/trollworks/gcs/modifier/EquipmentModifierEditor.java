@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -100,10 +100,15 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             mTabPanel = new JTabbedPane();
             mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
             Component panel = embedEditor(mFeatures);
-            mTabPanel.addTab(panel.getName(), panel);
+            addTab(panel.getName(), panel);
             UIUtilities.selectTab(mTabPanel, getLastTabName());
             add(mTabPanel);
         }
+    }
+
+    private void addTab(String title, Component panel) {
+        mTabPanel.addTab(title, panel);
+        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     @Override

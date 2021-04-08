@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -309,7 +309,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         if (m.has(TAG_CR)) {
             mCR = SelfControlRoll.getByCRValue(m.getInt(TAG_CR));
             if (m.has(KEY_CR_ADJ)) {
-                mCRAdj = Enums.extract(m.getString(SelfControlRoll.ATTR_ADJUSTMENT), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
+                mCRAdj = Enums.extract(m.getString(KEY_CR_ADJ), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
             }
         }
         if (m.has(KEY_MODIFIERS)) {

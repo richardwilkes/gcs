@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -170,9 +170,11 @@ public class Library implements Comparable<Library> {
             }
         }
         mAvailableUpgrade = new Release(availableUpgrades);
-        Version version = mAvailableUpgrade.getVersion();
+    }
+
+    public synchronized void setLastSeen(Version version) {
         if (!version.isZero()) {
-            mLastSeen = new Version(mAvailableUpgrade.getVersion());
+            mLastSeen = new Version(version);
         }
     }
 

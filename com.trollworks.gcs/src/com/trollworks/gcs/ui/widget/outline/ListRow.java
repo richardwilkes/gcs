@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.feature.AttributeBonus;
+import com.trollworks.gcs.feature.ConditionalModifier;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.DRBonus;
@@ -343,6 +344,7 @@ public abstract class ListRow extends Row implements Updatable {
                 case AttributeBonus.TAG_ROOT -> mFeatures.add(new AttributeBonus(m1));
                 case DRBonus.TAG_ROOT -> mFeatures.add(new DRBonus(m1));
                 case ReactionBonus.TAG_ROOT -> mFeatures.add(new ReactionBonus(m1));
+                case ConditionalModifier.TAG_ROOT -> mFeatures.add(new ConditionalModifier(m1));
                 case SkillBonus.TAG_ROOT -> mFeatures.add(new SkillBonus(m1));
                 case SkillPointBonus.TAG_ROOT -> mFeatures.add(new SkillPointBonus(m1));
                 case SpellBonus.TAG_ROOT -> mFeatures.add(new SpellBonus(m1));

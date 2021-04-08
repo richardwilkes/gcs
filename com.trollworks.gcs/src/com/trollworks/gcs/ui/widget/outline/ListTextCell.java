@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -37,11 +37,11 @@ public class ListTextCell extends TextCell {
     }
 
     @Override
-    public Color getColor(boolean selected, boolean active, Row row, Column column) {
+    public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (row instanceof ListRow && !((ListRow) row).isSatisfied()) {
             return Color.red;
         }
-        return super.getColor(selected, active, row, column);
+        return super.getColor(outline, row, column, selected, active);
     }
 
     @Override

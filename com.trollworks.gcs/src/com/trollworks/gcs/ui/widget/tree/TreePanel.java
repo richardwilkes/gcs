@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -1124,7 +1124,10 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     @SuppressWarnings("static-method")
     public Color getDefaultRowForeground(int position, boolean selected, boolean active) {
-        return Colors.getListForeground(selected, active);
+        if (selected) {
+            return UIManager.getColor("List.selectionForeground");
+        }
+        return Color.BLACK;
     }
 
     /**
@@ -1135,7 +1138,15 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public Color getDefaultRowBackground(int position, boolean selected, boolean active) {
         if (selected) {
-            return Colors.getListBackground(true, active);
+            Color color = UIManager.getColor("List.selectionBackground");
+            if (!active) {
+                Color previous = color;
+                color = Colors.adjustSaturation(color, -0.5f);
+                if (previous.getRGB() == color.getRGB()) {
+                    color = Colors.adjustBrightness(color, 0.2f);
+                }
+            }
+            return color;
         }
         return (mUseBanding && (position % 2 != 0)) ? ThemeColor.BANDING : Color.WHITE;
     }
@@ -1221,7 +1232,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
             notify(open ? TreeNotificationKeys.ROW_OPENED : TreeNotificationKeys.ROW_CLOSED, data);
             if (!selectionRemoved.isEmpty()) {
                 TreeRow[] oldSelection = mSelectedRows.toArray(new TreeRow[0]);
-                mSelectedRows.removeAll(selectionRemoved);
+                selectionRemoved.forEach(mSelectedRows::remove);
                 if (mAnchorRow != null && !mSelectedRows.contains(mAnchorRow)) {
                     mAnchorRow = getFirstSelectedRow();
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -11,13 +11,26 @@
 
 package com.trollworks.gcs.weapon;
 
+import com.trollworks.gcs.menu.edit.Duplicatable;
+import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
+import com.trollworks.gcs.ui.widget.outline.OutlineModel;
+import com.trollworks.gcs.ui.widget.outline.Row;
 
-class WeaponOutline extends Outline {
-    WeaponOutline() {
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+class WeaponOutline extends Outline implements Duplicatable {
+    private ListRow mOwner;
+
+    WeaponOutline(ListRow owner) {
         super(false);
+        mOwner = owner;
         setAllowColumnResize(false);
         setAllowRowDrag(false);
+        setBackground(Color.WHITE);
+        setForeground(Color.BLACK);
     }
 
     @Override
@@ -27,9 +40,33 @@ class WeaponOutline extends Outline {
 
     @Override
     public void deleteSelection() {
-        if (canDeleteSelection()) {
-            getModel().removeSelection();
+        OutlineModel model = getModel();
+        if (model.hasSelection()) {
+            model.removeSelection();
             sizeColumnsToFit();
+        }
+    }
+
+    @Override
+    public boolean canDuplicateSelection() {
+        return getModel().hasSelection();
+    }
+
+    @Override
+    public void duplicateSelection() {
+        OutlineModel model = getModel();
+        if (model.hasSelection()) {
+            List<WeaponDisplayRow> added = new ArrayList<>();
+            for (Row row : model.getSelectionAsList()) {
+                WeaponDisplayRow weapon = new WeaponDisplayRow(((WeaponDisplayRow) row).getWeapon().clone(mOwner));
+                model.addRow(weapon);
+                added.add(weapon);
+            }
+            sizeColumnsToFit();
+            model.select(added, false);
+            revalidate();
+            scrollSelectionIntoView();
+            requestFocus();
         }
     }
 }

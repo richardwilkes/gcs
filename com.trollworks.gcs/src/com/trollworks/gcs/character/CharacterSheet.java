@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2020 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -22,6 +22,7 @@ import com.trollworks.gcs.advantage.SelfControlRoll;
 import com.trollworks.gcs.advantage.SelfControlRollAdjustments;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
+import com.trollworks.gcs.feature.ConditionalModifier;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.ReactionBonus;
 import com.trollworks.gcs.modifier.AdvantageModifier;
@@ -32,6 +33,7 @@ import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
+import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.Fonts;
@@ -102,30 +104,35 @@ import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
 public class CharacterSheet extends CollectedOutlines implements ChangeListener, PageOwner, PrintProxy, Runnable {
-    private static final int              GAP                 = 2;
-    public static final  String           REACTIONS_KEY       = "reactions";
-    public static final  String           MELEE_KEY           = "melee";
-    public static final  String           RANGED_KEY          = "ranged";
-    public static final  String           ADVANTAGES_KEY      = "advantages";
-    public static final  String           SKILLS_KEY          = "skills";
-    public static final  String           SPELLS_KEY          = "spells";
-    public static final  String           EQUIPMENT_KEY       = "equipment";
-    public static final  String           OTHER_EQUIPMENT_KEY = "other_equipment";
-    public static final  String           NOTES_KEY           = "notes";
-    private static final String[]         ALL_KEYS            = {REACTIONS_KEY, MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY};
-    private static final Pattern          SCHEME_PATTERN      = Pattern.compile(".*://");
-    private              GURPSCharacter   mCharacter;
-    private              int              mLastPage;
-    private              WeaponOutline    mMeleeWeaponOutline;
-    private              WeaponOutline    mRangedWeaponOutline;
-    private              ReactionsOutline mReactionsOutline;
-    private              boolean          mRebuildPending;
-    private              Set<Outline>     mRootsToSync;
-    private              Scale            mSavedScale;
-    private              boolean          mOkToPaint          = true;
-    private              boolean          mIsPrinting;
-    private              boolean          mSyncWeapons;
-    private              boolean          mReloadSpellColumns;
+    private static final int                         GAP                       = 2;
+    public static final  String                      REACTIONS_KEY             = "reactions";
+    public static final  String                      CONDITIONAL_MODIFIERS_KEY = "conditional_modifiers";
+    public static final  String                      MELEE_KEY                 = "melee";
+    public static final  String                      RANGED_KEY                = "ranged";
+    public static final  String                      ADVANTAGES_KEY            = "advantages";
+    public static final  String                      SKILLS_KEY                = "skills";
+    public static final  String                      SPELLS_KEY                = "spells";
+    public static final  String                      EQUIPMENT_KEY             = "equipment";
+    public static final  String                      OTHER_EQUIPMENT_KEY       = "other_equipment";
+    public static final  String                      NOTES_KEY                 = "notes";
+    private static final String[]                    ALL_KEYS                  = {REACTIONS_KEY, CONDITIONAL_MODIFIERS_KEY, MELEE_KEY, RANGED_KEY, ADVANTAGES_KEY, SKILLS_KEY, SPELLS_KEY, EQUIPMENT_KEY, OTHER_EQUIPMENT_KEY, NOTES_KEY};
+    private static final Pattern                     SCHEME_PATTERN            = Pattern.compile(".*://");
+    private              GURPSCharacter              mCharacter;
+    private              int                         mLastPage;
+    private              WeaponOutline               mMeleeWeaponOutline;
+    private              WeaponOutline               mRangedWeaponOutline;
+    private              ReactionsOutline            mReactionsOutline;
+    private              ConditionalModifiersOutline mConditionalModifiersOutline;
+    private              boolean                     mRebuildPending;
+    private              Set<Outline>                mRootsToSync;
+    private              Scale                       mSavedScale;
+    private              boolean                     mOkToPaint                = true;
+    private              boolean                     mIsPrinting;
+    private              boolean                     mSyncWeapons;
+    private              boolean                     mSyncReactions;
+    private              boolean                     mSyncConditionalModifiers;
+    private              boolean                     mReloadSkillColumns;
+    private              boolean                     mReloadSpellColumns;
 
     /**
      * Creates a new character sheet display. {@link #rebuild()} must be called prior to the first
@@ -191,6 +198,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         createMeleeWeaponOutline();
         createRangedWeaponOutline();
         createReactionsOutline();
+        createConditionalModifiersOutline();
 
         // Clear out the old pages
         removeAll();
@@ -212,17 +220,19 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         wrapper.add(new DescriptionPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setHorizontalSpan(2));
         pageAssembler.addToContent(wrapper, null, null);
 
+        boolean extraSpaceAroundEncumbrance = mCharacter.getSettings().extraSpaceAroundEncumbrance();
+
         wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
         wrapper.add(new AttributesPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(true));
-        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
-        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
+        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundEncumbrance));
+        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundEncumbrance));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(!extraSpaceAroundEncumbrance).setFillAlignment());
         wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
-        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
-        wrapper.add(wrapper2, new PrecisionLayoutData().setFillAlignment());
+        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundEncumbrance));
+        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundEncumbrance));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(extraSpaceAroundEncumbrance).setFillAlignment());
         pageAssembler.addToContent(wrapper, null, null);
 
         // Add the various outline blocks, based on the layout preference.
@@ -270,6 +280,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         // Ensure everything is laid out and register for notification
         validate();
         OutlineSyncer.remove(mReactionsOutline);
+        OutlineSyncer.remove(mConditionalModifiersOutline);
         OutlineSyncer.remove(mMeleeWeaponOutline);
         OutlineSyncer.remove(mRangedWeaponOutline);
         OutlineSyncer.remove(getAdvantageOutline());
@@ -295,6 +306,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private static Set<String> prepBlockLayoutRemaining() {
         Set<String> remaining = new HashSet<>();
         remaining.add(REACTIONS_KEY);
+        remaining.add(CONDITIONAL_MODIFIERS_KEY);
         remaining.add(MELEE_KEY);
         remaining.add(RANGED_KEY);
         remaining.add(ADVANTAGES_KEY);
@@ -341,6 +353,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private static String getOutlineTitleForKey(String key) {
         return switch (key) {
             case REACTIONS_KEY -> I18n.Text("Reactions");
+            case CONDITIONAL_MODIFIERS_KEY -> I18n.Text("Conditional Modifiers");
             case MELEE_KEY -> I18n.Text("Melee Weapons");
             case RANGED_KEY -> I18n.Text("Ranged Weapons");
             case ADVANTAGES_KEY -> I18n.Text("Advantages, Disadvantages & Quirks");
@@ -356,6 +369,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private Outline getOutlineForKey(String key) {
         return switch (key) {
             case REACTIONS_KEY -> mReactionsOutline;
+            case CONDITIONAL_MODIFIERS_KEY -> mConditionalModifiersOutline;
             case MELEE_KEY -> mMeleeWeaponOutline;
             case RANGED_KEY -> mRangedWeaponOutline;
             case ADVANTAGES_KEY -> getAdvantageOutline();
@@ -421,6 +435,13 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     protected void createOutlines(CollectedModels models) {
+        if (mReloadSkillColumns) {
+            mReloadSkillColumns = false;
+            SkillOutline skillOutline = getSkillOutline();
+            if (skillOutline != null) {
+                skillOutline.resetColumns();
+            }
+        }
         if (mReloadSpellColumns) {
             mReloadSpellColumns = false;
             SpellOutline spellOutline = getSpellOutline();
@@ -495,6 +516,63 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 ReactionRow   existing  = reactionMap.get(situation);
                 if (existing == null) {
                     reactionMap.put(situation, new ReactionRow(amount, situation, source));
+                } else {
+                    existing.addAmount(amount, source);
+                }
+            }
+        }
+    }
+
+    private void createConditionalModifiersOutline() {
+        if (mConditionalModifiersOutline == null) {
+            OutlineModel outlineModel;
+            String       sortConfig;
+            mConditionalModifiersOutline = new ConditionalModifiersOutline();
+            outlineModel = mConditionalModifiersOutline.getModel();
+            sortConfig = outlineModel.getSortConfig();
+            for (ConditionalModifierRow row : collectConditionalModifiers()) {
+                outlineModel.addRow(row);
+            }
+            outlineModel.applySortConfig(sortConfig);
+            initOutline(mConditionalModifiersOutline);
+        }
+        resetOutline(mConditionalModifiersOutline);
+    }
+
+    public List<ConditionalModifierRow> collectConditionalModifiers() {
+        Map<String, ConditionalModifierRow> cmMap = new HashMap<>();
+        for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
+            String source = String.format(I18n.Text("from advantage %s"), advantage.getName());
+            collectConditionalModifiersFromFeatureList(source, advantage.getFeatures(), cmMap);
+            for (AdvantageModifier modifier : advantage.getModifiers()) {
+                if (modifier.isEnabled()) {
+                    collectConditionalModifiersFromFeatureList(source, modifier.getFeatures(), cmMap);
+                }
+            }
+        }
+        for (Equipment equipment : mCharacter.getEquipmentIterator()) {
+            if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
+                String source = String.format(I18n.Text("from equipment %s"), equipment.getDescription());
+                collectConditionalModifiersFromFeatureList(source, equipment.getFeatures(), cmMap);
+                for (EquipmentModifier modifier : equipment.getModifiers()) {
+                    if (modifier.isEnabled()) {
+                        collectConditionalModifiersFromFeatureList(source, modifier.getFeatures(), cmMap);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(cmMap.values());
+    }
+
+    private void collectConditionalModifiersFromFeatureList(String source, List<Feature> features, Map<String, ConditionalModifierRow> cmMap) {
+        for (Feature feature : features) {
+            if (feature instanceof ConditionalModifier) {
+                ConditionalModifier    cm        = (ConditionalModifier) feature;
+                int                    amount    = cm.getAmount().getIntegerAdjustedAmount();
+                String                 situation = cm.getSituation();
+                ConditionalModifierRow existing  = cmMap.get(situation);
+                if (existing == null) {
+                    cmMap.put(situation, new ConditionalModifierRow(amount, situation, source));
                 } else {
                     existing.addAmount(amount, source);
                 }
@@ -632,6 +710,11 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2);
         MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_COLLEGE_IN_SPELLS);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_DIFFICULTY);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_ADVANTAGE_MODIFIER_ADJ);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_EQUIPMENT_MODIFIER_ADJ);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_SPELL_ADJ);
+        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_EXTRA_SPACE_AROUND_ENCUMBRANCE);
 
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_DISABLED);
         MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_WEAPON_STATUS_CHANGED);
@@ -673,6 +756,10 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
+        if (Settings.ID_SHOW_DIFFICULTY.equals(type)) {
+            mReloadSkillColumns = true;
+            mReloadSpellColumns = true;
+        }
         if (Settings.ID_SHOW_COLLEGE_IN_SPELLS.equals(type)) {
             mReloadSpellColumns = true;
         }
@@ -682,6 +769,9 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             if (type.startsWith(Advantage.PREFIX)) {
                 OutlineSyncer.add(getAdvantageOutline());
                 OutlineSyncer.add(mReactionsOutline);
+                OutlineSyncer.add(mConditionalModifiersOutline);
+                mSyncReactions = true;
+                mSyncConditionalModifiers = true;
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (Settings.ID_USER_DESCRIPTION_DISPLAY.equals(type) || Settings.ID_MODIFIERS_DISPLAY.equals(type) || Settings.ID_NOTES_DISPLAY.equals(type)) {
@@ -704,6 +794,9 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                 OutlineSyncer.add(getEquipmentOutline());
                 OutlineSyncer.add(getOtherEquipmentOutline());
                 OutlineSyncer.add(mReactionsOutline);
+                OutlineSyncer.add(mConditionalModifiersOutline);
+                mSyncReactions = true;
+                mSyncConditionalModifiers = true;
                 mSyncWeapons = true;
                 markForRebuild();
             } else if (type.startsWith(Note.PREFIX)) {
@@ -727,7 +820,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             } else if (GURPSCharacter.ID_NOT_CARRIED_WEALTH.equals(type)) {
                 Column column = getOtherEquipmentOutline().getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
                 column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
-            } else if (Settings.ID_BASE_WILL_AND_PER_ON_10.equals(type)) {
+            } else if (Settings.ID_BASE_WILL_ON_10.equals(type) || Settings.ID_BASE_PER_ON_10.equals(type)) {
                 mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
             } else if (Settings.ID_USE_MULTIPLICATIVE_MODIFIERS.equals(type)) {
                 mCharacter.notifySingle(Advantage.ID_LIST_CHANGED, null);
@@ -860,11 +953,20 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     private void syncRoots() {
-        if (mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
+        if (mSyncReactions || mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
             OutlineModel outlineModel = mReactionsOutline.getModel();
             String       sortConfig   = outlineModel.getSortConfig();
             outlineModel.removeAllRows();
             for (ReactionRow row : collectReactions()) {
+                outlineModel.addRow(row);
+            }
+            outlineModel.applySortConfig(sortConfig);
+        }
+        if (mSyncConditionalModifiers || mRootsToSync.contains(mConditionalModifiersOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
+            OutlineModel outlineModel = mConditionalModifiersOutline.getModel();
+            String       sortConfig   = outlineModel.getSortConfig();
+            outlineModel.removeAllRows();
+            for (ConditionalModifierRow row : collectConditionalModifiers()) {
                 outlineModel.addRow(row);
             }
             outlineModel.applySortConfig(sortConfig);
@@ -888,6 +990,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             }
             outlineModel.applySortConfig(sortConfig);
         }
+        mSyncReactions = false;
+        mSyncConditionalModifiers = true;
         mSyncWeapons = false;
         mRootsToSync.clear();
     }
