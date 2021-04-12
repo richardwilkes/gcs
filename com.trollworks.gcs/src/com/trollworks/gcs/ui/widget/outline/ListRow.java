@@ -40,14 +40,9 @@ import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -58,21 +53,17 @@ import java.util.UUID;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row implements Updatable {
-    private static final String             ATTRIBUTE_OPEN    = "open";
-    private static final String             TAG_NOTES         = "notes";
-    private static final String             TAG_CATEGORIES    = "categories";
-    private static final String             KEY_ID            = "id";
-    private static final String             KEY_BASED_ON_ID   = "based_on_id";
-    private static final String             KEY_BASED_ON_HASH = "based_on_hash";
-    private static final String             KEY_FEATURES      = "features";
-    private static final String             KEY_DEFAULTS      = "defaults";
-    private static final String             KEY_CHILDREN      = "children";
-    private static final String             KEY_PREREQS       = "prereqs";
+    private static final String             ATTRIBUTE_OPEN = "open";
+    private static final String             TAG_NOTES      = "notes";
+    private static final String             TAG_CATEGORIES = "categories";
+    private static final String             KEY_ID         = "id";
+    private static final String             KEY_FEATURES   = "features";
+    private static final String             KEY_DEFAULTS   = "defaults";
+    private static final String             KEY_CHILDREN   = "children";
+    private static final String             KEY_PREREQS    = "prereqs";
     /** The data file the row is associated with. */
     protected            DataFile           mDataFile;
     private              UUID               mID;
-    private              UUID               mBasedOnID;
-    private              String             mBasedOnHash;
     private              List<Feature>      mFeatures;
     private              PrereqList         mPrereqList;
     private              List<SkillDefault> mDefaults;
@@ -191,19 +182,6 @@ public abstract class ListRow extends Row implements Updatable {
             mDefaults.add(new SkillDefault(skillDefault));
         }
         mCategories = new TreeSet<>(rowToClone.mCategories);
-        try {
-            MessageDigest         digest = MessageDigest.getInstance("SHA3-256");
-            ByteArrayOutputStream baos   = new ByteArrayOutputStream();
-            try (JsonWriter w = new JsonWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8), "")) {
-                rowToClone.save(w, SaveType.HASH);
-            }
-            mBasedOnHash = Base64.getEncoder().withoutPadding().encodeToString(digest.digest(baos.toByteArray()));
-            mBasedOnID = rowToClone.mID;
-        } catch (Exception exception) {
-            mBasedOnID = null;
-            mBasedOnHash = null;
-            Log.warn(exception);
-        }
     }
 
     @Override
@@ -306,15 +284,6 @@ public abstract class ListRow extends Row implements Updatable {
                 mID = UUID.randomUUID();
             }
         }
-        if (m.has(KEY_BASED_ON_ID)) {
-            try {
-                mBasedOnID = UUID.fromString(m.getString(KEY_BASED_ON_ID));
-                mBasedOnHash = m.getString(KEY_BASED_ON_HASH);
-            } catch (Exception exception) {
-                mBasedOnID = null;
-                mBasedOnHash = null;
-            }
-        }
         state.mDataItemVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
         if (state.mDataItemVersion > getJSONVersion()) {
             throw VersionException.createTooNew();
@@ -414,10 +383,6 @@ public abstract class ListRow extends Row implements Updatable {
         w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
         w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
         w.keyValue(KEY_ID, mID.toString());
-        if (mBasedOnID != null) {
-            w.keyValue(KEY_BASED_ON_ID, mBasedOnID.toString());
-            w.keyValue(KEY_BASED_ON_HASH, mBasedOnHash);
-        }
         saveSelf(w, saveType);
         if (!mPrereqList.isEmpty()) {
             w.key(KEY_PREREQS);
