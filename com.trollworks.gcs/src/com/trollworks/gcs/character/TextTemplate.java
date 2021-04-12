@@ -1017,12 +1017,22 @@ public class TextTemplate {
             writeEncodedText(out, row.toString());
             writeNote(out, row.getModifierNotes());
             writeNote(out, row.getNotes());
+            if (row instanceof Spell) {
+                writeNote(out, ((Spell) row).getRituals());
+            }
         } else if (key.equals(KEY_DESCRIPTION_PRIMARY)) {
             writeEncodedText(out, row.toString());
         } else if (key.startsWith(KEY_DESCRIPTION_MODIFIER_NOTES)) {
             writeXMLTextWithOptionalParens(key, out, row.getModifierNotes());
         } else if (key.startsWith(KEY_DESCRIPTION_NOTES)) {
-            writeXMLTextWithOptionalParens(key, out, row.getNotes());
+            String notes = row.getNotes();
+            if (row instanceof Spell) {
+                if (!notes.isEmpty()) {
+                    notes += "; ";
+                }
+                notes += ((Spell) row).getRituals();
+            }
+            writeXMLTextWithOptionalParens(key, out, notes);
         } else {
             return false;
         }
