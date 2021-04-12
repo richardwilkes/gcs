@@ -366,7 +366,7 @@ public class WeaponDamage {
                 }
                 boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
                 StringBuilder buffer                      = new StringBuilder();
-                if (!base.equals(new Dice(0, 0))) {
+                if (base.getDieCount() != 0 || base.getModifier() != 0) {
                     buffer.append(base.toString(convertModifiersToExtraDice));
                 }
                 if (mArmorDivisor != 1) {
