@@ -156,7 +156,7 @@ public class EquipmentModifier extends Modifier {
     public boolean setCostAdjType(EquipmentModifierCostType costType) {
         if (costType != mCostType) {
             mCostType = costType;
-            notifySingle(ID_COST_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -175,7 +175,7 @@ public class EquipmentModifier extends Modifier {
         amount = mCostType.format(amount, false);
         if (!mCostAmount.equals(amount)) {
             mCostAmount = amount;
-            notifySingle(ID_COST_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -193,7 +193,7 @@ public class EquipmentModifier extends Modifier {
     public boolean setWeightAdjType(EquipmentModifierWeightType weightType) {
         if (weightType != mWeightType) {
             mWeightType = weightType;
-            notifySingle(ID_WEIGHT_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -212,7 +212,7 @@ public class EquipmentModifier extends Modifier {
         amount = mWeightType.format(amount, getDataFile().defaultWeightUnits(), false);
         if (!mWeightAmount.equals(amount)) {
             mWeightAmount = amount;
-            notifySingle(ID_WEIGHT_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -353,7 +353,7 @@ public class EquipmentModifier extends Modifier {
     public boolean setTechLevel(String techLevel) {
         if (!mTechLevel.equals(techLevel)) {
             mTechLevel = techLevel;
-            notifySingle(ID_TECH_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;

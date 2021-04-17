@@ -12,7 +12,7 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.character.CharacterSheet;
-import com.trollworks.gcs.character.GURPSCharacterSetter;
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
@@ -38,8 +38,8 @@ import javax.swing.plaf.basic.BasicTextFieldUI;
 /** A generic field for a page. */
 public class PageField extends JFormattedTextField implements PropertyChangeListener, ActionListener, Commitable {
     private CharacterSheet       mSheet;
-    private String               mTag;
-    private GURPSCharacterSetter mSetter;
+    private String          mTag;
+    private CharacterSetter mSetter;
 
     /**
      * Creates a new disabled text input field.
@@ -67,7 +67,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
      * @param tooltip      The tooltip to set.
      * @param color        The color to use.
      */
-    public PageField(AbstractFormatterFactory factory, Object currentValue, GURPSCharacterSetter setter, CharacterSheet sheet, String tag, int alignment, boolean editable, String tooltip, Color color) {
+    public PageField(AbstractFormatterFactory factory, Object currentValue, CharacterSetter setter, CharacterSheet sheet, String tag, int alignment, boolean editable, String tooltip, Color color) {
         super(factory, currentValue);
         if (Platform.isLinux()) {
             // I override the UI here since the GTK UI on Linux has no way to turn off the border

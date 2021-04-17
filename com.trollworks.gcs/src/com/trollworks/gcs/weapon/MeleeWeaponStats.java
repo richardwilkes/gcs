@@ -230,7 +230,7 @@ public class MeleeWeaponStats extends WeaponStats {
         parry = sanitize(parry);
         if (!mParry.equals(parry)) {
             mParry = parry;
-            notifySingle(ID_PARRY);
+            notifyOfChange();
         }
     }
 
@@ -258,7 +258,7 @@ public class MeleeWeaponStats extends WeaponStats {
         block = sanitize(block);
         if (!mBlock.equals(block)) {
             mBlock = block;
-            notifySingle(ID_BLOCK);
+            notifyOfChange();
         }
     }
 
@@ -276,7 +276,7 @@ public class MeleeWeaponStats extends WeaponStats {
         reach = sanitize(reach);
         if (!mReach.equals(reach)) {
             mReach = reach;
-            notifySingle(ID_REACH);
+            notifyOfChange();
         }
     }
 

@@ -531,7 +531,7 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSwing().toString());
             break;
         case KEY_GENERAL_DR:
-            writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(Armor.ID_TORSO_DR)).intValue()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getArmor().getTorsoDR()));
             break;
         case KEY_CURRENT_DODGE:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel(false))));
@@ -885,7 +885,7 @@ public class TextTemplate {
                         case KEY_ROLL -> writeEncodedText(out, entry.getRoll());
                         case KEY_WHERE -> writeEncodedText(out, entry.getName());
                         case KEY_PENALTY -> writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
-                        case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
+                        case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getArmor().getValueForID(entry.getKey())).intValue()));
                         case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         // Show the equipment that is providing the DR bonus
                         case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));

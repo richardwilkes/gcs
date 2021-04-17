@@ -11,6 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-public interface GURPSCharacterSetter {
+public interface CharacterSetter {
     void setValue(GURPSCharacter gch, Object obj);
 }

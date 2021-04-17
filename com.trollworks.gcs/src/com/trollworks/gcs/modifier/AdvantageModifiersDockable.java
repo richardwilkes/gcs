@@ -34,7 +34,6 @@ public class AdvantageModifiersDockable extends LibraryDockable {
     @Override
     protected ListOutline createOutline() {
         AdvantageModifierList list = getDataFile();
-        list.addTarget(this, AdvantageModifier.ID_CATEGORY);
         return new AdvantageModifiersOutline(list);
     }
 }

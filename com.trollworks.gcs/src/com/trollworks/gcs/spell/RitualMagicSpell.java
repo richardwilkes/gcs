@@ -101,7 +101,7 @@ public class RitualMagicSpell extends Spell {
         if (mLevel == null || !mLevel.isSameLevelAs(skillLevel)) {
             mLevel = skillLevel;
             if (notify) {
-                notify(ID_LEVEL, this);
+                notifyOfChange();
             }
         }
     }

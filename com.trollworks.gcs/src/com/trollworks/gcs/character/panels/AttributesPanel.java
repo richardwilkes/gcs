@@ -14,7 +14,7 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.GURPSCharacterSetter;
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
@@ -63,14 +63,14 @@ public class AttributesPanel extends DropPanel {
         createDiceField(sheet, gch.getSwing(), I18n.Text("Basic Swing"));
     }
 
-    private void createEditableIntegerField(CharacterSheet sheet, Integer points, int value, GURPSCharacterSetter setter, String tag, String title) {
+    private void createEditableIntegerField(CharacterSheet sheet, Integer points, int value, CharacterSetter setter, String tag, String title) {
         PageField field = new PageField(FieldFactory.POSINT5, Integer.valueOf(value), setter, sheet, tag, SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);
         add(points != null ? new PagePoints(points.intValue()) : new Label(), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         add(new PageLabel(title, field));
     }
 
-    private void createEditableFloatField(CharacterSheet sheet, Integer points, double value, GURPSCharacterSetter setter, String tag, String title) {
+    private void createEditableFloatField(CharacterSheet sheet, Integer points, double value, CharacterSetter setter, String tag, String title) {
         PageField field = new PageField(FieldFactory.FLOAT, Double.valueOf(value), setter, sheet, tag, SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);
         add(points != null ? new PagePoints(points.intValue()) : new Label(), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));

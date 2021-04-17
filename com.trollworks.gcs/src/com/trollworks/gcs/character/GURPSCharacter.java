@@ -45,7 +45,6 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -90,10 +89,6 @@ public class GURPSCharacter extends CollectedModels {
     public static final  String                              ID_MODIFIED                          = CHARACTER_PREFIX + "Modified";
     /** The field ID for created on date changes. */
     public static final  String                              ID_CREATED                           = CHARACTER_PREFIX + "Created";
-    /**
-     * The prefix used to indicate a point value is requested from {@link #getValueForID(String)}.
-     */
-    public static final  String                              POINTS_PREFIX                        = CHARACTER_PREFIX + "points.";
     /** The prefix used in front of all IDs for basic attributes. */
     public static final  String                              ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";
     /** The field ID for strength (ST) changes. */
@@ -402,111 +397,6 @@ public class GURPSCharacter extends CollectedModels {
         }
     }
 
-    /**
-     * @param id The field ID to retrieve the data for.
-     * @return The value of the specified field ID, or {@code null} if the field ID is invalid.
-     */
-    public Object getValueForID(String id) {
-        if (id == null) {
-            return null;
-        }
-        if (id.startsWith(POINTS_PREFIX)) {
-            id = id.substring(POINTS_PREFIX.length());
-            if (ID_STRENGTH.equals(id)) {
-                return Integer.valueOf(getStrengthPoints());
-            } else if (ID_DEXTERITY.equals(id)) {
-                return Integer.valueOf(getDexterityPoints());
-            } else if (ID_INTELLIGENCE.equals(id)) {
-                return Integer.valueOf(getIntelligencePoints());
-            } else if (ID_HEALTH.equals(id)) {
-                return Integer.valueOf(getHealthPoints());
-            } else if (ID_WILL.equals(id)) {
-                return Integer.valueOf(getWillPoints());
-            } else if (ID_PERCEPTION.equals(id)) {
-                return Integer.valueOf(getPerceptionPoints());
-            } else if (ID_BASIC_SPEED.equals(id)) {
-                return Integer.valueOf(getBasicSpeedPoints());
-            } else if (ID_BASIC_MOVE.equals(id)) {
-                return Integer.valueOf(getBasicMovePoints());
-            }
-            return null;
-        } else if (ID_MODIFIED.equals(id)) {
-            return Long.valueOf(getModifiedOn());
-        } else if (ID_CREATED.equals(id)) {
-            return Long.valueOf(getCreatedOn());
-        } else if (ID_STRENGTH.equals(id)) {
-            return Integer.valueOf(getStrength());
-        } else if (ID_DEXTERITY.equals(id)) {
-            return Integer.valueOf(getDexterity());
-        } else if (ID_INTELLIGENCE.equals(id)) {
-            return Integer.valueOf(getIntelligence());
-        } else if (ID_HEALTH.equals(id)) {
-            return Integer.valueOf(getHealth());
-        } else if (ID_BASIC_SPEED.equals(id)) {
-            return Double.valueOf(getBasicSpeed());
-        } else if (ID_BASIC_MOVE.equals(id)) {
-            return Integer.valueOf(getBasicMove());
-        } else if (ID_PERCEPTION.equals(id)) {
-            return Integer.valueOf(getPerAdj());
-        } else if (ID_VISION.equals(id)) {
-            return Integer.valueOf(getVision());
-        } else if (ID_HEARING.equals(id)) {
-            return Integer.valueOf(getHearing());
-        } else if (ID_TASTE_AND_SMELL.equals(id)) {
-            return Integer.valueOf(getTasteAndSmell());
-        } else if (ID_TOUCH.equals(id)) {
-            return Integer.valueOf(getTouch());
-        } else if (ID_WILL.equals(id)) {
-            return Integer.valueOf(getWillAdj());
-        } else if (ID_FRIGHT_CHECK.equals(id)) {
-            return Integer.valueOf(getFrightCheck());
-        } else if (ID_BASIC_THRUST.equals(id)) {
-            return getThrust();
-        } else if (ID_BASIC_SWING.equals(id)) {
-            return getSwing();
-        } else if (ID_PARRY_BONUS.equals(id)) {
-            return Integer.valueOf(getParryBonus());
-        } else if (ID_BLOCK_BONUS.equals(id)) {
-            return Integer.valueOf(getBlockBonus());
-        } else if (ID_DODGE_BONUS.equals(id)) {
-            return Integer.valueOf(getDodgeBonus());
-        } else if (id.startsWith(Armor.DR_PREFIX)) {
-            return mArmor.getValueForID(id);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @param id    The field ID to set the value for.
-     * @param value The value to set.
-     */
-    public void setValueForID(String id, Object value) {
-        if (id != null) {
-            if (ID_STRENGTH.equals(id)) {
-                setStrength(((Integer) value).intValue());
-            } else if (ID_DEXTERITY.equals(id)) {
-                setDexterity(((Integer) value).intValue());
-            } else if (ID_INTELLIGENCE.equals(id)) {
-                setIntelligence(((Integer) value).intValue());
-            } else if (ID_HEALTH.equals(id)) {
-                setHealth(((Integer) value).intValue());
-            } else if (ID_BASIC_SPEED.equals(id)) {
-                setBasicSpeed(((Double) value).doubleValue());
-            } else if (ID_BASIC_MOVE.equals(id)) {
-                setBasicMove(((Integer) value).intValue());
-            } else if (ID_PERCEPTION.equals(id)) {
-                setPerAdj(((Integer) value).intValue());
-            } else if (ID_WILL.equals(id)) {
-                setWillAdj(((Integer) value).intValue());
-            } else if (id.startsWith(Armor.DR_PREFIX)) {
-                mArmor.setValueForID(id, value);
-            } else {
-                Log.error(String.format(I18n.Text("Unable to set a value for %s"), id));
-            }
-        }
-    }
-
     /** @return The created on date. */
     public long getCreatedOn() {
         return mCreatedOn;
@@ -552,7 +442,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setStrength(int strength) {
         int oldStrength = getStrength();
         if (oldStrength != strength) {
-            postUndoEdit(I18n.Text("Strength Change"), ID_STRENGTH, Integer.valueOf(oldStrength), Integer.valueOf(strength));
+            postUndoEdit(I18n.Text("Strength Change"), (c, v) -> c.setStrength(((Integer) v).intValue()), Integer.valueOf(oldStrength), Integer.valueOf(strength));
             mStrength = strength - mStrengthBonus;
             notifyOfChange();
         }
@@ -864,7 +754,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setBasicSpeed(double speed) {
         double oldBasicSpeed = getBasicSpeed();
         if (oldBasicSpeed != speed) {
-            postUndoEdit(I18n.Text("Basic Speed Change"), ID_BASIC_SPEED, Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
+            postUndoEdit(I18n.Text("Basic Speed Change"), (c, v) -> c.setBasicSpeed(((Double) v).doubleValue()), Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
             mSpeedAdj = speed - (mSpeedBonus + getRawBasicSpeed());
             notifyOfChange();
         }
@@ -907,7 +797,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setBasicMove(int move) {
         int oldBasicMove = getBasicMove();
         if (oldBasicMove != move) {
-            postUndoEdit(I18n.Text("Basic Move Change"), ID_BASIC_MOVE, Integer.valueOf(oldBasicMove), Integer.valueOf(move));
+            postUndoEdit(I18n.Text("Basic Move Change"), (c, v) -> c.setBasicMove(((Integer) v).intValue()), Integer.valueOf(oldBasicMove), Integer.valueOf(move));
             mMoveAdj = move - (mMoveBonus + getRawBasicMove());
             notifyOfChange();
         }
@@ -1156,7 +1046,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setDexterity(int dexterity) {
         int oldDexterity = getDexterity();
         if (oldDexterity != dexterity) {
-            postUndoEdit(I18n.Text("Dexterity Change"), ID_DEXTERITY, Integer.valueOf(oldDexterity), Integer.valueOf(dexterity));
+            postUndoEdit(I18n.Text("Dexterity Change"), (c, v) -> c.setDexterity(((Integer) v).intValue()), Integer.valueOf(oldDexterity), Integer.valueOf(dexterity));
             mDexterity = dexterity - mDexterityBonus;
             notifyOfChange();
         }
@@ -1201,7 +1091,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setIntelligence(int intelligence) {
         int oldIntelligence = getIntelligence();
         if (oldIntelligence != intelligence) {
-            postUndoEdit(I18n.Text("Intelligence Change"), ID_INTELLIGENCE, Integer.valueOf(oldIntelligence), Integer.valueOf(intelligence));
+            postUndoEdit(I18n.Text("Intelligence Change"), (c, v) -> c.setIntelligence(((Integer) v).intValue()), Integer.valueOf(oldIntelligence), Integer.valueOf(intelligence));
             mIntelligence = intelligence - mIntelligenceBonus;
             notifyOfChange();
         }
@@ -1246,7 +1136,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setHealth(int health) {
         int oldHealth = getHealth();
         if (oldHealth != health) {
-            postUndoEdit(I18n.Text("Health Change"), ID_HEALTH, Integer.valueOf(oldHealth), Integer.valueOf(health));
+            postUndoEdit(I18n.Text("Health Change"), (c, v) -> c.setHealth(((Integer) v).intValue()), Integer.valueOf(oldHealth), Integer.valueOf(health));
             mHealth = health - mHealthBonus;
             notifyOfChange();
         }
@@ -1301,7 +1191,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setUnspentPoints(int unspent) {
         int current = getUnspentPoints();
         if (current != unspent) {
-            postUndoFieldEdit(I18n.Text("Unspent Points Change"), (c, v) -> c.setUnspentPoints(((Integer) v).intValue()), Integer.valueOf(current), Integer.valueOf(unspent));
+            postUndoEdit(I18n.Text("Unspent Points Change"), (c, v) -> c.setUnspentPoints(((Integer) v).intValue()), Integer.valueOf(current), Integer.valueOf(unspent));
             mTotalPoints = unspent + getSpentPoints();
             notifyOfChange();
         }
@@ -1411,7 +1301,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setHitPointsAdj(int hp) {
         int oldHP = getHitPointsAdj();
         if (oldHP != hp) {
-            postUndoFieldEdit(I18n.Text("Hit Points Change"), (c, v) -> c.setHitPointsAdj(((Integer) v).intValue()), Integer.valueOf(oldHP), Integer.valueOf(hp));
+            postUndoEdit(I18n.Text("Hit Points Change"), (c, v) -> c.setHitPointsAdj(((Integer) v).intValue()), Integer.valueOf(oldHP), Integer.valueOf(hp));
             mHitPointsAdj = hp - (getStrength() + mHitPointBonus);
             notifyOfChange();
         }
@@ -1465,7 +1355,7 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setHitPointsDamage(int damage) {
         if (mHitPointsDamage != damage) {
-            postUndoFieldEdit(I18n.Text("Current Hit Points Change"), (c, v) -> c.setHitPointsDamage(((Integer) v).intValue()), Integer.valueOf(mHitPointsDamage), Integer.valueOf(damage));
+            postUndoEdit(I18n.Text("Current Hit Points Change"), (c, v) -> c.setHitPointsDamage(((Integer) v).intValue()), Integer.valueOf(mHitPointsDamage), Integer.valueOf(damage));
             mHitPointsDamage = damage;
             notifyOfChange();
         }
@@ -1549,7 +1439,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setWillAdj(int willAdj) {
         int oldWill = getWillAdj();
         if (oldWill != willAdj) {
-            postUndoEdit(I18n.Text("Will Change"), ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(willAdj));
+            postUndoEdit(I18n.Text("Will Change"), (c, v) -> c.setWillAdj(((Integer) v).intValue()), Integer.valueOf(oldWill), Integer.valueOf(willAdj));
             mWillAdj = willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence()));
             notifyOfChange();
         }
@@ -1676,7 +1566,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setPerAdj(int perAdj) {
         int oldPerception = getPerAdj();
         if (oldPerception != perAdj) {
-            postUndoEdit(I18n.Text("Perception Change"), ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
+            postUndoEdit(I18n.Text("Perception Change"), (c, v) -> c.setPerAdj(((Integer) v).intValue()), Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
             mPerAdj = perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence()));
             notifyOfChange();
         }
@@ -1717,7 +1607,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setFatiguePoints(int fp) {
         int oldFP = getFatiguePoints();
         if (oldFP != fp) {
-            postUndoFieldEdit(I18n.Text("Fatigue Points Change"), (c, v) -> c.setFatiguePoints(((Integer) v).intValue()), Integer.valueOf(oldFP), Integer.valueOf(fp));
+            postUndoEdit(I18n.Text("Fatigue Points Change"), (c, v) -> c.setFatiguePoints(((Integer) v).intValue()), Integer.valueOf(oldFP), Integer.valueOf(fp));
             mFatiguePoints = fp - (getHealth() + mFatiguePointBonus);
             notifyOfChange();
         }
@@ -1753,7 +1643,7 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setFatiguePointsDamage(int damage) {
         if (mFatiguePointsDamage != damage) {
-            postUndoFieldEdit(I18n.Text("Current Fatigue Points Change"), (c, v) -> c.setFatiguePointsDamage(((Integer) v).intValue()), Integer.valueOf(mFatiguePointsDamage), Integer.valueOf(damage));
+            postUndoEdit(I18n.Text("Current Fatigue Points Change"), (c, v) -> c.setFatiguePointsDamage(((Integer) v).intValue()), Integer.valueOf(mFatiguePointsDamage), Integer.valueOf(damage));
             mFatiguePointsDamage = damage;
             notifyOfChange();
         }
@@ -2333,31 +2223,14 @@ public class GURPSCharacter extends CollectedModels {
      * Post an undo edit if we're not currently in an undo.
      *
      * @param name   The name of the undo.
-     * @param id     The ID of the field being changed.
-     * @param before The original value.
-     * @param after  The new value.
-     */
-    void postUndoEdit(String name, String id, Object before, Object after) {
-        StdUndoManager mgr = getUndoManager();
-        if (!mgr.isInTransaction()) {
-            if (before instanceof ListRow ? !((ListRow) before).isEquivalentTo(after) : !before.equals(after)) {
-                addEdit(new CharacterFieldUndo(this, name, id, before, after));
-            }
-        }
-    }
-
-    /**
-     * Post an undo edit if we're not currently in an undo.
-     *
-     * @param name   The name of the undo.
      * @param setter The field setter.
      * @param before The original value.
      * @param after  The new value.
      */
-    void postUndoFieldEdit(String name, GURPSCharacterSetter setter, Object before, Object after) {
+    void postUndoEdit(String name, CharacterSetter setter, Object before, Object after) {
         StdUndoManager mgr = getUndoManager();
         if (!mgr.isInTransaction() && !before.equals(after)) {
-            addEdit(new GURPSCharacterFieldUndo(this, name, setter, before, after));
+            addEdit(new CharacterUndo(this, name, setter, before, after));
         }
     }
 

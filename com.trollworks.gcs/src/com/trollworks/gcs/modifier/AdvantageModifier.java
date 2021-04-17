@@ -143,7 +143,7 @@ public class AdvantageModifier extends Modifier {
     public boolean setCostType(AdvantageModifierCostType costType) {
         if (costType != mCostType) {
             mCostType = costType;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -161,7 +161,7 @@ public class AdvantageModifier extends Modifier {
     public boolean setCost(int cost) {
         if (mCost != cost) {
             mCost = cost;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -179,7 +179,7 @@ public class AdvantageModifier extends Modifier {
     public boolean setCostMultiplier(double multiplier) {
         if (mCostMultiplier != multiplier) {
             mCostMultiplier = multiplier;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -200,7 +200,7 @@ public class AdvantageModifier extends Modifier {
         }
         if (mLevels != levels) {
             mLevels = levels;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -350,7 +350,7 @@ public class AdvantageModifier extends Modifier {
     public boolean setAffects(Affects affects) {
         if (affects != mAffects) {
             mAffects = affects;
-            notifySingle(getNotificationPrefix() + TAG_AFFECTS);
+            notifyOfChange();
             return true;
         }
         return false;

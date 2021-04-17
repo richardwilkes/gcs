@@ -74,7 +74,6 @@ public class Armor {
 
     void update() {
         int extra = mCharacter.getIntegerBonusFor(ID_FULL_BODY_DR);
-        mCharacter.startNotify();
         setEyesDR(getBonusDR(ID_EYES_DR) + extra);
         extra += mCharacter.getIntegerBonusFor(ID_FULL_BODY_EXCEPT_EYES_DR);
         setBrainDR(getBonusDR(ID_BRAIN_DR) + extra);
@@ -92,7 +91,6 @@ public class Armor {
         setLegDR(getBonusDR(ID_LEG_DR) + extra);
         setFootDR(getBonusDR(ID_FOOT_DR) + extra);
         setTailDR(getBonusDR(ID_TAIL_DR) + extra);
-        mCharacter.endNotify();
     }
 
     private int getBonusDR(String key) {

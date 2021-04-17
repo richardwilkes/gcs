@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.character.CharacterSheet;
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Label;
@@ -23,28 +21,10 @@ import javax.swing.UIManager;
 
 /** A points field in a page. */
 public class PagePoints extends Label {
-    /**
-     * Creates a new points field.
-     *
-     * @param sheet        The sheet to listen to.
-     * @param consumedType The field to listen to.
-     */
-    public PagePoints(CharacterSheet sheet, String consumedType) {
-        super(getFormattedValue(sheet, consumedType));
-        setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
-        setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Points spent")));
-        UIUtilities.setToPreferredSizeOnly(this);
-    }
-
     public PagePoints(int points) {
         super("[" + points + "]");
         setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
         setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Points spent")));
         UIUtilities.setToPreferredSizeOnly(this);
-    }
-
-    private static String getFormattedValue(CharacterSheet sheet, String consumedType) {
-        Object value = sheet.getCharacter().getValueForID(GURPSCharacter.POINTS_PREFIX + consumedType);
-        return value != null ? "[" + value + "]" : "";
     }
 }

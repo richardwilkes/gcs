@@ -225,11 +225,6 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getJSONTypeName() {
         return canHaveChildren() ? TAG_SKILL_CONTAINER : TAG_SKILL;
     }
@@ -335,7 +330,7 @@ public class Skill extends ListRow implements HasSourceReference {
             for (WeaponStats weapon : mWeapons) {
                 weapon.setOwner(this);
             }
-            notifySingle(ID_WEAPON_STATUS_CHANGED);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -368,7 +363,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setName(String name) {
         if (!mName.equals(name)) {
             mName = name;
-            notifySingle(ID_NAME);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -386,7 +381,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setSpecialization(String specialization) {
         if (!mSpecialization.equals(specialization)) {
             mSpecialization = specialization;
-            notifySingle(ID_SPECIALIZATION);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -404,7 +399,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setTechLevel(String techLevel) {
         if (!Objects.equals(mTechLevel, techLevel)) {
             mTechLevel = techLevel;
-            notifySingle(ID_TECH_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -464,10 +459,8 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setRawPoints(int points) {
         if (mPoints != points) {
             mPoints = points;
-            startNotify();
-            notify(ID_POINTS, this);
-            updateLevel(true);
-            endNotify();
+            updateLevel(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -482,14 +475,9 @@ public class Skill extends ListRow implements HasSourceReference {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
         if (notify) {
-            startNotify();
-            if (savedLevel.isDifferentLevelThan(mLevel)) {
-                notify(ID_LEVEL, this);
+            if (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel)) {
+                notifyOfChange();
             }
-            if (savedLevel.isDifferentRelativeLevelThan(mLevel)) {
-                notify(ID_RELATIVE_LEVEL, this);
-            }
-            endNotify();
         }
     }
 
@@ -526,10 +514,8 @@ public class Skill extends ListRow implements HasSourceReference {
         if (mAttribute != attribute || mDifficulty != difficulty) {
             mAttribute = attribute;
             mDifficulty = difficulty;
-            startNotify();
-            notify(ID_DIFFICULTY, this);
-            updateLevel(true);
-            endNotify();
+            updateLevel(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -548,7 +534,7 @@ public class Skill extends ListRow implements HasSourceReference {
         multiplier = Math.min(Math.max(multiplier, 0), 9);
         if (mEncumbrancePenaltyMultiplier != multiplier) {
             mEncumbrancePenaltyMultiplier = multiplier;
-            notifySingle(ID_ENCUMBRANCE_PENALTY);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -563,7 +549,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(ID_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -746,12 +732,9 @@ public class Skill extends ListRow implements HasSourceReference {
         Skill baseSkill = getDefaultSkill();
         if (baseSkill != null) {
             mDefaultedFrom = getBestDefaultWithPoints(mDefaultedFrom);
-            startNotify();
-            baseSkill.updateLevel(true);
-            updateLevel(true);
-            notify(ID_NAME, this);
-            baseSkill.notify(ID_NAME, baseSkill);
-            endNotify();
+            baseSkill.updateLevel(false);
+            updateLevel(false);
+            notifyOfChange();
         }
     }
 

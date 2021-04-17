@@ -251,7 +251,7 @@ public class Profile {
         if (portrait == null ? mPortrait != null : mPortrait.getRetina() != portrait) {
             mCustomPortrait = true;
             RetinaIcon newPortrait = portrait != null ? createPortrait(portrait) : null;
-            mCharacter.postUndoFieldEdit(I18n.Text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, newPortrait);
+            mCharacter.postUndoEdit(I18n.Text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, newPortrait);
             mPortrait = newPortrait;
             mCharacter.notifyOfChange();
         }
@@ -298,7 +298,7 @@ public class Profile {
      */
     public void setName(String name) {
         if (!mName.equals(name)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Name Change"), (c, v) -> c.getProfile().setName((String) v), mName, name);
+            mCharacter.postUndoEdit(I18n.Text("Name Change"), (c, v) -> c.getProfile().setName((String) v), mName, name);
             mName = name;
             mCharacter.notifyOfChange();
         }
@@ -316,7 +316,7 @@ public class Profile {
      */
     public void setGender(String gender) {
         if (!mGender.equals(gender)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Gender Change"), (c, v) -> c.getProfile().setGender((String) v), mGender, gender);
+            mCharacter.postUndoEdit(I18n.Text("Gender Change"), (c, v) -> c.getProfile().setGender((String) v), mGender, gender);
             mGender = gender;
             mCharacter.notifyOfChange();
         }
@@ -334,7 +334,7 @@ public class Profile {
      */
     public void setReligion(String religion) {
         if (!mReligion.equals(religion)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Religion Change"), (c, v) -> c.getProfile().setReligion((String) v), mReligion, religion);
+            mCharacter.postUndoEdit(I18n.Text("Religion Change"), (c, v) -> c.getProfile().setReligion((String) v), mReligion, religion);
             mReligion = religion;
             mCharacter.notifyOfChange();
         }
@@ -352,7 +352,7 @@ public class Profile {
      */
     public void setPlayerName(String player) {
         if (!mPlayerName.equals(player)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Player Name Change"), (c, v) -> c.getProfile().setPlayerName((String) v), mPlayerName, player);
+            mCharacter.postUndoEdit(I18n.Text("Player Name Change"), (c, v) -> c.getProfile().setPlayerName((String) v), mPlayerName, player);
             mPlayerName = player;
             mCharacter.notifyOfChange();
         }
@@ -370,7 +370,7 @@ public class Profile {
      */
     public void setTechLevel(String techLevel) {
         if (!mTechLevel.equals(techLevel)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Tech Level Change"), (c, v) -> c.getProfile().setTechLevel((String) v), mTechLevel, techLevel);
+            mCharacter.postUndoEdit(I18n.Text("Tech Level Change"), (c, v) -> c.getProfile().setTechLevel((String) v), mTechLevel, techLevel);
             mTechLevel = techLevel;
             mCharacter.notifyOfChange();
         }
@@ -388,7 +388,7 @@ public class Profile {
      */
     public void setTitle(String title) {
         if (!mTitle.equals(title)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Title Change"), (c, v) -> c.getProfile().setTitle((String) v), mTitle, title);
+            mCharacter.postUndoEdit(I18n.Text("Title Change"), (c, v) -> c.getProfile().setTitle((String) v), mTitle, title);
             mTitle = title;
             mCharacter.notifyOfChange();
         }
@@ -406,7 +406,7 @@ public class Profile {
      */
     public void setAge(String age) {
         if (!mAge.equals(age)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Age Change"), (c, v) -> c.getProfile().setAge((String) v), mAge, age);
+            mCharacter.postUndoEdit(I18n.Text("Age Change"), (c, v) -> c.getProfile().setAge((String) v), mAge, age);
             mAge = age;
             mCharacter.notifyOfChange();
         }
@@ -460,7 +460,7 @@ public class Profile {
      */
     public void setBirthday(String birthday) {
         if (!mBirthday.equals(birthday)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Birthday Change"), (c, v) -> c.getProfile().setBirthday((String) v), mBirthday, birthday);
+            mCharacter.postUndoEdit(I18n.Text("Birthday Change"), (c, v) -> c.getProfile().setBirthday((String) v), mBirthday, birthday);
             mBirthday = birthday;
             mCharacter.notifyOfChange();
         }
@@ -478,7 +478,7 @@ public class Profile {
      */
     public void setEyeColor(String eyeColor) {
         if (!mEyeColor.equals(eyeColor)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Eye Color Change"), (c, v) -> c.getProfile().setEyeColor((String) v), mEyeColor, eyeColor);
+            mCharacter.postUndoEdit(I18n.Text("Eye Color Change"), (c, v) -> c.getProfile().setEyeColor((String) v), mEyeColor, eyeColor);
             mEyeColor = eyeColor;
             mCharacter.notifyOfChange();
         }
@@ -496,7 +496,7 @@ public class Profile {
      */
     public void setHair(String hair) {
         if (!mHair.equals(hair)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Hair Change"), (c, v) -> c.getProfile().setHair((String) v), mHair, hair);
+            mCharacter.postUndoEdit(I18n.Text("Hair Change"), (c, v) -> c.getProfile().setHair((String) v), mHair, hair);
             mHair = hair;
             mCharacter.notifyOfChange();
         }
@@ -514,7 +514,7 @@ public class Profile {
      */
     public void setSkinColor(String skinColor) {
         if (!mSkinColor.equals(skinColor)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Skin Color Change"), (c, v) -> c.getProfile().setSkinColor((String) v), mSkinColor, skinColor);
+            mCharacter.postUndoEdit(I18n.Text("Skin Color Change"), (c, v) -> c.getProfile().setSkinColor((String) v), mSkinColor, skinColor);
             mSkinColor = skinColor;
             mCharacter.notifyOfChange();
         }
@@ -532,7 +532,7 @@ public class Profile {
      */
     public void setHandedness(String handedness) {
         if (!mHandedness.equals(handedness)) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Handedness Change"), (c, v) -> c.getProfile().setHandedness((String) v), mHandedness, handedness);
+            mCharacter.postUndoEdit(I18n.Text("Handedness Change"), (c, v) -> c.getProfile().setHandedness((String) v), mHandedness, handedness);
             mHandedness = handedness;
             mCharacter.notifyOfChange();
         }
@@ -551,7 +551,7 @@ public class Profile {
     public void setHeight(LengthValue height) {
         if (!mHeight.equals(height)) {
             height = new LengthValue(height);
-            mCharacter.postUndoFieldEdit(I18n.Text("Height Change"), (c, v) -> c.getProfile().setHeight((LengthValue) v), new LengthValue(mHeight), height);
+            mCharacter.postUndoEdit(I18n.Text("Height Change"), (c, v) -> c.getProfile().setHeight((LengthValue) v), new LengthValue(mHeight), height);
             mHeight = height;
             mCharacter.notifyOfChange();
         }
@@ -570,7 +570,7 @@ public class Profile {
     public void setWeight(WeightValue weight) {
         if (!mWeight.equals(weight)) {
             weight = new WeightValue(weight);
-            mCharacter.postUndoFieldEdit(I18n.Text("Weight Change"), (c, v) -> c.getProfile().setWeight((WeightValue) v), new WeightValue(mWeight), weight);
+            mCharacter.postUndoEdit(I18n.Text("Weight Change"), (c, v) -> c.getProfile().setWeight((WeightValue) v), new WeightValue(mWeight), weight);
             mWeight = weight;
             mCharacter.notifyOfChange();
         }
@@ -607,7 +607,7 @@ public class Profile {
         if (totalSizeModifier != size) {
             Integer value = Integer.valueOf(size);
 
-            mCharacter.postUndoFieldEdit(I18n.Text("Size Modifier Change"), (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()), Integer.valueOf(totalSizeModifier), value);
+            mCharacter.postUndoEdit(I18n.Text("Size Modifier Change"), (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()), Integer.valueOf(totalSizeModifier), value);
             mSizeModifier = size - mSizeModifierBonus;
             mCharacter.notifyOfChange();
         }
@@ -807,7 +807,7 @@ public class Profile {
     /** @param table The hit location table. */
     public void setHitLocationTable(HitLocationTable table) {
         if (mHitLocationTable != table) {
-            mCharacter.postUndoFieldEdit(I18n.Text("Body Type Change"), (c, v) -> c.getProfile().setHitLocationTable((HitLocationTable) v), mHitLocationTable, table);
+            mCharacter.postUndoEdit(I18n.Text("Body Type Change"), (c, v) -> c.getProfile().setHitLocationTable((HitLocationTable) v), mHitLocationTable, table);
             mHitLocationTable = table;
             mCharacter.notifyOfChange();
         }

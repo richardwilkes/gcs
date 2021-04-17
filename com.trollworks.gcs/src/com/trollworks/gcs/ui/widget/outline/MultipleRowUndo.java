@@ -35,7 +35,7 @@ public class MultipleRowUndo extends AbstractUndoableEdit {
 
     private void notifyDataFile() {
         if (mUndos.length > 0) {
-            mUndos[0].getDataFile().notifySingle(mUndos[0].getRow().getListChangedID(), null);
+            mUndos[0].getDataFile().notifyOfChange();
         }
     }
 

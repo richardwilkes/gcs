@@ -71,7 +71,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.PrintProxy;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
@@ -151,8 +150,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
         }
-        mCharacter.addTarget(this, FEATURES_AND_PREREQS_NOTIFICATIONS.toArray(new String[0]));
-        mCharacter.addTarget(this, Settings.PREFIX);
         mCharacter.addChangeListener(this);
     }
 
@@ -160,7 +157,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     @Override
     public void dispose() {
         mCharacter.removeChangeListener(this);
-        mCharacter.resetNotifier();
         super.dispose();
     }
 
@@ -207,13 +203,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
         // Clear out the old pages
         removeAll();
-        List<NotifierTarget> targets = new ArrayList<>();
-        targets.add(this);
-        SheetDockable sheetDockable = UIUtilities.getAncestorOfType(this, SheetDockable.class);
-        if (sheetDockable != null) {
-            targets.add(sheetDockable);
-        }
-        mCharacter.resetNotifier(targets.toArray(new NotifierTarget[0]));
 
         // Create the first page, which holds stuff that has a fixed vertical size.
         pageAssembler = new PageAssembler(this);
@@ -284,7 +273,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
         // Ensure everything is laid out and register for notification
         validate();
-        mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
         if (focusKey != null) {
             restoreFocusToKey(focusKey, this);
         } else if (focus instanceof Outline) {

@@ -63,7 +63,7 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
      * @param model    The {@link OutlineModel} to use.
      */
     public SpellOutline(DataFile dataFile, OutlineModel model) {
-        super(dataFile, model, Spell.ID_LIST_CHANGED);
+        super(dataFile, model);
         SpellColumn.addColumns(this, dataFile);
     }
 

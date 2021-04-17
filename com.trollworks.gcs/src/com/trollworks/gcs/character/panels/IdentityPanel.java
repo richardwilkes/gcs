@@ -13,7 +13,7 @@ package com.trollworks.gcs.character.panels;
 
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.character.GURPSCharacterSetter;
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.page.DropPanel;
@@ -43,7 +43,7 @@ public class IdentityPanel extends DropPanel {
         createStringField(sheet, profile.getPlayerName(), I18n.Text("Player"), "player", (c, v) -> c.getProfile().setPlayerName((String) v));
     }
 
-    private void createRandomizableField(CharacterSheet sheet, String value, String title, String tag, GURPSCharacterSetter setter, Runnable randomizer) {
+    private void createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
         IconButton button = new IconButton(Images.RANDOMIZE, null, randomizer);
         button.setToolTipText(String.format(I18n.Text("Randomize %s"), title));
         add(button);
@@ -51,7 +51,7 @@ public class IdentityPanel extends DropPanel {
         add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayout());
     }
 
-    private void createStringField(CharacterSheet sheet, String value, String title, String tag, GURPSCharacterSetter setter) {
+    private void createStringField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter) {
         add(new PageLabel(title + ":"), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
         add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayout());
     }

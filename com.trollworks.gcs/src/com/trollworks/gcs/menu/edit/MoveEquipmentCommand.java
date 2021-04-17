@@ -92,7 +92,6 @@ public class MoveEquipmentCommand extends Command {
                     OutlineModel  target  = other.getModel();
                     StateEdit     edit1   = new StateEdit(model, getTitle());
                     StateEdit     edit2   = new StateEdit(target, getTitle());
-                    dataFile.startNotify();
                     target.setDragRows(outline.getModel().getSelectionAsList(true).toArray(new Row[0]));
                     other.convertDragRowsToSelf(rows);
                     target.setDragRows(null);
@@ -102,7 +101,6 @@ public class MoveEquipmentCommand extends Command {
                         }
                     }
                     other.addRow(topRows.toArray(new ListRow[0]), getTitle(), true);
-                    dataFile.endNotify();
                     edit1.end();
                     edit2.end();
                     undo.addEdit(edit1);

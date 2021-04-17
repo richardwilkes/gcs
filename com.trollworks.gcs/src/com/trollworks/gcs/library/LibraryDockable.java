@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
@@ -30,7 +30,6 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowFilter;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
-import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -100,6 +99,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mScroller.setColumnHeaderView(header);
         add(mScroller, BorderLayout.CENTER);
         prefs.addChangeListener(this);
+        getDataFile().addChangeListener(this);
         setDropTarget(new DropTarget(mOutline, mOutline));
     }
 
@@ -108,6 +108,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         boolean closed = super.attemptClose();
         if (closed) {
             Preferences.getInstance().removeChangeListener(this);
+            getDataFile().removeChangeListener(this);
         }
         return closed;
     }
@@ -231,6 +232,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     @Override
     public void run() {
         mOutline.updateRowHeights();
+        adjustCategoryCombo();
         mUpdatePending = false;
     }
 
@@ -260,11 +262,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
 
     @Override
     public void handleNotification(Object producer, String name, Object data) {
-        if (Advantage.ID_TYPE.equals(name)) {
-            getOutline().repaint();
-        } else {
-            adjustCategoryCombo();
-        }
     }
 
     @Override

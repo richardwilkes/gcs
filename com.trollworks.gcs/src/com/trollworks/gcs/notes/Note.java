@@ -104,11 +104,6 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getJSONTypeName() {
         return canHaveChildren() ? TAG_NOTE_CONTAINER : TAG_NOTE;
     }
@@ -166,7 +161,7 @@ public class Note extends ListRow implements HasSourceReference {
     public boolean setDescription(String description) {
         if (!mText.equals(description)) {
             mText = description;
-            notifySingle(ID_TEXT);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -229,7 +224,7 @@ public class Note extends ListRow implements HasSourceReference {
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(ID_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;

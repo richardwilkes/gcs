@@ -156,9 +156,9 @@ public class WeaponDamage {
         return false;
     }
 
-    protected void notifySingle() {
+    protected void notifyOfChange() {
         if (mOwner != null) {
-            mOwner.notifySingle(WeaponStats.ID_DAMAGE);
+            mOwner.notifyOfChange();
         }
     }
 
@@ -169,7 +169,7 @@ public class WeaponDamage {
     public void setWeaponSTDamage(WeaponSTDamage stDamage) {
         if (mST != stDamage) {
             mST = stDamage;
-            notifySingle();
+            notifyOfChange();
         }
     }
 
@@ -180,7 +180,7 @@ public class WeaponDamage {
     public void setBase(Dice base) {
         if (!Objects.equals(mBase, base)) {
             mBase = base;
-            notifySingle();
+            notifyOfChange();
         }
     }
 
@@ -191,7 +191,7 @@ public class WeaponDamage {
     public void setArmorDivisor(double armorDivisor) {
         if (mArmorDivisor != armorDivisor) {
             mArmorDivisor = armorDivisor;
-            notifySingle();
+            notifyOfChange();
         }
     }
 
@@ -214,7 +214,7 @@ public class WeaponDamage {
         mFragmentation = fragmentation;
         mFragmentationArmorDivisor = armorDivisor;
         mFragmentationType = type;
-        notifySingle();
+        notifyOfChange();
     }
 
     public int getModifierPerDie() {
@@ -224,7 +224,7 @@ public class WeaponDamage {
     public void setModifierPerDie(int modifierPerDie) {
         if (mModifierPerDie != modifierPerDie) {
             mModifierPerDie = modifierPerDie;
-            notifySingle();
+            notifyOfChange();
         }
     }
 
@@ -235,7 +235,7 @@ public class WeaponDamage {
     public void setType(String type) {
         if (!mType.equals(type)) {
             mType = type;
-            notifySingle();
+            notifyOfChange();
         }
     }
 

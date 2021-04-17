@@ -198,10 +198,9 @@ public abstract class WeaponStats {
         }
     }
 
-    /** @param id The ID to use for notification. */
-    protected void notifySingle(String id) {
+    protected void notifyOfChange() {
         if (mOwner != null) {
-            mOwner.notifySingle(id);
+            mOwner.notifyOfChange();
         }
     }
 
@@ -262,7 +261,7 @@ public abstract class WeaponStats {
         }
         if (!mDamage.equivalent(damage)) {
             mDamage = damage.clone(this);
-            notifySingle(ID_DAMAGE);
+            notifyOfChange();
         }
     }
 
@@ -432,7 +431,7 @@ public abstract class WeaponStats {
         usage = sanitize(usage);
         if (!mUsage.equals(usage)) {
             mUsage = usage;
-            notifySingle(ID_USAGE);
+            notifyOfChange();
         }
     }
 
@@ -450,7 +449,7 @@ public abstract class WeaponStats {
         strength = sanitize(strength);
         if (!mStrength.equals(strength)) {
             mStrength = strength;
-            notifySingle(ID_STRENGTH);
+            notifyOfChange();
         }
     }
 

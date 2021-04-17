@@ -13,7 +13,7 @@ package com.trollworks.gcs.character.panels;
 
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.character.GURPSCharacterSetter;
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
@@ -33,7 +33,7 @@ public abstract class HPFPPanel extends DropPanel {
         super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), title);
     }
 
-    protected void createEditableField(CharacterSheet sheet, Integer points, JFormattedTextField.AbstractFormatterFactory formatter, int value, GURPSCharacterSetter setter, String tag, String title, String tooltip) {
+    protected void createEditableField(CharacterSheet sheet, Integer points, JFormattedTextField.AbstractFormatterFactory formatter, int value, CharacterSetter setter, String tag, String title, String tooltip) {
         PageField field = new PageField(formatter, Integer.valueOf(value), setter, sheet, tag, SwingConstants.RIGHT, true, tooltip, ThemeColor.ON_PAGE);
         add(points != null ? new PagePoints(points.intValue()) : new Label(), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));

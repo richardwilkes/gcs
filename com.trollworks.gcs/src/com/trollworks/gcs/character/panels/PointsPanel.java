@@ -14,7 +14,7 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.GURPSCharacterSetter;
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
@@ -50,7 +50,7 @@ public class PointsPanel extends DropPanel {
         createLabelAndField(gch.getSpellPoints(), sheet, I18n.Text("Spells"), I18n.Text("Total points spent on spells"));
     }
 
-    private void createLabelAndEditableField(int value, GURPSCharacterSetter setter, CharacterSheet sheet, String key, String title, String tooltip) {
+    private void createLabelAndEditableField(int value, CharacterSetter setter, CharacterSheet sheet, String key, String title, String tooltip) {
         PageField field = new PageField(FieldFactory.INT6, Integer.valueOf(value), setter, sheet, key, SwingConstants.RIGHT, true, Text.wrapPlainTextForToolTip(tooltip), ThemeColor.ON_PAGE);
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         add(new PageLabel(title, field));

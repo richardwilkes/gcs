@@ -139,7 +139,7 @@ public class RangedWeaponStats extends WeaponStats {
         accuracy = sanitize(accuracy);
         if (!mAccuracy.equals(accuracy)) {
             mAccuracy = accuracy;
-            notifySingle(ID_ACCURACY);
+            notifyOfChange();
         }
     }
 
@@ -157,7 +157,7 @@ public class RangedWeaponStats extends WeaponStats {
         bulk = sanitize(bulk);
         if (!mBulk.equals(bulk)) {
             mBulk = bulk;
-            notifySingle(ID_BULK);
+            notifyOfChange();
         }
     }
 
@@ -239,7 +239,7 @@ public class RangedWeaponStats extends WeaponStats {
         range = sanitize(range);
         if (!mRange.equals(range)) {
             mRange = range;
-            notifySingle(ID_RANGE);
+            notifyOfChange();
         }
     }
 
@@ -257,7 +257,7 @@ public class RangedWeaponStats extends WeaponStats {
         rateOfFire = sanitize(rateOfFire);
         if (!mRateOfFire.equals(rateOfFire)) {
             mRateOfFire = rateOfFire;
-            notifySingle(ID_RATE_OF_FIRE);
+            notifyOfChange();
         }
     }
 
@@ -275,7 +275,7 @@ public class RangedWeaponStats extends WeaponStats {
         recoil = sanitize(recoil);
         if (!mRecoil.equals(recoil)) {
             mRecoil = recoil;
-            notifySingle(ID_RECOIL);
+            notifyOfChange();
         }
     }
 
@@ -293,7 +293,7 @@ public class RangedWeaponStats extends WeaponStats {
         shots = sanitize(shots);
         if (!mShots.equals(shots)) {
             mShots = shots;
-            notifySingle(ID_SHOTS);
+            notifyOfChange();
         }
     }
 

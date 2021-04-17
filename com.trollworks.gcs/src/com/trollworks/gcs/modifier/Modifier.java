@@ -81,11 +81,6 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     public abstract String getNotificationPrefix();
 
     @Override
-    public String getListChangedID() {
-        return getNotificationPrefix() + "ListChanged";
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Modifier");
     }
@@ -107,7 +102,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     public boolean setName(String name) {
         if (!mName.equals(name)) {
             mName = name;
-            notifySingle(getNotificationPrefix() + TAG_NAME);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -122,7 +117,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(getNotificationPrefix() + TAG_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -145,7 +140,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     public boolean setEnabled(boolean enabled) {
         if (mEnabled != enabled) {
             mEnabled = enabled;
-            notifySingle(getNotificationPrefix() + ATTRIBUTE_ENABLED);
+            notifyOfChange();
             return true;
         }
         return false;

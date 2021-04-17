@@ -37,7 +37,7 @@ public class AdvantageModifiersOutline extends ListOutline {
      * @param model    The {@link OutlineModel} to use.
      */
     public AdvantageModifiersOutline(DataFile dataFile, OutlineModel model) {
-        super(dataFile, model, AdvantageModifier.ID_LIST_CHANGED);
+        super(dataFile, model);
         AdvantageModifierColumnID.addColumns(this, !(dataFile instanceof AdvantageModifierList));
     }
 

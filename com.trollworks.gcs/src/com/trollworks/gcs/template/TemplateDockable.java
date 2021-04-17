@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.template;
 
-import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.ui.Fonts;
@@ -109,7 +108,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
             mTemplate.updateRowHeights();
             mTemplate.revalidate();
         } else {
-            getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
+            getDataFile().notifyOfChange();
         }
     }
 }

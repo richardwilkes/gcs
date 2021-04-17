@@ -12,7 +12,6 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedOutlines;
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -28,12 +27,15 @@ import java.awt.event.ActionEvent;
 
 /** The template sheet. */
 public class TemplateSheet extends CollectedOutlines {
+    private Template mTemplate;
+
     /**
      * Creates a new {@link TemplateSheet}.
      *
      * @param template The template to display the data for.
      */
     public TemplateSheet(Template template) {
+        mTemplate = template;
         setLayout(new ColumnLayout(1, 0, 5));
         setOpaque(true);
         setBackground(Color.WHITE);
@@ -48,13 +50,16 @@ public class TemplateSheet extends CollectedOutlines {
         add(new TemplateOutlinePanel(getOtherEquipmentOutline(), I18n.Text("Other Equipment")));
         add(new TemplateOutlinePanel(getNotesOutline(), I18n.Text("Notes")));
 
-        // Ensure everything is laid out and register for notification
         revalidate();
-        template.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
-
+        mTemplate.addChangeListener(this);
         setDropTarget(new DropTarget(this, this));
-
         adjustSize();
+    }
+
+    @Override
+    public void dispose() {
+        mTemplate.removeChangeListener(this);
+        super.dispose();
     }
 
     @Override

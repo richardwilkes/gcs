@@ -61,7 +61,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
      * @param model    The {@link OutlineModel} to use.
      */
     public AdvantageOutline(DataFile dataFile, OutlineModel model) {
-        super(dataFile, model, Advantage.ID_LIST_CHANGED);
+        super(dataFile, model);
         AdvantageColumn.addColumns(this, dataFile);
     }
 

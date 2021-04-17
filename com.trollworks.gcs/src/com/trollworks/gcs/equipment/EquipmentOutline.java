@@ -45,7 +45,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
      * @param model    The {@link OutlineModel} to use.
      */
     public EquipmentOutline(DataFile dataFile, OutlineModel model) {
-        super(dataFile, model, Equipment.ID_LIST_CHANGED);
+        super(dataFile, model);
         EquipmentColumn.addColumns(this, dataFile, model.getProperty(EquipmentList.TAG_OTHER_ROOT) == null);
     }
 
@@ -288,7 +288,6 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
                     StateEdit   edit            = new StateEdit(otherModel, I18n.Text("Remove Rows"));
                     ListOutline otherOwningList = (ListOutline) otherModel.getProperty(ListOutline.OWNING_LIST);
                     DataFile    otherDataFile   = otherOwningList.getDataFile();
-                    otherDataFile.startNotify();
                     otherModel.removeRows(rows);
                     for (Row row : rows) {
                         Row parent = row.getParent();
@@ -299,10 +298,9 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
                     if (otherModel.getRowCount() > 0) {
                         otherOwningList.updateAllRows();
                     }
-                    otherDataFile.notify(otherOwningList.getRowSetChangedID(), null);
-                    otherDataFile.endNotify();
                     edit.end();
                     postUndo(edit);
+                    otherDataFile.notifyOfChange();
                 }
             }
         }

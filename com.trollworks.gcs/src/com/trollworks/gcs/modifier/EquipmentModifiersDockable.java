@@ -34,7 +34,6 @@ public class EquipmentModifiersDockable extends LibraryDockable {
     @Override
     protected ListOutline createOutline() {
         EquipmentModifierList list = getDataFile();
-        list.addTarget(this, EquipmentModifier.ID_CATEGORY);
         return new EquipmentModifiersOutline(list, list.getModel());
     }
 }

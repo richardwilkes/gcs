@@ -221,7 +221,7 @@ public class Settings {
     public void setDefaultLengthUnits(LengthUnits defaultLengthUnits) {
         if (mDefaultLengthUnits != defaultLengthUnits) {
             mDefaultLengthUnits = defaultLengthUnits;
-            mCharacter.notifySingle(ID_DEFAULT_LENGTH_UNITS, mDefaultLengthUnits);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -232,7 +232,7 @@ public class Settings {
     public void setDefaultWeightUnits(WeightUnits defaultWeightUnits) {
         if (mDefaultWeightUnits != defaultWeightUnits) {
             mDefaultWeightUnits = defaultWeightUnits;
-            mCharacter.notifySingle(ID_DEFAULT_WEIGHT_UNITS, mDefaultWeightUnits);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -243,7 +243,7 @@ public class Settings {
     public void setBlockLayout(List<String> blockLayout) {
         if (!mBlockLayout.equals(blockLayout)) {
             mBlockLayout = new ArrayList<>(blockLayout);
-            mCharacter.notifySingle(ID_BLOCK_LAYOUT, mBlockLayout);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -254,7 +254,7 @@ public class Settings {
     public void setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
         if (mUserDescriptionDisplay != userDescriptionDisplay) {
             mUserDescriptionDisplay = userDescriptionDisplay;
-            mCharacter.notifySingle(ID_USER_DESCRIPTION_DISPLAY, mUserDescriptionDisplay);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -265,7 +265,7 @@ public class Settings {
     public void setModifiersDisplay(DisplayOption modifiersDisplay) {
         if (mModifiersDisplay != modifiersDisplay) {
             mModifiersDisplay = modifiersDisplay;
-            mCharacter.notifySingle(ID_MODIFIERS_DISPLAY, mModifiersDisplay);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -276,7 +276,7 @@ public class Settings {
     public void setNotesDisplay(DisplayOption notesDisplay) {
         if (mNotesDisplay != notesDisplay) {
             mNotesDisplay = notesDisplay;
-            mCharacter.notifySingle(ID_NOTES_DISPLAY, mNotesDisplay);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -287,7 +287,7 @@ public class Settings {
     public void setBaseWillOn10(boolean baseWillOn10) {
         if (mBaseWillOn10 != baseWillOn10) {
             mBaseWillOn10 = baseWillOn10;
-            mCharacter.notifySingle(ID_BASE_WILL_ON_10, Boolean.valueOf(mBaseWillOn10));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -298,7 +298,7 @@ public class Settings {
     public void setBasePerOn10(boolean basePerOn10) {
         if (mBasePerOn10 != basePerOn10) {
             mBasePerOn10 = basePerOn10;
-            mCharacter.notifySingle(ID_BASE_PER_ON_10, Boolean.valueOf(mBasePerOn10));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -309,7 +309,7 @@ public class Settings {
     public void setUseMultiplicativeModifiers(boolean useMultiplicativeModifiers) {
         if (mUseMultiplicativeModifiers != useMultiplicativeModifiers) {
             mUseMultiplicativeModifiers = useMultiplicativeModifiers;
-            mCharacter.notifySingle(ID_USE_MULTIPLICATIVE_MODIFIERS, Boolean.valueOf(mUseMultiplicativeModifiers));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -320,7 +320,7 @@ public class Settings {
     public void setUseModifyingDicePlusAdds(boolean useModifyingDicePlusAdds) {
         if (mUseModifyingDicePlusAdds != useModifyingDicePlusAdds) {
             mUseModifyingDicePlusAdds = useModifyingDicePlusAdds;
-            mCharacter.notifySingle(ID_USE_MODIFYING_DICE_PLUS_ADDS, Boolean.valueOf(mUseModifyingDicePlusAdds));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -331,7 +331,7 @@ public class Settings {
     public void setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
         if (mUseKnowYourOwnStrength != useKnowYourOwnStrength) {
             mUseKnowYourOwnStrength = useKnowYourOwnStrength;
-            mCharacter.notifySingle(ID_USE_KNOW_YOUR_OWN_STRENGTH, Boolean.valueOf(mUseKnowYourOwnStrength));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -342,7 +342,7 @@ public class Settings {
     public void setUseReducedSwing(boolean useReducedSwing) {
         if (mUseReducedSwing != useReducedSwing) {
             mUseReducedSwing = useReducedSwing;
-            mCharacter.notifySingle(ID_USE_REDUCED_SWING, Boolean.valueOf(mUseReducedSwing));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -353,7 +353,7 @@ public class Settings {
     public void setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
         if (mUseThrustEqualsSwingMinus2 != useThrustEqualsSwingMinus2) {
             mUseThrustEqualsSwingMinus2 = useThrustEqualsSwingMinus2;
-            mCharacter.notifySingle(ID_USE_THRUST_EQUALS_SWING_MINUS_2, Boolean.valueOf(mUseThrustEqualsSwingMinus2));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -364,7 +364,7 @@ public class Settings {
     public void setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
         if (mUseSimpleMetricConversions != useSimpleMetricConversions) {
             mUseSimpleMetricConversions = useSimpleMetricConversions;
-            mCharacter.notifySingle(ID_USE_SIMPLE_METRIC_CONVERSIONS, Boolean.valueOf(mUseSimpleMetricConversions));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -375,7 +375,7 @@ public class Settings {
     public void setShowCollegeInSpells(boolean show) {
         if (mShowCollegeInSpells != show) {
             mShowCollegeInSpells = show;
-            mCharacter.notifySingle(ID_SHOW_COLLEGE_IN_SPELLS, Boolean.valueOf(mShowCollegeInSpells));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -386,7 +386,7 @@ public class Settings {
     public void setShowDifficulty(boolean show) {
         if (mShowDifficulty != show) {
             mShowDifficulty = show;
-            mCharacter.notifySingle(ID_SHOW_DIFFICULTY, Boolean.valueOf(mShowDifficulty));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -397,7 +397,7 @@ public class Settings {
     public void setShowAdvantageModifierAdj(boolean show) {
         if (mShowAdvantageModifierAdj != show) {
             mShowAdvantageModifierAdj = show;
-            mCharacter.notifySingle(ID_SHOW_ADVANTAGE_MODIFIER_ADJ, Boolean.valueOf(mShowAdvantageModifierAdj));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -408,7 +408,7 @@ public class Settings {
     public void setShowEquipmentModifierAdj(boolean show) {
         if (mShowEquipmentModifierAdj != show) {
             mShowEquipmentModifierAdj = show;
-            mCharacter.notifySingle(ID_SHOW_EQUIPMENT_MODIFIER_ADJ, Boolean.valueOf(mShowEquipmentModifierAdj));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -419,7 +419,7 @@ public class Settings {
     public void setShowSpellAdj(boolean show) {
         if (mShowSpellAdj != show) {
             mShowSpellAdj = show;
-            mCharacter.notifySingle(ID_SHOW_SPELL_ADJ, Boolean.valueOf(mShowSpellAdj));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -430,7 +430,7 @@ public class Settings {
     public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
-            mCharacter.notifySingle(ID_USE_TITLE_IN_FOOTER, Boolean.valueOf(mUseTitleInFooter));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -441,7 +441,7 @@ public class Settings {
     public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
         if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
             mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
-            mCharacter.notifySingle(ID_EXTRA_SPACE_AROUND_ENCUMBRANCE, Boolean.valueOf(mExtraSpaceAroundEncumbrance));
+            mCharacter.notifyOfChange();
         }
     }
 }

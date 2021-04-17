@@ -27,7 +27,7 @@ public class EquipmentModifiersOutline extends ListOutline {
      * @param model    The {@link OutlineModel} to use.
      */
     public EquipmentModifiersOutline(DataFile dataFile, OutlineModel model) {
-        super(dataFile, model, EquipmentModifier.ID_LIST_CHANGED);
+        super(dataFile, model);
         EquipmentModifierColumnID.addColumns(this, !(dataFile instanceof EquipmentModifierList));
     }
 

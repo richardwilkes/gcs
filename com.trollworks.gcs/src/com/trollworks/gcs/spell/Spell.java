@@ -222,11 +222,6 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getJSONTypeName() {
         return canHaveChildren() ? TAG_SPELL_CONTAINER : TAG_SPELL;
     }
@@ -354,7 +349,7 @@ public class Spell extends ListRow implements HasSourceReference {
             for (WeaponStats weapon : mWeapons) {
                 weapon.setOwner(this);
             }
-            notifySingle(ID_WEAPON_STATUS_CHANGED);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -372,7 +367,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setTechLevel(String techLevel) {
         if (!Objects.equals(mTechLevel, techLevel)) {
             mTechLevel = techLevel;
-            notifySingle(ID_TECH_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -402,7 +397,7 @@ public class Spell extends ListRow implements HasSourceReference {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
         if (notify && (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel))) {
-            notify(ID_LEVEL, this);
+            notifyOfChange();
         }
     }
 
@@ -477,7 +472,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setName(String name) {
         if (!mName.equals(name)) {
             mName = name;
-            notifySingle(ID_NAME);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -495,7 +490,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setCollege(String college) {
         if (!mCollege.equals(college)) {
             mCollege = college;
-            notifySingle(ID_COLLEGE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -513,7 +508,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setPowerSource(String powerSource) {
         if (!mPowerSource.equals(powerSource)) {
             mPowerSource = powerSource;
-            notifySingle(ID_POWER_SOURCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -677,10 +672,8 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setRawPoints(int points) {
         if (mPoints != points) {
             mPoints = points;
-            startNotify();
-            notify(ID_POINTS, this);
             updateLevel(true);
-            endNotify();
+            notifyOfChange();
             return true;
         }
         return false;
@@ -808,10 +801,8 @@ public class Spell extends ListRow implements HasSourceReference {
         if (mAttribute != attribute || mDifficulty != difficulty) {
             mAttribute = attribute;
             mDifficulty = difficulty;
-            startNotify();
-            notify(ID_DIFFICULTY, this);
-            updateLevel(true);
-            endNotify();
+            updateLevel(false);
+            notifyOfChange();
             return true;
         }
         return false;

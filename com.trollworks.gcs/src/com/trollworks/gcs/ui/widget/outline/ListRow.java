@@ -230,13 +230,10 @@ public abstract class ListRow extends Row implements Updatable {
     public boolean addChild(Row row) {
         boolean result = super.addChild(row);
         if (result) {
-            notifySingle(getListChangedID());
+            notifyOfChange();
         }
         return result;
     }
-
-    /** @return The ID for the "list changed" notification. */
-    public abstract String getListChangedID();
 
     /** @return The most recent version of the JSON data this object knows how to load. */
     public abstract int getJSONVersion();
@@ -432,45 +429,9 @@ public abstract class ListRow extends Row implements Updatable {
      */
     protected abstract void saveSelf(JsonWriter w, SaveType saveType) throws IOException;
 
-    /**
-     * Starts the notification process. Should be called before calling {@link #notify(String,
-     * Object)}.
-     */
-    protected final void startNotify() {
+    public void notifyOfChange() {
         if (mDataFile != null) {
-            mDataFile.startNotify();
-        }
-    }
-
-    /**
-     * Sends a notification to all interested consumers.
-     *
-     * @param type The notification type.
-     * @param data Extra data specific to this notification.
-     */
-    public void notify(String type, Object data) {
-        if (mDataFile != null) {
-            mDataFile.notify(type, this);
-        }
-    }
-
-    /**
-     * Sends a notification to all interested consumers.
-     *
-     * @param type The notification type.
-     */
-    public final void notifySingle(String type) {
-        if (mDataFile != null) {
-            mDataFile.notifySingle(type, this);
-        }
-    }
-
-    /**
-     * Ends the notification process. Must be called after calling {@link #notify(String, Object)}.
-     */
-    public void endNotify() {
-        if (mDataFile != null) {
-            mDataFile.endNotify();
+            mDataFile.notifyOfChange();
         }
     }
 
@@ -584,9 +545,8 @@ public abstract class ListRow extends Row implements Updatable {
             }
         }
         if (!old.equals(mCategories)) {
-            String id = getCategoryID();
-            if (id != null) {
-                notifySingle(id);
+            if (getCategoryID() != null) {
+                notifyOfChange();
             }
             return true;
         }
@@ -610,9 +570,8 @@ public abstract class ListRow extends Row implements Updatable {
         category = category.trim();
         if (!category.isEmpty()) {
             if (mCategories.add(category)) {
-                String id = getCategoryID();
-                if (id != null) {
-                    notifySingle(id);
+                if (getCategoryID() != null) {
+                    notifyOfChange();
                 }
                 return true;
             }

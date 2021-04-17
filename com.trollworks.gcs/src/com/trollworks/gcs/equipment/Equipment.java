@@ -229,11 +229,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getJSONTypeName() {
         return canHaveChildren() ? TAG_EQUIPMENT_CONTAINER : TAG_EQUIPMENT;
     }
@@ -367,11 +362,9 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setQuantity(int quantity) {
         if (quantity != mQuantity) {
             mQuantity = quantity;
-            startNotify();
-            notify(ID_QUANTITY, this);
-            updateContainingWeights(true);
-            updateContainingValues(true);
-            endNotify();
+            updateContainingWeights(false);
+            updateContainingValues(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -391,7 +384,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (uses != mUses) {
             mUses = uses;
-            notifySingle(ID_USES);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -408,18 +401,11 @@ public class Equipment extends ListRow implements HasSourceReference {
             maxUses = 0;
         }
         if (maxUses != mMaxUses) {
-            boolean notifyUsesToo = false;
             mMaxUses = maxUses;
             if (mMaxUses > mUses) {
                 mUses = mMaxUses;
-                notifyUsesToo = true;
             }
-            startNotify();
-            notify(ID_MAX_USES, this);
-            if (notifyUsesToo) {
-                notify(ID_USES, this);
-            }
-            endNotify();
+            notifyOfChange();
             return true;
         }
         return false;
@@ -437,7 +423,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setDescription(String description) {
         if (!mDescription.equals(description)) {
             mDescription = description;
-            notifySingle(ID_DESCRIPTION);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -455,7 +441,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setTechLevel(String techLevel) {
         if (!mTechLevel.equals(techLevel)) {
             mTechLevel = techLevel;
-            notifySingle(ID_TECH_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -485,7 +471,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setLegalityClass(String legalityClass) {
         if (!mLegalityClass.equals(legalityClass)) {
             mLegalityClass = legalityClass;
-            notifySingle(ID_LEGALITY_CLASS);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -570,10 +556,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setValue(Fixed6 value) {
         if (!mValue.equals(value)) {
             mValue = value;
-            startNotify();
-            notify(ID_VALUE, this);
-            updateContainingValues(true);
-            endNotify();
+            updateContainingValues(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -674,10 +658,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setWeight(WeightValue weight) {
         if (!mWeight.equals(weight)) {
             mWeight = new WeightValue(weight);
-            startNotify();
-            notify(ID_WEIGHT, this);
-            updateContainingWeights(true);
-            endNotify();
+            updateContainingWeights(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -754,7 +736,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (!saved.equals(mExtendedWeight) || !savedForSkills.equals(mExtendedWeightForSkills)) {
             if (okToNotify) {
-                notify(ID_EXTENDED_WEIGHT, this);
+                notifyOfChange();
             }
             return true;
         }
@@ -786,7 +768,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (!mExtendedValue.equals(savedValue)) {
             if (okToNotify) {
-                notify(ID_EXTENDED_VALUE, this);
+                notifyOfChange();
             }
             return true;
         }
@@ -823,10 +805,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setWeightIgnoredForSkills(boolean ignore) {
         if (mWeightIgnoredForSkills != ignore) {
             mWeightIgnoredForSkills = ignore;
-            startNotify();
-            notify(ID_WEIGHT, this);
-            updateContainingWeights(true);
-            endNotify();
+            updateContainingWeights(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -844,7 +824,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setEquipped(boolean equipped) {
         if (mEquipped != equipped) {
             mEquipped = equipped;
-            notifySingle(ID_EQUIPPED);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -864,7 +844,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(ID_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -908,7 +888,7 @@ public class Equipment extends ListRow implements HasSourceReference {
             for (WeaponStats weapon : mWeapons) {
                 weapon.setOwner(this);
             }
-            notifySingle(ID_WEAPON_STATUS_CHANGED);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -962,7 +942,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         List<EquipmentModifier> in = new FilteredList<>(modifiers, EquipmentModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
-            notifySingle(ID_MODIFIER_STATUS_CHANGED);
+            notifyOfChange();
             update();
         }
     }

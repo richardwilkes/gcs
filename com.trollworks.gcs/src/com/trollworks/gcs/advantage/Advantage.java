@@ -227,11 +227,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Advantage");
     }
@@ -388,7 +383,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setContainerType(AdvantageContainerType type) {
         if (mContainerType != type) {
             mContainerType = type;
-            notifySingle(ID_CONTAINER_TYPE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -406,7 +401,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setType(int type) {
         if (mType != type) {
             mType = type;
-            notifySingle(ID_TYPE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -429,7 +424,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setUserDesc(String desc) {
         if (!mUserDesc.equals(desc)) {
             mUserDesc = desc;
-            notifySingle(ID_USER_DESC);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -442,7 +437,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setName(String name) {
         if (!mName.equals(name)) {
             mName = name;
-            notifySingle(ID_NAME);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -460,7 +455,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setCR(SelfControlRoll cr) {
         if (mCR != cr) {
             mCR = cr;
-            notifySingle(ID_CR);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -478,7 +473,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setCRAdj(SelfControlRollAdjustments crAdj) {
         if (mCRAdj != crAdj) {
             mCRAdj = crAdj;
-            notifySingle(ID_CR);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -501,7 +496,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setLevels(int levels) {
         if (mLevels != levels) {
             mLevels = levels;
-            notifySingle(ID_LEVELS);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -524,7 +519,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setHalfLevel(boolean halfLevel) {
         if (mHalfLevel != halfLevel) {
             mHalfLevel = halfLevel;
-            notifySingle(ID_HALF_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -609,10 +604,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setEnabled(boolean enabled) {
         if (mDisabled == enabled) {
             mDisabled = !enabled;
-            startNotify();
-            notify(ID_DISABLED, this);
-            notify(ID_POINTS, this);
-            endNotify();
+            notifyOfChange();
             return true;
         }
         return false;
@@ -729,7 +721,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setPoints(int points) {
         if (mPoints != points) {
             mPoints = points;
-            notifySingle(ID_POINTS);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -747,7 +739,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setPointsPerLevel(int points) {
         if (mPointsPerLevel != points) {
             mPointsPerLevel = points;
-            notifySingle(ID_POINTS);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -762,7 +754,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(ID_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -789,7 +781,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setShouldRoundCostDown(boolean shouldRoundDown) {
         if (mRoundCostDown != shouldRoundDown) {
             mRoundCostDown = shouldRoundDown;
-            notifySingle(ID_ROUND_COST_DOWN);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -803,7 +795,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public boolean setAllowHalfLevels(boolean allowHalfLevels) {
         if (mAllowHalfLevels != allowHalfLevels) {
             mAllowHalfLevels = allowHalfLevels;
-            notifySingle(ID_ALLOW_HALF_LEVELS);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -899,7 +891,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             for (WeaponStats weapon : mWeapons) {
                 weapon.setOwner(this);
             }
-            notifySingle(ID_WEAPON_STATUS_CHANGED);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -962,7 +954,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         List<AdvantageModifier> in = new FilteredList<>(modifiers, AdvantageModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
-            notifySingle(ID_MODIFIER_STATUS_CHANGED);
+            notifyOfChange();
             update();
         }
     }
