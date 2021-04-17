@@ -24,7 +24,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightValue;
 
@@ -46,7 +45,7 @@ public class EquipmentModifier extends Modifier {
     /** The attribute for the weight type. */
     public static final  String                      ATTRIBUTE_WEIGHT_TYPE  = "weight_type";
     /** The notification prefix used. */
-    public static final  String                      PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "eqpmod" + Notifier.SEPARATOR;
+    public static final  String                      PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "eqpmod.";
     /** The notification ID for enabled changes. */
     public static final  String                      ID_ENABLED             = PREFIX + ATTRIBUTE_ENABLED;
     /** The field ID for when the categories change. */
@@ -302,8 +301,8 @@ public class EquipmentModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter)mDataFile).getSettings().showEquipmentModifierAdj()) {
-            String costDesc = getCostDescription();
+        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter) mDataFile).getSettings().showEquipmentModifierAdj()) {
+            String costDesc   = getCostDescription();
             String weightDesc = getWeightDescription();
             if (!costDesc.isEmpty() || !weightDesc.isEmpty()) {
                 builder.append(" [");

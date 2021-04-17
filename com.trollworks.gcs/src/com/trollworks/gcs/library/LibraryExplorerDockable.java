@@ -60,7 +60,6 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.BorderLayout;
@@ -81,7 +80,6 @@ import javax.swing.ListCellRenderer;
 public class LibraryExplorerDockable extends Dockable implements SearchTarget, FieldAccessor, IconAccessor, Openable, Deletable {
     private Search    mSearch;
     private TreePanel mTreePanel;
-    private Notifier  mNotifier;
 
     public static LibraryExplorerDockable get() {
         for (Dockable dockable : Workspace.get().getDock().getDockables()) {
@@ -95,8 +93,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     public LibraryExplorerDockable() {
         super(new BorderLayout());
-        mNotifier = new Notifier();
-        TreeRoot root = new TreeRoot(mNotifier);
+        TreeRoot root = new TreeRoot();
         fillTree(LibraryUpdater.collectFiles(), root);
         mTreePanel = new TreePanel(root);
         mTreePanel.setShowHeader(false);
@@ -178,10 +175,8 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
             selected.add(((LibraryExplorerRow) row).getSelectionKey());
         }
         Set<String> open = collectOpenRowKeys();
-        mNotifier.startBatch();
         root.removeRow(new ArrayList<>(root.getChildren()));
         fillTree(LibraryUpdater.collectFiles(), root);
-        mNotifier.endBatch();
         mTreePanel.setOpen(true, collectRowsToOpen(root, open, null));
         mTreePanel.select(collectRows(root, selected, null));
     }

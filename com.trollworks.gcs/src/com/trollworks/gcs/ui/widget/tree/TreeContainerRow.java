@@ -141,7 +141,10 @@ public class TreeContainerRow extends TreeRow {
                 row.mParent = this;
             }
             renumber(start);
-            notify(TreeNotificationKeys.ROW_ADDED, rows.toArray(new TreeRow[list.size()]));
+            TreePanel owner = getOwner();
+            if (owner != null) {
+                owner.rowsAdded(rows.toArray(new TreeRow[list.size()]));
+            }
         }
     }
 
@@ -182,7 +185,10 @@ public class TreeContainerRow extends TreeRow {
                     row.mParent = null;
                 }
                 renumber(start);
-                notify(TreeNotificationKeys.ROW_REMOVED, removed);
+                TreePanel owner = getOwner();
+                if (owner != null) {
+                    owner.rowsRemoved(removed);
+                }
             }
         }
     }

@@ -22,7 +22,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 
@@ -43,7 +42,7 @@ public class AdvantageModifier extends Modifier {
     /** The tag for how the cost is affected. */
     public static final  String                    TAG_AFFECTS            = "affects";
     /** The notification prefix used. */
-    public static final  String                    PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "advmod" + Notifier.SEPARATOR;
+    public static final  String                    PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "advmod.";
     /** The field ID for when the categories change. */
     public static final  String                    ID_CATEGORY            = PREFIX + "Category";
     /** The field ID for enabled changes. */
@@ -309,7 +308,7 @@ public class AdvantageModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter)mDataFile).getSettings().showAdvantageModifierAdj()) {
+        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter) mDataFile).getSettings().showAdvantageModifierAdj()) {
             builder.append(" [");
             builder.append(getCostDescription());
             builder.append(']');

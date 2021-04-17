@@ -35,7 +35,6 @@ import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
@@ -81,7 +80,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String                     KEY_EXOTIC                 = "exotic";
     private static final String                     KEY_SUPERNATURAL           = "supernatural";
     /** The prefix used in front of all IDs for the advantages. */
-    public static final  String                     PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage" + Notifier.SEPARATOR;
+    public static final  String                     PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage.";
     /** The field ID for type changes. */
     public static final  String                     ID_TYPE                    = PREFIX + "Type";
     /** The field ID for container type changes. */

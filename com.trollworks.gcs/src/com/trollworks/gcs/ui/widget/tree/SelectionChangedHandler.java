@@ -11,15 +11,6 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
-/** Provides the root of a tree of {@link TreeRow}s. */
-public class TreeRoot extends TreeContainerRow {
-    private TreePanel mPanel;
-
-    public TreePanel getOwner() {
-        return mPanel;
-    }
-
-    public void setOwner(TreePanel panel) {
-        mPanel = panel;
-    }
+public interface SelectionChangedHandler {
+    void selectionChanged();
 }
