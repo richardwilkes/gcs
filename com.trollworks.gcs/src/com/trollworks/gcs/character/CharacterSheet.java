@@ -69,7 +69,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
@@ -101,7 +100,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /** The character sheet. */
-public class CharacterSheet extends CollectedOutlines implements ChangeListener, PageOwner, PrintProxy, Runnable {
+public class CharacterSheet extends CollectedOutlines implements ChangeListener, PageOwner, PrintProxy {
     private static final int                         GAP                       = 2;
     public static final  String                      REACTIONS_KEY             = "reactions";
     public static final  String                      CONDITIONAL_MODIFIERS_KEY = "conditional_modifiers";
@@ -121,7 +120,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private              WeaponOutline               mRangedWeaponOutline;
     private              ReactionsOutline            mReactionsOutline;
     private              ConditionalModifiersOutline mConditionalModifiersOutline;
-    private              boolean                     mRebuildPending;
     private              Scale                       mSavedScale;
     private              boolean                     mOkToPaint                = true;
     private              boolean                     mIsPrinting;
@@ -152,25 +150,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    protected void scaleChanged() {
-        markForRebuild();
-    }
-
-    /** Marks the sheet for a rebuild in the near future. */
-    public void markForRebuild() {
-        if (!mRebuildPending) {
-            mRebuildPending = true;
-            EventQueue.invokeLater(this);
-        }
-    }
-
-    @Override
-    public void run() {
-        rebuild();
-        mRebuildPending = false;
-    }
-
-    /** Synchronizes the display with the underlying model. */
     public void rebuild() {
         KeyboardFocusManager focusMgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         Component            focus    = focusMgr.getPermanentFocusOwner();
@@ -843,9 +822,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         expandAllContainers(mCharacter.getEquipmentIterator(), changed);
         expandAllContainers(mCharacter.getOtherEquipmentIterator(), changed);
         expandAllContainers(mCharacter.getNotesIterator(), changed);
-        if (mRebuildPending) {
-            rebuild();
-        }
+        rebuild();
         return changed;
     }
 
@@ -862,9 +839,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         for (Row row : rows) {
             row.setOpen(false);
         }
-        if (mRebuildPending) {
-            rebuild();
-        }
+        rebuild();
     }
 
     /**

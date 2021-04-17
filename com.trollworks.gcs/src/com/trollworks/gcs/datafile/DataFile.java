@@ -51,10 +51,10 @@ public abstract class DataFile implements Updatable, Undoable {
     private             Path                       mPath;
     private             UUID                       mID                    = UUID.randomUUID();
     private             Notifier                   mNotifier              = new Notifier();
-    private             boolean                    mModified;
     private             StdUndoManager             mUndoManager           = new StdUndoManager();
     private             List<DataModifiedListener> mDataModifiedListeners = new ArrayList<>();
     private             boolean                    mSortingMarksDirty     = true;
+    private             boolean                    mModified;
 
     /** @param path The path to load. */
     public void load(Path path) throws IOException {

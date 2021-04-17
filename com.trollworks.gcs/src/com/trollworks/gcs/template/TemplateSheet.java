@@ -24,15 +24,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 
 /** The template sheet. */
-public class TemplateSheet extends CollectedOutlines implements Runnable {
-    private static final EmptyBorder NORMAL_BORDER = new EmptyBorder(5);
-    private              boolean     mRebuildPending;
-
+public class TemplateSheet extends CollectedOutlines {
     /**
      * Creates a new {@link TemplateSheet}.
      *
@@ -42,7 +38,7 @@ public class TemplateSheet extends CollectedOutlines implements Runnable {
         setLayout(new ColumnLayout(1, 0, 5));
         setOpaque(true);
         setBackground(Color.WHITE);
-        setBorder(NORMAL_BORDER);
+        setBorder(new EmptyBorder(5));
 
         // Make sure our primary outlines exist
         createOutlines(template);
@@ -55,17 +51,12 @@ public class TemplateSheet extends CollectedOutlines implements Runnable {
 
         // Ensure everything is laid out and register for notification
         revalidate();
-        template.addTarget(this, Template.TEMPLATE_PREFIX, GURPSCharacter.CHARACTER_PREFIX);
+        template.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
         Preferences.getInstance().getNotifier().add(this, Preferences.KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
 
         setDropTarget(new DropTarget(this, this));
 
         adjustSize();
-    }
-
-    @Override
-    protected void scaleChanged() {
-        markForRebuild();
     }
 
     @Override
@@ -81,16 +72,8 @@ public class TemplateSheet extends CollectedOutlines implements Runnable {
         markForRebuild();
     }
 
-    public void markForRebuild() {
-        if (!mRebuildPending) {
-            mRebuildPending = true;
-            EventQueue.invokeLater(this);
-        }
-    }
-
     @Override
-    public void run() {
-        mRebuildPending = false;
+    public void rebuild() {
         syncOutline(getAdvantagesOutline());
         syncOutline(getSkillsOutline());
         SpellOutline spellOutline = getSpellsOutline();

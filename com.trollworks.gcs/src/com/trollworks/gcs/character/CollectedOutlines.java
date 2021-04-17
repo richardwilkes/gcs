@@ -28,9 +28,10 @@ import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowSelection;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
+import com.trollworks.gcs.utility.notification.NotifierTarget;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
@@ -44,7 +45,7 @@ import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
-public abstract class CollectedOutlines extends JPanel implements ActionListener, ScaleRoot, Scrollable, BatchNotifierTarget, DropTargetListener {
+public abstract class CollectedOutlines extends JPanel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, NotifierTarget {
     private Scale            mScale;
     private AdvantageOutline mAdvantagesOutline;
     private SkillOutline     mSkillsOutline;
@@ -52,13 +53,30 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     private EquipmentOutline mEquipmentOutline;
     private EquipmentOutline mOtherEquipmentOutline;
     private NoteOutline      mNotesOutline;
-    private boolean          mDragWasAcceptable;
     private List<Row>        mDragRows;
-    private boolean          mBatchMode;
+    private boolean          mDragWasAcceptable;
+    private boolean          mRebuildPending;
 
     public CollectedOutlines() {
         mScale = Preferences.getInstance().getInitialUIScale().getScale();
     }
+
+    /** Mark it for a rebuild in the near future. */
+    public void markForRebuild() {
+        if (!mRebuildPending) {
+            mRebuildPending = true;
+            EventQueue.invokeLater(this);
+        }
+    }
+
+    @Override
+    public void run() {
+        rebuild();
+        mRebuildPending = false;
+    }
+
+    /** Synchronize the display with the underlying model. */
+    public abstract void rebuild();
 
     protected void createOutlines(CollectedModels models) {
         if (mAdvantagesOutline == null) {
@@ -132,11 +150,9 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     public void setScale(Scale scale) {
         if (mScale.getScale() != scale.getScale()) {
             mScale = scale;
-            scaleChanged();
+            markForRebuild();
         }
     }
-
-    protected abstract void scaleChanged();
 
     /** @return The outline containing the Advantages, Disadvantages, Quirks & Perks. */
     public AdvantageOutline getAdvantagesOutline() {
@@ -201,22 +217,6 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     @Override
     public boolean getScrollableTracksViewportWidth() {
         return false;
-    }
-
-    /** @return {@code true} if in batch mode. */
-    public boolean inBatchMode() {
-        return mBatchMode;
-    }
-
-    @Override
-    public void enterBatchMode() {
-        mBatchMode = true;
-    }
-
-    @Override
-    public void leaveBatchMode() {
-        mBatchMode = false;
-        validate();
     }
 
     @Override
