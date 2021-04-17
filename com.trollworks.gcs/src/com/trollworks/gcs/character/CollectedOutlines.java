@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.AdvantageOutline;
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.preferences.Preferences;
@@ -28,8 +29,6 @@ import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowSelection;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.datafile.DataChangeListener;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -46,7 +45,7 @@ import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
-public abstract class CollectedOutlines extends JPanel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, NotifierTarget, DataChangeListener {
+public abstract class CollectedOutlines extends JPanel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, DataChangeListener {
     private Scale            mScale;
     private AdvantageOutline mAdvantagesOutline;
     private SkillOutline     mSkillsOutline;
@@ -287,10 +286,5 @@ public abstract class CollectedOutlines extends JPanel implements Runnable, Acti
     @Override
     public void dragExit(DropTargetEvent dte) {
         mDragRows = null;
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
     }
 }

@@ -36,7 +36,6 @@ import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
 import com.trollworks.gcs.ui.widget.search.Search;
 import com.trollworks.gcs.ui.widget.search.SearchTarget;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -49,7 +48,7 @@ import javax.swing.JComboBox;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
-public abstract class CollectedOutlinesDockable extends DataFileDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
+public abstract class CollectedOutlinesDockable extends DataFileDockable implements SearchTarget, RetargetableFocus {
     private JComboBox<Scales> mScaleCombo;
     private Search            mSearch;
 
@@ -290,10 +289,5 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
                 addCompleteRow(outlineModel, child);
             }
         }
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
     }
 }

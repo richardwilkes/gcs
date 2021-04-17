@@ -145,9 +145,4 @@ public class SheetDockable extends CollectedOutlinesDockable implements DataChan
     public void dataWasChanged() {
         mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
     }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
-
-    }
 }

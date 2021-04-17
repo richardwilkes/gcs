@@ -123,7 +123,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public TreePanel(TreeRoot root) {
         mRoot = root;
-        mRoot.getNotifier().add(this, TreeNotificationKeys.ROW_REMOVED);
+       // mRoot.getNotifier().add(this, TreeNotificationKeys.ROW_REMOVED);
         setUnitIncrement(mRowHeight + getRowDividerHeight());
         setFocusable(true);
         addFocusListener(this);
@@ -143,9 +143,9 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     public void setRoot(TreeRoot root) {
         if (root != mRoot) {
-            mRoot.getNotifier().remove(this);
+          //  mRoot.getNotifier().remove(this);
             mRoot = root;
-            mRoot.getNotifier().add(this, TreeNotificationKeys.ROW_REMOVED);
+          //  mRoot.getNotifier().add(this, TreeNotificationKeys.ROW_REMOVED);
             repaint();
         }
     }
@@ -1822,7 +1822,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     }
 
     protected void notify(String key, Object extra) {
-        mRoot.getNotifier().notify(this, key, extra);
+     //   mRoot.getNotifier().notify(this, key, extra);
     }
 
     @Override

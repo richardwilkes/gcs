@@ -71,11 +71,6 @@ public class TemplateSheet extends CollectedOutlines {
     }
 
     @Override
-    public void handleNotification(Object producer, String type, Object data) {
-        markForRebuild();
-    }
-
-    @Override
     public void rebuild() {
         syncOutline(getAdvantagesOutline());
         syncOutline(getSkillsOutline());

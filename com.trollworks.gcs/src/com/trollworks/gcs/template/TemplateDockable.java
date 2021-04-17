@@ -11,9 +11,8 @@
 
 package com.trollworks.gcs.template;
 
-import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.character.CollectedOutlines;
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
@@ -100,15 +99,5 @@ public class TemplateDockable extends CollectedOutlinesDockable {
     @Override
     public PrintProxy getPrintProxy() {
         return null;
-    }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
-        if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
-            mTemplate.updateRowHeights();
-            mTemplate.revalidate();
-        } else {
-            getDataFile().notifyOfChange();
-        }
     }
 }

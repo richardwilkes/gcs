@@ -30,7 +30,6 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowFilter;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
@@ -49,7 +48,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, NotifierTarget, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
+public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
     private Toolbar           mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;
@@ -253,15 +252,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
 
     private void documentChanged() {
         mOutline.reapplyRowFilter();
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
-    }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
     }
 
     @Override

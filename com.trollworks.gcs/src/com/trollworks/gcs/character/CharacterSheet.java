@@ -704,11 +704,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    public void handleNotification(Object producer, String type, Object data) {
-        markForRebuild();
-    }
-
-    @Override
     public void drawPageAdornments(Page page, Graphics gc) {
         Rectangle bounds = page.getBounds();
         Insets    insets = page.getInsets();
