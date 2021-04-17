@@ -20,6 +20,19 @@ import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
 import com.trollworks.gcs.advantage.SelfControlRollAdjustments;
+import com.trollworks.gcs.character.panels.AttributesPanel;
+import com.trollworks.gcs.character.panels.DescriptionPanel;
+import com.trollworks.gcs.character.panels.DoubleOutlinePanel;
+import com.trollworks.gcs.character.panels.EncumbrancePanel;
+import com.trollworks.gcs.character.panels.FatiguePointsPanel;
+import com.trollworks.gcs.character.panels.HitLocationPanel;
+import com.trollworks.gcs.character.panels.HitPointsPanel;
+import com.trollworks.gcs.character.panels.IdentityPanel;
+import com.trollworks.gcs.character.panels.LiftPanel;
+import com.trollworks.gcs.character.panels.MiscPanel;
+import com.trollworks.gcs.character.panels.PointsPanel;
+import com.trollworks.gcs.character.panels.PortraitPanel;
+import com.trollworks.gcs.character.panels.SingleOutlinePanel;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.ConditionalModifier;
@@ -140,11 +153,13 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         }
         mCharacter.addTarget(this, FEATURES_AND_PREREQS_NOTIFICATIONS.toArray(new String[0]));
         mCharacter.addTarget(this, Settings.PREFIX);
+        mCharacter.addChangeListener(this);
     }
 
     /** Call when the sheet is no longer in use. */
     @Override
     public void dispose() {
+        mCharacter.removeChangeListener(this);
         mCharacter.resetNotifier();
         super.dispose();
     }
@@ -159,12 +174,11 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
         if (UIUtilities.getSelfOrAncestorOfType(focus, CharacterSheet.class) == this) {
             if (focus instanceof PageField) {
-                focusKey = ((PageField) focus).getConsumedType();
+                focusKey = ((PageField) focus).getTag();
                 focus = null;
             } else if (focus instanceof Outline) {
                 Outline   outline   = (Outline) focus;
                 Selection selection = outline.getModel().getSelection();
-
                 firstRow = outline.getFirstRowToDisplay();
                 int selRow = selection.nextSelectedIndex(firstRow);
                 if (selRow >= 0) {
@@ -189,11 +203,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
         column = getOtherEquipmentOutline().getModel().getColumnWithID(descColID);
         column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
-        mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
-        mCharacter.updateSkills();
-        mCharacter.processFeaturesAndPrereqs();
-        mCharacter.calculateWeightAndWealthCarried(true);
-        mCharacter.calculateWealthNotCarried(true);
+        mCharacter.recalculate();
 
         // Clear out the old pages
         removeAll();
@@ -374,13 +384,12 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private boolean restoreFocusToKey(String key, Component panel) {
         if (key != null) {
             if (panel instanceof PageField) {
-                if (key.equals(((PageField) panel).getConsumedType())) {
+                if (key.equals(((PageField) panel).getTag())) {
                     panel.requestFocus();
                     return true;
                 }
             } else if (panel instanceof Container) {
                 Container container = (Container) panel;
-
                 if (container.getComponentCount() > 0) {
                     for (Component child : container.getComponents()) {
                         if (restoreFocusToKey(key, child)) {
@@ -727,7 +736,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         FontMetrics fm1        = gc.getFontMetrics(font1);
         FontMetrics fm2        = gc.getFontMetrics(font2);
         int         y          = bounds.y + bounds.height + fm2.getAscent();
-        String      modified   = String.format("Modified %s", Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, mCharacter.getModifiedOn()));
+        String      modified   = String.format("Modified %s", Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, mCharacter.getModifiedOn() * FieldFactory.TIMESTAMP_FACTOR));
         String      left;
         String      right;
 

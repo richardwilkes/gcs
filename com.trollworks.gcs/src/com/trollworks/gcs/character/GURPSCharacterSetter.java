@@ -11,6 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-public interface FieldRandomizer {
-    Object Randomize();
+public interface GURPSCharacterSetter {
+    void setValue(GURPSCharacter gch, Object obj);
 }

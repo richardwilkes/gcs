@@ -9,8 +9,9 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.Outline;

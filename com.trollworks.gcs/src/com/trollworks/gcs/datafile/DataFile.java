@@ -281,6 +281,7 @@ public abstract class DataFile extends ChangeableData implements Updatable, Undo
         setModified(true);
         mNotifier.notify(this, type, data);
         notifyOccured();
+        notifyOfChange(); // This is here to catch all the old notifications
     }
 
     /** Called when {@link #notify(String, Object)} is called. */

@@ -9,8 +9,12 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.Encumbrance;
+import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
@@ -81,11 +85,11 @@ public class EncumbrancePanel extends DropPanel {
             JComponent field = new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header);
             add(field);
             createDivider();
-            add(new PageField(sheet, GURPSCharacter.MAXIMUM_CARRY_PREFIX + index, SwingConstants.RIGHT, false, maxLoadTooltip, textColor));
+            add(new PageField(FieldFactory.WEIGHT, character.getMaximumCarry(encumbrance), sheet, SwingConstants.RIGHT, maxLoadTooltip, textColor));
             createDivider();
-            add(new PageField(sheet, GURPSCharacter.MOVE_PREFIX + index, SwingConstants.RIGHT, false, moveTooltip, textColor));
+            add(new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getMove(encumbrance)), sheet, SwingConstants.RIGHT, moveTooltip, textColor));
             createDivider();
-            add(new PageField(sheet, GURPSCharacter.DODGE_PREFIX + index, SwingConstants.RIGHT, false, dodgeTooltip, textColor));
+            add(new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getDodge(encumbrance)), sheet, SwingConstants.RIGHT, dodgeTooltip, textColor));
         }
     }
 

@@ -9,8 +9,14 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.character.Armor;
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.HitLocationTable;
+import com.trollworks.gcs.character.HitLocationTableEntry;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
@@ -29,7 +35,6 @@ import javax.swing.SwingConstants;
 
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
-
     /**
      * Creates a new hit location panel.
      *
@@ -47,8 +52,9 @@ public class HitLocationPanel extends DropPanel {
         createHeader(I18n.Text("DR"), null);
 
         GURPSCharacter   character = sheet.getCharacter();
+        Armor            armor     = character.getArmor();
         HitLocationTable table     = character.getProfile().getHitLocationTable();
-        boolean band = false;
+        boolean          band      = false;
         for (HitLocationTableEntry entry : table.getEntries()) {
             PageLabel first = createLabel(entry.getRoll(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), entry.getName()), true);
             if (band) {
@@ -62,7 +68,7 @@ public class HitLocationPanel extends DropPanel {
             createDivider();
             createLabel(Integer.toString(entry.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), entry.getName()), false);
             createDivider();
-            createDRField(sheet, entry.getKey(), MessageFormat.format(I18n.Text("<html><body>The total DR protecting the <b>{0}</b> hit location</body></html>"), entry.getName()));
+            createDRField(sheet, armor.getValueForID(entry.getKey()), MessageFormat.format(I18n.Text("<html><body>The total DR protecting the <b>{0}</b> hit location</body></html>"), entry.getName()));
         }
     }
 
@@ -94,8 +100,8 @@ public class HitLocationPanel extends DropPanel {
         return label;
     }
 
-    private void createDRField(CharacterSheet sheet, String key, String tooltip) {
-        PageField field = new PageField(sheet, key, SwingConstants.RIGHT, false, tooltip);
+    private void createDRField(CharacterSheet sheet, Object value, String tooltip) {
+        PageField field = new PageField(FieldFactory.POSINT5, value, sheet, SwingConstants.RIGHT, tooltip, ThemeColor.ON_PAGE);
         add(field, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
     }
 }

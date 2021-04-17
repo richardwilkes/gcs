@@ -36,6 +36,13 @@ public class PagePoints extends Label {
         UIUtilities.setToPreferredSizeOnly(this);
     }
 
+    public PagePoints(int points) {
+        super("[" + points + "]");
+        setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
+        setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Points spent")));
+        UIUtilities.setToPreferredSizeOnly(this);
+    }
+
     private static String getFormattedValue(CharacterSheet sheet, String consumedType) {
         Object value = sheet.getCharacter().getValueForID(GURPSCharacter.POINTS_PREFIX + consumedType);
         return value != null ? "[" + value + "]" : "";

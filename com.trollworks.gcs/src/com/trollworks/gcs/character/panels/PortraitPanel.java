@@ -9,8 +9,10 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.Fonts;
@@ -59,7 +61,16 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
         super(null, true);
         setBorder(new TitledBorder(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), I18n.Text("Portrait")));
         mSheet = sheet;
-        setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.Text("<html><body><b>Double-click</b> to set a character portrait.<br><br>The dimensions of the chosen picture should be in a ratio of<br><b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br><br>Dimensions of <b>{0}x{1}</b> are ideal.</body></html>"), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
+        setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.Text("""
+                <html><body>
+                <b>Double-click</b> to set a character portrait.<br>
+                <br>
+                The dimensions of the chosen picture should be in a ratio of<br>
+                <b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br>
+                <br>
+                Dimensions of <b>{0}x{1}</b> are ideal.
+                </body></html>
+                """), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
         if (!GraphicsUtilities.inHeadlessPrintMode() && !GraphicsEnvironment.isHeadless()) {
             setDropTarget(new DropTarget(this, DnDConstants.ACTION_COPY, this));
         }

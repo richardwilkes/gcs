@@ -117,7 +117,7 @@ public class Armor {
     public void setBrainDR(int dr) {
         if (mBrainDR != dr) {
             mBrainDR = dr;
-            mCharacter.notifySingle(ID_BRAIN_DR, Integer.valueOf(mBrainDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -134,7 +134,7 @@ public class Armor {
     public void setSkullDR(int dr) {
         if (mSkullDR != dr) {
             mSkullDR = dr;
-            mCharacter.notifySingle(ID_SKULL_DR, Integer.valueOf(mSkullDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -151,7 +151,7 @@ public class Armor {
     public void setEyesDR(int dr) {
         if (mEyesDR != dr) {
             mEyesDR = dr;
-            mCharacter.notifySingle(ID_EYES_DR, Integer.valueOf(mEyesDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -168,7 +168,7 @@ public class Armor {
     public void setFaceDR(int dr) {
         if (mFaceDR != dr) {
             mFaceDR = dr;
-            mCharacter.notifySingle(ID_FACE_DR, Integer.valueOf(mFaceDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -185,7 +185,7 @@ public class Armor {
     public void setNeckDR(int dr) {
         if (mNeckDR != dr) {
             mNeckDR = dr;
-            mCharacter.notifySingle(ID_NECK_DR, Integer.valueOf(mNeckDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -202,7 +202,7 @@ public class Armor {
     public void setTorsoDR(int dr) {
         if (mTorsoDR != dr) {
             mTorsoDR = dr;
-            mCharacter.notifySingle(ID_TORSO_DR, Integer.valueOf(mTorsoDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -219,7 +219,7 @@ public class Armor {
     public void setVitalsDR(int dr) {
         if (mVitalsDR != dr) {
             mVitalsDR = dr;
-            mCharacter.notifySingle(ID_VITALS_DR, Integer.valueOf(mVitalsDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -236,7 +236,7 @@ public class Armor {
     public void setGroinDR(int dr) {
         if (mGroinDR != dr) {
             mGroinDR = dr;
-            mCharacter.notifySingle(ID_GROIN_DR, Integer.valueOf(mGroinDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -253,7 +253,7 @@ public class Armor {
     public void setArmDR(int dr) {
         if (mArmDR != dr) {
             mArmDR = dr;
-            mCharacter.notifySingle(ID_ARM_DR, Integer.valueOf(mArmDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -270,7 +270,7 @@ public class Armor {
     public void setWingDR(int dr) {
         if (mWingDR != dr) {
             mWingDR = dr;
-            mCharacter.notifySingle(ID_WING_DR, Integer.valueOf(mWingDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -287,7 +287,7 @@ public class Armor {
     public void setHandDR(int dr) {
         if (mHandDR != dr) {
             mHandDR = dr;
-            mCharacter.notifySingle(ID_HAND_DR, Integer.valueOf(mHandDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -304,7 +304,7 @@ public class Armor {
     public void setFinDR(int dr) {
         if (mFinDR != dr) {
             mFinDR = dr;
-            mCharacter.notifySingle(ID_FIN_DR, Integer.valueOf(mFinDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -321,7 +321,7 @@ public class Armor {
     public void setLegDR(int dr) {
         if (mLegDR != dr) {
             mLegDR = dr;
-            mCharacter.notifySingle(ID_LEG_DR, Integer.valueOf(mLegDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -338,7 +338,7 @@ public class Armor {
     public void setFootDR(int dr) {
         if (mFootDR != dr) {
             mFootDR = dr;
-            mCharacter.notifySingle(ID_FOOT_DR, Integer.valueOf(mFootDR));
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -355,7 +355,7 @@ public class Armor {
     public void setTailDR(int dr) {
         if (mTailDR != dr) {
             mTailDR = dr;
-            mCharacter.notifySingle(ID_TAIL_DR, Integer.valueOf(mTailDR));
+            mCharacter.notifyOfChange();
         }
     }
 

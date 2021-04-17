@@ -250,9 +250,10 @@ public class Profile {
     public void setPortrait(Img portrait) {
         if (portrait == null ? mPortrait != null : mPortrait.getRetina() != portrait) {
             mCustomPortrait = true;
-            mCharacter.postUndoEdit(I18n.Text("Portrait Change"), ID_PORTRAIT, mPortrait, portrait);
-            mPortrait = createPortrait(portrait);
-            mCharacter.notifySingle(ID_PORTRAIT, mPortrait);
+            RetinaIcon newPortrait = portrait != null ? createPortrait(portrait) : null;
+            mCharacter.postUndoFieldEdit(I18n.Text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, newPortrait);
+            mPortrait = newPortrait;
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -297,9 +298,9 @@ public class Profile {
      */
     public void setName(String name) {
         if (!mName.equals(name)) {
-            mCharacter.postUndoEdit(I18n.Text("Name Change"), ID_NAME, mName, name);
+            mCharacter.postUndoFieldEdit(I18n.Text("Name Change"), (c, v) -> c.getProfile().setName((String) v), mName, name);
             mName = name;
-            mCharacter.notifySingle(ID_NAME, mName);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -315,9 +316,9 @@ public class Profile {
      */
     public void setGender(String gender) {
         if (!mGender.equals(gender)) {
-            mCharacter.postUndoEdit(I18n.Text("Gender Change"), ID_GENDER, mGender, gender);
+            mCharacter.postUndoFieldEdit(I18n.Text("Gender Change"), (c, v) -> c.getProfile().setGender((String) v), mGender, gender);
             mGender = gender;
-            mCharacter.notifySingle(ID_GENDER, mGender);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -333,9 +334,9 @@ public class Profile {
      */
     public void setReligion(String religion) {
         if (!mReligion.equals(religion)) {
-            mCharacter.postUndoEdit(I18n.Text("Religion Change"), ID_RELIGION, mReligion, religion);
+            mCharacter.postUndoFieldEdit(I18n.Text("Religion Change"), (c, v) -> c.getProfile().setReligion((String) v), mReligion, religion);
             mReligion = religion;
-            mCharacter.notifySingle(ID_RELIGION, mReligion);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -351,9 +352,9 @@ public class Profile {
      */
     public void setPlayerName(String player) {
         if (!mPlayerName.equals(player)) {
-            mCharacter.postUndoEdit(I18n.Text("Player Name Change"), ID_PLAYER_NAME, mPlayerName, player);
+            mCharacter.postUndoFieldEdit(I18n.Text("Player Name Change"), (c, v) -> c.getProfile().setPlayerName((String) v), mPlayerName, player);
             mPlayerName = player;
-            mCharacter.notifySingle(ID_PLAYER_NAME, mPlayerName);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -369,9 +370,9 @@ public class Profile {
      */
     public void setTechLevel(String techLevel) {
         if (!mTechLevel.equals(techLevel)) {
-            mCharacter.postUndoEdit(I18n.Text("Tech Level Change"), ID_TECH_LEVEL, mTechLevel, techLevel);
+            mCharacter.postUndoFieldEdit(I18n.Text("Tech Level Change"), (c, v) -> c.getProfile().setTechLevel((String) v), mTechLevel, techLevel);
             mTechLevel = techLevel;
-            mCharacter.notifySingle(ID_TECH_LEVEL, mTechLevel);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -387,9 +388,9 @@ public class Profile {
      */
     public void setTitle(String title) {
         if (!mTitle.equals(title)) {
-            mCharacter.postUndoEdit(I18n.Text("Title Change"), ID_TITLE, mTitle, title);
+            mCharacter.postUndoFieldEdit(I18n.Text("Title Change"), (c, v) -> c.getProfile().setTitle((String) v), mTitle, title);
             mTitle = title;
-            mCharacter.notifySingle(ID_TITLE, mTitle);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -405,9 +406,9 @@ public class Profile {
      */
     public void setAge(String age) {
         if (!mAge.equals(age)) {
-            mCharacter.postUndoEdit(I18n.Text("Age Change"), ID_AGE, mAge, age);
+            mCharacter.postUndoFieldEdit(I18n.Text("Age Change"), (c, v) -> c.getProfile().setAge((String) v), mAge, age);
             mAge = age;
-            mCharacter.notifySingle(ID_AGE, age);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -459,9 +460,9 @@ public class Profile {
      */
     public void setBirthday(String birthday) {
         if (!mBirthday.equals(birthday)) {
-            mCharacter.postUndoEdit(I18n.Text("Birthday Change"), ID_BIRTHDAY, mBirthday, birthday);
+            mCharacter.postUndoFieldEdit(I18n.Text("Birthday Change"), (c, v) -> c.getProfile().setBirthday((String) v), mBirthday, birthday);
             mBirthday = birthday;
-            mCharacter.notifySingle(ID_BIRTHDAY, mBirthday);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -477,9 +478,9 @@ public class Profile {
      */
     public void setEyeColor(String eyeColor) {
         if (!mEyeColor.equals(eyeColor)) {
-            mCharacter.postUndoEdit(I18n.Text("Eye Color Change"), ID_EYE_COLOR, mEyeColor, eyeColor);
+            mCharacter.postUndoFieldEdit(I18n.Text("Eye Color Change"), (c, v) -> c.getProfile().setEyeColor((String) v), mEyeColor, eyeColor);
             mEyeColor = eyeColor;
-            mCharacter.notifySingle(ID_EYE_COLOR, mEyeColor);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -495,9 +496,9 @@ public class Profile {
      */
     public void setHair(String hair) {
         if (!mHair.equals(hair)) {
-            mCharacter.postUndoEdit(I18n.Text("Hair Change"), ID_HAIR, mHair, hair);
+            mCharacter.postUndoFieldEdit(I18n.Text("Hair Change"), (c, v) -> c.getProfile().setHair((String) v), mHair, hair);
             mHair = hair;
-            mCharacter.notifySingle(ID_HAIR, mHair);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -513,9 +514,9 @@ public class Profile {
      */
     public void setSkinColor(String skinColor) {
         if (!mSkinColor.equals(skinColor)) {
-            mCharacter.postUndoEdit(I18n.Text("Skin Color Change"), ID_SKIN_COLOR, mSkinColor, skinColor);
+            mCharacter.postUndoFieldEdit(I18n.Text("Skin Color Change"), (c, v) -> c.getProfile().setSkinColor((String) v), mSkinColor, skinColor);
             mSkinColor = skinColor;
-            mCharacter.notifySingle(ID_SKIN_COLOR, mSkinColor);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -531,9 +532,9 @@ public class Profile {
      */
     public void setHandedness(String handedness) {
         if (!mHandedness.equals(handedness)) {
-            mCharacter.postUndoEdit(I18n.Text("Handedness Change"), ID_HANDEDNESS, mHandedness, handedness);
+            mCharacter.postUndoFieldEdit(I18n.Text("Handedness Change"), (c, v) -> c.getProfile().setHandedness((String) v), mHandedness, handedness);
             mHandedness = handedness;
-            mCharacter.notifySingle(ID_HANDEDNESS, mHandedness);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -550,9 +551,9 @@ public class Profile {
     public void setHeight(LengthValue height) {
         if (!mHeight.equals(height)) {
             height = new LengthValue(height);
-            mCharacter.postUndoEdit(I18n.Text("Height Change"), ID_HEIGHT, new LengthValue(mHeight), height);
+            mCharacter.postUndoFieldEdit(I18n.Text("Height Change"), (c, v) -> c.getProfile().setHeight((LengthValue) v), new LengthValue(mHeight), height);
             mHeight = height;
-            mCharacter.notifySingle(ID_HEIGHT, height);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -569,9 +570,9 @@ public class Profile {
     public void setWeight(WeightValue weight) {
         if (!mWeight.equals(weight)) {
             weight = new WeightValue(weight);
-            mCharacter.postUndoEdit(I18n.Text("Weight Change"), ID_WEIGHT, new WeightValue(mWeight), weight);
+            mCharacter.postUndoFieldEdit(I18n.Text("Weight Change"), (c, v) -> c.getProfile().setWeight((WeightValue) v), new WeightValue(mWeight), weight);
             mWeight = weight;
-            mCharacter.notifySingle(ID_WEIGHT, weight);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -606,9 +607,9 @@ public class Profile {
         if (totalSizeModifier != size) {
             Integer value = Integer.valueOf(size);
 
-            mCharacter.postUndoEdit(I18n.Text("Size Modifier Change"), ID_SIZE_MODIFIER, Integer.valueOf(totalSizeModifier), value);
+            mCharacter.postUndoFieldEdit(I18n.Text("Size Modifier Change"), (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()), Integer.valueOf(totalSizeModifier), value);
             mSizeModifier = size - mSizeModifierBonus;
-            mCharacter.notifySingle(ID_SIZE_MODIFIER, value);
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -616,96 +617,7 @@ public class Profile {
     public void setSizeModifierBonus(int bonus) {
         if (mSizeModifierBonus != bonus) {
             mSizeModifierBonus = bonus;
-            mCharacter.notifySingle(ID_SIZE_MODIFIER, Integer.valueOf(getSizeModifier()));
-        }
-    }
-
-    /**
-     * @param id The field ID to retrieve the data for.
-     * @return The value of the specified field ID, or {@code null} if the field ID is invalid.
-     */
-    public Object getValueForID(String id) {
-        if (id != null && id.startsWith(PROFILE_PREFIX)) {
-            if (ID_NAME.equals(id)) {
-                return getName();
-            } else if (ID_TITLE.equals(id)) {
-                return getTitle();
-            } else if (ID_AGE.equals(id)) {
-                return getAge();
-            } else if (ID_BIRTHDAY.equals(id)) {
-                return getBirthday();
-            } else if (ID_EYE_COLOR.equals(id)) {
-                return getEyeColor();
-            } else if (ID_HAIR.equals(id)) {
-                return getHair();
-            } else if (ID_SKIN_COLOR.equals(id)) {
-                return getSkinColor();
-            } else if (ID_HANDEDNESS.equals(id)) {
-                return getHandedness();
-            } else if (ID_HEIGHT.equals(id)) {
-                return new LengthValue(getHeight());
-            } else if (ID_WEIGHT.equals(id)) {
-                return new WeightValue(getWeight());
-            } else if (ID_GENDER.equals(id)) {
-                return getGender();
-            } else if (ID_RELIGION.equals(id)) {
-                return getReligion();
-            } else if (ID_PLAYER_NAME.equals(id)) {
-                return getPlayerName();
-            } else if (ID_TECH_LEVEL.equals(id)) {
-                return getTechLevel();
-            } else if (ID_SIZE_MODIFIER.equals(id)) {
-                return Integer.valueOf(getSizeModifier());
-            } else if (ID_BODY_TYPE.equals(id)) {
-                return mHitLocationTable;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @param id    The field ID to set the value for.
-     * @param value The value to set.
-     */
-    public void setValueForID(String id, Object value) {
-        if (id != null && id.startsWith(PROFILE_PREFIX)) {
-            if (ID_NAME.equals(id)) {
-                setName((String) value);
-            } else if (ID_TITLE.equals(id)) {
-                setTitle((String) value);
-            } else if (ID_AGE.equals(id)) {
-                setAge((String) value);
-            } else if (ID_BIRTHDAY.equals(id)) {
-                setBirthday((String) value);
-            } else if (ID_EYE_COLOR.equals(id)) {
-                setEyeColor((String) value);
-            } else if (ID_HAIR.equals(id)) {
-                setHair((String) value);
-            } else if (ID_SKIN_COLOR.equals(id)) {
-                setSkinColor((String) value);
-            } else if (ID_HANDEDNESS.equals(id)) {
-                setHandedness((String) value);
-            } else if (ID_HEIGHT.equals(id)) {
-                setHeight((LengthValue) value);
-            } else if (ID_WEIGHT.equals(id)) {
-                setWeight((WeightValue) value);
-            } else if (ID_GENDER.equals(id)) {
-                setGender((String) value);
-            } else if (ID_RELIGION.equals(id)) {
-                setReligion((String) value);
-            } else if (ID_PLAYER_NAME.equals(id)) {
-                setPlayerName((String) value);
-            } else if (ID_TECH_LEVEL.equals(id)) {
-                setTechLevel((String) value);
-            } else if (ID_PORTRAIT.equals(id)) {
-                if (value instanceof Img) {
-                    setPortrait((Img) value);
-                }
-            } else if (ID_SIZE_MODIFIER.equals(id)) {
-                setSizeModifier(((Integer) value).intValue());
-            } else if (ID_BODY_TYPE.equals(id)) {
-                setHitLocationTable((HitLocationTable) value);
-            }
+            mCharacter.notifyOfChange();
         }
     }
 
@@ -895,9 +807,9 @@ public class Profile {
     /** @param table The hit location table. */
     public void setHitLocationTable(HitLocationTable table) {
         if (mHitLocationTable != table) {
-            mCharacter.postUndoEdit(I18n.Text("Body Type Change"), ID_BODY_TYPE, mHitLocationTable, table);
+            mCharacter.postUndoFieldEdit(I18n.Text("Body Type Change"), (c, v) -> c.getProfile().setHitLocationTable((HitLocationTable) v), mHitLocationTable, table);
             mHitLocationTable = table;
-            mCharacter.notifySingle(ID_BODY_TYPE, mHitLocationTable);
+            mCharacter.notifyOfChange();
         }
     }
 }

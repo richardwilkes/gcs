@@ -134,51 +134,14 @@ public class GURPSCharacter extends CollectedModels {
     public static final  String                              ID_PARRY_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.PARRY.name();
     /** The field ID for block bonus changes. */
     public static final  String                              ID_BLOCK_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
-    /** The prefix used in front of all IDs for move changes. */
-    public static final  String                              MOVE_PREFIX                          = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name() + "#.";
     /** The field ID for carried weight changes. */
     public static final  String                              ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";
     /** The field ID for carried wealth changes. */
     public static final  String                              ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";
     /** The field ID for other wealth changes. */
     public static final  String                              ID_NOT_CARRIED_WEALTH                = CHARACTER_PREFIX + "NotCarriedWealth";
-    /** The prefix used in front of all IDs for encumbrance changes. */
-    public static final  String                              MAXIMUM_CARRY_PREFIX                 = ATTRIBUTES_PREFIX + "MaximumCarry";
-    private static final String                              LIFT_PREFIX                          = ATTRIBUTES_PREFIX + "lift.";
-    /** The field ID for basic lift changes. */
-    public static final  String                              ID_BASIC_LIFT                        = LIFT_PREFIX + "BasicLift";
-    /** The field ID for one-handed lift changes. */
-    public static final  String                              ID_ONE_HANDED_LIFT                   = LIFT_PREFIX + "OneHandedLift";
-    /** The field ID for two-handed lift changes. */
-    public static final  String                              ID_TWO_HANDED_LIFT                   = LIFT_PREFIX + "TwoHandedLift";
-    /** The field ID for shove and knock over changes. */
-    public static final  String                              ID_SHOVE_AND_KNOCK_OVER              = LIFT_PREFIX + "ShoveAndKnockOver";
-    /** The field ID for running shove and knock over changes. */
-    public static final  String                              ID_RUNNING_SHOVE_AND_KNOCK_OVER      = LIFT_PREFIX + "RunningShoveAndKnockOver";
-    /** The field ID for carry on back changes. */
-    public static final  String                              ID_CARRY_ON_BACK                     = LIFT_PREFIX + "CarryOnBack";
-    /** The field ID for carry on back changes. */
-    public static final  String                              ID_SHIFT_SLIGHTLY                    = LIFT_PREFIX + "ShiftSlightly";
     /** The prefix used in front of all IDs for point summaries. */
     public static final  String                              POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";
-    /** The field ID for point total changes. */
-    public static final  String                              ID_TOTAL_POINTS                      = POINT_SUMMARY_PREFIX + "TotalPoints";
-    /** The field ID for attribute point summary changes. */
-    public static final  String                              ID_ATTRIBUTE_POINTS                  = POINT_SUMMARY_PREFIX + "AttributePoints";
-    /** The field ID for advantage point summary changes. */
-    public static final  String                              ID_ADVANTAGE_POINTS                  = POINT_SUMMARY_PREFIX + "AdvantagePoints";
-    /** The field ID for disadvantage point summary changes. */
-    public static final  String                              ID_DISADVANTAGE_POINTS               = POINT_SUMMARY_PREFIX + "DisadvantagePoints";
-    /** The field ID for quirk point summary changes. */
-    public static final  String                              ID_QUIRK_POINTS                      = POINT_SUMMARY_PREFIX + "QuirkPoints";
-    /** The field ID for skill point summary changes. */
-    public static final  String                              ID_SKILL_POINTS                      = POINT_SUMMARY_PREFIX + "SkillPoints";
-    /** The field ID for spell point summary changes. */
-    public static final  String                              ID_SPELL_POINTS                      = POINT_SUMMARY_PREFIX + "SpellPoints";
-    /** The field ID for racial point summary changes. */
-    public static final  String                              ID_RACE_POINTS                       = POINT_SUMMARY_PREFIX + "RacePoints";
-    /** The field ID for unspent point changes. */
-    public static final  String                              ID_UNSPENT_POINTS                    = POINT_SUMMARY_PREFIX + "UnspentPoints";
     /** The prefix used in front of all IDs for basic damage. */
     public static final  String                              BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";
     /** The field ID for basic thrust damage changes. */
@@ -279,12 +242,6 @@ public class GURPSCharacter extends CollectedModels {
     private              String                              mPageSettingsString;
     private              boolean                             mSkillsUpdated;
     private              boolean                             mSpellsUpdated;
-    private              boolean                             mDidModify;
-    private              boolean                             mNeedAttributePointCalculation;
-    private              boolean                             mNeedAdvantagesPointCalculation;
-    private              boolean                             mNeedSkillPointCalculation;
-    private              boolean                             mNeedSpellPointCalculation;
-    private              boolean                             mNeedEquipmentCalculation;
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
@@ -324,8 +281,14 @@ public class GURPSCharacter extends CollectedModels {
             mPageSettings = new PrintManager(mPageSettings);
             mPageSettingsString = mPageSettings.toString();
         }
-        mModifiedOn = System.currentTimeMillis();
+        mModifiedOn = System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR;
         mCreatedOn = mModifiedOn;
+    }
+
+    @Override
+    public void notifyOfChange() {
+        setModifiedOn(System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR);
+        super.notifyOfChange();
     }
 
     /** @return The page settings. May return {@code null} if no printer has been defined. */
@@ -357,6 +320,12 @@ public class GURPSCharacter extends CollectedModels {
         return TAG_ROOT;
     }
 
+    public void recalculate() {
+        updateSkills();
+        processFeaturesAndPrereqs();
+        calculateAll();
+    }
+
     private void calculateAll() {
         calculateAttributePoints();
         calculateAdvantagePoints();
@@ -370,7 +339,7 @@ public class GURPSCharacter extends CollectedModels {
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         characterInitialize(false);
         mSettings.load(m.getMap(Settings.TAG_ROOT));
-        mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_CREATED_DATE));
+        mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
         mProfile.load(m.getMap(Profile.TAG_ROOT));
         mHitPointsAdj = m.getInt(KEY_HP_ADJ);
         mHitPointsDamage = m.getInt(TAG_HP_DAMAGE);
@@ -398,15 +367,15 @@ public class GURPSCharacter extends CollectedModels {
         }
         calculateAll();
         mThirdPartyData = m.getMap(KEY_THIRD_PARTY_DATA);
-        mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_MODIFIED_DATE)); // Must be last
+        mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_MODIFIED_DATE)) / FieldFactory.TIMESTAMP_FACTOR; // Must be last
     }
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.key(Settings.TAG_ROOT);
         mSettings.save(w);
-        w.keyValue(TAG_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn));
-        w.keyValue(TAG_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn));
+        w.keyValue(TAG_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
+        w.keyValue(TAG_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.key(Profile.TAG_ROOT);
         mProfile.save(w);
         w.keyValueNot(KEY_HP_ADJ, mHitPointsAdj, 0);
@@ -441,9 +410,7 @@ public class GURPSCharacter extends CollectedModels {
         if (id == null) {
             return null;
         }
-        if (Settings.PREFIX.equals(id)) { // Special to retrieve options code
-            return mSettings.optionsCode();
-        } else if (id.startsWith(POINTS_PREFIX)) {
+        if (id.startsWith(POINTS_PREFIX)) {
             id = id.substring(POINTS_PREFIX.length());
             if (ID_STRENGTH.equals(id)) {
                 return Integer.valueOf(getStrengthPoints());
@@ -461,10 +428,6 @@ public class GURPSCharacter extends CollectedModels {
                 return Integer.valueOf(getBasicSpeedPoints());
             } else if (ID_BASIC_MOVE.equals(id)) {
                 return Integer.valueOf(getBasicMovePoints());
-            } else if (ID_FATIGUE_POINTS.equals(id)) {
-                return Integer.valueOf(getFatiguePointPoints());
-            } else if (ID_HIT_POINTS.equals(id)) {
-                return Integer.valueOf(getHitPointPoints());
             }
             return null;
         } else if (ID_MODIFIED.equals(id)) {
@@ -483,8 +446,6 @@ public class GURPSCharacter extends CollectedModels {
             return Double.valueOf(getBasicSpeed());
         } else if (ID_BASIC_MOVE.equals(id)) {
             return Integer.valueOf(getBasicMove());
-        } else if (ID_BASIC_LIFT.equals(id)) {
-            return getBasicLift();
         } else if (ID_PERCEPTION.equals(id)) {
             return Integer.valueOf(getPerAdj());
         } else if (ID_VISION.equals(id)) {
@@ -499,95 +460,19 @@ public class GURPSCharacter extends CollectedModels {
             return Integer.valueOf(getWillAdj());
         } else if (ID_FRIGHT_CHECK.equals(id)) {
             return Integer.valueOf(getFrightCheck());
-        } else if (ID_ATTRIBUTE_POINTS.equals(id)) {
-            return Integer.valueOf(getAttributePoints());
-        } else if (ID_ADVANTAGE_POINTS.equals(id)) {
-            return Integer.valueOf(getAdvantagePoints());
-        } else if (ID_DISADVANTAGE_POINTS.equals(id)) {
-            return Integer.valueOf(getDisadvantagePoints());
-        } else if (ID_QUIRK_POINTS.equals(id)) {
-            return Integer.valueOf(getQuirkPoints());
-        } else if (ID_SKILL_POINTS.equals(id)) {
-            return Integer.valueOf(getSkillPoints());
-        } else if (ID_SPELL_POINTS.equals(id)) {
-            return Integer.valueOf(getSpellPoints());
-        } else if (ID_RACE_POINTS.equals(id)) {
-            return Integer.valueOf(getRacePoints());
-        } else if (ID_UNSPENT_POINTS.equals(id)) {
-            return Integer.valueOf(getUnspentPoints());
-        } else if (ID_ONE_HANDED_LIFT.equals(id)) {
-            return getOneHandedLift();
-        } else if (ID_TWO_HANDED_LIFT.equals(id)) {
-            return getTwoHandedLift();
-        } else if (ID_SHOVE_AND_KNOCK_OVER.equals(id)) {
-            return getShoveAndKnockOver();
-        } else if (ID_RUNNING_SHOVE_AND_KNOCK_OVER.equals(id)) {
-            return getRunningShoveAndKnockOver();
-        } else if (ID_CARRY_ON_BACK.equals(id)) {
-            return getCarryOnBack();
-        } else if (ID_SHIFT_SLIGHTLY.equals(id)) {
-            return getShiftSlightly();
-        } else if (ID_TOTAL_POINTS.equals(id)) {
-            return Integer.valueOf(getTotalPoints());
         } else if (ID_BASIC_THRUST.equals(id)) {
             return getThrust();
         } else if (ID_BASIC_SWING.equals(id)) {
             return getSwing();
-        } else if (ID_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getHitPointsAdj());
-        } else if (ID_HIT_POINTS_DAMAGE.equals(id)) {
-            return Integer.valueOf(getHitPointsDamage());
-        } else if (ID_CURRENT_HP.equals(id)) {
-            return Integer.valueOf(getCurrentHitPoints());
-        } else if (ID_REELING_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getReelingHitPoints());
-        } else if (ID_UNCONSCIOUS_CHECKS_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getUnconsciousChecksHitPoints());
-        } else if (ID_DEATH_CHECK_1_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getDeathCheck1HitPoints());
-        } else if (ID_DEATH_CHECK_2_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getDeathCheck2HitPoints());
-        } else if (ID_DEATH_CHECK_3_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getDeathCheck3HitPoints());
-        } else if (ID_DEATH_CHECK_4_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getDeathCheck4HitPoints());
-        } else if (ID_DEAD_HIT_POINTS.equals(id)) {
-            return Integer.valueOf(getDeadHitPoints());
-        } else if (ID_FATIGUE_POINTS.equals(id)) {
-            return Integer.valueOf(getFatiguePoints());
-        } else if (ID_FATIGUE_POINTS_DAMAGE.equals(id)) {
-            return Integer.valueOf(getFatiguePointsDamage());
-        } else if (ID_CURRENT_FP.equals(id)) {
-            return Integer.valueOf(getCurrentFatiguePoints());
-        } else if (ID_TIRED_FATIGUE_POINTS.equals(id)) {
-            return Integer.valueOf(getTiredFatiguePoints());
-        } else if (ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS.equals(id)) {
-            return Integer.valueOf(getUnconsciousChecksFatiguePoints());
-        } else if (ID_UNCONSCIOUS_FATIGUE_POINTS.equals(id)) {
-            return Integer.valueOf(getUnconsciousFatiguePoints());
         } else if (ID_PARRY_BONUS.equals(id)) {
             return Integer.valueOf(getParryBonus());
         } else if (ID_BLOCK_BONUS.equals(id)) {
             return Integer.valueOf(getBlockBonus());
         } else if (ID_DODGE_BONUS.equals(id)) {
             return Integer.valueOf(getDodgeBonus());
-        } else if (id.startsWith(Profile.PROFILE_PREFIX)) {
-            return mProfile.getValueForID(id);
         } else if (id.startsWith(Armor.DR_PREFIX)) {
             return mArmor.getValueForID(id);
         } else {
-            for (Encumbrance encumbrance : Encumbrance.values()) {
-                int index = encumbrance.ordinal();
-                if ((DODGE_PREFIX + index).equals(id)) {
-                    return Integer.valueOf(getDodge(encumbrance));
-                }
-                if ((MOVE_PREFIX + index).equals(id)) {
-                    return Integer.valueOf(getMove(encumbrance));
-                }
-                if ((MAXIMUM_CARRY_PREFIX + index).equals(id)) {
-                    return getMaximumCarry(encumbrance);
-                }
-            }
             return null;
         }
     }
@@ -614,22 +499,6 @@ public class GURPSCharacter extends CollectedModels {
                 setPerAdj(((Integer) value).intValue());
             } else if (ID_WILL.equals(id)) {
                 setWillAdj(((Integer) value).intValue());
-            } else if (ID_UNSPENT_POINTS.equals(id)) {
-                setUnspentPoints(((Integer) value).intValue());
-            } else if (ID_HIT_POINTS.equals(id)) {
-                setHitPointsAdj(((Integer) value).intValue());
-            } else if (ID_HIT_POINTS_DAMAGE.equals(id)) {
-                setHitPointsDamage(((Integer) value).intValue());
-            } else if (ID_CURRENT_HP.equals(id)) {
-                setHitPointsDamage(-Math.min(((Integer) value).intValue() - getHitPointsAdj(), 0));
-            } else if (ID_FATIGUE_POINTS.equals(id)) {
-                setFatiguePoints(((Integer) value).intValue());
-            } else if (ID_FATIGUE_POINTS_DAMAGE.equals(id)) {
-                setFatiguePointsDamage(((Integer) value).intValue());
-            } else if (ID_CURRENT_FP.equals(id)) {
-                setFatiguePointsDamage(-Math.min(((Integer) value).intValue() - getFatiguePoints(), 0));
-            } else if (id.startsWith(Profile.PROFILE_PREFIX)) {
-                mProfile.setValueForID(id, value);
             } else if (id.startsWith(Armor.DR_PREFIX)) {
                 mArmor.setValueForID(id, value);
             } else {
@@ -638,88 +507,21 @@ public class GURPSCharacter extends CollectedModels {
         }
     }
 
-    @Override
-    protected void startNotifyAtBatchLevelZero() {
-        mDidModify = false;
-        mNeedAttributePointCalculation = false;
-        mNeedAdvantagesPointCalculation = false;
-        mNeedSkillPointCalculation = false;
-        mNeedSpellPointCalculation = false;
-        mNeedEquipmentCalculation = false;
-    }
-
-    @Override
-    public void notify(String type, Object data) {
-        super.notify(type, data);
-        if (Advantage.ID_POINTS.equals(type) || Advantage.ID_ROUND_COST_DOWN.equals(type) || Advantage.ID_LEVELS.equals(type) || Advantage.ID_CONTAINER_TYPE.equals(type) || Advantage.ID_LIST_CHANGED.equals(type) || Advantage.ID_CR.equals(type) || AdvantageModifier.ID_LIST_CHANGED.equals(type) || AdvantageModifier.ID_ENABLED.equals(type)) {
-            mNeedAdvantagesPointCalculation = true;
-        }
-        if (Skill.ID_POINTS.equals(type) || Skill.ID_LIST_CHANGED.equals(type)) {
-            mNeedSkillPointCalculation = true;
-        }
-        if (Spell.ID_POINTS.equals(type) || Spell.ID_LIST_CHANGED.equals(type)) {
-            mNeedSpellPointCalculation = true;
-        }
-        if (Equipment.ID_QUANTITY.equals(type) || Equipment.ID_WEIGHT.equals(type) || Equipment.ID_EXTENDED_WEIGHT.equals(type) || Equipment.ID_LIST_CHANGED.equals(type) || EquipmentModifier.ID_WEIGHT_ADJ.equals(type) || EquipmentModifier.ID_COST_ADJ.equals(type) || EquipmentModifier.ID_ENABLED.equals(type)) {
-            mNeedEquipmentCalculation = true;
-        }
-        if (Profile.ID_SIZE_MODIFIER.equals(type) || Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH.equals(type)) {
-            mNeedAttributePointCalculation = true;
-        }
-    }
-
-    @Override
-    protected void notifyOccured() {
-        mDidModify = true;
-    }
-
-    @Override
-    protected void endNotifyAtBatchLevelOne() {
-        if (mNeedAttributePointCalculation) {
-            calculateAttributePoints();
-            notify(ID_ATTRIBUTE_POINTS, Integer.valueOf(getAttributePoints()));
-        }
-        if (mNeedAdvantagesPointCalculation) {
-            calculateAdvantagePoints();
-            notify(ID_ADVANTAGE_POINTS, Integer.valueOf(getAdvantagePoints()));
-            notify(ID_DISADVANTAGE_POINTS, Integer.valueOf(getDisadvantagePoints()));
-            notify(ID_QUIRK_POINTS, Integer.valueOf(getQuirkPoints()));
-            notify(ID_RACE_POINTS, Integer.valueOf(getRacePoints()));
-        }
-        if (mNeedSkillPointCalculation) {
-            calculateSkillPoints();
-            notify(ID_SKILL_POINTS, Integer.valueOf(getSkillPoints()));
-        }
-        if (mNeedSpellPointCalculation) {
-            calculateSpellPoints();
-            notify(ID_SPELL_POINTS, Integer.valueOf(getSpellPoints()));
-        }
-        if (mNeedAttributePointCalculation || mNeedAdvantagesPointCalculation || mNeedSkillPointCalculation || mNeedSpellPointCalculation) {
-            notify(ID_UNSPENT_POINTS, Integer.valueOf(getUnspentPoints()));
-        }
-        if (mNeedEquipmentCalculation) {
-            calculateWeightAndWealthCarried(true);
-            calculateWealthNotCarried(true);
-        }
-        if (mDidModify) {
-            setModifiedOn(System.currentTimeMillis());
-        }
-    }
-
     /** @return The created on date. */
     public long getCreatedOn() {
         return mCreatedOn;
     }
 
-    /** @return The modified date. */
+    /** @return The modified date, in seconds since midnight, January 1, 1970 UTC. */
     public long getModifiedOn() {
         return mModifiedOn;
     }
 
-    public void setModifiedOn(long when) {
-        if (mModifiedOn != when) {
-            mModifiedOn = when;
-            notify(ID_MODIFIED, Long.valueOf(mModifiedOn));
+    /** @param whenInSeconds The modified date, in seconds since midnight, January 1, 1970 UTC. */
+    public void setModifiedOn(long whenInSeconds) {
+        if (mModifiedOn != whenInSeconds) {
+            mModifiedOn = whenInSeconds;
+            super.notifyOfChange(); // Skip local notifyOfChange, since it update the modified on value
         }
     }
 
@@ -751,7 +553,8 @@ public class GURPSCharacter extends CollectedModels {
         int oldStrength = getStrength();
         if (oldStrength != strength) {
             postUndoEdit(I18n.Text("Strength Change"), ID_STRENGTH, Integer.valueOf(oldStrength), Integer.valueOf(strength));
-            updateStrengthInfo(strength - mStrengthBonus, mStrengthBonus, mLiftingStrengthBonus, mStrikingStrengthBonus);
+            mStrength = strength - mStrengthBonus;
+            notifyOfChange();
         }
     }
 
@@ -763,7 +566,8 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new strength bonus. */
     public void setStrengthBonus(int bonus) {
         if (mStrengthBonus != bonus) {
-            updateStrengthInfo(mStrength, bonus, mLiftingStrengthBonus, mStrikingStrengthBonus);
+            mStrengthBonus = bonus;
+            notifyOfChange();
         }
     }
 
@@ -771,7 +575,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setStrengthCostReduction(int reduction) {
         if (mStrengthCostReduction != reduction) {
             mStrengthCostReduction = reduction;
-            mNeedAttributePointCalculation = true;
+            notifyOfChange();
         }
     }
 
@@ -783,7 +587,8 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new lifting strength bonus. */
     public void setLiftingStrengthBonus(int bonus) {
         if (mLiftingStrengthBonus != bonus) {
-            updateStrengthInfo(mStrength, mStrengthBonus, bonus, mStrikingStrengthBonus);
+            mLiftingStrengthBonus = bonus;
+            notifyOfChange();
         }
     }
 
@@ -795,56 +600,8 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new striking strength bonus. */
     public void setStrikingStrengthBonus(int bonus) {
         if (mStrikingStrengthBonus != bonus) {
-            updateStrengthInfo(mStrength, mStrengthBonus, mLiftingStrengthBonus, bonus);
-        }
-    }
-
-    private void updateStrengthInfo(int strength, int bonus, int liftingBonus, int strikingBonus) {
-        Dice        thrust   = getThrust();
-        Dice        swing    = getSwing();
-        WeightValue lift     = getBasicLift();
-        boolean     notifyST = mStrength != strength || mStrengthBonus != bonus;
-        Dice        dice;
-
-        mStrength = strength;
-        mStrengthBonus = bonus;
-        mLiftingStrengthBonus = liftingBonus;
-        mStrikingStrengthBonus = strikingBonus;
-
-        startNotify();
-        if (notifyST) {
-            notify(ID_STRENGTH, Integer.valueOf(getStrength()));
-            notifyOfBaseHitPointChange();
-        }
-        WeightValue newLift = getBasicLift();
-        if (!newLift.equals(lift)) {
-            notifyBasicLift();
-        }
-
-        dice = getThrust();
-        if (!dice.equals(thrust)) {
-            notify(ID_BASIC_THRUST, dice);
-        }
-        dice = getSwing();
-        if (!dice.equals(swing)) {
-            notify(ID_BASIC_SWING, dice);
-        }
-
-        updateSkills();
-        mNeedAttributePointCalculation = true;
-        endNotify();
-    }
-
-    public void notifyBasicLift() {
-        notify(ID_BASIC_LIFT, getBasicLift());
-        notify(ID_ONE_HANDED_LIFT, getOneHandedLift());
-        notify(ID_TWO_HANDED_LIFT, getTwoHandedLift());
-        notify(ID_SHOVE_AND_KNOCK_OVER, getShoveAndKnockOver());
-        notify(ID_RUNNING_SHOVE_AND_KNOCK_OVER, getRunningShoveAndKnockOver());
-        notify(ID_CARRY_ON_BACK, getCarryOnBack());
-        notify(ID_SHIFT_SLIGHTLY, getShiftSlightly());
-        for (Encumbrance encumbrance : Encumbrance.values()) {
-            notify(MAXIMUM_CARRY_PREFIX + encumbrance.ordinal(), getMaximumCarry(encumbrance));
+            mStrikingStrengthBonus = bonus;
+            notifyOfChange();
         }
     }
 
@@ -1108,7 +865,8 @@ public class GURPSCharacter extends CollectedModels {
         double oldBasicSpeed = getBasicSpeed();
         if (oldBasicSpeed != speed) {
             postUndoEdit(I18n.Text("Basic Speed Change"), ID_BASIC_SPEED, Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
-            updateBasicSpeedInfo(speed - (mSpeedBonus + getRawBasicSpeed()), mSpeedBonus);
+            mSpeedAdj = speed - (mSpeedBonus + getRawBasicSpeed());
+            notifyOfChange();
         }
     }
 
@@ -1120,27 +878,9 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The basic speed bonus. */
     public void setBasicSpeedBonus(double bonus) {
         if (mSpeedBonus != bonus) {
-            updateBasicSpeedInfo(mSpeedAdj, bonus);
+            mSpeedBonus = bonus;
+            notifyOfChange();
         }
-    }
-
-    private void updateBasicSpeedInfo(double speed, double bonus) {
-        int   move = getBasicMove();
-        int[] data = preserveMoveAndDodge();
-        int   tmp;
-
-        mSpeedAdj = speed;
-        mSpeedBonus = bonus;
-
-        startNotify();
-        notify(ID_BASIC_SPEED, Double.valueOf(getBasicSpeed()));
-        tmp = getBasicMove();
-        if (move != tmp) {
-            notify(ID_BASIC_MOVE, Integer.valueOf(tmp));
-        }
-        notifyIfMoveOrDodgeAltered(data);
-        mNeedAttributePointCalculation = true;
-        endNotify();
     }
 
     /** @return The number of points spent on basic speed. */
@@ -1166,10 +906,10 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setBasicMove(int move) {
         int oldBasicMove = getBasicMove();
-
         if (oldBasicMove != move) {
             postUndoEdit(I18n.Text("Basic Move Change"), ID_BASIC_MOVE, Integer.valueOf(oldBasicMove), Integer.valueOf(move));
-            updateBasicMoveInfo(move - (mMoveBonus + getRawBasicMove()), mMoveBonus);
+            mMoveAdj = move - (mMoveBonus + getRawBasicMove());
+            notifyOfChange();
         }
     }
 
@@ -1181,20 +921,9 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The basic move bonus. */
     public void setBasicMoveBonus(int bonus) {
         if (mMoveBonus != bonus) {
-            updateBasicMoveInfo(mMoveAdj, bonus);
+            mMoveBonus = bonus;
+            notifyOfChange();
         }
-    }
-
-    private void updateBasicMoveInfo(int move, int bonus) {
-        int[] data = preserveMoveAndDodge();
-
-        startNotify();
-        mMoveAdj = move;
-        mMoveBonus = bonus;
-        notify(ID_BASIC_MOVE, Integer.valueOf(getBasicMove()));
-        notifyIfMoveOrDodgeAltered(data);
-        mNeedAttributePointCalculation = true;
-        endNotify();
     }
 
     /** @return The number of points spent on basic move. */
@@ -1252,13 +981,8 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The dodge bonus. */
     public void setDodgeBonus(int bonus) {
         if (mDodgeBonus != bonus) {
-            int[] data = preserveMoveAndDodge();
-
             mDodgeBonus = bonus;
-            startNotify();
-            notifySingle(ID_DODGE_BONUS, Integer.valueOf(mDodgeBonus));
-            notifyIfMoveOrDodgeAltered(data);
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -1271,7 +995,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setParryBonus(int bonus) {
         if (mParryBonus != bonus) {
             mParryBonus = bonus;
-            notifySingle(ID_PARRY_BONUS, Integer.valueOf(mParryBonus));
+            notifyOfChange();
         }
     }
 
@@ -1284,7 +1008,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setBlockBonus(int bonus) {
         if (mBlockBonus != bonus) {
             mBlockBonus = bonus;
-            notifySingle(ID_BLOCK_BONUS, Integer.valueOf(mBlockBonus));
+            notifyOfChange();
         }
     }
 
@@ -1383,11 +1107,8 @@ public class GURPSCharacter extends CollectedModels {
             mCachedWeightCarriedForSkills.add(weight);
         }
         if (notify) {
-            if (!savedWeight.equals(mCachedWeightCarried) || !savedWeightForSkills.equals(mCachedWeightCarriedForSkills)) {
-                notify(ID_CARRIED_WEIGHT, mCachedWeightCarried);
-            }
-            if (!mCachedWealthCarried.equals(savedWealth)) {
-                notify(ID_CARRIED_WEALTH, mCachedWealthCarried);
+            if (!savedWeight.equals(mCachedWeightCarried) || !savedWeightForSkills.equals(mCachedWeightCarriedForSkills) || !mCachedWealthCarried.equals(savedWealth)) {
+                notifyOfChange();
             }
         }
     }
@@ -1406,7 +1127,7 @@ public class GURPSCharacter extends CollectedModels {
         }
         if (notify) {
             if (!mCachedWealthNotCarried.equals(savedWealth)) {
-                notify(ID_NOT_CARRIED_WEALTH, mCachedWealthNotCarried);
+                notifyOfChange();
             }
         }
     }
@@ -1422,29 +1143,6 @@ public class GURPSCharacter extends CollectedModels {
         return data;
     }
 
-    private void notifyIfMoveOrDodgeAltered(int[] data) {
-        Encumbrance[] values = Encumbrance.values();
-        for (Encumbrance encumbrance : values) {
-            int index = encumbrance.ordinal();
-            int tmp   = getDodge(encumbrance);
-            if (tmp != data[values.length + index]) {
-                notify(DODGE_PREFIX + index, Integer.valueOf(tmp));
-            }
-            tmp = getMove(encumbrance);
-            if (tmp != data[index]) {
-                notify(MOVE_PREFIX + index, Integer.valueOf(tmp));
-            }
-        }
-    }
-
-    public void notifyMoveAndDodge() {
-        for (Encumbrance encumbrance : Encumbrance.values()) {
-            int index = encumbrance.ordinal();
-            notify(DODGE_PREFIX + index, Integer.valueOf(getDodge(encumbrance)));
-            notify(MOVE_PREFIX + index, Integer.valueOf(getMove(encumbrance)));
-        }
-    }
-
     /** @return The dexterity (DX). */
     public int getDexterity() {
         return mDexterity + mDexterityBonus;
@@ -1457,10 +1155,10 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setDexterity(int dexterity) {
         int oldDexterity = getDexterity();
-
         if (oldDexterity != dexterity) {
             postUndoEdit(I18n.Text("Dexterity Change"), ID_DEXTERITY, Integer.valueOf(oldDexterity), Integer.valueOf(dexterity));
-            updateDexterityInfo(dexterity - mDexterityBonus, mDexterityBonus);
+            mDexterity = dexterity - mDexterityBonus;
+            notifyOfChange();
         }
     }
 
@@ -1472,7 +1170,8 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new dexterity bonus. */
     public void setDexterityBonus(int bonus) {
         if (mDexterityBonus != bonus) {
-            updateDexterityInfo(mDexterity, bonus);
+            mDexterityBonus = bonus;
+            notifyOfChange();
         }
     }
 
@@ -1480,34 +1179,8 @@ public class GURPSCharacter extends CollectedModels {
     public void setDexterityCostReduction(int reduction) {
         if (mDexterityCostReduction != reduction) {
             mDexterityCostReduction = reduction;
-            mNeedAttributePointCalculation = true;
+            notifyOfChange();
         }
-    }
-
-    private void updateDexterityInfo(int dexterity, int bonus) {
-        double speed = getBasicSpeed();
-        int    move  = getBasicMove();
-        int[]  data  = preserveMoveAndDodge();
-        double newSpeed;
-        int    newMove;
-
-        mDexterity = dexterity;
-        mDexterityBonus = bonus;
-
-        startNotify();
-        notify(ID_DEXTERITY, Integer.valueOf(getDexterity()));
-        newSpeed = getBasicSpeed();
-        if (newSpeed != speed) {
-            notify(ID_BASIC_SPEED, Double.valueOf(newSpeed));
-        }
-        newMove = getBasicMove();
-        if (newMove != move) {
-            notify(ID_BASIC_MOVE, Integer.valueOf(newMove));
-        }
-        notifyIfMoveOrDodgeAltered(data);
-        updateSkills();
-        mNeedAttributePointCalculation = true;
-        endNotify();
     }
 
     /** @return The number of points spent on dexterity. */
@@ -1529,7 +1202,8 @@ public class GURPSCharacter extends CollectedModels {
         int oldIntelligence = getIntelligence();
         if (oldIntelligence != intelligence) {
             postUndoEdit(I18n.Text("Intelligence Change"), ID_INTELLIGENCE, Integer.valueOf(oldIntelligence), Integer.valueOf(intelligence));
-            updateIntelligenceInfo(intelligence - mIntelligenceBonus, mIntelligenceBonus);
+            mIntelligence = intelligence - mIntelligenceBonus;
+            notifyOfChange();
         }
     }
 
@@ -1541,7 +1215,8 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new intelligence bonus. */
     public void setIntelligenceBonus(int bonus) {
         if (mIntelligenceBonus != bonus) {
-            updateIntelligenceInfo(mIntelligence, bonus);
+            mIntelligenceBonus = bonus;
+            notifyOfChange();
         }
     }
 
@@ -1549,38 +1224,8 @@ public class GURPSCharacter extends CollectedModels {
     public void setIntelligenceCostReduction(int reduction) {
         if (mIntelligenceCostReduction != reduction) {
             mIntelligenceCostReduction = reduction;
-            mNeedAttributePointCalculation = true;
+            notifyOfChange();
         }
-    }
-
-    private void updateIntelligenceInfo(int intelligence, int bonus) {
-        int perception = getPerAdj();
-        int will       = getWillAdj();
-        int newPerception;
-        int newWill;
-
-        mIntelligence = intelligence;
-        mIntelligenceBonus = bonus;
-
-        startNotify();
-        notify(ID_INTELLIGENCE, Integer.valueOf(getIntelligence()));
-        newPerception = getPerAdj();
-        if (newPerception != perception) {
-            notify(ID_PERCEPTION, Integer.valueOf(newPerception));
-            notify(ID_VISION, Integer.valueOf(getVision()));
-            notify(ID_HEARING, Integer.valueOf(getHearing()));
-            notify(ID_TASTE_AND_SMELL, Integer.valueOf(getTasteAndSmell()));
-            notify(ID_TOUCH, Integer.valueOf(getTouch()));
-        }
-        newWill = getWillAdj();
-        if (newWill != will) {
-            notify(ID_WILL, Integer.valueOf(newWill));
-            notify(ID_FRIGHT_CHECK, Integer.valueOf(getFrightCheck()));
-        }
-        updateSkills();
-        updateSpells();
-        mNeedAttributePointCalculation = true;
-        endNotify();
     }
 
     /** @return The number of points spent on intelligence. */
@@ -1600,10 +1245,10 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setHealth(int health) {
         int oldHealth = getHealth();
-
         if (oldHealth != health) {
             postUndoEdit(I18n.Text("Health Change"), ID_HEALTH, Integer.valueOf(oldHealth), Integer.valueOf(health));
-            updateHealthInfo(health - mHealthBonus, mHealthBonus);
+            mHealth = health - mHealthBonus;
+            notifyOfChange();
         }
     }
 
@@ -1615,7 +1260,8 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new health bonus. */
     public void setHealthBonus(int bonus) {
         if (mHealthBonus != bonus) {
-            updateHealthInfo(mHealth, bonus);
+            mHealthBonus = bonus;
+            notifyOfChange();
         }
     }
 
@@ -1623,37 +1269,8 @@ public class GURPSCharacter extends CollectedModels {
     public void setHealthCostReduction(int reduction) {
         if (mHealthCostReduction != reduction) {
             mHealthCostReduction = reduction;
-            mNeedAttributePointCalculation = true;
+            notifyOfChange();
         }
-    }
-
-    private void updateHealthInfo(int health, int bonus) {
-        double speed = getBasicSpeed();
-        int    move  = getBasicMove();
-        int[]  data  = preserveMoveAndDodge();
-        double newSpeed;
-        int    tmp;
-
-        mHealth = health;
-        mHealthBonus = bonus;
-
-        startNotify();
-        notify(ID_HEALTH, Integer.valueOf(getHealth()));
-
-        newSpeed = getBasicSpeed();
-        if (newSpeed != speed) {
-            notify(ID_BASIC_SPEED, Double.valueOf(newSpeed));
-        }
-
-        tmp = getBasicMove();
-        if (tmp != move) {
-            notify(ID_BASIC_MOVE, Integer.valueOf(tmp));
-        }
-        notifyIfMoveOrDodgeAltered(data);
-        notifyOfBaseFatiguePointChange();
-        updateSkills();
-        mNeedAttributePointCalculation = true;
-        endNotify();
     }
 
     /** @return The number of points spent on health. */
@@ -1683,16 +1300,10 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setUnspentPoints(int unspent) {
         int current = getUnspentPoints();
-
         if (current != unspent) {
-            Integer value = Integer.valueOf(unspent);
-
-            postUndoEdit(I18n.Text("Unspent Points Change"), ID_UNSPENT_POINTS, Integer.valueOf(current), value);
+            postUndoFieldEdit(I18n.Text("Unspent Points Change"), (c, v) -> c.setUnspentPoints(((Integer) v).intValue()), Integer.valueOf(current), Integer.valueOf(unspent));
             mTotalPoints = unspent + getSpentPoints();
-            startNotify();
-            notify(ID_UNSPENT_POINTS, value);
-            notify(ID_TOTAL_POINTS, Integer.valueOf(getTotalPoints()));
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -1800,12 +1411,9 @@ public class GURPSCharacter extends CollectedModels {
     public void setHitPointsAdj(int hp) {
         int oldHP = getHitPointsAdj();
         if (oldHP != hp) {
-            postUndoEdit(I18n.Text("Hit Points Change"), ID_HIT_POINTS, Integer.valueOf(oldHP), Integer.valueOf(hp));
-            startNotify();
+            postUndoFieldEdit(I18n.Text("Hit Points Change"), (c, v) -> c.setHitPointsAdj(((Integer) v).intValue()), Integer.valueOf(oldHP), Integer.valueOf(hp));
             mHitPointsAdj = hp - (getStrength() + mHitPointBonus);
-            mNeedAttributePointCalculation = true;
-            notifyOfBaseHitPointChange();
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -1841,21 +1449,8 @@ public class GURPSCharacter extends CollectedModels {
     public void setHitPointBonus(int bonus) {
         if (mHitPointBonus != bonus) {
             mHitPointBonus = bonus;
-            notifyOfBaseHitPointChange();
+            notifyOfChange();
         }
-    }
-
-    private void notifyOfBaseHitPointChange() {
-        startNotify();
-        notify(ID_HIT_POINTS, Integer.valueOf(getHitPointsAdj()));
-        notify(ID_DEATH_CHECK_1_HIT_POINTS, Integer.valueOf(getDeathCheck1HitPoints()));
-        notify(ID_DEATH_CHECK_2_HIT_POINTS, Integer.valueOf(getDeathCheck2HitPoints()));
-        notify(ID_DEATH_CHECK_3_HIT_POINTS, Integer.valueOf(getDeathCheck3HitPoints()));
-        notify(ID_DEATH_CHECK_4_HIT_POINTS, Integer.valueOf(getDeathCheck4HitPoints()));
-        notify(ID_DEAD_HIT_POINTS, Integer.valueOf(getDeadHitPoints()));
-        notify(ID_REELING_HIT_POINTS, Integer.valueOf(getReelingHitPoints()));
-        notify(ID_CURRENT_HP, Integer.valueOf(getHitPointsAdj() - mHitPointsDamage));
-        endNotify();
     }
 
     /** @return The hit points damage. */
@@ -1870,10 +1465,9 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setHitPointsDamage(int damage) {
         if (mHitPointsDamage != damage) {
-            postUndoEdit(I18n.Text("Current Hit Points Change"), ID_HIT_POINTS_DAMAGE, Integer.valueOf(mHitPointsDamage), Integer.valueOf(damage));
+            postUndoFieldEdit(I18n.Text("Current Hit Points Change"), (c, v) -> c.setHitPointsDamage(((Integer) v).intValue()), Integer.valueOf(mHitPointsDamage), Integer.valueOf(damage));
             mHitPointsDamage = damage;
-            notifySingle(ID_HIT_POINTS_DAMAGE, Integer.valueOf(mHitPointsDamage));
-            notifySingle(ID_CURRENT_HP, Integer.valueOf(getHitPointsAdj() - mHitPointsDamage));
+            notifyOfChange();
         }
     }
 
@@ -1956,7 +1550,8 @@ public class GURPSCharacter extends CollectedModels {
         int oldWill = getWillAdj();
         if (oldWill != willAdj) {
             postUndoEdit(I18n.Text("Will Change"), ID_WILL, Integer.valueOf(oldWill), Integer.valueOf(willAdj));
-            updateWillInfo(willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence())), mWillBonus);
+            mWillAdj = willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence()));
+            notifyOfChange();
         }
     }
 
@@ -1968,26 +1563,9 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new will bonus. */
     public void setWillBonus(int bonus) {
         if (mWillBonus != bonus) {
-            updateWillInfo(mWillAdj, bonus);
+            mWillBonus = bonus;
+            notifyOfChange();
         }
-    }
-
-    private void updateWillInfo(int will, int bonus) {
-        mWillAdj = will;
-        mWillBonus = bonus;
-
-        startNotify();
-        notify(ID_WILL, Integer.valueOf(getWillAdj()));
-        notify(ID_FRIGHT_CHECK, Integer.valueOf(getFrightCheck()));
-        updateSkills();
-        mNeedAttributePointCalculation = true;
-        endNotify();
-    }
-
-    /** Called to ensure notifications are sent out when the optional IQ rule use is changed. */
-    public void updateWillAndPerceptionDueToOptionalIQRuleUseChange() {
-        updateWillInfo(mWillAdj, mWillBonus);
-        updatePerceptionInfo(mPerAdj, mPerceptionBonus);
     }
 
     /** @return The number of points spent on will. */
@@ -2009,9 +1587,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setFrightCheckBonus(int bonus) {
         if (mFrightCheckBonus != bonus) {
             mFrightCheckBonus = bonus;
-            startNotify();
-            notify(ID_FRIGHT_CHECK, Integer.valueOf(getFrightCheck()));
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -2029,9 +1605,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setVisionBonus(int bonus) {
         if (mVisionBonus != bonus) {
             mVisionBonus = bonus;
-            startNotify();
-            notify(ID_VISION, Integer.valueOf(getVision()));
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -2049,9 +1623,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setHearingBonus(int bonus) {
         if (mHearingBonus != bonus) {
             mHearingBonus = bonus;
-            startNotify();
-            notify(ID_HEARING, Integer.valueOf(getHearing()));
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -2069,9 +1641,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setTouchBonus(int bonus) {
         if (mTouchBonus != bonus) {
             mTouchBonus = bonus;
-            startNotify();
-            notify(ID_TOUCH, Integer.valueOf(getTouch()));
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -2089,9 +1659,7 @@ public class GURPSCharacter extends CollectedModels {
     public void setTasteAndSmellBonus(int bonus) {
         if (mTasteAndSmellBonus != bonus) {
             mTasteAndSmellBonus = bonus;
-            startNotify();
-            notify(ID_TASTE_AND_SMELL, Integer.valueOf(getTasteAndSmell()));
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -2109,7 +1677,8 @@ public class GURPSCharacter extends CollectedModels {
         int oldPerception = getPerAdj();
         if (oldPerception != perAdj) {
             postUndoEdit(I18n.Text("Perception Change"), ID_PERCEPTION, Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
-            updatePerceptionInfo(perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence())), mPerceptionBonus);
+            mPerAdj = perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence()));
+            notifyOfChange();
         }
     }
 
@@ -2121,22 +1690,9 @@ public class GURPSCharacter extends CollectedModels {
     /** @param bonus The new perception bonus. */
     public void setPerceptionBonus(int bonus) {
         if (mPerceptionBonus != bonus) {
-            updatePerceptionInfo(mPerAdj, bonus);
+            mPerceptionBonus = bonus;
+            notifyOfChange();
         }
-    }
-
-    private void updatePerceptionInfo(int perception, int bonus) {
-        mPerAdj = perception;
-        mPerceptionBonus = bonus;
-        startNotify();
-        notify(ID_PERCEPTION, Integer.valueOf(getPerAdj()));
-        notify(ID_VISION, Integer.valueOf(getVision()));
-        notify(ID_HEARING, Integer.valueOf(getHearing()));
-        notify(ID_TASTE_AND_SMELL, Integer.valueOf(getTasteAndSmell()));
-        notify(ID_TOUCH, Integer.valueOf(getTouch()));
-        updateSkills();
-        mNeedAttributePointCalculation = true;
-        endNotify();
     }
 
     /** @return The number of points spent on perception. */
@@ -2161,12 +1717,9 @@ public class GURPSCharacter extends CollectedModels {
     public void setFatiguePoints(int fp) {
         int oldFP = getFatiguePoints();
         if (oldFP != fp) {
-            postUndoEdit(I18n.Text("Fatigue Points Change"), ID_FATIGUE_POINTS, Integer.valueOf(oldFP), Integer.valueOf(fp));
-            startNotify();
+            postUndoFieldEdit(I18n.Text("Fatigue Points Change"), (c, v) -> c.setFatiguePoints(((Integer) v).intValue()), Integer.valueOf(oldFP), Integer.valueOf(fp));
             mFatiguePoints = fp - (getHealth() + mFatiguePointBonus);
-            mNeedAttributePointCalculation = true;
-            notifyOfBaseFatiguePointChange();
-            endNotify();
+            notifyOfChange();
         }
     }
 
@@ -2184,18 +1737,8 @@ public class GURPSCharacter extends CollectedModels {
     public void setFatiguePointBonus(int bonus) {
         if (mFatiguePointBonus != bonus) {
             mFatiguePointBonus = bonus;
-            notifyOfBaseFatiguePointChange();
+            notifyOfChange();
         }
-    }
-
-    private void notifyOfBaseFatiguePointChange() {
-        startNotify();
-        notify(ID_FATIGUE_POINTS, Integer.valueOf(getFatiguePoints()));
-        notify(ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousChecksFatiguePoints()));
-        notify(ID_UNCONSCIOUS_FATIGUE_POINTS, Integer.valueOf(getUnconsciousFatiguePoints()));
-        notify(ID_TIRED_FATIGUE_POINTS, Integer.valueOf(getTiredFatiguePoints()));
-        notify(ID_CURRENT_FP, Integer.valueOf(getFatiguePoints() - mFatiguePointsDamage));
-        endNotify();
     }
 
     /** @return The fatigue points damage. */
@@ -2210,10 +1753,9 @@ public class GURPSCharacter extends CollectedModels {
      */
     public void setFatiguePointsDamage(int damage) {
         if (mFatiguePointsDamage != damage) {
-            postUndoEdit(I18n.Text("Current Fatigue Points Change"), ID_FATIGUE_POINTS_DAMAGE, Integer.valueOf(mFatiguePointsDamage), Integer.valueOf(damage));
+            postUndoFieldEdit(I18n.Text("Current Fatigue Points Change"), (c, v) -> c.setFatiguePointsDamage(((Integer) v).intValue()), Integer.valueOf(mFatiguePointsDamage), Integer.valueOf(damage));
             mFatiguePointsDamage = damage;
-            notifySingle(ID_FATIGUE_POINTS_DAMAGE, Integer.valueOf(mFatiguePointsDamage));
-            notifySingle(ID_CURRENT_FP, Integer.valueOf(getFatiguePoints() - mFatiguePointsDamage));
+            notifyOfChange();
         }
     }
 
@@ -2465,8 +2007,6 @@ public class GURPSCharacter extends CollectedModels {
         mFeatureMap = map;
         mSkillsUpdated = false;
         mSpellsUpdated = false;
-
-        startNotify();
         setStrengthBonus(getIntegerBonusFor(ID_STRENGTH));
         setStrengthCostReduction(getCostReductionFor(ID_STRENGTH));
         setLiftingStrengthBonus(getIntegerBonusFor(ID_LIFTING_STRENGTH));
@@ -2499,7 +2039,6 @@ public class GURPSCharacter extends CollectedModels {
         if (!mSpellsUpdated) {
             updateSpells();
         }
-        endNotify();
     }
 
     /**
@@ -2804,6 +2343,21 @@ public class GURPSCharacter extends CollectedModels {
             if (before instanceof ListRow ? !((ListRow) before).isEquivalentTo(after) : !before.equals(after)) {
                 addEdit(new CharacterFieldUndo(this, name, id, before, after));
             }
+        }
+    }
+
+    /**
+     * Post an undo edit if we're not currently in an undo.
+     *
+     * @param name   The name of the undo.
+     * @param setter The field setter.
+     * @param before The original value.
+     * @param after  The new value.
+     */
+    void postUndoFieldEdit(String name, GURPSCharacterSetter setter, Object before, Object after) {
+        StdUndoManager mgr = getUndoManager();
+        if (!mgr.isInTransaction() && !before.equals(after)) {
+            addEdit(new GURPSCharacterFieldUndo(this, name, setter, before, after));
         }
     }
 

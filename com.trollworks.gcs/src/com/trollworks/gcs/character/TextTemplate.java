@@ -389,10 +389,10 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSettings().optionsCode());
             break;
         case KEY_CREATED_ON:
-            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn()));
+            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn() * FieldFactory.TIMESTAMP_FACTOR));
             break;
         case KEY_MODIFIED_ON:
-            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn()));
+            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn() * FieldFactory.TIMESTAMP_FACTOR));
             break;
         case KEY_TOTAL_POINTS:
             writeEncodedText(out, Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));

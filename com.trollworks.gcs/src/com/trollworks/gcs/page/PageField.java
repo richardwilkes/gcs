@@ -11,24 +11,15 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.character.Armor;
 import com.trollworks.gcs.character.CharacterSheet;
-import com.trollworks.gcs.character.Encumbrance;
-import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.Profile;
+import com.trollworks.gcs.character.GURPSCharacterSetter;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.text.DateTimeFormatter;
-import com.trollworks.gcs.utility.text.DiceFormatter;
-import com.trollworks.gcs.utility.text.DoubleFormatter;
-import com.trollworks.gcs.utility.text.HeightFormatter;
-import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.utility.text.WeightFormatter;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -40,49 +31,52 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
-import java.util.HashMap;
 import javax.swing.JFormattedTextField;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTextFieldUI;
-import javax.swing.text.DefaultFormatter;
-import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic field for a page. */
 public class PageField extends JFormattedTextField implements PropertyChangeListener, ActionListener, Commitable {
-    private CharacterSheet mSheet;
-    private String         mConsumedType;
+    private CharacterSheet       mSheet;
+    private String               mTag;
+    private GURPSCharacterSetter mSetter;
 
     /**
-     * Creates a new text input field.
+     * Creates a new disabled text input field.
      *
-     * @param sheet        The sheet to listen to.
-     * @param consumedType The field to listen to.
+     * @param factory      The {@link AbstractFormatterFactory} to use.
+     * @param currentValue The current value.
+     * @param sheet        The sheet the data belongs to.
      * @param alignment    The alignment of the field.
-     * @param editable     Whether or not the user can edit this field.
      * @param tooltip      The tooltip to set.
+     * @param color        The color to use.
      */
-    public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip) {
-        this(sheet, consumedType, alignment, editable, tooltip, ThemeColor.ON_PAGE);
+    public PageField(AbstractFormatterFactory factory, Object currentValue, CharacterSheet sheet, int alignment, String tooltip, Color color) {
+        this(factory, currentValue, null, sheet, "", alignment, false, tooltip, color);
     }
 
     /**
      * Creates a new text input field.
      *
-     * @param sheet        The sheet to listen to.
-     * @param consumedType The field to listen to.
+     * @param factory      The {@link AbstractFormatterFactory} to use.
+     * @param currentValue The current value.
+     * @param sheet        The sheet the data belongs to.
+     * @param tag          The tag for this field.
      * @param alignment    The alignment of the field.
      * @param editable     Whether or not the user can edit this field.
      * @param tooltip      The tooltip to set.
+     * @param color        The color to use.
      */
-    public PageField(CharacterSheet sheet, String consumedType, int alignment, boolean editable, String tooltip, Color color) {
-        super(getFormatterFactoryForType(sheet.getCharacter(), consumedType), sheet.getCharacter().getValueForID(consumedType));
+    public PageField(AbstractFormatterFactory factory, Object currentValue, GURPSCharacterSetter setter, CharacterSheet sheet, String tag, int alignment, boolean editable, String tooltip, Color color) {
+        super(factory, currentValue);
         if (Platform.isLinux()) {
             // I override the UI here since the GTK UI on Linux has no way to turn off the border
             // around text fields.
             setUI(new BasicTextFieldUI());
         }
         mSheet = sheet;
-        mConsumedType = consumedType;
+        mTag = tag;
+        mSetter = setter;
         setFont(sheet.getScale().scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)));
         setBorder(null);
         setOpaque(false);
@@ -131,111 +125,15 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         }
     }
 
-    /** @return The consumed type. */
-    public String getConsumedType() {
-        return mConsumedType;
+    public String getTag() {
+        return mTag;
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (isEditable()) {
-            mSheet.getCharacter().setValueForID(mConsumedType, getValue());
+            mSetter.setValue(mSheet.getCharacter(), getValue());
         }
-    }
-
-    private static final HashMap<String, AbstractFormatterFactory> FACTORY_MAP = new HashMap<>();
-    private static final AbstractFormatterFactory                  DEFAULT_FACTORY;
-
-    static {
-        DefaultFormatterFactory factory = new DefaultFormatterFactory(new WeightFormatter(true));
-        FACTORY_MAP.put(Profile.ID_WEIGHT, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_BASIC_LIFT, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_ONE_HANDED_LIFT, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_TWO_HANDED_LIFT, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_SHOVE_AND_KNOCK_OVER, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_RUNNING_SHOVE_AND_KNOCK_OVER, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_CARRY_ON_BACK, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_SHIFT_SLIGHTLY, factory);
-        for (Encumbrance encumbrance : Encumbrance.values()) {
-            FACTORY_MAP.put(GURPSCharacter.MAXIMUM_CARRY_PREFIX + encumbrance.ordinal(), factory);
-        }
-
-        factory = new DefaultFormatterFactory(new IntegerFormatter(0, 99999, false));
-        FACTORY_MAP.put(GURPSCharacter.ID_STRENGTH, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_DEXTERITY, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_INTELLIGENCE, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_HEALTH, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_WILL, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_FRIGHT_CHECK, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_BASIC_MOVE, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_PERCEPTION, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_VISION, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_HEARING, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_TASTE_AND_SMELL, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_TOUCH, factory);
-        FACTORY_MAP.put(Armor.ID_EYES_DR, factory);
-        FACTORY_MAP.put(Armor.ID_SKULL_DR, factory);
-        FACTORY_MAP.put(Armor.ID_FACE_DR, factory);
-        FACTORY_MAP.put(Armor.ID_LEG_DR, factory);
-        FACTORY_MAP.put(Armor.ID_ARM_DR, factory);
-        FACTORY_MAP.put(Armor.ID_TORSO_DR, factory);
-        FACTORY_MAP.put(Armor.ID_GROIN_DR, factory);
-        FACTORY_MAP.put(Armor.ID_HAND_DR, factory);
-        FACTORY_MAP.put(Armor.ID_FOOT_DR, factory);
-        FACTORY_MAP.put(Armor.ID_NECK_DR, factory);
-        for (Encumbrance encumbrance : Encumbrance.values()) {
-            int index = encumbrance.ordinal();
-            FACTORY_MAP.put(GURPSCharacter.MOVE_PREFIX + index, factory);
-            FACTORY_MAP.put(GURPSCharacter.DODGE_PREFIX + index, factory);
-        }
-
-        factory = new DefaultFormatterFactory(new IntegerFormatter(-999999, 999999, false));
-        FACTORY_MAP.put(GURPSCharacter.ID_ATTRIBUTE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_ADVANTAGE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_DISADVANTAGE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_QUIRK_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_SKILL_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_SPELL_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_RACE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_UNSPENT_POINTS, factory);
-
-        factory = new DefaultFormatterFactory(new IntegerFormatter(-9999999, 9999999, false));
-        FACTORY_MAP.put(GURPSCharacter.ID_TIRED_FATIGUE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_REELING_HIT_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_UNCONSCIOUS_CHECKS_HIT_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_DEATH_CHECK_1_HIT_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_DEATH_CHECK_2_HIT_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_DEATH_CHECK_3_HIT_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_DEATH_CHECK_4_HIT_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_DEAD_HIT_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_CURRENT_HP, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_CURRENT_FP, factory);
-
-        factory = new DefaultFormatterFactory(new IntegerFormatter(0, 999999, false));
-        FACTORY_MAP.put(GURPSCharacter.ID_FATIGUE_POINTS, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_HIT_POINTS, factory);
-
-        factory = new DefaultFormatterFactory(new DateTimeFormatter());
-        FACTORY_MAP.put(GURPSCharacter.ID_CREATED, factory);
-        FACTORY_MAP.put(GURPSCharacter.ID_MODIFIED, factory);
-
-        FACTORY_MAP.put(Profile.ID_SIZE_MODIFIER, new DefaultFormatterFactory(new IntegerFormatter(-99, 9999, true)));
-        FACTORY_MAP.put(Profile.ID_HEIGHT, new DefaultFormatterFactory(new HeightFormatter(true)));
-        FACTORY_MAP.put(GURPSCharacter.ID_BASIC_SPEED, new DefaultFormatterFactory(new DoubleFormatter(0, 99999, false)));
-
-        DefaultFormatter formatter = new DefaultFormatter();
-        formatter.setOverwriteMode(false);
-        DEFAULT_FACTORY = new DefaultFormatterFactory(formatter);
-    }
-
-    private static AbstractFormatterFactory getFormatterFactoryForType(GURPSCharacter character, String type) {
-        if (GURPSCharacter.ID_BASIC_THRUST.equals(type) || GURPSCharacter.ID_BASIC_SWING.equals(type)) {
-            return new DefaultFormatterFactory(new DiceFormatter(character));
-        }
-        AbstractFormatterFactory factory = FACTORY_MAP.get(type);
-        return factory != null ? factory : DEFAULT_FACTORY;
     }
 
     @Override

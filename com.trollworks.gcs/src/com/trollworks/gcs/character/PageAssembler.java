@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.character.panels.DoubleOutlinePanel;
+import com.trollworks.gcs.character.panels.SingleOutlinePanel;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
