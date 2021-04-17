@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 public final class Bundler {
     private static final String GCS_VERSION               = "4.29.1";
     private static       String JDK_MAJOR_VERSION         = "16";
-    private static       String JDK_MAJOR_VERSION_WINDOWS = "15"; // Due to bug in JDK 16 jpackage
+    private static final String JDK_MAJOR_VERSION_WINDOWS = "15"; // Due to bug in JDK 16 jpackage
     private static final String ITEXT_VERSION             = "2.1.7";
     private static final String LINUX                     = "linux";
     private static final String MACOS                     = "macos";
