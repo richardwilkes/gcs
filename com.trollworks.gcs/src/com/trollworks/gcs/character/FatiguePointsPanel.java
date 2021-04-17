@@ -42,7 +42,6 @@ public class FatiguePointsPanel extends HPFPPanel {
         mCollapsedField = addLabelAndField(sheet, GURPSCharacter.ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS, I18n.Text("Collapse"), I18n.Text("Current fatigue points at or below this point indicate the character is on the verge of collapse, causing the character to roll vs. Will to do anything besides talk or rest"), false);
         mUnconsciousField = addLabelAndField(sheet, GURPSCharacter.ID_UNCONSCIOUS_FATIGUE_POINTS, I18n.Text("Unconscious"), I18n.Text("Current fatigue points at or below this point cause the character to fall unconscious"), false);
         adjustColors();
-        sheet.getCharacter().addTarget(this, GURPSCharacter.ID_CURRENT_FP);
     }
 
     protected void adjustColors() {

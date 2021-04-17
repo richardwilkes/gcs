@@ -14,6 +14,7 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
+import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.ui.Fonts;
@@ -27,7 +28,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.SafeFileUpdater;
-import com.trollworks.gcs.utility.SimpleChangeListener;
 import com.trollworks.gcs.utility.Version;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -50,15 +50,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import javax.swing.ToolTipManager;
 
 /** Provides the implementation of preferences. Note: not all preferences emit notifications. */
-public class Preferences {
+public class Preferences extends ChangeableData {
     private static final int CURRENT_VERSION = 2;
     private static final int MINIMUM_VERSION = 1;
 
@@ -177,7 +175,6 @@ public class Preferences {
     public static final int MAXIMUM_TOOLTIP_TIMEOUT = 9999;
 
     private static Preferences                      INSTANCE;
-    private        Set<SimpleChangeListener>        mChangeListeners;
     private        UUID                             mID;
     private        Version                          mLastSeenGCSVersion;
     private        int                              mInitialPoints;
@@ -245,7 +242,6 @@ public class Preferences {
     }
 
     private Preferences() {
-        mChangeListeners = new HashSet<>();
         mID = UUID.randomUUID();
         mLastSeenGCSVersion = new Version(GCS.VERSION);
         Library.LIBRARIES.clear();
@@ -443,24 +439,6 @@ public class Preferences {
         Collections.sort(Library.LIBRARIES);
         if (!GraphicsEnvironment.isHeadless()) {
             ToolTipManager.sharedInstance().setDismissDelay(mToolTipTimeout * 1000);
-        }
-    }
-
-    public synchronized void addChangeListener(SimpleChangeListener listener) {
-        mChangeListeners.add(listener);
-    }
-
-    public synchronized void removeChangeListener(SimpleChangeListener listener) {
-        mChangeListeners.remove(listener);
-    }
-
-    private void notifyOfChange() {
-        SimpleChangeListener[] listeners;
-        synchronized (this) {
-            listeners = mChangeListeners.toArray(new SimpleChangeListener[0]);
-        }
-        for (SimpleChangeListener listener : listeners) {
-            listener.dataWasChanged();
         }
     }
 

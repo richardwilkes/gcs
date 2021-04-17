@@ -19,12 +19,11 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 
 import java.awt.Color;
 import javax.swing.SwingConstants;
 
-public abstract class HPFPPanel extends DropPanel implements NotifierTarget {
+public abstract class HPFPPanel extends DropPanel {
     protected CharacterSheet mSheet;
 
     protected HPFPPanel(CharacterSheet sheet, String title) {
@@ -60,15 +59,5 @@ public abstract class HPFPPanel extends DropPanel implements NotifierTarget {
         field.setDisabledTextColor(textColor);
         PageLabel label = (PageLabel) field.getClientProperty(PageLabel.class);
         label.setForeground(textColor);
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
-    }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
-        adjustColors();
     }
 }

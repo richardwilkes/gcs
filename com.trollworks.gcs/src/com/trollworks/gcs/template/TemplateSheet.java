@@ -13,7 +13,6 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;

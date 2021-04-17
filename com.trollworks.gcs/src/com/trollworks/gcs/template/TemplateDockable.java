@@ -14,13 +14,11 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.character.CollectedOutlines;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;

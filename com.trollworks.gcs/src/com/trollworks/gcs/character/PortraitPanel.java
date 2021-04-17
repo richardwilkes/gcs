@@ -23,7 +23,6 @@ import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Dimension;
@@ -48,7 +47,7 @@ import java.util.List;
 import javax.swing.UIManager;
 
 /** The character portrait. */
-public class PortraitPanel extends DropPanel implements DropTargetListener, NotifierTarget {
+public class PortraitPanel extends DropPanel implements DropTargetListener {
     private CharacterSheet mSheet;
 
     /**
@@ -61,7 +60,6 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
         setBorder(new TitledBorder(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), I18n.Text("Portrait")));
         mSheet = sheet;
         setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.Text("<html><body><b>Double-click</b> to set a character portrait.<br><br>The dimensions of the chosen picture should be in a ratio of<br><b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br><br>Dimensions of <b>{0}x{1}</b> are ideal.</body></html>"), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
-        sheet.getCharacter().addTarget(this, Profile.ID_PORTRAIT);
         if (!GraphicsUtilities.inHeadlessPrintMode() && !GraphicsEnvironment.isHeadless()) {
             setDropTarget(new DropTarget(this, DnDConstants.ACTION_COPY, this));
         }
@@ -96,16 +94,6 @@ public class PortraitPanel extends DropPanel implements DropTargetListener, Noti
             Insets insets = getInsets();
             portrait.paintIcon(this, gc, insets.left, insets.top);
         }
-    }
-
-    @Override
-    public void handleNotification(Object producer, String type, Object data) {
-        repaint();
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
     }
 
     @Override

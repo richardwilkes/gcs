@@ -17,7 +17,6 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
@@ -31,7 +30,7 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowFilter;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
-import com.trollworks.gcs.utility.SimpleChangeListener;
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -51,7 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, NotifierTarget, JumpToSearchTarget, RetargetableFocus, SimpleChangeListener, Runnable {
+public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, NotifierTarget, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
     private Toolbar           mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;

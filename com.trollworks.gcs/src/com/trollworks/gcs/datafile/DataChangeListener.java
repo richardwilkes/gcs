@@ -9,8 +9,8 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.utility;
+package com.trollworks.gcs.datafile;
 
-public interface SimpleChangeListener {
+public interface DataChangeListener {
     void dataWasChanged();
 }

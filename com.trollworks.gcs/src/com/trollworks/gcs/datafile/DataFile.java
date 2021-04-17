@@ -43,7 +43,7 @@ import java.util.UUID;
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
-public abstract class DataFile implements Updatable, Undoable {
+public abstract class DataFile extends ChangeableData implements Updatable, Undoable {
     /** The 'id' attribute. */
     public static final String                     ATTRIBUTE_ID           = "id";
     /** Identifies the type of a JSON object. */
@@ -55,6 +55,12 @@ public abstract class DataFile implements Updatable, Undoable {
     private             List<DataModifiedListener> mDataModifiedListeners = new ArrayList<>();
     private             boolean                    mSortingMarksDirty     = true;
     private             boolean                    mModified;
+
+    @Override
+    public void notifyOfChange() {
+        setModified(true);
+        super.notifyOfChange();
+    }
 
     /** @param path The path to load. */
     public void load(Path path) throws IOException {

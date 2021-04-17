@@ -27,8 +27,6 @@ import javax.swing.SwingConstants;
 
 /** The character points panel. */
 public class PointsPanel extends DropPanel {
-    private CharacterSheet mSheet;
-
     /**
      * Creates a new points panel.
      *
@@ -36,7 +34,6 @@ public class PointsPanel extends DropPanel {
      */
     public PointsPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), getTitle(sheet.getCharacter()));
-        mSheet = sheet;
         createLabelAndField(sheet, GURPSCharacter.ID_UNSPENT_POINTS, I18n.Text("Unspent"), I18n.Text("Points that have been earned but have not yet been spent"), true);
         createLabelAndField(sheet, GURPSCharacter.ID_RACE_POINTS, I18n.Text("Race"), I18n.Text("A summary of all points spent on a racial package for this character"), false);
         createLabelAndField(sheet, GURPSCharacter.ID_ATTRIBUTE_POINTS, I18n.Text("Attributes"), I18n.Text("A summary of all points spent on attributes for this character"), false);

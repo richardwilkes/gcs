@@ -55,7 +55,6 @@ public class HitPointsPanel extends HPFPPanel {
         mCheck4Field = addLabelAndField(sheet, GURPSCharacter.ID_DEATH_CHECK_4_HIT_POINTS, I18n.Text("Check #4"), deathCheckTooltip, false);
         mDeadField = addLabelAndField(sheet, GURPSCharacter.ID_DEAD_HIT_POINTS, I18n.Text("Dead"), I18n.Text("Current hit points at or below this point cause the character to die"), false);
         adjustColors();
-        sheet.getCharacter().addTarget(this, GURPSCharacter.ID_CURRENT_HP);
     }
 
     protected void adjustColors() {
