@@ -76,12 +76,12 @@ public class NewSkillCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline = sheet.getSheet().getSkillOutline();
+                outline = sheet.getSheet().getSkillsOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline = template.getTemplate().getSkillOutline();
+                    outline = template.getTemplate().getSkillsOutline();
                 } else {
                     return;
                 }

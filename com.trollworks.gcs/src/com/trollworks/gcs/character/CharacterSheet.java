@@ -27,7 +27,6 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.ReactionBonus;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
-import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
@@ -52,7 +51,6 @@ import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
-import com.trollworks.gcs.ui.widget.outline.OutlineSyncer;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
@@ -124,15 +122,9 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private              ReactionsOutline            mReactionsOutline;
     private              ConditionalModifiersOutline mConditionalModifiersOutline;
     private              boolean                     mRebuildPending;
-    private              Set<Outline>                mRootsToSync;
     private              Scale                       mSavedScale;
     private              boolean                     mOkToPaint                = true;
     private              boolean                     mIsPrinting;
-    private              boolean                     mSyncWeapons;
-    private              boolean                     mSyncReactions;
-    private              boolean                     mSyncConditionalModifiers;
-    private              boolean                     mReloadSkillColumns;
-    private              boolean                     mReloadSpellColumns;
 
     /**
      * Creates a new character sheet display. {@link #rebuild()} must be called prior to the first
@@ -145,7 +137,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         setOpaque(false);
         mCharacter = character;
         mLastPage = -1;
-        mRootsToSync = new HashSet<>();
         if (!GraphicsUtilities.inHeadlessPrintMode()) {
             setDropTarget(new DropTarget(this, this));
         }
@@ -163,6 +154,20 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     @Override
     protected void scaleChanged() {
         markForRebuild();
+    }
+
+    /** Marks the sheet for a rebuild in the near future. */
+    public void markForRebuild() {
+        if (!mRebuildPending) {
+            mRebuildPending = true;
+            EventQueue.invokeLater(this);
+        }
+    }
+
+    @Override
+    public void run() {
+        rebuild();
+        mRebuildPending = false;
     }
 
     /** Synchronizes the display with the underlying model. */
@@ -199,6 +204,17 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         createRangedWeaponOutline();
         createReactionsOutline();
         createConditionalModifiersOutline();
+
+        int    descColID = EquipmentColumn.DESCRIPTION.ordinal();
+        Column column    = getEquipmentOutline().getModel().getColumnWithID(descColID);
+        column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
+        column = getOtherEquipmentOutline().getModel().getColumnWithID(descColID);
+        column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
+        mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
+        mCharacter.updateSkills();
+        mCharacter.processFeaturesAndPrereqs();
+        mCharacter.calculateWeightAndWealthCarried(true);
+        mCharacter.calculateWealthNotCarried(true);
 
         // Clear out the old pages
         removeAll();
@@ -279,19 +295,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
         // Ensure everything is laid out and register for notification
         validate();
-        OutlineSyncer.remove(mReactionsOutline);
-        OutlineSyncer.remove(mConditionalModifiersOutline);
-        OutlineSyncer.remove(mMeleeWeaponOutline);
-        OutlineSyncer.remove(mRangedWeaponOutline);
-        OutlineSyncer.remove(getAdvantageOutline());
-        OutlineSyncer.remove(getSkillOutline());
-        OutlineSyncer.remove(getSpellOutline());
-        OutlineSyncer.remove(getEquipmentOutline());
-        OutlineSyncer.remove(getOtherEquipmentOutline());
-        OutlineSyncer.remove(getNoteOutline());
         mCharacter.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
-        mCharacter.calculateWeightAndWealthCarried(true);
-        mCharacter.calculateWealthNotCarried(true);
         if (focusKey != null) {
             restoreFocusToKey(focusKey, this);
         } else if (focus instanceof Outline) {
@@ -301,6 +305,12 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         }
         setSize(getPreferredSize());
         repaint();
+    }
+
+    private void syncOutline(Outline outline) {
+        if (outline != null) {
+            outline.sizeColumnsToFit();
+        }
     }
 
     private static Set<String> prepBlockLayoutRemaining() {
@@ -372,12 +382,12 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             case CONDITIONAL_MODIFIERS_KEY -> mConditionalModifiersOutline;
             case MELEE_KEY -> mMeleeWeaponOutline;
             case RANGED_KEY -> mRangedWeaponOutline;
-            case ADVANTAGES_KEY -> getAdvantageOutline();
-            case SKILLS_KEY -> getSkillOutline();
-            case SPELLS_KEY -> getSpellOutline();
+            case ADVANTAGES_KEY -> getAdvantagesOutline();
+            case SKILLS_KEY -> getSkillsOutline();
+            case SPELLS_KEY -> getSpellsOutline();
             case EQUIPMENT_KEY -> getEquipmentOutline();
             case OTHER_EQUIPMENT_KEY -> getOtherEquipmentOutline();
-            case NOTES_KEY -> getNoteOutline();
+            case NOTES_KEY -> getNotesOutline();
             default -> null;
         };
     }
@@ -435,37 +445,30 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     protected void createOutlines(CollectedModels models) {
-        if (mReloadSkillColumns) {
-            mReloadSkillColumns = false;
-            SkillOutline skillOutline = getSkillOutline();
-            if (skillOutline != null) {
-                skillOutline.resetColumns();
-            }
+        SkillOutline skillOutline = getSkillsOutline();
+        if (skillOutline != null) {
+            skillOutline.resetColumns();
         }
-        if (mReloadSpellColumns) {
-            mReloadSpellColumns = false;
-            SpellOutline spellOutline = getSpellOutline();
-            if (spellOutline != null) {
-                spellOutline.resetColumns();
-            }
+        SpellOutline spellOutline = getSpellsOutline();
+        if (spellOutline != null) {
+            spellOutline.resetColumns();
         }
         super.createOutlines(models);
     }
 
     private void createReactionsOutline() {
         if (mReactionsOutline == null) {
-            OutlineModel outlineModel;
-            String       sortConfig;
             mReactionsOutline = new ReactionsOutline();
-            outlineModel = mReactionsOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
-            for (ReactionRow row : collectReactions()) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
             initOutline(mReactionsOutline);
         }
         resetOutline(mReactionsOutline);
+        OutlineModel model      = mReactionsOutline.getModel();
+        String       sortConfig = model.getSortConfig();
+        model.removeAllRows();
+        for (ReactionRow row : collectReactions()) {
+            model.addRow(row);
+        }
+        model.applySortConfig(sortConfig);
     }
 
     public List<ReactionRow> collectReactions() {
@@ -525,18 +528,17 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     private void createConditionalModifiersOutline() {
         if (mConditionalModifiersOutline == null) {
-            OutlineModel outlineModel;
-            String       sortConfig;
             mConditionalModifiersOutline = new ConditionalModifiersOutline();
-            outlineModel = mConditionalModifiersOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
-            for (ConditionalModifierRow row : collectConditionalModifiers()) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
             initOutline(mConditionalModifiersOutline);
         }
         resetOutline(mConditionalModifiersOutline);
+        OutlineModel model      = mConditionalModifiersOutline.getModel();
+        String       sortConfig = model.getSortConfig();
+        model.removeAllRows();
+        for (ConditionalModifierRow row : collectConditionalModifiers()) {
+            model.addRow(row);
+        }
+        model.applySortConfig(sortConfig);
     }
 
     public List<ConditionalModifierRow> collectConditionalModifiers() {
@@ -587,18 +589,17 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     private void createMeleeWeaponOutline() {
         if (mMeleeWeaponOutline == null) {
-            OutlineModel outlineModel;
-            String       sortConfig;
             mMeleeWeaponOutline = new WeaponOutline(MeleeWeaponStats.class);
-            outlineModel = mMeleeWeaponOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
-            for (WeaponDisplayRow row : collectWeapons(MeleeWeaponStats.class)) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
             initOutline(mMeleeWeaponOutline);
         }
         resetOutline(mMeleeWeaponOutline);
+        OutlineModel model      = mMeleeWeaponOutline.getModel();
+        String       sortConfig = model.getSortConfig();
+        model.removeAllRows();
+        for (WeaponDisplayRow row : collectWeapons(MeleeWeaponStats.class)) {
+            model.addRow(row);
+        }
+        model.applySortConfig(sortConfig);
     }
 
     /** @return The outline containing the ranged weapons. */
@@ -608,19 +609,17 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     private void createRangedWeaponOutline() {
         if (mRangedWeaponOutline == null) {
-            OutlineModel outlineModel;
-            String       sortConfig;
-
             mRangedWeaponOutline = new WeaponOutline(RangedWeaponStats.class);
-            outlineModel = mRangedWeaponOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
-            for (WeaponDisplayRow row : collectWeapons(RangedWeaponStats.class)) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
             initOutline(mRangedWeaponOutline);
         }
         resetOutline(mRangedWeaponOutline);
+        OutlineModel model      = mRangedWeaponOutline.getModel();
+        String       sortConfig = model.getSortConfig();
+        model.removeAllRows();
+        for (WeaponDisplayRow row : collectWeapons(RangedWeaponStats.class)) {
+            model.addRow(row);
+        }
+        model.applySortConfig(sortConfig);
     }
 
     private List<WeaponDisplayRow> collectWeapons(Class<? extends WeaponStats> weaponClass) {
@@ -695,35 +694,9 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         return PAGE_EXISTS;
     }
 
-    private static Set<String> MARK_FOR_REBUILD_NOTIFICATIONS        = new HashSet<>();
-    private static Set<String> MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS = new HashSet<>();
-    private static Set<String> FEATURES_AND_PREREQS_NOTIFICATIONS    = new HashSet<>();
+    private static Set<String> FEATURES_AND_PREREQS_NOTIFICATIONS = new HashSet<>();
 
     static {
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_BLOCK_LAYOUT);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_DEFAULT_WEIGHT_UNITS);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Fonts.FONT_NOTIFICATION_KEY);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Profile.ID_BODY_TYPE);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_SIMPLE_METRIC_CONVERSIONS);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_MODIFYING_DICE_PLUS_ADDS);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_REDUCED_SWING);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_COLLEGE_IN_SPELLS);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_DIFFICULTY);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_ADVANTAGE_MODIFIER_ADJ);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_EQUIPMENT_MODIFIER_ADJ);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_SHOW_SPELL_ADJ);
-        MARK_FOR_REBUILD_NOTIFICATIONS.add(Settings.ID_EXTRA_SPACE_AROUND_ENCUMBRANCE);
-
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_DISABLED);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Advantage.ID_WEAPON_STATUS_CHANGED);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_EQUIPPED);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_QUANTITY);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Equipment.ID_WEAPON_STATUS_CHANGED);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Skill.ID_WEAPON_STATUS_CHANGED);
-        MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.add(Spell.ID_WEAPON_STATUS_CHANGED);
-
         FEATURES_AND_PREREQS_NOTIFICATIONS.add(Advantage.ID_LEVELS);
         FEATURES_AND_PREREQS_NOTIFICATIONS.add(Advantage.ID_LIST_CHANGED);
         FEATURES_AND_PREREQS_NOTIFICATIONS.add(Advantage.ID_NAME);
@@ -756,100 +729,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     public void handleNotification(Object producer, String type, Object data) {
-        if (Settings.ID_SHOW_DIFFICULTY.equals(type)) {
-            mReloadSkillColumns = true;
-            mReloadSpellColumns = true;
-        }
-        if (Settings.ID_SHOW_COLLEGE_IN_SPELLS.equals(type)) {
-            mReloadSpellColumns = true;
-        }
-        if (MARK_FOR_REBUILD_NOTIFICATIONS.contains(type)) {
-            markForRebuild();
-        } else {
-            if (type.startsWith(Advantage.PREFIX)) {
-                OutlineSyncer.add(getAdvantageOutline());
-                OutlineSyncer.add(mReactionsOutline);
-                OutlineSyncer.add(mConditionalModifiersOutline);
-                mSyncReactions = true;
-                mSyncConditionalModifiers = true;
-                mSyncWeapons = true;
-                markForRebuild();
-            } else if (Settings.ID_USER_DESCRIPTION_DISPLAY.equals(type) || Settings.ID_MODIFIERS_DISPLAY.equals(type) || Settings.ID_NOTES_DISPLAY.equals(type)) {
-                OutlineSyncer.add(getAdvantageOutline());
-                OutlineSyncer.add(getSkillOutline());
-                OutlineSyncer.add(getSpellOutline());
-                OutlineSyncer.add(getEquipmentOutline());
-                OutlineSyncer.add(getOtherEquipmentOutline());
-                mSyncWeapons = true;
-                markForRebuild();
-            } else if (type.startsWith(Skill.PREFIX)) {
-                OutlineSyncer.add(getSkillOutline());
-                mSyncWeapons = true;
-                markForRebuild();
-            } else if (type.startsWith(Spell.PREFIX)) {
-                OutlineSyncer.add(getSpellOutline());
-                mSyncWeapons = true;
-                markForRebuild();
-            } else if (type.startsWith(Equipment.PREFIX)) {
-                OutlineSyncer.add(getEquipmentOutline());
-                OutlineSyncer.add(getOtherEquipmentOutline());
-                OutlineSyncer.add(mReactionsOutline);
-                OutlineSyncer.add(mConditionalModifiersOutline);
-                mSyncReactions = true;
-                mSyncConditionalModifiers = true;
-                mSyncWeapons = true;
-                markForRebuild();
-            } else if (type.startsWith(Note.PREFIX)) {
-                OutlineSyncer.add(getNoteOutline());
-                markForRebuild();
-            }
-
-            if (MARK_FOR_WEAPON_REBUILD_NOTIFICATIONS.contains(type)) {
-                mSyncWeapons = true;
-                markForRebuild();
-            } else if (GURPSCharacter.ID_PARRY_BONUS.equals(type) || Skill.ID_LEVEL.equals(type)) {
-                OutlineSyncer.add(mMeleeWeaponOutline);
-                OutlineSyncer.add(mRangedWeaponOutline);
-                markForRebuild();
-            } else if (GURPSCharacter.ID_CARRIED_WEIGHT.equals(type) || GURPSCharacter.ID_CARRIED_WEALTH.equals(type)) {
-                Column column = getEquipmentOutline().getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
-                column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
-                if (GURPSCharacter.ID_CARRIED_WEIGHT.equals(type)) {
-                    mCharacter.updateSkills();
-                }
-            } else if (GURPSCharacter.ID_NOT_CARRIED_WEALTH.equals(type)) {
-                Column column = getOtherEquipmentOutline().getModel().getColumnWithID(EquipmentColumn.DESCRIPTION.ordinal());
-                column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
-            } else if (Settings.ID_BASE_WILL_ON_10.equals(type) || Settings.ID_BASE_PER_ON_10.equals(type)) {
-                mCharacter.updateWillAndPerceptionDueToOptionalIQRuleUseChange();
-            } else if (Settings.ID_USE_MULTIPLICATIVE_MODIFIERS.equals(type)) {
-                mCharacter.notifySingle(Advantage.ID_LIST_CHANGED, null);
-            } else if (Settings.ID_USE_KNOW_YOUR_OWN_STRENGTH.equals(type)) {
-                mCharacter.notifySingle(type, data);
-            } else if (Settings.ID_USE_THRUST_EQUALS_SWING_MINUS_2.equals(type)) {
-                mCharacter.notifySingle(type, data);
-            } else if (Advantage.ID_LEVELS.equals(type)) {
-                markForRebuild();
-            } else if (GURPSCharacter.ID_MODIFIED.equals(type) || Settings.ID_USE_TITLE_IN_FOOTER.equals(type)) {
-                int count = getComponentCount();
-                for (int i = 0; i < count; i++) {
-                    Page      page   = (Page) getComponent(i);
-                    Rectangle bounds = page.getBounds();
-                    Insets    insets = page.getInsets();
-                    bounds.y = bounds.y + bounds.height - insets.bottom;
-                    bounds.height = insets.bottom;
-                    repaint(bounds);
-                }
-            }
-        }
-        if (FEATURES_AND_PREREQS_NOTIFICATIONS.contains(type)) {
-            if (mCharacter.processFeaturesAndPrereqs()) {
-                repaint();
-            }
-        }
-        if (!inBatchMode() && !mRebuildPending) {
-            validate();
-        }
+        markForRebuild();
     }
 
     @Override
@@ -930,70 +810,9 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
-            mRootsToSync.add(((Outline) event.getSource()).getRealOutline());
+        if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(event.getActionCommand())) {
             markForRebuild();
         }
-    }
-
-    /** Marks the sheet for a rebuild in the near future. */
-    public void markForRebuild() {
-        if (!mRebuildPending) {
-            mRebuildPending = true;
-            EventQueue.invokeLater(this);
-        }
-    }
-
-    @Override
-    public void run() {
-        syncRoots();
-        rebuild();
-        mRebuildPending = false;
-    }
-
-    private void syncRoots() {
-        if (mSyncReactions || mRootsToSync.contains(mReactionsOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
-            OutlineModel outlineModel = mReactionsOutline.getModel();
-            String       sortConfig   = outlineModel.getSortConfig();
-            outlineModel.removeAllRows();
-            for (ReactionRow row : collectReactions()) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
-        }
-        if (mSyncConditionalModifiers || mRootsToSync.contains(mConditionalModifiersOutline) || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline())) {
-            OutlineModel outlineModel = mConditionalModifiersOutline.getModel();
-            String       sortConfig   = outlineModel.getSortConfig();
-            outlineModel.removeAllRows();
-            for (ConditionalModifierRow row : collectConditionalModifiers()) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
-        }
-        if (mSyncWeapons || mRootsToSync.contains(getEquipmentOutline()) || mRootsToSync.contains(getAdvantageOutline()) || mRootsToSync.contains(getSpellOutline()) || mRootsToSync.contains(getSkillOutline())) {
-            OutlineModel outlineModel = mMeleeWeaponOutline.getModel();
-            String       sortConfig   = outlineModel.getSortConfig();
-
-            outlineModel.removeAllRows();
-            for (WeaponDisplayRow row : collectWeapons(MeleeWeaponStats.class)) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
-
-            outlineModel = mRangedWeaponOutline.getModel();
-            sortConfig = outlineModel.getSortConfig();
-
-            outlineModel.removeAllRows();
-            for (WeaponDisplayRow row : collectWeapons(RangedWeaponStats.class)) {
-                outlineModel.addRow(row);
-            }
-            outlineModel.applySortConfig(sortConfig);
-        }
-        mSyncReactions = false;
-        mSyncConditionalModifiers = true;
-        mSyncWeapons = false;
-        mRootsToSync.clear();
     }
 
     @Override
@@ -1023,8 +842,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         expandAllContainers(mCharacter.getSpellsIterator(), changed);
         expandAllContainers(mCharacter.getEquipmentIterator(), changed);
         expandAllContainers(mCharacter.getOtherEquipmentIterator(), changed);
+        expandAllContainers(mCharacter.getNotesIterator(), changed);
         if (mRebuildPending) {
-            syncRoots();
             rebuild();
         }
         return changed;
@@ -1044,7 +863,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             row.setOpen(false);
         }
         if (mRebuildPending) {
-            syncRoots();
             rebuild();
         }
     }

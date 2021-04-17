@@ -80,12 +80,12 @@ public class NewSpellCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline = sheet.getSheet().getSpellOutline();
+                outline = sheet.getSheet().getSpellsOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline = template.getTemplate().getSpellOutline();
+                    outline = template.getTemplate().getSpellsOutline();
                 } else {
                     return;
                 }

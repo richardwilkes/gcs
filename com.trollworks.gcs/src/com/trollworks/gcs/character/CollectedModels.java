@@ -140,7 +140,7 @@ public abstract class CollectedModels extends DataFile {
     }
 
     /** @return A recursive iterator over the notes. */
-    public RowIterator<Note> getNoteIterator() {
+    public RowIterator<Note> getNotesIterator() {
         return new RowIterator<>(mNotes);
     }
 

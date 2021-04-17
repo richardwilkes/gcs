@@ -70,12 +70,12 @@ public class NewNoteCommand extends Command {
             SheetDockable sheet = getTarget(SheetDockable.class);
             if (sheet != null) {
                 dataFile = sheet.getDataFile();
-                outline = sheet.getSheet().getNoteOutline();
+                outline = sheet.getSheet().getNotesOutline();
             } else {
                 TemplateDockable template = getTarget(TemplateDockable.class);
                 if (template != null) {
                     dataFile = template.getDataFile();
-                    outline = template.getTemplate().getNoteOutline();
+                    outline = template.getTemplate().getNotesOutline();
                 } else {
                     return;
                 }

@@ -47,7 +47,7 @@ public class NewCharacterSheetCommand extends Command {
         if (library != null) {
             SheetDockable sheet = new SheetDockable(new GURPSCharacter());
             library.dockSheet(sheet);
-            AddNaturalAttacksAdvantageCommand.INSTANCE.create(sheet.getDataFile(), sheet.getSheet().getAdvantageOutline());
+            AddNaturalAttacksAdvantageCommand.INSTANCE.create(sheet.getDataFile(), sheet.getSheet().getAdvantagesOutline());
             return sheet;
         }
         return null;

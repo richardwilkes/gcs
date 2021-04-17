@@ -619,7 +619,7 @@ public class TextTemplate {
             break;
         case KEY_NOTES:
             StringBuilder buffer = new StringBuilder();
-            for (Note note : gurpsCharacter.getNoteIterator()) {
+            for (Note note : gurpsCharacter.getNotesIterator()) {
                 if (!buffer.isEmpty()) {
                     buffer.append("\n\n");
                 }
@@ -1769,7 +1769,7 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        for (Note note : mSheet.getCharacter().getNoteIterator()) {
+        for (Note note : mSheet.getCharacter().getNotesIterator()) {
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
