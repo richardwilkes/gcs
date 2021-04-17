@@ -16,14 +16,12 @@ import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Encumbrance;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.Profile;
-import com.trollworks.gcs.character.Settings;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.DateTimeFormatter;
 import com.trollworks.gcs.utility.text.DiceFormatter;
 import com.trollworks.gcs.utility.text.DoubleFormatter;
@@ -50,7 +48,7 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic field for a page. */
-public class PageField extends JFormattedTextField implements NotifierTarget, PropertyChangeListener, ActionListener, Commitable {
+public class PageField extends JFormattedTextField implements PropertyChangeListener, ActionListener, Commitable {
     private CharacterSheet mSheet;
     private String         mConsumedType;
 
@@ -97,7 +95,6 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         setForeground(editable ? ThemeColor.ON_EDITABLE : color);
         setDisabledTextColor(color);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        mSheet.getCharacter().addTarget(this, mConsumedType);
         addPropertyChangeListener("value", this);
         addActionListener(this);
         setFocusLostBehavior(COMMIT_OR_REVERT);
@@ -110,17 +107,6 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         // about 2 pixels.
         size.width += mSheet.getScale().scale(2);
         return size;
-    }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
-        if (name.startsWith(Settings.PREFIX)) {
-            setValue(mSheet.getCharacter().getSettings().optionsCode());
-        } else {
-            setValue(data);
-        }
-        invalidate();
-        repaint();
     }
 
     @Override
@@ -250,11 +236,6 @@ public class PageField extends JFormattedTextField implements NotifierTarget, Pr
         }
         AbstractFormatterFactory factory = FACTORY_MAP.get(type);
         return factory != null ? factory : DEFAULT_FACTORY;
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
     }
 
     @Override

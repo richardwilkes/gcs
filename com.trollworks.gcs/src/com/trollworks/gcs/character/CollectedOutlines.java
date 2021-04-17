@@ -28,6 +28,7 @@ import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowSelection;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SimpleChangeListener;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 
 import java.awt.Dimension;
@@ -45,7 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
-public abstract class CollectedOutlines extends JPanel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, NotifierTarget {
+public abstract class CollectedOutlines extends JPanel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, NotifierTarget, SimpleChangeListener {
     private Scale            mScale;
     private AdvantageOutline mAdvantagesOutline;
     private SkillOutline     mSkillsOutline;
@@ -59,6 +60,17 @@ public abstract class CollectedOutlines extends JPanel implements Runnable, Acti
 
     public CollectedOutlines() {
         mScale = Preferences.getInstance().getInitialUIScale().getScale();
+        Preferences.getInstance().addChangeListener(this);
+    }
+
+    /** Call when no longer in use. */
+    public void dispose() {
+        Preferences.getInstance().removeChangeListener(this);
+    }
+
+    @Override
+    public void dataWasChanged() {
+        markForRebuild();
     }
 
     /** Mark it for a rebuild in the near future. */

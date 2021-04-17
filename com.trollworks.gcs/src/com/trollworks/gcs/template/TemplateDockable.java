@@ -47,7 +47,6 @@ public class TemplateDockable extends CollectedOutlinesDockable {
         StdUndoManager undoManager = getUndoManager();
         undoManager.discardAllEdits();
         dataFile.setUndoManager(undoManager);
-        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, Preferences.KEY_USE_MULTIPLICATIVE_MODIFIERS);
     }
 
     @Override
@@ -59,9 +58,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
     public boolean attemptClose() {
         boolean closed = super.attemptClose();
         if (closed) {
-            Notifier notifier = Preferences.getInstance().getNotifier();
-            notifier.remove(mTemplate);
-            notifier.remove(this);
+            mTemplate.dispose();
         }
         return closed;
     }

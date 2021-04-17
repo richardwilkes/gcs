@@ -140,13 +140,13 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         }
         mCharacter.addTarget(this, FEATURES_AND_PREREQS_NOTIFICATIONS.toArray(new String[0]));
         mCharacter.addTarget(this, Settings.PREFIX);
-        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
     }
 
     /** Call when the sheet is no longer in use. */
+    @Override
     public void dispose() {
-        Preferences.getInstance().getNotifier().remove(this);
         mCharacter.resetNotifier();
+        super.dispose();
     }
 
     @Override

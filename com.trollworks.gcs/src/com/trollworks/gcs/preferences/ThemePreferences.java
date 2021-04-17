@@ -131,7 +131,6 @@ public class ThemePreferences extends PreferencePanel implements ActionListener 
                 }
                 if (adjusted) {
                     BaseWindow.forceRepaintAndInvalidate();
-                    Fonts.notifyOfFontChanges();
                 }
             }
             adjustResetButton();
@@ -150,7 +149,6 @@ public class ThemePreferences extends PreferencePanel implements ActionListener 
         }
         mIgnore = false;
         BaseWindow.forceRepaintAndInvalidate();
-        Fonts.notifyOfFontChanges();
         Theme.repaint();
     }
 

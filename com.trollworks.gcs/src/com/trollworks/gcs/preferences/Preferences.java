@@ -27,12 +27,12 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.SafeFileUpdater;
+import com.trollworks.gcs.utility.SimpleChangeListener;
 import com.trollworks.gcs.utility.Version;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
@@ -50,8 +50,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import javax.swing.ToolTipManager;
 
@@ -95,7 +97,7 @@ public class Preferences {
     private static final String SHOW_DIFFICULTY                 = "show_difficulty";
     private static final String SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
     private static final String SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
-    private static final String SHOW_SPELL_ADJ               = "show_spell_adj";
+    private static final String SHOW_SPELL_ADJ                  = "show_spell_adj";
     private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     private static final String EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_fp";
     private static final String THEME                           = "theme";
@@ -126,7 +128,7 @@ public class Preferences {
     public static final String KEY_SHOW_DIFFICULTY                 = KEY_PER_SHEET_PREFIX + SHOW_DIFFICULTY;
     public static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_ADVANTAGE_MODIFIER_ADJ;
     public static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_EQUIPMENT_MODIFIER_ADJ;
-    public static final String KEY_SHOW_SPELL_ADJ                 = KEY_PER_SHEET_PREFIX + SHOW_SPELL_ADJ;
+    public static final String KEY_SHOW_SPELL_ADJ                  = KEY_PER_SHEET_PREFIX + SHOW_SPELL_ADJ;
     public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
     public static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = KEY_PER_SHEET_PREFIX + EXTRA_SPACE_AROUND_ENCUMBRANCE;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
@@ -147,7 +149,7 @@ public class Preferences {
     public static final boolean       DEFAULT_SHOW_DIFFICULTY                   = false;
     public static final boolean       DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ       = false;
     public static final boolean       DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ       = false;
-    public static final boolean       DEFAULT_SHOW_SPELL_ADJ                   = true;
+    public static final boolean       DEFAULT_SHOW_SPELL_ADJ                    = true;
     public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
     public static final boolean       DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE    = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
@@ -175,7 +177,7 @@ public class Preferences {
     public static final int MAXIMUM_TOOLTIP_TIMEOUT = 9999;
 
     private static Preferences                      INSTANCE;
-    private        Notifier                         mNotifier;
+    private        Set<SimpleChangeListener>        mChangeListeners;
     private        UUID                             mID;
     private        Version                          mLastSeenGCSVersion;
     private        int                              mInitialPoints;
@@ -243,7 +245,7 @@ public class Preferences {
     }
 
     private Preferences() {
-        mNotifier = new Notifier();
+        mChangeListeners = new HashSet<>();
         mID = UUID.randomUUID();
         mLastSeenGCSVersion = new Version(GCS.VERSION);
         Library.LIBRARIES.clear();
@@ -444,16 +446,22 @@ public class Preferences {
         }
     }
 
-    public Notifier getNotifier() {
-        return mNotifier;
+    public synchronized void addChangeListener(SimpleChangeListener listener) {
+        mChangeListeners.add(listener);
     }
 
-    public void startBatch() {
-        mNotifier.startBatch();
+    public synchronized void removeChangeListener(SimpleChangeListener listener) {
+        mChangeListeners.remove(listener);
     }
 
-    public void endBatch() {
-        mNotifier.endBatch();
+    private void notifyOfChange() {
+        SimpleChangeListener[] listeners;
+        synchronized (this) {
+            listeners = mChangeListeners.toArray(new SimpleChangeListener[0]);
+        }
+        for (SimpleChangeListener listener : listeners) {
+            listener.dataWasChanged();
+        }
     }
 
     public void save() {
@@ -634,7 +642,7 @@ public class Preferences {
     public void setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
         if (mUserDescriptionDisplay != userDescriptionDisplay) {
             mUserDescriptionDisplay = userDescriptionDisplay;
-            mNotifier.notify(this, KEY_USER_DESCRIPTION_DISPLAY);
+            notifyOfChange();
         }
     }
 
@@ -645,7 +653,7 @@ public class Preferences {
     public void setModifiersDisplay(DisplayOption modifiersDisplay) {
         if (mModifiersDisplay != modifiersDisplay) {
             mModifiersDisplay = modifiersDisplay;
-            mNotifier.notify(this, KEY_MODIFIERS_DISPLAY);
+            notifyOfChange();
         }
     }
 
@@ -656,7 +664,7 @@ public class Preferences {
     public void setNotesDisplay(DisplayOption notesDisplay) {
         if (mNotesDisplay != notesDisplay) {
             mNotesDisplay = notesDisplay;
-            mNotifier.notify(this, KEY_NOTES_DISPLAY);
+            notifyOfChange();
         }
     }
 
@@ -675,7 +683,7 @@ public class Preferences {
     public void setDefaultLengthUnits(LengthUnits defaultLengthUnits) {
         if (mDefaultLengthUnits != defaultLengthUnits) {
             mDefaultLengthUnits = defaultLengthUnits;
-            mNotifier.notify(this, KEY_DEFAULT_LENGTH_UNITS);
+            notifyOfChange();
         }
     }
 
@@ -686,7 +694,7 @@ public class Preferences {
     public void setDefaultWeightUnits(WeightUnits defaultWeightUnits) {
         if (mDefaultWeightUnits != defaultWeightUnits) {
             mDefaultWeightUnits = defaultWeightUnits;
-            mNotifier.notify(this, KEY_DEFAULT_WEIGHT_UNITS);
+            notifyOfChange();
         }
     }
 
@@ -697,7 +705,7 @@ public class Preferences {
     public void setBlockLayout(List<String> blockLayout) {
         if (!mBlockLayout.equals(blockLayout)) {
             mBlockLayout = new ArrayList<>(blockLayout);
-            mNotifier.notify(this, KEY_BLOCK_LAYOUT);
+            notifyOfChange();
         }
     }
 
@@ -845,6 +853,7 @@ public class Preferences {
 
     public void setFontInfo(String key, Fonts.Info fontInfo) {
         mFontInfo.put(key, fontInfo);
+        notifyOfChange();
     }
 
     public String getKeyBindingOverride(String key) {
@@ -882,7 +891,7 @@ public class Preferences {
     public void setIncludeUnspentPointsInTotal(boolean includeUnspentPointsInTotal) {
         if (mIncludeUnspentPointsInTotal != includeUnspentPointsInTotal) {
             mIncludeUnspentPointsInTotal = includeUnspentPointsInTotal;
-            mNotifier.notify(this, KEY_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
+            notifyOfChange();
         }
     }
 
@@ -894,7 +903,7 @@ public class Preferences {
     public void setBaseWillOn10(boolean baseWillOn10) {
         if (mBaseWillOn10 != baseWillOn10) {
             mBaseWillOn10 = baseWillOn10;
-            mNotifier.notify(this, KEY_BASE_WILL_ON_10);
+            notifyOfChange();
         }
     }
 
@@ -906,7 +915,7 @@ public class Preferences {
     public void setBasePerOn10(boolean basePerOn10) {
         if (mBasePerOn10 != basePerOn10) {
             mBasePerOn10 = basePerOn10;
-            mNotifier.notify(this, KEY_BASE_PER_ON_10);
+            notifyOfChange();
         }
     }
 
@@ -918,7 +927,7 @@ public class Preferences {
     public void setShowCollegeInSheetSpells(boolean show) {
         if (mShowCollegeInSheetSpells != show) {
             mShowCollegeInSheetSpells = show;
-            mNotifier.notify(this, KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
+            notifyOfChange();
         }
     }
 
@@ -930,7 +939,7 @@ public class Preferences {
     public void setShowDifficulty(boolean show) {
         if (mShowDifficulty != show) {
             mShowDifficulty = show;
-            mNotifier.notify(this, KEY_SHOW_DIFFICULTY);
+            notifyOfChange();
         }
     }
 
@@ -942,7 +951,7 @@ public class Preferences {
     public void setShowAdvantageModifierAdj(boolean show) {
         if (mShowAdvantageModifierAdj != show) {
             mShowAdvantageModifierAdj = show;
-            mNotifier.notify(this, KEY_SHOW_ADVANTAGE_MODIFIER_ADJ);
+            notifyOfChange();
         }
     }
 
@@ -954,19 +963,22 @@ public class Preferences {
     public void setShowEquipmentModifierAdj(boolean show) {
         if (mShowEquipmentModifierAdj != show) {
             mShowEquipmentModifierAdj = show;
-            mNotifier.notify(this, KEY_SHOW_EQUIPMENT_MODIFIER_ADJ);
+            notifyOfChange();
         }
     }
 
-    /** @return Whether to show the spell rituals, cost & time adjustments in the spell list display. */
+    /**
+     * @return Whether to show the spell rituals, cost & time adjustments in the spell list
+     *         display.
+     */
     public boolean showSpellAdj() {
         return mShowSpellAdj;
     }
 
     public void setShowSpellAdj(boolean show) {
         if (mShowSpellAdj != show) {
-            mShowSpellAdj= show;
-            mNotifier.notify(this, KEY_SHOW_SPELL_ADJ);
+            mShowSpellAdj = show;
+            notifyOfChange();
         }
     }
 
@@ -978,7 +990,7 @@ public class Preferences {
     public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
-            mNotifier.notify(this, KEY_USE_TITLE_IN_FOOTER);
+            notifyOfChange();
         }
     }
 
@@ -990,7 +1002,7 @@ public class Preferences {
     public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
         if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
             mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
-            mNotifier.notify(this, KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE);
+            notifyOfChange();
         }
     }
 
@@ -1002,7 +1014,7 @@ public class Preferences {
     public void setUseMultiplicativeModifiers(boolean useMultiplicativeModifiers) {
         if (mUseMultiplicativeModifiers != useMultiplicativeModifiers) {
             mUseMultiplicativeModifiers = useMultiplicativeModifiers;
-            mNotifier.notify(this, KEY_USE_MULTIPLICATIVE_MODIFIERS);
+            notifyOfChange();
         }
     }
 
@@ -1014,7 +1026,7 @@ public class Preferences {
     public void setUseModifyingDicePlusAdds(boolean useModifyingDicePlusAdds) {
         if (mUseModifyingDicePlusAdds != useModifyingDicePlusAdds) {
             mUseModifyingDicePlusAdds = useModifyingDicePlusAdds;
-            mNotifier.notify(this, KEY_USE_MODIFYING_DICE_PLUS_ADDS);
+            notifyOfChange();
         }
     }
 
@@ -1026,7 +1038,7 @@ public class Preferences {
     public void setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
         if (mUseKnowYourOwnStrength != useKnowYourOwnStrength) {
             mUseKnowYourOwnStrength = useKnowYourOwnStrength;
-            mNotifier.notify(this, KEY_USE_KNOW_YOUR_OWN_STRENGTH);
+            notifyOfChange();
         }
     }
 
@@ -1041,7 +1053,7 @@ public class Preferences {
     public void setUseReducedSwing(boolean useReducedSwing) {
         if (mUseReducedSwing != useReducedSwing) {
             mUseReducedSwing = useReducedSwing;
-            mNotifier.notify(this, KEY_USE_REDUCED_SWING);
+            notifyOfChange();
         }
     }
 
@@ -1053,7 +1065,7 @@ public class Preferences {
     public void setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
         if (mUseThrustEqualsSwingMinus2 != useThrustEqualsSwingMinus2) {
             mUseThrustEqualsSwingMinus2 = useThrustEqualsSwingMinus2;
-            mNotifier.notify(this, KEY_USE_THRUST_EQUALS_SWING_MINUS_2);
+            notifyOfChange();
         }
     }
 
@@ -1065,7 +1077,7 @@ public class Preferences {
     public void setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
         if (mUseSimpleMetricConversions != useSimpleMetricConversions) {
             mUseSimpleMetricConversions = useSimpleMetricConversions;
-            mNotifier.notify(this, KEY_USE_SIMPLE_METRIC_CONVERSIONS);
+            notifyOfChange();
         }
     }
 

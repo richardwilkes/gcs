@@ -52,7 +52,6 @@ public class TemplateSheet extends CollectedOutlines {
         // Ensure everything is laid out and register for notification
         revalidate();
         template.addTarget(this, GURPSCharacter.CHARACTER_PREFIX);
-        Preferences.getInstance().getNotifier().add(this, Preferences.KEY_SHOW_COLLEGE_IN_SHEET_SPELLS);
 
         setDropTarget(new DropTarget(this, this));
 

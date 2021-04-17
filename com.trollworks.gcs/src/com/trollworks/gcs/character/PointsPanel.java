@@ -19,7 +19,6 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -27,7 +26,7 @@ import java.text.MessageFormat;
 import javax.swing.SwingConstants;
 
 /** The character points panel. */
-public class PointsPanel extends DropPanel implements NotifierTarget {
+public class PointsPanel extends DropPanel {
     private CharacterSheet mSheet;
 
     /**
@@ -46,8 +45,6 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
         createLabelAndField(sheet, GURPSCharacter.ID_QUIRK_POINTS, I18n.Text("Quirks"), I18n.Text("A summary of all points spent on quirks for this character"), false);
         createLabelAndField(sheet, GURPSCharacter.ID_SKILL_POINTS, I18n.Text("Skills"), I18n.Text("A summary of all points spent on skills for this character"), false);
         createLabelAndField(sheet, GURPSCharacter.ID_SPELL_POINTS, I18n.Text("Spells"), I18n.Text("A summary of all points spent on spells for this character"), false);
-        sheet.getCharacter().addTarget(this, GURPSCharacter.ID_TOTAL_POINTS);
-        Preferences.getInstance().getNotifier().add(this, Preferences.KEY_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
     }
 
     private void createLabelAndField(CharacterSheet sheet, String key, String title, String tooltip, boolean enabled) {
@@ -56,19 +53,7 @@ public class PointsPanel extends DropPanel implements NotifierTarget {
         add(new PageLabel(title, field));
     }
 
-    @Override
-    public void handleNotification(Object producer, String type, Object data) {
-        getTitledBorder().setTitle(getTitle(mSheet.getCharacter()));
-        invalidate();
-        repaint();
-    }
-
     private static String getTitle(GURPSCharacter character) {
         return MessageFormat.format(I18n.Text("{0} Points"), Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? character.getTotalPoints() : character.getSpentPoints()));
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
     }
 }

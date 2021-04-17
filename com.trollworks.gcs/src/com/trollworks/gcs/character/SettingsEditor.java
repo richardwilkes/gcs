@@ -19,12 +19,14 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.SimpleChangeListener;
 import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -45,7 +47,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, NotifierTarget {
+public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, NotifierTarget, SimpleChangeListener, Runnable {
     private GURPSCharacter           mCharacter;
     private Settings                 mSettings;
     private JCheckBox                mBaseWillOn10;
@@ -70,6 +72,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JComboBox<DisplayOption> mNotesDisplayCombo;
     private JTextArea                mBlockLayoutField;
     private JButton                  mResetButton;
+    private boolean                  mUpdatePending;
 
     public static SettingsEditor find(GURPSCharacter character) {
         for (Window window : Window.getWindows()) {
@@ -106,7 +109,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         adjustResetButton();
         restoreBounds();
         character.addTarget(this, Profile.ID_NAME);
-        Preferences.getInstance().getNotifier().add(this, Preferences.KEY_PER_SHEET_PREFIX);
+        Preferences.getInstance().addChangeListener(this);
     }
 
     private void addTopPanel() {
@@ -317,8 +320,23 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     @Override
     public void dispose() {
         mCharacter.removeTarget(this);
-        Preferences.getInstance().getNotifier().remove(this);
+        Preferences.getInstance().removeChangeListener(this);
         super.dispose();
+    }
+
+    @Override
+    public void dataWasChanged() {
+        if (!mUpdatePending) {
+            mUpdatePending = true;
+            EventQueue.invokeLater(this);
+        }
+    }
+
+    @Override
+    public void run() {
+        setTitle(createTitle(mCharacter));
+        adjustResetButton();
+        mUpdatePending = false;
     }
 
     @Override
@@ -328,8 +346,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
     @Override
     public void handleNotification(Object producer, String name, Object data) {
-        setTitle(createTitle(mCharacter));
-        adjustResetButton();
+        dataWasChanged();
     }
 
     @Override
