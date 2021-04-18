@@ -29,10 +29,10 @@ import java.util.Set;
 
 /** An Advantage prerequisite. */
 public class AdvantagePrereq extends NameLevelPrereq {
-    /** The XML tag for this class. */
-    public static final  String         TAG_ROOT  = "advantage_prereq";
-    private static final String         TAG_NOTES = "notes";
-    private              StringCriteria mNotesCriteria;
+    public static final  String KEY_ROOT  = "advantage_prereq";
+    private static final String KEY_NOTES = "notes";
+
+    private StringCriteria mNotesCriteria;
 
     /**
      * Creates a new prerequisite.
@@ -40,7 +40,7 @@ public class AdvantagePrereq extends NameLevelPrereq {
      * @param parent The owning prerequisite list, if any.
      */
     public AdvantagePrereq(PrereqList parent) {
-        super(TAG_ROOT, parent);
+        super(KEY_ROOT, parent);
         mNotesCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
@@ -78,18 +78,18 @@ public class AdvantagePrereq extends NameLevelPrereq {
     @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
-        mNotesCriteria.load(m.getMap(TAG_NOTES));
+        mNotesCriteria.load(m.getMap(KEY_NOTES));
     }
 
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        mNotesCriteria.save(w, TAG_NOTES);
+        mNotesCriteria.save(w, KEY_NOTES);
     }
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override

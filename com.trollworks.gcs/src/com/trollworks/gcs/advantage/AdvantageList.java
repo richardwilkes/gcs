@@ -26,9 +26,7 @@ import java.io.IOException;
 
 /** A list of Advantages. */
 public class AdvantageList extends ListFile {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag for {@link AdvantageList}s. */
-    public static final  String TAG_ROOT             = "advantage_list";
+    private static final int CURRENT_JSON_VERSION = 1;
 
     @Override
     public int getJSONVersion() {
@@ -37,7 +35,7 @@ public class AdvantageList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return "advantage_list";
     }
 
     @Override
@@ -60,7 +58,7 @@ public class AdvantageList extends ListFile {
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
-            if (Advantage.TAG_ADVANTAGE.equals(type) || Advantage.TAG_ADVANTAGE_CONTAINER.equals(type)) {
+            if (Advantage.KEY_ADVANTAGE.equals(type) || Advantage.KEY_ADVANTAGE_CONTAINER.equals(type)) {
                 model.addRow(new Advantage(file, m1, state), true);
             } else {
                 Log.warn("invalid advantage type: " + type);

@@ -52,7 +52,7 @@ public class SpellBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
 
-        row.add(addComboBox(COLLEGE_TYPE, new Object[]{getMatchText(true, ""), getMatchText(false, SpellBonus.TAG_COLLEGE_NAME), getMatchText(false, ""), getMatchText(false, SpellBonus.TAG_POWER_SOURCE_NAME)}, getMatchText(bonus.allColleges(), bonus.getMatchType())));
+        row.add(addComboBox(COLLEGE_TYPE, new Object[]{getMatchText(true, ""), getMatchText(false, SpellBonus.KEY_COLLEGE_NAME), getMatchText(false, ""), getMatchText(false, SpellBonus.KEY_POWER_SOURCE_NAME)}, getMatchText(bonus.allColleges(), bonus.getMatchType())));
         if (bonus.allColleges()) {
             row.add(new FlexSpacer(0, 0, true, false));
         } else {
@@ -74,10 +74,10 @@ public class SpellBonusEditor extends FeatureEditor {
         if (allColleges) {
             return I18n.Text("to all colleges");
         }
-        if (SpellBonus.TAG_COLLEGE_NAME.equals(matchType)) {
+        if (SpellBonus.KEY_COLLEGE_NAME.equals(matchType)) {
             return I18n.Text("to the college whose name");
         }
-        if (SpellBonus.TAG_POWER_SOURCE_NAME.equals(matchType)) {
+        if (SpellBonus.KEY_POWER_SOURCE_NAME.equals(matchType)) {
             return I18n.Text("to the power source whose name");
         }
         return I18n.Text("to the spell whose name");
@@ -98,13 +98,13 @@ public class SpellBonusEditor extends FeatureEditor {
                 }
                 break;
             case 1:
-                adjustMatchType(bonus, SpellBonus.TAG_COLLEGE_NAME);
+                adjustMatchType(bonus, SpellBonus.KEY_COLLEGE_NAME);
                 break;
             case 2:
-                adjustMatchType(bonus, SpellBonus.TAG_SPELL_NAME);
+                adjustMatchType(bonus, SpellBonus.KEY_SPELL_NAME);
                 break;
             case 3:
-                adjustMatchType(bonus, SpellBonus.TAG_POWER_SOURCE_NAME);
+                adjustMatchType(bonus, SpellBonus.KEY_POWER_SOURCE_NAME);
                 break;
             }
         } else {

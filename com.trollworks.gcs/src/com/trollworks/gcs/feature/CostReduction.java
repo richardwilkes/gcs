@@ -22,14 +22,19 @@ import java.util.Set;
 
 /** Describes a cost reduction. */
 public class CostReduction extends Feature {
-    /** The possible {@link BonusAttributeType}s that can be affected. */
-    public static final  BonusAttributeType[] TYPES          = {BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT};
-    /** The XML tag. */
-    public static final  String               TAG_ROOT       = "cost_reduction";
-    private static final String               TAG_ATTRIBUTE  = "attribute";
-    private static final String               TAG_PERCENTAGE = "percentage";
-    private              BonusAttributeType   mAttribute;
-    private              int                  mPercentage;
+    public static final  String KEY_ROOT       = "cost_reduction";
+    private static final String KEY_ATTRIBUTE  = "attribute";
+    private static final String KEY_PERCENTAGE = "percentage";
+
+    public static final BonusAttributeType[] TYPES = {
+            BonusAttributeType.ST,
+            BonusAttributeType.DX,
+            BonusAttributeType.IQ,
+            BonusAttributeType.HT
+    };
+
+    private BonusAttributeType mAttribute;
+    private int                mPercentage;
 
     /** Creates a new cost reduction. */
     public CostReduction() {
@@ -91,7 +96,7 @@ public class CostReduction extends Feature {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
@@ -105,14 +110,14 @@ public class CostReduction extends Feature {
     }
 
     protected void load(JsonMap m) {
-        setAttribute(Enums.extract(m.getString(TAG_ATTRIBUTE), TYPES, BonusAttributeType.ST));
-        setPercentage(m.getInt(TAG_PERCENTAGE));
+        setAttribute(Enums.extract(m.getString(KEY_ATTRIBUTE), TYPES, BonusAttributeType.ST));
+        setPercentage(m.getInt(KEY_PERCENTAGE));
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
-        w.keyValue(TAG_ATTRIBUTE, Enums.toId(mAttribute));
-        w.keyValue(TAG_PERCENTAGE, mPercentage);
+        w.keyValue(KEY_ATTRIBUTE, Enums.toId(mAttribute));
+        w.keyValue(KEY_PERCENTAGE, mPercentage);
     }
 
     @Override

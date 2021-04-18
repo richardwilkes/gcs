@@ -22,32 +22,20 @@ import java.io.IOException;
 
 /** The stats for a ranged weapon. */
 public class RangedWeaponStats extends WeaponStats {
-    /** The root XML tag. */
-    public static final  String TAG_ROOT         = "ranged_weapon";
-    private static final String TAG_ACCURACY     = "accuracy";
-    private static final String TAG_RANGE        = "range";
-    private static final String TAG_RATE_OF_FIRE = "rate_of_fire";
-    private static final String TAG_SHOTS        = "shots";
-    private static final String TAG_BULK         = "bulk";
-    private static final String TAG_RECOIL       = "recoil";
-    /** The field ID for accuracy changes. */
-    public static final  String ID_ACCURACY      = PREFIX + TAG_ACCURACY;
-    /** The field ID for range changes. */
-    public static final  String ID_RANGE         = PREFIX + TAG_RANGE;
-    /** The field ID for rate of fire changes. */
-    public static final  String ID_RATE_OF_FIRE  = PREFIX + TAG_RATE_OF_FIRE;
-    /** The field ID for shots changes. */
-    public static final  String ID_SHOTS         = PREFIX + TAG_SHOTS;
-    /** The field ID for bulk changes. */
-    public static final  String ID_BULK          = PREFIX + TAG_BULK;
-    /** The field ID for recoil changes. */
-    public static final  String ID_RECOIL        = PREFIX + TAG_RECOIL;
-    private              String mAccuracy;
-    private              String mRange;
-    private              String mRateOfFire;
-    private              String mShots;
-    private              String mBulk;
-    private              String mRecoil;
+    public static final  String KEY_ROOT         = "ranged_weapon";
+    private static final String KEY_ACCURACY     = "accuracy";
+    private static final String KEY_RANGE        = "range";
+    private static final String KEY_RATE_OF_FIRE = "rate_of_fire";
+    private static final String KEY_SHOTS        = "shots";
+    private static final String KEY_BULK         = "bulk";
+    private static final String KEY_RECOIL       = "recoil";
+
+    private String mAccuracy;
+    private String mRange;
+    private String mRateOfFire;
+    private String mShots;
+    private String mBulk;
+    private String mRecoil;
 
     /**
      * Creates a new {@link RangedWeaponStats}.
@@ -101,28 +89,28 @@ public class RangedWeaponStats extends WeaponStats {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
         super.loadSelf(m);
-        mAccuracy = m.getString(TAG_ACCURACY);
-        mRange = m.getString(TAG_RANGE);
-        mRateOfFire = m.getString(TAG_RATE_OF_FIRE);
-        mShots = m.getString(TAG_SHOTS);
-        mBulk = m.getString(TAG_BULK);
-        mRecoil = m.getString(TAG_RECOIL);
+        mAccuracy = m.getString(KEY_ACCURACY);
+        mRange = m.getString(KEY_RANGE);
+        mRateOfFire = m.getString(KEY_RATE_OF_FIRE);
+        mShots = m.getString(KEY_SHOTS);
+        mBulk = m.getString(KEY_BULK);
+        mRecoil = m.getString(KEY_RECOIL);
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
-        w.keyValueNot(TAG_ACCURACY, mAccuracy, "");
-        w.keyValueNot(TAG_RANGE, mRange, "");
-        w.keyValueNot(TAG_RATE_OF_FIRE, mRateOfFire, "");
-        w.keyValueNot(TAG_SHOTS, mShots, "");
-        w.keyValueNot(TAG_BULK, mBulk, "");
-        w.keyValueNot(TAG_RECOIL, mRecoil, "");
+        w.keyValueNot(KEY_ACCURACY, mAccuracy, "");
+        w.keyValueNot(KEY_RANGE, mRange, "");
+        w.keyValueNot(KEY_RATE_OF_FIRE, mRateOfFire, "");
+        w.keyValueNot(KEY_SHOTS, mShots, "");
+        w.keyValueNot(KEY_BULK, mBulk, "");
+        w.keyValueNot(KEY_RECOIL, mRecoil, "");
     }
 
     /** @return The accuracy. */

@@ -39,24 +39,24 @@ import java.util.Set;
 
 /** Holds damage a weapon does, broken down for easier manipulation. */
 public class WeaponDamage {
-    /** The XML tag used for weapon damage. */
-    public static final  String         TAG_ROOT                         = "damage";
-    private static final String         ATTR_ST                          = "st";
-    private static final String         ATTR_BASE                        = "base";
-    private static final String         ATTR_FRAGMENTATION               = "fragmentation";
-    private static final String         ATTR_ARMOR_DIVISOR               = "armor_divisor";
-    private static final String         ATTR_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
-    private static final String         ATTR_FRAGMENTATION_TYPE          = "fragmentation_type";
-    private static final String         ATTR_MODIFIER_PER_DIE            = "modifier_per_die";
-    private              WeaponStats    mOwner;
-    private              String         mType;
-    private              WeaponSTDamage mST;
-    private              Dice           mBase;
-    private              double         mArmorDivisor;
-    private              Dice           mFragmentation;
-    private              double         mFragmentationArmorDivisor;
-    private              String         mFragmentationType;
-    private              int            mModifierPerDie;
+    public static final  String KEY_ROOT                        = "damage";
+    private static final String KEY_ST                          = "st";
+    private static final String KEY_BASE                        = "base";
+    private static final String KEY_FRAGMENTATION               = "fragmentation";
+    private static final String KEY_ARMOR_DIVISOR               = "armor_divisor";
+    private static final String KEY_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
+    private static final String KEY_FRAGMENTATION_TYPE          = "fragmentation_type";
+    private static final String KEY_MODIFIER_PER_DIE            = "modifier_per_die";
+
+    private WeaponStats    mOwner;
+    private String         mType;
+    private WeaponSTDamage mST;
+    private Dice           mBase;
+    private double         mArmorDivisor;
+    private Dice           mFragmentation;
+    private double         mFragmentationArmorDivisor;
+    private String         mFragmentationType;
+    private int            mModifierPerDie;
 
     public WeaponDamage(WeaponStats owner) {
         mType = "";
@@ -68,16 +68,16 @@ public class WeaponDamage {
     public WeaponDamage(JsonMap m, WeaponStats owner) {
         mOwner = owner;
         mType = m.getString(DataFile.KEY_TYPE);
-        mST = Enums.extract(m.getString(ATTR_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
-        if (m.has(ATTR_BASE)) {
-            mBase = new Dice(m.getString(ATTR_BASE));
+        mST = Enums.extract(m.getString(KEY_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
+        if (m.has(KEY_BASE)) {
+            mBase = new Dice(m.getString(KEY_BASE));
         }
-        mArmorDivisor = m.getDoubleWithDefault(ATTR_ARMOR_DIVISOR, 1);
-        mModifierPerDie = m.getInt(ATTR_MODIFIER_PER_DIE);
-        if (m.has(ATTR_FRAGMENTATION)) {
-            mFragmentation = new Dice(m.getString(ATTR_FRAGMENTATION));
-            mFragmentationType = m.getString(ATTR_FRAGMENTATION_TYPE);
-            mFragmentationArmorDivisor = m.getDoubleWithDefault(ATTR_FRAGMENTATION_ARMOR_DIVISOR, 1);
+        mArmorDivisor = m.getDoubleWithDefault(KEY_ARMOR_DIVISOR, 1);
+        mModifierPerDie = m.getInt(KEY_MODIFIER_PER_DIE);
+        if (m.has(KEY_FRAGMENTATION)) {
+            mFragmentation = new Dice(m.getString(KEY_FRAGMENTATION));
+            mFragmentationType = m.getString(KEY_FRAGMENTATION_TYPE);
+            mFragmentationArmorDivisor = m.getDoubleWithDefault(KEY_FRAGMENTATION_ARMOR_DIVISOR, 1);
         }
     }
 
@@ -90,26 +90,26 @@ public class WeaponDamage {
         w.startMap();
         w.keyValue(DataFile.KEY_TYPE, mType);
         if (mST != WeaponSTDamage.NONE) {
-            w.keyValue(ATTR_ST, mST.name().toLowerCase());
+            w.keyValue(KEY_ST, mST.name().toLowerCase());
         }
         if (mBase != null) {
             String base = mBase.toString();
             if (!"0".equals(base)) {
-                w.keyValue(ATTR_BASE, base);
+                w.keyValue(KEY_BASE, base);
             }
         }
         if (mArmorDivisor != 1) {
-            w.keyValue(ATTR_ARMOR_DIVISOR, mArmorDivisor);
+            w.keyValue(KEY_ARMOR_DIVISOR, mArmorDivisor);
         }
         if (mFragmentation != null) {
             String frag = mFragmentation.toString();
             if (!"0".equals(frag)) {
-                w.keyValue(ATTR_FRAGMENTATION, frag);
-                w.keyValueNot(ATTR_FRAGMENTATION_ARMOR_DIVISOR, mFragmentationArmorDivisor, 1);
-                w.keyValue(ATTR_FRAGMENTATION_TYPE, mFragmentationType);
+                w.keyValue(KEY_FRAGMENTATION, frag);
+                w.keyValueNot(KEY_FRAGMENTATION_ARMOR_DIVISOR, mFragmentationArmorDivisor, 1);
+                w.keyValue(KEY_FRAGMENTATION_TYPE, mFragmentationType);
             }
         }
-        w.keyValueNot(ATTR_MODIFIER_PER_DIE, mModifierPerDie, 0);
+        w.keyValueNot(KEY_MODIFIER_PER_DIE, mModifierPerDie, 0);
         w.endMap();
     }
 

@@ -65,178 +65,108 @@ import java.util.regex.Pattern;
 
 /** A GURPS character. */
 public class GURPSCharacter extends CollectedModels {
-    private static final int                                 CURRENT_JSON_VERSION                 = 1;
-    private static final String                              TAG_ROOT                             = "character";
-    private static final String                              TAG_CREATED_DATE                     = "created_date";
-    private static final String                              TAG_MODIFIED_DATE                    = "modified_date";
-    private static final String                              TAG_HP_DAMAGE                        = "hp_damage";
-    private static final String                              TAG_FP_DAMAGE                        = "fp_damage";
-    private static final String                              TAG_TOTAL_POINTS                     = "total_points";
-    private static final String                              KEY_HP_ADJ                           = "HP_adj";
-    private static final String                              KEY_FP_ADJ                           = "FP_adj";
-    private static final String                              KEY_ST                               = "ST";
-    private static final String                              KEY_DX                               = "DX";
-    private static final String                              KEY_IQ                               = "IQ";
-    private static final String                              KEY_HT                               = "HT";
-    private static final String                              KEY_WILL_ADJ                         = "will_adj";
-    private static final String                              KEY_PER_ADJ                          = "per_adj";
-    private static final String                              KEY_SPEED_ADJ                        = "speed_adj";
-    private static final String                              KEY_MOVE_ADJ                         = "move_adj";
-    private static final String                              KEY_THIRD_PARTY_DATA                 = "third_party";
-    /** The prefix for all character IDs. */
-    public static final  String                              CHARACTER_PREFIX                     = "gcs.";
-    /** The field ID for last modified date changes. */
-    public static final  String                              ID_MODIFIED                          = CHARACTER_PREFIX + "Modified";
-    /** The field ID for created on date changes. */
-    public static final  String                              ID_CREATED                           = CHARACTER_PREFIX + "Created";
-    /** The prefix used in front of all IDs for basic attributes. */
-    public static final  String                              ATTRIBUTES_PREFIX                    = CHARACTER_PREFIX + "ba.";
-    /** The field ID for strength (ST) changes. */
-    public static final  String                              ID_STRENGTH                          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
-    /** The field ID for lifting strength bonuses -- used by features. */
-    public static final  String                              ID_LIFTING_STRENGTH                  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
-    /** The field ID for striking strength bonuses -- used by features. */
-    public static final  String                              ID_STRIKING_STRENGTH                 = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
-    /** The field ID for dexterity (DX) changes. */
-    public static final  String                              ID_DEXTERITY                         = ATTRIBUTES_PREFIX + BonusAttributeType.DX.name();
-    /** The field ID for intelligence (IQ) changes. */
-    public static final  String                              ID_INTELLIGENCE                      = ATTRIBUTES_PREFIX + BonusAttributeType.IQ.name();
-    /** The field ID for health (HT) changes. */
-    public static final  String                              ID_HEALTH                            = ATTRIBUTES_PREFIX + BonusAttributeType.HT.name();
-    /** The field ID for perception changes. */
-    public static final  String                              ID_PERCEPTION                        = ATTRIBUTES_PREFIX + BonusAttributeType.PERCEPTION.name();
-    /** The field ID for vision changes. */
-    public static final  String                              ID_VISION                            = ATTRIBUTES_PREFIX + BonusAttributeType.VISION.name();
-    /** The field ID for hearing changes. */
-    public static final  String                              ID_HEARING                           = ATTRIBUTES_PREFIX + BonusAttributeType.HEARING.name();
-    /** The field ID for taste changes. */
-    public static final  String                              ID_TASTE_AND_SMELL                   = ATTRIBUTES_PREFIX + BonusAttributeType.TASTE_SMELL.name();
-    /** The field ID for smell changes. */
-    public static final  String                              ID_TOUCH                             = ATTRIBUTES_PREFIX + BonusAttributeType.TOUCH.name();
-    /** The field ID for will changes. */
-    public static final  String                              ID_WILL                              = ATTRIBUTES_PREFIX + BonusAttributeType.WILL.name();
-    /** The field ID for fright check changes. */
-    public static final  String                              ID_FRIGHT_CHECK                      = ATTRIBUTES_PREFIX + BonusAttributeType.FRIGHT_CHECK.name();
-    /** The field ID for basic speed changes. */
-    public static final  String                              ID_BASIC_SPEED                       = ATTRIBUTES_PREFIX + BonusAttributeType.SPEED.name();
-    /** The field ID for basic move changes. */
-    public static final  String                              ID_BASIC_MOVE                        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
-    /** The prefix used in front of all IDs for dodge changes. */
-    public static final  String                              DODGE_PREFIX                         = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name() + "#.";
-    /** The field ID for dodge bonus changes. */
-    public static final  String                              ID_DODGE_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
-    /** The field ID for parry bonus changes. */
-    public static final  String                              ID_PARRY_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.PARRY.name();
-    /** The field ID for block bonus changes. */
-    public static final  String                              ID_BLOCK_BONUS                       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
-    /** The field ID for carried weight changes. */
-    public static final  String                              ID_CARRIED_WEIGHT                    = CHARACTER_PREFIX + "CarriedWeight";
-    /** The field ID for carried wealth changes. */
-    public static final  String                              ID_CARRIED_WEALTH                    = CHARACTER_PREFIX + "CarriedWealth";
-    /** The field ID for other wealth changes. */
-    public static final  String                              ID_NOT_CARRIED_WEALTH                = CHARACTER_PREFIX + "NotCarriedWealth";
-    /** The prefix used in front of all IDs for point summaries. */
-    public static final  String                              POINT_SUMMARY_PREFIX                 = CHARACTER_PREFIX + "ps.";
-    /** The prefix used in front of all IDs for basic damage. */
-    public static final  String                              BASIC_DAMAGE_PREFIX                  = CHARACTER_PREFIX + "bd.";
-    /** The field ID for basic thrust damage changes. */
-    public static final  String                              ID_BASIC_THRUST                      = BASIC_DAMAGE_PREFIX + "Thrust";
-    /** The field ID for basic swing damage changes. */
-    public static final  String                              ID_BASIC_SWING                       = BASIC_DAMAGE_PREFIX + "Swing";
-    private static final String                              HIT_POINTS_PREFIX                    = ATTRIBUTES_PREFIX + "derived_hp.";
-    /** The field ID for hit point changes. */
-    public static final  String                              ID_HIT_POINTS                        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
-    /** The field ID for hit point damage changes. */
-    public static final  String                              ID_HIT_POINTS_DAMAGE                 = HIT_POINTS_PREFIX + "Damage";
-    /** The field ID for current hit point changes. */
-    public static final  String                              ID_CURRENT_HP                        = HIT_POINTS_PREFIX + "Current";
-    /** The field ID for reeling hit point changes. */
-    public static final  String                              ID_REELING_HIT_POINTS                = HIT_POINTS_PREFIX + "Reeling";
-    /** The field ID for unconscious check hit point changes. */
-    public static final  String                              ID_UNCONSCIOUS_CHECKS_HIT_POINTS     = HIT_POINTS_PREFIX + "UnconsciousChecks";
-    /** The field ID for death check #1 hit point changes. */
-    public static final  String                              ID_DEATH_CHECK_1_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck1";
-    /** The field ID for death check #2 hit point changes. */
-    public static final  String                              ID_DEATH_CHECK_2_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck2";
-    /** The field ID for death check #3 hit point changes. */
-    public static final  String                              ID_DEATH_CHECK_3_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck3";
-    /** The field ID for death check #4 hit point changes. */
-    public static final  String                              ID_DEATH_CHECK_4_HIT_POINTS          = HIT_POINTS_PREFIX + "DeathCheck4";
-    /** The field ID for dead hit point changes. */
-    public static final  String                              ID_DEAD_HIT_POINTS                   = HIT_POINTS_PREFIX + "Dead";
-    private static final String                              FATIGUE_POINTS_PREFIX                = ATTRIBUTES_PREFIX + "derived_fp.";
-    /** The field ID for fatigue point changes. */
-    public static final  String                              ID_FATIGUE_POINTS                    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
-    /** The field ID for fatigue point damage changes. */
-    public static final  String                              ID_FATIGUE_POINTS_DAMAGE             = FATIGUE_POINTS_PREFIX + "Damage";
-    /** The field ID for current fatigue point changes. */
-    public static final  String                              ID_CURRENT_FP                        = FATIGUE_POINTS_PREFIX + "Current";
-    /** The field ID for tired fatigue point changes. */
-    public static final  String                              ID_TIRED_FATIGUE_POINTS              = FATIGUE_POINTS_PREFIX + "Tired";
-    /** The field ID for unconscious check fatigue point changes. */
-    public static final  String                              ID_UNCONSCIOUS_CHECKS_FATIGUE_POINTS = FATIGUE_POINTS_PREFIX + "UnconsciousChecks";
-    /** The field ID for unconscious fatigue point changes. */
-    public static final  String                              ID_UNCONSCIOUS_FATIGUE_POINTS        = FATIGUE_POINTS_PREFIX + "Unconscious";
-    private static final Pattern                             UL_PATTERN                           = Pattern.compile("<ul>");
-    private              long                                mModifiedOn;
-    private              long                                mCreatedOn;
-    private              HashMap<String, ArrayList<Feature>> mFeatureMap;
-    private              JsonMap                             mThirdPartyData;
-    private              int                                 mStrength;
-    private              int                                 mStrengthBonus;
-    private              int                                 mLiftingStrengthBonus;
-    private              int                                 mStrikingStrengthBonus;
-    private              int                                 mStrengthCostReduction;
-    private              int                                 mDexterity;
-    private              int                                 mDexterityBonus;
-    private              int                                 mDexterityCostReduction;
-    private              int                                 mIntelligence;
-    private              int                                 mIntelligenceBonus;
-    private              int                                 mIntelligenceCostReduction;
-    private              int                                 mHealth;
-    private              int                                 mHealthBonus;
-    private              int                                 mHealthCostReduction;
-    private              int                                 mWillAdj;
-    private              int                                 mWillBonus;
-    private              int                                 mFrightCheckBonus;
-    private              int                                 mPerAdj;
-    private              int                                 mPerceptionBonus;
-    private              int                                 mVisionBonus;
-    private              int                                 mHearingBonus;
-    private              int                                 mTasteAndSmellBonus;
-    private              int                                 mTouchBonus;
-    private              int                                 mHitPointsDamage;
-    private              int                                 mHitPointsAdj;
-    private              int                                 mHitPointBonus;
-    private              int                                 mFatiguePoints;
-    private              int                                 mFatiguePointsDamage;
-    private              int                                 mFatiguePointBonus;
-    private              double                              mSpeedAdj;
-    private              double                              mSpeedBonus;
-    private              int                                 mMoveAdj;
-    private              int                                 mMoveBonus;
-    private              int                                 mDodgeBonus;
-    private              int                                 mParryBonus;
-    private              int                                 mBlockBonus;
-    private              int                                 mTotalPoints;
-    private              Settings                            mSettings;
-    private              Profile                             mProfile;
-    private              Armor                               mArmor;
-    private              WeightValue                         mCachedWeightCarried;
-    private              WeightValue                         mCachedWeightCarriedForSkills;
-    private              Fixed6                              mCachedWealthCarried;
-    private              Fixed6                              mCachedWealthNotCarried;
-    private              int                                 mCachedAttributePoints;
-    private              int                                 mCachedAdvantagePoints;
-    private              int                                 mCachedDisadvantagePoints;
-    private              int                                 mCachedQuirkPoints;
-    private              int                                 mCachedSkillPoints;
-    private              int                                 mCachedSpellPoints;
-    private              int                                 mCachedRacePoints;
-    private              PrintManager                        mPageSettings;
-    private              String                              mPageSettingsString;
-    private              boolean                             mSkillsUpdated;
-    private              boolean                             mSpellsUpdated;
+    private static final int    CURRENT_JSON_VERSION = 1;
+    private static final String KEY_ROOT             = "character";
+    private static final String KEY_CREATED_DATE     = "created_date";
+    private static final String KEY_MODIFIED_DATE    = "modified_date";
+    private static final String KEY_HP_DAMAGE        = "hp_damage";
+    private static final String KEY_FP_DAMAGE        = "fp_damage";
+    private static final String KEY_TOTAL_POINTS     = "total_points";
+    private static final String KEY_HP_ADJ           = "HP_adj";
+    private static final String KEY_FP_ADJ           = "FP_adj";
+    private static final String KEY_ST               = "ST";
+    private static final String KEY_DX               = "DX";
+    private static final String KEY_IQ               = "IQ";
+    private static final String KEY_HT               = "HT";
+    private static final String KEY_WILL_ADJ         = "will_adj";
+    private static final String KEY_PER_ADJ          = "per_adj";
+    private static final String KEY_SPEED_ADJ        = "speed_adj";
+    private static final String KEY_MOVE_ADJ         = "move_adj";
+    private static final String KEY_THIRD_PARTY_DATA = "third_party";
+
+    public static final String ATTRIBUTES_PREFIX    = "attr.";
+    public static final String ID_STRENGTH          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
+    public static final String ID_LIFTING_STRENGTH  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
+    public static final String ID_STRIKING_STRENGTH = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
+    public static final String ID_DEXTERITY         = ATTRIBUTES_PREFIX + BonusAttributeType.DX.name();
+    public static final String ID_INTELLIGENCE      = ATTRIBUTES_PREFIX + BonusAttributeType.IQ.name();
+    public static final String ID_HEALTH            = ATTRIBUTES_PREFIX + BonusAttributeType.HT.name();
+    public static final String ID_PERCEPTION        = ATTRIBUTES_PREFIX + BonusAttributeType.PERCEPTION.name();
+    public static final String ID_VISION            = ATTRIBUTES_PREFIX + BonusAttributeType.VISION.name();
+    public static final String ID_HEARING           = ATTRIBUTES_PREFIX + BonusAttributeType.HEARING.name();
+    public static final String ID_TASTE_AND_SMELL   = ATTRIBUTES_PREFIX + BonusAttributeType.TASTE_SMELL.name();
+    public static final String ID_TOUCH             = ATTRIBUTES_PREFIX + BonusAttributeType.TOUCH.name();
+    public static final String ID_WILL              = ATTRIBUTES_PREFIX + BonusAttributeType.WILL.name();
+    public static final String ID_FRIGHT_CHECK      = ATTRIBUTES_PREFIX + BonusAttributeType.FRIGHT_CHECK.name();
+    public static final String ID_BASIC_SPEED       = ATTRIBUTES_PREFIX + BonusAttributeType.SPEED.name();
+    public static final String ID_BASIC_MOVE        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
+    public static final String ID_DODGE_BONUS       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
+    public static final String ID_PARRY_BONUS       = ATTRIBUTES_PREFIX + BonusAttributeType.PARRY.name();
+    public static final String ID_BLOCK_BONUS       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
+    public static final String ID_HIT_POINTS        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
+    public static final String ID_FATIGUE_POINTS    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
+
+    private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
+
+    private long                                mModifiedOn;
+    private long                                mCreatedOn;
+    private HashMap<String, ArrayList<Feature>> mFeatureMap;
+    private JsonMap                             mThirdPartyData;
+    private int                                 mStrength;
+    private int                                 mStrengthBonus;
+    private int                                 mLiftingStrengthBonus;
+    private int                                 mStrikingStrengthBonus;
+    private int                                 mStrengthCostReduction;
+    private int                                 mDexterity;
+    private int                                 mDexterityBonus;
+    private int                                 mDexterityCostReduction;
+    private int                                 mIntelligence;
+    private int                                 mIntelligenceBonus;
+    private int                                 mIntelligenceCostReduction;
+    private int                                 mHealth;
+    private int                                 mHealthBonus;
+    private int                                 mHealthCostReduction;
+    private int                                 mWillAdj;
+    private int                                 mWillBonus;
+    private int                                 mFrightCheckBonus;
+    private int                                 mPerAdj;
+    private int                                 mPerceptionBonus;
+    private int                                 mVisionBonus;
+    private int                                 mHearingBonus;
+    private int                                 mTasteAndSmellBonus;
+    private int                                 mTouchBonus;
+    private int                                 mHitPointsDamage;
+    private int                                 mHitPointsAdj;
+    private int                                 mHitPointBonus;
+    private int                                 mFatiguePoints;
+    private int                                 mFatiguePointsDamage;
+    private int                                 mFatiguePointBonus;
+    private double                              mSpeedAdj;
+    private double                              mSpeedBonus;
+    private int                                 mMoveAdj;
+    private int                                 mMoveBonus;
+    private int                                 mDodgeBonus;
+    private int                                 mParryBonus;
+    private int                                 mBlockBonus;
+    private int                                 mTotalPoints;
+    private Settings                            mSettings;
+    private Profile                             mProfile;
+    private Armor                               mArmor;
+    private WeightValue                         mCachedWeightCarried;
+    private WeightValue                         mCachedWeightCarriedForSkills;
+    private Fixed6                              mCachedWealthCarried;
+    private Fixed6                              mCachedWealthNotCarried;
+    private int                                 mCachedAttributePoints;
+    private int                                 mCachedAdvantagePoints;
+    private int                                 mCachedDisadvantagePoints;
+    private int                                 mCachedQuirkPoints;
+    private int                                 mCachedSkillPoints;
+    private int                                 mCachedSpellPoints;
+    private int                                 mCachedRacePoints;
+    private PrintManager                        mPageSettings;
+    private String                              mPageSettingsString;
+    private boolean                             mSkillsUpdated;
+    private boolean                             mSpellsUpdated;
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
@@ -312,7 +242,7 @@ public class GURPSCharacter extends CollectedModels {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     public void recalculate() {
@@ -333,14 +263,14 @@ public class GURPSCharacter extends CollectedModels {
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         characterInitialize(false);
-        mSettings.load(m.getMap(Settings.TAG_ROOT));
-        mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
-        mProfile.load(m.getMap(Profile.TAG_ROOT));
+        mSettings.load(m.getMap(Settings.KEY_ROOT));
+        mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
+        mProfile.load(m.getMap(Profile.KEY_PROFILE));
         mHitPointsAdj = m.getInt(KEY_HP_ADJ);
-        mHitPointsDamage = m.getInt(TAG_HP_DAMAGE);
+        mHitPointsDamage = m.getInt(KEY_HP_DAMAGE);
         mFatiguePoints = m.getInt(KEY_FP_ADJ);
-        mFatiguePointsDamage = m.getInt(TAG_FP_DAMAGE);
-        mTotalPoints = m.getInt(TAG_TOTAL_POINTS);
+        mFatiguePointsDamage = m.getInt(KEY_FP_DAMAGE);
+        mTotalPoints = m.getInt(KEY_TOTAL_POINTS);
         mStrength = m.getInt(KEY_ST);
         mDexterity = m.getInt(KEY_DX);
         mIntelligence = m.getInt(KEY_IQ);
@@ -350,8 +280,8 @@ public class GURPSCharacter extends CollectedModels {
         mSpeedAdj = m.getDouble(KEY_SPEED_ADJ);
         mMoveAdj = m.getInt(KEY_MOVE_ADJ);
         loadModels(m, state);
-        if (mPageSettings != null && m.has(PrintManager.TAG_ROOT)) {
-            mPageSettings = new PrintManager(m.getMap(PrintManager.TAG_ROOT));
+        if (mPageSettings != null && m.has(PrintManager.KEY_ROOT)) {
+            mPageSettings = new PrintManager(m.getMap(PrintManager.KEY_ROOT));
             mPageSettingsString = mPageSettings.toString();
         }
         // Loop through the skills and update their levels. It is necessary to do this here and not
@@ -362,22 +292,22 @@ public class GURPSCharacter extends CollectedModels {
         }
         calculateAll();
         mThirdPartyData = m.getMap(KEY_THIRD_PARTY_DATA);
-        mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(TAG_MODIFIED_DATE)) / FieldFactory.TIMESTAMP_FACTOR; // Must be last
+        mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_MODIFIED_DATE)) / FieldFactory.TIMESTAMP_FACTOR; // Must be last
     }
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
-        w.key(Settings.TAG_ROOT);
+        w.key(Settings.KEY_ROOT);
         mSettings.save(w);
-        w.keyValue(TAG_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
-        w.keyValue(TAG_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
-        w.key(Profile.TAG_ROOT);
+        w.keyValue(KEY_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
+        w.keyValue(KEY_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
+        w.key(Profile.KEY_PROFILE);
         mProfile.save(w);
         w.keyValueNot(KEY_HP_ADJ, mHitPointsAdj, 0);
-        w.keyValueNot(TAG_HP_DAMAGE, mHitPointsDamage, 0);
+        w.keyValueNot(KEY_HP_DAMAGE, mHitPointsDamage, 0);
         w.keyValueNot(KEY_FP_ADJ, mFatiguePoints, 0);
-        w.keyValueNot(TAG_FP_DAMAGE, mFatiguePointsDamage, 0);
-        w.keyValue(TAG_TOTAL_POINTS, mTotalPoints);
+        w.keyValueNot(KEY_FP_DAMAGE, mFatiguePointsDamage, 0);
+        w.keyValue(KEY_TOTAL_POINTS, mTotalPoints);
         w.keyValue(KEY_ST, mStrength);
         w.keyValue(KEY_DX, mDexterity);
         w.keyValue(KEY_IQ, mIntelligence);
@@ -389,7 +319,7 @@ public class GURPSCharacter extends CollectedModels {
         saveModels(w, saveType);
         if (saveType != SaveType.HASH) {
             if (mPageSettings != null) {
-                w.key(PrintManager.TAG_ROOT);
+                w.key(PrintManager.KEY_ROOT);
                 mPageSettings.save(w, LengthUnits.IN);
                 mPageSettingsString = mPageSettings.toString();
             }

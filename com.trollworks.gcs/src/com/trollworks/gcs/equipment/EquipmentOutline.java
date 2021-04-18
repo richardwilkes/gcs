@@ -46,7 +46,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
      */
     public EquipmentOutline(DataFile dataFile, OutlineModel model) {
         super(dataFile, model);
-        EquipmentColumn.addColumns(this, dataFile, model.getProperty(EquipmentList.TAG_OTHER_ROOT) == null);
+        EquipmentColumn.addColumns(this, dataFile, model.getProperty(EquipmentList.KEY_OTHER_ROOT) == null);
     }
 
     @Override

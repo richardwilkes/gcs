@@ -50,95 +50,55 @@ import java.util.Set;
 
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
-    private static final int                        CURRENT_JSON_VERSION       = 1;
-    /** The XML tag used for items. */
-    public static final  String                     TAG_ADVANTAGE              = "advantage";
-    /** The XML tag used for containers. */
-    public static final  String                     TAG_ADVANTAGE_CONTAINER    = "advantage_container";
-    private static final String                     TAG_REFERENCE              = "reference";
-    private static final String                     TAG_BASE_POINTS            = "base_points";
-    private static final String                     TAG_POINTS_PER_LEVEL       = "points_per_level";
-    private static final String                     TAG_LEVELS                 = "levels";
-    private static final String                     TAG_NAME                   = "name";
-    private static final String                     TAG_CR                     = "cr";
-    private static final String                     TAG_USER_DESC              = "userdesc";
-    private static final String                     TYPE_MENTAL                = "Mental";
-    private static final String                     TYPE_PHYSICAL              = "Physical";
-    private static final String                     TYPE_SOCIAL                = "Social";
-    private static final String                     TYPE_EXOTIC                = "Exotic";
-    private static final String                     TYPE_SUPERNATURAL          = "Supernatural";
-    private static final String                     ATTR_DISABLED              = "disabled";
-    private static final String                     ATTR_ROUND_COST_DOWN       = "round_down";
-    private static final String                     ATTR_ALLOW_HALF_LEVELS     = "allow_half_levels";
-    private static final String                     KEY_CONTAINER_TYPE         = "container_type";
-    private static final String                     KEY_WEAPONS                = "weapons";
-    private static final String                     KEY_MODIFIERS              = "modifiers";
-    private static final String                     KEY_CR_ADJ                 = "cr_adj";
-    private static final String                     KEY_MENTAL                 = "mental";
-    private static final String                     KEY_PHYSICAL               = "physical";
-    private static final String                     KEY_SOCIAL                 = "social";
-    private static final String                     KEY_EXOTIC                 = "exotic";
-    private static final String                     KEY_SUPERNATURAL           = "supernatural";
-    /** The prefix used in front of all IDs for the advantages. */
-    public static final  String                     PREFIX                     = GURPSCharacter.CHARACTER_PREFIX + "advantage.";
-    /** The field ID for type changes. */
-    public static final  String                     ID_TYPE                    = PREFIX + "Type";
-    /** The field ID for container type changes. */
-    public static final  String                     ID_CONTAINER_TYPE          = PREFIX + "ContainerType";
-    /** The field ID for name changes. */
-    public static final  String                     ID_NAME                    = PREFIX + "Name";
-    /** The field ID for CR changes. */
-    public static final  String                     ID_CR                      = PREFIX + "CR";
-    /** The field ID for level changes. */
-    public static final  String                     ID_LEVELS                  = PREFIX + "Levels";
-    /** The field ID for half level. */
-    public static final  String                     ID_HALF_LEVEL              = PREFIX + "HalfLevel";
-    /** The field ID for round cost down changes. */
-    public static final  String                     ID_ROUND_COST_DOWN         = PREFIX + "RoundCostDown";
-    /** The field ID for disabled changes. */
-    public static final  String                     ID_DISABLED                = PREFIX + "Disabled";
-    /** The field ID for allowing half levels. */
-    public static final  String                     ID_ALLOW_HALF_LEVELS       = PREFIX + "AllowHalfLevels";
-    /** The field ID for point changes. */
-    public static final  String                     ID_POINTS                  = PREFIX + "Points";
-    /** The field ID for page reference changes. */
-    public static final  String                     ID_REFERENCE               = PREFIX + "Reference";
-    /** The field ID for when the categories change. */
-    public static final  String                     ID_CATEGORY                = PREFIX + "Category";
-    /** The field ID for when the row hierarchy changes. */
-    public static final  String                     ID_LIST_CHANGED            = PREFIX + "ListChanged";
-    /** The field ID for when the advantage becomes or stops being a weapon. */
-    public static final  String                     ID_WEAPON_STATUS_CHANGED   = PREFIX + "WeaponStatus";
-    /** The field ID for when the advantage gets Modifiers. */
-    public static final  String                     ID_MODIFIER_STATUS_CHANGED = PREFIX + "Modifier";
-    /** The field ID for user description changes. */
-    public static final  String                     ID_USER_DESC               = PREFIX + "UserDesc";
-    /** The type mask for mental advantages. */
-    public static final  int                        TYPE_MASK_MENTAL           = 1 << 0;
-    /** The type mask for physical advantages. */
-    public static final  int                        TYPE_MASK_PHYSICAL         = 1 << 1;
-    /** The type mask for social advantages. */
-    public static final  int                        TYPE_MASK_SOCIAL           = 1 << 2;
-    /** The type mask for exotic advantages. */
-    public static final  int                        TYPE_MASK_EXOTIC           = 1 << 3;
-    /** The type mask for supernatural advantages. */
-    public static final  int                        TYPE_MASK_SUPERNATURAL     = 1 << 4;
-    private              int                        mType;
-    private              String                     mName;
-    private              SelfControlRoll            mCR;
-    private              SelfControlRollAdjustments mCRAdj;
-    private              int                        mLevels;
-    private              boolean                    mAllowHalfLevels;
-    private              boolean                    mHalfLevel;
-    private              int                        mPoints;
-    private              int                        mPointsPerLevel;
-    private              String                     mReference;
-    private              AdvantageContainerType     mContainerType;
-    private              List<WeaponStats>          mWeapons;
-    private              List<AdvantageModifier>    mModifiers;
-    private              boolean                    mRoundCostDown;
-    private              boolean                    mDisabled;
-    private              String                     mUserDesc;
+    private static final int    CURRENT_JSON_VERSION    = 1;
+    public static final  String KEY_ADVANTAGE           = "advantage";
+    public static final  String KEY_ADVANTAGE_CONTAINER = "advantage_container";
+    private static final String KEY_REFERENCE           = "reference";
+    private static final String KEY_BASE_POINTS         = "base_points";
+    private static final String KEY_POINTS_PER_LEVEL    = "points_per_level";
+    private static final String KEY_LEVELS              = "levels";
+    private static final String KEY_NAME                = "name";
+    private static final String KEY_CR                  = "cr";
+    private static final String KEY_USER_DESC           = "userdesc";
+    private static final String KEY_DISABLED            = "disabled";
+    private static final String KEY_ROUND_COST_DOWN     = "round_down";
+    private static final String KEY_ALLOW_HALF_LEVELS   = "allow_half_levels";
+    private static final String KEY_CONTAINER_TYPE      = "container_type";
+    private static final String KEY_WEAPONS             = "weapons";
+    private static final String KEY_MODIFIERS           = "modifiers";
+    private static final String KEY_CR_ADJ              = "cr_adj";
+    private static final String KEY_MENTAL              = "mental";
+    private static final String KEY_PHYSICAL            = "physical";
+    private static final String KEY_SOCIAL              = "social";
+    private static final String KEY_EXOTIC              = "exotic";
+    private static final String KEY_SUPERNATURAL        = "supernatural";
+    private static final String TYPE_MENTAL             = "Mental";
+    private static final String TYPE_PHYSICAL           = "Physical";
+    private static final String TYPE_SOCIAL             = "Social";
+    private static final String TYPE_EXOTIC             = "Exotic";
+    private static final String TYPE_SUPERNATURAL       = "Supernatural";
+    public static final  int    TYPE_MASK_MENTAL        = 1 << 0;
+    public static final  int    TYPE_MASK_PHYSICAL      = 1 << 1;
+    public static final  int    TYPE_MASK_SOCIAL        = 1 << 2;
+    public static final  int    TYPE_MASK_EXOTIC        = 1 << 3;
+    public static final  int    TYPE_MASK_SUPERNATURAL  = 1 << 4;
+
+    private int                        mType;
+    private String                     mName;
+    private SelfControlRoll            mCR;
+    private SelfControlRollAdjustments mCRAdj;
+    private int                        mLevels;
+    private int                        mPoints;
+    private int                        mPointsPerLevel;
+    private String                     mReference;
+    private AdvantageContainerType     mContainerType;
+    private List<WeaponStats>          mWeapons;
+    private List<AdvantageModifier>    mModifiers;
+    private String                     mUserDesc;
+    private boolean                    mAllowHalfLevels;
+    private boolean                    mHalfLevel;
+    private boolean                    mRoundCostDown;
+    private boolean                    mDisabled;
 
     /**
      * Creates a new advantage.
@@ -205,7 +165,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     public Advantage(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_ADVANTAGE_CONTAINER));
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_ADVANTAGE_CONTAINER));
         load(m, state);
     }
 
@@ -232,7 +192,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     @Override
     public String getJSONTypeName() {
-        return canHaveChildren() ? TAG_ADVANTAGE_CONTAINER : TAG_ADVANTAGE;
+        return canHaveChildren() ? KEY_ADVANTAGE_CONTAINER : KEY_ADVANTAGE;
     }
 
     @Override
@@ -263,13 +223,13 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
-        mRoundCostDown = m.getBoolean(ATTR_ROUND_COST_DOWN);
-        mDisabled = m.getBoolean(ATTR_DISABLED);
-        mAllowHalfLevels = m.getBoolean(ATTR_ALLOW_HALF_LEVELS);
+        mRoundCostDown = m.getBoolean(KEY_ROUND_COST_DOWN);
+        mDisabled = m.getBoolean(KEY_DISABLED);
+        mAllowHalfLevels = m.getBoolean(KEY_ALLOW_HALF_LEVELS);
         if (canHaveChildren()) {
             mContainerType = Enums.extract(m.getString(KEY_CONTAINER_TYPE), AdvantageContainerType.values(), AdvantageContainerType.GROUP);
         }
-        mName = m.getString(TAG_NAME);
+        mName = m.getString(KEY_NAME);
         mType = 0;
         if (!canHaveChildren()) {
             if (m.getBoolean(KEY_MENTAL)) {
@@ -287,21 +247,21 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             if (m.getBoolean(KEY_SUPERNATURAL)) {
                 mType |= TYPE_MASK_SUPERNATURAL;
             }
-            if (m.has(TAG_LEVELS)) {
-                Fixed6 levels = new Fixed6(m.getString(TAG_LEVELS), false);
+            if (m.has(KEY_LEVELS)) {
+                Fixed6 levels = new Fixed6(m.getString(KEY_LEVELS), false);
                 mLevels = (int) levels.asLong();
                 if (mAllowHalfLevels) {
                     mHalfLevel = levels.sub(new Fixed6(mLevels)).equals(new Fixed6(0.5));
                 }
             }
-            mPoints = m.getInt(TAG_BASE_POINTS);
-            mPointsPerLevel = m.getInt(TAG_POINTS_PER_LEVEL);
+            mPoints = m.getInt(KEY_BASE_POINTS);
+            mPointsPerLevel = m.getInt(KEY_POINTS_PER_LEVEL);
             if (m.has(KEY_WEAPONS)) {
                 WeaponStats.loadFromJSONArray(this, m.getArray(KEY_WEAPONS), mWeapons);
             }
         }
-        if (m.has(TAG_CR)) {
-            mCR = SelfControlRoll.getByCRValue(m.getInt(TAG_CR));
+        if (m.has(KEY_CR)) {
+            mCR = SelfControlRoll.getByCRValue(m.getInt(KEY_CR));
             if (m.has(KEY_CR_ADJ)) {
                 mCRAdj = Enums.extract(m.getString(KEY_CR_ADJ), SelfControlRollAdjustments.values(), SelfControlRollAdjustments.NONE);
             }
@@ -314,16 +274,16 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             }
         }
         if (getDataFile() instanceof GURPSCharacter) {
-            mUserDesc = m.getString(TAG_USER_DESC);
+            mUserDesc = m.getString(KEY_USER_DESC);
         }
-        mReference = m.getString(TAG_REFERENCE);
+        mReference = m.getString(KEY_REFERENCE);
     }
 
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
             String type = m.getString(DataFile.KEY_TYPE);
-            if (TAG_ADVANTAGE.equals(type) || TAG_ADVANTAGE_CONTAINER.equals(type)) {
+            if (KEY_ADVANTAGE.equals(type) || KEY_ADVANTAGE_CONTAINER.equals(type)) {
                 addChild(new Advantage(mDataFile, m, state));
             } else {
                 Log.warn("invalid child type: " + type);
@@ -333,13 +293,13 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
-        w.keyValueNot(ATTR_ROUND_COST_DOWN, mRoundCostDown, false);
-        w.keyValueNot(ATTR_ALLOW_HALF_LEVELS, mAllowHalfLevels, false);
-        w.keyValueNot(ATTR_DISABLED, mDisabled, false);
+        w.keyValueNot(KEY_ROUND_COST_DOWN, mRoundCostDown, false);
+        w.keyValueNot(KEY_ALLOW_HALF_LEVELS, mAllowHalfLevels, false);
+        w.keyValueNot(KEY_DISABLED, mDisabled, false);
         if (canHaveChildren() && mContainerType != AdvantageContainerType.GROUP) {
             w.keyValue(KEY_CONTAINER_TYPE, Enums.toId(mContainerType));
         }
-        w.keyValue(TAG_NAME, mName);
+        w.keyValue(KEY_NAME, mName);
         if (!canHaveChildren()) {
             w.keyValueNot(KEY_MENTAL, (mType & TYPE_MASK_MENTAL) != 0, false);
             w.keyValueNot(KEY_PHYSICAL, (mType & TYPE_MASK_PHYSICAL) != 0, false);
@@ -351,23 +311,23 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
                 if (mAllowHalfLevels && mHalfLevel) {
                     levels = levels.add(new Fixed6(0.5));
                 }
-                w.keyValue(TAG_LEVELS, levels.toString());
+                w.keyValue(KEY_LEVELS, levels.toString());
             }
-            w.keyValueNot(TAG_BASE_POINTS, mPoints, 0);
-            w.keyValueNot(TAG_POINTS_PER_LEVEL, mPointsPerLevel, 0);
+            w.keyValueNot(KEY_BASE_POINTS, mPoints, 0);
+            w.keyValueNot(KEY_POINTS_PER_LEVEL, mPointsPerLevel, 0);
             WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
         }
         if (mCR != SelfControlRoll.NONE_REQUIRED) {
-            w.keyValue(TAG_CR, mCR.getCR());
+            w.keyValue(KEY_CR, mCR.getCR());
             if (mCRAdj != SelfControlRollAdjustments.NONE) {
                 w.keyValue(KEY_CR_ADJ, Enums.toId(mCRAdj));
             }
         }
         saveList(w, KEY_MODIFIERS, mModifiers, saveType);
         if (getDataFile() instanceof GURPSCharacter) {
-            w.keyValueNot(TAG_USER_DESC, mUserDesc, "");
+            w.keyValueNot(KEY_USER_DESC, mUserDesc, "");
         }
-        w.keyValueNot(TAG_REFERENCE, mReference, "");
+        w.keyValueNot(KEY_REFERENCE, mReference, "");
     }
 
     /** @return The container type. */
@@ -995,11 +955,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             builder.setLength(builder.length() - MODIFIER_SEPARATOR.length());
         }
         return builder.toString();
-    }
-
-    @Override
-    protected String getCategoryID() {
-        return ID_CATEGORY;
     }
 
     /** @return The "secondary" text, the text display below an Advantage. */

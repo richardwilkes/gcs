@@ -27,10 +27,10 @@ import java.text.MessageFormat;
 
 /** An equipment contained quantity prerequisite. */
 public class ContainedQuantityPrereq extends HasPrereq {
-    /** The XML tag for this class. */
-    public static final  String          TAG_ROOT      = "contained_quantity_prereq";
-    private static final String          KEY_QUALIFIER = "qualifier";
-    private              IntegerCriteria mQuantityCompare;
+    public static final  String KEY_ROOT      = "contained_quantity_prereq";
+    private static final String KEY_QUALIFIER = "qualifier";
+
+    private IntegerCriteria mQuantityCompare;
 
     /**
      * Creates a new prerequisite.
@@ -77,7 +77,7 @@ public class ContainedQuantityPrereq extends HasPrereq {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override

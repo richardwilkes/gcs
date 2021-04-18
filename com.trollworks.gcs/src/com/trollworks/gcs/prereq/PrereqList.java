@@ -34,15 +34,15 @@ import java.util.Set;
 
 /** A prerequisite list. */
 public class PrereqList extends Prereq {
-    /** The XML tag used for the prereq list. */
-    public static final  String          TAG_ROOT      = "prereq_list";
-    private static final String          TAG_WHEN_TL   = "when_tl";
-    private static final String          ATTRIBUTE_ALL = "all";
-    private static final String          KEY_PREREQS   = "prereqs";
-    private              IntegerCriteria mWhenTLCriteria;
-    private              List<Prereq>    mPrereqs;
-    private              boolean         mWhenEnabled;
-    private              boolean         mAll;
+    public static final  String KEY_ROOT    = "prereq_list";
+    private static final String KEY_WHEN_TL = "when_tl";
+    private static final String KEY_ALL     = "all";
+    private static final String KEY_PREREQS = "prereqs";
+
+    private IntegerCriteria mWhenTLCriteria;
+    private List<Prereq>    mPrereqs;
+    private boolean         mWhenEnabled;
+    private boolean         mAll;
 
     /**
      * Creates a new prerequisite list.
@@ -109,15 +109,15 @@ public class PrereqList extends Prereq {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
-        mAll = m.getBoolean(ATTRIBUTE_ALL);
-        mWhenEnabled = m.has(TAG_WHEN_TL);
+        mAll = m.getBoolean(KEY_ALL);
+        mWhenEnabled = m.has(KEY_WHEN_TL);
         if (mWhenEnabled) {
-            mWhenTLCriteria.load(m.getMap(TAG_WHEN_TL));
+            mWhenTLCriteria.load(m.getMap(KEY_WHEN_TL));
         }
         if (m.has(KEY_PREREQS)) {
             JsonArray a     = m.getArray(KEY_PREREQS);
@@ -125,13 +125,13 @@ public class PrereqList extends Prereq {
             for (int i = 0; i < count; i++) {
                 JsonMap m1 = a.getMap(i);
                 switch (m1.getString(DataFile.KEY_TYPE)) {
-                case TAG_ROOT -> mPrereqs.add(new PrereqList(this, state.mDefWeightUnits, m1));
-                case AdvantagePrereq.TAG_ROOT -> mPrereqs.add(new AdvantagePrereq(this, m1));
-                case AttributePrereq.TAG_ROOT -> mPrereqs.add(new AttributePrereq(this, m1));
-                case ContainedWeightPrereq.TAG_ROOT -> mPrereqs.add(new ContainedWeightPrereq(this, state.mDefWeightUnits, m1));
-                case ContainedQuantityPrereq.TAG_ROOT -> mPrereqs.add(new ContainedQuantityPrereq(this, m1));
-                case SkillPrereq.TAG_ROOT -> mPrereqs.add(new SkillPrereq(this, m1));
-                case SpellPrereq.TAG_ROOT -> mPrereqs.add(new SpellPrereq(this, m1));
+                case KEY_ROOT -> mPrereqs.add(new PrereqList(this, state.mDefWeightUnits, m1));
+                case AdvantagePrereq.KEY_ROOT -> mPrereqs.add(new AdvantagePrereq(this, m1));
+                case AttributePrereq.KEY_ROOT -> mPrereqs.add(new AttributePrereq(this, m1));
+                case ContainedWeightPrereq.KEY_ROOT -> mPrereqs.add(new ContainedWeightPrereq(this, state.mDefWeightUnits, m1));
+                case ContainedQuantityPrereq.KEY_ROOT -> mPrereqs.add(new ContainedQuantityPrereq(this, m1));
+                case SkillPrereq.KEY_ROOT -> mPrereqs.add(new SkillPrereq(this, m1));
+                case SpellPrereq.KEY_ROOT -> mPrereqs.add(new SpellPrereq(this, m1));
                 }
             }
         }
@@ -139,9 +139,9 @@ public class PrereqList extends Prereq {
 
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
-        w.keyValue(ATTRIBUTE_ALL, mAll);
+        w.keyValue(KEY_ALL, mAll);
         if (mWhenEnabled) {
-            mWhenTLCriteria.save(w, TAG_WHEN_TL);
+            mWhenTLCriteria.save(w, KEY_WHEN_TL);
         }
         if (!mPrereqs.isEmpty()) {
             w.key(KEY_PREREQS);
@@ -167,7 +167,7 @@ public class PrereqList extends Prereq {
         return mWhenEnabled;
     }
 
-    /** @param enabled  Whether the character's TL criteria check is enabled. */
+    /** @param enabled Whether the character's TL criteria check is enabled. */
     public void setWhenTLEnabled(boolean enabled) {
         mWhenEnabled = enabled;
     }

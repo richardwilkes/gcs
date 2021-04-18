@@ -26,9 +26,7 @@ import java.io.IOException;
 
 /** A list of notes. */
 public class NoteList extends ListFile {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag for {@link NoteList}s. */
-    public static final  String TAG_ROOT             = "note_list";
+    private static final int CURRENT_JSON_VERSION = 1;
 
     @Override
     public int getJSONVersion() {
@@ -37,7 +35,7 @@ public class NoteList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return "note_list";
     }
 
     @Override
@@ -60,7 +58,7 @@ public class NoteList extends ListFile {
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
-            if (Note.TAG_NOTE.equals(type) || Note.TAG_NOTE_CONTAINER.equals(type)) {
+            if (Note.KEY_NOTE.equals(type) || Note.KEY_NOTE_CONTAINER.equals(type)) {
                 model.addRow(new Note(file, m1, state), true);
             } else {
                 Log.warn("invalid note type: " + type);

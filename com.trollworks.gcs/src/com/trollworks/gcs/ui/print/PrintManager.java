@@ -46,24 +46,24 @@ import javax.swing.JOptionPane;
 
 /** Manages printing. */
 public class PrintManager {
-    /** The XML root tag for {@link PrintManager}. */
-    public static final  String                       TAG_ROOT          = "print_settings";
-    private static final String                       ATTRIBUTE_UNITS   = "units";
-    private static final String                       ATTRIBUTE_PRINTER = "printer";
-    private static final String                       TAG_ORIENTATION   = "orientation";
-    private static final String                       TAG_WIDTH         = "width";
-    private static final String                       TAG_HEIGHT        = "height";
-    private static final String                       TAG_TOP_MARGIN    = "top_margin";
-    private static final String                       TAG_BOTTOM_MARGIN = "bottom_margin";
-    private static final String                       TAG_LEFT_MARGIN   = "left_margin";
-    private static final String                       TAG_RIGHT_MARGIN  = "right_margin";
-    private static final String                       TAG_CHROMATICITY  = "ink_chromaticity";
-    private static final String                       TAG_SIDES         = "sides";
-    private static final String                       TAG_NUMBER_UP     = "number_up";
-    private static final String                       TAG_QUALITY       = "quality";
-    private static final String                       TAG_RESOLUTION    = "resolution";
-    private              PrinterJob                   mJob;
-    private              HashPrintRequestAttributeSet mSet;
+    public static final  String KEY_ROOT          = "print_settings";
+    private static final String KEY_UNITS         = "units";
+    private static final String KEY_PRINTER       = "printer";
+    private static final String KEY_ORIENTATION   = "orientation";
+    private static final String KEY_WIDTH         = "width";
+    private static final String KEY_HEIGHT        = "height";
+    private static final String KEY_TOP_MARGIN    = "top_margin";
+    private static final String KEY_BOTTOM_MARGIN = "bottom_margin";
+    private static final String KEY_LEFT_MARGIN   = "left_margin";
+    private static final String KEY_RIGHT_MARGIN  = "right_margin";
+    private static final String KEY_CHROMATICITY  = "ink_chromaticity";
+    private static final String KEY_SIDES         = "sides";
+    private static final String KEY_NUMBER_UP     = "number_up";
+    private static final String KEY_QUALITY       = "quality";
+    private static final String KEY_RESOLUTION    = "resolution";
+
+    private PrinterJob                   mJob;
+    private HashPrintRequestAttributeSet mSet;
 
     /** Creates a new {@link PrintManager} object. */
     public PrintManager() {
@@ -123,20 +123,20 @@ public class PrintManager {
         this();
         double[]    size    = {8.5, 11.0};
         double[]    margins = {0, 0, 0, 0};
-        LengthUnits units   = Enums.extract(m.getString(ATTRIBUTE_UNITS), LengthUnits.values(), LengthUnits.IN);
-        setPrintServiceForPrinter(m.getString(ATTRIBUTE_PRINTER));
-        setPageOrientation(Enums.extract(m.getString(TAG_ORIENTATION), PageOrientation.values(), PageOrientation.PORTRAIT));
-        size[0] = getNumberForJSON(m, TAG_WIDTH, units, 8.5);
-        size[1] = getNumberForJSON(m, TAG_HEIGHT, units, 11.0);
-        margins[0] = getNumberForJSON(m, TAG_TOP_MARGIN, units, 0.0);
-        margins[1] = getNumberForJSON(m, TAG_LEFT_MARGIN, units, 0.0);
-        margins[2] = getNumberForJSON(m, TAG_BOTTOM_MARGIN, units, 0.0);
-        margins[3] = getNumberForJSON(m, TAG_RIGHT_MARGIN, units, 0.0);
-        setChromaticity(Enums.extract(m.getString(TAG_CHROMATICITY), InkChromaticity.values(), InkChromaticity.COLOR));
-        setSides(Enums.extract(m.getString(TAG_SIDES), PageSides.values(), PageSides.SINGLE));
-        setNumberUp(m.getIntWithDefault(TAG_NUMBER_UP, 1));
-        setPrintQuality(Enums.extract(m.getString(TAG_QUALITY), Quality.values(), Quality.NORMAL));
-        setResolution(extractFromResolutionString(m.getString(TAG_RESOLUTION)));
+        LengthUnits units   = Enums.extract(m.getString(KEY_UNITS), LengthUnits.values(), LengthUnits.IN);
+        setPrintServiceForPrinter(m.getString(KEY_PRINTER));
+        setPageOrientation(Enums.extract(m.getString(KEY_ORIENTATION), PageOrientation.values(), PageOrientation.PORTRAIT));
+        size[0] = getNumberForJSON(m, KEY_WIDTH, units, 8.5);
+        size[1] = getNumberForJSON(m, KEY_HEIGHT, units, 11.0);
+        margins[0] = getNumberForJSON(m, KEY_TOP_MARGIN, units, 0.0);
+        margins[1] = getNumberForJSON(m, KEY_LEFT_MARGIN, units, 0.0);
+        margins[2] = getNumberForJSON(m, KEY_BOTTOM_MARGIN, units, 0.0);
+        margins[3] = getNumberForJSON(m, KEY_RIGHT_MARGIN, units, 0.0);
+        setChromaticity(Enums.extract(m.getString(KEY_CHROMATICITY), InkChromaticity.values(), InkChromaticity.COLOR));
+        setSides(Enums.extract(m.getString(KEY_SIDES), PageSides.values(), PageSides.SINGLE));
+        setNumberUp(m.getIntWithDefault(KEY_NUMBER_UP, 1));
+        setPrintQuality(Enums.extract(m.getString(KEY_QUALITY), Quality.values(), Quality.NORMAL));
+        setResolution(extractFromResolutionString(m.getString(KEY_RESOLUTION)));
         setPaperSize(size, units);
         setPaperMargins(margins, units);
     }
@@ -283,21 +283,21 @@ public class PrintManager {
         PrintService service = getPrintService();
         w.startMap();
         if (service != null) {
-            w.keyValue(ATTRIBUTE_PRINTER, service.getName());
+            w.keyValue(KEY_PRINTER, service.getName());
         }
-        w.keyValue(ATTRIBUTE_UNITS, Enums.toId(units));
-        w.keyValue(TAG_ORIENTATION, Enums.toId(getPageOrientation()));
-        w.keyValue(TAG_WIDTH, size[0]);
-        w.keyValue(TAG_HEIGHT, size[1]);
-        w.keyValue(TAG_TOP_MARGIN, margins[0]);
-        w.keyValue(TAG_LEFT_MARGIN, margins[1]);
-        w.keyValue(TAG_BOTTOM_MARGIN, margins[2]);
-        w.keyValue(TAG_RIGHT_MARGIN, margins[3]);
-        w.keyValue(TAG_CHROMATICITY, Enums.toId(getChromaticity(false)));
-        w.keyValue(TAG_SIDES, Enums.toId(getSides()));
-        w.keyValueNot(TAG_NUMBER_UP, getNumberUp().getValue(), 1);
-        w.keyValue(TAG_QUALITY, Enums.toId(getPrintQuality(false)));
-        w.keyValueNot(TAG_RESOLUTION, createResolutionString(getResolution(false)), null);
+        w.keyValue(KEY_UNITS, Enums.toId(units));
+        w.keyValue(KEY_ORIENTATION, Enums.toId(getPageOrientation()));
+        w.keyValue(KEY_WIDTH, size[0]);
+        w.keyValue(KEY_HEIGHT, size[1]);
+        w.keyValue(KEY_TOP_MARGIN, margins[0]);
+        w.keyValue(KEY_LEFT_MARGIN, margins[1]);
+        w.keyValue(KEY_BOTTOM_MARGIN, margins[2]);
+        w.keyValue(KEY_RIGHT_MARGIN, margins[3]);
+        w.keyValue(KEY_CHROMATICITY, Enums.toId(getChromaticity(false)));
+        w.keyValue(KEY_SIDES, Enums.toId(getSides()));
+        w.keyValueNot(KEY_NUMBER_UP, getNumberUp().getValue(), 1);
+        w.keyValue(KEY_QUALITY, Enums.toId(getPrintQuality(false)));
+        w.keyValueNot(KEY_RESOLUTION, createResolutionString(getResolution(false)), null);
         w.endMap();
     }
 

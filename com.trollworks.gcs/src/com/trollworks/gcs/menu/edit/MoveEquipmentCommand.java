@@ -55,7 +55,7 @@ public class MoveEquipmentCommand extends Command {
             ListOutline  outline  = (ListOutline) focus;
             DataFile     dataFile = outline.getDataFile();
             OutlineModel model    = outline.getModel();
-            boolean      isOther  = model.getProperty(EquipmentList.TAG_OTHER_ROOT) != null;
+            boolean      isOther  = model.getProperty(EquipmentList.KEY_OTHER_ROOT) != null;
             setEnabled((dataFile instanceof GURPSCharacter || dataFile instanceof Template) && isOther == mToCarried && model.hasSelection());
         } else {
             setEnabled(false);
@@ -73,7 +73,7 @@ public class MoveEquipmentCommand extends Command {
             EquipmentOutline other    = null;
             DataFile         dataFile = outline.getDataFile();
             OutlineModel     model    = outline.getModel();
-            boolean          isOther  = model.getProperty(EquipmentList.TAG_OTHER_ROOT) != null;
+            boolean          isOther  = model.getProperty(EquipmentList.KEY_OTHER_ROOT) != null;
             if ((dataFile instanceof GURPSCharacter || dataFile instanceof Template) && isOther == mToCarried && model.hasSelection()) {
                 CharacterSheet csheet = UIUtilities.getAncestorOfType(outline, CharacterSheet.class);
                 if (csheet != null) {

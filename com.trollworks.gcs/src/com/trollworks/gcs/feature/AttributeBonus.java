@@ -20,12 +20,12 @@ import java.io.IOException;
 
 /** An attribute bonus. */
 public class AttributeBonus extends Bonus {
-    /** The XML tag. */
-    public static final  String                   TAG_ROOT             = "attribute_bonus";
-    private static final String                   TAG_ATTRIBUTE        = "attribute";
-    private static final String                   ATTRIBUTE_LIMITATION = "limitation";
-    private              BonusAttributeType       mAttribute;
-    private              AttributeBonusLimitation mLimitation;
+    public static final  String KEY_ROOT       = "attribute_bonus";
+    private static final String KEY_ATTRIBUTE  = "attribute";
+    private static final String KEY_LIMITATION = "limitation";
+
+    private BonusAttributeType       mAttribute;
+    private AttributeBonusLimitation mLimitation;
 
     /** Creates a new attribute bonus. */
     public AttributeBonus() {
@@ -69,7 +69,7 @@ public class AttributeBonus extends Bonus {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
@@ -85,17 +85,17 @@ public class AttributeBonus extends Bonus {
 
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
-        setAttribute(Enums.extract(m.getString(TAG_ATTRIBUTE), BonusAttributeType.values(), BonusAttributeType.ST));
-        setLimitation(Enums.extract(m.getString(ATTRIBUTE_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
+        setAttribute(Enums.extract(m.getString(KEY_ATTRIBUTE), BonusAttributeType.values(), BonusAttributeType.ST));
+        setLimitation(Enums.extract(m.getString(KEY_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
         super.loadSelf(m);
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(TAG_ATTRIBUTE, Enums.toId(mAttribute));
+        w.keyValue(KEY_ATTRIBUTE, Enums.toId(mAttribute));
         if (mLimitation != AttributeBonusLimitation.NONE) {
-            w.keyValue(ATTRIBUTE_LIMITATION, Enums.toId(mLimitation));
+            w.keyValue(KEY_LIMITATION, Enums.toId(mLimitation));
         }
     }
 

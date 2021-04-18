@@ -27,16 +27,23 @@ import java.text.MessageFormat;
 
 /** A Attribute prerequisite. */
 public class AttributePrereq extends HasPrereq {
-    /** The possible {@link BonusAttributeType}s that can be affected. */
-    public static final  BonusAttributeType[] TYPES                   = {BonusAttributeType.ST, BonusAttributeType.DX, BonusAttributeType.IQ, BonusAttributeType.HT, BonusAttributeType.WILL, BonusAttributeType.PERCEPTION};
-    /** The XML tag for this class. */
-    public static final  String               TAG_ROOT                = "attribute_prereq";
-    private static final String               ATTRIBUTE_WHICH         = "which";
-    private static final String               ATTRIBUTE_COMBINED_WITH = "combined_with";
-    private static final String               KEY_QUALIFIER           = "qualifier";
-    private              BonusAttributeType   mWhich;
-    private              BonusAttributeType   mCombinedWith;
-    private              IntegerCriteria      mValueCompare;
+    public static final  String KEY_ROOT          = "attribute_prereq";
+    private static final String KEY_WHICH         = "which";
+    private static final String KEY_COMBINED_WITH = "combined_with";
+    private static final String KEY_QUALIFIER     = "qualifier";
+
+    public static final BonusAttributeType[] TYPES = {
+            BonusAttributeType.ST,
+            BonusAttributeType.DX,
+            BonusAttributeType.IQ,
+            BonusAttributeType.HT,
+            BonusAttributeType.WILL,
+            BonusAttributeType.PERCEPTION
+    };
+
+    private BonusAttributeType mWhich;
+    private BonusAttributeType mCombinedWith;
+    private IntegerCriteria    mValueCompare;
 
     /**
      * Creates a new prerequisite.
@@ -88,7 +95,7 @@ public class AttributePrereq extends HasPrereq {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
@@ -99,17 +106,17 @@ public class AttributePrereq extends HasPrereq {
     @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
-        setWhich(Enums.extract(m.getString(ATTRIBUTE_WHICH), TYPES, BonusAttributeType.ST));
-        setCombinedWith(Enums.extract(m.getString(ATTRIBUTE_COMBINED_WITH), TYPES));
+        setWhich(Enums.extract(m.getString(KEY_WHICH), TYPES, BonusAttributeType.ST));
+        setCombinedWith(Enums.extract(m.getString(KEY_COMBINED_WITH), TYPES));
         mValueCompare.load(m.getMap(KEY_QUALIFIER));
     }
 
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(ATTRIBUTE_WHICH, Enums.toId(mWhich));
+        w.keyValue(KEY_WHICH, Enums.toId(mWhich));
         if (mCombinedWith != null) {
-            w.keyValue(ATTRIBUTE_COMBINED_WITH, Enums.toId(mCombinedWith));
+            w.keyValue(KEY_COMBINED_WITH, Enums.toId(mCombinedWith));
         }
         mValueCompare.save(w, KEY_QUALIFIER);
     }

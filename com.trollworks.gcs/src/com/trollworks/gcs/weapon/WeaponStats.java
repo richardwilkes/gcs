@@ -42,22 +42,15 @@ import java.util.Set;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
-    private static final String             KEY_DEFAULTS = "defaults";
-    private static final String             TAG_STRENGTH = "strength";
-    private static final String             TAG_USAGE    = "usage";
-    /** The prefix used in front of all IDs for weapons. */
-    public static final  String             PREFIX       = GURPSCharacter.CHARACTER_PREFIX + "weapon.";
-    /** The field ID for damage changes. */
-    public static final  String             ID_DAMAGE    = PREFIX + WeaponDamage.TAG_ROOT;
-    /** The field ID for strength changes. */
-    public static final  String             ID_STRENGTH  = PREFIX + TAG_STRENGTH;
-    /** The field ID for usage changes. */
-    public static final  String             ID_USAGE     = PREFIX + TAG_USAGE;
-    protected            ListRow            mOwner;
-    private              WeaponDamage       mDamage;
-    private              String             mStrength;
-    private              String             mUsage;
-    private              List<SkillDefault> mDefaults;
+    private static final String KEY_DEFAULTS = "defaults";
+    private static final String KEY_STRENGTH = "strength";
+    private static final String KEY_USAGE    = "usage";
+
+    protected ListRow            mOwner;
+    private   WeaponDamage       mDamage;
+    private   String             mStrength;
+    private   String             mUsage;
+    private   List<SkillDefault> mDefaults;
 
     public static void loadFromJSONArray(ListRow row, JsonArray a, List<WeaponStats> list) throws IOException {
         int count = a.size();
@@ -65,8 +58,8 @@ public abstract class WeaponStats {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
             switch (type) {
-            case MeleeWeaponStats.TAG_ROOT -> list.add(new MeleeWeaponStats(row, m1));
-            case RangedWeaponStats.TAG_ROOT -> list.add(new RangedWeaponStats(row, m1));
+            case MeleeWeaponStats.KEY_ROOT -> list.add(new MeleeWeaponStats(row, m1));
+            case RangedWeaponStats.KEY_ROOT -> list.add(new RangedWeaponStats(row, m1));
             default -> Log.warn("unknown weapon type: " + type);
             }
         }
@@ -143,9 +136,9 @@ public abstract class WeaponStats {
 
     /** @param m The {@link JsonMap} to load from. */
     protected void loadSelf(JsonMap m) throws IOException {
-        mDamage = new WeaponDamage(m.getMap(WeaponDamage.TAG_ROOT), this);
-        mStrength = m.getString(TAG_STRENGTH);
-        mUsage = m.getString(TAG_USAGE);
+        mDamage = new WeaponDamage(m.getMap(WeaponDamage.KEY_ROOT), this);
+        mStrength = m.getString(KEY_STRENGTH);
+        mUsage = m.getString(KEY_USAGE);
         if (m.has(KEY_DEFAULTS)) {
             JsonArray a     = m.getArray(KEY_DEFAULTS);
             int       count = a.size();
@@ -163,10 +156,10 @@ public abstract class WeaponStats {
     public final void save(JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
-        w.key(WeaponDamage.TAG_ROOT);
+        w.key(WeaponDamage.KEY_ROOT);
         mDamage.save(w);
-        w.keyValueNot(TAG_STRENGTH, mStrength, "");
-        w.keyValueNot(TAG_USAGE, mUsage, "");
+        w.keyValueNot(KEY_STRENGTH, mStrength, "");
+        w.keyValueNot(KEY_USAGE, mUsage, "");
         saveSelf(w);
         if (!mDefaults.isEmpty()) {
             w.key(KEY_DEFAULTS);

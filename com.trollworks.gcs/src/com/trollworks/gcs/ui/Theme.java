@@ -35,54 +35,7 @@ public class Theme {
             DEFAULT.setColor(color.getIndex(), color.getDefault());
         }
         DEFAULT.mReadOnly = true;
-
         CURRENT = new Theme(DEFAULT);
-
-        // This next chunk is currently commented out, but will be necessary if we want the look and
-        // feel to have its colors updated by the theme as well.
-        //
-        // Take a look at javax.swing.plaf.basic.BasicLookAndFeel to find relevant keys
-        //
-        //UIDefaults def = UIManager.getDefaults();
-        //def.put("Button.background", ThemeColor.ButtonBackground);
-        //def.put("Button.foreground", ThemeColor.ButtonForeground);
-        //def.put("CheckBox.background", ThemeColor.ContentBackground);
-        //def.put("CheckBox.foreground", ThemeColor.ContentForeground);
-        //def.put("CheckBoxMenuItem.background", ThemeColor.ContentBackground);
-        //def.put("CheckBoxMenuItem.foreground", ThemeColor.ContentForeground);
-        //def.put("ComboBox.background", ThemeColor.ContentBackground);
-        //def.put("ComboBox.foreground", ThemeColor.ContentForeground);
-        //def.put("EditorPane.background", ThemeColor.ContentBackground);
-        //def.put("EditorPane.foreground", ThemeColor.ContentForeground);
-        //def.put("Label.background", ThemeColor.ContentBackground);
-        //def.put("Label.foreground", ThemeColor.ContentForeground);
-        //def.put("List.background", ThemeColor.ContentBackground);
-        //def.put("List.foreground", ThemeColor.ContentForeground);
-        //def.put("Menu.background", ThemeColor.ContentBackground);
-        //def.put("Menu.foreground", ThemeColor.ContentForeground);
-        //def.put("MenuBar.background", ThemeColor.ContentBackground);
-        //def.put("MenuBar.foreground", ThemeColor.ContentForeground);
-        //def.put("MenuItem.background", ThemeColor.ContentBackground);
-        //def.put("MenuItem.foreground", ThemeColor.ContentForeground);
-        //def.put("OptionPane.background", ThemeColor.ContentBackground);
-        //def.put("OptionPane.foreground", ThemeColor.ContentForeground);
-        //def.put("Panel.background", ThemeColor.ContentBackground);
-        //def.put("Panel.foreground", ThemeColor.ContentForeground);
-        //def.put("PopupMenu.background", ThemeColor.ContentBackground);
-        //def.put("PopupMenu.foreground", ThemeColor.ContentForeground);
-        //def.put("ScrollPane.background", ThemeColor.ContentBackground);
-        //def.put("ScrollPane.foreground", ThemeColor.ContentForeground);
-        //def.put("TabbedPane.background", ThemeColor.ContentBackground);
-        //def.put("TabbedPane.contentAreaColor", ThemeColor.ContentBackground);
-        //def.put("TabbedPane.foreground", ThemeColor.ContentForeground);
-        //def.put("TextArea.background", ThemeColor.ContentBackground);
-        //def.put("TextArea.foreground", ThemeColor.ContentForeground);
-        //def.put("TextField.background", ThemeColor.ContentBackground);
-        //def.put("TextField.foreground", ThemeColor.ContentForeground);
-        //def.put("TextPane.background", ThemeColor.ContentBackground);
-        //def.put("TextPane.foreground", ThemeColor.ContentForeground);
-        //def.put("Viewport.background", ThemeColor.ContentBackground);
-        //def.put("Viewport.foreground", ThemeColor.ContentForeground);
     }
 
     /** @return The current {@link Theme}. */

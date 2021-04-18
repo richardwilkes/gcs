@@ -31,13 +31,13 @@ import java.util.Set;
 
 /** A GURPS Technique. */
 public class Technique extends Skill {
-    /** The XML tag used for items. */
-    public static final  String       TAG_TECHNIQUE   = "technique";
-    private static final String       ATTRIBUTE_LIMIT = "limit";
-    private static final String       KEY_DEFAULT     = "default";
-    private              SkillDefault mDefault;
-    private              boolean      mLimited;
-    private              int          mLimitModifier;
+    public static final  String KEY_TECHNIQUE = "technique";
+    private static final String KEY_LIMIT     = "limit";
+    private static final String KEY_DEFAULT   = "default";
+
+    private SkillDefault mDefault;
+    private boolean      mLimited;
+    private int          mLimitModifier;
 
     /**
      * Calculates the technique level.
@@ -170,7 +170,7 @@ public class Technique extends Skill {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_TECHNIQUE;
+        return KEY_TECHNIQUE;
     }
 
     @Override
@@ -189,9 +189,9 @@ public class Technique extends Skill {
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
-        if (m.has(ATTRIBUTE_LIMIT)) {
+        if (m.has(KEY_LIMIT)) {
             mLimited = true;
-            mLimitModifier = m.getInt(ATTRIBUTE_LIMIT);
+            mLimitModifier = m.getInt(KEY_LIMIT);
         }
         mDefault = new SkillDefault(m.getMap(KEY_DEFAULT), false);
     }
@@ -200,7 +200,7 @@ public class Technique extends Skill {
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         super.saveSelf(w, saveType);
         if (mLimited) {
-            w.keyValue(ATTRIBUTE_LIMIT, mLimitModifier);
+            w.keyValue(KEY_LIMIT, mLimitModifier);
         }
         w.key(KEY_DEFAULT);
         mDefault.save(w, false);

@@ -14,9 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageList;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.notes.Note;
@@ -33,8 +31,6 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
 
 public abstract class CollectedModels extends DataFile {
     public static final String       KEY_ADVANTAGES      = "advantages";
@@ -56,7 +52,7 @@ public abstract class CollectedModels extends DataFile {
         mSpells = new OutlineModel();
         mEquipment = new OutlineModel();
         mOtherEquipment = new OutlineModel();
-        mOtherEquipment.setProperty(EquipmentList.TAG_OTHER_ROOT, Boolean.TRUE);
+        mOtherEquipment.setProperty(EquipmentList.KEY_OTHER_ROOT, Boolean.TRUE);
         mNotes = new OutlineModel();
     }
 
@@ -142,15 +138,5 @@ public abstract class CollectedModels extends DataFile {
     /** @return A recursive iterator over the notes. */
     public RowIterator<Note> getNotesIterator() {
         return new RowIterator<>(mNotes);
-    }
-
-    @Override
-    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
-        ListFile.getContainedUpdatables(mAdvantages, updatables);
-        ListFile.getContainedUpdatables(mSkills, updatables);
-        ListFile.getContainedUpdatables(mSpells, updatables);
-        ListFile.getContainedUpdatables(mEquipment, updatables);
-        ListFile.getContainedUpdatables(mOtherEquipment, updatables);
-        ListFile.getContainedUpdatables(mNotes, updatables);
     }
 }

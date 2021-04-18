@@ -283,7 +283,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
         if (getModel().hasSelection()) {
             JPopupMenu menu = new JPopupMenu();
             if (this instanceof EquipmentOutline && (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template)) {
-                menu.add(new MoveEquipmentCommand(getModel().getProperty(EquipmentList.TAG_OTHER_ROOT) != null));
+                menu.add(new MoveEquipmentCommand(getModel().getProperty(EquipmentList.KEY_OTHER_ROOT) != null));
                 menu.add(new ConvertToContainer());
                 menu.addSeparator();
             }

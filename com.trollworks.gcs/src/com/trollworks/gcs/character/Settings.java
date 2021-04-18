@@ -26,76 +26,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Settings {
-    private static final int            CURRENT_JSON_VERSION                   = 1;
-    private static final int            CURRENT_VERSION                        = 1;
-    private static final int            MINIMUM_VERSION                        = 0;
-    public static final  String         TAG_ROOT                               = "settings";
-    public static final  String         TAG_DEFAULT_LENGTH_UNITS               = "default_length_units";
-    public static final  String         TAG_DEFAULT_WEIGHT_UNITS               = "default_weight_units";
-    public static final  String         TAG_BLOCK_LAYOUT                       = "block_layout";
-    public static final  String         TAG_USER_DESCRIPTION_DISPLAY           = "user_description_display";
-    public static final  String         TAG_MODIFIERS_DISPLAY                  = "modifiers_display";
-    public static final  String         TAG_NOTES_DISPLAY                      = "notes_display";
-    public static final  String         DEPRECATED_TAG_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10";
-    public static final  String         TAG_BASE_WILL_ON_10                    = "base_will_on_10";
-    public static final  String         TAG_BASE_PER_ON_10                     = "base_per_on_10";
-    public static final  String         TAG_USE_MULTIPLICATIVE_MODIFIERS       = "use_multiplicative_modifiers";
-    public static final  String         TAG_USE_MODIFYING_DICE_PLUS_ADDS       = "use_modifying_dice_plus_adds";
-    public static final  String         TAG_USE_KNOW_YOUR_OWN_STRENGTH         = "use_know_your_own_strength";
-    public static final  String         TAG_USE_REDUCED_SWING                  = "use_reduced_swing";
-    public static final  String         TAG_USE_THRUST_EQUALS_SWING_MINUS_2    = "use_thrust_equals_swing_minus_2";
-    public static final  String         TAG_USE_SIMPLE_METRIC_CONVERSIONS      = "use_simple_metric_conversions";
-    public static final  String         TAG_SHOW_COLLEGE_IN_SPELLS             = "show_college_in_sheet_spells";
-    public static final  String         TAG_SHOW_DIFFICULTY                    = "show_difficulty";
-    public static final  String         TAG_SHOW_ADVANTAGE_MODIFIER_ADJ        = "show_advantage_modifier_adj";
-    public static final  String         TAG_SHOW_EQUIPMENT_MODIFIER_ADJ        = "show_equipment_modifier_adj";
-    public static final  String         TAG_SHOW_SPELL_ADJ                    = "show_spell_adj";
-    public static final  String         TAG_USE_TITLE_IN_FOOTER                = "use_title_in_footer";
-    private static final String         TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE     = "extra_space_around_encumbrance";
-    public static final  String         PREFIX                                 = GURPSCharacter.CHARACTER_PREFIX + "settings.";
-    public static final  String         ID_DEFAULT_LENGTH_UNITS                = PREFIX + TAG_DEFAULT_LENGTH_UNITS;
-    public static final  String         ID_DEFAULT_WEIGHT_UNITS                = PREFIX + TAG_DEFAULT_WEIGHT_UNITS;
-    public static final  String         ID_BLOCK_LAYOUT                        = PREFIX + TAG_BLOCK_LAYOUT;
-    public static final  String         ID_USER_DESCRIPTION_DISPLAY            = PREFIX + TAG_USER_DESCRIPTION_DISPLAY;
-    public static final  String         ID_MODIFIERS_DISPLAY                   = PREFIX + TAG_MODIFIERS_DISPLAY;
-    public static final  String         ID_NOTES_DISPLAY                       = PREFIX + TAG_NOTES_DISPLAY;
-    public static final  String         ID_BASE_WILL_ON_10                     = PREFIX + TAG_BASE_WILL_ON_10;
-    public static final  String         ID_BASE_PER_ON_10                      = PREFIX + TAG_BASE_PER_ON_10;
-    public static final  String         ID_USE_MULTIPLICATIVE_MODIFIERS        = PREFIX + TAG_USE_MULTIPLICATIVE_MODIFIERS;
-    public static final  String         ID_USE_MODIFYING_DICE_PLUS_ADDS        = PREFIX + TAG_USE_MODIFYING_DICE_PLUS_ADDS;
-    public static final  String         ID_USE_KNOW_YOUR_OWN_STRENGTH          = PREFIX + TAG_USE_KNOW_YOUR_OWN_STRENGTH;
-    public static final  String         ID_USE_REDUCED_SWING                   = PREFIX + TAG_USE_REDUCED_SWING;
-    public static final  String         ID_USE_THRUST_EQUALS_SWING_MINUS_2     = PREFIX + TAG_USE_THRUST_EQUALS_SWING_MINUS_2;
-    public static final  String         ID_USE_SIMPLE_METRIC_CONVERSIONS       = PREFIX + TAG_USE_SIMPLE_METRIC_CONVERSIONS;
-    public static final  String         ID_SHOW_COLLEGE_IN_SPELLS              = PREFIX + TAG_SHOW_COLLEGE_IN_SPELLS;
-    public static final  String         ID_SHOW_DIFFICULTY                     = PREFIX + TAG_SHOW_DIFFICULTY;
-    public static final  String         ID_SHOW_ADVANTAGE_MODIFIER_ADJ         = PREFIX + TAG_SHOW_ADVANTAGE_MODIFIER_ADJ;
-    public static final  String         ID_SHOW_EQUIPMENT_MODIFIER_ADJ         = PREFIX + TAG_SHOW_EQUIPMENT_MODIFIER_ADJ;
-    public static final  String         ID_SHOW_SPELL_ADJ                     = PREFIX + TAG_SHOW_SPELL_ADJ;
-    public static final  String         ID_USE_TITLE_IN_FOOTER                 = PREFIX + TAG_USE_TITLE_IN_FOOTER;
-    public static final  String         ID_EXTRA_SPACE_AROUND_ENCUMBRANCE      = PREFIX + TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE;
-    private              GURPSCharacter mCharacter;
-    private              LengthUnits    mDefaultLengthUnits;
-    private              WeightUnits    mDefaultWeightUnits;
-    private              List<String>   mBlockLayout;
-    private              DisplayOption  mUserDescriptionDisplay;
-    private              DisplayOption  mModifiersDisplay;
-    private              DisplayOption  mNotesDisplay;
-    private              boolean        mBaseWillOn10; // Home brew
-    private              boolean        mBasePerOn10; // Home brew
-    private              boolean        mUseMultiplicativeModifiers; // P102
-    private              boolean        mUseModifyingDicePlusAdds; // B269
-    private              boolean        mUseKnowYourOwnStrength; // PY83
-    private              boolean        mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
-    private              boolean        mUseThrustEqualsSwingMinus2; // Home brew
-    private              boolean        mUseSimpleMetricConversions; // B9
-    private              boolean        mShowCollegeInSpells;
-    private              boolean        mShowDifficulty;
-    private              boolean        mShowAdvantageModifierAdj;
-    private              boolean        mShowEquipmentModifierAdj;
-    private              boolean        mShowSpellAdj;
-    private              boolean        mUseTitleInFooter;
-    private              boolean        mExtraSpaceAroundEncumbrance;
+    private static final int    CURRENT_JSON_VERSION                = 1;
+    private static final int    CURRENT_VERSION                     = 1;
+    private static final int    MINIMUM_VERSION                     = 0;
+    public static final  String KEY_ROOT                            = "settings";
+    public static final  String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
+    public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
+    public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
+    public static final  String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
+    public static final  String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
+    public static final  String KEY_NOTES_DISPLAY                   = "notes_display";
+    public static final  String KEY_BASE_WILL_ON_10                 = "base_will_on_10";
+    public static final  String KEY_BASE_PER_ON_10                  = "base_per_on_10";
+    public static final  String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
+    public static final  String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
+    public static final  String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
+    public static final  String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
+    public static final  String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
+    public static final  String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
+    public static final  String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
+    public static final  String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
+    public static final  String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
+    public static final  String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
+    public static final  String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
+    public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
+    private static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_encumbrance";
+
+    public static final String DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10"; // January 23, 2021
+
+    private GURPSCharacter mCharacter;
+    private LengthUnits    mDefaultLengthUnits;
+    private WeightUnits    mDefaultWeightUnits;
+    private List<String>   mBlockLayout;
+    private DisplayOption  mUserDescriptionDisplay;
+    private DisplayOption  mModifiersDisplay;
+    private DisplayOption  mNotesDisplay;
+    private boolean        mBaseWillOn10; // Home brew
+    private boolean        mBasePerOn10; // Home brew
+    private boolean        mUseMultiplicativeModifiers; // P102
+    private boolean        mUseModifyingDicePlusAdds; // B269
+    private boolean        mUseKnowYourOwnStrength; // PY83
+    private boolean        mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
+    private boolean        mUseThrustEqualsSwingMinus2; // Home brew
+    private boolean        mUseSimpleMetricConversions; // B9
+    private boolean        mShowCollegeInSpells;
+    private boolean        mShowDifficulty;
+    private boolean        mShowAdvantageModifierAdj;
+    private boolean        mShowEquipmentModifierAdj;
+    private boolean        mShowSpellAdj;
+    private boolean        mUseTitleInFooter;
+    private boolean        mExtraSpaceAroundEncumbrance;
 
     public Settings(GURPSCharacter character) {
         Preferences prefs = Preferences.getInstance();
@@ -131,37 +111,37 @@ public class Settings {
         if (version > CURRENT_VERSION) {
             throw VersionException.createTooNew();
         }
-        mDefaultLengthUnits = Enums.extract(m.getString(TAG_DEFAULT_LENGTH_UNITS), LengthUnits.values(), Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
-        mDefaultWeightUnits = Enums.extract(m.getString(TAG_DEFAULT_WEIGHT_UNITS), WeightUnits.values(), Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
-        mUserDescriptionDisplay = Enums.extract(m.getString(TAG_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
-        mModifiersDisplay = Enums.extract(m.getString(TAG_MODIFIERS_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
-        mNotesDisplay = Enums.extract(m.getString(TAG_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
-        if (m.has(DEPRECATED_TAG_BASE_WILL_AND_PER_ON_10)) {
-            mBaseWillOn10 = m.getBoolean(DEPRECATED_TAG_BASE_WILL_AND_PER_ON_10);
-            mBasePerOn10 = m.getBoolean(DEPRECATED_TAG_BASE_WILL_AND_PER_ON_10);
+        mDefaultLengthUnits = Enums.extract(m.getString(KEY_DEFAULT_LENGTH_UNITS), LengthUnits.values(), Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
+        mDefaultWeightUnits = Enums.extract(m.getString(KEY_DEFAULT_WEIGHT_UNITS), WeightUnits.values(), Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
+        mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
+        mModifiersDisplay = Enums.extract(m.getString(KEY_MODIFIERS_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
+        mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
+        if (m.has(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10)) {
+            mBaseWillOn10 = m.getBoolean(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10);
+            mBasePerOn10 = m.getBoolean(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10);
         } else {
-            mBaseWillOn10 = m.getBoolean(TAG_BASE_WILL_ON_10);
-            mBasePerOn10 = m.getBoolean(TAG_BASE_PER_ON_10);
+            mBaseWillOn10 = m.getBoolean(KEY_BASE_WILL_ON_10);
+            mBasePerOn10 = m.getBoolean(KEY_BASE_PER_ON_10);
         }
-        mUseMultiplicativeModifiers = m.getBoolean(TAG_USE_MULTIPLICATIVE_MODIFIERS);
-        mUseModifyingDicePlusAdds = m.getBoolean(TAG_USE_MODIFYING_DICE_PLUS_ADDS);
-        mUseKnowYourOwnStrength = m.getBoolean(TAG_USE_KNOW_YOUR_OWN_STRENGTH);
-        mUseReducedSwing = m.getBoolean(TAG_USE_REDUCED_SWING);
-        mUseThrustEqualsSwingMinus2 = m.getBoolean(TAG_USE_THRUST_EQUALS_SWING_MINUS_2);
-        mUseSimpleMetricConversions = m.getBoolean(TAG_USE_SIMPLE_METRIC_CONVERSIONS);
-        mShowCollegeInSpells = m.getBoolean(TAG_SHOW_COLLEGE_IN_SPELLS);
-        mShowDifficulty = m.getBoolean(TAG_SHOW_DIFFICULTY);
-        mShowAdvantageModifierAdj = m.getBoolean(TAG_SHOW_ADVANTAGE_MODIFIER_ADJ);
-        mShowEquipmentModifierAdj = m.getBoolean(TAG_SHOW_EQUIPMENT_MODIFIER_ADJ);
-        if (m.has(TAG_SHOW_SPELL_ADJ)) {
-            mShowSpellAdj = m.getBoolean(TAG_SHOW_SPELL_ADJ);
+        mUseMultiplicativeModifiers = m.getBoolean(KEY_USE_MULTIPLICATIVE_MODIFIERS);
+        mUseModifyingDicePlusAdds = m.getBoolean(KEY_USE_MODIFYING_DICE_PLUS_ADDS);
+        mUseKnowYourOwnStrength = m.getBoolean(KEY_USE_KNOW_YOUR_OWN_STRENGTH);
+        mUseReducedSwing = m.getBoolean(KEY_USE_REDUCED_SWING);
+        mUseThrustEqualsSwingMinus2 = m.getBoolean(KEY_USE_THRUST_EQUALS_SWING_MINUS_2);
+        mUseSimpleMetricConversions = m.getBoolean(KEY_USE_SIMPLE_METRIC_CONVERSIONS);
+        mShowCollegeInSpells = m.getBoolean(KEY_SHOW_COLLEGE_IN_SPELLS);
+        mShowDifficulty = m.getBoolean(KEY_SHOW_DIFFICULTY);
+        mShowAdvantageModifierAdj = m.getBoolean(KEY_SHOW_ADVANTAGE_MODIFIER_ADJ);
+        mShowEquipmentModifierAdj = m.getBoolean(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ);
+        if (m.has(KEY_SHOW_SPELL_ADJ)) {
+            mShowSpellAdj = m.getBoolean(KEY_SHOW_SPELL_ADJ);
         } else {
             mShowSpellAdj = Preferences.DEFAULT_SHOW_SPELL_ADJ;
         }
-        mUseTitleInFooter = m.getBoolean(TAG_USE_TITLE_IN_FOOTER);
-        mExtraSpaceAroundEncumbrance = m.getBoolean(TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE);
+        mUseTitleInFooter = m.getBoolean(KEY_USE_TITLE_IN_FOOTER);
+        mExtraSpaceAroundEncumbrance = m.getBoolean(KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mBlockLayout = new ArrayList<>();
-        JsonArray a     = m.getArray(TAG_BLOCK_LAYOUT);
+        JsonArray a     = m.getArray(KEY_BLOCK_LAYOUT);
         int       count = a.size();
         for (int i = 0; i < count; i++) {
             mBlockLayout.add(a.getString(i));
@@ -171,27 +151,27 @@ public class Settings {
     void save(JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(LoadState.ATTRIBUTE_VERSION, CURRENT_JSON_VERSION);
-        w.keyValue(TAG_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
-        w.keyValue(TAG_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
-        w.keyValue(TAG_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
-        w.keyValue(TAG_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
-        w.keyValue(TAG_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
-        w.keyValue(TAG_BASE_WILL_ON_10, mBaseWillOn10);
-        w.keyValue(TAG_BASE_PER_ON_10, mBasePerOn10);
-        w.keyValue(TAG_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
-        w.keyValue(TAG_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
-        w.keyValue(TAG_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
-        w.keyValue(TAG_USE_REDUCED_SWING, mUseReducedSwing);
-        w.keyValue(TAG_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
-        w.keyValue(TAG_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
-        w.keyValue(TAG_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
-        w.keyValue(TAG_SHOW_DIFFICULTY, mShowDifficulty);
-        w.keyValue(TAG_SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
-        w.keyValue(TAG_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
-        w.keyValue(TAG_SHOW_SPELL_ADJ, mShowSpellAdj);
-        w.keyValue(TAG_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-        w.keyValue(TAG_EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
-        w.key(TAG_BLOCK_LAYOUT);
+        w.keyValue(KEY_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
+        w.keyValue(KEY_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
+        w.keyValue(KEY_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
+        w.keyValue(KEY_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
+        w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
+        w.keyValue(KEY_BASE_WILL_ON_10, mBaseWillOn10);
+        w.keyValue(KEY_BASE_PER_ON_10, mBasePerOn10);
+        w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
+        w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
+        w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
+        w.keyValue(KEY_USE_REDUCED_SWING, mUseReducedSwing);
+        w.keyValue(KEY_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
+        w.keyValue(KEY_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
+        w.keyValue(KEY_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
+        w.keyValue(KEY_SHOW_DIFFICULTY, mShowDifficulty);
+        w.keyValue(KEY_SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
+        w.keyValue(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
+        w.keyValue(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
+        w.keyValue(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+        w.keyValue(KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
+        w.key(KEY_BLOCK_LAYOUT);
         w.startArray();
         for (String one : mBlockLayout) {
             w.value(one);

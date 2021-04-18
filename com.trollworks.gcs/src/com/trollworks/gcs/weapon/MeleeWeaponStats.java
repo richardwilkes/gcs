@@ -27,20 +27,14 @@ import java.util.StringTokenizer;
 
 /** The stats for a melee weapon. */
 public class MeleeWeaponStats extends WeaponStats {
-    /** The root XML tag. */
-    public static final  String TAG_ROOT  = "melee_weapon";
-    private static final String TAG_REACH = "reach";
-    private static final String TAG_PARRY = "parry";
-    private static final String TAG_BLOCK = "block";
-    /** The field ID for reach changes. */
-    public static final  String ID_REACH  = PREFIX + TAG_REACH;
-    /** The field ID for parry changes. */
-    public static final  String ID_PARRY  = PREFIX + TAG_PARRY;
-    /** The field ID for block changes. */
-    public static final  String ID_BLOCK  = PREFIX + TAG_BLOCK;
-    private              String mReach;
-    private              String mParry;
-    private              String mBlock;
+    public static final  String KEY_ROOT  = "melee_weapon";
+    private static final String KEY_REACH = "reach";
+    private static final String KEY_PARRY = "parry";
+    private static final String KEY_BLOCK = "block";
+
+    private String mReach;
+    private String mParry;
+    private String mBlock;
 
     /**
      * Creates a new {@link MeleeWeaponStats}.
@@ -88,22 +82,22 @@ public class MeleeWeaponStats extends WeaponStats {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
         super.loadSelf(m);
-        mReach = m.getString(TAG_REACH);
-        mParry = m.getString(TAG_PARRY);
-        mBlock = m.getString(TAG_BLOCK);
+        mReach = m.getString(KEY_REACH);
+        mParry = m.getString(KEY_PARRY);
+        mBlock = m.getString(KEY_BLOCK);
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
-        w.keyValueNot(TAG_REACH, mReach, "");
-        w.keyValueNot(TAG_PARRY, mParry, "");
-        w.keyValueNot(TAG_BLOCK, mBlock, "");
+        w.keyValueNot(KEY_REACH, mReach, "");
+        w.keyValueNot(KEY_PARRY, mParry, "");
+        w.keyValueNot(KEY_BLOCK, mBlock, "");
     }
 
     /** @return The parry. */

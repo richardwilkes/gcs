@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -21,10 +20,10 @@ import java.util.Map;
 import java.util.Set;
 
 public class ReactionBonus extends Bonus {
-    public static final String TAG_ROOT      = "reaction_bonus";
-    public static final String TAG_SITUATION = "situation";
-    public static final String REACTION_KEY  = GURPSCharacter.CHARACTER_PREFIX + "reaction";
-    private             String mSituation;
+    public static final String KEY_ROOT      = "reaction_bonus";
+    public static final String KEY_SITUATION = "situation";
+
+    private String mSituation;
 
     public ReactionBonus() {
         super(1);
@@ -54,12 +53,12 @@ public class ReactionBonus extends Bonus {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
     public String getKey() {
-        return REACTION_KEY;
+        return "reaction";
     }
 
     @Override
@@ -70,13 +69,13 @@ public class ReactionBonus extends Bonus {
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
         super.loadSelf(m);
-        setSituation(m.getString(TAG_SITUATION));
+        setSituation(m.getString(KEY_SITUATION));
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(TAG_SITUATION, mSituation);
+        w.keyValue(KEY_SITUATION, mSituation);
     }
 
     public String getSituation() {

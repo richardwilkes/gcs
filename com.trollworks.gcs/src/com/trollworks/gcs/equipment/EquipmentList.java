@@ -27,10 +27,7 @@ import java.io.IOException;
 /** A list of equipment. */
 public class EquipmentList extends ListFile {
     private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag for {@link EquipmentList}s. */
-    public static final  String TAG_CARRIED_ROOT     = "equipment_list";
-    /** The XML tag for {@link EquipmentList}s. */
-    public static final  String TAG_OTHER_ROOT       = "other_equipment_list";
+    public static final  String KEY_OTHER_ROOT       = "other_equipment_list";
 
     @Override
     public int getJSONVersion() {
@@ -39,7 +36,7 @@ public class EquipmentList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_CARRIED_ROOT;
+        return "equipment_list";
     }
 
     @Override
@@ -62,7 +59,7 @@ public class EquipmentList extends ListFile {
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
-            if (Equipment.TAG_EQUIPMENT.equals(type) || Equipment.TAG_EQUIPMENT_CONTAINER.equals(type)) {
+            if (Equipment.KEY_EQUIPMENT.equals(type) || Equipment.KEY_EQUIPMENT_CONTAINER.equals(type)) {
                 model.addRow(new Equipment(file, m1, state), true);
             } else {
                 Log.warn("invalid equipment type: " + type);

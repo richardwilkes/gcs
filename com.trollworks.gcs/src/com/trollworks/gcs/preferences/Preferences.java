@@ -52,7 +52,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import javax.swing.ToolTipManager;
 
 /** Provides the implementation of preferences. Note: not all preferences emit notifications. */
@@ -76,7 +75,6 @@ public class Preferences extends ChangeableData {
     private static final String DIVIDER_POSITION                = "divider_position";
     private static final String FONTS                           = "fonts";
     private static final String GURPS_CALCULATOR_KEY            = "gurps_calculator_key";
-    private static final String ID                              = "id";
     private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL = "include_unspent_points_in_total";
     private static final String INITIAL_POINTS                  = "initial_points";
     private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
@@ -175,7 +173,6 @@ public class Preferences extends ChangeableData {
     public static final int MAXIMUM_TOOLTIP_TIMEOUT = 9999;
 
     private static Preferences                      INSTANCE;
-    private        UUID                             mID;
     private        Version                          mLastSeenGCSVersion;
     private        int                              mInitialPoints;
     private        int                              mToolTipTimeout;
@@ -242,7 +239,6 @@ public class Preferences extends ChangeableData {
     }
 
     private Preferences() {
-        mID = UUID.randomUUID();
         mLastSeenGCSVersion = new Version(GCS.VERSION);
         Library.LIBRARIES.clear();
         mInitialPoints = DEFAULT_INITIAL_POINTS;
@@ -297,7 +293,6 @@ public class Preferences extends ChangeableData {
                 if (!m.isEmpty()) {
                     int version = m.getInt(VERSION);
                     if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION) {
-                        mID = UUID.fromString(m.getStringWithDefault(ID, mID.toString()));
                         Version loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION));
                         if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
                             mLastSeenGCSVersion = loadVersion;
@@ -453,7 +448,6 @@ public class Preferences extends ChangeableData {
                 try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)), "\t")) {
                     w.startMap();
                     w.keyValue(VERSION, CURRENT_VERSION);
-                    w.keyValue(ID, mID.toString());
                     w.keyValue(LAST_SEEN_GCS_VERSION, mLastSeenGCSVersion.toString());
                     w.key(LIBRARIES);
                     w.startMap();
@@ -564,10 +558,6 @@ public class Preferences extends ChangeableData {
         } catch (Exception exception) {
             Log.error(exception);
         }
-    }
-
-    public UUID getID() {
-        return mID;
     }
 
     public Version getLastSeenGCSVersion() {

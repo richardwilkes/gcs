@@ -26,9 +26,7 @@ import java.io.IOException;
 
 /** Data Object to hold several {@link AdvantageModifier}s */
 public class AdvantageModifierList extends ListFile {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag for advantage modifier lists. */
-    public static final  String TAG_ROOT             = "modifier_list";
+    private static final int CURRENT_JSON_VERSION = 1;
 
     @Override
     public int getJSONVersion() {
@@ -37,7 +35,7 @@ public class AdvantageModifierList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return "modifier_list";
     }
 
     @Override
@@ -62,7 +60,7 @@ public class AdvantageModifierList extends ListFile {
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
-            if (AdvantageModifier.TAG_MODIFIER.equals(type) || AdvantageModifier.TAG_MODIFIER_CONTAINER.equals(type)) {
+            if (AdvantageModifier.KEY_MODIFIER.equals(type) || AdvantageModifier.KEY_MODIFIER_CONTAINER.equals(type)) {
                 model.addRow(new AdvantageModifier(file, m1, state), true);
             } else {
                 Log.warn("invalid advantage modifier type: " + type);

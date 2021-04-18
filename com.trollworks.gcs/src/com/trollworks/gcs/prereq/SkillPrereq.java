@@ -29,10 +29,10 @@ import java.util.Set;
 
 /** A Skill prerequisite. */
 public class SkillPrereq extends NameLevelPrereq {
-    /** The XML tag for this class. */
-    public static final  String         TAG_ROOT           = "skill_prereq";
-    private static final String         TAG_SPECIALIZATION = "specialization";
-    private              StringCriteria mSpecializationCriteria;
+    public static final  String KEY_ROOT           = "skill_prereq";
+    private static final String KEY_SPECIALIZATION = "specialization";
+
+    private StringCriteria mSpecializationCriteria;
 
     /**
      * Creates a new prerequisite.
@@ -40,7 +40,7 @@ public class SkillPrereq extends NameLevelPrereq {
      * @param parent The owning prerequisite list, if any.
      */
     public SkillPrereq(PrereqList parent) {
-        super(TAG_ROOT, parent);
+        super(KEY_ROOT, parent);
         mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
@@ -78,18 +78,18 @@ public class SkillPrereq extends NameLevelPrereq {
     @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
-        mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
+        mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
     }
 
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
+        mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
     }
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override

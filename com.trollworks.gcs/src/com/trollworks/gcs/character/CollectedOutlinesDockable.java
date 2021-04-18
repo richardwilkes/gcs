@@ -227,7 +227,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
                 row = new Spell(getDataFile(), (Spell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Equipment) {
-                outline = row.getOwner().getProperty(EquipmentList.TAG_OTHER_ROOT) != null ? outlines.getOtherEquipmentOutline() : outlines.getEquipmentOutline();
+                outline = row.getOwner().getProperty(EquipmentList.KEY_OTHER_ROOT) != null ? outlines.getOtherEquipmentOutline() : outlines.getEquipmentOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
