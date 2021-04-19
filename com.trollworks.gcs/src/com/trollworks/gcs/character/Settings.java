@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.pointpool.PointPoolDef;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -24,6 +25,7 @@ import com.trollworks.gcs.utility.units.WeightUnits;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Settings {
     private static final int    CURRENT_JSON_VERSION                = 1;
@@ -51,31 +53,33 @@ public class Settings {
     public static final  String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
     public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     private static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_encumbrance";
+    private static final String KEY_POINT_POOLS                     = "point_pools";
 
     public static final String DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10"; // January 23, 2021
 
-    private GURPSCharacter mCharacter;
-    private LengthUnits    mDefaultLengthUnits;
-    private WeightUnits    mDefaultWeightUnits;
-    private List<String>   mBlockLayout;
-    private DisplayOption  mUserDescriptionDisplay;
-    private DisplayOption  mModifiersDisplay;
-    private DisplayOption  mNotesDisplay;
-    private boolean        mBaseWillOn10; // Home brew
-    private boolean        mBasePerOn10; // Home brew
-    private boolean        mUseMultiplicativeModifiers; // P102
-    private boolean        mUseModifyingDicePlusAdds; // B269
-    private boolean        mUseKnowYourOwnStrength; // PY83
-    private boolean        mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
-    private boolean        mUseThrustEqualsSwingMinus2; // Home brew
-    private boolean        mUseSimpleMetricConversions; // B9
-    private boolean        mShowCollegeInSpells;
-    private boolean        mShowDifficulty;
-    private boolean        mShowAdvantageModifierAdj;
-    private boolean        mShowEquipmentModifierAdj;
-    private boolean        mShowSpellAdj;
-    private boolean        mUseTitleInFooter;
-    private boolean        mExtraSpaceAroundEncumbrance;
+    private GURPSCharacter            mCharacter;
+    private LengthUnits               mDefaultLengthUnits;
+    private WeightUnits               mDefaultWeightUnits;
+    private List<String>              mBlockLayout;
+    private DisplayOption             mUserDescriptionDisplay;
+    private DisplayOption             mModifiersDisplay;
+    private DisplayOption             mNotesDisplay;
+    private Map<String, PointPoolDef> mPointPools;
+    private boolean                   mBaseWillOn10; // Home brew
+    private boolean                   mBasePerOn10; // Home brew
+    private boolean                   mUseMultiplicativeModifiers; // P102
+    private boolean                   mUseModifyingDicePlusAdds; // B269
+    private boolean                   mUseKnowYourOwnStrength; // PY83
+    private boolean                   mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
+    private boolean                   mUseThrustEqualsSwingMinus2; // Home brew
+    private boolean                   mUseSimpleMetricConversions; // B9
+    private boolean                   mShowCollegeInSpells;
+    private boolean                   mShowDifficulty;
+    private boolean                   mShowAdvantageModifierAdj;
+    private boolean                   mShowEquipmentModifierAdj;
+    private boolean                   mShowSpellAdj;
+    private boolean                   mUseTitleInFooter;
+    private boolean                   mExtraSpaceAroundEncumbrance;
 
     public Settings(GURPSCharacter character) {
         Preferences prefs = Preferences.getInstance();
@@ -86,6 +90,7 @@ public class Settings {
         mUserDescriptionDisplay = prefs.getUserDescriptionDisplay();
         mModifiersDisplay = prefs.getModifiersDisplay();
         mNotesDisplay = prefs.getNotesDisplay();
+        mPointPools = PointPoolDef.cloneMap(prefs.getPointPools());
         mBaseWillOn10 = prefs.baseWillOn10();
         mBasePerOn10 = prefs.basePerOn10();
         mUseMultiplicativeModifiers = prefs.useMultiplicativeModifiers();
@@ -116,6 +121,9 @@ public class Settings {
         mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
         mModifiersDisplay = Enums.extract(m.getString(KEY_MODIFIERS_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
+        if (m.has(KEY_POINT_POOLS)) {
+            mPointPools = PointPoolDef.loadPools(m.getArray(KEY_POINT_POOLS));
+        }
         if (m.has(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10)) {
             mBaseWillOn10 = m.getBoolean(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10);
             mBasePerOn10 = m.getBoolean(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10);
@@ -156,6 +164,8 @@ public class Settings {
         w.keyValue(KEY_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
         w.keyValue(KEY_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
+        w.key(KEY_POINT_POOLS);
+        PointPoolDef.writeOrderedPools(w, mPointPools);
         w.keyValue(KEY_BASE_WILL_ON_10, mBaseWillOn10);
         w.keyValue(KEY_BASE_PER_ON_10, mBasePerOn10);
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
@@ -421,6 +431,17 @@ public class Settings {
     public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
         if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
             mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
+            mCharacter.notifyOfChange();
+        }
+    }
+
+    public Map<String, PointPoolDef> getPointPools() {
+        return mPointPools;
+    }
+
+    public void setPointPools(Map<String, PointPoolDef> pointPools) {
+        if (!mPointPools.equals(pointPools)) {
+            mPointPools = PointPoolDef.cloneMap(pointPools);
             mCharacter.notifyOfChange();
         }
     }
