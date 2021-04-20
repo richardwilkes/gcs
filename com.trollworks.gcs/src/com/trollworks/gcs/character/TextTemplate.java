@@ -13,6 +13,8 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
+import com.trollworks.gcs.character.attribute.Attribute;
+import com.trollworks.gcs.character.attribute.AttributeDef;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
@@ -87,8 +89,11 @@ public class TextTemplate {
     private static final String KEY_ADVANTAGES_ONLY_LOOP_START        = "ADVANTAGES_ONLY_LOOP_START";
     private static final String KEY_AGE                               = "AGE";
     private static final String KEY_AMMO                              = "AMMO";
+    private static final String KEY_AMMO_TYPE                         = "AmmoType:";
     private static final String KEY_ATTACK_MODES_LOOP_END             = "ATTACK_MODES_LOOP_END";
     private static final String KEY_ATTACK_MODES_LOOP_START           = "ATTACK_MODES_LOOP_START";
+    private static final String KEY_ATTRIBUTE_LOOP_END                = "ATTRIBUTE_LOOP_END";
+    private static final String KEY_ATTRIBUTE_LOOP_START              = "ATTRIBUTE_LOOP_START";
     private static final String KEY_ATTRIBUTE_POINTS                  = "ATTRIBUTE_POINTS";
     private static final String KEY_BASIC_LIFT                        = "BASIC_LIFT";
     private static final String KEY_BASIC_MOVE                        = "BASIC_MOVE";
@@ -108,6 +113,8 @@ public class TextTemplate {
     private static final String KEY_CATEGORIES                        = "CATEGORIES";
     private static final String KEY_CLASS                             = "CLASS";
     private static final String KEY_COLLEGE                           = "COLLEGE";
+    private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_END    = "CONDITIONAL_MODIFIERS_LOOP_END";
+    private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_START  = "CONDITIONAL_MODIFIERS_LOOP_START";
     private static final String KEY_CONTINUE_ID                       = "CONTINUE_ID";
     private static final String KEY_COST                              = "COST";
     private static final String KEY_COST_SUMMARY                      = "COST_SUMMARY";
@@ -121,7 +128,6 @@ public class TextTemplate {
     private static final String KEY_CURRENT_MARKER_BULLET             = "CURRENT_MARKER_BULLET";
     private static final String KEY_CURRENT_MOVE                      = "CURRENT_MOVE";
     private static final String KEY_DAMAGE                            = "DAMAGE";
-    private static final String KEY_UNMODIFIED_DAMAGE                 = "UNMODIFIED_DAMAGE";
     private static final String KEY_DESCRIPTION                       = "DESCRIPTION";
     private static final String KEY_DESCRIPTION_MODIFIER_NOTES        = "DESCRIPTION_MODIFIER_NOTES";
     private static final String KEY_DESCRIPTION_NOTES                 = "DESCRIPTION_NOTES";
@@ -139,7 +145,6 @@ public class TextTemplate {
     private static final String KEY_DURATION                          = "DURATION";
     private static final String KEY_DX                                = "DX";
     private static final String KEY_DX_POINTS                         = "DX_POINTS";
-    private static final String KEY_UNSPENT_POINTS                    = "UNSPENT_POINTS";
     private static final String KEY_ENCODING_OFF                      = "ENCODING_OFF";
     private static final String KEY_ENCUMBRANCE_LOOP_END              = "ENCUMBRANCE_LOOP_END";
     private static final String KEY_ENCUMBRANCE_LOOP_START            = "ENCUMBRANCE_LOOP_START";
@@ -175,12 +180,13 @@ public class TextTemplate {
     private static final String KEY_LANGUAGES_LOOP_START              = "LANGUAGES_LOOP_START";
     private static final String KEY_LEGALITY_CLASS                    = "LEGALITY_CLASS";
     private static final String KEY_LEVEL                             = "LEVEL";
-    private static final String KEY_LEVEL_ONLY                        = "LEVEL_ONLY";
     private static final String KEY_LEVEL_NO_MARKER                   = "LEVEL_NO_MARKER";
+    private static final String KEY_LEVEL_ONLY                        = "LEVEL_ONLY";
     private static final String KEY_LOCATION                          = "LOCATION";
     private static final String KEY_MANA_CAST                         = "MANA_CAST";
     private static final String KEY_MANA_MAINTAIN                     = "MANA_MAINTAIN";
     private static final String KEY_MAX_LOAD                          = "MAX_LOAD";
+    private static final String KEY_MAX_USES                          = "MAX_USES";
     private static final String KEY_MAXIMUM                           = "MAXIMUM";
     private static final String KEY_MELEE_LOOP_END                    = "MELEE_LOOP_END";
     private static final String KEY_MELEE_LOOP_START                  = "MELEE_LOOP_START";
@@ -196,6 +202,7 @@ public class TextTemplate {
     private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
     private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
     private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
+    private static final String KEY_OPTIONS_CODE                      = "OPTIONS_CODE";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
     private static final String KEY_OTHER_VALUE                       = "OTHER_EQUIPMENT_VALUE";
@@ -207,9 +214,9 @@ public class TextTemplate {
     private static final String KEY_PERKS_LOOP_END                    = "PERKS_LOOP_END";
     private static final String KEY_PERKS_LOOP_START                  = "PERKS_LOOP_START";
     private static final String KEY_PLAYER                            = "PLAYER";
-    private static final String KEY_POINTS                            = "POINTS";
     private static final String KEY_POINT_POOL_LOOP_END               = "POINT_POOL_LOOP_END";
     private static final String KEY_POINT_POOL_LOOP_START             = "POINT_POOL_LOOP_START";
+    private static final String KEY_POINTS                            = "POINTS";
     private static final String KEY_PORTRAIT                          = "PORTRAIT";
     private static final String KEY_PORTRAIT_EMBEDDED                 = "PORTRAIT_EMBEDDED";
     private static final String KEY_PREFIX_DEPTH                      = "DEPTHx";
@@ -224,8 +231,6 @@ public class TextTemplate {
     private static final String KEY_REACH                             = "REACH";
     private static final String KEY_REACTION_LOOP_END                 = "REACTION_LOOP_END";
     private static final String KEY_REACTION_LOOP_START               = "REACTION_LOOP_START";
-    private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_END    = "CONDITIONAL_MODIFIERS_LOOP_END";
-    private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_START  = "CONDITIONAL_MODIFIERS_LOOP_START";
     private static final String KEY_RECOIL                            = "RECOIL";
     private static final String KEY_REF                               = "REF";
     private static final String KEY_RELIGION                          = "RELIGION";
@@ -252,9 +257,6 @@ public class TextTemplate {
     private static final String KEY_ST_POINTS                         = "ST_POINTS";
     private static final String KEY_STATE                             = "STATE";
     private static final String KEY_STYLE_INDENT_WARNING              = "STYLE_INDENT_WARNING";
-    private static final String KEY_SUFFIX_PAREN                      = "_PAREN";
-    private static final String KEY_SUFFIX_BRACKET                    = "_BRACKET";
-    private static final String KEY_SUFFIX_CURLY                      = "_CURLY";
     private static final String KEY_SWING                             = "SWING";
     private static final String KEY_TASTE_SMELL                       = "TASTE_SMELL";
     private static final String KEY_THRUST                            = "THRUST";
@@ -265,9 +267,12 @@ public class TextTemplate {
     private static final String KEY_TOUCH                             = "TOUCH";
     private static final String KEY_TWO_HANDED_LIFT                   = "TWO_HANDED_LIFT";
     private static final String KEY_TYPE                              = "TYPE";
+    private static final String KEY_UNMODIFIED_DAMAGE                 = "UNMODIFIED_DAMAGE";
+    private static final String KEY_UNSPENT_POINTS                    = "UNSPENT_POINTS";
     private static final String KEY_USAGE                             = "USAGE";
     private static final String KEY_USES                              = "USES";
-    private static final String KEY_MAX_USES                          = "MAX_USES";
+    private static final String KEY_USES_AMMO_TYPE                    = "UsesAmmoType:";
+    private static final String KEY_VALUE                             = "VALUE";
     private static final String KEY_VISION                            = "VISION";
     private static final String KEY_WEAPON_STRENGTH                   = "STRENGTH";
     private static final String KEY_WEAPON_STRENGTH_NUM               = "WEAPON_STRENGTH";
@@ -277,9 +282,10 @@ public class TextTemplate {
     private static final String KEY_WHERE                             = "WHERE";
     private static final String KEY_WILL                              = "WILL";
     private static final String KEY_WILL_POINTS                       = "WILL_POINTS";
-    private static final String KEY_AMMO_TYPE                         = "AmmoType:";
-    private static final String KEY_USES_AMMO_TYPE                    = "UsesAmmoType:";
-    private static final String KEY_OPTIONS_CODE                      = "OPTIONS_CODE";
+
+    private static final String KEY_SUFFIX_BRACKET = "_BRACKET";
+    private static final String KEY_SUFFIX_CURLY   = "_CURLY";
+    private static final String KEY_SUFFIX_PAREN   = "_PAREN";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; last added to May 30, 2020
     private static final String KEY_EARNED_POINTS_DEPRECATED = "EARNED_POINTS";
@@ -414,16 +420,16 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));
             break;
         case KEY_ST_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getStrengthPoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("st")));
             break;
         case KEY_DX_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getDexterityPoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("dx")));
             break;
         case KEY_IQ_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getIntelligencePoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("iq")));
             break;
         case KEY_HT_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getHealthPoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("ht")));
             break;
         case KEY_PERCEPTION_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getPerceptionPoints()));
@@ -509,16 +515,16 @@ public class TextTemplate {
             writeEncodedText(out, description.getHandedness());
             break;
         case KEY_ST:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getStrength()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("st")));
             break;
         case KEY_DX:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getDexterity()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("dx")));
             break;
         case KEY_IQ:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getIntelligence()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("iq")));
             break;
         case KEY_HT:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getHealth()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("ht")));
             break;
         case KEY_WILL:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getWillAdj()));
@@ -723,6 +729,8 @@ public class TextTemplate {
                 processReactionLoop(out, extractUpToMarker(in, KEY_REACTION_LOOP_END));
             } else if (key.startsWith(KEY_CONDITIONAL_MODIFIERS_LOOP_START)) {
                 processConditionalModifiersLoop(out, extractUpToMarker(in, KEY_CONDITIONAL_MODIFIERS_LOOP_END));
+            } else if (key.startsWith(KEY_ATTRIBUTE_LOOP_START)) {
+                processAttributeLoop(out, extractUpToMarker(in, KEY_ATTRIBUTE_LOOP_END));
             } else if (key.startsWith(KEY_POINT_POOL_LOOP_START)) {
                 processPointPoolLoop(out, extractUpToMarker(in, KEY_POINT_POOL_LOOP_END));
             } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
@@ -1955,6 +1963,49 @@ public class TextTemplate {
                         case KEY_SITUATION -> writeEncodedText(out, cm.getFrom());
                         case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void processAttributeLoop(BufferedWriter out, String contents) throws IOException {
+        int                length           = contents.length();
+        StringBuilder      keyBuffer        = new StringBuilder();
+        boolean            lookForKeyMarker = true;
+        GURPSCharacter     gch              = mSheet.getCharacter();
+        List<AttributeDef> defs             = AttributeDef.getOrdered(gch.getSettings().getAttributes());
+        for (AttributeDef def : defs) {
+            Attribute attr = gch.getAttributes().get(def.getID());
+            if (attr != null) {
+                for (int i = 0; i < length; i++) {
+                    char ch = contents.charAt(i);
+                    if (lookForKeyMarker) {
+                        if (ch == '@') {
+                            lookForKeyMarker = false;
+                        } else {
+                            out.append(ch);
+                        }
+                    } else {
+                        if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                            keyBuffer.append(ch);
+                        } else {
+                            String key = keyBuffer.toString();
+                            i--;
+                            if (mEnhancedKeyParsing && ch == '@') {
+                                i++;        // Allow KEYs to be surrounded by @KEY@
+                            }
+                            keyBuffer.setLength(0);
+                            lookForKeyMarker = true;
+                            switch (key) {
+                            case KEY_ID -> writeEncodedText(out, "pool_" + def.getID());
+                            case KEY_NAME -> writeEncodedText(out, def.getName());
+                            case KEY_DESCRIPTION -> writeEncodedText(out, def.getDescription());
+                            case KEY_VALUE -> writeEncodedText(out, Numbers.formatWithForcedSign(attr.getValue(gch)));
+                            case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
+                            default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                            }
                         }
                     }
                 }

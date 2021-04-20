@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.character.attribute.Attribute;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.preferences.Preferences;
@@ -110,8 +111,9 @@ public class Profile {
             mHair = getRandomHair("");
             mSkinColor = getRandomSkinColor("");
             mHandedness = getRandomHandedness();
-            mHeight = getRandomHeight(mCharacter.getStrength(), getSizeModifier());
-            mWeight = getRandomWeight(mCharacter.getStrength(), getSizeModifier(), Fixed6.ONE);
+            int st = mCharacter.getAttributeValue("st");
+            mHeight = getRandomHeight(st, getSizeModifier());
+            mWeight = getRandomWeight(st, getSizeModifier(), Fixed6.ONE);
             mGender = getRandomGender();
             mName = USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender));
             mTechLevel = prefs.getDefaultTechLevel();
@@ -197,7 +199,7 @@ public class Profile {
     }
 
     void update() {
-        setSizeModifierBonus(mCharacter.getIntegerBonusFor(GURPSCharacter.ATTRIBUTES_PREFIX + BonusAttributeType.SM.name()));
+        setSizeModifierBonus(mCharacter.getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + BonusAttributeType.SM.name()));
     }
 
     /** @return The portrait. */

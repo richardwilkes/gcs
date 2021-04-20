@@ -12,6 +12,7 @@
 package com.trollworks.gcs.pointpool;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.attribute.Attribute;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -233,11 +234,15 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
     }
 
     public int getBaseValue(GURPSCharacter character) {
-        return switch (mAttributeBase.toLowerCase()) {
-            case "st" -> character.getStrength();
-            case "ht" -> character.getHealth();
-            default -> 0;
-        };
+        try {
+            return Integer.parseInt(mAttributeBase);
+        } catch(NumberFormatException ex) {
+            Attribute attr = character.getAttributes().get(mAttributeBase);
+            if (attr == null) {
+                return 0;
+            }
+            return attr.getValue(character);
+        }
     }
 
     public int computeCost(GURPSCharacter character, int value, int sm) {

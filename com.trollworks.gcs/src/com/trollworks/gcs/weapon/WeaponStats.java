@@ -320,7 +320,7 @@ public abstract class WeaponStats {
 
     protected int getSkillLevelBaseAdjustment(GURPSCharacter character, StringBuilder toolTip) {
         int adj   = 0;
-        int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
+        int minST = getMinStrengthValue() - (character.getAttributeValue("st") + character.getStrikingStrengthBonus());
         if (minST > 0) {
             adj -= minST;
         }

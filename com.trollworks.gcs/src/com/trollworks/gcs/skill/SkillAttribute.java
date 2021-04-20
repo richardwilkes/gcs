@@ -16,6 +16,8 @@ import com.trollworks.gcs.utility.I18n;
 
 /** The possible skill attributes. */
 public enum SkillAttribute {
+    // TODO: These should be generated from the attributes list on the character
+
     /** The strength attribute. */
     ST {
         @Override
@@ -25,7 +27,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getStrength() : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeValue("st") : Integer.MIN_VALUE;
         }
     },
     /** The dexterity attribute. */
@@ -37,7 +39,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getDexterity() : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeValue("dx") : Integer.MIN_VALUE;
         }
     },
     /** The health attribute. */
@@ -49,7 +51,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getHealth() : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeValue("ht") : Integer.MIN_VALUE;
         }
     },
     /** The intelligence attribute. */
@@ -61,7 +63,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getIntelligence() : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeValue("iq") : Integer.MIN_VALUE;
         }
     },
     /** The will attribute. */

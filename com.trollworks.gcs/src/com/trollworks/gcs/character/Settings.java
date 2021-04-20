@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.character.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.pointpool.PointPoolDef;
 import com.trollworks.gcs.preferences.Preferences;
@@ -32,28 +33,29 @@ public class Settings {
     private static final int    CURRENT_VERSION                     = 1;
     private static final int    MINIMUM_VERSION                     = 0;
     public static final  String KEY_ROOT                            = "settings";
-    public static final  String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
-    public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
-    public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
-    public static final  String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
-    public static final  String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
-    public static final  String KEY_NOTES_DISPLAY                   = "notes_display";
-    public static final  String KEY_BASE_WILL_ON_10                 = "base_will_on_10";
-    public static final  String KEY_BASE_PER_ON_10                  = "base_per_on_10";
-    public static final  String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
-    public static final  String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
-    public static final  String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
-    public static final  String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
-    public static final  String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
-    public static final  String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
-    public static final  String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
-    public static final  String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
-    public static final  String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
-    public static final  String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
-    public static final  String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
-    public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
+    private static final String KEY_ATTRIBUTES                      = "attributes";
     private static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_encumbrance";
     private static final String KEY_POINT_POOLS                     = "point_pools";
+    public static final  String KEY_BASE_PER_ON_10                  = "base_per_on_10";
+    public static final  String KEY_BASE_WILL_ON_10                 = "base_will_on_10";
+    public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
+    public static final  String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
+    public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
+    public static final  String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
+    public static final  String KEY_NOTES_DISPLAY                   = "notes_display";
+    public static final  String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
+    public static final  String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
+    public static final  String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
+    public static final  String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
+    public static final  String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
+    public static final  String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
+    public static final  String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
+    public static final  String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
+    public static final  String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
+    public static final  String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
+    public static final  String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
+    public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
+    public static final  String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
 
     public static final String DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10"; // January 23, 2021
 
@@ -64,6 +66,7 @@ public class Settings {
     private DisplayOption             mUserDescriptionDisplay;
     private DisplayOption             mModifiersDisplay;
     private DisplayOption             mNotesDisplay;
+    private Map<String, AttributeDef> mAttributes;
     private Map<String, PointPoolDef> mPointPools;
     private boolean                   mBaseWillOn10; // Home brew
     private boolean                   mBasePerOn10; // Home brew
@@ -90,6 +93,7 @@ public class Settings {
         mUserDescriptionDisplay = prefs.getUserDescriptionDisplay();
         mModifiersDisplay = prefs.getModifiersDisplay();
         mNotesDisplay = prefs.getNotesDisplay();
+        mAttributes = AttributeDef.cloneMap(prefs.getAttributes());
         mPointPools = PointPoolDef.cloneMap(prefs.getPointPools());
         mBaseWillOn10 = prefs.baseWillOn10();
         mBasePerOn10 = prefs.basePerOn10();
@@ -121,6 +125,9 @@ public class Settings {
         mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
         mModifiersDisplay = Enums.extract(m.getString(KEY_MODIFIERS_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
+        if (m.has(KEY_ATTRIBUTES)) {
+            mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
+        }
         if (m.has(KEY_POINT_POOLS)) {
             mPointPools = PointPoolDef.loadPools(m.getArray(KEY_POINT_POOLS));
         }
@@ -164,6 +171,8 @@ public class Settings {
         w.keyValue(KEY_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
         w.keyValue(KEY_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
+        w.key(KEY_ATTRIBUTES);
+        AttributeDef.writeOrdered(w, mAttributes);
         w.key(KEY_POINT_POOLS);
         PointPoolDef.writeOrderedPools(w, mPointPools);
         w.keyValue(KEY_BASE_WILL_ON_10, mBaseWillOn10);
@@ -442,6 +451,17 @@ public class Settings {
     public void setPointPools(Map<String, PointPoolDef> pointPools) {
         if (!mPointPools.equals(pointPools)) {
             mPointPools = PointPoolDef.cloneMap(pointPools);
+            mCharacter.notifyOfChange();
+        }
+    }
+
+    public Map<String, AttributeDef> getAttributes() {
+        return mAttributes;
+    }
+
+    public void setAttributes(Map<String, AttributeDef> attributes) {
+        if (!mAttributes.equals(attributes)) {
+            mAttributes = AttributeDef.cloneMap(attributes);
             mCharacter.notifyOfChange();
         }
     }

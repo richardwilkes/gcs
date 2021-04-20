@@ -141,15 +141,16 @@ public class AttributePrereq extends HasPrereq {
         mCombinedWith = which;
     }
 
+    // TODO: Should get this straight from the attributes list
     private static int getAttributeValue(GURPSCharacter character, BonusAttributeType attribute) {
         if (attribute == null) {
             return 0;
         }
         return switch (attribute) {
-            case ST -> character.getStrength();
-            case DX -> character.getDexterity();
-            case IQ -> character.getIntelligence();
-            case HT -> character.getHealth();
+            case ST -> character.getAttributeValue("st");
+            case DX -> character.getAttributeValue("dx");
+            case IQ -> character.getAttributeValue("iq");
+            case HT -> character.getAttributeValue("ht");
             case WILL -> character.getWillAdj();
             case PERCEPTION -> character.getPerAdj();
             default -> 0;

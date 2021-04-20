@@ -14,6 +14,7 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
+import com.trollworks.gcs.character.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
@@ -63,6 +64,7 @@ public class Preferences extends ChangeableData {
     private static final String DEPRECATED_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021
     private static final String DEPRECATED_BASE_WILL_AND_PER_ON_10  = "base_will_and_per_on_10"; // January 23, 2021
 
+    private static final String ATTRIBUTES                      = "attributes";
     private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
     private static final String BASE_WILL_ON_10                 = "base_will_on_10";
     private static final String BASE_PER_ON_10                  = "base_per_on_10";
@@ -114,6 +116,7 @@ public class Preferences extends ChangeableData {
     public static final String KEY_PREFIX           = "prefs.";
     public static final String KEY_PER_SHEET_PREFIX = KEY_PREFIX + "sheet.";
 
+    public static final String KEY_ATTRIBUTES                      = KEY_PER_SHEET_PREFIX + ATTRIBUTES;
     public static final String KEY_BASE_WILL_ON_10                 = KEY_PER_SHEET_PREFIX + BASE_WILL_ON_10;
     public static final String KEY_BASE_PER_ON_10                  = KEY_PER_SHEET_PREFIX + BASE_PER_ON_10;
     public static final String KEY_BLOCK_LAYOUT                    = KEY_PER_SHEET_PREFIX + BLOCK_LAYOUT;
@@ -199,6 +202,7 @@ public class Preferences extends ChangeableData {
     private        String                           mDefaultPlayerName;
     private        String                           mDefaultTechLevel;
     private        String                           mDefaultPortraitPath;
+    private        Map<String, AttributeDef>        mAttributes;
     private        Map<String, PointPoolDef>        mPointPools;
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
@@ -290,6 +294,7 @@ public class Preferences extends ChangeableData {
         mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         mExtraSpaceAroundEncumbrance = DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
+        mAttributes = AttributeDef.createStandardAttributes();
         mPointPools = PointPoolDef.createStandardPools();
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
@@ -370,6 +375,9 @@ public class Preferences extends ChangeableData {
                             for (String key : m2.keySet()) {
                                 mBaseWindowPositions.put(key, new BaseWindow.Position(m2.getMap(key)));
                             }
+                        }
+                        if (m.has(ATTRIBUTES)) {
+                            mAttributes = AttributeDef.load(m.getArray(ATTRIBUTES));
                         }
                         if (m.has(POINT_POOLS)) {
                             mPointPools = PointPoolDef.loadPools(m.getArray(POINT_POOLS));
@@ -527,6 +535,8 @@ public class Preferences extends ChangeableData {
                         }
                     }
                     w.endMap();
+                    w.key(ATTRIBUTES);
+                    AttributeDef.writeOrdered(w, mAttributes);
                     w.key(POINT_POOLS);
                     PointPoolDef.writeOrderedPools(w, mPointPools);
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
@@ -1086,6 +1096,17 @@ public class Preferences extends ChangeableData {
     public void setPointPools(Map<String, PointPoolDef> pointPools) {
         if (!mPointPools.equals(pointPools)) {
             mPointPools = PointPoolDef.cloneMap(pointPools);
+            notifyOfChange();
+        }
+    }
+
+    public Map<String, AttributeDef> getAttributes() {
+        return mAttributes;
+    }
+
+    public void setAttributes(Map<String, AttributeDef> attributes) {
+        if (!mAttributes.equals(attributes)) {
+            mAttributes = AttributeDef.cloneMap(attributes);
             notifyOfChange();
         }
     }

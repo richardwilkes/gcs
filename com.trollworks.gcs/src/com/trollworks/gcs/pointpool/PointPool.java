@@ -19,10 +19,10 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 import java.io.IOException;
 
 public class PointPool {
+    public static final  String ID_POOL_PREFIX = "pool.";
     private static final String KEY_POOL_ID    = "pool_id";
     private static final String KEY_ADJ        = "adj";
     private static final String KEY_DAMAGE     = "damage";
-    public static final  String ID_POOL_PREFIX = "pool.";
 
     private String mPoolDefID;
     private int    mAdjustment;
@@ -85,13 +85,9 @@ public class PointPool {
     public int getMaximum(GURPSCharacter character) {
         PointPoolDef pool = getPoolDef(character);
         if (pool != null) {
-            return getMaximum(character, pool);
+            return pool.getBaseValue(character) + mAdjustment + mBonus;
         }
         return 0;
-    }
-
-    private int getMaximum(GURPSCharacter character, PointPoolDef pool) {
-        return pool.getBaseValue(character) + mAdjustment + mBonus;
     }
 
     public void setMaximum(GURPSCharacter character, int value) {

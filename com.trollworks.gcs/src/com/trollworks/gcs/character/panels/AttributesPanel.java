@@ -11,10 +11,12 @@
 
 package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.CharacterSetter;
+import com.trollworks.gcs.character.attribute.Attribute;
+import com.trollworks.gcs.character.attribute.AttributeDef;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
@@ -42,10 +44,9 @@ public class AttributesPanel extends DropPanel {
     public AttributesPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), I18n.Text("Attributes"));
         GURPSCharacter gch = sheet.getCharacter();
-        createEditableIntegerField(sheet, Integer.valueOf(gch.getStrengthPoints()), gch.getStrength(), (c, v) -> c.setStrength(((Integer) v).intValue()), "ST", I18n.Text("Strength (ST)"));
-        createEditableIntegerField(sheet, Integer.valueOf(gch.getDexterityPoints()), gch.getDexterity(), (c, v) -> c.setDexterity(((Integer) v).intValue()), "DX", I18n.Text("Dexterity (DX)"));
-        createEditableIntegerField(sheet, Integer.valueOf(gch.getIntelligencePoints()), gch.getIntelligence(), (c, v) -> c.setIntelligence(((Integer) v).intValue()), "IQ", I18n.Text("Intelligence (IQ)"));
-        createEditableIntegerField(sheet, Integer.valueOf(gch.getHealthPoints()), gch.getHealth(), (c, v) -> c.setHealth(((Integer) v).intValue()), "HT", I18n.Text("Health (HT)"));
+        for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
+            createEditableAttributeField(sheet, gch, def);
+        }
         addDivider();
         createEditableIntegerField(sheet, Integer.valueOf(gch.getWillPoints()), gch.getWillAdj(), (c, v) -> c.setWillAdj(((Integer) v).intValue()), "Will", I18n.TextWithContext(1, "Will"));
         createField(sheet, gch.getFrightCheck(), I18n.Text("Fright Check"));
@@ -61,6 +62,11 @@ public class AttributesPanel extends DropPanel {
         addDivider();
         createDiceField(sheet, gch.getThrust(), I18n.Text("Basic Thrust"));
         createDiceField(sheet, gch.getSwing(), I18n.Text("Basic Swing"));
+    }
+
+    private void createEditableAttributeField(CharacterSheet sheet, GURPSCharacter gch, AttributeDef def) {
+        Attribute attr = gch.getAttributes().get(def.getID());
+        createEditableIntegerField(sheet, Integer.valueOf(attr.getPointCost(gch)), attr.getValue(gch), (c, v) -> attr.setValue(c, ((Integer) v).intValue()), attr.getAttrID(), String.format("%s (%s)", def.getDescription(), def.getName()));
     }
 
     private void createEditableIntegerField(CharacterSheet sheet, Integer points, int value, CharacterSetter setter, String tag, String title) {

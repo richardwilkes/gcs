@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.attribute.Attribute;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
@@ -75,7 +75,7 @@ public class AttributeBonus extends Bonus {
     @Override
     public String getKey() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(GURPSCharacter.ATTRIBUTES_PREFIX);
+        buffer.append(Attribute.ID_ATTR_PREFIX);
         buffer.append(mAttribute.name());
         if (mLimitation != AttributeBonusLimitation.NONE) {
             buffer.append(mLimitation.name());

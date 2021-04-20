@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.attribute.Attribute;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
@@ -101,7 +101,7 @@ public class CostReduction extends Feature {
 
     @Override
     public String getKey() {
-        return GURPSCharacter.ATTRIBUTES_PREFIX + mAttribute.name();
+        return Attribute.ID_ATTR_PREFIX + mAttribute.name();
     }
 
     @Override
