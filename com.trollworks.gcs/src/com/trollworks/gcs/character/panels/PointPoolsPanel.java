@@ -36,7 +36,7 @@ import javax.swing.UIManager;
 
 public class PointPoolsPanel extends DropPanel {
     public PointPoolsPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(5).setMargins(0).setSpacing(2, 0).setFillAlignment(), I18n.Text("Point Pools"));
+        super(new PrecisionLayout().setColumns(6).setMargins(0).setSpacing(2, 0).setFillAlignment(), I18n.Text("Point Pools"));
         GURPSCharacter         gch = sheet.getCharacter();
         Map<String, PointPool> pp  = gch.getPointPools();
         for (PointPoolDef poolDef : PointPoolDef.getOrderedPools(gch.getSettings().getPointPools())) {
@@ -62,7 +62,7 @@ public class PointPoolsPanel extends DropPanel {
         setForeground(ThemeColor.ON_PAGE);
         PoolThreshold threshold = pool.getCurrentThreshold(gch);
         if (threshold != null) {
-            mState.setText(threshold.getState());
+            mState.setText(String.format("[%s]", threshold.getState()));
             String explanation = threshold.getExplanation();
             if (explanation.isEmpty()) {
                 explanation = null;
@@ -71,6 +71,6 @@ public class PointPoolsPanel extends DropPanel {
                 mState.setToolTipText(explanation);
             }
         }
-        add(mState, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setHorizontalSpan(5));
+        add(mState, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.END));
     }
 }

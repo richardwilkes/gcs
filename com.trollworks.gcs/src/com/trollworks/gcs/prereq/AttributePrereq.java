@@ -147,12 +147,12 @@ public class AttributePrereq extends HasPrereq {
             return 0;
         }
         return switch (attribute) {
-            case ST -> character.getAttributeValue("st");
-            case DX -> character.getAttributeValue("dx");
-            case IQ -> character.getAttributeValue("iq");
-            case HT -> character.getAttributeValue("ht");
-            case WILL -> character.getWillAdj();
-            case PERCEPTION -> character.getPerAdj();
+            case ST -> character.getAttributeIntValue("st");
+            case DX -> character.getAttributeIntValue("dx");
+            case IQ -> character.getAttributeIntValue("iq");
+            case HT -> character.getAttributeIntValue("ht");
+            case WILL -> character.getAttributeIntValue("will");
+            case PERCEPTION -> character.getAttributeIntValue("per");
             default -> 0;
         };
     }

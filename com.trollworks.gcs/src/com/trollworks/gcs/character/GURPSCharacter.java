@@ -13,8 +13,8 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
-import com.trollworks.gcs.character.attribute.Attribute;
-import com.trollworks.gcs.character.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
@@ -78,44 +78,30 @@ public class GURPSCharacter extends CollectedModels {
     private static final String KEY_ATTRIBUTES       = "attributes";
     private static final String KEY_CREATED_DATE     = "created_date";
     private static final String KEY_MODIFIED_DATE    = "modified_date";
-    private static final String KEY_MOVE_ADJ         = "move_adj";
-    private static final String KEY_PER_ADJ          = "per_adj";
     private static final String KEY_POINT_POOLS      = "point_pools";
-    private static final String KEY_SPEED_ADJ        = "speed_adj";
     private static final String KEY_THIRD_PARTY_DATA = "third_party";
     private static final String KEY_TOTAL_POINTS     = "total_points";
-    private static final String KEY_WILL_ADJ         = "will_adj";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; added April 15, 2021
+    private static final String KEY_DX        = "DX";
     private static final String KEY_FP_ADJ    = "FP_adj";
     private static final String KEY_FP_DAMAGE = "fp_damage";
     private static final String KEY_HP_ADJ    = "HP_adj";
     private static final String KEY_HP_DAMAGE = "hp_damage";
-    private static final String KEY_DX        = "DX";
     private static final String KEY_HT        = "HT";
     private static final String KEY_IQ        = "IQ";
+    private static final String KEY_MOVE_ADJ  = "move_adj";
+    private static final String KEY_PER_ADJ   = "per_adj";
+    private static final String KEY_SPEED_ADJ = "speed_adj";
     private static final String KEY_ST        = "ST";
+    private static final String KEY_WILL_ADJ  = "will_adj";
 
     public static final String ID_STRENGTH          = Attribute.ID_ATTR_PREFIX + BonusAttributeType.ST.name();
     public static final String ID_LIFTING_STRENGTH  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
     public static final String ID_STRIKING_STRENGTH = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
-    public static final String ID_DEXTERITY         = Attribute.ID_ATTR_PREFIX + BonusAttributeType.DX.name();
-    public static final String ID_INTELLIGENCE      = Attribute.ID_ATTR_PREFIX + BonusAttributeType.IQ.name();
-    public static final String ID_HEALTH            = Attribute.ID_ATTR_PREFIX + BonusAttributeType.HT.name();
-    public static final String ID_PERCEPTION        = Attribute.ID_ATTR_PREFIX + BonusAttributeType.PERCEPTION.name();
-    public static final String ID_VISION            = Attribute.ID_ATTR_PREFIX + BonusAttributeType.VISION.name();
-    public static final String ID_HEARING           = Attribute.ID_ATTR_PREFIX + BonusAttributeType.HEARING.name();
-    public static final String ID_TASTE_AND_SMELL   = Attribute.ID_ATTR_PREFIX + BonusAttributeType.TASTE_SMELL.name();
-    public static final String ID_TOUCH             = Attribute.ID_ATTR_PREFIX + BonusAttributeType.TOUCH.name();
-    public static final String ID_WILL              = Attribute.ID_ATTR_PREFIX + BonusAttributeType.WILL.name();
-    public static final String ID_FRIGHT_CHECK      = Attribute.ID_ATTR_PREFIX + BonusAttributeType.FRIGHT_CHECK.name();
-    public static final String ID_BASIC_SPEED       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.SPEED.name();
-    public static final String ID_BASIC_MOVE        = Attribute.ID_ATTR_PREFIX + BonusAttributeType.MOVE.name();
     public static final String ID_DODGE_BONUS       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.DODGE.name();
     public static final String ID_PARRY_BONUS       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.PARRY.name();
     public static final String ID_BLOCK_BONUS       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.BLOCK.name();
-    public static final String ID_HIT_POINTS        = Attribute.ID_ATTR_PREFIX + BonusAttributeType.HP.name();
-    public static final String ID_FATIGUE_POINTS    = Attribute.ID_ATTR_PREFIX + BonusAttributeType.FP.name();
 
     private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
 
@@ -127,19 +113,6 @@ public class GURPSCharacter extends CollectedModels {
     private Map<String, PointPool>              mPointPools;
     private int                                 mLiftingStrengthBonus;
     private int                                 mStrikingStrengthBonus;
-    private int                                 mWillAdj;
-    private int                                 mWillBonus;
-    private int                                 mFrightCheckBonus;
-    private int                                 mPerAdj;
-    private int                                 mPerceptionBonus;
-    private int                                 mVisionBonus;
-    private int                                 mHearingBonus;
-    private int                                 mTasteAndSmellBonus;
-    private int                                 mTouchBonus;
-    private double                              mSpeedAdj;
-    private double                              mSpeedBonus;
-    private int                                 mMoveAdj;
-    private int                                 mMoveBonus;
     private int                                 mDodgeBonus;
     private int                                 mParryBonus;
     private int                                 mBlockBonus;
@@ -296,6 +269,18 @@ public class GURPSCharacter extends CollectedModels {
                     case "ht":
                         attr.initTo(m.getInt(KEY_HT) - 10);
                         break;
+                    case "will":
+                        attr.initTo(m.getInt(KEY_WILL_ADJ));
+                        break;
+                    case "per":
+                        attr.initTo(m.getInt(KEY_PER_ADJ));
+                        break;
+                    case "basic_speed":
+                        attr.initTo(m.getDouble(KEY_SPEED_ADJ));
+                        break;
+                    case "basic_move":
+                        attr.initTo(m.getInt(KEY_MOVE_ADJ));
+                        break;
                     default:
                         break;
                     }
@@ -328,10 +313,6 @@ public class GURPSCharacter extends CollectedModels {
             }
         }
         mTotalPoints = m.getInt(KEY_TOTAL_POINTS);
-        mWillAdj = m.getInt(KEY_WILL_ADJ);
-        mPerAdj = m.getInt(KEY_PER_ADJ);
-        mSpeedAdj = m.getDouble(KEY_SPEED_ADJ);
-        mMoveAdj = m.getInt(KEY_MOVE_ADJ);
         loadModels(m, state);
         if (mPageSettings != null && m.has(PrintManager.KEY_ROOT)) {
             mPageSettings = new PrintManager(m.getMap(PrintManager.KEY_ROOT));
@@ -375,10 +356,6 @@ public class GURPSCharacter extends CollectedModels {
         }
         w.endArray();
         w.keyValue(KEY_TOTAL_POINTS, mTotalPoints);
-        w.keyValueNot(KEY_WILL_ADJ, mWillAdj, 0);
-        w.keyValueNot(KEY_PER_ADJ, mPerAdj, 0);
-        w.keyValueNot(KEY_SPEED_ADJ, mSpeedAdj, 0);
-        w.keyValueNot(KEY_MOVE_ADJ, mMoveAdj, 0);
         saveModels(w, saveType);
         if (saveType != SaveType.HASH) {
             if (mPageSettings != null) {
@@ -448,12 +425,20 @@ public class GURPSCharacter extends CollectedModels {
         }
     }
 
-    public int getAttributeValue(String name) {
+    public int getAttributeIntValue(String name) {
         Attribute attr = getAttributes().get(name);
         if (attr == null) {
             return 0;
         }
-        return attr.getValue(this);
+        return attr.getIntValue(this);
+    }
+
+    public double getAttributeDoubleValue(String name) {
+        Attribute attr = getAttributes().get(name);
+        if (attr == null) {
+            return 0;
+        }
+        return attr.getDoubleValue(this);
     }
 
     public int getAttributeCost(String name) {
@@ -466,7 +451,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The basic thrusting damage. */
     public Dice getThrust() {
-        return getThrust(getAttributeValue("st") + mStrikingStrengthBonus);
+        return getThrust(getAttributeIntValue("st") + mStrikingStrengthBonus);
     }
 
     /**
@@ -525,7 +510,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The basic swinging damage. */
     public Dice getSwing() {
-        return getSwing(getAttributeValue("st") + mStrikingStrengthBonus);
+        return getSwing(getAttributeIntValue("st") + mStrikingStrengthBonus);
     }
 
     /**
@@ -603,7 +588,7 @@ public class GURPSCharacter extends CollectedModels {
             multiplier = new Fixed6(2);
             roundAt = ten;
         }
-        int strength = getAttributeValue("st") + mLiftingStrengthBonus;
+        int strength = getAttributeIntValue("st") + mLiftingStrengthBonus;
         if (isThresholdOpMet(ThresholdOps.HALVE_ST)) {
             boolean plusOne = strength % 2 != 0;
             strength /= 2;
@@ -685,98 +670,12 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     /**
-     * @return The character's basic speed.
-     */
-    public double getBasicSpeed() {
-        return mSpeedAdj + mSpeedBonus + getRawBasicSpeed();
-    }
-
-    private double getRawBasicSpeed() {
-        return (getAttributeValue("dx") + getAttributeValue("ht")) / 4.0;
-    }
-
-    /**
-     * Sets the basic speed.
-     *
-     * @param speed The new basic speed.
-     */
-    public void setBasicSpeed(double speed) {
-        double oldBasicSpeed = getBasicSpeed();
-        if (oldBasicSpeed != speed) {
-            postUndoEdit(I18n.Text("Basic Speed Change"), (c, v) -> c.setBasicSpeed(((Double) v).doubleValue()), Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
-            mSpeedAdj = speed - (mSpeedBonus + getRawBasicSpeed());
-            notifyOfChange();
-        }
-    }
-
-    /** @return The basic speed bonus. */
-    public double getBasicSpeedBonus() {
-        return mSpeedBonus;
-    }
-
-    /** @param bonus The basic speed bonus. */
-    public void setBasicSpeedBonus(double bonus) {
-        if (mSpeedBonus != bonus) {
-            mSpeedBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on basic speed. */
-    public int getBasicSpeedPoints() {
-        return (int) (mSpeedAdj * 20.0);
-    }
-
-    /**
-     * @return The character's basic move.
-     */
-    public int getBasicMove() {
-        return Math.max(mMoveAdj + mMoveBonus + getRawBasicMove(), 0);
-    }
-
-    private int getRawBasicMove() {
-        return (int) Math.floor(getBasicSpeed());
-    }
-
-    /**
-     * Sets the basic move.
-     *
-     * @param move The new basic move.
-     */
-    public void setBasicMove(int move) {
-        int oldBasicMove = getBasicMove();
-        if (oldBasicMove != move) {
-            postUndoEdit(I18n.Text("Basic Move Change"), (c, v) -> c.setBasicMove(((Integer) v).intValue()), Integer.valueOf(oldBasicMove), Integer.valueOf(move));
-            mMoveAdj = move - (mMoveBonus + getRawBasicMove());
-            notifyOfChange();
-        }
-    }
-
-    /** @return The basic move bonus. */
-    public int getBasicMoveBonus() {
-        return mMoveBonus;
-    }
-
-    /** @param bonus The basic move bonus. */
-    public void setBasicMoveBonus(int bonus) {
-        if (mMoveBonus != bonus) {
-            mMoveBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on basic move. */
-    public int getBasicMovePoints() {
-        return mMoveAdj * 5;
-    }
-
-    /**
      * @param encumbrance The encumbrance level.
      * @return The character's ground move for the specified encumbrance level.
      */
     public int getMove(Encumbrance encumbrance) {
-        int initialMove = getBasicMove();
-        int divisor     = 2 * Math.max(countThresholdOpMet(ThresholdOps.HALVE_MOVE), 2);
+        int initialMove = getAttributeIntValue("basic_move");
+        int divisor     = 2 * Math.min(countThresholdOpMet(ThresholdOps.HALVE_MOVE), 2);
         if (divisor > 0) {
             boolean plusOne = (initialMove % divisor) != 0;
             initialMove /= divisor;
@@ -796,8 +695,8 @@ public class GURPSCharacter extends CollectedModels {
      * @return The character's dodge for the specified encumbrance level.
      */
     public int getDodge(Encumbrance encumbrance) {
-        int dodge   = 3 + mDodgeBonus + (int) Math.floor(getBasicSpeed());
-        int divisor = 2 * Math.max(countThresholdOpMet(ThresholdOps.HALVE_DODGE), 2);
+        int dodge   = 3 + mDodgeBonus + (int) Math.floor(getAttributeDoubleValue("basic_speed"));
+        int divisor = 2 * Math.min(countThresholdOpMet(ThresholdOps.HALVE_DODGE), 2);
         if (divisor > 0) {
             boolean plusOne = (dodge % divisor) != 0;
             dodge /= divisor;
@@ -1014,7 +913,7 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     private void calculateAttributePoints() {
-        mCachedAttributePoints = getWillPoints() + getPerceptionPoints() + getBasicSpeedPoints() + getBasicMovePoints();
+        mCachedAttributePoints = 0;
         for (Attribute attr : mAttributes.values()) {
             mCachedAttributePoints += attr.getPointCost(this);
         }
@@ -1099,166 +998,6 @@ public class GURPSCharacter extends CollectedModels {
         for (Spell spell : getSpellsIterator()) {
             mCachedSpellPoints += spell.getRawPoints();
         }
-    }
-
-    /** @return The will. */
-    public int getWillAdj() {
-        return mWillAdj + mWillBonus + (mSettings.baseWillOn10() ? 10 : getAttributeValue("iq"));
-    }
-
-    /** @param willAdj The new will. */
-    public void setWillAdj(int willAdj) {
-        int oldWill = getWillAdj();
-        if (oldWill != willAdj) {
-            postUndoEdit(I18n.Text("Will Change"), (c, v) -> c.setWillAdj(((Integer) v).intValue()), Integer.valueOf(oldWill), Integer.valueOf(willAdj));
-            mWillAdj = willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getAttributeValue("iq")));
-            notifyOfChange();
-        }
-    }
-
-    /** @return The will bonus. */
-    public int getWillBonus() {
-        return mWillBonus;
-    }
-
-    /** @param bonus The new will bonus. */
-    public void setWillBonus(int bonus) {
-        if (mWillBonus != bonus) {
-            mWillBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on will. */
-    public int getWillPoints() {
-        return mWillAdj * 5;
-    }
-
-    /** @return The fright check. */
-    public int getFrightCheck() {
-        return getWillAdj() + mFrightCheckBonus;
-    }
-
-    /** @return The fright check bonus. */
-    public int getFrightCheckBonus() {
-        return mFrightCheckBonus;
-    }
-
-    /** @param bonus The new fright check bonus. */
-    public void setFrightCheckBonus(int bonus) {
-        if (mFrightCheckBonus != bonus) {
-            mFrightCheckBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The vision. */
-    public int getVision() {
-        return getPerAdj() + mVisionBonus;
-    }
-
-    /** @return The vision bonus. */
-    public int getVisionBonus() {
-        return mVisionBonus;
-    }
-
-    /** @param bonus The new vision bonus. */
-    public void setVisionBonus(int bonus) {
-        if (mVisionBonus != bonus) {
-            mVisionBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The hearing. */
-    public int getHearing() {
-        return getPerAdj() + mHearingBonus;
-    }
-
-    /** @return The hearing bonus. */
-    public int getHearingBonus() {
-        return mHearingBonus;
-    }
-
-    /** @param bonus The new hearing bonus. */
-    public void setHearingBonus(int bonus) {
-        if (mHearingBonus != bonus) {
-            mHearingBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The touch perception. */
-    public int getTouch() {
-        return getPerAdj() + mTouchBonus;
-    }
-
-    /** @return The touch bonus. */
-    public int getTouchBonus() {
-        return mTouchBonus;
-    }
-
-    /** @param bonus The new touch bonus. */
-    public void setTouchBonus(int bonus) {
-        if (mTouchBonus != bonus) {
-            mTouchBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The taste and smell perception. */
-    public int getTasteAndSmell() {
-        return getPerAdj() + mTasteAndSmellBonus;
-    }
-
-    /** @return The taste and smell bonus. */
-    public int getTasteAndSmellBonus() {
-        return mTasteAndSmellBonus;
-    }
-
-    /** @param bonus The new taste and smell bonus. */
-    public void setTasteAndSmellBonus(int bonus) {
-        if (mTasteAndSmellBonus != bonus) {
-            mTasteAndSmellBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The perception (Per). */
-    public int getPerAdj() {
-        return mPerAdj + mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getAttributeValue("iq"));
-    }
-
-    /**
-     * Sets the perception.
-     *
-     * @param perAdj The new perception.
-     */
-    public void setPerAdj(int perAdj) {
-        int oldPerception = getPerAdj();
-        if (oldPerception != perAdj) {
-            postUndoEdit(I18n.Text("Perception Change"), (c, v) -> c.setPerAdj(((Integer) v).intValue()), Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
-            mPerAdj = perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getAttributeValue("iq")));
-            notifyOfChange();
-        }
-    }
-
-    /** @return The perception bonus. */
-    public int getPerceptionBonus() {
-        return mPerceptionBonus;
-    }
-
-    /** @param bonus The new perception bonus. */
-    public void setPerceptionBonus(int bonus) {
-        if (mPerceptionBonus != bonus) {
-            mPerceptionBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on perception. */
-    public int getPerceptionPoints() {
-        return mPerAdj * 5;
     }
 
     /** @return The {@link Profile} data. */
@@ -1478,17 +1217,17 @@ public class GURPSCharacter extends CollectedModels {
         mSpellsUpdated = false;
         setLiftingStrengthBonus(getIntegerBonusFor(ID_LIFTING_STRENGTH));
         setStrikingStrengthBonus(getIntegerBonusFor(ID_STRIKING_STRENGTH));
-        setWillBonus(getIntegerBonusFor(ID_WILL));
-        setFrightCheckBonus(getIntegerBonusFor(ID_FRIGHT_CHECK));
-        setPerceptionBonus(getIntegerBonusFor(ID_PERCEPTION));
-        setVisionBonus(getIntegerBonusFor(ID_VISION));
-        setHearingBonus(getIntegerBonusFor(ID_HEARING));
-        setTasteAndSmellBonus(getIntegerBonusFor(ID_TASTE_AND_SMELL));
-        setTouchBonus(getIntegerBonusFor(ID_TOUCH));
         for (Attribute attr : mAttributes.values()) {
             String attrID = attr.getAttrID();
-            attr.setBonus(this, getIntegerBonusFor(attrID));
-            attr.setCostReduction(this, getCostReductionFor(attrID));
+            AttributeDef def = attr.getAttrDef(this);
+            if (def != null) {
+                if (def.isDecimal()) {
+                    attr.setBonus(this, getDoubleBonusFor(attrID));
+                } else {
+                    attr.setBonus(this, getIntegerBonusFor(attrID));
+                }
+                attr.setCostReduction(this, getCostReductionFor(attrID));
+            }
         }
         for (PointPool pool : mPointPools.values()) {
             pool.setBonus(this, getIntegerBonusFor(pool.getPoolID()));
@@ -1497,8 +1236,6 @@ public class GURPSCharacter extends CollectedModels {
         setDodgeBonus(getIntegerBonusFor(ID_DODGE_BONUS));
         setParryBonus(getIntegerBonusFor(ID_PARRY_BONUS));
         setBlockBonus(getIntegerBonusFor(ID_BLOCK_BONUS));
-        setBasicSpeedBonus(getDoubleBonusFor(ID_BASIC_SPEED));
-        setBasicMoveBonus(getIntegerBonusFor(ID_BASIC_MOVE));
         mArmor.update();
         if (!mSkillsUpdated) {
             updateSkills();

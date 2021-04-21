@@ -27,7 +27,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getAttributeValue("st") : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeIntValue("st") : Integer.MIN_VALUE;
         }
     },
     /** The dexterity attribute. */
@@ -39,7 +39,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getAttributeValue("dx") : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeIntValue("dx") : Integer.MIN_VALUE;
         }
     },
     /** The health attribute. */
@@ -51,7 +51,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getAttributeValue("ht") : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeIntValue("ht") : Integer.MIN_VALUE;
         }
     },
     /** The intelligence attribute. */
@@ -63,7 +63,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getAttributeValue("iq") : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeIntValue("iq") : Integer.MIN_VALUE;
         }
     },
     /** The will attribute. */
@@ -75,7 +75,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getWillAdj() : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeIntValue("will") : Integer.MIN_VALUE;
         }
     },
     /** The perception attribute. */
@@ -87,7 +87,7 @@ public enum SkillAttribute {
 
         @Override
         public int getBaseSkillLevel(GURPSCharacter character) {
-            return character != null ? character.getPerAdj() : Integer.MIN_VALUE;
+            return character != null ? character.getAttributeIntValue("per") : Integer.MIN_VALUE;
         }
     },
     /** Just 10 instead of the actual attribute. */

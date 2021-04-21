@@ -11,8 +11,11 @@
 
 package com.trollworks.gcs.pointpool;
 
+import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.attribute.Attribute;
+import com.trollworks.gcs.character.CharacterVariableResolver;
+import com.trollworks.gcs.expression.EvaluationException;
+import com.trollworks.gcs.expression.Evaluator;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -100,7 +103,7 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Rested"), "", null));
 
         Map<String, PointPoolDef> m = new HashMap<>();
-        m.put("fp", new PointPoolDef("fp", I18n.Text("FP"), I18n.Text("Fatigue Points"), "ht", 0, 3, 0, true, thresholds));
+        m.put("fp", new PointPoolDef("fp", I18n.Text("FP"), I18n.Text("Fatigue Points"), "$" + Attribute.ID_ATTR_PREFIX + "ht", 0, 3, 0, true, thresholds));
 
         ops = new ArrayList<>();
         ops.add(ThresholdOps.HALVE_MOVE);
@@ -126,7 +129,7 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         thresholds.add(new PoolThreshold(1, 3, 0, I18n.Text("Reeling"), I18n.Text("Move and Dodge are halved (B419)"), ops));
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Wounded"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Healthy"), "", null));
-        m.put("hp", new PointPoolDef("hp", I18n.Text("HP"), I18n.Text("Hit Points"), "st", 1, 2, 10, true, thresholds));
+        m.put("hp", new PointPoolDef("hp", I18n.Text("HP"), I18n.Text("Hit Points"), "$" + Attribute.ID_ATTR_PREFIX + "st", 1, 2, 10, true, thresholds));
         return m;
     }
 
@@ -233,16 +236,19 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         mMayGoBelowZero = mayGoBelowZero;
     }
 
-    public int getBaseValue(GURPSCharacter character) {
+    public int getBaseValue(CharacterVariableResolver resolver) {
+        Evaluator evaluator = new Evaluator(resolver);
+        String    exclude   = PointPool.ID_POOL_PREFIX + mID;
+        resolver.addExclusion(exclude);
+        int value;
         try {
-            return Integer.parseInt(mAttributeBase);
-        } catch(NumberFormatException ex) {
-            Attribute attr = character.getAttributes().get(mAttributeBase);
-            if (attr == null) {
-                return 0;
-            }
-            return attr.getValue(character);
+            value = evaluator.evaluateToInteger(mAttributeBase);
+        } catch (EvaluationException ex) {
+            Log.error(ex);
+            value = 0;
         }
+        resolver.removeExclusion(exclude);
+        return value;
     }
 
     public int computeCost(GURPSCharacter character, int value, int sm) {

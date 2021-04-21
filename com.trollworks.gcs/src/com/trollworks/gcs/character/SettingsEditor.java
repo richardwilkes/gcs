@@ -49,8 +49,6 @@ import javax.swing.event.DocumentListener;
 public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, DataChangeListener, Runnable {
     private GURPSCharacter           mCharacter;
     private Settings                 mSettings;
-    private JCheckBox                mBaseWillOn10;
-    private JCheckBox                mBasePerOn10;
     private JCheckBox                mUseMultiplicativeModifiers;
     private JCheckBox                mUseModifyingDicePlusAdds;
     private JCheckBox                mUseKnowYourOwnStrength;
@@ -63,7 +61,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mShowEquipmentModifierAdj;
     private JCheckBox                mShowSpellAdj;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
-    private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
     private JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
@@ -119,9 +116,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mShowEquipmentModifierAdj = addCheckBox(panel, I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists"), null, mSettings.showEquipmentModifierAdj());
         mShowSpellAdj = addCheckBox(panel, I18n.Text("Show the spell ritual, cost and time adjustments in the spell list"), null, mSettings.showSpellAdj());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
-        mExtraSpaceAroundEncumbrance = addCheckBox(panel, I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table"), null, mSettings.extraSpaceAroundEncumbrance());
-        mBaseWillOn10 = addCheckBox(panel, I18n.Text("Base Will on 10 and not IQ"), null, mSettings.baseWillOn10());
-        mBasePerOn10 = addCheckBox(panel, I18n.Text("Base Perception on 10 and not IQ"), null, mSettings.basePerOn10());
         mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
         mUseModifyingDicePlusAdds = addCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
@@ -208,12 +202,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mSettings.setShowSpellAdj(mShowSpellAdj.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
-        } else if (source == mExtraSpaceAroundEncumbrance) {
-            mSettings.setExtraSpaceAroundEncumbrance(mExtraSpaceAroundEncumbrance.isSelected());
-        } else if (source == mBaseWillOn10) {
-            mSettings.setBaseWillOn10(mBaseWillOn10.isSelected());
-        } else if (source == mBasePerOn10) {
-            mSettings.setBasePerOn10(mBasePerOn10.isSelected());
         } else if (source == mUseMultiplicativeModifiers) {
             mSettings.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
         } else if (source == mUseModifyingDicePlusAdds) {
@@ -243,9 +231,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mShowEquipmentModifierAdj.isSelected() == prefs.showEquipmentModifierAdj();
         atDefaults = atDefaults && mShowSpellAdj.isSelected() == prefs.showSpellAdj();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
-        atDefaults = atDefaults && mExtraSpaceAroundEncumbrance.isSelected() == prefs.extraSpaceAroundEncumbrance();
-        atDefaults = atDefaults && mBaseWillOn10.isSelected() == prefs.baseWillOn10();
-        atDefaults = atDefaults && mBasePerOn10.isSelected() == prefs.basePerOn10();
         atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
         atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == prefs.useKnowYourOwnStrength();
         atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == prefs.useThrustEqualsSwingMinus2();
@@ -282,9 +267,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mShowEquipmentModifierAdj.setSelected(prefs.showEquipmentModifierAdj());
             mShowSpellAdj.setSelected(prefs.showSpellAdj());
             mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
-            mExtraSpaceAroundEncumbrance.setSelected(prefs.extraSpaceAroundEncumbrance());
-            mBaseWillOn10.setSelected(prefs.baseWillOn10());
-            mBasePerOn10.setSelected(prefs.basePerOn10());
             mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
             mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
             mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());

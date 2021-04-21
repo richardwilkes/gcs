@@ -13,8 +13,8 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
-import com.trollworks.gcs.character.attribute.Attribute;
-import com.trollworks.gcs.character.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
@@ -432,10 +432,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("ht")));
             break;
         case KEY_PERCEPTION_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getPerceptionPoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("per")));
             break;
         case KEY_WILL_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getWillPoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("will")));
             break;
         case KEY_FP_POINTS:
             int fpPoints = 0;
@@ -454,10 +454,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(hpPoints));
             break;
         case KEY_BASIC_SPEED_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicSpeedPoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("basic_speed")));
             break;
         case KEY_BASIC_MOVE_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMovePoints()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("basic_move")));
             break;
         case KEY_ADVANTAGE_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAdvantagePoints()));
@@ -515,43 +515,43 @@ public class TextTemplate {
             writeEncodedText(out, description.getHandedness());
             break;
         case KEY_ST:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("st")));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("st")));
             break;
         case KEY_DX:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("dx")));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("dx")));
             break;
         case KEY_IQ:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("iq")));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("iq")));
             break;
         case KEY_HT:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeValue("ht")));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("ht")));
             break;
         case KEY_WILL:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getWillAdj()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("will")));
             break;
         case KEY_FRIGHT_CHECK:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getFrightCheck()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fright_check")));
             break;
         case KEY_BASIC_SPEED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicSpeed()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeDoubleValue("basic_speed")));
             break;
         case KEY_BASIC_MOVE:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getBasicMove()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("basic_move")));
             break;
         case KEY_PERCEPTION:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getPerAdj()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("per")));
             break;
         case KEY_VISION:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getVision()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("vision")));
             break;
         case KEY_HEARING:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getHearing()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hearing")));
             break;
         case KEY_TASTE_SMELL:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getTasteAndSmell()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("taste_smell")));
             break;
         case KEY_TOUCH:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getTouch()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("touch")));
             break;
         case KEY_THRUST:
             writeEncodedText(out, gurpsCharacter.getThrust().toString());
@@ -2002,7 +2002,13 @@ public class TextTemplate {
                             case KEY_ID -> writeEncodedText(out, "pool_" + def.getID());
                             case KEY_NAME -> writeEncodedText(out, def.getName());
                             case KEY_DESCRIPTION -> writeEncodedText(out, def.getDescription());
-                            case KEY_VALUE -> writeEncodedText(out, Numbers.formatWithForcedSign(attr.getValue(gch)));
+                            case KEY_VALUE -> {
+                                if (def.isDecimal()) {
+                                    writeEncodedText(out, Numbers.formatWithForcedSign(attr.getDoubleValue(gch)));
+                                } else {
+                                    writeEncodedText(out, Numbers.formatWithForcedSign(attr.getIntValue(gch)));
+                                }
+                            }
                             case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
                             default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                             }

@@ -9,9 +9,10 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character.attribute;
+package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.CharacterVariableResolver;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -24,8 +25,8 @@ public class Attribute {
     private static final String KEY_ADJ        = "adj";
 
     private String mAttrDefID;
-    private int    mAdjustment;
-    private int    mBonus;
+    private double mAdjustment;
+    private double mBonus;
     private int    mCostReduction;
 
     public Attribute(String attrDefID) {
@@ -34,10 +35,10 @@ public class Attribute {
 
     public Attribute(JsonMap m) {
         mAttrDefID = m.getString(KEY_ATTR_ID);
-        mAdjustment = m.getInt(KEY_ADJ);
+        mAdjustment = m.getDouble(KEY_ADJ);
     }
 
-    public void initTo(int adjustment) {
+    public void initTo(double adjustment) {
         mAdjustment = adjustment;
     }
 
@@ -61,39 +62,47 @@ public class Attribute {
         return 0;
     }
 
-    public int getValue(GURPSCharacter character) {
+    public int getIntValue(GURPSCharacter character) {
+        return (int) Math.floor(getDoubleValue(character));
+    }
+
+    public double getDoubleValue(GURPSCharacter character) {
         AttributeDef def = getAttrDef(character);
         if (def != null) {
-            return def.getBaseValue(character) + mAdjustment + mBonus;
+            return def.getBaseValue(new CharacterVariableResolver(character)) + mAdjustment + mBonus;
         }
         return 0;
     }
 
-    public void setValue(GURPSCharacter character, int value) {
-        int old = getValue(character);
+    public void setIntValue(GURPSCharacter character, int value) {
+        int old = getIntValue(character);
         if (old != value) {
             AttributeDef def = getAttrDef(character);
             if (def != null) {
-                character.postUndoEdit(String.format(I18n.Text("%s Change"), def.getName()), (c, v) -> setValue(c, ((Integer) v).intValue()), Integer.valueOf(old), Integer.valueOf(value));
-                mAdjustment = value - (def.getBaseValue(character) + mBonus);
+                character.postUndoEdit(String.format(I18n.Text("%s Change"), def.getName()), (c, v) -> setIntValue(c, ((Integer) v).intValue()), Integer.valueOf(old), Integer.valueOf(value));
+                mAdjustment = value - (def.getBaseValue(new CharacterVariableResolver(character)) + mBonus);
                 character.notifyOfChange();
             }
         }
     }
 
-    public int getBonus() {
-        return mBonus;
+    public void setDoubleValue(GURPSCharacter character, double value) {
+        double old = getDoubleValue(character);
+        if (old != value) {
+            AttributeDef def = getAttrDef(character);
+            if (def != null) {
+                character.postUndoEdit(String.format(I18n.Text("%s Change"), def.getName()), (c, v) -> setDoubleValue(c, ((Double) v).doubleValue()), Double.valueOf(old), Double.valueOf(value));
+                mAdjustment = value - (def.getBaseValue(new CharacterVariableResolver(character)) + mBonus);
+                character.notifyOfChange();
+            }
+        }
     }
 
-    public void setBonus(GURPSCharacter character, int bonus) {
+    public void setBonus(GURPSCharacter character, double bonus) {
         if (mBonus != bonus) {
             mBonus = bonus;
             character.notifyOfChange();
         }
-    }
-
-    public int getCostReduction() {
-        return mBonus;
     }
 
     public void setCostReduction(GURPSCharacter character, int reductionPercentage) {

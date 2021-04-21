@@ -9,9 +9,12 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character.attribute;
+package com.trollworks.gcs.attribute;
 
+import com.trollworks.gcs.character.CharacterVariableResolver;
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.expression.EvaluationException;
+import com.trollworks.gcs.expression.Evaluator;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -32,14 +35,16 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_ATTRIBUTE_BASE          = "attribute_base";
     private static final String KEY_COST_PER_POINT          = "cost_per_point";
     private static final String KEY_COST_ADJ_PERCENT_PER_SM = "cost_adj_percent_per_sm";
+    private static final String KEY_DECIMAL                 = "decimal";
 
-    private String mID;
-    private String mName;
-    private String mDescription;
-    private String mAttributeBase;
-    private int    mOrder;
-    private int    mCostPerPoint;
-    private int    mCostAdjPercentPerSM;
+    private String  mID;
+    private String  mName;
+    private String  mDescription;
+    private String  mAttributeBase;
+    private int     mOrder;
+    private int     mCostPerPoint;
+    private int     mCostAdjPercentPerSM;
+    private boolean mDecimal;
 
     public static final Map<String, AttributeDef> cloneMap(Map<String, AttributeDef> m) {
         Map<String, AttributeDef> result = new HashMap<>();
@@ -76,14 +81,24 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
 
     public static final Map<String, AttributeDef> createStandardAttributes() {
         Map<String, AttributeDef> m = new HashMap<>();
-        m.put("st", new AttributeDef("st", I18n.Text("ST"), I18n.Text("Strength"), "10", 0, 10, 10));
-        m.put("dx", new AttributeDef("dx", I18n.Text("DX"), I18n.Text("Dexterity"), "10", 1, 20, 0));
-        m.put("iq", new AttributeDef("iq", I18n.Text("IQ"), I18n.Text("Intelligence"), "10", 2, 20, 0));
-        m.put("ht", new AttributeDef("ht", I18n.Text("HT"), I18n.Text("Health"), "10", 3, 10, 0));
+        int                       i = 0;
+        m.put("st", new AttributeDef("st", I18n.Text("ST"), I18n.Text("Strength"), "10", ++i, 10, 10, false));
+        m.put("dx", new AttributeDef("dx", I18n.Text("DX"), I18n.Text("Dexterity"), "10", ++i, 20, 0, false));
+        m.put("iq", new AttributeDef("iq", I18n.Text("IQ"), I18n.Text("Intelligence"), "10", ++i, 20, 0, false));
+        m.put("ht", new AttributeDef("ht", I18n.Text("HT"), I18n.Text("Health"), "10", ++i, 10, 0, false));
+        m.put("will", new AttributeDef("will", I18n.Text("Will"), I18n.Text("Will"), "$" + Attribute.ID_ATTR_PREFIX + "iq", ++i, 5, 0, false));
+        m.put("fright_check", new AttributeDef("fright_check", I18n.Text("Fright Check"), I18n.Text("Fright Check"), "$" + Attribute.ID_ATTR_PREFIX + "will", ++i, 2, 0, false));
+        m.put("per", new AttributeDef("per", I18n.Text("Per"), I18n.Text("Perception"), "$" + Attribute.ID_ATTR_PREFIX + "iq", ++i, 5, 0, false));
+        m.put("vision", new AttributeDef("vision", I18n.Text("Vision"), I18n.Text("Vision"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
+        m.put("hearing", new AttributeDef("hearing", I18n.Text("Hearing"), I18n.Text("Hearing"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
+        m.put("taste_smell", new AttributeDef("taste_smell", I18n.Text("Taste & Smell"), I18n.Text("Taste & Smell"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
+        m.put("touch", new AttributeDef("touch", I18n.Text("Touch"), I18n.Text("Touch"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
+        m.put("basic_speed", new AttributeDef("basic_speed", I18n.Text("Basic Speed"), I18n.Text("Basic Speed"), "($" + Attribute.ID_ATTR_PREFIX + "dx+$" + Attribute.ID_ATTR_PREFIX + "ht)/4", ++i, 20, 0, true));
+        m.put("basic_move", new AttributeDef("basic_move", I18n.Text("Basic Move"), I18n.Text("Basic Move"), "floor($" + Attribute.ID_ATTR_PREFIX + "basic_speed)", ++i, 5, 0, false));
         return m;
     }
 
-    public AttributeDef(String id, String name, String desc, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM) {
+    public AttributeDef(String id, String name, String desc, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, boolean decimal) {
         mID = id;
         mName = name;
         mDescription = desc;
@@ -91,6 +106,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mOrder = order;
         mCostPerPoint = costPerPoint;
         mCostAdjPercentPerSM = costAdjPercentPerSM;
+        mDecimal = decimal;
     }
 
     public AttributeDef(JsonMap m, int order) {
@@ -101,6 +117,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mOrder = order;
         mCostPerPoint = m.getInt(KEY_COST_PER_POINT);
         mCostAdjPercentPerSM = m.getInt(KEY_COST_ADJ_PERCENT_PER_SM);
+        mDecimal = m.getBoolean(KEY_DECIMAL);
     }
 
     public String getID() {
@@ -159,26 +176,35 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mCostAdjPercentPerSM = costAdjPercentPerSM;
     }
 
-    public int getBaseValue(GURPSCharacter character) {
-        if (mName.equals(mAttributeBase)) {
-            return 0; // Referring to self, which isn't valid.
-        }
+    public boolean isDecimal() {
+        return mDecimal;
+    }
+
+    public boolean isPrimary() {
         try {
-            return Integer.parseInt(mAttributeBase);
+            Integer.parseInt(mAttributeBase);
+            return true;
         } catch (NumberFormatException ex) {
-            Attribute attr = character.getAttributes().get(mAttributeBase);
-            if (attr == null) {
-                return 0;
-            }
-            return attr.getValue(character);
+            return false;
         }
     }
 
-    public int computeCost(GURPSCharacter character, int value, int sm, int costReduction) {
-        if (value < 0) {
-            return 0;
+    public double getBaseValue(CharacterVariableResolver resolver) {
+        Evaluator evaluator = new Evaluator(resolver);
+        String    exclude   = Attribute.ID_ATTR_PREFIX + mID;
+        resolver.addExclusion(exclude);
+        double value;
+        try {
+            value = evaluator.evaluateToNumber(mAttributeBase);
+        } catch (EvaluationException ex) {
+            Log.error(ex);
+            value = 0;
         }
-        int cost = mCostPerPoint * value;
+        resolver.removeExclusion(exclude);
+        return value;
+    }
+
+    public int computeCost(GURPSCharacter character, double value, int sm, int costReduction) {
         if (sm > 0 && mCostAdjPercentPerSM > 0) {
             costReduction += sm * mCostAdjPercentPerSM;
             if (costReduction < 0) {
@@ -187,6 +213,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
                 costReduction = 80;
             }
         }
+        int cost = (int) Math.floor(mCostPerPoint * value);
         return costReduction == 0 ? cost : (99 + cost * (100 - costReduction)) / 100;
     }
 

@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.character.attribute.Attribute;
+import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;

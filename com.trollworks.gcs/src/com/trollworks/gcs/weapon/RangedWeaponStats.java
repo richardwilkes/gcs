@@ -160,7 +160,7 @@ public class RangedWeaponStats extends WeaponStats {
         String   range = mRange;
 
         if (df instanceof GURPSCharacter) {
-            int    strength = ((GURPSCharacter) df).getAttributeValue("st");
+            int    strength = ((GURPSCharacter) df).getAttributeIntValue("st");
             String savedRange;
 
             do {

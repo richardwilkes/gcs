@@ -12,6 +12,7 @@
 package com.trollworks.gcs.pointpool;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.CharacterVariableResolver;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -85,7 +86,7 @@ public class PointPool {
     public int getMaximum(GURPSCharacter character) {
         PointPoolDef pool = getPoolDef(character);
         if (pool != null) {
-            return pool.getBaseValue(character) + mAdjustment + mBonus;
+            return pool.getBaseValue(new CharacterVariableResolver(character)) + mAdjustment + mBonus;
         }
         return 0;
     }
@@ -96,7 +97,7 @@ public class PointPool {
             PointPoolDef pool = getPoolDef(character);
             if (pool != null) {
                 character.postUndoEdit(String.format(I18n.Text("%s Change"), pool.getName()), (c, v) -> setMaximum(c, ((Integer) v).intValue()), Integer.valueOf(old), Integer.valueOf(value));
-                mAdjustment = value - (pool.getBaseValue(character) + mBonus);
+                mAdjustment = value - (pool.getBaseValue(new CharacterVariableResolver(character)) + mBonus);
                 character.notifyOfChange();
             }
         }

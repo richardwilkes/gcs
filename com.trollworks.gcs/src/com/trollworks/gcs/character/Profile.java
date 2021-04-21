@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.character.attribute.Attribute;
+import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.preferences.Preferences;
@@ -111,7 +111,7 @@ public class Profile {
             mHair = getRandomHair("");
             mSkinColor = getRandomSkinColor("");
             mHandedness = getRandomHandedness();
-            int st = mCharacter.getAttributeValue("st");
+            int st = mCharacter.getAttributeIntValue("st");
             mHeight = getRandomHeight(st, getSizeModifier());
             mWeight = getRandomWeight(st, getSizeModifier(), Fixed6.ONE);
             mGender = getRandomGender();

@@ -259,7 +259,7 @@ public class WeaponDamage {
                 Set<WeaponBonus> bonusSet   = new HashSet<>();
                 Set<String>      categories = mOwner.getCategories();
                 int              maxST      = mOwner.getMinStrengthValue() * 3;
-                int              st         = character.getAttributeValue("st") + character.getStrikingStrengthBonus();
+                int              st         = character.getAttributeIntValue("st") + character.getStrikingStrengthBonus();
                 Dice             base       = new Dice(0, 0);
 
                 if (maxST > 0 && maxST < st) {
