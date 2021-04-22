@@ -12,8 +12,8 @@
 package com.trollworks.gcs.pointpool;
 
 import com.trollworks.gcs.attribute.Attribute;
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.CharacterVariableResolver;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.expression.EvaluationException;
 import com.trollworks.gcs.expression.Evaluator;
 import com.trollworks.gcs.utility.I18n;
@@ -38,7 +38,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
     private static final String KEY_COST_PER_POINT          = "cost_per_point";
     private static final String KEY_COST_ADJ_PERCENT_PER_SM = "cost_adj_percent_per_sm";
     private static final String KEY_THRESHOLDS              = "thresholds";
-    private static final String KEY_MAY_GO_BELOW_ZERO       = "may_go_below_zero";
 
     private String              mID;
     private String              mName;
@@ -48,7 +47,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
     private int                 mCostPerPoint;
     private int                 mCostAdjPercentPerSM;
     private List<PoolThreshold> mThresholds;
-    private boolean             mMayGoBelowZero;
 
     public static final Map<String, PointPoolDef> cloneMap(Map<String, PointPoolDef> m) {
         Map<String, PointPoolDef> result = new HashMap<>();
@@ -103,7 +101,7 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Rested"), "", null));
 
         Map<String, PointPoolDef> m = new HashMap<>();
-        m.put("fp", new PointPoolDef("fp", I18n.Text("FP"), I18n.Text("Fatigue Points"), "$" + Attribute.ID_ATTR_PREFIX + "ht", 0, 3, 0, true, thresholds));
+        m.put("fp", new PointPoolDef("fp", I18n.Text("FP"), I18n.Text("Fatigue Points"), "$" + Attribute.ID_ATTR_PREFIX + "ht", 0, 3, 0, thresholds));
 
         ops = new ArrayList<>();
         ops.add(ThresholdOps.HALVE_MOVE);
@@ -129,11 +127,11 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         thresholds.add(new PoolThreshold(1, 3, 0, I18n.Text("Reeling"), I18n.Text("Move and Dodge are halved (B419)"), ops));
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Wounded"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Healthy"), "", null));
-        m.put("hp", new PointPoolDef("hp", I18n.Text("HP"), I18n.Text("Hit Points"), "$" + Attribute.ID_ATTR_PREFIX + "st", 1, 2, 10, true, thresholds));
+        m.put("hp", new PointPoolDef("hp", I18n.Text("HP"), I18n.Text("Hit Points"), "$" + Attribute.ID_ATTR_PREFIX + "st", 1, 2, 10, thresholds));
         return m;
     }
 
-    public PointPoolDef(String id, String name, String desc, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, boolean mayGoBelowZero, List<PoolThreshold> thresholds) {
+    public PointPoolDef(String id, String name, String desc, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, List<PoolThreshold> thresholds) {
         mID = id;
         mName = name;
         mDescription = desc;
@@ -141,7 +139,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         mOrder = order;
         mCostPerPoint = costPerPoint;
         mCostAdjPercentPerSM = costAdjPercentPerSM;
-        mMayGoBelowZero = mayGoBelowZero;
         mThresholds = thresholds;
     }
 
@@ -153,7 +150,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         mOrder = order;
         mCostPerPoint = m.getInt(KEY_COST_PER_POINT);
         mCostAdjPercentPerSM = m.getInt(KEY_COST_ADJ_PERCENT_PER_SM);
-        mMayGoBelowZero = m.getBoolean(KEY_MAY_GO_BELOW_ZERO);
         mThresholds = new ArrayList<>();
         if (m.has(KEY_THRESHOLDS)) {
             JsonArray a      = m.getArray(KEY_THRESHOLDS);
@@ -228,14 +224,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         mThresholds = thresholds;
     }
 
-    public boolean mayGoBelowZero() {
-        return mMayGoBelowZero;
-    }
-
-    public void setMayGoBelowZero(boolean mayGoBelowZero) {
-        mMayGoBelowZero = mayGoBelowZero;
-    }
-
     public int getBaseValue(CharacterVariableResolver resolver) {
         Evaluator evaluator = new Evaluator(resolver);
         String    exclude   = PointPool.ID_POOL_PREFIX + mID;
@@ -252,9 +240,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
     }
 
     public int computeCost(GURPSCharacter character, int value, int sm) {
-        if (value < 0 && !mMayGoBelowZero) {
-            return 0;
-        }
         int cost = mCostPerPoint * value;
         if (sm > 0 && mCostAdjPercentPerSM > 0 && !("hp".equals(mID) && character.getSettings().useKnowYourOwnStrength())) {
             int factor = sm * mCostAdjPercentPerSM;
@@ -281,7 +266,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         w.keyValue(KEY_ATTRIBUTE_BASE, mAttributeBase);
         w.keyValue(KEY_COST_PER_POINT, mCostPerPoint);
         w.keyValue(KEY_COST_ADJ_PERCENT_PER_SM, mCostAdjPercentPerSM);
-        w.keyValue(KEY_MAY_GO_BELOW_ZERO, mMayGoBelowZero);
         w.key(KEY_THRESHOLDS);
         w.startArray();
         for (PoolThreshold threshold : mThresholds) {
@@ -304,9 +288,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
             return false;
         }
         if (mCostAdjPercentPerSM != that.mCostAdjPercentPerSM) {
-            return false;
-        }
-        if (mMayGoBelowZero != that.mMayGoBelowZero) {
             return false;
         }
         if (!mID.equals(that.mID)) {
@@ -333,7 +314,6 @@ public class PointPoolDef implements Cloneable, Comparable<PointPoolDef> {
         result = 31 * result + mCostPerPoint;
         result = 31 * result + mCostAdjPercentPerSM;
         result = 31 * result + (mThresholds != null ? mThresholds.hashCode() : 0);
-        result = 31 * result + (mMayGoBelowZero ? 1 : 0);
         return result;
     }
 
