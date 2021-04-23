@@ -42,6 +42,9 @@ public class CharacterVariableResolver implements VariableResolver {
             Log.error("attempt to resolve variable via itself: $" + variableName);
             return "";
         }
+        if ("sm".equals(variableName)) {
+            return String.valueOf(mCharacter.getProfile().getSizeModifier());
+        }
         String[]  parts = variableName.split("\\.", 2);
         Attribute attr  = mCharacter.getAttributes().get(parts[0]);
         if (attr == null) {
