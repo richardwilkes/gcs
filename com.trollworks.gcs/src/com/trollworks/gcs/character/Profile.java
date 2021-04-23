@@ -199,7 +199,7 @@ public class Profile {
     }
 
     void update() {
-        setSizeModifierBonus(mCharacter.getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + BonusAttributeType.SM.name()));
+        setSizeModifierBonus(mCharacter.getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "sm"));
     }
 
     /** @return The portrait. */

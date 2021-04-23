@@ -93,7 +93,7 @@ public class GURPSCharacter extends CollectedModels {
     private static final String KEY_ST        = "ST";
     private static final String KEY_WILL_ADJ  = "will_adj";
 
-    public static final String ID_STRENGTH          = Attribute.ID_ATTR_PREFIX + BonusAttributeType.ST.name();
+    public static final String ID_STRENGTH          = Attribute.ID_ATTR_PREFIX + "st";
     public static final String ID_LIFTING_STRENGTH  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
     public static final String ID_STRIKING_STRENGTH = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
     public static final String ID_DODGE_BONUS       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.DODGE.name();
