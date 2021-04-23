@@ -529,7 +529,11 @@ public class GURPSCharacter extends CollectedModels {
             }
             int ndice = value / 8 + 1;
             return new Dice(ndice, (value % 8 / 2 - 1)+Math.max(ndice,4)+adds);
-
+            /* 
+            Dice newdice = getThrust(strength);
+            newdice.add( newdice.getDieCount());
+            return newdice;
+            */
         }
         if (mSettings.useReducedSwing()) {
             if (strength < 10) {

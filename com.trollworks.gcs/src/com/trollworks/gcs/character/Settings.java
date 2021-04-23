@@ -338,7 +338,7 @@ public class Settings {
     public void setUsePhoenixSwing(boolean usePhoenixSwing) {
         if (mUsePhoenixSwing != usePhoenixSwing) {
             mUsePhoenixSwing = usePhoenixSwing;
-            mCharacter.notifySingle(KEY_USE_PHOENIX_SWING, Boolean.valueOf(mUsePhoenixSwing));
+            mCharacter.notifyOfChange();
         }
     }
 

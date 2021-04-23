@@ -1042,7 +1042,7 @@ public class Preferences extends ChangeableData {
     public void setUsePhoenixSwing(boolean usePhoenixSwing) {
         if (mUsePhoenixSwing != usePhoenixSwing) {
             mUsePhoenixSwing = usePhoenixSwing;
-            mNotifier.notify(this, KEY_USE_PHOENIX_SWING);
+            notifyOfChange();
         }
     }
 
