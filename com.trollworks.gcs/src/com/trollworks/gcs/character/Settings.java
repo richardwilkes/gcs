@@ -134,7 +134,7 @@ public class Settings {
         mUseSimpleMetricConversions = m.getBoolean(KEY_USE_SIMPLE_METRIC_CONVERSIONS);
         mShowCollegeInSpells = m.getBoolean(KEY_SHOW_COLLEGE_IN_SPELLS);
         mShowDifficulty = m.getBoolean(KEY_SHOW_DIFFICULTY);
-        mUsePhoenixSwing = m.getBoolean(TAG_USE_PHOENIX_SWING);
+        mUsePhoenixSwing = m.getBoolean(KEY_USE_PHOENIX_SWING);
         mShowAdvantageModifierAdj = m.getBoolean(KEY_SHOW_ADVANTAGE_MODIFIER_ADJ);
         mShowEquipmentModifierAdj = m.getBoolean(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ);
         if (m.has(KEY_SHOW_SPELL_ADJ)) {
