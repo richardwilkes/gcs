@@ -51,6 +51,7 @@ public class Settings {
     public static final  String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
     public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     private static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_encumbrance";
+    public static final  String KEY_USE_PHOENIX_SWING               = "use_phoenix_swing";
 
     public static final String DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10"; // January 23, 2021
 
@@ -71,6 +72,7 @@ public class Settings {
     private boolean        mUseSimpleMetricConversions; // B9
     private boolean        mShowCollegeInSpells;
     private boolean        mShowDifficulty;
+    private boolean        mUsePhoenixSwing;
     private boolean        mShowAdvantageModifierAdj;
     private boolean        mShowEquipmentModifierAdj;
     private boolean        mShowSpellAdj;
@@ -92,6 +94,7 @@ public class Settings {
         mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
         mUseKnowYourOwnStrength = prefs.useKnowYourOwnStrength();
         mUseReducedSwing = prefs.useReducedSwing();
+        mUsePhoenixSwing = prefs.usePhoenixSwing();
         mUseThrustEqualsSwingMinus2 = prefs.useThrustEqualsSwingMinus2();
         mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
         mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
@@ -131,6 +134,7 @@ public class Settings {
         mUseSimpleMetricConversions = m.getBoolean(KEY_USE_SIMPLE_METRIC_CONVERSIONS);
         mShowCollegeInSpells = m.getBoolean(KEY_SHOW_COLLEGE_IN_SPELLS);
         mShowDifficulty = m.getBoolean(KEY_SHOW_DIFFICULTY);
+        mUsePhoenixSwing = m.getBoolean(KEY_USE_PHOENIX_SWING);
         mShowAdvantageModifierAdj = m.getBoolean(KEY_SHOW_ADVANTAGE_MODIFIER_ADJ);
         mShowEquipmentModifierAdj = m.getBoolean(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ);
         if (m.has(KEY_SHOW_SPELL_ADJ)) {
@@ -162,6 +166,7 @@ public class Settings {
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
         w.keyValue(KEY_USE_REDUCED_SWING, mUseReducedSwing);
+        w.keyValue(KEY_USE_PHOENIX_SWING, mUsePhoenixSwing);
         w.keyValue(KEY_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
         w.keyValue(KEY_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         w.keyValue(KEY_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
@@ -189,6 +194,7 @@ public class Settings {
         buffer.append(mUseModifyingDicePlusAdds ? 'D' : 'd');
         buffer.append(mUseKnowYourOwnStrength ? 'K' : 'k');
         buffer.append(mUseReducedSwing ? 'S' : 's');
+        buffer.append(mUsePhoenixSwing ? 'P' : 'p');
         buffer.append(mUseThrustEqualsSwingMinus2 ? 'T' : 't');
         buffer.append(mUseSimpleMetricConversions ? 'C' : 'c');
         return buffer.toString();
@@ -325,6 +331,16 @@ public class Settings {
             mCharacter.notifyOfChange();
         }
     }
+    public boolean usePhoenixSwing() {
+        return mUsePhoenixSwing;
+    }
+
+    public void setUsePhoenixSwing(boolean usePhoenixSwing) {
+        if (mUsePhoenixSwing != usePhoenixSwing) {
+            mUsePhoenixSwing = usePhoenixSwing;
+            mCharacter.notifyOfChange();
+        }
+    }
 
     public boolean useThrustEqualsSwingMinus2() {
         return mUseThrustEqualsSwingMinus2;
@@ -425,3 +441,4 @@ public class Settings {
         }
     }
 }
+
