@@ -15,6 +15,8 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.PoolThreshold;
+import com.trollworks.gcs.attribute.ThresholdOps;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
@@ -32,10 +34,6 @@ import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
-import com.trollworks.gcs.pointpool.PointPool;
-import com.trollworks.gcs.pointpool.PointPoolDef;
-import com.trollworks.gcs.pointpool.PoolThreshold;
-import com.trollworks.gcs.pointpool.ThresholdOps;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
@@ -78,7 +76,6 @@ public class GURPSCharacter extends CollectedModels {
     private static final String KEY_ATTRIBUTES       = "attributes";
     private static final String KEY_CREATED_DATE     = "created_date";
     private static final String KEY_MODIFIED_DATE    = "modified_date";
-    private static final String KEY_POINT_POOLS      = "point_pools";
     private static final String KEY_THIRD_PARTY_DATA = "third_party";
     private static final String KEY_TOTAL_POINTS     = "total_points";
 
@@ -110,7 +107,6 @@ public class GURPSCharacter extends CollectedModels {
     private HashMap<String, ArrayList<Feature>> mFeatureMap;
     private JsonMap                             mThirdPartyData;
     private Map<String, Attribute>              mAttributes;
-    private Map<String, PointPool>              mPointPools;
     private int                                 mLiftingStrengthBonus;
     private int                                 mStrikingStrengthBonus;
     private int                                 mDodgeBonus;
@@ -162,10 +158,6 @@ public class GURPSCharacter extends CollectedModels {
         for (String attrID : mSettings.getAttributes().keySet()) {
             mAttributes.put(attrID, new Attribute(attrID));
         }
-        mPointPools = new HashMap<>();
-        for (String poolID : mSettings.getPointPools().keySet()) {
-            mPointPools.put(poolID, new PointPool(poolID));
-        }
         mProfile = new Profile(this, full);
         mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
@@ -182,10 +174,6 @@ public class GURPSCharacter extends CollectedModels {
 
     public Map<String, Attribute> getAttributes() {
         return mAttributes;
-    }
-
-    public Map<String, PointPool> getPointPools() {
-        return mPointPools;
     }
 
     @Override
@@ -250,7 +238,7 @@ public class GURPSCharacter extends CollectedModels {
             int       length = a.size();
             for (int i = 0; i < length; i++) {
                 Attribute attr = new Attribute(a.getMap(i));
-                mAttributes.put(attr.getAttrDefID(), attr);
+                mAttributes.put(attr.getID(), attr);
             }
         } else {
             for (String attrID : mSettings.getAttributes().keySet()) {
@@ -258,53 +246,34 @@ public class GURPSCharacter extends CollectedModels {
                 if (attr != null) {
                     switch (attrID) {
                     case "st":
-                        attr.initTo(m.getInt(KEY_ST) - 10);
+                        attr.initTo(m.getInt(KEY_ST) - 10, 0);
                         break;
                     case "dx":
-                        attr.initTo(m.getInt(KEY_DX) - 10);
+                        attr.initTo(m.getInt(KEY_DX) - 10, 0);
                         break;
                     case "iq":
-                        attr.initTo(m.getInt(KEY_IQ) - 10);
+                        attr.initTo(m.getInt(KEY_IQ) - 10, 0);
                         break;
                     case "ht":
-                        attr.initTo(m.getInt(KEY_HT) - 10);
+                        attr.initTo(m.getInt(KEY_HT) - 10, 0);
                         break;
                     case "will":
-                        attr.initTo(m.getInt(KEY_WILL_ADJ));
+                        attr.initTo(m.getInt(KEY_WILL_ADJ), 0);
                         break;
                     case "per":
-                        attr.initTo(m.getInt(KEY_PER_ADJ));
+                        attr.initTo(m.getInt(KEY_PER_ADJ), 0);
                         break;
                     case "basic_speed":
-                        attr.initTo(m.getDouble(KEY_SPEED_ADJ));
+                        attr.initTo(m.getDouble(KEY_SPEED_ADJ), 0);
                         break;
                     case "basic_move":
-                        attr.initTo(m.getInt(KEY_MOVE_ADJ));
+                        attr.initTo(m.getInt(KEY_MOVE_ADJ), 0);
                         break;
-                    default:
-                        break;
-                    }
-                }
-            }
-        }
-        if (m.has(KEY_POINT_POOLS)) {
-            mPointPools = new HashMap<>();
-            JsonArray a      = m.getArray(KEY_POINT_POOLS);
-            int       length = a.size();
-            for (int i = 0; i < length; i++) {
-                PointPool pool = new PointPool(a.getMap(i));
-                mPointPools.put(pool.getPoolDefID(), pool);
-            }
-        } else {
-            for (String poolID : mSettings.getPointPools().keySet()) {
-                PointPool pool = mPointPools.get(poolID);
-                if (pool != null) {
-                    switch (poolID) {
                     case "hp":
-                        pool.initTo(m.getInt(KEY_HP_ADJ), m.getInt(KEY_HP_DAMAGE));
+                        attr.initTo(m.getInt(KEY_HP_ADJ), m.getInt(KEY_HP_DAMAGE));
                         break;
                     case "fp":
-                        pool.initTo(m.getInt(KEY_FP_ADJ), m.getInt(KEY_FP_DAMAGE));
+                        attr.initTo(m.getInt(KEY_FP_ADJ), m.getInt(KEY_FP_DAMAGE));
                         break;
                     default:
                         break;
@@ -343,15 +312,6 @@ public class GURPSCharacter extends CollectedModels {
             Attribute attr = mAttributes.get(def.getID());
             if (attr != null) {
                 attr.toJSON(w);
-            }
-        }
-        w.endArray();
-        w.key(KEY_POINT_POOLS);
-        w.startArray();
-        for (PointPoolDef def : PointPoolDef.getOrderedPools(mSettings.getPointPools())) {
-            PointPool pool = mPointPools.get(def.getID());
-            if (pool != null) {
-                pool.toJSON(w);
             }
         }
         w.endArray();
@@ -423,6 +383,14 @@ public class GURPSCharacter extends CollectedModels {
             mStrikingStrengthBonus = bonus;
             notifyOfChange();
         }
+    }
+
+    public int getAttributeCurrentIntValue(String name) {
+        Attribute attr = getAttributes().get(name);
+        if (attr == null) {
+            return 0;
+        }
+        return attr.getCurrentIntValue(this);
     }
 
     public int getAttributeIntValue(String name) {
@@ -695,7 +663,7 @@ public class GURPSCharacter extends CollectedModels {
      * @return The character's dodge for the specified encumbrance level.
      */
     public int getDodge(Encumbrance encumbrance) {
-        int dodge   = 3 + mDodgeBonus + (int) Math.floor(getAttributeDoubleValue("basic_speed"));
+        int dodge   = 3 + mDodgeBonus + getAttributeIntValue("basic_speed");
         int divisor = 2 * Math.min(countThresholdOpMet(ThresholdOps.HALVE_DODGE), 2);
         if (divisor > 0) {
             boolean plusOne = (dodge % divisor) != 0;
@@ -916,9 +884,6 @@ public class GURPSCharacter extends CollectedModels {
         mCachedAttributePoints = 0;
         for (Attribute attr : mAttributes.values()) {
             mCachedAttributePoints += attr.getPointCost(this);
-        }
-        for (PointPool pool : mPointPools.values()) {
-            mCachedAttributePoints += pool.getPointCost(this);
         }
     }
 
@@ -1218,8 +1183,8 @@ public class GURPSCharacter extends CollectedModels {
         setLiftingStrengthBonus(getIntegerBonusFor(ID_LIFTING_STRENGTH));
         setStrikingStrengthBonus(getIntegerBonusFor(ID_STRIKING_STRENGTH));
         for (Attribute attr : mAttributes.values()) {
-            String attrID = attr.getAttrID();
-            AttributeDef def = attr.getAttrDef(this);
+            String       attrID = Attribute.ID_ATTR_PREFIX + attr.getID();
+            AttributeDef def    = attr.getAttrDef(this);
             if (def != null) {
                 if (def.isDecimal()) {
                     attr.setBonus(this, getDoubleBonusFor(attrID));
@@ -1228,9 +1193,6 @@ public class GURPSCharacter extends CollectedModels {
                 }
                 attr.setCostReduction(this, getCostReductionFor(attrID));
             }
-        }
-        for (PointPool pool : mPointPools.values()) {
-            pool.setBonus(this, getIntegerBonusFor(pool.getPoolID()));
         }
         mProfile.update();
         setDodgeBonus(getIntegerBonusFor(ID_DODGE_BONUS));
@@ -1584,8 +1546,8 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     public boolean isThresholdOpMet(ThresholdOps op) {
-        for (PointPool pool : mPointPools.values()) {
-            PoolThreshold threshold = pool.getCurrentThreshold(this);
+        for (Attribute attr : mAttributes.values()) {
+            PoolThreshold threshold = attr.getCurrentThreshold(this);
             if (threshold != null && threshold.getOps().contains(op)) {
                 return true;
             }
@@ -1595,8 +1557,8 @@ public class GURPSCharacter extends CollectedModels {
 
     public int countThresholdOpMet(ThresholdOps op) {
         int total = 0;
-        for (PointPool pool : mPointPools.values()) {
-            PoolThreshold threshold = pool.getCurrentThreshold(this);
+        for (Attribute attr : mAttributes.values()) {
+            PoolThreshold threshold = attr.getCurrentThreshold(this);
             if (threshold != null && threshold.getOps().contains(op)) {
                 total++;
             }

@@ -11,6 +11,9 @@
 
 package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.PoolThreshold;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -18,9 +21,6 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.page.PagePoints;
-import com.trollworks.gcs.pointpool.PointPool;
-import com.trollworks.gcs.pointpool.PointPoolDef;
-import com.trollworks.gcs.pointpool.PoolThreshold;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -37,30 +37,32 @@ import javax.swing.UIManager;
 public class PointPoolsPanel extends DropPanel {
     public PointPoolsPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(6).setMargins(0).setSpacing(2, 0).setFillAlignment(), I18n.Text("Point Pools"));
-        GURPSCharacter         gch = sheet.getCharacter();
-        Map<String, PointPool> pp  = gch.getPointPools();
-        for (PointPoolDef poolDef : PointPoolDef.getOrderedPools(gch.getSettings().getPointPools())) {
-            PointPool pool = pp.get(poolDef.getID());
-            if (pool != null) {
-                addPool(sheet, gch, poolDef, pool);
+        GURPSCharacter         gch        = sheet.getCharacter();
+        Map<String, Attribute> attributes = gch.getAttributes();
+        for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
+            if (def.isPool()) {
+                Attribute attr = attributes.get(def.getID());
+                if (attr != null) {
+                    addPool(sheet, gch, def, attr);
+                }
             }
         }
     }
 
-    private void addPool(CharacterSheet sheet, GURPSCharacter gch, PointPoolDef poolDef, PointPool pool) {
-        String id   = pool.getPoolID();
-        String name = poolDef.getName();
-        add(new PagePoints(pool.getPointCost(gch)), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
-        add(new PageField(FieldFactory.INT7, Integer.valueOf(pool.getCurrent(gch)), (c, v) -> pool.setDamage(gch, -Math.min(((Integer) v).intValue() - pool.getMaximum(gch), 0)), sheet, id + ".current", SwingConstants.RIGHT, true, String.format(I18n.Text("Current %s"), name), ThemeColor.ON_PAGE), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+    private void addPool(CharacterSheet sheet, GURPSCharacter gch, AttributeDef def, Attribute attr) {
+        String id   = attr.getID();
+        String name = def.getName();
+        add(new PagePoints(attr.getPointCost(gch)), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        add(new PageField(FieldFactory.INT7, Integer.valueOf(attr.getCurrentIntValue(gch)), (c, v) -> attr.setDamage(gch, -Math.min(((Integer) v).intValue() - attr.getIntValue(gch), 0)), sheet, Attribute.ID_ATTR_PREFIX + id + ".current", SwingConstants.RIGHT, true, String.format(I18n.Text("Current %s"), name), ThemeColor.ON_PAGE), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         add(new PageLabel(I18n.Text("of"), null));
-        add(new PageField(FieldFactory.POSINT6, Integer.valueOf(pool.getMaximum(gch)), (c, v) -> pool.setMaximum(gch, ((Integer) v).intValue()), sheet, id + ".maximum", SwingConstants.RIGHT, true, String.format(I18n.Text("Maximum %s"), name), ThemeColor.ON_PAGE), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(new PageField(FieldFactory.POSINT6, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(gch, ((Integer) v).intValue()), sheet, Attribute.ID_ATTR_PREFIX + id, SwingConstants.RIGHT, true, String.format(I18n.Text("Maximum %s"), name), ThemeColor.ON_PAGE), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         PageLabel label = new PageLabel(name, null);
-        label.setToolTipText(poolDef.getDescription());
+        label.setToolTipText(def.getDescription());
         add(label);
         Label mState = new Label("");
         setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
         setForeground(ThemeColor.ON_PAGE);
-        PoolThreshold threshold = pool.getCurrentThreshold(gch);
+        PoolThreshold threshold = attr.getCurrentThreshold(gch);
         if (threshold != null) {
             mState.setText(String.format("[%s]", threshold.getState()));
             String explanation = threshold.getExplanation();

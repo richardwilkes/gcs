@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.pointpool;
+package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.utility.I18n;
 

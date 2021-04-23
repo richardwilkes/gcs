@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_ID                      = "id";
@@ -36,15 +37,17 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_COST_PER_POINT          = "cost_per_point";
     private static final String KEY_COST_ADJ_PERCENT_PER_SM = "cost_adj_percent_per_sm";
     private static final String KEY_DECIMAL                 = "decimal";
+    private static final String KEY_THRESHOLDS              = "thresholds";
 
-    private String  mID;
-    private String  mName;
-    private String  mDescription;
-    private String  mAttributeBase;
-    private int     mOrder;
-    private int     mCostPerPoint;
-    private int     mCostAdjPercentPerSM;
-    private boolean mDecimal;
+    private String              mID;
+    private String              mName;
+    private String              mDescription;
+    private String              mAttributeBase;
+    private int                 mOrder;
+    private int                 mCostPerPoint;
+    private int                 mCostAdjPercentPerSM;
+    private List<PoolThreshold> mThresholds;
+    private boolean             mDecimal;
 
     public static final Map<String, AttributeDef> cloneMap(Map<String, AttributeDef> m) {
         Map<String, AttributeDef> result = new HashMap<>();
@@ -76,29 +79,80 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
             def.toJSON(w);
         }
         w.endArray();
-
     }
 
     public static final Map<String, AttributeDef> createStandardAttributes() {
         Map<String, AttributeDef> m = new HashMap<>();
         int                       i = 0;
-        m.put("st", new AttributeDef("st", I18n.Text("ST"), I18n.Text("Strength"), "10", ++i, 10, 10, false));
-        m.put("dx", new AttributeDef("dx", I18n.Text("DX"), I18n.Text("Dexterity"), "10", ++i, 20, 0, false));
-        m.put("iq", new AttributeDef("iq", I18n.Text("IQ"), I18n.Text("Intelligence"), "10", ++i, 20, 0, false));
-        m.put("ht", new AttributeDef("ht", I18n.Text("HT"), I18n.Text("Health"), "10", ++i, 10, 0, false));
-        m.put("will", new AttributeDef("will", I18n.Text("Will"), I18n.Text("Will"), "$" + Attribute.ID_ATTR_PREFIX + "iq", ++i, 5, 0, false));
-        m.put("fright_check", new AttributeDef("fright_check", I18n.Text("Fright Check"), I18n.Text("Fright Check"), "$" + Attribute.ID_ATTR_PREFIX + "will", ++i, 2, 0, false));
-        m.put("per", new AttributeDef("per", I18n.Text("Per"), I18n.Text("Perception"), "$" + Attribute.ID_ATTR_PREFIX + "iq", ++i, 5, 0, false));
-        m.put("vision", new AttributeDef("vision", I18n.Text("Vision"), I18n.Text("Vision"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
-        m.put("hearing", new AttributeDef("hearing", I18n.Text("Hearing"), I18n.Text("Hearing"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
-        m.put("taste_smell", new AttributeDef("taste_smell", I18n.Text("Taste & Smell"), I18n.Text("Taste & Smell"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
-        m.put("touch", new AttributeDef("touch", I18n.Text("Touch"), I18n.Text("Touch"), "$" + Attribute.ID_ATTR_PREFIX + "per", ++i, 2, 0, false));
-        m.put("basic_speed", new AttributeDef("basic_speed", I18n.Text("Basic Speed"), I18n.Text("Basic Speed"), "($" + Attribute.ID_ATTR_PREFIX + "dx+$" + Attribute.ID_ATTR_PREFIX + "ht)/4", ++i, 20, 0, true));
-        m.put("basic_move", new AttributeDef("basic_move", I18n.Text("Basic Move"), I18n.Text("Basic Move"), "floor($" + Attribute.ID_ATTR_PREFIX + "basic_speed)", ++i, 5, 0, false));
+
+        // Primary attributes
+        m.put("st", new AttributeDef("st", I18n.Text("ST"), I18n.Text("Strength"), "10", ++i, 10, 10, null, false));
+        m.put("dx", new AttributeDef("dx", I18n.Text("DX"), I18n.Text("Dexterity"), "10", ++i, 20, 0, null, false));
+        m.put("iq", new AttributeDef("iq", I18n.Text("IQ"), I18n.Text("Intelligence"), "10", ++i, 20, 0, null, false));
+        m.put("ht", new AttributeDef("ht", I18n.Text("HT"), I18n.Text("Health"), "10", ++i, 10, 0, null, false));
+
+        // Secondary attributes
+        m.put("will", new AttributeDef("will", I18n.Text("Will"), I18n.Text("Will"), "$iq", ++i, 5, 0, null, false));
+        m.put("fright_check", new AttributeDef("fright_check", I18n.Text("Fright Check"), I18n.Text("Fright Check"), "$will", ++i, 2, 0, null, false));
+        m.put("per", new AttributeDef("per", I18n.Text("Per"), I18n.Text("Perception"), "$iq", ++i, 5, 0, null, false));
+        m.put("vision", new AttributeDef("vision", I18n.Text("Vision"), I18n.Text("Vision"), "$per", ++i, 2, 0, null, false));
+        m.put("hearing", new AttributeDef("hearing", I18n.Text("Hearing"), I18n.Text("Hearing"), "$per", ++i, 2, 0, null, false));
+        m.put("taste_smell", new AttributeDef("taste_smell", I18n.Text("Taste & Smell"), I18n.Text("Taste & Smell"), "$per", ++i, 2, 0, null, false));
+        m.put("touch", new AttributeDef("touch", I18n.Text("Touch"), I18n.Text("Touch"), "$per", ++i, 2, 0, null, false));
+        m.put("basic_speed", new AttributeDef("basic_speed", I18n.Text("Basic Speed"), I18n.Text("Basic Speed"), "($dx+$ht)/4", ++i, 20, 0, null, true));
+        m.put("basic_move", new AttributeDef("basic_move", I18n.Text("Basic Move"), I18n.Text("Basic Move"), "floor($basic_speed)", ++i, 5, 0, null, false));
+
+        // Point pools
+        List<ThresholdOps> ops = new ArrayList<>();
+        ops.add(ThresholdOps.HALVE_MOVE);
+        ops.add(ThresholdOps.HALVE_DODGE);
+        ops.add(ThresholdOps.HALVE_ST);
+
+        List<PoolThreshold> thresholds = new ArrayList<>();
+        thresholds.add(new PoolThreshold(-1, 1, 0, I18n.Text("Unconscious"), "", ops));
+        thresholds.add(new PoolThreshold(0, 1, 0, I18n.Text("Collapse"), I18n.Text("""
+                <html><body>
+                <b>Roll vs. Will</b> to do anything besides talk or rest; failure causes unconsciousness<br>
+                Each FP you lose below 0 also causes 1 HP of injury<br>
+                Move, Dodge and ST are halved (B426)
+                </body></html>
+                """), ops));
+        thresholds.add(new PoolThreshold(1, 3, 0, I18n.Text("Tired"), I18n.Text("Move, Dodge and ST are halved (B426)"), ops));
+        thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Tiring"), "", null));
+        thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Rested"), "", null));
+
+        m.put("fp", new AttributeDef("fp", I18n.Text("FP"), I18n.Text("Fatigue Points"), "$ht", ++i, 3, 0, thresholds, false));
+
+        ops = new ArrayList<>();
+        ops.add(ThresholdOps.HALVE_MOVE);
+        ops.add(ThresholdOps.HALVE_DODGE);
+
+        thresholds = new ArrayList<>();
+        thresholds.add(new PoolThreshold(-5, 1, 0, I18n.Text("Dead"), "", ops));
+        for (int j = -4; j < 0; j++) {
+            thresholds.add(new PoolThreshold(j, 1, 0, String.format(I18n.Text("Dying #%d"), Integer.valueOf(-j)), String.format(I18n.Text("""
+                    <html><body>
+                    <b>Roll vs. HT</b> to avoid death<br>
+                    <b>Roll vs. HT%d</b> every second to avoid falling unconscious<br>
+                    Move and Dodge are halved (B419)
+                    </body></html>
+                    """), Integer.valueOf(j)), ops));
+        }
+        thresholds.add(new PoolThreshold(0, 1, 0, I18n.Text("Collapse"), I18n.Text("""
+                <html><body>
+                <b>Roll vs. HT</b> every second to avoid falling unconscious<br>
+                Move and Dodge are halved (B419)
+                </body></html>
+                """), ops));
+        thresholds.add(new PoolThreshold(1, 3, 0, I18n.Text("Reeling"), I18n.Text("Move and Dodge are halved (B419)"), ops));
+        thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Wounded"), "", null));
+        thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Healthy"), "", null));
+        m.put("hp", new AttributeDef("hp", I18n.Text("HP"), I18n.Text("Hit Points"), "$st", ++i, 2, 10, thresholds, false));
+
         return m;
     }
 
-    public AttributeDef(String id, String name, String desc, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, boolean decimal) {
+    public AttributeDef(String id, String name, String desc, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, List<PoolThreshold> thresholds, boolean decimal) {
         mID = id;
         mName = name;
         mDescription = desc;
@@ -106,6 +160,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mOrder = order;
         mCostPerPoint = costPerPoint;
         mCostAdjPercentPerSM = costAdjPercentPerSM;
+        mThresholds = thresholds;
         mDecimal = decimal;
     }
 
@@ -118,6 +173,14 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mCostPerPoint = m.getInt(KEY_COST_PER_POINT);
         mCostAdjPercentPerSM = m.getInt(KEY_COST_ADJ_PERCENT_PER_SM);
         mDecimal = m.getBoolean(KEY_DECIMAL);
+        if (m.has(KEY_THRESHOLDS)) {
+            JsonArray a      = m.getArray(KEY_THRESHOLDS);
+            int       length = a.size();
+            mThresholds = new ArrayList<>();
+            for (int i = 0; i < length; i++) {
+                mThresholds.add(new PoolThreshold(a.getMap(i)));
+            }
+        }
     }
 
     public String getID() {
@@ -176,6 +239,14 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mCostAdjPercentPerSM = costAdjPercentPerSM;
     }
 
+    public List<PoolThreshold> getThresholds() {
+        return mThresholds;
+    }
+
+    public void setThresholds(List<PoolThreshold> thresholds) {
+        mThresholds = thresholds;
+    }
+
     public boolean isDecimal() {
         return mDecimal;
     }
@@ -187,6 +258,10 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         } catch (NumberFormatException ex) {
             return false;
         }
+    }
+
+    public boolean isPool() {
+        return mThresholds != null;
     }
 
     public double getBaseValue(CharacterVariableResolver resolver) {
@@ -205,7 +280,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     }
 
     public int computeCost(GURPSCharacter character, double value, int sm, int costReduction) {
-        if (sm > 0 && mCostAdjPercentPerSM > 0) {
+        if (sm > 0 && mCostAdjPercentPerSM > 0 && !("hp".equals(mID) && character.getSettings().useKnowYourOwnStrength())) {
             costReduction += sm * mCostAdjPercentPerSM;
             if (costReduction < 0) {
                 costReduction = 0;
@@ -213,8 +288,18 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
                 costReduction = 80;
             }
         }
-        int cost = (int) Math.floor(mCostPerPoint * value);
-        return costReduction == 0 ? cost : (99 + cost * (100 - costReduction)) / 100;
+        int cost = (int) (mCostPerPoint * value);
+        if (costReduction != 0) {
+            cost *= 100 - costReduction;
+            int rem = cost % 100;
+            cost /= 100;
+            if (rem > 49) {
+                cost++;
+            } else if (rem < -50) {
+                cost--;
+            }
+        }
+        return cost;
     }
 
     public void toJSON(JsonWriter w) throws IOException {
@@ -225,6 +310,14 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         w.keyValue(KEY_ATTRIBUTE_BASE, mAttributeBase);
         w.keyValue(KEY_COST_PER_POINT, mCostPerPoint);
         w.keyValue(KEY_COST_ADJ_PERCENT_PER_SM, mCostAdjPercentPerSM);
+        if (mThresholds != null) {
+            w.key(KEY_THRESHOLDS);
+            w.startArray();
+            for (PoolThreshold threshold : mThresholds) {
+                threshold.toJSON(w);
+            }
+            w.endArray();
+        }
         w.endMap();
     }
 
@@ -237,6 +330,9 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
             return false;
         }
         AttributeDef that = (AttributeDef) o;
+        if (mDecimal != that.mDecimal) {
+            return false;
+        }
         if (mCostPerPoint != that.mCostPerPoint) {
             return false;
         }
@@ -252,7 +348,10 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         if (!mDescription.equals(that.mDescription)) {
             return false;
         }
-        return mAttributeBase.equals(that.mAttributeBase);
+        if (!mAttributeBase.equals(that.mAttributeBase)) {
+            return false;
+        }
+        return Objects.equals(mThresholds, that.mThresholds);
     }
 
     @Override
@@ -263,19 +362,25 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         result = 31 * result + mAttributeBase.hashCode();
         result = 31 * result + mCostPerPoint;
         result = 31 * result + mCostAdjPercentPerSM;
+        result = 31 * result + (mDecimal ? 1 : 3);
+        result = 31 * result + (mThresholds != null ? mThresholds.hashCode() : 0);
         return result;
     }
 
     @Override
     protected AttributeDef clone() {
+        AttributeDef other = null;
         try {
-            return (AttributeDef) super.clone();
+            other = (AttributeDef) super.clone();
+            if (mThresholds != null) {
+                other.mThresholds = PoolThreshold.cloneList(mThresholds);
+            }
         } catch (CloneNotSupportedException e) {
             // This can't happen
             Log.error(e);
             System.exit(1);
         }
-        return null;
+        return other;
     }
 
     @Override

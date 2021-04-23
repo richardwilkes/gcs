@@ -12,8 +12,8 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.expression.VariableResolver;
-import com.trollworks.gcs.pointpool.PointPool;
 import com.trollworks.gcs.utility.Log;
 
 import java.util.HashSet;
@@ -39,44 +39,31 @@ public class CharacterVariableResolver implements VariableResolver {
     @Override
     public String resolveVariable(String variableName) {
         if (mExclude.contains(variableName)) {
+            Log.error("attempt to resolve variable via itself: $" + variableName);
             return "";
         }
-        String[] parts = variableName.split("\\.", 2);
-        if (parts.length == 2) {
-            switch (parts[0] + ".") {
-            case Attribute.ID_ATTR_PREFIX:
-                Attribute attr = mCharacter.getAttributes().get(parts[1]);
-                if (attr != null) {
-                    return String.valueOf(attr.getDoubleValue(mCharacter));
-                }
-                break;
-            case PointPool.ID_POOL_PREFIX:
-                parts = parts[1].split("\\.", 2);
-                PointPool pool = mCharacter.getPointPools().get(parts[0]);
-                if (pool != null) {
-                    switch (parts.length) {
-                    case 1:
-                        return String.valueOf(pool.getMaximum(mCharacter));
-                    case 2:
-                        switch (parts[1]) {
-                        case "current":
-                            return String.valueOf(pool.getCurrent(mCharacter));
-                        case "maximum":
-                            return String.valueOf(pool.getMaximum(mCharacter));
-                        default:
-                            break;
-                        }
-                        break;
-                    default:
-                        break;
-                    }
-                }
-                break;
+        String[]  parts = variableName.split("\\.", 2);
+        Attribute attr  = mCharacter.getAttributes().get(parts[0]);
+        if (attr == null) {
+            Log.error("no such variable: $" + variableName);
+            return "";
+        }
+        AttributeDef def = attr.getAttrDef(mCharacter);
+        if (def == null) {
+            Log.error("no such variable definition: $" + variableName);
+            return "";
+        }
+        if (def.isPool() && parts.length > 1) {
+            switch (parts[1]) {
+            case "current":
+                return String.valueOf(attr.getCurrentIntValue(mCharacter));
+            case "maximum":
+                return String.valueOf(attr.getIntValue(mCharacter));
             default:
-                break;
+                Log.error("no such variable: $" + variableName);
+                return "";
             }
         }
-        Log.error("unresolved variable: $" + variableName);
-        return null;
+        return String.valueOf(attr.getDoubleValue(mCharacter));
     }
 }

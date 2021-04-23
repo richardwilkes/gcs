@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.PoolThreshold;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
@@ -22,9 +23,6 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.pointpool.PointPool;
-import com.trollworks.gcs.pointpool.PointPoolDef;
-import com.trollworks.gcs.pointpool.PoolThreshold;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
@@ -438,20 +436,10 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("will")));
             break;
         case KEY_FP_POINTS:
-            int fpPoints = 0;
-            PointPool fpPointPool = gurpsCharacter.getPointPools().get("fp");
-            if (fpPointPool != null) {
-                fpPoints = fpPointPool.getPointCost(gurpsCharacter);
-            }
-            writeEncodedText(out, Numbers.format(fpPoints));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("fp")));
             break;
         case KEY_HP_POINTS:
-            int hpPoints = 0;
-            PointPool hpPointPool = gurpsCharacter.getPointPools().get("hp");
-            if (hpPointPool != null) {
-                hpPoints = hpPointPool.getPointCost(gurpsCharacter);
-            }
-            writeEncodedText(out, Numbers.format(hpPoints));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("hp")));
             break;
         case KEY_BASIC_SPEED_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("basic_speed")));
@@ -575,20 +563,10 @@ public class TextTemplate {
             writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
             break;
         case KEY_FP:
-            int curFP = 0;
-            PointPool curFPPool = gurpsCharacter.getPointPools().get("fp");
-            if (curFPPool != null) {
-                curFP = curFPPool.getCurrent(gurpsCharacter);
-            }
-            writeEncodedText(out, Numbers.format(curFP));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("fp")));
             break;
         case KEY_BASIC_FP:
-            int maxFP = 0;
-            PointPool maxFPPool = gurpsCharacter.getPointPools().get("fp");
-            if (maxFPPool != null) {
-                maxFP = maxFPPool.getCurrent(gurpsCharacter);
-            }
-            writeEncodedText(out, Numbers.format(maxFP));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fp")));
             break;
         case KEY_TIRED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Tired"));
@@ -600,20 +578,10 @@ public class TextTemplate {
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Unconscious"));
             break;
         case KEY_HP:
-            int curHP = 0;
-            PointPool curHPPool = gurpsCharacter.getPointPools().get("hp");
-            if (curHPPool != null) {
-                curHP = curHPPool.getCurrent(gurpsCharacter);
-            }
-            writeEncodedText(out, Numbers.format(curHP));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("hp")));
             break;
         case KEY_BASIC_HP:
-            int maxHP = 0;
-            PointPool maxHPPool = gurpsCharacter.getPointPools().get("hp");
-            if (maxHPPool != null) {
-                maxHP = maxHPPool.getCurrent(gurpsCharacter);
-            }
-            writeEncodedText(out, Numbers.format(maxHP));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hp")));
             break;
         case KEY_REELING:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Reeling"));
@@ -745,14 +713,17 @@ public class TextTemplate {
     }
 
     private void deprecatedWritePointPoolThreshold(BufferedWriter out, GURPSCharacter gch, String poolID, String match) throws IOException {
-        PointPool pp = gch.getPointPools().get(poolID);
-        if (pp != null) {
-            PointPoolDef ppDef = pp.getPoolDef(gch);
-            if (ppDef != null) {
-                for (PoolThreshold threshold : ppDef.getThresholds()) {
-                    if (match.equals(threshold.getState())) {
-                        writeEncodedText(out, Numbers.format(threshold.threshold(pp.getMaximum(gch))));
-                        break;
+        Attribute attr = gch.getAttributes().get(poolID);
+        if (attr != null) {
+            AttributeDef def = attr.getAttrDef(gch);
+            if (def != null) {
+                List<PoolThreshold> thresholds = def.getThresholds();
+                if (thresholds != null) {
+                    for (PoolThreshold threshold : thresholds) {
+                        if (match.equals(threshold.getState())) {
+                            writeEncodedText(out, Numbers.format(threshold.threshold(attr.getIntValue(gch))));
+                            break;
+                        }
                     }
                 }
             }
@@ -2020,41 +1991,42 @@ public class TextTemplate {
     }
 
     private void processPointPoolLoop(BufferedWriter out, String contents) throws IOException {
-        int                length           = contents.length();
-        StringBuilder      keyBuffer        = new StringBuilder();
-        boolean            lookForKeyMarker = true;
-        GURPSCharacter     gch              = mSheet.getCharacter();
-        List<PointPoolDef> ppdefs           = PointPoolDef.getOrderedPools(gch.getSettings().getPointPools());
-        for (PointPoolDef ppdef : ppdefs) {
-            PointPool pp = gch.getPointPools().get(ppdef.getID());
-            if (pp != null) {
-                for (int i = 0; i < length; i++) {
-                    char ch = contents.charAt(i);
-                    if (lookForKeyMarker) {
-                        if (ch == '@') {
-                            lookForKeyMarker = false;
-                        } else {
-                            out.append(ch);
-                        }
-                    } else {
-                        if (ch == '_' || Character.isLetterOrDigit(ch)) {
-                            keyBuffer.append(ch);
-                        } else {
-                            String key = keyBuffer.toString();
-                            i--;
-                            if (mEnhancedKeyParsing && ch == '@') {
-                                i++;        // Allow KEYs to be surrounded by @KEY@
+        int            length           = contents.length();
+        StringBuilder  keyBuffer        = new StringBuilder();
+        boolean        lookForKeyMarker = true;
+        GURPSCharacter gch              = mSheet.getCharacter();
+        for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
+            if (def.isPool()) {
+                Attribute attr = gch.getAttributes().get(def.getID());
+                if (attr != null) {
+                    for (int i = 0; i < length; i++) {
+                        char ch = contents.charAt(i);
+                        if (lookForKeyMarker) {
+                            if (ch == '@') {
+                                lookForKeyMarker = false;
+                            } else {
+                                out.append(ch);
                             }
-                            keyBuffer.setLength(0);
-                            lookForKeyMarker = true;
-                            switch (key) {
-                            case KEY_ID -> writeEncodedText(out, "pool_" + ppdef.getID());
-                            case KEY_NAME -> writeEncodedText(out, ppdef.getName());
-                            case KEY_DESCRIPTION -> writeEncodedText(out, ppdef.getDescription());
-                            case KEY_CURRENT -> writeEncodedText(out, Numbers.formatWithForcedSign(pp.getCurrent(gch)));
-                            case KEY_MAXIMUM -> writeEncodedText(out, Numbers.format(pp.getMaximum(gch)));
-                            case KEY_POINTS -> writeEncodedText(out, Numbers.format(pp.getPointCost(gch)));
-                            default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                        } else {
+                            if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                                keyBuffer.append(ch);
+                            } else {
+                                String key = keyBuffer.toString();
+                                i--;
+                                if (mEnhancedKeyParsing && ch == '@') {
+                                    i++;        // Allow KEYs to be surrounded by @KEY@
+                                }
+                                keyBuffer.setLength(0);
+                                lookForKeyMarker = true;
+                                switch (key) {
+                                case KEY_ID -> writeEncodedText(out, "pool_" + def.getID());
+                                case KEY_NAME -> writeEncodedText(out, def.getName());
+                                case KEY_DESCRIPTION -> writeEncodedText(out, def.getDescription());
+                                case KEY_CURRENT -> writeEncodedText(out, Numbers.formatWithForcedSign(attr.getCurrentIntValue(gch)));
+                                case KEY_MAXIMUM -> writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
+                                case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
+                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                }
                             }
                         }
                     }

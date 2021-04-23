@@ -13,7 +13,6 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.pointpool.PointPoolDef;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -34,7 +33,6 @@ public class Settings {
     private static final int    MINIMUM_VERSION                     = 0;
     public static final  String KEY_ROOT                            = "settings";
     private static final String KEY_ATTRIBUTES                      = "attributes";
-    private static final String KEY_POINT_POOLS                     = "point_pools";
     public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
     public static final  String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
     public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
@@ -64,7 +62,6 @@ public class Settings {
     private DisplayOption             mModifiersDisplay;
     private DisplayOption             mNotesDisplay;
     private Map<String, AttributeDef> mAttributes;
-    private Map<String, PointPoolDef> mPointPools;
     private boolean                   mUseMultiplicativeModifiers; // P102
     private boolean                   mUseModifyingDicePlusAdds; // B269
     private boolean                   mUseKnowYourOwnStrength; // PY83
@@ -88,7 +85,6 @@ public class Settings {
         mModifiersDisplay = prefs.getModifiersDisplay();
         mNotesDisplay = prefs.getNotesDisplay();
         mAttributes = AttributeDef.cloneMap(prefs.getAttributes());
-        mPointPools = PointPoolDef.cloneMap(prefs.getPointPools());
         mUseMultiplicativeModifiers = prefs.useMultiplicativeModifiers();
         mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
         mUseKnowYourOwnStrength = prefs.useKnowYourOwnStrength();
@@ -118,9 +114,6 @@ public class Settings {
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
-        }
-        if (m.has(KEY_POINT_POOLS)) {
-            mPointPools = PointPoolDef.loadPools(m.getArray(KEY_POINT_POOLS));
         }
         mUseMultiplicativeModifiers = m.getBoolean(KEY_USE_MULTIPLICATIVE_MODIFIERS);
         mUseModifyingDicePlusAdds = m.getBoolean(KEY_USE_MODIFYING_DICE_PLUS_ADDS);
@@ -156,8 +149,6 @@ public class Settings {
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
         w.key(KEY_ATTRIBUTES);
         AttributeDef.writeOrdered(w, mAttributes);
-        w.key(KEY_POINT_POOLS);
-        PointPoolDef.writeOrderedPools(w, mPointPools);
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -385,17 +376,6 @@ public class Settings {
     public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
-            mCharacter.notifyOfChange();
-        }
-    }
-
-    public Map<String, PointPoolDef> getPointPools() {
-        return mPointPools;
-    }
-
-    public void setPointPools(Map<String, PointPoolDef> pointPools) {
-        if (!mPointPools.equals(pointPools)) {
-            mPointPools = PointPoolDef.cloneMap(pointPools);
             mCharacter.notifyOfChange();
         }
     }

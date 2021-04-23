@@ -12,13 +12,12 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.GCS;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
-import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
-import com.trollworks.gcs.pointpool.PointPoolDef;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.Theme;
 import com.trollworks.gcs.ui.print.PageOrientation;
@@ -88,7 +87,6 @@ public class Preferences extends ChangeableData {
     private static final String OPEN_ROW_KEYS                   = "open_row_keys";
     private static final String PDF_REFS                        = "pdf_refs";
     private static final String PNG_RESOLUTION                  = "png_resolution";
-    private static final String POINT_POOLS                     = "point_pools";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHOW_COLLEGE_IN_SHEET_SPELLS    = "show_college_in_sheet_spells";
     private static final String SHOW_DIFFICULTY                 = "show_difficulty";
@@ -120,7 +118,6 @@ public class Preferences extends ChangeableData {
     public static final String KEY_INCLUDE_UNSPENT_POINTS_IN_TOTAL = KEY_PREFIX + INCLUDE_UNSPENT_POINTS_IN_TOTAL;
     public static final String KEY_MODIFIERS_DISPLAY               = KEY_PER_SHEET_PREFIX + MODIFIERS_DISPLAY;
     public static final String KEY_NOTES_DISPLAY                   = KEY_PER_SHEET_PREFIX + NOTES_DISPLAY;
-    public static final String KEY_POINT_POOLS                     = KEY_PER_SHEET_PREFIX + POINT_POOLS;
     public static final String KEY_SHOW_COLLEGE_IN_SHEET_SPELLS    = KEY_PER_SHEET_PREFIX + SHOW_COLLEGE_IN_SHEET_SPELLS;
     public static final String KEY_SHOW_DIFFICULTY                 = KEY_PER_SHEET_PREFIX + SHOW_DIFFICULTY;
     public static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_ADVANTAGE_MODIFIER_ADJ;
@@ -196,7 +193,6 @@ public class Preferences extends ChangeableData {
     private        String                           mDefaultTechLevel;
     private        String                           mDefaultPortraitPath;
     private        Map<String, AttributeDef>        mAttributes;
-    private        Map<String, PointPoolDef>        mPointPools;
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
     private        boolean                          mIncludeUnspentPointsInTotal;
@@ -284,7 +280,6 @@ public class Preferences extends ChangeableData {
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         mExtraSpaceAroundEncumbrance = DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         mAttributes = AttributeDef.createStandardAttributes();
-        mPointPools = PointPoolDef.createStandardPools();
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -367,9 +362,6 @@ public class Preferences extends ChangeableData {
                         }
                         if (m.has(ATTRIBUTES)) {
                             mAttributes = AttributeDef.load(m.getArray(ATTRIBUTES));
-                        }
-                        if (m.has(POINT_POOLS)) {
-                            mPointPools = PointPoolDef.loadPools(m.getArray(POINT_POOLS));
                         }
                         mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                         mDefaultPlayerName = m.getStringWithDefault(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
@@ -519,8 +511,6 @@ public class Preferences extends ChangeableData {
                     w.endMap();
                     w.key(ATTRIBUTES);
                     AttributeDef.writeOrdered(w, mAttributes);
-                    w.key(POINT_POOLS);
-                    PointPoolDef.writeOrderedPools(w, mPointPools);
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                     w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                     w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
@@ -1043,17 +1033,6 @@ public class Preferences extends ChangeableData {
 
     public void setUseNativePrintDialogs(boolean useNativePrintDialogs) {
         mUseNativePrintDialogs = useNativePrintDialogs;
-    }
-
-    public Map<String, PointPoolDef> getPointPools() {
-        return mPointPools;
-    }
-
-    public void setPointPools(Map<String, PointPoolDef> pointPools) {
-        if (!mPointPools.equals(pointPools)) {
-            mPointPools = PointPoolDef.cloneMap(pointPools);
-            notifyOfChange();
-        }
     }
 
     public Map<String, AttributeDef> getAttributes() {

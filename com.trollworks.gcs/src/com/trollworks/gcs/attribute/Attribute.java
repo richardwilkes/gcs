@@ -11,47 +11,65 @@
 
 package com.trollworks.gcs.attribute;
 
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.CharacterVariableResolver;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Attribute {
     public static final  String ID_ATTR_PREFIX = "attr.";
     private static final String KEY_ATTR_ID    = "attr_id";
     private static final String KEY_ADJ        = "adj";
+    private static final String KEY_DAMAGE     = "damage";
 
-    private String mAttrDefID;
+    private String mAttrID;
     private double mAdjustment;
     private double mBonus;
     private int    mCostReduction;
+    private int    mDamage;
 
-    public Attribute(String attrDefID) {
-        mAttrDefID = attrDefID;
+    public Attribute(String attrID) {
+        mAttrID = attrID;
     }
 
     public Attribute(JsonMap m) {
-        mAttrDefID = m.getString(KEY_ATTR_ID);
+        mAttrID = m.getString(KEY_ATTR_ID);
         mAdjustment = m.getDouble(KEY_ADJ);
+        mDamage = m.getInt(KEY_DAMAGE);
     }
 
-    public void initTo(double adjustment) {
+    public void initTo(double adjustment, int damage) {
         mAdjustment = adjustment;
+        mDamage = damage;
     }
 
-    public String getAttrID() {
-        return ID_ATTR_PREFIX + mAttrDefID;
-    }
-
-    public String getAttrDefID() {
-        return mAttrDefID;
+    public String getID() {
+        return mAttrID;
     }
 
     public AttributeDef getAttrDef(GURPSCharacter character) {
-        return character.getSettings().getAttributes().get(mAttrDefID);
+        return character.getSettings().getAttributes().get(mAttrID);
+    }
+
+    public PoolThreshold getCurrentThreshold(GURPSCharacter character) {
+        AttributeDef def = getAttrDef(character);
+        if (def != null) {
+            List<PoolThreshold> thresholds = def.getThresholds();
+            if (thresholds != null) {
+                int max = getIntValue(character);
+                int cur = max - mDamage;
+                for (PoolThreshold threshold : thresholds) {
+                    if (cur <= threshold.threshold(max)) {
+                        return threshold;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public int getPointCost(GURPSCharacter character) {
@@ -62,8 +80,12 @@ public class Attribute {
         return 0;
     }
 
+    public int getCurrentIntValue(GURPSCharacter character) {
+        return getIntValue(character) - mDamage;
+    }
+
     public int getIntValue(GURPSCharacter character) {
-        return (int) Math.floor(getDoubleValue(character));
+        return (int) getDoubleValue(character);
     }
 
     public double getDoubleValue(GURPSCharacter character) {
@@ -112,10 +134,26 @@ public class Attribute {
         }
     }
 
+    public int getDamage() {
+        return mDamage;
+    }
+
+    public void setDamage(GURPSCharacter character, int damage) {
+        if (mDamage != damage) {
+            AttributeDef def = getAttrDef(character);
+            if (def != null) {
+                character.postUndoEdit(String.format(I18n.Text("Current %s Change"), def.getName()), (c, v) -> setDamage(c, ((Integer) v).intValue()), Integer.valueOf(mDamage), Integer.valueOf(damage));
+                mDamage = damage;
+                character.notifyOfChange();
+            }
+        }
+    }
+
     public void toJSON(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(KEY_ATTR_ID, mAttrDefID);
+        w.keyValue(KEY_ATTR_ID, mAttrID);
         w.keyValue(KEY_ADJ, mAdjustment);
+        w.keyValue(KEY_DAMAGE, mDamage);
         w.endMap();
     }
 }

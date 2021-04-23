@@ -46,8 +46,10 @@ public class AttributesPanel extends DropPanel {
         super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), primary ? I18n.Text("Primary Attributes") : I18n.Text("Secondary Attributes"));
         GURPSCharacter gch = sheet.getCharacter();
         for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
-            if (def.isPrimary() == primary) {
-                createAttributeField(sheet, gch, def);
+            if (!def.isPool()) {
+                if (def.isPrimary() == primary) {
+                    createAttributeField(sheet, gch, def);
+                }
             }
         }
         if (primary) {
@@ -66,9 +68,9 @@ public class AttributesPanel extends DropPanel {
         }
         PageField field;
         if (def.isDecimal()) {
-            field = new PageField(FieldFactory.FLOAT, Double.valueOf(attr.getDoubleValue(gch)), (c, v) -> attr.setDoubleValue(c, ((Double) v).doubleValue()), sheet, attr.getAttrID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);
+            field = new PageField(FieldFactory.FLOAT, Double.valueOf(attr.getDoubleValue(gch)), (c, v) -> attr.setDoubleValue(c, ((Double) v).doubleValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);
         } else {
-            field = new PageField(FieldFactory.POSINT5, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(c, ((Integer) v).intValue()), sheet, attr.getAttrID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);
+            field = new PageField(FieldFactory.POSINT5, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(c, ((Integer) v).intValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);
         }
         add(new PagePoints(attr.getPointCost(gch)), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
