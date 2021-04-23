@@ -514,22 +514,22 @@ public class GURPSCharacter extends CollectedModels {
      * @return The basic thrusting damage.
      */
     public Dice getSwing(int strength) {
-        if(mSettings.usePhoenixSwing()){
-            if(strength > 12 & strength < 100){
-                int adds =(1- strength % 2);
-                if (strength < 19){
-                    return new Dice(1,(-(6 - (strength - 1) / 2))+2);
-                }
-                int value = strength -= 11;
-                if (strength > 50) {
-                    value--;
-                    if (strength > 79) {
-                        value -= 1 + (strength - 80) / 5;
-                    }
-                }
-                int ndice = value / 8 + 1;
-                return new Dice(ndice, (value % 8 / 2 - 1)+Math.max(ndice,4)+adds);
+        if(mSettings.usePhoenixSwing() & strength > 12 & strength < 100){
+
+            int adds =(1- strength % 2);
+            if (strength < 19){
+                return new Dice(1,(-(6 - (strength - 1) / 2))+2);
             }
+            int value = strength -= 11;
+            if (strength > 50) {
+                value--;
+                if (strength > 79) {
+                    value -= 1 + (strength - 80) / 5;
+                }
+            }
+            int ndice = value / 8 + 1;
+            return new Dice(ndice, (value % 8 / 2 - 1)+Math.max(ndice,4)+adds);
+
         }
         if (mSettings.useReducedSwing()) {
             if (strength < 10) {
