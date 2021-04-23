@@ -23,6 +23,15 @@ import javax.swing.UIManager;
 /** A label for a field in a page. */
 public class PageLabel extends Label {
     /**
+     * Creates a new label.
+     *
+     * @param title The title of the field.
+     */
+    public PageLabel(String title) {
+        this(title, ThemeColor.ON_PAGE, null);
+    }
+
+    /**
      * Creates a new label for the specified field.
      *
      * @param title The title of the field.

@@ -15,13 +15,19 @@ import javax.swing.JFormattedTextField;
 
 /** Provides date field conversion. */
 public class DateTimeFormatter extends JFormattedTextField.AbstractFormatter {
+    private long mFactor;
+
+    public DateTimeFormatter(long factor) {
+        mFactor = factor;
+    }
+
     @Override
     public Object stringToValue(String text) {
-        return Long.valueOf(Numbers.extractDateTime(Numbers.DATE_AT_TIME_FORMAT, text));
+        return Long.valueOf(Numbers.extractDateTime(Numbers.DATE_AT_TIME_FORMAT, text) / mFactor);
     }
 
     @Override
     public String valueToString(Object value) {
-        return Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, ((Long) value).longValue());
+        return Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, ((Long) value).longValue() * mFactor);
     }
 }

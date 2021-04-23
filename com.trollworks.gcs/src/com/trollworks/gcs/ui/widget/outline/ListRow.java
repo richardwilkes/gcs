@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.datafile.Updatable;
 import com.trollworks.gcs.feature.AttributeBonus;
 import com.trollworks.gcs.feature.ConditionalModifier;
 import com.trollworks.gcs.feature.ContainedWeightReduction;
@@ -40,14 +39,9 @@ import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -57,29 +51,25 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 /** A common row super-class for the model. */
-public abstract class ListRow extends Row implements Updatable {
-    private static final String             ATTRIBUTE_OPEN    = "open";
-    private static final String             TAG_NOTES         = "notes";
-    private static final String             TAG_CATEGORIES    = "categories";
-    private static final String             KEY_ID            = "id";
-    private static final String             KEY_BASED_ON_ID   = "based_on_id";
-    private static final String             KEY_BASED_ON_HASH = "based_on_hash";
-    private static final String             KEY_FEATURES      = "features";
-    private static final String             KEY_DEFAULTS      = "defaults";
-    private static final String             KEY_CHILDREN      = "children";
-    private static final String             KEY_PREREQS       = "prereqs";
-    /** The data file the row is associated with. */
-    protected            DataFile           mDataFile;
-    private              UUID               mID;
-    private              UUID               mBasedOnID;
-    private              String             mBasedOnHash;
-    private              List<Feature>      mFeatures;
-    private              PrereqList         mPrereqList;
-    private              List<SkillDefault> mDefaults;
-    private              boolean            mIsSatisfied;
-    private              String             mUnsatisfiedReason;
-    private              String             mNotes;
-    private              TreeSet<String>    mCategories;
+public abstract class ListRow extends Row {
+    private static final String KEY_ID         = "id";
+    private static final String KEY_OPEN       = "open";
+    private static final String KEY_NOTES      = "notes";
+    private static final String KEY_CATEGORIES = "categories";
+    private static final String KEY_FEATURES   = "features";
+    private static final String KEY_DEFAULTS   = "defaults";
+    private static final String KEY_CHILDREN   = "children";
+    private static final String KEY_PREREQS    = "prereqs";
+
+    protected DataFile           mDataFile;
+    private   UUID               mID;
+    private   List<Feature>      mFeatures;
+    private   PrereqList         mPrereqList;
+    private   List<SkillDefault> mDefaults;
+    private   boolean            mIsSatisfied;
+    private   String             mUnsatisfiedReason;
+    private   String             mNotes;
+    private   TreeSet<String>    mCategories;
 
     public static void saveList(JsonWriter w, String key, List<?> list, SaveType saveType) throws IOException {
         FilteredList<ListRow> rows = new FilteredList<>(list, ListRow.class, true);
@@ -191,22 +181,8 @@ public abstract class ListRow extends Row implements Updatable {
             mDefaults.add(new SkillDefault(skillDefault));
         }
         mCategories = new TreeSet<>(rowToClone.mCategories);
-        try {
-            MessageDigest         digest = MessageDigest.getInstance("SHA3-256");
-            ByteArrayOutputStream baos   = new ByteArrayOutputStream();
-            try (JsonWriter w = new JsonWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8), "")) {
-                rowToClone.save(w, SaveType.HASH);
-            }
-            mBasedOnHash = Base64.getEncoder().withoutPadding().encodeToString(digest.digest(baos.toByteArray()));
-            mBasedOnID = rowToClone.mID;
-        } catch (Exception exception) {
-            mBasedOnID = null;
-            mBasedOnHash = null;
-            Log.warn(exception);
-        }
     }
 
-    @Override
     public UUID getID() {
         return mID;
     }
@@ -252,13 +228,10 @@ public abstract class ListRow extends Row implements Updatable {
     public boolean addChild(Row row) {
         boolean result = super.addChild(row);
         if (result) {
-            notifySingle(getListChangedID());
+            notifyOfChange();
         }
         return result;
     }
-
-    /** @return The ID for the "list changed" notification. */
-    public abstract String getListChangedID();
 
     /** @return The most recent version of the JSON data this object knows how to load. */
     public abstract int getJSONVersion();
@@ -306,15 +279,6 @@ public abstract class ListRow extends Row implements Updatable {
                 mID = UUID.randomUUID();
             }
         }
-        if (m.has(KEY_BASED_ON_ID)) {
-            try {
-                mBasedOnID = UUID.fromString(m.getString(KEY_BASED_ON_ID));
-                mBasedOnHash = m.getString(KEY_BASED_ON_HASH);
-            } catch (Exception exception) {
-                mBasedOnID = null;
-                mBasedOnHash = null;
-            }
-        }
         state.mDataItemVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
         if (state.mDataItemVersion > getJSONVersion()) {
             throw VersionException.createTooNew();
@@ -341,31 +305,31 @@ public abstract class ListRow extends Row implements Updatable {
                 JsonMap m1   = a.getMap(i);
                 String  type = m1.getString(DataFile.KEY_TYPE);
                 switch (type) {
-                case AttributeBonus.TAG_ROOT -> mFeatures.add(new AttributeBonus(m1));
-                case DRBonus.TAG_ROOT -> mFeatures.add(new DRBonus(m1));
-                case ReactionBonus.TAG_ROOT -> mFeatures.add(new ReactionBonus(m1));
-                case ConditionalModifier.TAG_ROOT -> mFeatures.add(new ConditionalModifier(m1));
-                case SkillBonus.TAG_ROOT -> mFeatures.add(new SkillBonus(m1));
-                case SkillPointBonus.TAG_ROOT -> mFeatures.add(new SkillPointBonus(m1));
-                case SpellBonus.TAG_ROOT -> mFeatures.add(new SpellBonus(m1));
-                case SpellPointBonus.TAG_ROOT -> mFeatures.add(new SpellPointBonus(m1));
-                case WeaponBonus.TAG_ROOT -> mFeatures.add(new WeaponBonus(m1));
-                case CostReduction.TAG_ROOT -> mFeatures.add(new CostReduction(m1));
-                case ContainedWeightReduction.TAG_ROOT -> mFeatures.add(new ContainedWeightReduction(m1));
+                case AttributeBonus.KEY_ROOT -> mFeatures.add(new AttributeBonus(m1));
+                case DRBonus.KEY_ROOT -> mFeatures.add(new DRBonus(m1));
+                case ReactionBonus.KEY_ROOT -> mFeatures.add(new ReactionBonus(m1));
+                case ConditionalModifier.KEY_ROOT -> mFeatures.add(new ConditionalModifier(m1));
+                case SkillBonus.KEY_ROOT -> mFeatures.add(new SkillBonus(m1));
+                case SkillPointBonus.KEY_ROOT -> mFeatures.add(new SkillPointBonus(m1));
+                case SpellBonus.KEY_ROOT -> mFeatures.add(new SpellBonus(m1));
+                case SpellPointBonus.KEY_ROOT -> mFeatures.add(new SpellPointBonus(m1));
+                case WeaponBonus.KEY_ROOT -> mFeatures.add(new WeaponBonus(m1));
+                case CostReduction.KEY_ROOT -> mFeatures.add(new CostReduction(m1));
+                case ContainedWeightReduction.KEY_ROOT -> mFeatures.add(new ContainedWeightReduction(m1));
                 default -> Log.warn("unknown feature type: " + type);
                 }
             }
         }
-        mNotes = m.getString(TAG_NOTES);
-        if (m.has(TAG_CATEGORIES)) {
-            JsonArray a     = m.getArray(TAG_CATEGORIES);
+        mNotes = m.getString(KEY_NOTES);
+        if (m.has(KEY_CATEGORIES)) {
+            JsonArray a     = m.getArray(KEY_CATEGORIES);
             int       count = a.size();
             for (int i = 0; i < count; i++) {
                 mCategories.add(a.getString(i));
             }
         }
         if (canHaveChildren()) {
-            setOpen(m.getBoolean(ATTRIBUTE_OPEN));
+            setOpen(m.getBoolean(KEY_OPEN));
             if (m.has(KEY_CHILDREN)) {
                 JsonArray a     = m.getArray(KEY_CHILDREN);
                 int       count = a.size();
@@ -414,10 +378,6 @@ public abstract class ListRow extends Row implements Updatable {
         w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
         w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
         w.keyValue(KEY_ID, mID.toString());
-        if (mBasedOnID != null) {
-            w.keyValue(KEY_BASED_ON_ID, mBasedOnID.toString());
-            w.keyValue(KEY_BASED_ON_HASH, mBasedOnHash);
-        }
         saveSelf(w, saveType);
         if (!mPrereqList.isEmpty()) {
             w.key(KEY_PREREQS);
@@ -439,9 +399,9 @@ public abstract class ListRow extends Row implements Updatable {
             }
             w.endArray();
         }
-        w.keyValueNot(TAG_NOTES, mNotes, "");
+        w.keyValueNot(KEY_NOTES, mNotes, "");
         if (!mCategories.isEmpty()) {
-            w.key(TAG_CATEGORIES);
+            w.key(KEY_CATEGORIES);
             w.startArray();
             for (String category : mCategories) {
                 w.value(category);
@@ -450,7 +410,7 @@ public abstract class ListRow extends Row implements Updatable {
         }
         if (canHaveChildren()) {
             if (saveType != SaveType.HASH) {
-                w.keyValue(ATTRIBUTE_OPEN, isOpen());
+                w.keyValue(KEY_OPEN, isOpen());
             }
             if (saveType != SaveType.UNDO) {
                 saveList(w, KEY_CHILDREN, getChildren(), saveType);
@@ -467,45 +427,9 @@ public abstract class ListRow extends Row implements Updatable {
      */
     protected abstract void saveSelf(JsonWriter w, SaveType saveType) throws IOException;
 
-    /**
-     * Starts the notification process. Should be called before calling {@link #notify(String,
-     * Object)}.
-     */
-    protected final void startNotify() {
+    public void notifyOfChange() {
         if (mDataFile != null) {
-            mDataFile.startNotify();
-        }
-    }
-
-    /**
-     * Sends a notification to all interested consumers.
-     *
-     * @param type The notification type.
-     * @param data Extra data specific to this notification.
-     */
-    public void notify(String type, Object data) {
-        if (mDataFile != null) {
-            mDataFile.notify(type, this);
-        }
-    }
-
-    /**
-     * Sends a notification to all interested consumers.
-     *
-     * @param type The notification type.
-     */
-    public final void notifySingle(String type) {
-        if (mDataFile != null) {
-            mDataFile.notifySingle(type, this);
-        }
-    }
-
-    /**
-     * Ends the notification process. Must be called after calling {@link #notify(String, Object)}.
-     */
-    public void endNotify() {
-        if (mDataFile != null) {
-            mDataFile.endNotify();
+            mDataFile.notifyOfChange();
         }
     }
 
@@ -587,8 +511,8 @@ public abstract class ListRow extends Row implements Updatable {
     }
 
     /*
-     * Does this belong to a category?   Added the ability to check for compound
-     * categories like "Money: US", "Concoctions:Potions" using "Money" or "Concoctions".
+     * Does this belong to a category? Added the ability to check for compound categories like
+     * "Money: US", "Concoctions:Potions" using "Money" or "Concoctions".
      */
     public boolean hasCategory(String cat) {
         for (String category : mCategories) {
@@ -619,10 +543,7 @@ public abstract class ListRow extends Row implements Updatable {
             }
         }
         if (!old.equals(mCategories)) {
-            String id = getCategoryID();
-            if (id != null) {
-                notifySingle(id);
-            }
+            notifyOfChange();
             return true;
         }
         return false;
@@ -635,30 +556,6 @@ public abstract class ListRow extends Row implements Updatable {
      */
     public final boolean setCategories(String categories) {
         return setCategories(createList(categories));
-    }
-
-    /**
-     * @param category The category to add.
-     * @return Whether there was a change or not.
-     */
-    public boolean addCategory(String category) {
-        category = category.trim();
-        if (!category.isEmpty()) {
-            if (mCategories.add(category)) {
-                String id = getCategoryID();
-                if (id != null) {
-                    notifySingle(id);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** @return The notification ID to use with categories. */
-    @SuppressWarnings("static-method")
-    protected String getCategoryID() {
-        return null;
     }
 
     /** @return The prerequisites needed by this data row. */
@@ -761,18 +658,5 @@ public abstract class ListRow extends Row implements Updatable {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void getContainedUpdatables(Map<UUID, Updatable> updatables) {
-        if (canHaveChildren()) {
-            for (Row one : getChildren()) {
-                if (one instanceof Updatable) {
-                    Updatable u = (Updatable) one;
-                    updatables.put(u.getID(), u);
-                    u.getContainedUpdatables(updatables);
-                }
-            }
-        }
     }
 }

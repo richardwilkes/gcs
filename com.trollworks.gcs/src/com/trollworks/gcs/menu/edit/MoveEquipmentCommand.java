@@ -55,7 +55,7 @@ public class MoveEquipmentCommand extends Command {
             ListOutline  outline  = (ListOutline) focus;
             DataFile     dataFile = outline.getDataFile();
             OutlineModel model    = outline.getModel();
-            boolean      isOther  = model.getProperty(EquipmentList.TAG_OTHER_ROOT) != null;
+            boolean      isOther  = model.getProperty(EquipmentList.KEY_OTHER_ROOT) != null;
             setEnabled((dataFile instanceof GURPSCharacter || dataFile instanceof Template) && isOther == mToCarried && model.hasSelection());
         } else {
             setEnabled(false);
@@ -73,7 +73,7 @@ public class MoveEquipmentCommand extends Command {
             EquipmentOutline other    = null;
             DataFile         dataFile = outline.getDataFile();
             OutlineModel     model    = outline.getModel();
-            boolean          isOther  = model.getProperty(EquipmentList.TAG_OTHER_ROOT) != null;
+            boolean          isOther  = model.getProperty(EquipmentList.KEY_OTHER_ROOT) != null;
             if ((dataFile instanceof GURPSCharacter || dataFile instanceof Template) && isOther == mToCarried && model.hasSelection()) {
                 CharacterSheet csheet = UIUtilities.getAncestorOfType(outline, CharacterSheet.class);
                 if (csheet != null) {
@@ -92,7 +92,6 @@ public class MoveEquipmentCommand extends Command {
                     OutlineModel  target  = other.getModel();
                     StateEdit     edit1   = new StateEdit(model, getTitle());
                     StateEdit     edit2   = new StateEdit(target, getTitle());
-                    dataFile.startNotify();
                     target.setDragRows(outline.getModel().getSelectionAsList(true).toArray(new Row[0]));
                     other.convertDragRowsToSelf(rows);
                     target.setDragRows(null);
@@ -102,7 +101,6 @@ public class MoveEquipmentCommand extends Command {
                         }
                     }
                     other.addRow(topRows.toArray(new ListRow[0]), getTitle(), true);
-                    dataFile.endNotify();
                     edit1.end();
                     edit2.end();
                     undo.addEdit(edit1);

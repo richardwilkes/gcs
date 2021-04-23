@@ -41,17 +41,13 @@ import java.util.Set;
  * spell.
  */
 public class RitualMagicSpell extends Spell {
-    public static final  String TAG_RITUAL_MAGIC_SPELL  = "ritual_magic_spell";
-    private static final String TAG_BASE_SKILL_NAME     = "base_skill";
-    private static final String TAG_PREREQ_COUNT        = "prereq_count";
-    /** The default base name of the skill Ritual Magic Spells default from. */
-    public static final  String DEFAULT_BASE_SKILL_NAME = "Ritual Magic";
-    private              String mBaseSkillName;
-    /**
-     * The (positive) number of spell prerequisites needed to cast this spell. Used as skill penalty
-     * relative to the Ritual Magic skill.
-     */
-    private              int    mPrerequisiteSpellsCount;
+    public static final  String KEY_RITUAL_MAGIC_SPELL  = "ritual_magic_spell";
+    private static final String KEY_BASE_SKILL_NAME     = "base_skill";
+    private static final String KEY_PREREQ_COUNT        = "prereq_count";
+    private static final String DEFAULT_BASE_SKILL_NAME = "Ritual Magic";
+
+    private String mBaseSkillName;
+    private int    mPrerequisiteSpellsCount;
 
     /**
      * Creates a new ritual magic spell.
@@ -101,7 +97,7 @@ public class RitualMagicSpell extends Spell {
         if (mLevel == null || !mLevel.isSameLevelAs(skillLevel)) {
             mLevel = skillLevel;
             if (notify) {
-                notify(ID_LEVEL, this);
+                notifyOfChange();
             }
         }
     }
@@ -173,7 +169,7 @@ public class RitualMagicSpell extends Spell {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_RITUAL_MAGIC_SPELL;
+        return KEY_RITUAL_MAGIC_SPELL;
     }
 
     @Override
@@ -192,19 +188,19 @@ public class RitualMagicSpell extends Spell {
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
-        mBaseSkillName = m.getString(TAG_BASE_SKILL_NAME);
-        mPrerequisiteSpellsCount = m.getInt(TAG_PREREQ_COUNT);
+        mBaseSkillName = m.getString(KEY_BASE_SKILL_NAME);
+        mPrerequisiteSpellsCount = m.getInt(KEY_PREREQ_COUNT);
     }
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         super.saveSelf(w, saveType);
-        w.keyValue(TAG_BASE_SKILL_NAME, mBaseSkillName);
-        w.keyValueNot(TAG_PREREQ_COUNT, mPrerequisiteSpellsCount, 0);
+        w.keyValue(KEY_BASE_SKILL_NAME, mBaseSkillName);
+        w.keyValueNot(KEY_PREREQ_COUNT, mPrerequisiteSpellsCount, 0);
         // Spells assume a default of 1 point, while RM assumes a default of 0, so we have to make
         // sure it gets written
         if (mPoints == 1) {
-            w.keyValue(TAG_POINTS, 1);
+            w.keyValue(KEY_POINTS, 1);
         }
     }
 

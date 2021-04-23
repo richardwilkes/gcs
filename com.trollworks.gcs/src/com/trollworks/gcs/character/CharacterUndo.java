@@ -16,26 +16,26 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /** Provides undo support for character fields. */
-public class CharacterFieldUndo extends AbstractUndoableEdit {
-    private GURPSCharacter mCharacter;
-    private String         mName;
-    private String         mID;
-    private Object         mBefore;
-    private Object         mAfter;
+public class CharacterUndo extends AbstractUndoableEdit {
+    private GURPSCharacter       mCharacter;
+    private String          mName;
+    private CharacterSetter mSetter;
+    private Object          mBefore;
+    private Object               mAfter;
 
     /**
      * Create a new character field undo edit.
      *
      * @param character The character to provide an undo edit for.
      * @param name      The name of the undo edit.
-     * @param id        The ID of the field being changed.
+     * @param setter    The field setter.
      * @param before    The original value.
      * @param after     The new value.
      */
-    public CharacterFieldUndo(GURPSCharacter character, String name, String id, Object before, Object after) {
+    public CharacterUndo(GURPSCharacter character, String name, CharacterSetter setter, Object before, Object after) {
         mCharacter = character;
         mName = name;
-        mID = id;
+        mSetter = setter;
         mBefore = before;
         mAfter = after;
     }
@@ -48,12 +48,12 @@ public class CharacterFieldUndo extends AbstractUndoableEdit {
     @Override
     public void undo() throws CannotUndoException {
         super.undo();
-        mCharacter.setValueForID(mID, mBefore);
+        mSetter.setValue(mCharacter, mBefore);
     }
 
     @Override
     public void redo() throws CannotRedoException {
         super.redo();
-        mCharacter.setValueForID(mID, mAfter);
+        mSetter.setValue(mCharacter, mAfter);
     }
 }

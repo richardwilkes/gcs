@@ -24,8 +24,6 @@ import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
@@ -43,18 +41,23 @@ import java.util.UUID;
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
-public abstract class DataFile implements Updatable, Undoable {
+public abstract class DataFile extends ChangeableData implements Undoable {
     /** The 'id' attribute. */
     public static final String                     ATTRIBUTE_ID           = "id";
     /** Identifies the type of a JSON object. */
     public static final String                     KEY_TYPE               = "type";
     private             Path                       mPath;
     private             UUID                       mID                    = UUID.randomUUID();
-    private             Notifier                   mNotifier              = new Notifier();
-    private             boolean                    mModified;
     private             StdUndoManager             mUndoManager           = new StdUndoManager();
     private             List<DataModifiedListener> mDataModifiedListeners = new ArrayList<>();
     private             boolean                    mSortingMarksDirty     = true;
+    private             boolean                    mModified;
+
+    @Override
+    public void notifyOfChange() {
+        setModified(true);
+        super.notifyOfChange();
+    }
 
     /** @param path The path to load. */
     public void load(Path path) throws IOException {
@@ -217,98 +220,6 @@ public abstract class DataFile implements Updatable, Undoable {
     /** @param listener The listener to remove. */
     public void removeDataModifiedListener(DataModifiedListener listener) {
         mDataModifiedListeners.remove(listener);
-    }
-
-    /**
-     * Resets the underlying {@link Notifier} by removing all targets except the specified ones.
-     *
-     * @param exclude The {@link NotifierTarget}(s) to exclude.
-     */
-    public void resetNotifier(NotifierTarget... exclude) {
-        mNotifier.reset(exclude);
-    }
-
-    /**
-     * Registers a {@link NotifierTarget} with this data file's {@link Notifier}.
-     *
-     * @param target The {@link NotifierTarget} to register.
-     * @param names  The names to register for.
-     */
-    public void addTarget(NotifierTarget target, String... names) {
-        mNotifier.add(target, names);
-    }
-
-    /**
-     * Un-registers a {@link NotifierTarget} with this data file's {@link Notifier}.
-     *
-     * @param target The {@link NotifierTarget} to un-register.
-     */
-    public void removeTarget(NotifierTarget target) {
-        mNotifier.remove(target);
-    }
-
-    /**
-     * Starts the notification process. Should be called before calling {@link #notify(String,
-     * Object)}.
-     */
-    public void startNotify() {
-        if (mNotifier.getBatchLevel() == 0) {
-            startNotifyAtBatchLevelZero();
-        }
-        mNotifier.startBatch();
-    }
-
-    /**
-     * Called when {@link #startNotify()} is called and the current batch level is zero.
-     */
-    protected void startNotifyAtBatchLevelZero() {
-        // Does nothing by default.
-    }
-
-    /**
-     * Sends a notification to all interested consumers.
-     *
-     * @param type The notification type.
-     * @param data Extra data specific to this notification.
-     */
-    public void notify(String type, Object data) {
-        setModified(true);
-        mNotifier.notify(this, type, data);
-        notifyOccured();
-    }
-
-    /** Called when {@link #notify(String, Object)} is called. */
-    protected void notifyOccured() {
-        // Does nothing by default.
-    }
-
-    /**
-     * Ends the notification process. Must be called after calling {@link #notify(String, Object)}.
-     */
-    public void endNotify() {
-        if (mNotifier.getBatchLevel() == 1) {
-            endNotifyAtBatchLevelOne();
-        }
-        mNotifier.endBatch();
-    }
-
-    /**
-     * Called when {@link #endNotify()} is called and the current batch level is one.
-     */
-    protected void endNotifyAtBatchLevelOne() {
-        // Does nothing by default.
-    }
-
-    /**
-     * Sends a notification to all interested consumers.
-     *
-     * @param type The notification type.
-     * @param data Extra data specific to this notification.
-     */
-    public void notifySingle(String type, Object data) {
-        startNotify();
-        notify(type, data);
-        endNotify();
     }
 
     /** @return The {@link StdUndoManager} to use. */

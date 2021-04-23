@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -25,10 +24,10 @@ import java.util.Set;
 
 /** Describes a contained weight reduction. */
 public class ContainedWeightReduction extends Feature {
-    /** The XML tag. */
-    public static final  String TAG_ROOT      = "contained_weight_reduction";
+    public static final  String KEY_ROOT      = "contained_weight_reduction";
     private static final String KEY_REDUCTION = "reduction";
-    private              Object mValue;
+
+    private Object mValue;
 
     /** Creates a new contained weight reduction. */
     public ContainedWeightReduction() {
@@ -137,12 +136,12 @@ public class ContainedWeightReduction extends Feature {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
     public String getKey() {
-        return Equipment.ID_EXTENDED_WEIGHT;
+        return "equipment.weight.sum";
     }
 
     @Override

@@ -26,9 +26,7 @@ import java.io.IOException;
 
 /** A list of spells. */
 public class SpellList extends ListFile {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag for {@link SpellList}s. */
-    public static final  String TAG_ROOT             = "spell_list";
+    private static final int CURRENT_JSON_VERSION = 1;
 
     @Override
     public int getJSONVersion() {
@@ -37,7 +35,7 @@ public class SpellList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return "spell_list";
     }
 
     @Override
@@ -60,9 +58,9 @@ public class SpellList extends ListFile {
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
-            if (Spell.TAG_SPELL.equals(type) || Spell.TAG_SPELL_CONTAINER.equals(type)) {
+            if (Spell.KEY_SPELL.equals(type) || Spell.KEY_SPELL_CONTAINER.equals(type)) {
                 model.addRow(new Spell(file, m1, state), true);
-            } else if (RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(type)) {
+            } else if (RitualMagicSpell.KEY_RITUAL_MAGIC_SPELL.equals(type)) {
                 model.addRow(new RitualMagicSpell(file, m1, state), true);
             } else {
                 Log.warn("invalid spell type: " + type);

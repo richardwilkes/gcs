@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
-import com.trollworks.gcs.utility.notification.Notifier;
-
 /** A row that can be used with a {@link TreeRoot}. */
 public class TreeRow implements Cloneable {
     /** The {@link TreeRow}'s parent. */
@@ -84,26 +82,9 @@ public class TreeRow implements Cloneable {
         return null;
     }
 
-    /**
-     * Sends a notification if this {@link TreeRow} belongs to {@link TreeRoot} which has a {@link
-     * Notifier}.
-     *
-     * @param name The notification name.
-     */
-    public void notify(String name) {
-        notify(name, null);
-    }
-
-    /**
-     * Sends a notification if this {@link TreeRow} belongs to a {@link TreeRoot}.
-     *
-     * @param name The notification name.
-     * @param data Extra data specific to this notification.
-     */
-    public void notify(String name, Object data) {
+    /** @return The owning {@link TreePanel}, if any. */
+    public TreePanel getOwner() {
         TreeRoot root = getTreeRoot();
-        if (root != null) {
-            root.getNotifier().notify(this, name, data);
-        }
+        return (root != null) ? root.getOwner() : null;
     }
 }

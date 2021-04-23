@@ -73,8 +73,6 @@ public final class FileMenuProvider {
         menu.add(new DynamicMenuItem(SaveCommand.INSTANCE));
         menu.add(new DynamicMenuItem(SaveAsCommand.INSTANCE));
         menu.add(new ExportMenu());
-        //menu.addSeparator();
-        //menu.add(new DynamicMenuItem(UpdateCommand.INSTANCE));
         menu.addSeparator();
         menu.add(new DynamicMenuItem(PageSetupCommand.INSTANCE));
         menu.add(new DynamicMenuItem(PrintCommand.INSTANCE));

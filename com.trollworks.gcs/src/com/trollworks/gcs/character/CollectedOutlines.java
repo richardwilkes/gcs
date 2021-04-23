@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.AdvantageOutline;
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.preferences.Preferences;
@@ -28,9 +29,9 @@ import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowSelection;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
@@ -44,40 +45,68 @@ import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
-public abstract class CollectedOutlines extends JPanel implements ActionListener, ScaleRoot, Scrollable, BatchNotifierTarget, DropTargetListener {
+public abstract class CollectedOutlines extends JPanel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, DataChangeListener {
     private Scale            mScale;
-    private AdvantageOutline mAdvantageOutline;
-    private SkillOutline     mSkillOutline;
-    private SpellOutline     mSpellOutline;
+    private AdvantageOutline mAdvantagesOutline;
+    private SkillOutline     mSkillsOutline;
+    private SpellOutline     mSpellsOutline;
     private EquipmentOutline mEquipmentOutline;
     private EquipmentOutline mOtherEquipmentOutline;
-    private NoteOutline      mNoteOutline;
-    private boolean          mDragWasAcceptable;
+    private NoteOutline      mNotesOutline;
     private List<Row>        mDragRows;
-    private boolean          mBatchMode;
+    private boolean          mDragWasAcceptable;
+    private boolean          mRebuildPending;
 
     public CollectedOutlines() {
         mScale = Preferences.getInstance().getInitialUIScale().getScale();
+        Preferences.getInstance().addChangeListener(this);
     }
 
+    /** Call when no longer in use. */
+    public void dispose() {
+        Preferences.getInstance().removeChangeListener(this);
+    }
+
+    @Override
+    public void dataWasChanged() {
+        markForRebuild();
+    }
+
+    /** Mark it for a rebuild in the near future. */
+    public void markForRebuild() {
+        if (!mRebuildPending) {
+            mRebuildPending = true;
+            EventQueue.invokeLater(this);
+        }
+    }
+
+    @Override
+    public void run() {
+        rebuild();
+        mRebuildPending = false;
+    }
+
+    /** Synchronize the display with the underlying model. */
+    public abstract void rebuild();
+
     protected void createOutlines(CollectedModels models) {
-        if (mAdvantageOutline == null) {
-            mAdvantageOutline = new AdvantageOutline(models);
-            initOutline(mAdvantageOutline);
+        if (mAdvantagesOutline == null) {
+            mAdvantagesOutline = new AdvantageOutline(models);
+            initOutline(mAdvantagesOutline);
         }
-        resetOutline(mAdvantageOutline);
+        resetOutline(mAdvantagesOutline);
 
-        if (mSkillOutline == null) {
-            mSkillOutline = new SkillOutline(models);
-            initOutline(mSkillOutline);
+        if (mSkillsOutline == null) {
+            mSkillsOutline = new SkillOutline(models);
+            initOutline(mSkillsOutline);
         }
-        resetOutline(mSkillOutline);
+        resetOutline(mSkillsOutline);
 
-        if (mSpellOutline == null) {
-            mSpellOutline = new SpellOutline(models);
-            initOutline(mSpellOutline);
+        if (mSpellsOutline == null) {
+            mSpellsOutline = new SpellOutline(models);
+            initOutline(mSpellsOutline);
         }
-        resetOutline(mSpellOutline);
+        resetOutline(mSpellsOutline);
 
         if (mEquipmentOutline == null) {
             mEquipmentOutline = new EquipmentOutline(models, models.getEquipmentModel());
@@ -91,11 +120,11 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
         }
         resetOutline(mOtherEquipmentOutline);
 
-        if (mNoteOutline == null) {
-            mNoteOutline = new NoteOutline(models);
-            initOutline(mNoteOutline);
+        if (mNotesOutline == null) {
+            mNotesOutline = new NoteOutline(models);
+            initOutline(mNotesOutline);
         }
-        resetOutline(mNoteOutline);
+        resetOutline(mNotesOutline);
     }
 
     protected void initOutline(Outline outline) {
@@ -132,25 +161,23 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     public void setScale(Scale scale) {
         if (mScale.getScale() != scale.getScale()) {
             mScale = scale;
-            scaleChanged();
+            markForRebuild();
         }
     }
 
-    protected abstract void scaleChanged();
-
-    /** @return The outline containing the Advantages, Disadvantages & Quirks. */
-    public AdvantageOutline getAdvantageOutline() {
-        return mAdvantageOutline;
+    /** @return The outline containing the Advantages, Disadvantages, Quirks & Perks. */
+    public AdvantageOutline getAdvantagesOutline() {
+        return mAdvantagesOutline;
     }
 
     /** @return The outline containing the skills. */
-    public SkillOutline getSkillOutline() {
-        return mSkillOutline;
+    public SkillOutline getSkillsOutline() {
+        return mSkillsOutline;
     }
 
     /** @return The outline containing the spells. */
-    public SpellOutline getSpellOutline() {
-        return mSpellOutline;
+    public SpellOutline getSpellsOutline() {
+        return mSpellsOutline;
     }
 
     /** @return The outline containing the equipment. */
@@ -164,18 +191,18 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     }
 
     /** @return The outline containing the notes. */
-    public NoteOutline getNoteOutline() {
-        return mNoteOutline;
+    public NoteOutline getNotesOutline() {
+        return mNotesOutline;
     }
 
     /** Update the row heights of each outline. */
     public void updateRowHeights() {
-        mAdvantageOutline.updateRowHeights();
-        mSkillOutline.updateRowHeights();
-        mSpellOutline.updateRowHeights();
+        mAdvantagesOutline.updateRowHeights();
+        mSkillsOutline.updateRowHeights();
+        mSpellsOutline.updateRowHeights();
         mEquipmentOutline.updateRowHeights();
         mOtherEquipmentOutline.updateRowHeights();
-        mNoteOutline.updateRowHeights();
+        mNotesOutline.updateRowHeights();
     }
 
     @Override
@@ -201,22 +228,6 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     @Override
     public boolean getScrollableTracksViewportWidth() {
         return false;
-    }
-
-    /** @return {@code true} if in batch mode. */
-    public boolean inBatchMode() {
-        return mBatchMode;
-    }
-
-    @Override
-    public void enterBatchMode() {
-        mBatchMode = true;
-    }
-
-    @Override
-    public void leaveBatchMode() {
-        mBatchMode = false;
-        validate();
     }
 
     @Override
@@ -275,10 +286,5 @@ public abstract class CollectedOutlines extends JPanel implements ActionListener
     @Override
     public void dragExit(DropTargetEvent dte) {
         mDragRows = null;
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
     }
 }

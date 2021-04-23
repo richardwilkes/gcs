@@ -176,7 +176,10 @@ public class TreeRowDragState extends TreeDragState {
             panel.setOpen(true, openRows);
             panel.getTreeSorter().clearSort();
             panel.pack();
-            panel.notify(TreeNotificationKeys.ROW_DROP, rows);
+            RowsDroppedHandler handler = panel.getRowsDroppedHandler();
+            if (handler != null) {
+                handler.rowsDropped(rows);
+            }
             return true;
         }
         return false;

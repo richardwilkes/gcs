@@ -54,7 +54,7 @@ public class NoteOutline extends ListOutline {
      * @param model    The {@link OutlineModel} to use.
      */
     public NoteOutline(DataFile dataFile, OutlineModel model) {
-        super(dataFile, model, Note.ID_LIST_CHANGED);
+        super(dataFile, model);
         NoteColumn.addColumns(this, dataFile);
     }
 

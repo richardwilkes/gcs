@@ -30,12 +30,12 @@ import java.util.Set;
  * item is present.
  */
 public abstract class NameLevelPrereq extends HasPrereq {
-    /** Provided for sub-classes. */
-    private static final String          TAG_NAME  = "name";
-    private static final String          TAG_LEVEL = "level";
-    private              String          mTag;
-    private              StringCriteria  mNameCriteria;
-    private              IntegerCriteria mLevelCriteria;
+    private static final String KEY_NAME  = "name";
+    private static final String KEY_LEVEL = "level";
+
+    private String          mTag;
+    private StringCriteria  mNameCriteria;
+    private IntegerCriteria mLevelCriteria;
 
     /**
      * Creates a new prerequisite.
@@ -95,18 +95,18 @@ public abstract class NameLevelPrereq extends HasPrereq {
     @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
-        mNameCriteria.load(m.getMap(TAG_NAME));
-        if (m.has(TAG_LEVEL)) {
-            mLevelCriteria.load(m.getMap(TAG_LEVEL));
+        mNameCriteria.load(m.getMap(KEY_NAME));
+        if (m.has(KEY_LEVEL)) {
+            mLevelCriteria.load(m.getMap(KEY_LEVEL));
         }
     }
 
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        mNameCriteria.save(w, TAG_NAME);
+        mNameCriteria.save(w, KEY_NAME);
         if (mLevelCriteria.getType() != NumericCompareType.AT_LEAST || mLevelCriteria.getQualifier() != 0) {
-            mLevelCriteria.save(w, TAG_LEVEL);
+            mLevelCriteria.save(w, KEY_LEVEL);
         }
     }
 

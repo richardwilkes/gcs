@@ -25,16 +25,16 @@ import java.util.Set;
 
 /** A skill bonus. */
 public class SkillBonus extends Bonus {
-    /** The XML tag. */
-    public static final  String             TAG_ROOT           = "skill_bonus";
-    private static final String             TAG_SELECTION_TYPE = "selection_type";
-    private static final String             TAG_NAME           = "name";
-    private static final String             TAG_SPECIALIZATION = "specialization";
-    private static final String             TAG_CATEGORY       = "category";
-    private              SkillSelectionType mSkillSelectionType;
-    private              StringCriteria     mNameCriteria;
-    private              StringCriteria     mSpecializationCriteria;
-    private              StringCriteria     mCategoryCriteria;
+    public static final  String KEY_ROOT           = "skill_bonus";
+    private static final String KEY_SELECTION_TYPE = "selection_type";
+    private static final String KEY_NAME           = "name";
+    private static final String KEY_SPECIALIZATION = "specialization";
+    private static final String KEY_CATEGORY       = "category";
+
+    private SkillSelectionType mSkillSelectionType;
+    private StringCriteria     mNameCriteria;
+    private StringCriteria     mSpecializationCriteria;
+    private StringCriteria     mCategoryCriteria;
 
     /** Creates a new skill bonus. */
     public SkillBonus() {
@@ -84,7 +84,7 @@ public class SkillBonus extends Bonus {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
@@ -115,22 +115,22 @@ public class SkillBonus extends Bonus {
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
         super.loadSelf(m);
-        mSkillSelectionType = Enums.extract(m.getString(TAG_SELECTION_TYPE), SkillSelectionType.values(), SkillSelectionType.SKILLS_WITH_NAME);
+        mSkillSelectionType = Enums.extract(m.getString(KEY_SELECTION_TYPE), SkillSelectionType.values(), SkillSelectionType.SKILLS_WITH_NAME);
         if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
-            mNameCriteria.load(m.getMap(TAG_NAME));
-            mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
-            mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
+            mNameCriteria.load(m.getMap(KEY_NAME));
+            mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
+            mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
         }
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(TAG_SELECTION_TYPE, Enums.toId(mSkillSelectionType));
+        w.keyValue(KEY_SELECTION_TYPE, Enums.toId(mSkillSelectionType));
         if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
-            mNameCriteria.save(w, TAG_NAME);
-            mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
-            mCategoryCriteria.save(w, TAG_CATEGORY);
+            mNameCriteria.save(w, KEY_NAME);
+            mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
+            mCategoryCriteria.save(w, KEY_CATEGORY);
         }
     }
 

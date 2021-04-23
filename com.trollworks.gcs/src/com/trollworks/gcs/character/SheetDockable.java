@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
@@ -28,7 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable extends CollectedOutlinesDockable {
+public class SheetDockable extends CollectedOutlinesDockable implements DataChangeListener {
     private static SheetDockable               LAST_ACTIVATED;
     private        CharacterSheet              mSheet;
     private        JComboBox<HitLocationTable> mHitLocationTableCombo;
@@ -52,7 +53,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         StdUndoManager undoManager = getUndoManager();
         undoManager.discardAllEdits();
         character.setUndoManager(undoManager);
-        character.addTarget(this, Profile.ID_BODY_TYPE);
+        character.addChangeListener(this);
     }
 
     @Override
@@ -79,6 +80,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
             if (editor != null) {
                 editor.attemptClose();
             }
+            mSheet.getCharacter().removeChangeListener(this);
             mSheet.dispose();
         }
         return closed;
@@ -140,9 +142,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
     }
 
     @Override
-    public void handleNotification(Object producer, String name, Object data) {
-        if (Profile.ID_BODY_TYPE.equals(name)) {
-            mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
-        }
+    public void dataWasChanged() {
+        mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
     }
 }

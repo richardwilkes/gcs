@@ -62,7 +62,7 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
      * @param model    The {@link OutlineModel} to use.
      */
     public SkillOutline(DataFile dataFile, OutlineModel model) {
-        super(dataFile, model, Skill.ID_LIST_CHANGED);
+        super(dataFile, model);
         SkillColumn.addColumns(this, dataFile);
     }
 

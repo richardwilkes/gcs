@@ -24,47 +24,28 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
-    private static final int                         CURRENT_JSON_VERSION   = 1;
-    /** The root tag. */
-    public static final  String                      TAG_MODIFIER           = "eqp_modifier";
-    /** The root tag for containers. */
-    public static final  String                      TAG_MODIFIER_CONTAINER = "eqp_modifier_container";
-    /** The attribute for the cost. */
-    public static final  String                      TAG_COST_ADJ           = "cost";
-    private static final String                      TAG_TECH_LEVEL         = "tech_level";
-    /** The attribute for the cost type. */
-    public static final  String                      ATTRIBUTE_COST_TYPE    = "cost_type";
-    /** The attribute for the weight. */
-    public static final  String                      TAG_WEIGHT_ADJ         = "weight";
-    /** The attribute for the weight type. */
-    public static final  String                      ATTRIBUTE_WEIGHT_TYPE  = "weight_type";
-    /** The notification prefix used. */
-    public static final  String                      PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "eqpmod" + Notifier.SEPARATOR;
-    /** The notification ID for enabled changes. */
-    public static final  String                      ID_ENABLED             = PREFIX + ATTRIBUTE_ENABLED;
-    /** The field ID for when the categories change. */
-    public static final  String                      ID_CATEGORY            = PREFIX + "Category";
-    /** The notification ID for list changes. */
-    public static final  String                      ID_LIST_CHANGED        = PREFIX + "list_changed";
-    /** The notification ID for cost adjustment changes. */
-    public static final  String                      ID_COST_ADJ            = PREFIX + TAG_COST_ADJ;
-    /** The notification ID for weight adjustment changes. */
-    public static final  String                      ID_WEIGHT_ADJ          = PREFIX + TAG_WEIGHT_ADJ;
-    /** The field ID for tech level changes. */
-    public static final  String                      ID_TECH_LEVEL          = PREFIX + "TechLevel";
-    private static final String                      DEFAULT_COST_AMOUNT    = "+0";
-    private              EquipmentModifierCostType   mCostType;
-    private              String                      mCostAmount;
-    private              EquipmentModifierWeightType mWeightType;
-    private              String                      mWeightAmount;
-    private              String                      mTechLevel;
+    private static final int    CURRENT_JSON_VERSION   = 1;
+    public static final  String KEY_MODIFIER           = "eqp_modifier";
+    public static final  String KEY_MODIFIER_CONTAINER = "eqp_modifier_container";
+    public static final  String KEY_COST_ADJ           = "cost";
+    private static final String KEY_TECH_LEVEL         = "tech_level";
+    public static final  String KEY_COST_TYPE          = "cost_type";
+    public static final  String KEY_WEIGHT_ADJ         = "weight";
+    public static final  String KEY_WEIGHT_TYPE        = "weight_type";
+
+    private static final String DEFAULT_COST_AMOUNT = "+0";
+
+    private EquipmentModifierCostType   mCostType;
+    private String                      mCostAmount;
+    private EquipmentModifierWeightType mWeightType;
+    private String                      mWeightAmount;
+    private String                      mTechLevel;
 
     /**
      * Creates a new {@link EquipmentModifier}.
@@ -89,7 +70,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     public EquipmentModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
-        this(file, TAG_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
+        this(file, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
         load(m, state);
     }
 
@@ -123,11 +104,6 @@ public class EquipmentModifier extends Modifier {
     }
 
     @Override
-    public String getNotificationPrefix() {
-        return PREFIX;
-    }
-
-    @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
             return true;
@@ -156,7 +132,7 @@ public class EquipmentModifier extends Modifier {
     public boolean setCostAdjType(EquipmentModifierCostType costType) {
         if (costType != mCostType) {
             mCostType = costType;
-            notifySingle(ID_COST_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -175,7 +151,7 @@ public class EquipmentModifier extends Modifier {
         amount = mCostType.format(amount, false);
         if (!mCostAmount.equals(amount)) {
             mCostAmount = amount;
-            notifySingle(ID_COST_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -193,7 +169,7 @@ public class EquipmentModifier extends Modifier {
     public boolean setWeightAdjType(EquipmentModifierWeightType weightType) {
         if (weightType != mWeightType) {
             mWeightType = weightType;
-            notifySingle(ID_WEIGHT_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -212,7 +188,7 @@ public class EquipmentModifier extends Modifier {
         amount = mWeightType.format(amount, getDataFile().defaultWeightUnits(), false);
         if (!mWeightAmount.equals(amount)) {
             mWeightAmount = amount;
-            notifySingle(ID_WEIGHT_ADJ);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -220,7 +196,7 @@ public class EquipmentModifier extends Modifier {
 
     @Override
     public String getJSONTypeName() {
-        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
+        return canHaveChildren() ? KEY_MODIFIER_CONTAINER : KEY_MODIFIER;
     }
 
     @Override
@@ -252,15 +228,15 @@ public class EquipmentModifier extends Modifier {
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         super.loadSelf(m, state);
         if (!canHaveChildren()) {
-            if (m.has(ATTRIBUTE_COST_TYPE)) {
-                mCostType = Enums.extract(m.getString(ATTRIBUTE_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.TO_ORIGINAL_COST);
-                mCostAmount = mCostType.format(m.getString(TAG_COST_ADJ), false);
+            if (m.has(KEY_COST_TYPE)) {
+                mCostType = Enums.extract(m.getString(KEY_COST_TYPE), EquipmentModifierCostType.values(), EquipmentModifierCostType.TO_ORIGINAL_COST);
+                mCostAmount = mCostType.format(m.getString(KEY_COST_ADJ), false);
             }
-            if (m.has(ATTRIBUTE_WEIGHT_TYPE)) {
-                mWeightType = Enums.extract(m.getString(ATTRIBUTE_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
-                mWeightAmount = mWeightType.format(m.getString(TAG_WEIGHT_ADJ), getDataFile().defaultWeightUnits(), false);
+            if (m.has(KEY_WEIGHT_TYPE)) {
+                mWeightType = Enums.extract(m.getString(KEY_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
+                mWeightAmount = mWeightType.format(m.getString(KEY_WEIGHT_ADJ), getDataFile().defaultWeightUnits(), false);
             }
-            mTechLevel = m.getString(TAG_TECH_LEVEL);
+            mTechLevel = m.getString(KEY_TECH_LEVEL);
         }
     }
 
@@ -268,7 +244,7 @@ public class EquipmentModifier extends Modifier {
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
             String type = m.getString(DataFile.KEY_TYPE);
-            if (TAG_MODIFIER.equals(type) || TAG_MODIFIER_CONTAINER.equals(type)) {
+            if (KEY_MODIFIER.equals(type) || KEY_MODIFIER_CONTAINER.equals(type)) {
                 addChild(new EquipmentModifier(mDataFile, m, state));
             } else {
                 Log.warn("invalid child type: " + type);
@@ -281,14 +257,14 @@ public class EquipmentModifier extends Modifier {
         super.saveSelf(w, saveType);
         if (!canHaveChildren()) {
             if (mCostType != EquipmentModifierCostType.TO_ORIGINAL_COST || !mCostAmount.equals(DEFAULT_COST_AMOUNT)) {
-                w.keyValue(ATTRIBUTE_COST_TYPE, Enums.toId(mCostType));
-                w.keyValue(TAG_COST_ADJ, mCostAmount);
+                w.keyValue(KEY_COST_TYPE, Enums.toId(mCostType));
+                w.keyValue(KEY_COST_ADJ, mCostAmount);
             }
             if (mWeightType != EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT || !mWeightAmount.equals(getDefaultWeightAmount())) {
-                w.keyValue(ATTRIBUTE_WEIGHT_TYPE, Enums.toId(mWeightType));
-                w.keyValue(TAG_WEIGHT_ADJ, mWeightAmount);
+                w.keyValue(KEY_WEIGHT_TYPE, Enums.toId(mWeightType));
+                w.keyValue(KEY_WEIGHT_ADJ, mWeightAmount);
             }
-            w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
+            w.keyValueNot(KEY_TECH_LEVEL, mTechLevel, "");
         }
     }
 
@@ -302,8 +278,8 @@ public class EquipmentModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter)mDataFile).getSettings().showEquipmentModifierAdj()) {
-            String costDesc = getCostDescription();
+        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter) mDataFile).getSettings().showEquipmentModifierAdj()) {
+            String costDesc   = getCostDescription();
             String weightDesc = getWeightDescription();
             if (!costDesc.isEmpty() || !weightDesc.isEmpty()) {
                 builder.append(" [");
@@ -336,11 +312,6 @@ public class EquipmentModifier extends Modifier {
         return mWeightType.format(mWeightAmount, getDataFile().defaultWeightUnits(), true) + " " + mWeightType.toShortString();
     }
 
-    @Override
-    protected String getCategoryID() {
-        return ID_CATEGORY;
-    }
-
     /** @return The tech level. */
     public String getTechLevel() {
         return mTechLevel;
@@ -353,7 +324,7 @@ public class EquipmentModifier extends Modifier {
     public boolean setTechLevel(String techLevel) {
         if (!mTechLevel.equals(techLevel)) {
             mTechLevel = techLevel;
-            notifySingle(ID_TECH_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;

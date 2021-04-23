@@ -11,23 +11,15 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
-import com.trollworks.gcs.utility.notification.Notifier;
-
 /** Provides the root of a tree of {@link TreeRow}s. */
 public class TreeRoot extends TreeContainerRow {
-    private Notifier mNotifier;
+    private TreePanel mPanel;
 
-    /**
-     * Creates a new {@link TreeRoot}.
-     *
-     * @param notifier The {@link Notifier} to use. Must not be {@code null}.
-     */
-    public TreeRoot(Notifier notifier) {
-        mNotifier = notifier;
+    public TreePanel getOwner() {
+        return mPanel;
     }
 
-    /** @return The {@link Notifier} being used. */
-    public Notifier getNotifier() {
-        return mNotifier;
+    public void setOwner(TreePanel panel) {
+        mPanel = panel;
     }
 }

@@ -11,16 +11,12 @@
 
 package com.trollworks.gcs.template;
 
-import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.character.CollectedOutlines;
-import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
@@ -47,7 +43,6 @@ public class TemplateDockable extends CollectedOutlinesDockable {
         StdUndoManager undoManager = getUndoManager();
         undoManager.discardAllEdits();
         dataFile.setUndoManager(undoManager);
-        Preferences.getInstance().getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY, Preferences.KEY_USE_MULTIPLICATIVE_MODIFIERS);
     }
 
     @Override
@@ -59,9 +54,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
     public boolean attemptClose() {
         boolean closed = super.attemptClose();
         if (closed) {
-            Notifier notifier = Preferences.getInstance().getNotifier();
-            notifier.remove(mTemplate);
-            notifier.remove(this);
+            mTemplate.dispose();
         }
         return closed;
     }
@@ -106,15 +99,5 @@ public class TemplateDockable extends CollectedOutlinesDockable {
     @Override
     public PrintProxy getPrintProxy() {
         return null;
-    }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
-        if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
-            mTemplate.updateRowHeights();
-            mTemplate.revalidate();
-        } else {
-            getDataFile().notifySingle(Advantage.ID_LIST_CHANGED, null);
-        }
     }
 }

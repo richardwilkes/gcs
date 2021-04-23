@@ -9,13 +9,10 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.datafile;
+package com.trollworks.gcs.ui.widget.tree;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.List;
 
-public interface Updatable {
-    UUID getID();
-
-    void getContainedUpdatables(Map<UUID, Updatable> updatables);
+public interface RowsDroppedHandler {
+    void rowsDropped(List<TreeRow> rows);
 }

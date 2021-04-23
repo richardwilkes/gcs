@@ -25,29 +25,25 @@ import java.util.Set;
 
 /** A spell point bonus. */
 public class SpellPointBonus extends Bonus {
-    /** The XML tag. */
-    public static final  String         TAG_ROOT               = "spell_point_bonus";
-    /** Matches against the college name. */
-    public static final  String         TAG_COLLEGE_NAME       = "college_name";
-    /** Matches against the power source name. */
-    public static final  String         TAG_POWER_SOURCE_NAME  = "power_source_name";
-    /** Matches against the spell name. */
-    public static final  String         TAG_SPELL_NAME         = "spell_name";
-    /** The XML attribute name for the "all colleges" flag. */
-    public static final  String         ATTRIBUTE_ALL_COLLEGES = "all_colleges";
-    private static final String         TAG_CATEGORY           = "category";
-    private static final String         KEY_MATCH              = "match";
-    private static final String         KEY_NAME               = "name";
-    private              boolean        mAllColleges;
-    private              String         mMatchType;
-    private              StringCriteria mNameCriteria;
-    private              StringCriteria mCategoryCriteria;
+    public static final  String KEY_ROOT              = "spell_point_bonus";
+    public static final  String KEY_COLLEGE_NAME      = "college_name";
+    public static final  String KEY_POWER_SOURCE_NAME = "power_source_name";
+    public static final  String KEY_SPELL_NAME        = "spell_name";
+    public static final  String KEY_ALL_COLLEGES      = "all_colleges";
+    private static final String KEY_CATEGORY          = "category";
+    private static final String KEY_MATCH             = "match";
+    private static final String KEY_NAME              = "name";
+
+    private boolean        mAllColleges;
+    private String         mMatchType;
+    private StringCriteria mNameCriteria;
+    private StringCriteria mCategoryCriteria;
 
     /** Creates a new spell bonus. */
     public SpellPointBonus() {
         super(1);
         mAllColleges = true;
-        mMatchType = TAG_COLLEGE_NAME;
+        mMatchType = KEY_COLLEGE_NAME;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
         mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
@@ -89,7 +85,7 @@ public class SpellPointBonus extends Bonus {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     public boolean matchesCategories(Set<String> categories) {
@@ -103,9 +99,9 @@ public class SpellPointBonus extends Bonus {
             if (mAllColleges) {
                 buffer.append(Spell.ID_POINTS_COLLEGE);
             } else {
-                if (TAG_COLLEGE_NAME.equals(mMatchType)) {
+                if (KEY_COLLEGE_NAME.equals(mMatchType)) {
                     buffer.append(Spell.ID_POINTS_COLLEGE);
-                } else if (TAG_POWER_SOURCE_NAME.equals(mMatchType)) {
+                } else if (KEY_POWER_SOURCE_NAME.equals(mMatchType)) {
                     buffer.append(Spell.ID_POINTS_POWER_SOURCE);
                 } else {
                     buffer.append(Spell.ID_POINTS);
@@ -127,22 +123,22 @@ public class SpellPointBonus extends Bonus {
     protected void loadSelf(JsonMap m) throws IOException {
         super.loadSelf(m);
         mMatchType = m.getString(KEY_MATCH);
-        mAllColleges = ATTRIBUTE_ALL_COLLEGES.equals(mMatchType);
+        mAllColleges = KEY_ALL_COLLEGES.equals(mMatchType);
         if (mAllColleges) {
-            mMatchType = TAG_COLLEGE_NAME;
+            mMatchType = KEY_COLLEGE_NAME;
         }
         mNameCriteria.load(m.getMap(KEY_NAME));
-        mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
+        mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(KEY_MATCH, mAllColleges ? ATTRIBUTE_ALL_COLLEGES : mMatchType);
+        w.keyValue(KEY_MATCH, mAllColleges ? KEY_ALL_COLLEGES : mMatchType);
         if (!mAllColleges) {
             mNameCriteria.save(w, KEY_NAME);
         }
-        mCategoryCriteria.save(w, TAG_CATEGORY);
+        mCategoryCriteria.save(w, KEY_CATEGORY);
     }
 
     /** @return Whether the bonus applies to all colleges. */
@@ -156,8 +152,8 @@ public class SpellPointBonus extends Bonus {
     }
 
     /**
-     * @return The match type. One of {@link #TAG_COLLEGE_NAME}, {@link #TAG_POWER_SOURCE_NAME}, or
-     *         {@link #TAG_SPELL_NAME}.
+     * @return The match type. One of {@link #KEY_COLLEGE_NAME}, {@link #KEY_POWER_SOURCE_NAME}, or
+     *         {@link #KEY_SPELL_NAME}.
      */
     public String getMatchType() {
         return mMatchType;
@@ -169,12 +165,12 @@ public class SpellPointBonus extends Bonus {
     }
 
     public void setMatchType(String type) {
-        if (TAG_COLLEGE_NAME.equals(type)) {
-            mMatchType = TAG_COLLEGE_NAME;
-        } else if (TAG_POWER_SOURCE_NAME.equals(type)) {
-            mMatchType = TAG_POWER_SOURCE_NAME;
+        if (KEY_COLLEGE_NAME.equals(type)) {
+            mMatchType = KEY_COLLEGE_NAME;
+        } else if (KEY_POWER_SOURCE_NAME.equals(type)) {
+            mMatchType = KEY_POWER_SOURCE_NAME;
         } else {
-            mMatchType = TAG_SPELL_NAME;
+            mMatchType = KEY_SPELL_NAME;
         }
     }
 

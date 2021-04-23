@@ -11,13 +11,12 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
@@ -31,12 +30,12 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowFilter;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
-import com.trollworks.gcs.utility.notification.BatchNotifierTarget;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.dnd.DropTarget;
@@ -49,7 +48,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, BatchNotifierTarget, JumpToSearchTarget, RetargetableFocus {
+public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
     private Toolbar           mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;
@@ -57,6 +56,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     private IconButton        mLockButton;
     private JScrollPane       mScroller;
     private ListOutline       mOutline;
+    private boolean           mUpdatePending;
 
     /** Creates a new {@link LibraryDockable}. */
     public LibraryDockable(ListFile file) {
@@ -97,7 +97,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mScroller.setBorder(null);
         mScroller.setColumnHeaderView(header);
         add(mScroller, BorderLayout.CENTER);
-        prefs.getNotifier().add(this, Fonts.FONT_NOTIFICATION_KEY);
+        prefs.addChangeListener(this);
+        getDataFile().addChangeListener(this);
         setDropTarget(new DropTarget(mOutline, mOutline));
     }
 
@@ -105,7 +106,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     public boolean attemptClose() {
         boolean closed = super.attemptClose();
         if (closed) {
-            Preferences.getInstance().getNotifier().remove(this);
+            Preferences.getInstance().removeChangeListener(this);
+            getDataFile().removeChangeListener(this);
         }
         return closed;
     }
@@ -219,6 +221,21 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     }
 
     @Override
+    public void dataWasChanged() {
+        if (!mUpdatePending) {
+            mUpdatePending = true;
+            EventQueue.invokeLater(this);
+        }
+    }
+
+    @Override
+    public void run() {
+        mOutline.updateRowHeights();
+        adjustCategoryCombo();
+        mUpdatePending = false;
+    }
+
+    @Override
     public void changedUpdate(DocumentEvent event) {
         documentChanged();
     }
@@ -235,32 +252,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
 
     private void documentChanged() {
         mOutline.reapplyRowFilter();
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
-    }
-
-    @Override
-    public void enterBatchMode() {
-        // Not needed.
-    }
-
-    @Override
-    public void leaveBatchMode() {
-        // Not needed.
-    }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
-        if (Fonts.FONT_NOTIFICATION_KEY.equals(name)) {
-            mOutline.updateRowHeights();
-        } else if (Advantage.ID_TYPE.equals(name)) {
-            getOutline().repaint();
-        } else {
-            adjustCategoryCombo();
-        }
     }
 
     @Override

@@ -28,7 +28,6 @@ import com.trollworks.gcs.ui.widget.DirectScrollPanelArea;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 import com.trollworks.gcs.utility.task.Tasks;
 
 import java.awt.AlphaComposite;
@@ -74,7 +73,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.UIManager;
 
 /** Provides a flexible tree widget. */
-public class TreePanel extends DirectScrollPanel implements Runnable, Openable, Deletable, SelectAllCapable, DropTargetListener, DragSourceListener, DragGestureListener, FocusListener, KeyListener, MouseListener, MouseMotionListener, NotifierTarget {
+public class TreePanel extends DirectScrollPanel implements Runnable, Openable, Deletable, SelectAllCapable, DropTargetListener, DragSourceListener, DragGestureListener, FocusListener, KeyListener, MouseListener, MouseMotionListener, RowsAddedHandler, RowsRemovedHandler {
     private static final float                     DRAG_OPACITY            = 0.75f;
     /** The amount of 'slop' to allow for hit detection. */
     public static final  int                       HIT_SLOP                = 4;
@@ -104,6 +103,11 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              TreeRow                   mRowToSelectOnMouseUp;
     private              TreeRow                   mResizeRow;
     private              Dock                      mAlternateDragDestination;
+    private              RowsAddedHandler          mRowsAddedHandler;
+    private              RowsRemovedHandler        mRowsRemovedHandler;
+    private              RowsDroppedHandler        mRowsDroppedHandler;
+    private              RowDisclosureHandler      mRowDisclosureHandler;
+    private              SelectionChangedHandler   mSelectionChangedHandler;
     private              boolean                   mShowDisclosureControls = true;
     private              boolean                   mUseBanding             = true;
     private              boolean                   mAllowColumnResize      = true;
@@ -123,7 +127,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public TreePanel(TreeRoot root) {
         mRoot = root;
-        mRoot.getNotifier().add(this, TreeNotificationKeys.ROW_REMOVED);
+        mRoot.setOwner(this);
         setUnitIncrement(mRowHeight + getRowDividerHeight());
         setFocusable(true);
         addFocusListener(this);
@@ -139,15 +143,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     /** @return The {@link TreeRoot} being displayed. */
     public TreeRoot getRoot() {
         return mRoot;
-    }
-
-    public void setRoot(TreeRoot root) {
-        if (root != mRoot) {
-            mRoot.getNotifier().remove(this);
-            mRoot = root;
-            mRoot.getNotifier().add(this, TreeNotificationKeys.ROW_REMOVED);
-            repaint();
-        }
     }
 
     @Override
@@ -216,8 +211,8 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                         setOpen(!isOpen(disclosureRow), disclosureRow);
                     } else {
                         boolean isPopupTrigger = event.isPopupTrigger();
-                        boolean handled = false;
-                        TreeRow row     = overRow(dragStart.y);
+                        boolean handled        = false;
+                        TreeRow row            = overRow(dragStart.y);
                         if (row != null) {
                             TreeColumn column = overColumn(dragStart.x);
                             if (column != null) {
@@ -477,14 +472,12 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     /** @param column The {@link TreeColumn} to add. */
     public void addColumn(TreeColumn column) {
         mColumns.add(column);
-        notify(TreeNotificationKeys.COLUMN_ADDED, new TreeColumn[]{column});
         sizeColumnToFit(column);
     }
 
     /** @param columns The {@link TreeColumn}s to add. */
     public void addColumn(List<TreeColumn> columns) {
         if (mColumns.addAll(columns)) {
-            notify(TreeNotificationKeys.COLUMN_ADDED, columns.toArray(new TreeColumn[0]));
             sizeColumnsToFit(columns);
         }
     }
@@ -495,7 +488,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public void addColumn(int index, TreeColumn column) {
         mColumns.add(index, column);
-        notify(TreeNotificationKeys.COLUMN_ADDED, new TreeColumn[]{column});
         sizeColumnToFit(column);
     }
 
@@ -505,23 +497,18 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public void addColumn(int index, List<TreeColumn> columns) {
         if (mColumns.addAll(index, columns)) {
-            notify(TreeNotificationKeys.COLUMN_ADDED, columns.toArray(new TreeColumn[0]));
             sizeColumnsToFit(columns);
         }
     }
 
     /** @param column The {@link TreeColumn} to remove. */
     public void removeColumn(TreeColumn column) {
-        if (mColumns.remove(column)) {
-            notify(TreeNotificationKeys.COLUMN_REMOVED, new TreeColumn[]{column});
-        }
+        mColumns.remove(column);
     }
 
     /** @param columns The {@link TreeColumn}s to remove. */
     public void removeColumn(Collection<TreeColumn> columns) {
-        if (mColumns.removeAll(columns)) {
-            notify(TreeNotificationKeys.COLUMN_REMOVED, columns.toArray(new TreeColumn[0]));
-        }
+        mColumns.removeAll(columns);
     }
 
     /** @param columns The {@link TreeColumn}s to use. */
@@ -633,17 +620,15 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     /** @param row The {@link TreeRow} to invalidate the cached height of. */
     public void invalidateRowHeight(TreeRow row) {
-        if (mRowHeight < 1 && mRowHeightMap.remove(row) != null) {
-            notify(TreeNotificationKeys.ROW_HEIGHT, new TreeRow[]{row});
+        if (mRowHeight < 1) {
+            mRowHeightMap.remove(row);
         }
     }
 
     /** Invalidates the height of all {@link TreeRow}s. */
     public void invalidateAllRowHeights() {
         if (mRowHeight < 1) {
-            TreeRow[] rows = mRowHeightMap.keySet().toArray(new TreeRow[0]);
             mRowHeightMap.clear();
-            notify(TreeNotificationKeys.ROW_HEIGHT, rows);
         }
     }
 
@@ -1057,7 +1042,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     public void setShowHeader(boolean visible) {
         if (visible != mShowHeader) {
             mShowHeader = visible;
-            notify(TreeNotificationKeys.HEADER, Boolean.valueOf(mShowHeader));
         }
     }
 
@@ -1068,7 +1052,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     public void setShowColumnDivider(boolean visible) {
         if (visible != mShowColumnDivider) {
             mShowColumnDivider = visible;
-            notify(TreeNotificationKeys.COLUMN_DIVIDER, Boolean.valueOf(mShowColumnDivider));
         }
     }
 
@@ -1079,7 +1062,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     public void setShowRowDivider(boolean visible) {
         if (visible != mShowRowDivider) {
             mShowRowDivider = visible;
-            notify(TreeNotificationKeys.ROW_DIVIDER, Boolean.valueOf(mShowRowDivider));
         }
     }
 
@@ -1206,7 +1188,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      * @param rows The {@link TreeContainerRow}s to disclose.
      */
     public void setOpen(boolean open, Collection<TreeContainerRow> rows) {
-        HashSet<TreeContainerRow> modified = new HashSet<>();
+        Set<TreeContainerRow> modified = new HashSet<>();
         for (TreeContainerRow row : rows) {
             if (row.getTreeRoot() == mRoot) {
                 if (mOpenRows.contains(row) != open) {
@@ -1229,14 +1211,17 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 }
                 mOpenRows.removeAll(modified);
             }
-            notify(open ? TreeNotificationKeys.ROW_OPENED : TreeNotificationKeys.ROW_CLOSED, data);
+            if (mRowDisclosureHandler != null) {
+                mRowDisclosureHandler.rowDisclosureChanged(data);
+            }
             if (!selectionRemoved.isEmpty()) {
-                TreeRow[] oldSelection = mSelectedRows.toArray(new TreeRow[0]);
                 selectionRemoved.forEach(mSelectedRows::remove);
                 if (mAnchorRow != null && !mSelectedRows.contains(mAnchorRow)) {
                     mAnchorRow = getFirstSelectedRow();
                 }
-                notify(TreeNotificationKeys.ROW_SELECTION, oldSelection);
+                if (mSelectionChangedHandler != null) {
+                    mSelectionChangedHandler.selectionChanged();
+                }
             }
             repaintContentView();
             run();
@@ -1312,8 +1297,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     @Override
     public void selectAll() {
-        TreeRow[] oldSelection = mSelectedRows.toArray(new TreeRow[0]);
-        boolean   added        = false;
+        boolean added = false;
         mAnchorRow = null;
         for (TreeRow row : new TreeRowViewIterator(this, mRoot.getChildren())) {
             if (mAnchorRow == null) {
@@ -1325,7 +1309,9 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         }
         if (added) {
             repaintContentView();
-            notify(TreeNotificationKeys.ROW_SELECTION, oldSelection);
+            if (mSelectionChangedHandler != null) {
+                mSelectionChangedHandler.selectionChanged();
+            }
         }
     }
 
@@ -1337,12 +1323,13 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public void select(Collection<TreeRow> rows) {
         if (!mSelectedRows.equals(rows)) {
-            TreeRow[] oldSelection = mSelectedRows.toArray(new TreeRow[0]);
             mSelectedRows.clear();
             mSelectedRows.addAll(rows);
             mAnchorRow = getFirstSelectedRow();
             repaintRows(mSelectedRows);
-            notify(TreeNotificationKeys.ROW_SELECTION, oldSelection);
+            if (mSelectionChangedHandler != null) {
+                mSelectionChangedHandler.selectionChanged();
+            }
         }
     }
 
@@ -1355,8 +1342,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      *            current selection.
      */
     public void select(TreeRow row, boolean add) {
-        TreeRow[] savedRows = mSelectedRows.toArray(new TreeRow[0]);
-        boolean   modified  = false;
+        boolean modified = false;
         if (!add) {
             modified = !mSelectedRows.isEmpty();
             repaintRows(mSelectedRows);
@@ -1371,7 +1357,9 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         }
         if (modified) {
             repaintRows(mSelectedRows);
-            notify(TreeNotificationKeys.ROW_SELECTION, savedRows);
+            if (mSelectionChangedHandler != null) {
+                mSelectionChangedHandler.selectionChanged();
+            }
         }
     }
 
@@ -1388,7 +1376,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         if (fromRow == toRow) {
             select(fromRow, add);
         } else {
-            TreeRow[] savedRows = mSelectedRows.toArray(new TreeRow[0]);
             if (!add) {
                 repaintRows(mSelectedRows);
                 mSelectedRows.clear();
@@ -1413,18 +1400,21 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 }
             }
             repaintRows(mSelectedRows);
-            notify(TreeNotificationKeys.ROW_SELECTION, savedRows);
+            if (mSelectionChangedHandler != null) {
+                mSelectionChangedHandler.selectionChanged();
+            }
         }
     }
 
     /** Deselect all. */
     public void deselect() {
         if (!mSelectedRows.isEmpty()) {
-            TreeRow[] rows = mSelectedRows.toArray(new TreeRow[0]);
             repaintRows(mSelectedRows);
             mSelectedRows.clear();
             mAnchorRow = null;
-            notify(TreeNotificationKeys.ROW_SELECTION, rows);
+            if (mSelectionChangedHandler != null) {
+                mSelectionChangedHandler.selectionChanged();
+            }
         }
     }
 
@@ -1435,13 +1425,14 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public void deselect(TreeRow row) {
         if (mSelectedRows.contains(row)) {
-            TreeRow[] rows = mSelectedRows.toArray(new TreeRow[0]);
             mSelectedRows.remove(row);
             if (mAnchorRow == row) {
                 mAnchorRow = getFirstSelectedRow();
             }
             repaintRows(row);
-            notify(TreeNotificationKeys.ROW_SELECTION, rows);
+            if (mSelectionChangedHandler != null) {
+                mSelectionChangedHandler.selectionChanged();
+            }
         }
     }
 
@@ -1701,7 +1692,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 if (mSelectedRows.size() == 1) {
                     TreeRow row = mSelectedRows.iterator().next();
                     if (row instanceof TreeContainerRow) {
-                        TreeContainerRow cRow = (TreeContainerRow)row;
+                        TreeContainerRow cRow = (TreeContainerRow) row;
                         if (isOpen(cRow)) {
                             setOpen(false, cRow);
                             break;
@@ -1818,30 +1809,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     public void openSelection() {
         if (mOpenableProxy != null && !mSelectedRows.isEmpty()) {
             mOpenableProxy.openSelection();
-        }
-    }
-
-    protected void notify(String key, Object extra) {
-        mRoot.getNotifier().notify(this, key, extra);
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public void handleNotification(Object producer, String name, Object data) {
-        if (TreeNotificationKeys.ROW_REMOVED.equals(name)) {
-            for (TreeRow row : new TreeRowIterator((TreeRow[]) data)) {
-                mSelectedRows.remove(row);
-                if (row instanceof TreeContainerRow) {
-                    mOpenRows.remove(row);
-                }
-                if (mRowHeight < 1) {
-                    mRowHeightMap.remove(row);
-                }
-            }
         }
     }
 
@@ -2188,4 +2155,68 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
             mResizeRow = null;
         }
     }
+
+    @Override
+    public void rowsAdded(TreeRow[] rows) {
+        if (mRowsAddedHandler != null) {
+            mRowsAddedHandler.rowsAdded(rows);
+        }
+    }
+
+    @Override
+    public void rowsRemoved(TreeRow[] rows) {
+        for (TreeRow row : new TreeRowIterator(rows)) {
+            mSelectedRows.remove(row);
+            if (row instanceof TreeContainerRow) {
+                mOpenRows.remove(row);
+            }
+            if (mRowHeight < 1) {
+                mRowHeightMap.remove(row);
+            }
+        }
+        if (mRowsRemovedHandler != null) {
+            mRowsRemovedHandler.rowsRemoved(rows);
+        }
+    }
+
+    public RowsAddedHandler getRowsAddedHandler() {
+        return mRowsAddedHandler;
+    }
+
+    public void setRowsAddedHandler(RowsAddedHandler handler) {
+        mRowsAddedHandler = handler;
+    }
+
+    public RowsRemovedHandler getRowsRemovedHandler() {
+        return mRowsRemovedHandler;
+    }
+
+    public void setRowsRemovedHandler(RowsRemovedHandler handler) {
+        mRowsRemovedHandler = handler;
+    }
+
+    public RowsDroppedHandler getRowsDroppedHandler() {
+        return mRowsDroppedHandler;
+    }
+
+    public void setRowsDroppedHandler(RowsDroppedHandler handler) {
+        mRowsDroppedHandler = handler;
+    }
+
+    public RowDisclosureHandler getRowDisclosureHandler() {
+        return mRowDisclosureHandler;
+    }
+
+    public void setRowDisclosureHandler(RowDisclosureHandler handler) {
+        mRowDisclosureHandler = handler;
+    }
+
+    public SelectionChangedHandler getSelectionChangedHandler() {
+        return mSelectionChangedHandler;
+    }
+
+    public void setSelectionChangedHandler(SelectionChangedHandler handler) {
+        mSelectionChangedHandler = handler;
+    }
 }
+

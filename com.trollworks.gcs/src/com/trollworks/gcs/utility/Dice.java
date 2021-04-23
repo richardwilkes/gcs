@@ -293,7 +293,9 @@ public class Dice implements Cloneable {
             }
         }
         if (mAltModifier > 0) {
-            buffer.append('+');
+            if (!buffer.isEmpty()) {
+                buffer.append('+');
+            }
             buffer.append(mAltModifier);
         } else if (mAltModifier < 0) {
             buffer.append(mAltModifier);

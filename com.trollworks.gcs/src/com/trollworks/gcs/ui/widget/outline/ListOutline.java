@@ -53,20 +53,17 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
     public static final String   OWNING_LIST = "owning_list";
     /** The owning data file. */
     protected           DataFile mDataFile;
-    private             String   mRowSetChangedID;
 
     /**
      * Create a new outline.
      *
-     * @param dataFile        The owning data file.
-     * @param model           The outline model to use.
-     * @param rowSetChangedID The notification ID to use when the row set changes.
+     * @param dataFile The owning data file.
+     * @param model    The outline model to use.
      */
-    public ListOutline(DataFile dataFile, OutlineModel model, String rowSetChangedID) {
+    public ListOutline(DataFile dataFile, OutlineModel model) {
         super(model);
         model.setProperty(OWNING_LIST, this);
         mDataFile = dataFile;
-        mRowSetChangedID = rowSetChangedID;
         addActionListener(this);
     }
 
@@ -78,18 +75,13 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
     @Override
     public void rowsAdded(OutlineModel model, Row[] rows) {
         super.rowsAdded(model, rows);
-        mDataFile.notifySingle(mRowSetChangedID, null);
+        mDataFile.notifyOfChange();
     }
 
     @Override
     public void rowsWereRemoved(OutlineModel model, Row[] rows) {
         super.rowsWereRemoved(model, rows);
-        mDataFile.notifySingle(mRowSetChangedID, null);
-    }
-
-    /** @return The notification ID to use when the row set changes. */
-    public String getRowSetChangedID() {
-        return mRowSetChangedID;
+        mDataFile.notifyOfChange();
     }
 
     @Override
@@ -104,7 +96,6 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
             OutlineModel model = getModel();
             StateEdit    edit  = new StateEdit(model, I18n.Text("Remove Rows"));
             Row[]        rows  = model.getSelectionAsList(true).toArray(new Row[0]);
-            mDataFile.startNotify();
             model.removeSelection();
             for (int i = rows.length - 1; i >= 0; i--) {
                 rows[i].removeFromParent();
@@ -112,10 +103,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
             if (model.getRowCount() > 0) {
                 updateAllRows();
             }
-            // Send it out again, since we have a few chicken-and-egg
-            // scenarios to deal with... <sigh>
-            mDataFile.notify(mRowSetChangedID, null);
-            mDataFile.endNotify();
+            mDataFile.notifyOfChange();
             edit.end();
             postUndo(edit);
         }
@@ -221,7 +209,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
             updateRows(mRowsToEdit);
             updateRowHeights(mRowsToEdit);
             repaint();
-            mDataFile.notifySingle(mRowSetChangedID, null);
+            mDataFile.notifyOfChange();
         }
         mRowsToEdit = null;
     }
@@ -230,13 +218,13 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
     public void undoDidHappen(OutlineModel model) {
         super.undoDidHappen(model);
         updateAllRows();
-        mDataFile.notifySingle(mRowSetChangedID, null);
+        mDataFile.notifyOfChange();
     }
 
     @Override
     protected void rowsWereDropped() {
         updateAllRows();
-        mDataFile.notifySingle(mRowSetChangedID, null);
+        mDataFile.notifyOfChange();
         requestFocus();
     }
 
@@ -295,7 +283,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
         if (getModel().hasSelection()) {
             JPopupMenu menu = new JPopupMenu();
             if (this instanceof EquipmentOutline && (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template)) {
-                menu.add(new MoveEquipmentCommand(getModel().getProperty(EquipmentList.TAG_OTHER_ROOT) != null));
+                menu.add(new MoveEquipmentCommand(getModel().getProperty(EquipmentList.KEY_OTHER_ROOT) != null));
                 menu.add(new ConvertToContainer());
                 menu.addSeparator();
             }
@@ -357,10 +345,8 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
     public void duplicateSelection() {
         OutlineModel model = getModel();
         if (!model.isLocked() && model.hasSelection()) {
-            List<Row>     rows     = new ArrayList<>();
-            List<ListRow> topRows  = new ArrayList<>();
-            DataFile      dataFile = getDataFile();
-            dataFile.startNotify();
+            List<Row>     rows    = new ArrayList<>();
+            List<ListRow> topRows = new ArrayList<>();
             model.setDragRows(model.getSelectionAsList(true).toArray(new Row[0]));
             convertDragRowsToSelf(rows);
             model.setDragRows(null);
@@ -370,9 +356,9 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
                 }
             }
             addRow(topRows.toArray(new ListRow[0]), I18n.Text("Duplicate Rows"), true);
-            dataFile.endNotify();
             model.select(topRows, false);
             scrollSelectionIntoView();
+            mDataFile.notifyOfChange();
         }
     }
 }

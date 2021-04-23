@@ -35,7 +35,6 @@ public class EquipmentDockable extends LibraryDockable {
     @Override
     protected ListOutline createOutline() {
         EquipmentList list = getDataFile();
-        list.addTarget(this, Equipment.ID_CATEGORY);
         return new EquipmentOutline(list, list.getModel());
     }
 }

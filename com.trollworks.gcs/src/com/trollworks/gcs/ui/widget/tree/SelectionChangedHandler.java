@@ -9,8 +9,8 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.ui.widget.tree;
 
-public interface FieldRandomizer {
-    Object Randomize();
+public interface SelectionChangedHandler {
+    void selectionChanged();
 }

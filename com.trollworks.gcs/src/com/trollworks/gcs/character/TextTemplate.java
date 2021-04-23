@@ -389,10 +389,10 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSettings().optionsCode());
             break;
         case KEY_CREATED_ON:
-            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn()));
+            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn() * FieldFactory.TIMESTAMP_FACTOR));
             break;
         case KEY_MODIFIED_ON:
-            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn()));
+            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn() * FieldFactory.TIMESTAMP_FACTOR));
             break;
         case KEY_TOTAL_POINTS:
             writeEncodedText(out, Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
@@ -531,7 +531,7 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSwing().toString());
             break;
         case KEY_GENERAL_DR:
-            writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(Armor.ID_TORSO_DR)).intValue()));
+            writeEncodedText(out, Numbers.format(gurpsCharacter.getArmor().getTorsoDR()));
             break;
         case KEY_CURRENT_DODGE:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel(false))));
@@ -619,7 +619,7 @@ public class TextTemplate {
             break;
         case KEY_NOTES:
             StringBuilder buffer = new StringBuilder();
-            for (Note note : gurpsCharacter.getNoteIterator()) {
+            for (Note note : gurpsCharacter.getNotesIterator()) {
                 if (!buffer.isEmpty()) {
                     buffer.append("\n\n");
                 }
@@ -885,7 +885,7 @@ public class TextTemplate {
                         case KEY_ROLL -> writeEncodedText(out, entry.getRoll());
                         case KEY_WHERE -> writeEncodedText(out, entry.getName());
                         case KEY_PENALTY -> writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
-                        case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getValueForID(entry.getKey())).intValue()));
+                        case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getArmor().getValueForID(entry.getKey())).intValue()));
                         case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         // Show the equipment that is providing the DR bonus
                         case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
@@ -1017,12 +1017,22 @@ public class TextTemplate {
             writeEncodedText(out, row.toString());
             writeNote(out, row.getModifierNotes());
             writeNote(out, row.getNotes());
+            if (row instanceof Spell) {
+                writeNote(out, ((Spell) row).getRituals());
+            }
         } else if (key.equals(KEY_DESCRIPTION_PRIMARY)) {
             writeEncodedText(out, row.toString());
         } else if (key.startsWith(KEY_DESCRIPTION_MODIFIER_NOTES)) {
             writeXMLTextWithOptionalParens(key, out, row.getModifierNotes());
         } else if (key.startsWith(KEY_DESCRIPTION_NOTES)) {
-            writeXMLTextWithOptionalParens(key, out, row.getNotes());
+            String notes = row.getNotes();
+            if (row instanceof Spell) {
+                if (!notes.isEmpty()) {
+                    notes += "; ";
+                }
+                notes += ((Spell) row).getRituals();
+            }
+            writeXMLTextWithOptionalParens(key, out, notes);
         } else {
             return false;
         }
@@ -1759,7 +1769,7 @@ public class TextTemplate {
         int           length           = contents.length();
         StringBuilder keyBuffer        = new StringBuilder();
         boolean       lookForKeyMarker = true;
-        for (Note note : mSheet.getCharacter().getNoteIterator()) {
+        for (Note note : mSheet.getCharacter().getNotesIterator()) {
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {

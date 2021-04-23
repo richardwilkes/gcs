@@ -23,27 +23,21 @@ import java.util.Set;
 
 /** Describes a skill default. */
 public class SkillDefault {
-    /** The tag used for the type. */
-    public static final String           TAG_TYPE           = "type";
-    /** The tag used for the skill name. */
-    public static final String           TAG_NAME           = "name";
-    /** The tag used for the skill specialization. */
-    public static final String           TAG_SPECIALIZATION = "specialization";
-    /** The tag used for the modifier. */
-    public static final String           TAG_MODIFIER       = "modifier";
-    /** The tag used for the level. */
-    public static final String           TAG_LEVEL          = "level";
-    /** The tag used for the adjusted level. */
-    public static final String           TAG_ADJ_LEVEL      = "adjusted_level";
-    /** The tag used for the points. */
-    public static final String           TAG_POINTS         = "points";
-    private             SkillDefaultType mType;
-    private             String           mName;
-    private             String           mSpecialization;
-    private             int              mModifier;
-    private             int              mLevel;
-    private             int              mAdjLevel;
-    private             int              mPoints;
+    public static final String KEY_TYPE           = "type";
+    public static final String KEY_NAME           = "name";
+    public static final String KEY_SPECIALIZATION = "specialization";
+    public static final String KEY_MODIFIER       = "modifier";
+    public static final String KEY_LEVEL          = "level";
+    public static final String KEY_ADJ_LEVEL      = "adjusted_level";
+    public static final String KEY_POINTS         = "points";
+
+    private SkillDefaultType mType;
+    private String           mName;
+    private String           mSpecialization;
+    private int              mModifier;
+    private int              mLevel;
+    private int              mAdjLevel;
+    private int              mPoints;
 
     /**
      * Creates a new skill default.
@@ -82,13 +76,13 @@ public class SkillDefault {
      */
     public SkillDefault(JsonMap m, boolean full) {
         mType = SkillDefaultType.getByName(m.getString(DataFile.KEY_TYPE));
-        mName = m.getString(TAG_NAME);
-        mSpecialization = m.getString(TAG_SPECIALIZATION);
-        mModifier = m.getInt(TAG_MODIFIER);
+        mName = m.getString(KEY_NAME);
+        mSpecialization = m.getString(KEY_SPECIALIZATION);
+        mModifier = m.getInt(KEY_MODIFIER);
         if (full) {
-            mLevel = m.getInt(TAG_LEVEL);
-            mAdjLevel = m.getInt(TAG_ADJ_LEVEL);
-            mPoints = m.getInt(TAG_POINTS);
+            mLevel = m.getInt(KEY_LEVEL);
+            mAdjLevel = m.getInt(KEY_ADJ_LEVEL);
+            mPoints = m.getInt(KEY_POINTS);
         }
     }
 
@@ -140,14 +134,14 @@ public class SkillDefault {
         w.startMap();
         w.keyValue(DataFile.KEY_TYPE, mType.name());
         if (mType.isSkillBased()) {
-            w.keyValueNot(TAG_NAME, mName, "");
-            w.keyValueNot(TAG_SPECIALIZATION, mSpecialization, "");
+            w.keyValueNot(KEY_NAME, mName, "");
+            w.keyValueNot(KEY_SPECIALIZATION, mSpecialization, "");
         }
-        w.keyValueNot(TAG_MODIFIER, mModifier, 0);
+        w.keyValueNot(KEY_MODIFIER, mModifier, 0);
         if (full) {
-            w.keyValue(TAG_LEVEL, mLevel);
-            w.keyValue(TAG_ADJ_LEVEL, mAdjLevel);
-            w.keyValueNot(TAG_POINTS, mPoints, 0);
+            w.keyValue(KEY_LEVEL, mLevel);
+            w.keyValue(KEY_ADJ_LEVEL, mAdjLevel);
+            w.keyValueNot(KEY_POINTS, mPoints, 0);
         }
         w.endMap();
     }

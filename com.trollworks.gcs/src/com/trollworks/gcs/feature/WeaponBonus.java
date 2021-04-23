@@ -27,20 +27,21 @@ import java.util.Set;
 
 /** A weapon bonus. */
 public class WeaponBonus extends Bonus {
-    public static final  String              THIS_WEAPON_ID         = "\u0001";
-    public static final  String              WEAPON_NAMED_ID_PREFIX = "weapon_named.";
-    /** The XML tag. */
-    public static final  String              TAG_ROOT               = "weapon_bonus";
-    private static final String              TAG_SELECTION_TYPE     = "selection_type";
-    private static final String              TAG_NAME               = "name";
-    private static final String              TAG_SPECIALIZATION     = "specialization";
-    private static final String              TAG_LEVEL              = "level";
-    private static final String              TAG_CATEGORY           = "category";
-    private              WeaponSelectionType mWeaponSelectionType;
-    private              StringCriteria      mNameCriteria;
-    private              StringCriteria      mSpecializationCriteria;
-    private              IntegerCriteria     mRelativeLevelCriteria;
-    private              StringCriteria      mCategoryCriteria;
+    public static final  String KEY_ROOT           = "weapon_bonus";
+    private static final String KEY_SELECTION_TYPE = "selection_type";
+    private static final String KEY_NAME           = "name";
+    private static final String KEY_SPECIALIZATION = "specialization";
+    private static final String KEY_LEVEL          = "level";
+    private static final String KEY_CATEGORY       = "category";
+
+    public static final String THIS_WEAPON_ID         = "\u0001";
+    public static final String WEAPON_NAMED_ID_PREFIX = "weapon_named.";
+
+    private WeaponSelectionType mWeaponSelectionType;
+    private StringCriteria      mNameCriteria;
+    private StringCriteria      mSpecializationCriteria;
+    private IntegerCriteria     mRelativeLevelCriteria;
+    private StringCriteria      mCategoryCriteria;
 
     /** Creates a new skill bonus. */
     public WeaponBonus() {
@@ -90,7 +91,7 @@ public class WeaponBonus extends Bonus {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
@@ -121,21 +122,21 @@ public class WeaponBonus extends Bonus {
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
         super.loadSelf(m);
-        mWeaponSelectionType = Enums.extract(m.getString(TAG_SELECTION_TYPE), WeaponSelectionType.values(), WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL);
+        mWeaponSelectionType = Enums.extract(m.getString(KEY_SELECTION_TYPE), WeaponSelectionType.values(), WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL);
         switch (mWeaponSelectionType) {
         case THIS_WEAPON:
         default:
             break;
         case WEAPONS_WITH_NAME:
-            mNameCriteria.load(m.getMap(TAG_NAME));
-            mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
-            mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
+            mNameCriteria.load(m.getMap(KEY_NAME));
+            mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
+            mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
             break;
         case WEAPONS_WITH_REQUIRED_SKILL:
-            mNameCriteria.load(m.getMap(TAG_NAME));
-            mSpecializationCriteria.load(m.getMap(TAG_SPECIALIZATION));
-            mRelativeLevelCriteria.load(m.getMap(TAG_LEVEL));
-            mCategoryCriteria.load(m.getMap(TAG_CATEGORY));
+            mNameCriteria.load(m.getMap(KEY_NAME));
+            mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
+            mRelativeLevelCriteria.load(m.getMap(KEY_LEVEL));
+            mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
             break;
         }
     }
@@ -143,21 +144,21 @@ public class WeaponBonus extends Bonus {
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(TAG_SELECTION_TYPE, Enums.toId(mWeaponSelectionType));
+        w.keyValue(KEY_SELECTION_TYPE, Enums.toId(mWeaponSelectionType));
         switch (mWeaponSelectionType) {
         case THIS_WEAPON:
         default:
             break;
         case WEAPONS_WITH_NAME:
-            mNameCriteria.save(w, TAG_NAME);
-            mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
-            mCategoryCriteria.save(w, TAG_CATEGORY);
+            mNameCriteria.save(w, KEY_NAME);
+            mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
+            mCategoryCriteria.save(w, KEY_CATEGORY);
             break;
         case WEAPONS_WITH_REQUIRED_SKILL:
-            mNameCriteria.save(w, TAG_NAME);
-            mSpecializationCriteria.save(w, TAG_SPECIALIZATION);
-            mRelativeLevelCriteria.save(w, TAG_LEVEL);
-            mCategoryCriteria.save(w, TAG_CATEGORY);
+            mNameCriteria.save(w, KEY_NAME);
+            mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
+            mRelativeLevelCriteria.save(w, KEY_LEVEL);
+            mCategoryCriteria.save(w, KEY_CATEGORY);
             break;
         }
     }

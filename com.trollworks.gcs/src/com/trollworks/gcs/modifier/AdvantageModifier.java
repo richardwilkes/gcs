@@ -22,7 +22,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.notification.Notifier;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 
@@ -30,32 +29,19 @@ import java.io.IOException;
 
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
-    private static final int                       CURRENT_JSON_VERSION   = 1;
-    /** The root tag. */
-    public static final  String                    TAG_MODIFIER           = "modifier";
-    /** The root tag for containers. */
-    public static final  String                    TAG_MODIFIER_CONTAINER = "modifier_container";
-    /** The tag for the base cost. */
-    public static final  String                    TAG_COST               = "cost";
-    private static final String                    KEY_COST_TYPE          = "cost_type";
-    /** The tag for the cost per level. */
-    public static final  String                    TAG_LEVELS             = "levels";
-    /** The tag for how the cost is affected. */
-    public static final  String                    TAG_AFFECTS            = "affects";
-    /** The notification prefix used. */
-    public static final  String                    PREFIX                 = GURPSCharacter.CHARACTER_PREFIX + "advmod" + Notifier.SEPARATOR;
-    /** The field ID for when the categories change. */
-    public static final  String                    ID_CATEGORY            = PREFIX + "Category";
-    /** The field ID for enabled changes. */
-    public static final  String                    ID_ENABLED             = PREFIX + ATTRIBUTE_ENABLED;
-    /** The field ID for list changes. */
-    public static final  String                    ID_LIST_CHANGED        = PREFIX + "list_changed";
-    /** The cost type of the {@link AdvantageModifier}. */
-    protected            AdvantageModifierCostType mCostType;
-    private              int                       mCost;
-    private              double                    mCostMultiplier;
-    private              int                       mLevels;
-    private              Affects                   mAffects;
+    private static final int    CURRENT_JSON_VERSION   = 1;
+    public static final  String KEY_MODIFIER           = "modifier";
+    public static final  String KEY_MODIFIER_CONTAINER = "modifier_container";
+    public static final  String KEY_COST               = "cost";
+    private static final String KEY_COST_TYPE          = "cost_type";
+    public static final  String KEY_LEVELS             = "levels";
+    public static final  String KEY_AFFECTS            = "affects";
+
+    protected AdvantageModifierCostType mCostType;
+    private   int                       mCost;
+    private   double                    mCostMultiplier;
+    private   int                       mLevels;
+    private   Affects                   mAffects;
 
     /**
      * Creates a new {@link AdvantageModifier}.
@@ -80,7 +66,7 @@ public class AdvantageModifier extends Modifier {
     }
 
     public AdvantageModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
-        this(file, TAG_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
+        this(file, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
         load(m, state);
     }
 
@@ -97,11 +83,6 @@ public class AdvantageModifier extends Modifier {
         mCostMultiplier = 1.0;
         mLevels = 0;
         mAffects = Affects.TOTAL;
-    }
-
-    @Override
-    public String getNotificationPrefix() {
-        return PREFIX;
     }
 
     @Override
@@ -143,7 +124,7 @@ public class AdvantageModifier extends Modifier {
     public boolean setCostType(AdvantageModifierCostType costType) {
         if (costType != mCostType) {
             mCostType = costType;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -161,7 +142,7 @@ public class AdvantageModifier extends Modifier {
     public boolean setCost(int cost) {
         if (mCost != cost) {
             mCost = cost;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -179,7 +160,7 @@ public class AdvantageModifier extends Modifier {
     public boolean setCostMultiplier(double multiplier) {
         if (mCostMultiplier != multiplier) {
             mCostMultiplier = multiplier;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -200,7 +181,7 @@ public class AdvantageModifier extends Modifier {
         }
         if (mLevels != levels) {
             mLevels = levels;
-            notifySingle(getNotificationPrefix() + TAG_COST);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -218,7 +199,7 @@ public class AdvantageModifier extends Modifier {
 
     @Override
     public String getJSONTypeName() {
-        return canHaveChildren() ? TAG_MODIFIER_CONTAINER : TAG_MODIFIER;
+        return canHaveChildren() ? KEY_MODIFIER_CONTAINER : KEY_MODIFIER;
     }
 
     @Override
@@ -242,12 +223,12 @@ public class AdvantageModifier extends Modifier {
         if (!canHaveChildren()) {
             mCostType = Enums.extract(m.getString(KEY_COST_TYPE), AdvantageModifierCostType.values(), AdvantageModifierCostType.PERCENTAGE);
             if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
-                mCostMultiplier = m.getDouble(TAG_COST);
+                mCostMultiplier = m.getDouble(KEY_COST);
             } else {
-                mCost = m.getInt(TAG_COST);
-                mAffects = Enums.extract(m.getString(TAG_AFFECTS), Affects.values(), Affects.TOTAL);
+                mCost = m.getInt(KEY_COST);
+                mAffects = Enums.extract(m.getString(KEY_AFFECTS), Affects.values(), Affects.TOTAL);
             }
-            mLevels = m.getInt(TAG_LEVELS);
+            mLevels = m.getInt(KEY_LEVELS);
         }
     }
 
@@ -255,7 +236,7 @@ public class AdvantageModifier extends Modifier {
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
             String type = m.getString(DataFile.KEY_TYPE);
-            if (TAG_MODIFIER.equals(type) || TAG_MODIFIER_CONTAINER.equals(type)) {
+            if (KEY_MODIFIER.equals(type) || KEY_MODIFIER_CONTAINER.equals(type)) {
                 addChild(new AdvantageModifier(mDataFile, m, state));
             } else {
                 Log.warn("invalid child type: " + type);
@@ -269,12 +250,12 @@ public class AdvantageModifier extends Modifier {
         if (!canHaveChildren()) {
             w.keyValue(KEY_COST_TYPE, Enums.toId(mCostType));
             if (mCostType == AdvantageModifierCostType.MULTIPLIER) {
-                w.keyValue(TAG_COST, mCostMultiplier);
+                w.keyValue(KEY_COST, mCostMultiplier);
             } else {
-                w.keyValue(TAG_COST, mCost);
-                w.keyValue(TAG_AFFECTS, Enums.toId(mAffects));
+                w.keyValue(KEY_COST, mCost);
+                w.keyValue(KEY_AFFECTS, Enums.toId(mAffects));
             }
-            w.keyValueNot(TAG_LEVELS, mLevels, 0);
+            w.keyValueNot(KEY_LEVELS, mLevels, 0);
         }
     }
 
@@ -309,7 +290,7 @@ public class AdvantageModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter)mDataFile).getSettings().showAdvantageModifierAdj()) {
+        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter) mDataFile).getSettings().showAdvantageModifierAdj()) {
             builder.append(" [");
             builder.append(getCostDescription());
             builder.append(']');
@@ -350,15 +331,10 @@ public class AdvantageModifier extends Modifier {
     public boolean setAffects(Affects affects) {
         if (affects != mAffects) {
             mAffects = affects;
-            notifySingle(getNotificationPrefix() + TAG_AFFECTS);
+            notifyOfChange();
             return true;
         }
         return false;
-    }
-
-    @Override
-    protected String getCategoryID() {
-        return ID_CATEGORY;
     }
 
     @Override

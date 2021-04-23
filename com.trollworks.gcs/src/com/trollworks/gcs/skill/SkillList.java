@@ -26,9 +26,7 @@ import java.io.IOException;
 
 /** A list of skills. */
 public class SkillList extends ListFile {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag for {@link SkillList}s. */
-    public static final  String TAG_ROOT             = "skill_list";
+    private static final int CURRENT_JSON_VERSION = 1;
 
     @Override
     public int getJSONVersion() {
@@ -37,7 +35,7 @@ public class SkillList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return "skill_list";
     }
 
     @Override
@@ -60,9 +58,9 @@ public class SkillList extends ListFile {
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
-            if (Skill.TAG_SKILL.equals(type) || Skill.TAG_SKILL_CONTAINER.equals(type)) {
+            if (Skill.KEY_SKILL.equals(type) || Skill.KEY_SKILL_CONTAINER.equals(type)) {
                 model.addRow(new Skill(file, m1, state), true);
-            } else if (Technique.TAG_TECHNIQUE.equals(type)) {
+            } else if (Technique.KEY_TECHNIQUE.equals(type)) {
                 model.addRow(new Technique(file, m1, state), true);
             } else {
                 Log.warn("invalid skill type: " + type);

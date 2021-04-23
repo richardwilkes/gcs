@@ -46,68 +46,48 @@ import java.util.Set;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
-    private static final   int               CURRENT_JSON_VERSION     = 1;
-    /** The XML tag used for items. */
-    public static final    String            TAG_SPELL                = "spell";
-    /** The XML tag used for containers. */
-    public static final    String            TAG_SPELL_CONTAINER      = "spell_container";
-    private static final   String            TAG_NAME                 = "name";
-    private static final   String            TAG_TECH_LEVEL           = "tech_level";
-    private static final   String            TAG_COLLEGE              = "college";
-    private static final   String            TAG_POWER_SOURCE         = "power_source";
-    private static final   String            TAG_SPELL_CLASS          = "spell_class";
-    private static final   String            TAG_RESIST               = "resist";
-    private static final   String            TAG_CASTING_COST         = "casting_cost";
-    private static final   String            TAG_MAINTENANCE_COST     = "maintenance_cost";
-    private static final   String            TAG_CASTING_TIME         = "casting_time";
-    private static final   String            TAG_DURATION             = "duration";
-    protected static final String            TAG_POINTS               = "points";
-    private static final   String            TAG_REFERENCE            = "reference";
-    private static final   String            TAG_ATTRIBUTE            = "attribute";
-    private static final   String            TAG_DIFFICULTY           = "difficulty";
-    private static final   String            KEY_WEAPONS              = "weapons";
-    /** The prefix used in front of all IDs for the spells. */
-    public static final    String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "spell.";
-    /** The field ID for name changes. */
-    public static final    String            ID_NAME                  = PREFIX + "Name";
-    /** The field ID for tech level changes. */
-    public static final    String            ID_TECH_LEVEL            = PREFIX + "TechLevel";
-    /** The field ID for college changes. */
-    public static final    String            ID_COLLEGE               = PREFIX + "College";
-    /** The field ID for power source changes. */
-    public static final    String            ID_POWER_SOURCE          = PREFIX + "PowerSource";
-    /** The field ID for point changes. */
-    public static final    String            ID_POINTS                = PREFIX + "Points";
-    /** The field ID for college changes. */
-    public static final    String            ID_POINTS_COLLEGE        = PREFIX + "PtsCollege";
-    /** The field ID for power source changes. */
-    public static final    String            ID_POINTS_POWER_SOURCE   = PREFIX + "PtsPowerSource";
-    /** The field ID for level changes. */
-    public static final    String            ID_LEVEL                 = PREFIX + "Level";
-    /** The field ID for difficulty changes. */
-    public static final    String            ID_DIFFICULTY            = PREFIX + "Difficulty";
-    /** The field ID for when the categories change. */
-    public static final    String            ID_CATEGORY              = PREFIX + "Category";
-    /** The field ID for when the row hierarchy changes. */
-    public static final    String            ID_LIST_CHANGED          = PREFIX + "ListChanged";
-    /** The field ID for when the spell becomes or stops being a weapon. */
-    public static final    String            ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
-    private                String            mName;
-    private                String            mTechLevel;
-    private                String            mCollege;
-    private                String            mPowerSource;
-    private                String            mSpellClass;
-    private                String            mResist;
-    private                String            mCastingCost;
-    private                String            mMaintenance;
-    private                String            mCastingTime;
-    private                String            mDuration;
-    protected              int               mPoints;
-    protected              SkillLevel        mLevel;
-    private                SkillAttribute    mAttribute;
-    private                String            mReference;
-    private                SkillDifficulty   mDifficulty;
-    private                List<WeaponStats> mWeapons;
+    private static final   int    CURRENT_JSON_VERSION = 1;
+    public static final    String KEY_SPELL            = "spell";
+    public static final    String KEY_SPELL_CONTAINER  = "spell_container";
+    private static final   String KEY_NAME             = "name";
+    private static final   String KEY_TECH_LEVEL       = "tech_level";
+    private static final   String KEY_COLLEGE          = "college";
+    private static final   String KEY_POWER_SOURCE     = "power_source";
+    private static final   String KEY_SPELL_CLASS      = "spell_class";
+    private static final   String KEY_RESIST           = "resist";
+    private static final   String KEY_CASTING_COST     = "casting_cost";
+    private static final   String KEY_MAINTENANCE_COST = "maintenance_cost";
+    private static final   String KEY_CASTING_TIME     = "casting_time";
+    private static final   String KEY_DURATION         = "duration";
+    protected static final String KEY_POINTS           = "points";
+    private static final   String KEY_REFERENCE        = "reference";
+    private static final   String KEY_ATTRIBUTE        = "attribute";
+    private static final   String KEY_DIFFICULTY       = "difficulty";
+    private static final   String KEY_WEAPONS          = "weapons";
+
+    public static final String ID_NAME                = "spell.name";
+    public static final String ID_COLLEGE             = "spell.college";
+    public static final String ID_POWER_SOURCE        = "spell.power_source";
+    public static final String ID_POINTS              = "spell.points";
+    public static final String ID_POINTS_COLLEGE      = "spell.college.points";
+    public static final String ID_POINTS_POWER_SOURCE = "spell.power_source.points";
+
+    private   String            mName;
+    private   String            mTechLevel;
+    private   String            mCollege;
+    private   String            mPowerSource;
+    private   String            mSpellClass;
+    private   String            mResist;
+    private   String            mCastingCost;
+    private   String            mMaintenance;
+    private   String            mCastingTime;
+    private   String            mDuration;
+    protected int               mPoints;
+    protected SkillLevel        mLevel;
+    private   SkillAttribute    mAttribute;
+    private   String            mReference;
+    private   SkillDifficulty   mDifficulty;
+    private   List<WeaponStats> mWeapons;
 
     /**
      * Creates a new spell.
@@ -192,7 +172,7 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     public Spell(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_SPELL_CONTAINER));
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_SPELL_CONTAINER));
         load(m, state);
     }
 
@@ -222,13 +202,8 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getJSONTypeName() {
-        return canHaveChildren() ? TAG_SPELL_CONTAINER : TAG_SPELL;
+        return canHaveChildren() ? KEY_SPELL_CONTAINER : KEY_SPELL;
     }
 
     @Override
@@ -270,26 +245,26 @@ public class Spell extends ListRow implements HasSourceReference {
 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
-        mName = m.getString(TAG_NAME);
-        mReference = m.getString(TAG_REFERENCE);
+        mName = m.getString(KEY_NAME);
+        mReference = m.getString(KEY_REFERENCE);
         if (!canHaveChildren()) {
-            setDifficultyFromText(m.getString(TAG_DIFFICULTY));
-            if (m.has(TAG_TECH_LEVEL)) {
-                mTechLevel = m.getString(TAG_TECH_LEVEL);
+            setDifficultyFromText(m.getString(KEY_DIFFICULTY));
+            if (m.has(KEY_TECH_LEVEL)) {
+                mTechLevel = m.getString(KEY_TECH_LEVEL);
                 if (!mTechLevel.isBlank() && getDataFile() instanceof ListFile) {
                     mTechLevel = "";
                 }
             }
-            mAttribute = Enums.extract(m.getString(TAG_ATTRIBUTE), SkillAttribute.values(), SkillAttribute.IQ);
-            mCollege = m.getString(TAG_COLLEGE);
-            mPowerSource = m.getString(TAG_POWER_SOURCE);
-            mSpellClass = m.getString(TAG_SPELL_CLASS);
-            mResist = m.getString(TAG_RESIST);
-            mCastingCost = m.getString(TAG_CASTING_COST);
-            mMaintenance = m.getString(TAG_MAINTENANCE_COST);
-            mCastingTime = m.getString(TAG_CASTING_TIME);
-            mDuration = m.getString(TAG_DURATION);
-            mPoints = m.getIntWithDefault(TAG_POINTS, 1);
+            mAttribute = Enums.extract(m.getString(KEY_ATTRIBUTE), SkillAttribute.values(), SkillAttribute.IQ);
+            mCollege = m.getString(KEY_COLLEGE);
+            mPowerSource = m.getString(KEY_POWER_SOURCE);
+            mSpellClass = m.getString(KEY_SPELL_CLASS);
+            mResist = m.getString(KEY_RESIST);
+            mCastingCost = m.getString(KEY_CASTING_COST);
+            mMaintenance = m.getString(KEY_MAINTENANCE_COST);
+            mCastingTime = m.getString(KEY_CASTING_TIME);
+            mDuration = m.getString(KEY_DURATION);
+            mPoints = m.getIntWithDefault(KEY_POINTS, 1);
             if (m.has(KEY_WEAPONS)) {
                 WeaponStats.loadFromJSONArray(this, m.getArray(KEY_WEAPONS), mWeapons);
             }
@@ -300,9 +275,9 @@ public class Spell extends ListRow implements HasSourceReference {
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
             String type = m.getString(DataFile.KEY_TYPE);
-            if (TAG_SPELL.equals(type) || TAG_SPELL_CONTAINER.equals(type)) {
+            if (KEY_SPELL.equals(type) || KEY_SPELL_CONTAINER.equals(type)) {
                 addChild(new Spell(mDataFile, m, state));
-            } else if (RitualMagicSpell.TAG_RITUAL_MAGIC_SPELL.equals(type)) {
+            } else if (RitualMagicSpell.KEY_RITUAL_MAGIC_SPELL.equals(type)) {
                 addChild(new RitualMagicSpell(mDataFile, m, state));
             } else {
                 Log.warn("invalid child type: " + type);
@@ -312,29 +287,29 @@ public class Spell extends ListRow implements HasSourceReference {
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
-        w.keyValue(TAG_NAME, mName);
-        w.keyValueNot(TAG_REFERENCE, mReference, "");
+        w.keyValue(KEY_NAME, mName);
+        w.keyValueNot(KEY_REFERENCE, mReference, "");
         if (!canHaveChildren()) {
-            w.keyValue(TAG_DIFFICULTY, getDifficultyAsText(false));
+            w.keyValue(KEY_DIFFICULTY, getDifficultyAsText(false));
             if (mTechLevel != null) {
                 if (getCharacter() != null) {
-                    w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
+                    w.keyValueNot(KEY_TECH_LEVEL, mTechLevel, "");
                 } else {
-                    w.keyValue(TAG_TECH_LEVEL, "");
+                    w.keyValue(KEY_TECH_LEVEL, "");
                 }
             }
             if (mAttribute != SkillAttribute.IQ) {
-                w.keyValue(TAG_ATTRIBUTE, Enums.toId(mAttribute));
+                w.keyValue(KEY_ATTRIBUTE, Enums.toId(mAttribute));
             }
-            w.keyValueNot(TAG_COLLEGE, mCollege, "");
-            w.keyValueNot(TAG_POWER_SOURCE, mPowerSource, "");
-            w.keyValueNot(TAG_SPELL_CLASS, mSpellClass, "");
-            w.keyValueNot(TAG_RESIST, mResist, "");
-            w.keyValueNot(TAG_CASTING_COST, mCastingCost, "");
-            w.keyValueNot(TAG_MAINTENANCE_COST, mMaintenance, "");
-            w.keyValueNot(TAG_CASTING_TIME, mCastingTime, "");
-            w.keyValueNot(TAG_DURATION, mDuration, "");
-            w.keyValueNot(TAG_POINTS, mPoints, 1);
+            w.keyValueNot(KEY_COLLEGE, mCollege, "");
+            w.keyValueNot(KEY_POWER_SOURCE, mPowerSource, "");
+            w.keyValueNot(KEY_SPELL_CLASS, mSpellClass, "");
+            w.keyValueNot(KEY_RESIST, mResist, "");
+            w.keyValueNot(KEY_CASTING_COST, mCastingCost, "");
+            w.keyValueNot(KEY_MAINTENANCE_COST, mMaintenance, "");
+            w.keyValueNot(KEY_CASTING_TIME, mCastingTime, "");
+            w.keyValueNot(KEY_DURATION, mDuration, "");
+            w.keyValueNot(KEY_POINTS, mPoints, 1);
             WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
         }
     }
@@ -354,7 +329,7 @@ public class Spell extends ListRow implements HasSourceReference {
             for (WeaponStats weapon : mWeapons) {
                 weapon.setOwner(this);
             }
-            notifySingle(ID_WEAPON_STATUS_CHANGED);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -372,7 +347,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setTechLevel(String techLevel) {
         if (!Objects.equals(mTechLevel, techLevel)) {
             mTechLevel = techLevel;
-            notifySingle(ID_TECH_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -402,7 +377,7 @@ public class Spell extends ListRow implements HasSourceReference {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
         if (notify && (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel))) {
-            notify(ID_LEVEL, this);
+            notifyOfChange();
         }
     }
 
@@ -477,7 +452,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setName(String name) {
         if (!mName.equals(name)) {
             mName = name;
-            notifySingle(ID_NAME);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -495,7 +470,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setCollege(String college) {
         if (!mCollege.equals(college)) {
             mCollege = college;
-            notifySingle(ID_COLLEGE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -513,7 +488,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setPowerSource(String powerSource) {
         if (!mPowerSource.equals(powerSource)) {
             mPowerSource = powerSource;
-            notifySingle(ID_POWER_SOURCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -677,10 +652,8 @@ public class Spell extends ListRow implements HasSourceReference {
     public boolean setRawPoints(int points) {
         if (mPoints != points) {
             mPoints = points;
-            startNotify();
-            notify(ID_POINTS, this);
             updateLevel(true);
-            endNotify();
+            notifyOfChange();
             return true;
         }
         return false;
@@ -808,10 +781,8 @@ public class Spell extends ListRow implements HasSourceReference {
         if (mAttribute != attribute || mDifficulty != difficulty) {
             mAttribute = attribute;
             mDifficulty = difficulty;
-            startNotify();
-            notify(ID_DIFFICULTY, this);
-            updateLevel(true);
-            endNotify();
+            updateLevel(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -880,11 +851,6 @@ public class Spell extends ListRow implements HasSourceReference {
     /** @return The default spell class. */
     public static final String getDefaultSpellClass() {
         return I18n.Text("Regular");
-    }
-
-    @Override
-    protected String getCategoryID() {
-        return ID_CATEGORY;
     }
 
     @Override

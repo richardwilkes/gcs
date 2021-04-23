@@ -56,7 +56,7 @@ public class ToggleStateCommand extends Command {
         if (focus instanceof EquipmentOutline) {
             ListOutline  outline = (ListOutline) focus;
             OutlineModel model   = outline.getModel();
-            if (model.hasSelection() && model.getProperty(EquipmentList.TAG_OTHER_ROOT) == null && outline.getDataFile() instanceof GURPSCharacter) {
+            if (model.hasSelection() && model.getProperty(EquipmentList.KEY_OTHER_ROOT) == null && outline.getDataFile() instanceof GURPSCharacter) {
                 setEnabled(true);
                 return;
             }

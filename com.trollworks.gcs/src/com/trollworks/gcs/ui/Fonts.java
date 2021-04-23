@@ -129,11 +129,6 @@ public class Fonts {
         return fm;
     }
 
-    /** Cause font change listeners to be notified. */
-    public static void notifyOfFontChanges() {
-        Preferences.getInstance().getNotifier().notify(null, FONT_NOTIFICATION_KEY, null);
-    }
-
     public enum FontStyle {
         PLAIN {
             @Override

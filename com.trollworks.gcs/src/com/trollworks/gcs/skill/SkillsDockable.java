@@ -35,7 +35,6 @@ public class SkillsDockable extends LibraryDockable {
     @Override
     protected ListOutline createOutline() {
         SkillList list = getDataFile();
-        list.addTarget(this, Skill.ID_CATEGORY);
         return new SkillOutline(list, list.getModel());
     }
 }

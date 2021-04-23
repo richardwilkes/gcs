@@ -36,7 +36,6 @@ import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
 import com.trollworks.gcs.ui.widget.search.Search;
 import com.trollworks.gcs.ui.widget.search.SearchTarget;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.notification.NotifierTarget;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -49,7 +48,7 @@ import javax.swing.JComboBox;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
-public abstract class CollectedOutlinesDockable extends DataFileDockable implements SearchTarget, RetargetableFocus, NotifierTarget {
+public abstract class CollectedOutlinesDockable extends DataFileDockable implements SearchTarget, RetargetableFocus {
     private JComboBox<Scales> mScaleCombo;
     private Search            mSearch;
 
@@ -97,12 +96,12 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         List<Object> list = new ArrayList<>();
         filter = filter.toLowerCase();
         CollectedOutlines outlines = getCollectedOutlines();
-        searchOne(outlines.getAdvantageOutline(), filter, list);
-        searchOne(outlines.getSkillOutline(), filter, list);
-        searchOne(outlines.getSpellOutline(), filter, list);
+        searchOne(outlines.getAdvantagesOutline(), filter, list);
+        searchOne(outlines.getSkillsOutline(), filter, list);
+        searchOne(outlines.getSpellsOutline(), filter, list);
         searchOne(outlines.getEquipmentOutline(), filter, list);
         searchOne(outlines.getOtherEquipmentOutline(), filter, list);
-        searchOne(outlines.getNoteOutline(), filter, list);
+        searchOne(outlines.getNotesOutline(), filter, list);
         return list;
     }
 
@@ -121,12 +120,12 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         Outline                      primary  = null;
         List<Row>                    list;
 
-        outlines.getAdvantageOutline().getModel().deselect();
-        outlines.getSkillOutline().getModel().deselect();
-        outlines.getSpellOutline().getModel().deselect();
+        outlines.getAdvantagesOutline().getModel().deselect();
+        outlines.getSkillsOutline().getModel().deselect();
+        outlines.getSpellsOutline().getModel().deselect();
         outlines.getEquipmentOutline().getModel().deselect();
         outlines.getOtherEquipmentOutline().getModel().deselect();
-        outlines.getNoteOutline().getModel().deselect();
+        outlines.getNotesOutline().getModel().deselect();
 
         for (Object obj : selection) {
             Row          row    = (Row) obj;
@@ -147,17 +146,17 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
                 list.add(row);
             }
             if (primary == null) {
-                primary = outlines.getAdvantageOutline();
+                primary = outlines.getAdvantagesOutline();
                 if (model != primary.getModel()) {
-                    primary = outlines.getSkillOutline();
+                    primary = outlines.getSkillsOutline();
                     if (model != primary.getModel()) {
-                        primary = outlines.getSpellOutline();
+                        primary = outlines.getSpellsOutline();
                         if (model != primary.getModel()) {
                             primary = outlines.getEquipmentOutline();
                             if (model != primary.getModel()) {
                                 primary = outlines.getOtherEquipmentOutline();
                                 if (model != primary.getModel()) {
-                                    primary = outlines.getNoteOutline();
+                                    primary = outlines.getNotesOutline();
                                     if (model != primary.getModel()) {
                                         primary = null;
                                     }
@@ -193,49 +192,49 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         String                      addRowsText = I18n.Text("Add Rows");
         for (Row row : rows) {
             if (row instanceof Advantage) {
-                outline = outlines.getAdvantageOutline();
+                outline = outlines.getAdvantagesOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Advantage(getDataFile(), (Advantage) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Technique) {
-                outline = outlines.getSkillOutline();
+                outline = outlines.getSkillsOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Technique(getDataFile(), (Technique) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Skill) {
-                outline = outlines.getSkillOutline();
+                outline = outlines.getSkillsOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Skill(getDataFile(), (Skill) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof RitualMagicSpell) {
-                outline = outlines.getSpellOutline();
+                outline = outlines.getSpellsOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new RitualMagicSpell(getDataFile(), (RitualMagicSpell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Spell) {
-                outline = outlines.getSpellOutline();
+                outline = outlines.getSpellsOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Spell(getDataFile(), (Spell) row, true, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Equipment) {
-                outline = row.getOwner().getProperty(EquipmentList.TAG_OTHER_ROOT) != null ? outlines.getOtherEquipmentOutline() : outlines.getEquipmentOutline();
+                outline = row.getOwner().getProperty(EquipmentList.KEY_OTHER_ROOT) != null ? outlines.getOtherEquipmentOutline() : outlines.getEquipmentOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
                 row = new Equipment(getDataFile(), (Equipment) row, true);
                 addCompleteRow(outline, row, selMap);
             } else if (row instanceof Note) {
-                outline = outlines.getNoteOutline();
+                outline = outlines.getNotesOutline();
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
@@ -290,10 +289,5 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
                 addCompleteRow(outlineModel, child);
             }
         }
-    }
-
-    @Override
-    public int getNotificationPriority() {
-        return 0;
     }
 }

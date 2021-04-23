@@ -26,9 +26,7 @@ import java.io.IOException;
 
 /** Data Object to hold several {@link EquipmentModifier}s */
 public class EquipmentModifierList extends ListFile {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag for equipment modifier lists. */
-    public static final  String TAG_ROOT             = "eqp_modifier_list";
+    private static final int CURRENT_JSON_VERSION = 1;
 
     @Override
     public int getJSONVersion() {
@@ -37,7 +35,7 @@ public class EquipmentModifierList extends ListFile {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return "eqp_modifier_list";
     }
 
     @Override
@@ -62,7 +60,7 @@ public class EquipmentModifierList extends ListFile {
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
             String  type = m1.getString(DataFile.KEY_TYPE);
-            if (EquipmentModifier.TAG_MODIFIER.equals(type) || EquipmentModifier.TAG_MODIFIER_CONTAINER.equals(type)) {
+            if (EquipmentModifier.KEY_MODIFIER.equals(type) || EquipmentModifier.KEY_MODIFIER_CONTAINER.equals(type)) {
                 model.addRow(new EquipmentModifier(file, m1, state), true);
             } else {
                 Log.warn("invalid equipment modifier type: " + type);

@@ -20,10 +20,10 @@ import java.io.IOException;
 
 /** A DR bonus. */
 public class DRBonus extends Bonus {
-    /** The XML tag. */
-    public static final  String      TAG_ROOT     = "dr_bonus";
-    private static final String      TAG_LOCATION = "location";
-    private              HitLocation mLocation;
+    public static final  String KEY_ROOT     = "dr_bonus";
+    private static final String KEY_LOCATION = "location";
+
+    private HitLocation mLocation;
 
     /** Creates a new DR bonus. */
     public DRBonus() {
@@ -59,7 +59,7 @@ public class DRBonus extends Bonus {
 
     @Override
     public String getJSONTypeName() {
-        return TAG_ROOT;
+        return KEY_ROOT;
     }
 
     @Override
@@ -75,13 +75,13 @@ public class DRBonus extends Bonus {
     @Override
     protected void loadSelf(JsonMap m) throws IOException {
         super.loadSelf(m);
-        setLocation(Enums.extract(m.getString(TAG_LOCATION), HitLocation.values(), HitLocation.TORSO));
+        setLocation(Enums.extract(m.getString(KEY_LOCATION), HitLocation.values(), HitLocation.TORSO));
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(TAG_LOCATION, Enums.toId(mLocation));
+        w.keyValue(KEY_LOCATION, Enums.toId(mLocation));
     }
 
     /** @return The location protected by the DR. */

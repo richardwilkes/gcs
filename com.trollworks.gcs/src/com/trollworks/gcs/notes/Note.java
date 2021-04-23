@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.notes;
 
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
@@ -33,22 +32,13 @@ import java.util.Set;
 /** A note. */
 public class Note extends ListRow implements HasSourceReference {
     private static final int    CURRENT_JSON_VERSION = 1;
-    /** The XML tag used for items. */
-    public static final  String TAG_NOTE             = "note";
-    /** The XML tag used for containers. */
-    public static final  String TAG_NOTE_CONTAINER   = "note_container";
-    private static final String TAG_TEXT             = "text";
-    private static final String TAG_REFERENCE        = "reference";
-    /** The prefix used in front of all IDs for the notes. */
-    public static final  String PREFIX               = GURPSCharacter.CHARACTER_PREFIX + "note.";
-    /** The field ID for text changes. */
-    public static final  String ID_TEXT              = PREFIX + "Text";
-    /** The field ID for page reference changes. */
-    public static final  String ID_REFERENCE         = PREFIX + "Reference";
-    /** The field ID for when the row hierarchy changes. */
-    public static final  String ID_LIST_CHANGED      = PREFIX + "ListChanged";
-    private              String mText;
-    private              String mReference;
+    public static final  String KEY_NOTE             = "note";
+    public static final  String KEY_NOTE_CONTAINER   = "note_container";
+    private static final String KEY_TEXT             = "text";
+    private static final String KEY_REFERENCE        = "reference";
+
+    private String mText;
+    private String mReference;
 
     /**
      * Creates a new note.
@@ -82,7 +72,7 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     public Note(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_NOTE_CONTAINER));
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_NOTE_CONTAINER));
         load(m, state);
     }
 
@@ -104,13 +94,8 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getJSONTypeName() {
-        return canHaveChildren() ? TAG_NOTE_CONTAINER : TAG_NOTE;
+        return canHaveChildren() ? KEY_NOTE_CONTAINER : KEY_NOTE;
     }
 
     @Override
@@ -132,15 +117,15 @@ public class Note extends ListRow implements HasSourceReference {
 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) {
-        mText = m.getString(TAG_TEXT);
-        mReference = m.getString(TAG_REFERENCE);
+        mText = m.getString(KEY_TEXT);
+        mReference = m.getString(KEY_REFERENCE);
     }
 
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
             String type = m.getString(DataFile.KEY_TYPE);
-            if (TAG_NOTE.equals(type) || TAG_NOTE_CONTAINER.equals(type)) {
+            if (KEY_NOTE.equals(type) || KEY_NOTE_CONTAINER.equals(type)) {
                 addChild(new Note(mDataFile, m, state));
             } else {
                 Log.warn("invalid child type: " + type);
@@ -150,8 +135,8 @@ public class Note extends ListRow implements HasSourceReference {
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
-        w.keyValueNot(TAG_TEXT, mText, "");
-        w.keyValueNot(TAG_REFERENCE, mReference, "");
+        w.keyValueNot(KEY_TEXT, mText, "");
+        w.keyValueNot(KEY_REFERENCE, mReference, "");
     }
 
     /** @return The description. */
@@ -166,7 +151,7 @@ public class Note extends ListRow implements HasSourceReference {
     public boolean setDescription(String description) {
         if (!mText.equals(description)) {
             mText = description;
-            notifySingle(ID_TEXT);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -229,7 +214,7 @@ public class Note extends ListRow implements HasSourceReference {
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(ID_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;

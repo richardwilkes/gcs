@@ -77,7 +77,7 @@ public class SkillDefaultEditor extends EditorPanel {
             JComboBox<?>     typeCombo = new JComboBox<Object>(SkillDefaultType.values());
             typeCombo.setOpaque(false);
             typeCombo.setSelectedItem(current);
-            typeCombo.setActionCommand(SkillDefault.TAG_TYPE);
+            typeCombo.setActionCommand(SkillDefault.KEY_TYPE);
             typeCombo.addActionListener(this);
             UIUtilities.setToPreferredSizeOnly(typeCombo);
             add(typeCombo);
@@ -182,7 +182,7 @@ public class SkillDefaultEditor extends EditorPanel {
     public void actionPerformed(ActionEvent event) {
         Object src     = event.getSource();
         String command = event.getActionCommand();
-        if (SkillDefault.TAG_TYPE.equals(command)) {
+        if (SkillDefault.KEY_TYPE.equals(command)) {
             SkillDefaultType current = mDefault.getType();
             SkillDefaultType value   = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
             if (current != value) {

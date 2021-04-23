@@ -44,58 +44,33 @@ import java.util.Set;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
-    private static final int               CURRENT_JSON_VERSION     = 1;
-    /** The XML tag used for items. */
-    public static final  String            TAG_SKILL                = "skill";
-    /** The XML tag used for containers. */
-    public static final  String            TAG_SKILL_CONTAINER      = "skill_container";
-    private static final String            TAG_NAME                 = "name";
-    private static final String            TAG_SPECIALIZATION       = "specialization";
-    private static final String            TAG_TECH_LEVEL           = "tech_level";
-    private static final String            TAG_DIFFICULTY           = "difficulty";
-    private static final String            TAG_POINTS               = "points";
-    private static final String            TAG_REFERENCE            = "reference";
-    private static final String            TAG_ENCUMBRANCE_PENALTY  = "encumbrance_penalty_multiplier";
-    private static final String            TAG_DEFAULTED_FROM       = "defaulted_from";
-    private static final String            KEY_WEAPONS              = "weapons";
-    /** The prefix used in front of all IDs for the skills. */
-    public static final  String            PREFIX                   = GURPSCharacter.CHARACTER_PREFIX + "skill.";
-    /** The field ID for name changes. */
-    public static final  String            ID_NAME                  = PREFIX + "Name";
-    /** The field ID for specialization changes. */
-    public static final  String            ID_SPECIALIZATION        = PREFIX + "Specialization";
-    /** The field ID for tech level changes. */
-    public static final  String            ID_TECH_LEVEL            = PREFIX + "TechLevel";
-    /** The field ID for level changes. */
-    public static final  String            ID_LEVEL                 = PREFIX + "Level";
-    /** The field ID for relative level changes. */
-    public static final  String            ID_RELATIVE_LEVEL        = PREFIX + "RelativeLevel";
-    /** The field ID for difficulty changes. */
-    public static final  String            ID_DIFFICULTY            = PREFIX + "Difficulty";
-    /** The field ID for point changes. */
-    public static final  String            ID_POINTS                = PREFIX + "Points";
-    /** The field ID for page reference changes. */
-    public static final  String            ID_REFERENCE             = PREFIX + "Reference";
-    /** The field ID for enumbrance penalty multiplier changes. */
-    public static final  String            ID_ENCUMBRANCE_PENALTY   = PREFIX + "EncMultplier";
-    /** The field ID for when the categories change. */
-    public static final  String            ID_CATEGORY              = PREFIX + "Category";
-    /** The field ID for when the row hierarchy changes. */
-    public static final  String            ID_LIST_CHANGED          = PREFIX + "ListChanged";
-    /** The field ID for when the skill becomes or stops being a weapon. */
-    public static final  String            ID_WEAPON_STATUS_CHANGED = PREFIX + "WeaponStatus";
-    private              String            mName;
-    private              String            mSpecialization;
-    private              String            mTechLevel;
-    private              SkillLevel        mLevel;
-    private              SkillAttribute    mAttribute;
-    private              SkillDifficulty   mDifficulty;
-    /** The points spent. */
-    protected            int               mPoints;
-    private              String            mReference;
-    private              int               mEncumbrancePenaltyMultiplier;
-    private              List<WeaponStats> mWeapons;
-    private              SkillDefault      mDefaultedFrom;
+    private static final int    CURRENT_JSON_VERSION    = 1;
+    public static final  String KEY_SKILL               = "skill";
+    public static final  String KEY_SKILL_CONTAINER     = "skill_container";
+    private static final String KEY_NAME                = "name";
+    private static final String KEY_SPECIALIZATION      = "specialization";
+    private static final String KEY_TECH_LEVEL          = "tech_level";
+    private static final String KEY_DIFFICULTY          = "difficulty";
+    private static final String KEY_POINTS              = "points";
+    private static final String KEY_REFERENCE           = "reference";
+    private static final String KEY_ENCUMBRANCE_PENALTY = "encumbrance_penalty_multiplier";
+    private static final String KEY_DEFAULTED_FROM      = "defaulted_from";
+    private static final String KEY_WEAPONS             = "weapons";
+
+    public static final String ID_NAME   = "skill.name";
+    public static final String ID_POINTS = "skill.points";
+
+    private   String            mName;
+    private   String            mSpecialization;
+    private   String            mTechLevel;
+    private   SkillLevel        mLevel;
+    private   SkillAttribute    mAttribute;
+    private   SkillDifficulty   mDifficulty;
+    protected int               mPoints;
+    private   String            mReference;
+    private   int               mEncumbrancePenaltyMultiplier;
+    private   List<WeaponStats> mWeapons;
+    private   SkillDefault      mDefaultedFrom;
 
     /**
      * Creates a string suitable for displaying the level.
@@ -185,7 +160,7 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     public Skill(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(TAG_SKILL_CONTAINER));
+        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_SKILL_CONTAINER));
         load(m, state);
     }
 
@@ -225,13 +200,8 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public String getListChangedID() {
-        return ID_LIST_CHANGED;
-    }
-
-    @Override
     public String getJSONTypeName() {
-        return canHaveChildren() ? TAG_SKILL_CONTAINER : TAG_SKILL;
+        return canHaveChildren() ? KEY_SKILL_CONTAINER : KEY_SKILL;
     }
 
     @Override
@@ -260,21 +230,21 @@ public class Skill extends ListRow implements HasSourceReference {
 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
-        mName = m.getString(TAG_NAME);
-        mReference = m.getString(TAG_REFERENCE);
+        mName = m.getString(KEY_NAME);
+        mReference = m.getString(KEY_REFERENCE);
         if (!canHaveChildren()) {
-            mSpecialization = m.getString(TAG_SPECIALIZATION);
-            if (m.has(TAG_TECH_LEVEL)) {
-                mTechLevel = m.getString(TAG_TECH_LEVEL);
+            mSpecialization = m.getString(KEY_SPECIALIZATION);
+            if (m.has(KEY_TECH_LEVEL)) {
+                mTechLevel = m.getString(KEY_TECH_LEVEL);
                 if (!mTechLevel.isBlank() && getDataFile() instanceof ListFile) {
                     mTechLevel = "";
                 }
             }
-            mEncumbrancePenaltyMultiplier = m.getInt(TAG_ENCUMBRANCE_PENALTY);
-            setDifficultyFromText(m.getString(TAG_DIFFICULTY));
-            mPoints = m.getInt(TAG_POINTS);
-            if (m.has(TAG_DEFAULTED_FROM)) {
-                mDefaultedFrom = new SkillDefault(m.getMap(TAG_DEFAULTED_FROM), true);
+            mEncumbrancePenaltyMultiplier = m.getInt(KEY_ENCUMBRANCE_PENALTY);
+            setDifficultyFromText(m.getString(KEY_DIFFICULTY));
+            mPoints = m.getInt(KEY_POINTS);
+            if (m.has(KEY_DEFAULTED_FROM)) {
+                mDefaultedFrom = new SkillDefault(m.getMap(KEY_DEFAULTED_FROM), true);
             }
             if (m.has(KEY_WEAPONS)) {
                 WeaponStats.loadFromJSONArray(this, m.getArray(KEY_WEAPONS), mWeapons);
@@ -286,9 +256,9 @@ public class Skill extends ListRow implements HasSourceReference {
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
             String type = m.getString(DataFile.KEY_TYPE);
-            if (TAG_SKILL.equals(type) || TAG_SKILL_CONTAINER.equals(type)) {
+            if (KEY_SKILL.equals(type) || KEY_SKILL_CONTAINER.equals(type)) {
                 addChild(new Skill(mDataFile, m, state));
-            } else if (Technique.TAG_TECHNIQUE.equals(type)) {
+            } else if (Technique.KEY_TECHNIQUE.equals(type)) {
                 addChild(new Technique(mDataFile, m, state));
             } else {
                 Log.warn("invalid child type: " + type);
@@ -298,22 +268,22 @@ public class Skill extends ListRow implements HasSourceReference {
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
-        w.keyValue(TAG_NAME, mName);
-        w.keyValueNot(TAG_REFERENCE, mReference, "");
+        w.keyValue(KEY_NAME, mName);
+        w.keyValueNot(KEY_REFERENCE, mReference, "");
         if (!canHaveChildren()) {
-            w.keyValueNot(TAG_SPECIALIZATION, mSpecialization, "");
+            w.keyValueNot(KEY_SPECIALIZATION, mSpecialization, "");
             if (mTechLevel != null) {
                 if (getCharacter() != null) {
-                    w.keyValueNot(TAG_TECH_LEVEL, mTechLevel, "");
+                    w.keyValueNot(KEY_TECH_LEVEL, mTechLevel, "");
                 } else {
-                    w.keyValue(TAG_TECH_LEVEL, "");
+                    w.keyValue(KEY_TECH_LEVEL, "");
                 }
             }
-            w.keyValueNot(TAG_ENCUMBRANCE_PENALTY, mEncumbrancePenaltyMultiplier, 0);
-            w.keyValue(TAG_DIFFICULTY, getDifficultyAsText(false));
-            w.keyValue(TAG_POINTS, mPoints);
+            w.keyValueNot(KEY_ENCUMBRANCE_PENALTY, mEncumbrancePenaltyMultiplier, 0);
+            w.keyValue(KEY_DIFFICULTY, getDifficultyAsText(false));
+            w.keyValue(KEY_POINTS, mPoints);
             if (mDefaultedFrom != null) {
-                w.key(TAG_DEFAULTED_FROM);
+                w.key(KEY_DEFAULTED_FROM);
                 mDefaultedFrom.save(w, true);
             }
             WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
@@ -335,7 +305,7 @@ public class Skill extends ListRow implements HasSourceReference {
             for (WeaponStats weapon : mWeapons) {
                 weapon.setOwner(this);
             }
-            notifySingle(ID_WEAPON_STATUS_CHANGED);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -368,7 +338,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setName(String name) {
         if (!mName.equals(name)) {
             mName = name;
-            notifySingle(ID_NAME);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -386,7 +356,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setSpecialization(String specialization) {
         if (!mSpecialization.equals(specialization)) {
             mSpecialization = specialization;
-            notifySingle(ID_SPECIALIZATION);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -404,7 +374,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setTechLevel(String techLevel) {
         if (!Objects.equals(mTechLevel, techLevel)) {
             mTechLevel = techLevel;
-            notifySingle(ID_TECH_LEVEL);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -464,10 +434,8 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setRawPoints(int points) {
         if (mPoints != points) {
             mPoints = points;
-            startNotify();
-            notify(ID_POINTS, this);
-            updateLevel(true);
-            endNotify();
+            updateLevel(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -482,14 +450,9 @@ public class Skill extends ListRow implements HasSourceReference {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
         if (notify) {
-            startNotify();
-            if (savedLevel.isDifferentLevelThan(mLevel)) {
-                notify(ID_LEVEL, this);
+            if (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel)) {
+                notifyOfChange();
             }
-            if (savedLevel.isDifferentRelativeLevelThan(mLevel)) {
-                notify(ID_RELATIVE_LEVEL, this);
-            }
-            endNotify();
         }
     }
 
@@ -526,10 +489,8 @@ public class Skill extends ListRow implements HasSourceReference {
         if (mAttribute != attribute || mDifficulty != difficulty) {
             mAttribute = attribute;
             mDifficulty = difficulty;
-            startNotify();
-            notify(ID_DIFFICULTY, this);
-            updateLevel(true);
-            endNotify();
+            updateLevel(false);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -548,7 +509,7 @@ public class Skill extends ListRow implements HasSourceReference {
         multiplier = Math.min(Math.max(multiplier, 0), 9);
         if (mEncumbrancePenaltyMultiplier != multiplier) {
             mEncumbrancePenaltyMultiplier = multiplier;
-            notifySingle(ID_ENCUMBRANCE_PENALTY);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -563,7 +524,7 @@ public class Skill extends ListRow implements HasSourceReference {
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(ID_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -746,12 +707,9 @@ public class Skill extends ListRow implements HasSourceReference {
         Skill baseSkill = getDefaultSkill();
         if (baseSkill != null) {
             mDefaultedFrom = getBestDefaultWithPoints(mDefaultedFrom);
-            startNotify();
-            baseSkill.updateLevel(true);
-            updateLevel(true);
-            notify(ID_NAME, this);
-            baseSkill.notify(ID_NAME, baseSkill);
-            endNotify();
+            baseSkill.updateLevel(false);
+            updateLevel(false);
+            notifyOfChange();
         }
     }
 
@@ -902,11 +860,6 @@ public class Skill extends ListRow implements HasSourceReference {
                 one.applyNameableKeys(map);
             }
         }
-    }
-
-    @Override
-    protected String getCategoryID() {
-        return ID_CATEGORY;
     }
 
     /**

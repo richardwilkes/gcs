@@ -25,19 +25,15 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class Modifier extends ListRow implements Comparable<Modifier>, HasSourceReference {
-    /** The tag for the name. */
-    protected static final String  TAG_NAME          = "name";
-    /** The tag for the page reference. */
-    protected static final String  TAG_REFERENCE     = "reference";
-    /** The attribute for whether it is enabled. */
-    protected static final String  ATTRIBUTE_ENABLED = "enabled";
-    private static final   String  KEY_DISABLED      = "disabled";
-    /** The name of the {@link Modifier}. */
-    protected              String  mName;
-    /** The page reference for the {@link Modifier}. */
-    protected              String  mReference;
-    protected              boolean mEnabled;
-    protected              boolean mReadOnly;
+    protected static final String KEY_NAME      = "name";
+    protected static final String KEY_REFERENCE = "reference";
+    protected static final String KEY_ENABLED   = "enabled";
+    private static final   String KEY_DISABLED  = "disabled";
+
+    protected String  mName;
+    protected String  mReference;
+    protected boolean mEnabled;
+    protected boolean mReadOnly;
 
     protected Modifier(DataFile file, Modifier other) {
         super(file, other);
@@ -67,22 +63,15 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         mEnabled = !m.getBoolean(KEY_DISABLED);
-        mName = m.getString(TAG_NAME);
-        mReference = m.getString(TAG_REFERENCE);
+        mName = m.getString(KEY_NAME);
+        mReference = m.getString(KEY_REFERENCE);
     }
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.keyValueNot(KEY_DISABLED, !mEnabled, false);
-        w.keyValue(TAG_NAME, mName);
-        w.keyValueNot(TAG_REFERENCE, mReference, "");
-    }
-
-    public abstract String getNotificationPrefix();
-
-    @Override
-    public String getListChangedID() {
-        return getNotificationPrefix() + "ListChanged";
+        w.keyValue(KEY_NAME, mName);
+        w.keyValueNot(KEY_REFERENCE, mReference, "");
     }
 
     @Override
@@ -107,7 +96,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     public boolean setName(String name) {
         if (!mName.equals(name)) {
             mName = name;
-            notifySingle(getNotificationPrefix() + TAG_NAME);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -122,7 +111,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     public boolean setReference(String reference) {
         if (!mReference.equals(reference)) {
             mReference = reference;
-            notifySingle(getNotificationPrefix() + TAG_REFERENCE);
+            notifyOfChange();
             return true;
         }
         return false;
@@ -145,7 +134,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
     public boolean setEnabled(boolean enabled) {
         if (mEnabled != enabled) {
             mEnabled = enabled;
-            notifySingle(getNotificationPrefix() + ATTRIBUTE_ENABLED);
+            notifyOfChange();
             return true;
         }
         return false;
