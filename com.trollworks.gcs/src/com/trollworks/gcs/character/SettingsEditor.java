@@ -154,7 +154,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         });
         JScrollPane scroller  = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         int         minHeight = mAttributeEditor.getMinimumScrollViewHeight();
-        panel.add(new Label(I18n.Text("Attributes")), new PrecisionLayoutData());
+        panel.add(new Label(mAttributeEditor.toString()), new PrecisionLayoutData());
         panel.add(scroller, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
 
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));

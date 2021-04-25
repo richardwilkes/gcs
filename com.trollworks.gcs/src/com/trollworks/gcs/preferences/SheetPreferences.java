@@ -92,7 +92,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mAttributeEditor = new AttributeEditor(prefs.getAttributes(), this::adjustResetButton);
         JScrollPane scroller  = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         int         minHeight = mAttributeEditor.getMinimumScrollViewHeight();
-        add(new Label(I18n.Text("Attributes")), new PrecisionLayoutData().setHorizontalSpan(3));
+        add(new Label(mAttributeEditor.toString() + " *"), new PrecisionLayoutData().setHorizontalSpan(3));
         add(scroller, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
 
         JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));
