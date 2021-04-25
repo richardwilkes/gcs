@@ -31,8 +31,8 @@ import java.util.Objects;
 
 public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_ID                      = "id";
-    private static final String KEY_NAME                    = "name";
-    private static final String KEY_DESCRIPTION             = "description";
+    private static final String KEY_SHORT_NAME              = "name";
+    private static final String KEY_FULL_NAME               = "full_name";
     private static final String KEY_ATTRIBUTE_BASE          = "attribute_base";
     private static final String KEY_COST_PER_POINT          = "cost_per_point";
     private static final String KEY_COST_ADJ_PERCENT_PER_SM = "cost_adj_percent_per_sm";
@@ -41,7 +41,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
 
     private String              mID;
     private String              mName;
-    private String              mDescription;
+    private String              mFullName;
     private String              mAttributeBase;
     private int                 mOrder;
     private int                 mCostPerPoint;
@@ -92,15 +92,15 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         m.put("ht", new AttributeDef("ht", I18n.Text("HT"), I18n.Text("Health"), "10", ++i, 10, 0, null, false));
 
         // Secondary attributes
-        m.put("will", new AttributeDef("will", I18n.Text("Will"), I18n.Text("Will"), "$iq", ++i, 5, 0, null, false));
-        m.put("fright_check", new AttributeDef("fright_check", I18n.Text("Fright Check"), I18n.Text("Fright Check"), "$will", ++i, 2, 0, null, false));
+        m.put("will", new AttributeDef("will", I18n.Text("Will"), "", "$iq", ++i, 5, 0, null, false));
+        m.put("fright_check", new AttributeDef("fright_check", I18n.Text("Fright Check"), "", "$will", ++i, 2, 0, null, false));
         m.put("per", new AttributeDef("per", I18n.Text("Per"), I18n.Text("Perception"), "$iq", ++i, 5, 0, null, false));
-        m.put("vision", new AttributeDef("vision", I18n.Text("Vision"), I18n.Text("Vision"), "$per", ++i, 2, 0, null, false));
-        m.put("hearing", new AttributeDef("hearing", I18n.Text("Hearing"), I18n.Text("Hearing"), "$per", ++i, 2, 0, null, false));
-        m.put("taste_smell", new AttributeDef("taste_smell", I18n.Text("Taste & Smell"), I18n.Text("Taste & Smell"), "$per", ++i, 2, 0, null, false));
-        m.put("touch", new AttributeDef("touch", I18n.Text("Touch"), I18n.Text("Touch"), "$per", ++i, 2, 0, null, false));
-        m.put("basic_speed", new AttributeDef("basic_speed", I18n.Text("Basic Speed"), I18n.Text("Basic Speed"), "($dx+$ht)/4", ++i, 20, 0, null, true));
-        m.put("basic_move", new AttributeDef("basic_move", I18n.Text("Basic Move"), I18n.Text("Basic Move"), "floor($basic_speed)", ++i, 5, 0, null, false));
+        m.put("vision", new AttributeDef("vision", I18n.Text("Vision"), "", "$per", ++i, 2, 0, null, false));
+        m.put("hearing", new AttributeDef("hearing", I18n.Text("Hearing"), "", "$per", ++i, 2, 0, null, false));
+        m.put("taste_smell", new AttributeDef("taste_smell", I18n.Text("Taste & Smell"), "", "$per", ++i, 2, 0, null, false));
+        m.put("touch", new AttributeDef("touch", I18n.Text("Touch"), "", "$per", ++i, 2, 0, null, false));
+        m.put("basic_speed", new AttributeDef("basic_speed", I18n.Text("Basic Speed"), "", "($dx+$ht)/4", ++i, 20, 0, null, true));
+        m.put("basic_move", new AttributeDef("basic_move", I18n.Text("Basic Move"), "", "floor($basic_speed)", ++i, 5, 0, null, false));
 
         // Point pools
         List<ThresholdOps> ops = new ArrayList<>();
@@ -152,10 +152,10 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         return m;
     }
 
-    public AttributeDef(String id, String name, String desc, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, List<PoolThreshold> thresholds, boolean decimal) {
+    public AttributeDef(String id, String name, String fullName, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, List<PoolThreshold> thresholds, boolean decimal) {
         mID = id;
         mName = name;
-        mDescription = desc;
+        mFullName = fullName;
         mAttributeBase = attributeBase;
         mOrder = order;
         mCostPerPoint = costPerPoint;
@@ -166,8 +166,8 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
 
     public AttributeDef(JsonMap m, int order) {
         mID = m.getString(KEY_ID);
-        mName = m.getString(KEY_NAME);
-        mDescription = m.getString(KEY_DESCRIPTION);
+        mName = m.getString(KEY_SHORT_NAME);
+        mFullName = m.getString(KEY_FULL_NAME);
         mAttributeBase = m.getString(KEY_ATTRIBUTE_BASE);
         mOrder = order;
         mCostPerPoint = m.getInt(KEY_COST_PER_POINT);
@@ -199,12 +199,12 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mName = name;
     }
 
-    public String getDescription() {
-        return mDescription;
+    public String getFullName() {
+        return mFullName;
     }
 
-    public void setDescription(String description) {
-        mDescription = description;
+    public void setFullName(String fullName) {
+        mFullName = fullName;
     }
 
     public String getAttributeBase() {
@@ -309,8 +309,8 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     public void toJSON(JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(KEY_ID, mID);
-        w.keyValue(KEY_NAME, mName);
-        w.keyValue(KEY_DESCRIPTION, mDescription);
+        w.keyValue(KEY_SHORT_NAME, mName);
+        w.keyValue(KEY_FULL_NAME, mFullName);
         w.keyValue(KEY_ATTRIBUTE_BASE, mAttributeBase);
         w.keyValue(KEY_COST_PER_POINT, mCostPerPoint);
         w.keyValue(KEY_COST_ADJ_PERCENT_PER_SM, mCostAdjPercentPerSM);
@@ -353,7 +353,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         if (!mName.equals(that.mName)) {
             return false;
         }
-        if (!mDescription.equals(that.mDescription)) {
+        if (!mFullName.equals(that.mFullName)) {
             return false;
         }
         if (!mAttributeBase.equals(that.mAttributeBase)) {
@@ -366,7 +366,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     public int hashCode() {
         int result = mID.hashCode();
         result = 31 * result + mName.hashCode();
-        result = 31 * result + mDescription.hashCode();
+        result = 31 * result + mFullName.hashCode();
         result = 31 * result + mAttributeBase.hashCode();
         result = 31 * result + mCostPerPoint;
         result = 31 * result + mCostAdjPercentPerSM;

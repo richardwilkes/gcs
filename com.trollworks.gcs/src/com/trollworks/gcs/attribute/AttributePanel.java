@@ -108,13 +108,13 @@ public class AttributePanel extends JPanel {
                     adjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("Description"),
-                I18n.Text("The full name of this attribute"),
-                attrDef.getDescription(),
+                I18n.Text("Full Name"),
+                I18n.Text("The full name of this attribute (may be omitted)"),
+                attrDef.getFullName(),
                 null,
                 FieldFactory.STRING,
                 (evt) -> {
-                    mAttrDef.setDescription((String) evt.getNewValue());
+                    mAttrDef.setFullName((String) evt.getNewValue());
                     adjustCallback.run();
                 });
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));

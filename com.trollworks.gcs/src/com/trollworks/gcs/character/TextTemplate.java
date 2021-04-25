@@ -181,6 +181,7 @@ public class TextTemplate {
     private static final String KEY_LEVEL_NO_MARKER                   = "LEVEL_NO_MARKER";
     private static final String KEY_LEVEL_ONLY                        = "LEVEL_ONLY";
     private static final String KEY_LOCATION                          = "LOCATION";
+    private static final String KEY_FULL_NAME                         = "FULL_NAME";
     private static final String KEY_MANA_CAST                         = "MANA_CAST";
     private static final String KEY_MANA_MAINTAIN                     = "MANA_MAINTAIN";
     private static final String KEY_MAX_LOAD                          = "MAX_LOAD";
@@ -1972,7 +1973,7 @@ public class TextTemplate {
                             switch (key) {
                             case KEY_ID -> writeEncodedText(out, "pool_" + def.getID());
                             case KEY_NAME -> writeEncodedText(out, def.getName());
-                            case KEY_DESCRIPTION -> writeEncodedText(out, def.getDescription());
+                            case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
                             case KEY_VALUE -> {
                                 if (def.isDecimal()) {
                                     writeEncodedText(out, Numbers.formatWithForcedSign(attr.getDoubleValue(gch)));
@@ -2021,7 +2022,7 @@ public class TextTemplate {
                                 switch (key) {
                                 case KEY_ID -> writeEncodedText(out, "pool_" + def.getID());
                                 case KEY_NAME -> writeEncodedText(out, def.getName());
-                                case KEY_DESCRIPTION -> writeEncodedText(out, def.getDescription());
+                                case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
                                 case KEY_CURRENT -> writeEncodedText(out, Numbers.formatWithForcedSign(attr.getCurrentIntValue(gch)));
                                 case KEY_MAXIMUM -> writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
                                 case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));

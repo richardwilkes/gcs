@@ -66,10 +66,12 @@ public class AttributesPanel extends DropPanel {
             Log.error(String.format("unable to locate attribute data for '%s'", def.getID()));
             return;
         }
-        String desc = def.getDescription();
-        String name = def.getName();
-        if (!desc.equals(name)) {
-            desc = String.format("%s (%s)", desc, name);
+        String fullName = def.getFullName();
+        String name     = def.getName();
+        if (fullName.isBlank()) {
+            fullName = name;
+        } else if (!name.isBlank() && !fullName.equals(name)) {
+            fullName = String.format("%s (%s)", fullName, name);
         }
         PageField field;
         if (def.isDecimal()) {
@@ -79,7 +81,7 @@ public class AttributesPanel extends DropPanel {
         }
         add(new PagePoints(attr.getPointCost(gch)), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
-        add(new PageLabel(desc, field));
+        add(new PageLabel(fullName, field));
     }
 
     private void createDiceField(CharacterSheet sheet, Dice dice, String title) {
