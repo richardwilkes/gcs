@@ -83,12 +83,12 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mInitialPoints = addTextField(initialPointsTooltip, Integer.toString(prefs.getInitialPoints()));
 
         mAutoFillProfile = addCheckBox(I18n.Text("Automatically fill in new character identity and description information with randomized choices"), null, prefs.autoFillProfile());
-        mUseMultiplicativeModifiers = addCheckBox(I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value) *"), null, prefs.useMultiplicativeModifiers());
-        mUseModifyingDicePlusAdds = addCheckBox(I18n.Text("Use Modifying Dice + Adds from B269 *"), null, prefs.useModifyingDicePlusAdds());
+        mUseMultiplicativeModifiers = addCheckBox(I18n.Text("Use Multiplicative Modifiers (PW102; changes point value) *"), null, prefs.useMultiplicativeModifiers());
+        mUseModifyingDicePlusAdds = addCheckBox(I18n.Text("Use Modifying Dice + Adds (B269) *"), null, prefs.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83) *"), null, prefs.useKnowYourOwnStrength());
-        mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy *"), "From noschoolgrognard.blogspot.com", prefs.useReducedSwing());
+        mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules *"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", prefs.useReducedSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
-        mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules from B9 *"), null, prefs.useSimpleMetricConversions());
+        mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules (B9) *"), null, prefs.useSimpleMetricConversions());
 
         mAttributeEditor = new AttributeEditor(prefs.getAttributes(), this::adjustResetButton);
         JScrollPane scroller      = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);

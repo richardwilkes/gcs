@@ -19,6 +19,7 @@ import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.Label;
@@ -116,37 +117,44 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     }
 
     private void addTopPanel() {
-        JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
-        mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
-        mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
-        mShowAdvantageModifierAdj = addCheckBox(panel, I18n.Text("Show the advantage modifier cost adjustments in the advantage list"), null, mSettings.showAdvantageModifierAdj());
-        mShowEquipmentModifierAdj = addCheckBox(panel, I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists"), null, mSettings.showEquipmentModifierAdj());
-        mShowSpellAdj = addCheckBox(panel, I18n.Text("Show the spell ritual, cost and time adjustments in the spell list"), null, mSettings.showSpellAdj());
-        mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
-        mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
-        mUseModifyingDicePlusAdds = addCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
-        mUseKnowYourOwnStrength = addCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
-        mUseReducedSwing = addCheckBox(panel, I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
-        mUseThrustEqualsSwingMinus2 = addCheckBox(panel, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
-        mUseSimpleMetricConversions = addCheckBox(panel, I18n.Text("Use the simple metric conversion rules from B9"), null, mSettings.useSimpleMetricConversions());
-
-        addLabel(panel, I18n.Text("Length Units"));
-        mLengthUnitsCombo = addCombo(panel, LengthUnits.values(), mSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
-
-        addLabel(panel, I18n.Text("Weight Units"));
-        mWeightUnitsCombo = addCombo(panel, WeightUnits.values(), mSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
-
-        addLabel(panel, I18n.Text("Show User Description"));
+        JPanel left = new JPanel(new PrecisionLayout().setColumns(2));
+        mShowCollegeInSpells = addCheckBox(left, I18n.Text("Show the College column"), null, mSettings.showCollegeInSpells());
+        mShowDifficulty = addCheckBox(left, I18n.Text("Show the Difficulty column"), null, mSettings.showDifficulty());
+        mShowAdvantageModifierAdj = addCheckBox(left, I18n.Text("Show advantage modifier cost adjustments"), null, mSettings.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj = addCheckBox(left, I18n.Text("Show equipment modifier cost & weight adjustments"), null, mSettings.showEquipmentModifierAdj());
+        mShowSpellAdj = addCheckBox(left, I18n.Text("Show spell ritual, cost & time adjustments"), null, mSettings.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter = addCheckBox(left, I18n.Text("Show the title instead of the name in the footer"), null, mSettings.useTitleInFooter());
+        addLabel(left, I18n.Text("Show User Description"));
         String tooltip = I18n.Text("Where to display this information");
-        mUserDescriptionDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.userDescriptionDisplay(), tooltip);
+        mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSettings.userDescriptionDisplay(), tooltip);
+        addLabel(left, I18n.Text("Show Modifiers"));
+        mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSettings.modifiersDisplay(), tooltip);
+        addLabel(left, I18n.Text("Show Notes"));
+        mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSettings.notesDisplay(), tooltip);
 
-        addLabel(panel, I18n.Text("Show Modifiers"));
-        mModifiersDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.modifiersDisplay(), tooltip);
+        JPanel right = new JPanel(new PrecisionLayout().setColumns(2));
+        mUseMultiplicativeModifiers = addCheckBox(right, I18n.Text("Use Multiplicative Modifiers (PW102; changes point value)"), null, mSettings.useMultiplicativeModifiers());
+        mUseModifyingDicePlusAdds = addCheckBox(right, I18n.Text("Use Modifying Dice + Adds (B269)"), null, mSettings.useModifyingDicePlusAdds());
+        mUseKnowYourOwnStrength = addCheckBox(right, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
+        mUseReducedSwing = addCheckBox(right, I18n.Text("Use the reduced swing rules"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
+        mUseThrustEqualsSwingMinus2 = addCheckBox(right, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
+        mUseSimpleMetricConversions = addCheckBox(right, I18n.Text("Use the simple metric conversion rules (B9)"), null, mSettings.useSimpleMetricConversions());
+        addLabel(right, I18n.Text("Length Units"));
+        mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
+        addLabel(right, I18n.Text("Weight Units"));
+        mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
 
-        addLabel(panel, I18n.Text("Show Notes"));
-        mNotesDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.notesDisplay(), tooltip);
+        JPanel top = new JPanel(new PrecisionLayout().setColumns(2));
+        top.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        top.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), this::adjustResetButton);
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
+        panel.add(top, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+
+        mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), () -> {
+            mCharacter.notifyOfChange();
+            adjustResetButton();
+        });
         JScrollPane scroller      = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         Dimension   preferredSize = scroller.getPreferredSize();
         if (preferredSize.height > 200) {
@@ -154,7 +162,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         }
         scroller.setPreferredSize(preferredSize);
         panel.add(new Label(I18n.Text("Attributes")), new PrecisionLayoutData().setHorizontalSpan(2));
-        panel.add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true));
+        panel.add(scroller, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         JLabel label = new JLabel(I18n.Text("Block Layout"));
         label.setOpaque(false);
@@ -165,7 +173,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mBlockLayoutField.setToolTipText(blockLayoutTooltip);
         mBlockLayoutField.getDocument().addDocumentListener(this);
         mBlockLayoutField.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
-        panel.add(mBlockLayoutField, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true));
+        panel.add(mBlockLayoutField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         getContentPane().add(panel);
     }
@@ -237,7 +245,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
     private void adjustResetButton() {
         mResetButton.setEnabled(!isSetToDefaults());
-        mCharacter.notifyOfChange();
     }
 
     private boolean isSetToDefaults() {

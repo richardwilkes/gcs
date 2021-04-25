@@ -94,7 +94,6 @@ public class Preferences extends ChangeableData {
     private static final String SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
     private static final String SHOW_SPELL_ADJ                  = "show_spell_adj";
     private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
-    private static final String EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_fp";
     private static final String THEME                           = "theme";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
     private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
@@ -124,7 +123,6 @@ public class Preferences extends ChangeableData {
     public static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_EQUIPMENT_MODIFIER_ADJ;
     public static final String KEY_SHOW_SPELL_ADJ                  = KEY_PER_SHEET_PREFIX + SHOW_SPELL_ADJ;
     public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
-    public static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = KEY_PER_SHEET_PREFIX + EXTRA_SPACE_AROUND_ENCUMBRANCE;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
     public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
@@ -143,7 +141,6 @@ public class Preferences extends ChangeableData {
     public static final boolean       DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ       = false;
     public static final boolean       DEFAULT_SHOW_SPELL_ADJ                    = true;
     public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
-    public static final boolean       DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE    = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
@@ -210,7 +207,6 @@ public class Preferences extends ChangeableData {
     private        boolean                          mShowEquipmentModifierAdj;
     private        boolean                          mShowSpellAdj;
     private        boolean                          mUseTitleInFooter;
-    private        boolean                          mExtraSpaceAroundEncumbrance;
 
     public static synchronized Preferences getInstance() {
         if (INSTANCE == null) {
@@ -278,7 +274,6 @@ public class Preferences extends ChangeableData {
         mShowEquipmentModifierAdj = DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ;
         mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
-        mExtraSpaceAroundEncumbrance = DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         mAttributes = AttributeDef.createStandardAttributes();
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
@@ -387,7 +382,6 @@ public class Preferences extends ChangeableData {
                         mShowEquipmentModifierAdj = m.getBooleanWithDefault(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
                         mShowSpellAdj = m.getBooleanWithDefault(SHOW_SPELL_ADJ, mShowSpellAdj);
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-                        mExtraSpaceAroundEncumbrance = m.getBooleanWithDefault(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                         if (m.has(THEME)) {
                             Theme.set(new Theme(m.getMap(THEME)));
                         }
@@ -529,7 +523,6 @@ public class Preferences extends ChangeableData {
                     w.keyValue(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
                     w.keyValue(SHOW_SPELL_ADJ, mShowSpellAdj);
                     w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-                    w.keyValue(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
                     w.key(THEME);
                     Theme.current().save(w);
@@ -924,18 +917,6 @@ public class Preferences extends ChangeableData {
     public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
-            notifyOfChange();
-        }
-    }
-
-    /** @return Whether or not to add extra space around FP/HP table. */
-    public boolean extraSpaceAroundEncumbrance() {
-        return mExtraSpaceAroundEncumbrance;
-    }
-
-    public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
-        if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
-            mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
             notifyOfChange();
         }
     }
