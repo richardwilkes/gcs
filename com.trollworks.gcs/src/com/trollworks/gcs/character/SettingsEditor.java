@@ -17,7 +17,6 @@ import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -29,7 +28,6 @@ import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Window;
@@ -48,7 +46,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -155,27 +152,21 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mCharacter.notifyOfChange();
             adjustResetButton();
         });
-        JScrollPane scroller      = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        Dimension   preferredSize = scroller.getPreferredSize();
-        if (preferredSize.height > 200) {
-            preferredSize.height = 200;
-        }
-        scroller.setPreferredSize(preferredSize);
-        panel.add(new Label(I18n.Text("Attributes")), new PrecisionLayoutData().setHorizontalSpan(2));
-        panel.add(scroller, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
-
-        JLabel label = new JLabel(I18n.Text("Block Layout"));
-        label.setOpaque(false);
-        panel.add(label, new PrecisionLayoutData().setHorizontalSpan(2));
+        JScrollPane scroller  = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        int         minHeight = mAttributeEditor.getMinimumScrollViewHeight();
+        panel.add(new Label(I18n.Text("Attributes")), new PrecisionLayoutData());
+        panel.add(scroller, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
 
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new JTextArea(Preferences.linesToString(mSettings.blockLayout()));
         mBlockLayoutField.setToolTipText(blockLayoutTooltip);
+        mBlockLayoutField.setBorder(new EmptyBorder(0, 4, 0, 4));
         mBlockLayoutField.getDocument().addDocumentListener(this);
-        mBlockLayoutField.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
-        panel.add(mBlockLayoutField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
+        scroller = new JScrollPane(mBlockLayoutField, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        panel.add(new Label(I18n.Text("Block Layout")), new PrecisionLayoutData());
+        panel.add(scroller, new PrecisionLayoutData().setHeightHint(scroller.getPreferredSize().height).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        getContentPane().add(panel);
+        getContentPane().add(panel, BorderLayout.CENTER);
     }
 
     private void addResetPanel() {

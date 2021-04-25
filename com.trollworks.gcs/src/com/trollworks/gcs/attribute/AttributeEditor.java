@@ -15,7 +15,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
 
+import java.awt.Rectangle;
 import java.util.Map;
 
 public class AttributeEditor extends BandedPanel {
@@ -42,5 +44,14 @@ public class AttributeEditor extends BandedPanel {
             add(new AttributePanel(def, mAdjustCallback), new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         }
         setPreferredSize(getPreferredSize());
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 16;
+    }
+
+    public int getMinimumScrollViewHeight() {
+        return new AttributePanel(new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;
     }
 }

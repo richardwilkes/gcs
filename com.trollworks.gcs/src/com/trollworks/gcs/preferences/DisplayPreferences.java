@@ -13,7 +13,6 @@ package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -32,10 +31,11 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -134,9 +134,10 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JTextArea addTextArea(String value, String tooltip) {
         JTextArea field = new JTextArea(value);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        field.setBorder(new EmptyBorder(0, 4, 0, 4));
         field.getDocument().addDocumentListener(this);
-        field.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
-        add(field, new PrecisionLayoutData().setHorizontalSpan(2).setGrabSpace(true).setFillAlignment());
+        JScrollPane scroller = new JScrollPane(field, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setHeightHint(scroller.getPreferredSize().height).setFillAlignment().setGrabSpace(true));
         return field;
     }
 
