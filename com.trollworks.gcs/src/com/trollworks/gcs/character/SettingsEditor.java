@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.datafile.DataChangeListener;
@@ -36,7 +37,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -149,6 +152,14 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         panel.add(top, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
 
         mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), () -> {
+            Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
+            Map<String, Attribute> newAttributes = new HashMap<>();
+            for (String key : mCharacter.getSettings().getAttributes().keySet()) {
+                Attribute attribute = oldAttributes.get(key);
+                newAttributes.put(key, attribute != null ? attribute : new Attribute(key));
+            }
+            oldAttributes.clear();
+            oldAttributes.putAll(newAttributes);
             mCharacter.notifyOfChange();
             adjustResetButton();
         });

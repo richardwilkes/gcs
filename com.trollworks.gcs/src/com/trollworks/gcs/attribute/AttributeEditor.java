@@ -30,10 +30,10 @@ public class AttributeEditor extends JPanel {
         super(new PrecisionLayout().setColumns(2).setMargins(0));
         setOpaque(false);
         add(new Label(I18n.Text("Attributes")));
-        add(new FontAwesomeButton("\uf055", 16, I18n.Text("Add Attribute"), () -> System.out.println("Add attribute")));
+        add(new FontAwesomeButton("\uf055", 16, I18n.Text("Add Attribute"), () -> mListPanel.addAttribute()));
         mListPanel = new AttributeListPanel(attributes, adjustCallback);
         JScrollPane scroller  = new JScrollPane(mListPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        int         minHeight = new AttributePanel(new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;
+        int         minHeight = new AttributePanel(null, new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;
         add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
     }
 

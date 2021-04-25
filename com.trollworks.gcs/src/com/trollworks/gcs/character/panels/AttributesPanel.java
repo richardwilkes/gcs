@@ -27,6 +27,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.text.DiceFormatter;
 
 import javax.swing.SwingConstants;
@@ -61,8 +62,12 @@ public class AttributesPanel extends DropPanel {
 
     private void createAttributeField(CharacterSheet sheet, GURPSCharacter gch, AttributeDef def) {
         Attribute attr = gch.getAttributes().get(def.getID());
-        String    desc = def.getDescription();
-        String    name = def.getName();
+        if (attr == null) {
+            Log.error(String.format("unable to locate attribute data for '%s'", def.getID()));
+            return;
+        }
+        String desc = def.getDescription();
+        String name = def.getName();
         if (!desc.equals(name)) {
             desc = String.format("%s (%s)", desc, name);
         }

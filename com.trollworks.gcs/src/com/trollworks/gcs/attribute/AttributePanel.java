@@ -12,6 +12,7 @@
 package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -24,6 +25,7 @@ import java.awt.Container;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.JLabel;
@@ -31,20 +33,43 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 public class AttributePanel extends JPanel {
-    private AttributeDef mAttrDef;
+    private   Map<String, AttributeDef> mAttributes;
+    protected AttributeDef              mAttrDef;
+    private   EditorField               mIDField;
+    private   FontAwesomeButton         mMoveUpButton;
+    private   FontAwesomeButton         mMoveDownButton;
 
-    public AttributePanel(AttributeDef attrDef, Runnable adjustCallback) {
+    public AttributePanel(Map<String, AttributeDef> attributes, AttributeDef attrDef, Runnable adjustCallback) {
         super(new PrecisionLayout().setColumns(3));
         setOpaque(false);
+        mAttributes = attributes;
         mAttrDef = attrDef;
 
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton moveUp = new FontAwesomeButton("\uf35b", 16, I18n.Text("Move Up"), () -> System.out.println("move up"));
-        left.add(moveUp);
-        FontAwesomeButton moveDown = new FontAwesomeButton("\uf358", 16, I18n.Text("Move Down"), () -> System.out.println("move down"));
-        left.add(moveDown);
+        mMoveUpButton = new FontAwesomeButton("\uf35b", 16, I18n.Text("Move Up"), () -> {
+            AttributeListPanel parent = (AttributeListPanel) getParent();
+            int                index  = UIUtilities.getIndexOf(parent, this);
+            if (index > 0) {
+                parent.remove(index);
+                parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index - 1);
+                parent.renumber();
+                adjustCallback.run();
+            }
+        });
+        left.add(mMoveUpButton);
+        mMoveDownButton = new FontAwesomeButton("\uf358", 16, I18n.Text("Move Down"), () -> {
+            AttributeListPanel parent = (AttributeListPanel) getParent();
+            int                index  = UIUtilities.getIndexOf(parent, this);
+            if (index != -1 && index < parent.getComponentCount() - 1) {
+                parent.remove(index);
+                parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index + 1);
+                parent.renumber();
+                adjustCallback.run();
+            }
+        });
+        left.add(mMoveDownButton);
 
         JPanel center = new JPanel(new PrecisionLayout());
         center.setOpaque(false);
@@ -52,15 +77,25 @@ public class AttributePanel extends JPanel {
 
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(6).setMargins(0));
         wrapper.setOpaque(false);
-        addField(wrapper,
+        mIDField = addField(wrapper,
                 I18n.Text("ID"),
                 I18n.Text("A unique ID for the attribute"),
                 attrDef.getID(),
                 Text.makeFiller(7, 'm'),
                 FieldFactory.STRING,
                 (evt) -> {
-                    mAttrDef.setID((String) evt.getNewValue());
-                    adjustCallback.run();
+                    String existingID = mAttrDef.getID();
+                    String id         = (String) evt.getNewValue();
+                    if (!existingID.equals(id)) {
+                        if (mAttributes.containsKey(id)) {
+                            mIDField.setText(existingID);
+                        } else {
+                            mAttributes.remove(existingID);
+                            mAttrDef.setID(id);
+                            mAttributes.put(id, mAttrDef);
+                            adjustCallback.run();
+                        }
+                    }
                 });
         addField(wrapper,
                 I18n.Text("Name"),
@@ -130,7 +165,11 @@ public class AttributePanel extends JPanel {
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove"), () -> System.out.println("remove"));
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove"), () -> {
+            getParent().remove(this);
+            mAttributes.remove(mAttrDef.getID());
+            adjustCallback.run();
+        });
         right.add(remove);
     }
 
@@ -156,5 +195,14 @@ public class AttributePanel extends JPanel {
         checkbox.addItemListener(listener);
         container.add(checkbox, new PrecisionLayoutData());
         return checkbox;
+    }
+
+    public void focusIDField() {
+        mIDField.requestFocusInWindow();
+    }
+
+    public void adjustButtons(boolean isFirst, boolean isLast) {
+        mMoveUpButton.setEnabled(!isFirst);
+        mMoveDownButton.setEnabled(!isLast);
     }
 }
