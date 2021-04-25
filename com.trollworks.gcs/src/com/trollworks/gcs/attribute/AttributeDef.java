@@ -344,6 +344,9 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         if (mCostAdjPercentPerSM != that.mCostAdjPercentPerSM) {
             return false;
         }
+        if (mOrder != that.mOrder) {
+            return false;
+        }
         if (!mID.equals(that.mID)) {
             return false;
         }
@@ -367,6 +370,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         result = 31 * result + mAttributeBase.hashCode();
         result = 31 * result + mCostPerPoint;
         result = 31 * result + mCostAdjPercentPerSM;
+        result = 31 * result + mOrder;
         result = 31 * result + (mDecimal ? 1 : 3);
         result = 31 * result + (mThresholds != null ? mThresholds.hashCode() : 0);
         return result;
