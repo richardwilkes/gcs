@@ -92,12 +92,6 @@ public class GURPSCharacter extends CollectedModels {
     private static final String KEY_ST        = "ST";
     private static final String KEY_WILL_ADJ  = "will_adj";
 
-    public static final String ID_LIFTING_STRENGTH  = Attribute.ID_ATTR_PREFIX + "st." + AttributeBonusLimitation.LIFTING_ONLY.name();
-    public static final String ID_STRIKING_STRENGTH = Attribute.ID_ATTR_PREFIX + "st." + AttributeBonusLimitation.STRIKING_ONLY.name();
-    public static final String ID_DODGE_BONUS       = Attribute.ID_ATTR_PREFIX + "dodge";
-    public static final String ID_PARRY_BONUS       = Attribute.ID_ATTR_PREFIX + "parry";
-    public static final String ID_BLOCK_BONUS       = Attribute.ID_ATTR_PREFIX + "block";
-
     private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
 
     private long                                mModifiedOn;
@@ -1178,8 +1172,9 @@ public class GURPSCharacter extends CollectedModels {
         mFeatureMap = map;
         mSkillsUpdated = false;
         mSpellsUpdated = false;
-        setLiftingStrengthBonus(getIntegerBonusFor(ID_LIFTING_STRENGTH));
-        setStrikingStrengthBonus(getIntegerBonusFor(ID_STRIKING_STRENGTH));
+        String strPrefix = Attribute.ID_ATTR_PREFIX + "st.";
+        setLiftingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.LIFTING_ONLY.name()));
+        setStrikingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.STRIKING_ONLY.name()));
         for (Attribute attr : mAttributes.values()) {
             String       attrID = Attribute.ID_ATTR_PREFIX + attr.getID();
             AttributeDef def    = attr.getAttrDef(this);
@@ -1193,9 +1188,9 @@ public class GURPSCharacter extends CollectedModels {
             }
         }
         mProfile.update();
-        setDodgeBonus(getIntegerBonusFor(ID_DODGE_BONUS));
-        setParryBonus(getIntegerBonusFor(ID_PARRY_BONUS));
-        setBlockBonus(getIntegerBonusFor(ID_BLOCK_BONUS));
+        setDodgeBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "dodge"));
+        setParryBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "parry"));
+        setBlockBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "block"));
         mArmor.update();
         if (!mSkillsUpdated) {
             updateSkills();
