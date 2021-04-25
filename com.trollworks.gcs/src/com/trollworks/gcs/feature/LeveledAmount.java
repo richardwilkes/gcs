@@ -23,9 +23,9 @@ public class LeveledAmount {
     /** The "per level" attribute. */
     public static final  String  ATTRIBUTE_PER_LEVEL = "per_level";
     private static final String  KEY_AMOUNT          = "amount";
-    private              boolean mPerLevel;
-    private              int     mLevel;
     private              double  mAmount;
+    private              int     mLevel;
+    private              boolean mPerLevel;
     private              boolean mInteger;
 
     /**

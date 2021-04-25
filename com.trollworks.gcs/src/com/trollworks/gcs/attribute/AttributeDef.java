@@ -251,6 +251,10 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         return mDecimal;
     }
 
+    public void setDecimal(boolean decimal) {
+        mDecimal = decimal;
+    }
+
     public boolean isPrimary() {
         try {
             Integer.parseInt(mAttributeBase);
@@ -310,6 +314,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         w.keyValue(KEY_ATTRIBUTE_BASE, mAttributeBase);
         w.keyValue(KEY_COST_PER_POINT, mCostPerPoint);
         w.keyValue(KEY_COST_ADJ_PERCENT_PER_SM, mCostAdjPercentPerSM);
+        w.keyValue(KEY_DECIMAL, mDecimal);
         if (mThresholds != null) {
             w.key(KEY_THRESHOLDS);
             w.startArray();

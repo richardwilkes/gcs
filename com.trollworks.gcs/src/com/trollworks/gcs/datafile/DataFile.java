@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.datafile;
 
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.preferences.Preferences;
@@ -37,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.swing.undo.UndoableEdit;
 
@@ -280,5 +282,13 @@ public abstract class DataFile extends ChangeableData implements Undoable {
 
     public DisplayOption notesDisplay() {
         return Preferences.getInstance().getNotesDisplay();
+    }
+
+    public Map<String, AttributeDef> getAttributeDefs() {
+        return Preferences.getInstance().getAttributes();
+    }
+
+    public AttributeDef getAttributeDef(String id) {
+        return getAttributeDefs().get(id);
     }
 }

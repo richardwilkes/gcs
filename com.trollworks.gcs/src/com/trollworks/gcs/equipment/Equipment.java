@@ -169,7 +169,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      */
     public Equipment(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_EQUIPMENT_CONTAINER));
-        load(m, state);
+        load(dataFile, m, state);
     }
 
     @Override

@@ -268,10 +268,11 @@ public abstract class ListRow extends Row {
     /**
      * Loads this row's contents.
      *
-     * @param m     The {@link JsonMap} to load data from.
-     * @param state The {@link LoadState} to use.
+     * @param dataFile The {@link DataFile} being loaded.
+     * @param m        The {@link JsonMap} to load data from.
+     * @param state    The {@link LoadState} to use.
      */
-    public final void load(JsonMap m, LoadState state) throws IOException {
+    public final void load(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         if (m.has(KEY_ID)) {
             try {
                 mID = UUID.fromString(m.getString(KEY_ID));
@@ -305,15 +306,15 @@ public abstract class ListRow extends Row {
                 JsonMap m1   = a.getMap(i);
                 String  type = m1.getString(DataFile.KEY_TYPE);
                 switch (type) {
-                case AttributeBonus.KEY_ROOT -> mFeatures.add(new AttributeBonus(m1));
-                case DRBonus.KEY_ROOT -> mFeatures.add(new DRBonus(m1));
-                case ReactionBonus.KEY_ROOT -> mFeatures.add(new ReactionBonus(m1));
-                case ConditionalModifier.KEY_ROOT -> mFeatures.add(new ConditionalModifier(m1));
-                case SkillBonus.KEY_ROOT -> mFeatures.add(new SkillBonus(m1));
-                case SkillPointBonus.KEY_ROOT -> mFeatures.add(new SkillPointBonus(m1));
-                case SpellBonus.KEY_ROOT -> mFeatures.add(new SpellBonus(m1));
-                case SpellPointBonus.KEY_ROOT -> mFeatures.add(new SpellPointBonus(m1));
-                case WeaponBonus.KEY_ROOT -> mFeatures.add(new WeaponBonus(m1));
+                case AttributeBonus.KEY_ROOT -> mFeatures.add(new AttributeBonus(dataFile, m1));
+                case DRBonus.KEY_ROOT -> mFeatures.add(new DRBonus(dataFile, m1));
+                case ReactionBonus.KEY_ROOT -> mFeatures.add(new ReactionBonus(dataFile, m1));
+                case ConditionalModifier.KEY_ROOT -> mFeatures.add(new ConditionalModifier(dataFile, m1));
+                case SkillBonus.KEY_ROOT -> mFeatures.add(new SkillBonus(dataFile, m1));
+                case SkillPointBonus.KEY_ROOT -> mFeatures.add(new SkillPointBonus(dataFile, m1));
+                case SpellBonus.KEY_ROOT -> mFeatures.add(new SpellBonus(dataFile, m1));
+                case SpellPointBonus.KEY_ROOT -> mFeatures.add(new SpellPointBonus(dataFile, m1));
+                case WeaponBonus.KEY_ROOT -> mFeatures.add(new WeaponBonus(dataFile, m1));
                 case CostReduction.KEY_ROOT -> mFeatures.add(new CostReduction(m1));
                 case ContainedWeightReduction.KEY_ROOT -> mFeatures.add(new ContainedWeightReduction(m1));
                 default -> Log.warn("unknown feature type: " + type);

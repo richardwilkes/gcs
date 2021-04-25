@@ -173,7 +173,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     public Spell(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_SPELL_CONTAINER));
-        load(m, state);
+        load(dataFile, m, state);
     }
 
     @Override

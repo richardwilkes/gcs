@@ -161,7 +161,7 @@ public class Skill extends ListRow implements HasSourceReference {
 
     public Skill(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_SKILL_CONTAINER));
-        load(m, state);
+        load(dataFile, m, state);
     }
 
     @Override

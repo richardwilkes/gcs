@@ -12,11 +12,13 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Enums;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,20 +27,13 @@ public class CostReduction extends Feature {
     public static final  String KEY_ROOT       = "cost_reduction";
     private static final String KEY_ATTRIBUTE  = "attribute";
     private static final String KEY_PERCENTAGE = "percentage";
-
-    public static final BonusAttributeType[] TYPES = {
-            BonusAttributeType.ST,
-            BonusAttributeType.DX,
-            BonusAttributeType.IQ,
-            BonusAttributeType.HT
-    };
-
-    private BonusAttributeType mAttribute;
-    private int                mPercentage;
+    private              String mAttribute;
+    private              int    mPercentage;
 
     /** Creates a new cost reduction. */
     public CostReduction() {
-        mAttribute = BonusAttributeType.ST;
+        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getAttributes());
+        mAttribute = list.isEmpty() ? "st" : list.get(0).getID();
         mPercentage = 40;
     }
 
@@ -64,7 +59,7 @@ public class CostReduction extends Feature {
         }
         if (obj instanceof CostReduction) {
             CostReduction cr = (CostReduction) obj;
-            return mPercentage == cr.mPercentage && mAttribute == cr.mAttribute;
+            return mPercentage == cr.mPercentage && mAttribute.equals(cr.mAttribute);
         }
         return false;
     }
@@ -85,12 +80,12 @@ public class CostReduction extends Feature {
     }
 
     /** @return The attribute this cost reduction applies to. */
-    public BonusAttributeType getAttribute() {
+    public String getAttribute() {
         return mAttribute;
     }
 
     /** @param attribute The attribute. */
-    public void setAttribute(BonusAttributeType attribute) {
+    public void setAttribute(String attribute) {
         mAttribute = attribute;
     }
 
@@ -101,7 +96,7 @@ public class CostReduction extends Feature {
 
     @Override
     public String getKey() {
-        return Attribute.ID_ATTR_PREFIX + mAttribute.name();
+        return Attribute.ID_ATTR_PREFIX + mAttribute;
     }
 
     @Override
@@ -110,13 +105,13 @@ public class CostReduction extends Feature {
     }
 
     protected void load(JsonMap m) {
-        setAttribute(Enums.extract(m.getString(KEY_ATTRIBUTE), TYPES, BonusAttributeType.ST));
-        setPercentage(m.getInt(KEY_PERCENTAGE));
+        mAttribute = m.getString(KEY_ATTRIBUTE);
+        mPercentage = m.getInt(KEY_PERCENTAGE);
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
-        w.keyValue(KEY_ATTRIBUTE, Enums.toId(mAttribute));
+        w.keyValue(KEY_ATTRIBUTE, mAttribute);
         w.keyValue(KEY_PERCENTAGE, mPercentage);
     }
 

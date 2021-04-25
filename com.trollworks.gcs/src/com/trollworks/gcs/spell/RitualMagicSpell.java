@@ -80,7 +80,7 @@ public class RitualMagicSpell extends Spell {
 
     public RitualMagicSpell(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile);
-        load(m, state);
+        load(dataFile, m, state);
         if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
             mPoints = 0;
         }

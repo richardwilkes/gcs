@@ -21,7 +21,6 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
 import com.trollworks.gcs.feature.Bonus;
-import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
@@ -93,12 +92,11 @@ public class GURPSCharacter extends CollectedModels {
     private static final String KEY_ST        = "ST";
     private static final String KEY_WILL_ADJ  = "will_adj";
 
-    public static final String ID_STRENGTH          = Attribute.ID_ATTR_PREFIX + "st";
-    public static final String ID_LIFTING_STRENGTH  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
-    public static final String ID_STRIKING_STRENGTH = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
-    public static final String ID_DODGE_BONUS       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.DODGE.name();
-    public static final String ID_PARRY_BONUS       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.PARRY.name();
-    public static final String ID_BLOCK_BONUS       = Attribute.ID_ATTR_PREFIX + BonusAttributeType.BLOCK.name();
+    public static final String ID_LIFTING_STRENGTH  = Attribute.ID_ATTR_PREFIX + "st." + AttributeBonusLimitation.LIFTING_ONLY.name();
+    public static final String ID_STRIKING_STRENGTH = Attribute.ID_ATTR_PREFIX + "st." + AttributeBonusLimitation.STRIKING_ONLY.name();
+    public static final String ID_DODGE_BONUS       = Attribute.ID_ATTR_PREFIX + "dodge";
+    public static final String ID_PARRY_BONUS       = Attribute.ID_ATTR_PREFIX + "parry";
+    public static final String ID_BLOCK_BONUS       = Attribute.ID_ATTR_PREFIX + "block";
 
     private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
 
@@ -1564,5 +1562,10 @@ public class GURPSCharacter extends CollectedModels {
             }
         }
         return total;
+    }
+
+    @Override
+    public Map<String, AttributeDef> getAttributeDefs() {
+        return getSettings().getAttributes();
     }
 }

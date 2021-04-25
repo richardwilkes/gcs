@@ -14,7 +14,6 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.character.names.USCensusNames;
-import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;

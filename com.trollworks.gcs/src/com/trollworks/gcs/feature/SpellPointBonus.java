@@ -13,6 +13,7 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -48,9 +49,9 @@ public class SpellPointBonus extends Bonus {
         mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
-    public SpellPointBonus(JsonMap m) throws IOException {
+    public SpellPointBonus(DataFile dataFile, JsonMap m) throws IOException {
         this();
-        loadSelf(m);
+        loadSelf(dataFile, m);
     }
 
     /**
@@ -120,8 +121,8 @@ public class SpellPointBonus extends Bonus {
     }
 
     @Override
-    protected void loadSelf(JsonMap m) throws IOException {
-        super.loadSelf(m);
+    protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
+        super.loadSelf(dataFile, m);
         mMatchType = m.getString(KEY_MATCH);
         mAllColleges = KEY_ALL_COLLEGES.equals(mMatchType);
         if (mAllColleges) {

@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -35,9 +36,9 @@ public class ConditionalModifier extends Bonus {
         mSituation = other.mSituation;
     }
 
-    public ConditionalModifier(JsonMap m) throws IOException {
+    public ConditionalModifier(DataFile dataFile, JsonMap m) throws IOException {
         this();
-        loadSelf(m);
+        loadSelf(dataFile, m);
     }
 
     @Override
@@ -67,8 +68,8 @@ public class ConditionalModifier extends Bonus {
     }
 
     @Override
-    protected void loadSelf(JsonMap m) throws IOException {
-        super.loadSelf(m);
+    protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
+        super.loadSelf(dataFile, m);
         setSituation(m.getString(KEY_SITUATION));
     }
 

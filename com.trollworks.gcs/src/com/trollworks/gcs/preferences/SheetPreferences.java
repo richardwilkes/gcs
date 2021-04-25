@@ -11,17 +11,21 @@
 
 package com.trollworks.gcs.preferences;
 
+import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -29,7 +33,9 @@ import java.awt.event.ItemListener;
 import java.nio.file.Path;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -48,6 +54,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JCheckBox               mUseThrustEqualsSwingMinus2;
     private JCheckBox               mUseSimpleMetricConversions;
     private JCheckBox               mAutoFillProfile;
+    private AttributeEditor         mAttributeEditor;
 
     /**
      * Creates a new {@link SheetPreferences}.
@@ -83,9 +90,19 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
         mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules from B9 *"), null, prefs.useSimpleMetricConversions());
 
+        mAttributeEditor = new AttributeEditor(prefs.getAttributes(), this::adjustResetButton);
+        JScrollPane scroller      = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        Dimension   preferredSize = scroller.getPreferredSize();
+        if (preferredSize.height > 200) {
+            preferredSize.height = 200;
+        }
+        scroller.setPreferredSize(preferredSize);
+        add(new Label(I18n.Text("Attributes")), new PrecisionLayoutData().setHorizontalSpan(3));
+        add(scroller, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
+
         JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));
         label.setOpaque(false);
-        add(label, new PrecisionLayoutData().setHorizontalSpan(3).setAlignment(PrecisionLayoutAlignment.MIDDLE, PrecisionLayoutAlignment.END).setGrabVerticalSpace(true));
+        add(label, new PrecisionLayoutData().setHorizontalSpan(3).setAlignment(PrecisionLayoutAlignment.MIDDLE, PrecisionLayoutAlignment.END));
     }
 
     private void addLabel(String title, String tooltip) {
@@ -193,6 +210,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseThrustEqualsSwingMinus2.setSelected(Preferences.DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
         mUseReducedSwing.setSelected(Preferences.DEFAULT_USE_REDUCED_SWING);
         mUseSimpleMetricConversions.setSelected(Preferences.DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
+        mAttributeEditor.reset(AttributeDef.createStandardAttributes());
     }
 
     @Override
@@ -207,6 +225,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
         atDefault = atDefault && prefs.autoFillProfile() == Preferences.DEFAULT_AUTO_FILL_PROFILE;
+        atDefault = atDefault && prefs.getAttributes().equals(AttributeDef.createStandardAttributes());
         return atDefault;
     }
 }

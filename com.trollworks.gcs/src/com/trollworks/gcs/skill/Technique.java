@@ -143,7 +143,7 @@ public class Technique extends Skill {
 
     public Technique(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile);
-        load(m, state);
+        load(dataFile, m, state);
         if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
             mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
         }

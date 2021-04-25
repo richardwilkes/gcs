@@ -69,9 +69,9 @@ public class EquipmentModifier extends Modifier {
         }
     }
 
-    public EquipmentModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
-        this(file, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
-        load(m, state);
+    public EquipmentModifier(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
+        load(dataFile, m, state);
     }
 
     /**

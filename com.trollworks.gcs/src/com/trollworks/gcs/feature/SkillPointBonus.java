@@ -13,6 +13,7 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -41,9 +42,9 @@ public class SkillPointBonus extends Bonus {
         mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
-    public SkillPointBonus(JsonMap m) throws IOException {
+    public SkillPointBonus(DataFile dataFile, JsonMap m) throws IOException {
         this();
-        loadSelf(m);
+        loadSelf(dataFile, m);
     }
 
     /**
@@ -100,8 +101,8 @@ public class SkillPointBonus extends Bonus {
     }
 
     @Override
-    protected void loadSelf(JsonMap m) throws IOException {
-        super.loadSelf(m);
+    protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
+        super.loadSelf(dataFile, m);
         mNameCriteria.load(m.getMap(KEY_NAME));
         mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
         mCategoryCriteria.load(m.getMap(KEY_CATEGORY));

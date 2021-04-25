@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.preferences.Preferences;
@@ -19,12 +21,14 @@ import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Window;
@@ -39,7 +43,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -67,6 +73,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JComboBox<DisplayOption> mModifiersDisplayCombo;
     private JComboBox<DisplayOption> mNotesDisplayCombo;
     private JTextArea                mBlockLayoutField;
+    private AttributeEditor          mAttributeEditor;
     private JButton                  mResetButton;
     private boolean                  mUpdatePending;
 
@@ -138,6 +145,16 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
         addLabel(panel, I18n.Text("Show Notes"));
         mNotesDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.notesDisplay(), tooltip);
+
+        mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), this::adjustResetButton);
+        JScrollPane scroller      = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        Dimension   preferredSize = scroller.getPreferredSize();
+        if (preferredSize.height > 200) {
+            preferredSize.height = 200;
+        }
+        scroller.setPreferredSize(preferredSize);
+        panel.add(new Label(I18n.Text("Attributes")), new PrecisionLayoutData().setHorizontalSpan(2));
+        panel.add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true));
 
         JLabel label = new JLabel(I18n.Text("Block Layout"));
         label.setOpaque(false);
@@ -220,6 +237,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
     private void adjustResetButton() {
         mResetButton.setEnabled(!isSetToDefaults());
+        mCharacter.notifyOfChange();
     }
 
     private boolean isSetToDefaults() {
@@ -242,6 +260,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == prefs.getModifiersDisplay();
         atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == prefs.getNotesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(prefs.getBlockLayout()));
+        atDefaults = atDefaults && mSettings.getAttributes().equals(Preferences.getInstance().getAttributes());
         return atDefaults;
     }
 
@@ -259,27 +278,32 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         } else if (source == mNotesDisplayCombo) {
             mSettings.setNotesDisplay((DisplayOption) mNotesDisplayCombo.getSelectedItem());
         } else if (source == mResetButton) {
-            Preferences prefs = Preferences.getInstance();
-            mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
-            mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
-            mShowDifficulty.setSelected(prefs.showDifficulty());
-            mShowAdvantageModifierAdj.setSelected(prefs.showAdvantageModifierAdj());
-            mShowEquipmentModifierAdj.setSelected(prefs.showEquipmentModifierAdj());
-            mShowSpellAdj.setSelected(prefs.showSpellAdj());
-            mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
-            mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
-            mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
-            mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());
-            mUseReducedSwing.setSelected(prefs.useReducedSwing());
-            mUseSimpleMetricConversions.setSelected(prefs.useSimpleMetricConversions());
-            mLengthUnitsCombo.setSelectedItem(prefs.getDefaultLengthUnits());
-            mWeightUnitsCombo.setSelectedItem(prefs.getDefaultWeightUnits());
-            mUserDescriptionDisplayCombo.setSelectedItem(prefs.getUserDescriptionDisplay());
-            mModifiersDisplayCombo.setSelectedItem(prefs.getModifiersDisplay());
-            mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
-            mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
+            reset();
         }
         adjustResetButton();
+    }
+
+    private void reset() {
+        Preferences prefs = Preferences.getInstance();
+        mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
+        mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
+        mShowDifficulty.setSelected(prefs.showDifficulty());
+        mShowAdvantageModifierAdj.setSelected(prefs.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj.setSelected(prefs.showEquipmentModifierAdj());
+        mShowSpellAdj.setSelected(prefs.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
+        mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
+        mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
+        mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());
+        mUseReducedSwing.setSelected(prefs.useReducedSwing());
+        mUseSimpleMetricConversions.setSelected(prefs.useSimpleMetricConversions());
+        mLengthUnitsCombo.setSelectedItem(prefs.getDefaultLengthUnits());
+        mWeightUnitsCombo.setSelectedItem(prefs.getDefaultWeightUnits());
+        mUserDescriptionDisplayCombo.setSelectedItem(prefs.getUserDescriptionDisplay());
+        mModifiersDisplayCombo.setSelectedItem(prefs.getModifiersDisplay());
+        mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
+        mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
+        mAttributeEditor.reset(AttributeDef.cloneMap(prefs.getAttributes()));
     }
 
     @Override
