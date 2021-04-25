@@ -18,7 +18,6 @@ import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -32,9 +31,7 @@ import java.awt.event.ItemListener;
 import java.nio.file.Path;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -90,10 +87,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules (B9) *"), null, prefs.useSimpleMetricConversions());
 
         mAttributeEditor = new AttributeEditor(prefs.getAttributes(), this::adjustResetButton);
-        JScrollPane scroller  = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        int         minHeight = mAttributeEditor.getMinimumScrollViewHeight();
-        add(new Label(mAttributeEditor.toString() + " *"), new PrecisionLayoutData().setHorizontalSpan(3));
-        add(scroller, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
+        add(mAttributeEditor, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
 
         JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));
         label.setOpaque(false);

@@ -152,17 +152,14 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mCharacter.notifyOfChange();
             adjustResetButton();
         });
-        JScrollPane scroller  = new JScrollPane(mAttributeEditor, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        int         minHeight = mAttributeEditor.getMinimumScrollViewHeight();
-        panel.add(new Label(mAttributeEditor.toString()), new PrecisionLayoutData());
-        panel.add(scroller, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
+        panel.add(mAttributeEditor, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new JTextArea(Preferences.linesToString(mSettings.blockLayout()));
         mBlockLayoutField.setToolTipText(blockLayoutTooltip);
         mBlockLayoutField.setBorder(new EmptyBorder(0, 4, 0, 4));
         mBlockLayoutField.getDocument().addDocumentListener(this);
-        scroller = new JScrollPane(mBlockLayoutField, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane scroller = new JScrollPane(mBlockLayoutField, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         panel.add(new Label(I18n.Text("Block Layout")), new PrecisionLayoutData());
         panel.add(scroller, new PrecisionLayoutData().setHeightHint(scroller.getPreferredSize().height).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 

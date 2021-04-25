@@ -13,8 +13,10 @@ package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -32,9 +34,21 @@ public class AttributePanel extends JPanel {
     private AttributeDef mAttrDef;
 
     public AttributePanel(AttributeDef attrDef, Runnable adjustCallback) {
-        super(new PrecisionLayout().setVerticalSpacing(0));
+        super(new PrecisionLayout().setColumns(3));
         setOpaque(false);
         mAttrDef = attrDef;
+
+        JPanel left = new JPanel(new PrecisionLayout());
+        left.setOpaque(false);
+        add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        FontAwesomeButton moveUp = new FontAwesomeButton("\uf35b", 16, I18n.Text("Move Up"), () -> System.out.println("move up"));
+        left.add(moveUp);
+        FontAwesomeButton moveDown = new FontAwesomeButton("\uf358", 16, I18n.Text("Move Down"), () -> System.out.println("move down"));
+        left.add(moveDown);
+
+        JPanel center = new JPanel(new PrecisionLayout());
+        center.setOpaque(false);
+        add(center, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(6).setMargins(0));
         wrapper.setOpaque(false);
@@ -68,7 +82,7 @@ public class AttributePanel extends JPanel {
                     mAttrDef.setDescription((String) evt.getNewValue());
                     adjustCallback.run();
                 });
-        add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
+        center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         wrapper = new JPanel(new PrecisionLayout().setColumns(7).setMargins(0));
         wrapper.setOpaque(false);
@@ -110,7 +124,14 @@ public class AttributePanel extends JPanel {
                     mAttrDef.setDecimal(evt.getStateChange() == ItemEvent.SELECTED);
                     adjustCallback.run();
                 });
-        add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
+        center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
+
+
+        JPanel right = new JPanel(new PrecisionLayout());
+        right.setOpaque(false);
+        add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove"), () -> System.out.println("remove"));
+        right.add(remove);
     }
 
     private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {

@@ -13,45 +13,31 @@ package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.BandedPanel;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 
-import java.awt.Rectangle;
 import java.util.Map;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
-public class AttributeEditor extends BandedPanel {
-    private Map<String, AttributeDef> mAttributes;
-    private Runnable                  mAdjustCallback;
+public class AttributeEditor extends JPanel {
+    private AttributeListPanel mListPanel;
 
     public AttributeEditor(Map<String, AttributeDef> attributes, Runnable adjustCallback) {
-        super(I18n.Text("Attributes"));
-        setLayout(new PrecisionLayout());
-        mAttributes = attributes;
-        mAdjustCallback = adjustCallback;
-        addAttributes();
+        super(new PrecisionLayout().setColumns(2).setMargins(0));
+        setOpaque(false);
+        add(new Label(I18n.Text("Attributes")));
+        add(new FontAwesomeButton("\uf055", 16, I18n.Text("Add Attribute"), () -> System.out.println("Add attribute")));
+        mListPanel = new AttributeListPanel(attributes, adjustCallback);
+        JScrollPane scroller  = new JScrollPane(mListPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        int         minHeight = new AttributePanel(new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;
+        add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
     }
 
     public void reset(Map<String, AttributeDef> attributes) {
-        removeAll();
-        mAttributes.clear();
-        mAttributes.putAll(attributes);
-        addAttributes();
-    }
-
-    private void addAttributes() {
-        for (AttributeDef def : AttributeDef.getOrdered(mAttributes)) {
-            add(new AttributePanel(def, mAdjustCallback), new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
-        }
-        setPreferredSize(getPreferredSize());
-    }
-
-    @Override
-    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-        return 16;
-    }
-
-    public int getMinimumScrollViewHeight() {
-        return new AttributePanel(new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;
+        mListPanel.reset(attributes);
     }
 }
