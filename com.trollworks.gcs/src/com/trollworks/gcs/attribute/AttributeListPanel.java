@@ -72,7 +72,7 @@ public class AttributeListPanel extends BandedPanel {
         int         count    = children.length;
         for (int i = 0; i < count; i++) {
             AttributePanel attrPanel = (AttributePanel) children[i];
-            attrPanel.mAttrDef.setOrder(i);
+            attrPanel.mAttrDef.setOrder(i + 1);
             attrPanel.adjustButtons(i == 0, i == count - 1);
         }
         repaint();
