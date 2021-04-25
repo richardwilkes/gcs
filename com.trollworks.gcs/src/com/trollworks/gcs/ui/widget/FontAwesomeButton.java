@@ -33,8 +33,10 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
-public class FontAwesomeButton extends JComponent implements MouseListener, MouseMotionListener, ComponentListener {
+public class FontAwesomeButton extends JComponent implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
     private String   mText;
     private Runnable mClickFunction;
     private int      mSize;
@@ -55,6 +57,7 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
         addMouseListener(this);
         addMouseMotionListener(this);
         addComponentListener(this);
+        addAncestorListener(this);
     }
 
     public void setText(String text) {
@@ -180,11 +183,11 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
     }
 
     private void updateRollOver() {
-        boolean wasBorderShown = mRollover;
-        Point   location       = MouseInfo.getPointerInfo().getLocation();
+        boolean wasRollover = mRollover;
+        Point   location    = MouseInfo.getPointerInfo().getLocation();
         UIUtilities.convertPointFromScreen(location, this);
         mRollover = isOver(location.x, location.y);
-        if (wasBorderShown != mRollover) {
+        if (wasRollover != mRollover) {
             repaint();
         }
     }
@@ -206,6 +209,21 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
 
     @Override
     public void componentHidden(ComponentEvent event) {
+        updateRollOver();
+    }
+
+    @Override
+    public void ancestorAdded(AncestorEvent event) {
+        updateRollOver();
+    }
+
+    @Override
+    public void ancestorRemoved(AncestorEvent event) {
+        updateRollOver();
+    }
+
+    @Override
+    public void ancestorMoved(AncestorEvent event) {
         updateRollOver();
     }
 }
