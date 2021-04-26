@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.attribute.PoolThreshold;
 import com.trollworks.gcs.attribute.ThresholdOps;
 import com.trollworks.gcs.datafile.LoadState;
@@ -1179,7 +1180,7 @@ public class GURPSCharacter extends CollectedModels {
             String       attrID = Attribute.ID_ATTR_PREFIX + attr.getID();
             AttributeDef def    = attr.getAttrDef(this);
             if (def != null) {
-                if (def.isDecimal()) {
+                if (def.getType() == AttributeType.DECIMAL) {
                     attr.setBonus(this, getDoubleBonusFor(attrID));
                 } else {
                     attr.setBonus(this, getIntegerBonusFor(attrID));

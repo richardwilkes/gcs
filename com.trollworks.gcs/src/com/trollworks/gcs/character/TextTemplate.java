@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageColumn;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.attribute.PoolThreshold;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
@@ -1975,7 +1976,7 @@ public class TextTemplate {
                             case KEY_NAME -> writeEncodedText(out, def.getName());
                             case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
                             case KEY_VALUE -> {
-                                if (def.isDecimal()) {
+                                if (def.getType() == AttributeType.DECIMAL) {
                                     writeEncodedText(out, Numbers.formatWithForcedSign(attr.getDoubleValue(gch)));
                                 } else {
                                     writeEncodedText(out, Numbers.formatWithForcedSign(attr.getIntValue(gch)));
@@ -1997,7 +1998,7 @@ public class TextTemplate {
         boolean        lookForKeyMarker = true;
         GURPSCharacter gch              = mSheet.getCharacter();
         for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
-            if (def.isPool()) {
+            if (def.getType() == AttributeType.POOL) {
                 Attribute attr = gch.getAttributes().get(def.getID());
                 if (attr != null) {
                     for (int i = 0; i < length; i++) {

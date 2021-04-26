@@ -20,6 +20,7 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
+import com.trollworks.gcs.utility.text.Enums;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,15 +32,16 @@ import java.util.Objects;
 
 public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_ID                      = "id";
+    private static final String KEY_TYPE                    = "type";
     private static final String KEY_SHORT_NAME              = "name";
     private static final String KEY_FULL_NAME               = "full_name";
     private static final String KEY_ATTRIBUTE_BASE          = "attribute_base";
     private static final String KEY_COST_PER_POINT          = "cost_per_point";
     private static final String KEY_COST_ADJ_PERCENT_PER_SM = "cost_adj_percent_per_sm";
-    private static final String KEY_DECIMAL                 = "decimal";
     private static final String KEY_THRESHOLDS              = "thresholds";
 
     private String              mID;
+    private AttributeType       mType;
     private String              mName;
     private String              mFullName;
     private String              mAttributeBase;
@@ -47,7 +49,6 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private int                 mCostPerPoint;
     private int                 mCostAdjPercentPerSM;
     private List<PoolThreshold> mThresholds;
-    private boolean             mDecimal;
 
     public static final Map<String, AttributeDef> cloneMap(Map<String, AttributeDef> m) {
         Map<String, AttributeDef> result = new HashMap<>();
@@ -86,21 +87,21 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         int                       i = 0;
 
         // Primary attributes
-        m.put("st", new AttributeDef("st", I18n.Text("ST"), I18n.Text("Strength"), "10", ++i, 10, 10, null, false));
-        m.put("dx", new AttributeDef("dx", I18n.Text("DX"), I18n.Text("Dexterity"), "10", ++i, 20, 0, null, false));
-        m.put("iq", new AttributeDef("iq", I18n.Text("IQ"), I18n.Text("Intelligence"), "10", ++i, 20, 0, null, false));
-        m.put("ht", new AttributeDef("ht", I18n.Text("HT"), I18n.Text("Health"), "10", ++i, 10, 0, null, false));
+        m.put("st", new AttributeDef("st", AttributeType.INTEGER, I18n.Text("ST"), I18n.Text("Strength"), "10", ++i, 10, 10));
+        m.put("dx", new AttributeDef("dx", AttributeType.INTEGER, I18n.Text("DX"), I18n.Text("Dexterity"), "10", ++i, 20, 0));
+        m.put("iq", new AttributeDef("iq", AttributeType.INTEGER, I18n.Text("IQ"), I18n.Text("Intelligence"), "10", ++i, 20, 0));
+        m.put("ht", new AttributeDef("ht", AttributeType.INTEGER, I18n.Text("HT"), I18n.Text("Health"), "10", ++i, 10, 0));
 
         // Secondary attributes
-        m.put("will", new AttributeDef("will", I18n.Text("Will"), "", "$iq", ++i, 5, 0, null, false));
-        m.put("fright_check", new AttributeDef("fright_check", I18n.Text("Fright Check"), "", "$will", ++i, 2, 0, null, false));
-        m.put("per", new AttributeDef("per", I18n.Text("Per"), I18n.Text("Perception"), "$iq", ++i, 5, 0, null, false));
-        m.put("vision", new AttributeDef("vision", I18n.Text("Vision"), "", "$per", ++i, 2, 0, null, false));
-        m.put("hearing", new AttributeDef("hearing", I18n.Text("Hearing"), "", "$per", ++i, 2, 0, null, false));
-        m.put("taste_smell", new AttributeDef("taste_smell", I18n.Text("Taste & Smell"), "", "$per", ++i, 2, 0, null, false));
-        m.put("touch", new AttributeDef("touch", I18n.Text("Touch"), "", "$per", ++i, 2, 0, null, false));
-        m.put("basic_speed", new AttributeDef("basic_speed", I18n.Text("Basic Speed"), "", "($dx+$ht)/4", ++i, 20, 0, null, true));
-        m.put("basic_move", new AttributeDef("basic_move", I18n.Text("Basic Move"), "", "floor($basic_speed)", ++i, 5, 0, null, false));
+        m.put("will", new AttributeDef("will", AttributeType.INTEGER, I18n.Text("Will"), "", "$iq", ++i, 5, 0));
+        m.put("fright_check", new AttributeDef("fright_check", AttributeType.INTEGER, I18n.Text("Fright Check"), "", "$will", ++i, 2, 0));
+        m.put("per", new AttributeDef("per", AttributeType.INTEGER, I18n.Text("Per"), I18n.Text("Perception"), "$iq", ++i, 5, 0));
+        m.put("vision", new AttributeDef("vision", AttributeType.INTEGER, I18n.Text("Vision"), "", "$per", ++i, 2, 0));
+        m.put("hearing", new AttributeDef("hearing", AttributeType.INTEGER, I18n.Text("Hearing"), "", "$per", ++i, 2, 0));
+        m.put("taste_smell", new AttributeDef("taste_smell", AttributeType.INTEGER, I18n.Text("Taste & Smell"), "", "$per", ++i, 2, 0));
+        m.put("touch", new AttributeDef("touch", AttributeType.INTEGER, I18n.Text("Touch"), "", "$per", ++i, 2, 0));
+        m.put("basic_speed", new AttributeDef("basic_speed", AttributeType.DECIMAL, I18n.Text("Basic Speed"), "", "($dx+$ht)/4", ++i, 20, 0));
+        m.put("basic_move", new AttributeDef("basic_move", AttributeType.INTEGER, I18n.Text("Basic Move"), "", "floor($basic_speed)", ++i, 5, 0));
 
         // Point pools
         List<ThresholdOps> ops = new ArrayList<>();
@@ -121,7 +122,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Tiring"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Rested"), "", null));
 
-        m.put("fp", new AttributeDef("fp", I18n.Text("FP"), I18n.Text("Fatigue Points"), "$ht", ++i, 3, 0, thresholds, false));
+        m.put("fp", new AttributeDef("fp", I18n.Text("FP"), I18n.Text("Fatigue Points"), "$ht", ++i, 3, 0, thresholds));
 
         ops = new ArrayList<>();
         ops.add(ThresholdOps.HALVE_MOVE);
@@ -147,13 +148,25 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         thresholds.add(new PoolThreshold(1, 3, 0, I18n.Text("Reeling"), I18n.Text("Move and Dodge are halved (B419)"), ops));
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Wounded"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Healthy"), "", null));
-        m.put("hp", new AttributeDef("hp", I18n.Text("HP"), I18n.Text("Hit Points"), "$st", ++i, 2, 10, thresholds, false));
+        m.put("hp", new AttributeDef("hp", I18n.Text("HP"), I18n.Text("Hit Points"), "$st", ++i, 2, 10, thresholds));
 
         return m;
     }
 
-    public AttributeDef(String id, String name, String fullName, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, List<PoolThreshold> thresholds, boolean decimal) {
+    public AttributeDef(String id, AttributeType type, String name, String fullName, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM) {
         mID = id;
+        mType = type;
+        mName = name;
+        mFullName = fullName;
+        mAttributeBase = attributeBase;
+        mOrder = order;
+        mCostPerPoint = costPerPoint;
+        mCostAdjPercentPerSM = costAdjPercentPerSM;
+    }
+
+    public AttributeDef(String id, String name, String fullName, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, List<PoolThreshold> thresholds) {
+        mID = id;
+        mType = AttributeType.POOL;
         mName = name;
         mFullName = fullName;
         mAttributeBase = attributeBase;
@@ -161,19 +174,18 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mCostPerPoint = costPerPoint;
         mCostAdjPercentPerSM = costAdjPercentPerSM;
         mThresholds = thresholds;
-        mDecimal = decimal;
     }
 
     public AttributeDef(JsonMap m, int order) {
         mID = m.getString(KEY_ID);
+        mType = Enums.extract(m.getString(KEY_TYPE), AttributeType.values(), AttributeType.INTEGER);
         mName = m.getString(KEY_SHORT_NAME);
         mFullName = m.getString(KEY_FULL_NAME);
         mAttributeBase = m.getString(KEY_ATTRIBUTE_BASE);
         mOrder = order;
         mCostPerPoint = m.getInt(KEY_COST_PER_POINT);
         mCostAdjPercentPerSM = m.getInt(KEY_COST_ADJ_PERCENT_PER_SM);
-        mDecimal = m.getBoolean(KEY_DECIMAL);
-        if (m.has(KEY_THRESHOLDS)) {
+        if (mType == AttributeType.POOL) {
             JsonArray a      = m.getArray(KEY_THRESHOLDS);
             int       length = a.size();
             mThresholds = new ArrayList<>();
@@ -189,6 +201,21 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
 
     public void setID(String ID) {
         mID = ID;
+    }
+
+    public AttributeType getType() {
+        return mType;
+    }
+
+    public void setType(AttributeType type) {
+        mType = type;
+        if (mType == AttributeType.POOL) {
+            if (mThresholds == null) {
+                mThresholds = new ArrayList<>();
+            }
+        } else {
+            mThresholds = null;
+        }
     }
 
     public String getName() {
@@ -247,14 +274,6 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         mThresholds = thresholds;
     }
 
-    public boolean isDecimal() {
-        return mDecimal;
-    }
-
-    public void setDecimal(boolean decimal) {
-        mDecimal = decimal;
-    }
-
     public boolean isPrimary() {
         try {
             Integer.parseInt(mAttributeBase);
@@ -262,10 +281,6 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         } catch (NumberFormatException ex) {
             return false;
         }
-    }
-
-    public boolean isPool() {
-        return mThresholds != null;
     }
 
     public double getBaseValue(CharacterVariableResolver resolver) {
@@ -309,17 +324,19 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     public void toJSON(JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(KEY_ID, mID);
+        w.keyValue(KEY_TYPE, Enums.toId(mType));
         w.keyValue(KEY_SHORT_NAME, mName);
         w.keyValue(KEY_FULL_NAME, mFullName);
         w.keyValue(KEY_ATTRIBUTE_BASE, mAttributeBase);
         w.keyValue(KEY_COST_PER_POINT, mCostPerPoint);
         w.keyValue(KEY_COST_ADJ_PERCENT_PER_SM, mCostAdjPercentPerSM);
-        w.keyValue(KEY_DECIMAL, mDecimal);
-        if (mThresholds != null) {
+        if (mType == AttributeType.POOL) {
             w.key(KEY_THRESHOLDS);
             w.startArray();
-            for (PoolThreshold threshold : mThresholds) {
-                threshold.toJSON(w);
+            if (mThresholds != null) {
+                for (PoolThreshold threshold : mThresholds) {
+                    threshold.toJSON(w);
+                }
             }
             w.endArray();
         }
@@ -335,7 +352,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
             return false;
         }
         AttributeDef that = (AttributeDef) o;
-        if (mDecimal != that.mDecimal) {
+        if (mType != that.mType) {
             return false;
         }
         if (mCostPerPoint != that.mCostPerPoint) {
@@ -371,7 +388,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         result = 31 * result + mCostPerPoint;
         result = 31 * result + mCostAdjPercentPerSM;
         result = 31 * result + mOrder;
-        result = 31 * result + (mDecimal ? 1 : 3);
+        result = 31 * result + mType.ordinal();
         result = 31 * result + (mThresholds != null ? mThresholds.hashCode() : 0);
         return result;
     }
@@ -381,8 +398,14 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         AttributeDef other = null;
         try {
             other = (AttributeDef) super.clone();
-            if (mThresholds != null) {
-                other.mThresholds = PoolThreshold.cloneList(mThresholds);
+            if (mType == AttributeType.POOL) {
+                if (mThresholds != null) {
+                    other.mThresholds = PoolThreshold.cloneList(mThresholds);
+                } else {
+                    other.mThresholds = new ArrayList<>();
+                }
+            } else {
+                mThresholds = null;
             }
         } catch (CloneNotSupportedException e) {
             // This can't happen

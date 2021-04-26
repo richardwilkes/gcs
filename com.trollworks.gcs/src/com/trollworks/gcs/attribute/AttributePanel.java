@@ -22,11 +22,11 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
-import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -38,6 +38,7 @@ public class AttributePanel extends JPanel {
     private   EditorField               mIDField;
     private   FontAwesomeButton         mMoveUpButton;
     private   FontAwesomeButton         mMoveDownButton;
+    private   FontAwesomeButton         mAddThresholdButton;
 
     public AttributePanel(Map<String, AttributeDef> attributes, AttributeDef attrDef, Runnable adjustCallback) {
         super(new PrecisionLayout().setColumns(3));
@@ -70,6 +71,10 @@ public class AttributePanel extends JPanel {
             }
         });
         left.add(mMoveDownButton);
+        mAddThresholdButton = new FontAwesomeButton("\uf055", 16, I18n.Text("Add Threshold"), () -> {
+            // TODO: Implement
+        });
+        left.add(mAddThresholdButton);
 
         JPanel center = new JPanel(new PrecisionLayout());
         center.setOpaque(false);
@@ -121,6 +126,12 @@ public class AttributePanel extends JPanel {
 
         wrapper = new JPanel(new PrecisionLayout().setColumns(7).setMargins(0));
         wrapper.setOpaque(false);
+        addAttributeTypeCombo(wrapper,
+                attrDef.getType(),
+                (evt) -> {
+                    mAttrDef.setType((AttributeType) evt.getItem());
+                    adjustCallback.run();
+                });
         addField(wrapper,
                 I18n.Text("Base"),
                 I18n.Text("The base value, which may be a number or a formula"),
@@ -151,14 +162,6 @@ public class AttributePanel extends JPanel {
                     mAttrDef.setCostAdjPercentPerSM(((Integer) evt.getNewValue()).intValue());
                     adjustCallback.run();
                 });
-        addCheckBox(wrapper,
-                I18n.Text("Decimal"),
-                I18n.Text("Checked if this field allows fractional values"),
-                attrDef.isDecimal(),
-                (evt) -> {
-                    mAttrDef.setDecimal(evt.getStateChange() == ItemEvent.SELECTED);
-                    adjustCallback.run();
-                });
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
 
@@ -173,12 +176,15 @@ public class AttributePanel extends JPanel {
         right.add(remove);
     }
 
-    private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private void addLabel(Container container, String title, String tooltip) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
-        tooltip = Text.wrapPlainTextForToolTip(tooltip);
-        label.setToolTipText(tooltip);
+        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         container.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+    }
+
+    private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+        addLabel(container, title, tooltip);
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {
@@ -193,8 +199,16 @@ public class AttributePanel extends JPanel {
         checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         checkbox.setSelected(selected);
         checkbox.addItemListener(listener);
-        container.add(checkbox, new PrecisionLayoutData());
+        container.add(checkbox);
         return checkbox;
+    }
+
+    private JComboBox<AttributeType> addAttributeTypeCombo(Container container, AttributeType value, ItemListener listener) {
+        JComboBox<AttributeType> combo = new JComboBox<>(AttributeType.values());
+        combo.setSelectedItem(value);
+        combo.addItemListener(listener);
+        container.add(combo);
+        return combo;
     }
 
     public void focusIDField() {

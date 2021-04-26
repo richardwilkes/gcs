@@ -13,6 +13,7 @@ package com.trollworks.gcs.character.panels;
 
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.attribute.PoolThreshold;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
@@ -40,7 +41,7 @@ public class PointPoolsPanel extends DropPanel {
         GURPSCharacter         gch        = sheet.getCharacter();
         Map<String, Attribute> attributes = gch.getAttributes();
         for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
-            if (def.isPool()) {
+            if (def.getType() == AttributeType.POOL) {
                 Attribute attr = attributes.get(def.getID());
                 if (attr != null) {
                     addPool(sheet, gch, def, attr);

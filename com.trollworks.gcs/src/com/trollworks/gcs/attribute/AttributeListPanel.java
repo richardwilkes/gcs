@@ -93,7 +93,7 @@ public class AttributeListPanel extends BandedPanel {
                 id = "id" + ++counter;
             }
         }
-        AttributeDef def = new AttributeDef(id, "name", "description", "10", order, 0, 0, null, false);
+        AttributeDef def = new AttributeDef(id, AttributeType.INTEGER, "name", "description", "10", order, 0, 0);
         mAttributes.put(def.getID(), def);
         mAdjustCallback.run();
         add(new AttributePanel(mAttributes, def, mAdjustCallback), new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());

@@ -13,6 +13,7 @@ package com.trollworks.gcs.character.panels;
 
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -47,7 +48,7 @@ public class AttributesPanel extends DropPanel {
         super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), primary ? I18n.Text("Primary Attributes") : I18n.Text("Secondary Attributes"));
         GURPSCharacter gch = sheet.getCharacter();
         for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
-            if (!def.isPool()) {
+            if (def.getType() != AttributeType.POOL) {
                 if (def.isPrimary() == primary) {
                     createAttributeField(sheet, gch, def);
                 }
@@ -74,7 +75,7 @@ public class AttributesPanel extends DropPanel {
             fullName = String.format("%s (%s)", fullName, name);
         }
         PageField field;
-        if (def.isDecimal()) {
+        if (def.getType() == AttributeType.DECIMAL) {
             field = new PageField(FieldFactory.FLOAT, Double.valueOf(attr.getDoubleValue(gch)), (c, v) -> attr.setDoubleValue(c, ((Double) v).doubleValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);
         } else {
             field = new PageField(FieldFactory.POSINT5, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(c, ((Integer) v).intValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_PAGE);

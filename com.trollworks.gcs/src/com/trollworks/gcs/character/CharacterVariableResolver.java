@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.expression.VariableResolver;
 import com.trollworks.gcs.utility.Log;
 
@@ -56,7 +57,7 @@ public class CharacterVariableResolver implements VariableResolver {
             Log.error("no such variable definition: $" + variableName);
             return "";
         }
-        if (def.isPool() && parts.length > 1) {
+        if (def.getType() == AttributeType.POOL && parts.length > 1) {
             switch (parts[1]) {
             case "current":
                 return String.valueOf(attr.getCurrentIntValue(mCharacter));

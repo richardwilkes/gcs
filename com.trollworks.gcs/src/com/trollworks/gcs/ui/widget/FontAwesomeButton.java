@@ -51,7 +51,6 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         setText(text);
         setSize(size);
-        setMargin(Math.max(size / 8, 1));
         setCursor(Cursor.getDefaultCursor());
         setClickFunction(clickFunction);
         addMouseListener(this);
@@ -112,7 +111,7 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
                 color = Color.BLACK;
             }
         } else {
-            color = Color.GRAY;
+            color = Color.LIGHT_GRAY;
         }
         gc.setColor(color);
         Scale scale = Scale.get(this);

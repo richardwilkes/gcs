@@ -13,6 +13,7 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -114,7 +115,7 @@ public class AttributeBonus extends Bonus {
     public void setAttribute(DataFile dataFile, String attribute) {
         mAttribute = attribute;
         AttributeDef def = dataFile.getAttributeDefs().get(attribute);
-        getAmount().setIntegerOnly(def == null || !def.isDecimal());
+        getAmount().setIntegerOnly(def == null || def.getType() != AttributeType.DECIMAL);
     }
 
     /** @return The limitation of this bonus. */
