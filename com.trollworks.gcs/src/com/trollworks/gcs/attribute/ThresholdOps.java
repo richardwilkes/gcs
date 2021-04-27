@@ -16,11 +16,21 @@ import com.trollworks.gcs.utility.I18n;
 public enum ThresholdOps {
     UNKNOWN {
         @Override
+        public String title() {
+            return toString();
+        }
+
+        @Override
         public String toString() {
             return I18n.Text("Unknown");
         }
     },
     HALVE_MOVE {
+        @Override
+        public String title() {
+            return I18n.Text("Halve Move");
+        }
+
         @Override
         public String toString() {
             return I18n.Text("Halve Move (round up)");
@@ -28,14 +38,26 @@ public enum ThresholdOps {
     },
     HALVE_DODGE {
         @Override
+        public String title() {
+            return I18n.Text("Halve Dodge");
+        }
+
+        @Override
         public String toString() {
             return I18n.Text("Halve Dodge (round up)");
         }
     },
     HALVE_ST {
         @Override
+        public String title() {
+            return I18n.Text("Halve ST");
+        }
+
+        @Override
         public String toString() {
             return I18n.Text("Halve ST (round up; does not affect HP and damage)");
         }
-    }
+    };
+
+    abstract String title();
 }

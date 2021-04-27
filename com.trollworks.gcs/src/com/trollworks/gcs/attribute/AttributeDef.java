@@ -116,8 +116,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
                 <b>Roll vs. Will</b> to do anything besides talk or rest; failure causes unconsciousness<br>
                 Each FP you lose below 0 also causes 1 HP of injury<br>
                 Move, Dodge and ST are halved (B426)
-                </body></html>
-                """), ops));
+                </body></html>"""), ops));
         thresholds.add(new PoolThreshold(1, 3, 0, I18n.Text("Tired"), I18n.Text("Move, Dodge and ST are halved (B426)"), ops));
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Tiring"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Rested"), "", null));
@@ -136,15 +135,13 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
                     <b>Roll vs. HT</b> to avoid death<br>
                     <b>Roll vs. HT%d</b> every second to avoid falling unconscious<br>
                     Move and Dodge are halved (B419)
-                    </body></html>
-                    """), Integer.valueOf(j)), ops));
+                    </body></html>"""), Integer.valueOf(j)), ops));
         }
         thresholds.add(new PoolThreshold(0, 1, 0, I18n.Text("Collapse"), I18n.Text("""
                 <html><body>
                 <b>Roll vs. HT</b> every second to avoid falling unconscious<br>
                 Move and Dodge are halved (B419)
-                </body></html>
-                """), ops));
+                </body></html>"""), ops));
         thresholds.add(new PoolThreshold(1, 3, 0, I18n.Text("Reeling"), I18n.Text("Move and Dodge are halved (B419)"), ops));
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.Text("Wounded"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.Text("Healthy"), "", null));

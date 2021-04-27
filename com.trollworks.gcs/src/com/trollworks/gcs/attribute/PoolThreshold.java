@@ -52,7 +52,7 @@ public class PoolThreshold implements Cloneable {
         mMultiplier = multiplier;
         mDivisor = divisor;
         mAddition = addition;
-        mOps = ops;
+        mOps = ops != null ? ops : new ArrayList<>();
     }
 
     public PoolThreshold(JsonMap m) {
@@ -61,10 +61,10 @@ public class PoolThreshold implements Cloneable {
         mMultiplier = m.getInt(KEY_MULTIPLIER);
         mDivisor = m.getInt(KEY_DIVISOR);
         mAddition = m.getInt(KEY_ADDITION);
+        mOps = new ArrayList<>();
         if (m.has(KEY_OPS)) {
             JsonArray a      = m.getArray(KEY_OPS);
             int       length = a.size();
-            mOps = new ArrayList<>();
             for (int i = 0; i < length; i++) {
                 mOps.add(Enums.extract(a.getString(i), ThresholdOps.values(), ThresholdOps.UNKNOWN));
             }
@@ -89,24 +89,44 @@ public class PoolThreshold implements Cloneable {
         return mMultiplier;
     }
 
+    public void setMultiplier(int multiplier) {
+        mMultiplier = multiplier;
+    }
+
     public int getDivisor() {
         return mDivisor;
+    }
+
+    public void setDivisor(int divisor) {
+        mDivisor = divisor;
     }
 
     public int getAddition() {
         return mAddition;
     }
 
+    public void setAddition(int addition) {
+        mAddition = addition;
+    }
+
     public String getState() {
         return mState;
+    }
+
+    public void setState(String state) {
+        mState = state;
     }
 
     public String getExplanation() {
         return mExplanation;
     }
 
+    public void setExplanation(String explanation) {
+        mExplanation = explanation;
+    }
+
     public List<ThresholdOps> getOps() {
-        return mOps != null ? mOps : Collections.emptyList();
+        return mOps;
     }
 
     public void toJSON(JsonWriter w) throws IOException {
@@ -116,14 +136,13 @@ public class PoolThreshold implements Cloneable {
         w.keyValue(KEY_MULTIPLIER, mMultiplier);
         w.keyValue(KEY_DIVISOR, mDivisor);
         w.keyValue(KEY_ADDITION, mAddition);
-        if (mOps != null) {
-            w.key(KEY_OPS);
-            w.startArray();
-            for (ThresholdOps op : mOps) {
-                w.value(Enums.toId(op));
-            }
-            w.endArray();
+        w.key(KEY_OPS);
+        w.startArray();
+        Collections.sort(mOps);
+        for (ThresholdOps op : mOps) {
+            w.value(Enums.toId(op));
         }
+        w.endArray();
         w.endMap();
     }
 
@@ -161,7 +180,7 @@ public class PoolThreshold implements Cloneable {
         result = 31 * result + mMultiplier;
         result = 31 * result + mDivisor;
         result = 31 * result + mAddition;
-        result = 31 * result + (mOps != null ? mOps.hashCode() : 0);
+        result = 31 * result + mOps.hashCode();
         return result;
     }
 
@@ -170,9 +189,7 @@ public class PoolThreshold implements Cloneable {
         PoolThreshold other = null;
         try {
             other = (PoolThreshold) super.clone();
-            if (mOps != null) {
-                other.mOps = new ArrayList<>(mOps);
-            }
+            other.mOps = new ArrayList<>(mOps);
         } catch (CloneNotSupportedException e) {
             // This can't happen
             Log.error(e);

@@ -24,13 +24,14 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
 public class AttributeEditor extends JPanel {
+    public static final int BUTTON_SIZE = 14;
     private AttributeListPanel mListPanel;
 
     public AttributeEditor(Map<String, AttributeDef> attributes, Runnable adjustCallback) {
         super(new PrecisionLayout().setColumns(2).setMargins(0));
         setOpaque(false);
         add(new Label(I18n.Text("Attributes")));
-        add(new FontAwesomeButton("\uf055", 16, I18n.Text("Add Attribute"), () -> mListPanel.addAttribute()));
+        add(new FontAwesomeButton("\uf055", BUTTON_SIZE, I18n.Text("Add Attribute"), () -> mListPanel.addAttribute()));
         mListPanel = new AttributeListPanel(attributes, adjustCallback);
         JScrollPane scroller  = new JScrollPane(mListPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         int         minHeight = new AttributePanel(null, new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;

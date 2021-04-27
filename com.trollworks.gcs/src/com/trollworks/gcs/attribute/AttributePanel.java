@@ -22,10 +22,11 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
+import java.awt.Rectangle;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.Map;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.JLabel;
@@ -35,21 +36,25 @@ import javax.swing.SwingConstants;
 public class AttributePanel extends JPanel {
     private   Map<String, AttributeDef> mAttributes;
     protected AttributeDef              mAttrDef;
+    private   Runnable                  mAdjustCallback;
     private   EditorField               mIDField;
     private   FontAwesomeButton         mMoveUpButton;
     private   FontAwesomeButton         mMoveDownButton;
+    private   JPanel                    mCenter;
     private   FontAwesomeButton         mAddThresholdButton;
+    private   ThresholdListPanel        mThresholdListPanel;
 
     public AttributePanel(Map<String, AttributeDef> attributes, AttributeDef attrDef, Runnable adjustCallback) {
-        super(new PrecisionLayout().setColumns(3));
+        super(new PrecisionLayout().setColumns(3).setMargins(0));
         setOpaque(false);
         mAttributes = attributes;
         mAttrDef = attrDef;
+        mAdjustCallback = adjustCallback;
 
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", 16, I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Up"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -60,7 +65,7 @@ public class AttributePanel extends JPanel {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", 16, I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Down"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -71,14 +76,12 @@ public class AttributePanel extends JPanel {
             }
         });
         left.add(mMoveDownButton);
-        mAddThresholdButton = new FontAwesomeButton("\uf055", 16, I18n.Text("Add Threshold"), () -> {
-            // TODO: Implement
-        });
+        mAddThresholdButton = new FontAwesomeButton("\uf055", AttributeEditor.BUTTON_SIZE, I18n.Text("Add Pool Threshold"), this::addThreshold);
         left.add(mAddThresholdButton);
 
-        JPanel center = new JPanel(new PrecisionLayout());
-        center.setOpaque(false);
-        add(center, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        mCenter = new JPanel(new PrecisionLayout());
+        mCenter.setOpaque(false);
+        add(mCenter, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(6).setMargins(0));
         wrapper.setOpaque(false);
@@ -122,7 +125,7 @@ public class AttributePanel extends JPanel {
                     mAttrDef.setFullName((String) evt.getNewValue());
                     adjustCallback.run();
                 });
-        center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
+        mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         wrapper = new JPanel(new PrecisionLayout().setColumns(7).setMargins(0));
         wrapper.setOpaque(false);
@@ -130,6 +133,20 @@ public class AttributePanel extends JPanel {
                 attrDef.getType(),
                 (evt) -> {
                     mAttrDef.setType((AttributeType) evt.getItem());
+                    if (mAttrDef.getType() == AttributeType.POOL) {
+                        if (mThresholdListPanel == null) {
+                            mThresholdListPanel = new ThresholdListPanel(mAttrDef, adjustCallback);
+                            mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
+                            mThresholdListPanel.revalidate();
+                        }
+                    } else if (mThresholdListPanel != null) {
+                        mCenter.remove(mThresholdListPanel);
+                        mCenter.revalidate();
+                    }
+                    AttributeListPanel owner = UIUtilities.getAncestorOfType(this, AttributeListPanel.class);
+                    if (owner != null) {
+                        owner.adjustButtons();
+                    }
                     adjustCallback.run();
                 });
         addField(wrapper,
@@ -162,13 +179,17 @@ public class AttributePanel extends JPanel {
                     mAttrDef.setCostAdjPercentPerSM(((Integer) evt.getNewValue()).intValue());
                     adjustCallback.run();
                 });
-        center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
+        mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
+        if (mAttrDef.getType() == AttributeType.POOL) {
+            mThresholdListPanel = new ThresholdListPanel(mAttrDef, adjustCallback);
+            mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
+        }
 
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", AttributeEditor.BUTTON_SIZE, I18n.Text("Remove"), () -> {
             getParent().remove(this);
             mAttributes.remove(mAttrDef.getID());
             adjustCallback.run();
@@ -194,15 +215,6 @@ public class AttributePanel extends JPanel {
         return field;
     }
 
-    private JCheckBox addCheckBox(Container container, String title, String tooltip, boolean selected, ItemListener listener) {
-        JCheckBox checkbox = new JCheckBox(title);
-        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        checkbox.setSelected(selected);
-        checkbox.addItemListener(listener);
-        container.add(checkbox);
-        return checkbox;
-    }
-
     private JComboBox<AttributeType> addAttributeTypeCombo(Container container, AttributeType value, ItemListener listener) {
         JComboBox<AttributeType> combo = new JComboBox<>(AttributeType.values());
         combo.setSelectedItem(value);
@@ -218,5 +230,18 @@ public class AttributePanel extends JPanel {
     public void adjustButtons(boolean isFirst, boolean isLast) {
         mMoveUpButton.setEnabled(!isFirst);
         mMoveDownButton.setEnabled(!isLast);
+        mAddThresholdButton.setEnabled(mAttrDef.getType() == AttributeType.POOL);
+    }
+
+    public void addThreshold() {
+        List<PoolThreshold> thresholds = mAttrDef.getThresholds();
+        PoolThreshold       threshold  = new PoolThreshold(1, 1, 0, I18n.Text("state"), "", null);
+        thresholds.add(threshold);
+        ThresholdPanel panel = new ThresholdPanel(thresholds, threshold, mAdjustCallback);
+        mThresholdListPanel.add(panel, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+        mAdjustCallback.run();
+        scrollRectToVisible(new Rectangle(0, getPreferredSize().height - 1, 1, 1));
+        panel.focusStateField();
+        mThresholdListPanel.adjustButtons();
     }
 }

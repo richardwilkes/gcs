@@ -45,6 +45,11 @@ public class AttributeListPanel extends BandedPanel {
         return new Dimension(32, 32); // This needs to be small to allow the scroll pane to work
     }
 
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return true;
+    }
+
     public void reset(Map<String, AttributeDef> attributes) {
         removeAll();
         mAttributes.clear();
@@ -59,7 +64,7 @@ public class AttributeListPanel extends BandedPanel {
         adjustButtons();
     }
 
-    private void adjustButtons() {
+    public void adjustButtons() {
         Component[] children = getComponents();
         int         count    = children.length;
         for (int i = 0; i < count; i++) {
