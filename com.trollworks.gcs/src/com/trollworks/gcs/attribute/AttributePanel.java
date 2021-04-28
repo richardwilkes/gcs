@@ -93,14 +93,17 @@ public class AttributePanel extends JPanel {
                 FieldFactory.STRING,
                 (evt) -> {
                     String existingID = mAttrDef.getID();
-                    String id         = (String) evt.getNewValue();
+                    String id         = ((String) evt.getNewValue());
                     if (!existingID.equals(id)) {
-                        if (mAttributes.containsKey(id)) {
-                            mIDField.setText(existingID);
+                        id = AttributeDef.sanitizeID(id, true);
+                        if (id.isEmpty() || mAttributes.containsKey(id)) {
+                            mIDField.setValue(existingID);
                         } else {
                             mAttributes.remove(existingID);
                             mAttrDef.setID(id);
+                            id = mAttrDef.getID();
                             mAttributes.put(id, mAttrDef);
+                            mIDField.setValue(id);
                             adjustCallback.run();
                         }
                     }

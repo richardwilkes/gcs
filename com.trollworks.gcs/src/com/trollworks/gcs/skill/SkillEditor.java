@@ -113,7 +113,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
             mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-            mDefaults = new Defaults(mRow.getDefaults());
+            mDefaults = new Defaults(mRow.getDataFile(), mRow.getDefaults());
             mDefaults.addActionListener(this);
             Component panel = embedEditor(mDefaults);
             addTab(panel.getName(), panel);

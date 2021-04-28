@@ -310,9 +310,8 @@ public class WeaponDamage {
                 int          best        = Integer.MIN_VALUE;
                 SkillDefault bestDefault = null;
                 for (SkillDefault skillDefault : mOwner.getDefaults()) {
-                    SkillDefaultType type = skillDefault.getType();
-                    if (type.isSkillBased()) {
-                        int level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+                    if (SkillDefaultType.isSkillBased(skillDefault.getType())) {
+                        int level = SkillDefaultType.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
                         if (level > best) {
                             best = level;
                             bestDefault = skillDefault;

@@ -507,7 +507,7 @@ public class Skill extends ListRow implements HasSourceReference {
      */
     public boolean setDifficulty(String attribute, SkillDifficulty difficulty) {
         if (mDifficulty != difficulty || !mAttribute.equals(attribute)) {
-            mAttribute = attribute;
+            mAttribute = AttributeDef.sanitizeID(attribute, false);
             mDifficulty = difficulty;
             updateLevel(false);
             notifyOfChange();
@@ -778,7 +778,7 @@ public class Skill extends ListRow implements HasSourceReference {
     private boolean hasDefaultTo(Skill skill) {
         boolean result = false;
         for (SkillDefault skillDefault : getDefaults()) {
-            boolean skillBased            = skillDefault.getType().isSkillBased();
+            boolean skillBased            = SkillDefaultType.isSkillBased(skillDefault.getType());
             boolean nameMatches           = skillDefault.getName().equals(skill.getName());
             boolean specializationMatches = skillDefault.getSpecialization() == null || skillDefault.getSpecialization().isEmpty() || skillDefault.getSpecialization().equals(skill.getSpecialization());
             if (skillBased && nameMatches && specializationMatches) {
@@ -842,8 +842,8 @@ public class Skill extends ListRow implements HasSourceReference {
                     // For skill-based defaults, prune out any that already use a default that we
                     // are involved with
                     if (!skillDefault.equals(excludedDefault) && !isInDefaultChain(this, skillDefault, new HashSet<>())) {
-                        int level = skillDefault.getType().getSkillLevel(character, skillDefault, true, excludes, !(this instanceof Technique));
-                        if (skillDefault.getType().isSkillBased()) {
+                        int level = SkillDefaultType.getSkillLevel(character, skillDefault, true, excludes, !(this instanceof Technique));
+                        if (SkillDefaultType.isSkillBased(skillDefault.getType())) {
                             String name  = skillDefault.getName();
                             Skill  skill = character.getBestSkillNamed(name, skillDefault.getSpecialization(), true, excludes);
                             if (skill != null) {
@@ -866,7 +866,7 @@ public class Skill extends ListRow implements HasSourceReference {
 
     private boolean isInDefaultChain(Skill skill, SkillDefault skillDefault, Set<Skill> lookedAt) {
         GURPSCharacter character = getCharacter();
-        if (character != null && skillDefault != null && skillDefault.getType().isSkillBased()) {
+        if (character != null && skillDefault != null && SkillDefaultType.isSkillBased(skillDefault.getType())) {
             boolean hadOne = false;
             for (Skill one : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), true, null)) {
                 if (one == skill) {
@@ -916,7 +916,7 @@ public class Skill extends ListRow implements HasSourceReference {
      * @return Returns the skill defaulted to.
      */
     protected static Skill getBaseSkill(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints) {
-        if (character != null && skillDefault != null && skillDefault.getType().isSkillBased()) {
+        if (character != null && skillDefault != null && SkillDefaultType.isSkillBased(skillDefault.getType())) {
             return character.getBestSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, new HashSet<>());
         }
         return null;

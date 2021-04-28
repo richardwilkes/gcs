@@ -290,8 +290,7 @@ public abstract class WeaponStats {
         int           postAdj        = getSkillLevelPostAdjustment(character, primaryToolTip);
         int           best           = Integer.MIN_VALUE;
         for (SkillDefault skillDefault : getDefaults()) {
-            SkillDefaultType type  = skillDefault.getType();
-            int              level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+            int level = SkillDefaultType.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
             if (level != Integer.MIN_VALUE) {
                 level += preAdj;
                 level += postAdj;

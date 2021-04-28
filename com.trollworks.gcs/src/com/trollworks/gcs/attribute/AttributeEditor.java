@@ -18,14 +18,16 @@ import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 
+import java.awt.EventQueue;
+import java.awt.Point;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
 public class AttributeEditor extends JPanel {
-    public static final int BUTTON_SIZE = 14;
-    private AttributeListPanel mListPanel;
+    public static final int                BUTTON_SIZE = 14;
+    private             AttributeListPanel mListPanel;
 
     public AttributeEditor(Map<String, AttributeDef> attributes, Runnable adjustCallback) {
         super(new PrecisionLayout().setColumns(2).setMargins(0));
@@ -36,6 +38,7 @@ public class AttributeEditor extends JPanel {
         JScrollPane scroller  = new JScrollPane(mListPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         int         minHeight = new AttributePanel(null, new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;
         add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true).setMinimumHeight(minHeight));
+        EventQueue.invokeLater(() -> scroller.getViewport().setViewPosition(new Point(0, 0)));
     }
 
     public void reset(Map<String, AttributeDef> attributes) {

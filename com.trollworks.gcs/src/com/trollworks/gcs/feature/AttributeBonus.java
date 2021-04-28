@@ -113,7 +113,7 @@ public class AttributeBonus extends Bonus {
 
     /** @param attribute The attribute. */
     public void setAttribute(DataFile dataFile, String attribute) {
-        mAttribute = attribute;
+        mAttribute = AttributeDef.sanitizeID(attribute, false);
         AttributeDef def = dataFile.getAttributeDefs().get(attribute);
         getAmount().setIntegerOnly(def == null || def.getType() != AttributeType.DECIMAL);
     }

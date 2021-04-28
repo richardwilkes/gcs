@@ -33,11 +33,11 @@ public class Attribute {
     private int    mDamage;
 
     public Attribute(String attrID) {
-        mAttrID = attrID;
+        setID(attrID);
     }
 
     public Attribute(JsonMap m) {
-        mAttrID = m.getString(KEY_ATTR_ID);
+        setID(m.getString(KEY_ATTR_ID));
         mAdjustment = m.getDouble(KEY_ADJ);
         mDamage = m.getInt(KEY_DAMAGE);
     }
@@ -49,6 +49,10 @@ public class Attribute {
 
     public String getID() {
         return mAttrID;
+    }
+
+    private void setID(String id) {
+        mAttrID = id.trim().toLowerCase();
     }
 
     public AttributeDef getAttrDef(GURPSCharacter character) {

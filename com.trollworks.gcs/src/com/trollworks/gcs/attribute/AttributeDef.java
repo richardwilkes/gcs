@@ -26,9 +26,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_ID                      = "id";
@@ -40,6 +42,8 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_COST_ADJ_PERCENT_PER_SM = "cost_adj_percent_per_sm";
     private static final String KEY_THRESHOLDS              = "thresholds";
 
+    private static final Set<String> RESERVED = new HashSet<>();
+
     private String              mID;
     private AttributeType       mType;
     private String              mName;
@@ -49,6 +53,14 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private int                 mCostPerPoint;
     private int                 mCostAdjPercentPerSM;
     private List<PoolThreshold> mThresholds;
+
+    static {
+        RESERVED.add("skill");
+        RESERVED.add("parry");
+        RESERVED.add("block");
+        RESERVED.add("dodge");
+        RESERVED.add("sm");
+    }
 
     public static final Map<String, AttributeDef> cloneMap(Map<String, AttributeDef> m) {
         Map<String, AttributeDef> result = new HashMap<>();
@@ -151,7 +163,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     }
 
     public AttributeDef(String id, AttributeType type, String name, String fullName, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM) {
-        mID = id;
+        setID(id);
         mType = type;
         mName = name;
         mFullName = fullName;
@@ -162,7 +174,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     }
 
     public AttributeDef(String id, String name, String fullName, String attributeBase, int order, int costPerPoint, int costAdjPercentPerSM, List<PoolThreshold> thresholds) {
-        mID = id;
+        setID(id);
         mType = AttributeType.POOL;
         mName = name;
         mFullName = fullName;
@@ -174,7 +186,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     }
 
     public AttributeDef(JsonMap m, int order) {
-        mID = m.getString(KEY_ID);
+        setID(m.getString(KEY_ID));
         mType = Enums.extract(m.getString(KEY_TYPE), AttributeType.values(), AttributeType.INTEGER);
         mName = m.getString(KEY_SHORT_NAME);
         mFullName = m.getString(KEY_FULL_NAME);
@@ -196,8 +208,36 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         return mID;
     }
 
-    public void setID(String ID) {
-        mID = ID;
+    public void setID(String id) {
+        mID = sanitizeID(id, true);
+    }
+
+    public static String sanitizeID(String id, boolean noReserved) {
+        if (!noReserved) {
+            id = id.trim();
+            try {
+                Integer.parseInt(id);
+                return id;
+            } catch (NumberFormatException nfex) {
+                // continue
+            }
+        }
+        StringBuilder buffer = new StringBuilder();
+        int           length = id.length();
+        for (int i = 0; i < length; i++) {
+            char ch = id.charAt(i);
+            if (ch >= 'A' && ch <= 'Z') {
+                ch = Character.toLowerCase(ch);
+            }
+            if (ch == '_' || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9' && !buffer.isEmpty())) {
+                buffer.append(ch);
+            }
+        }
+        id = buffer.toString();
+        if (noReserved && RESERVED.contains(id)) {
+            id += "_";
+        }
+        return id;
     }
 
     public AttributeType getType() {

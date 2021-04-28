@@ -822,7 +822,7 @@ public class Spell extends ListRow implements HasSourceReference {
      */
     public boolean setDifficulty(String attribute, SkillDifficulty difficulty) {
         if (mDifficulty != difficulty || !mAttribute.equals(attribute)) {
-            mAttribute = attribute;
+            mAttribute = AttributeDef.sanitizeID(attribute, false);
             mDifficulty = difficulty;
             updateLevel(false);
             notifyOfChange();

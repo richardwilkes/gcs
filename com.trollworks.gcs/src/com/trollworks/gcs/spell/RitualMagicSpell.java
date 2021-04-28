@@ -16,7 +16,6 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
-import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.skill.Technique;
@@ -120,12 +119,12 @@ public class RitualMagicSpell extends Spell {
             college = "";
         }
 
-        SkillDefault def        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : baseSkillName, college, -prereqSpellsCount);
+        SkillDefault def        = new SkillDefault("skill", college.isBlank() ? null : baseSkillName, college, -prereqSpellsCount);
         SkillLevel   skillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, def, difficulty, points, false, true, 0);
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
         skillLevel.mRelativeLevel += def.getModifier();
 
-        SkillDefault fallbackDef        = new SkillDefault(SkillDefaultType.Skill, college.isBlank() ? null : baseSkillName, null, -(6 + prereqSpellsCount));
+        SkillDefault fallbackDef        = new SkillDefault("skill", college.isBlank() ? null : baseSkillName, null, -(6 + prereqSpellsCount));
         SkillLevel   fallbackSkillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, fallbackDef, difficulty, points, false, true, 0);
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
         fallbackSkillLevel.mRelativeLevel += fallbackDef.getModifier();
