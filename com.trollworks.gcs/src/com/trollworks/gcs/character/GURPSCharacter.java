@@ -381,7 +381,7 @@ public class GURPSCharacter extends CollectedModels {
     public int getAttributeCurrentIntValue(String name) {
         Attribute attr = getAttributes().get(name);
         if (attr == null) {
-            return 0;
+            return Integer.MIN_VALUE;
         }
         return attr.getCurrentIntValue(this);
     }
@@ -389,7 +389,7 @@ public class GURPSCharacter extends CollectedModels {
     public int getAttributeIntValue(String name) {
         Attribute attr = getAttributes().get(name);
         if (attr == null) {
-            return 0;
+            return Integer.MIN_VALUE;
         }
         return attr.getIntValue(this);
     }
@@ -397,7 +397,7 @@ public class GURPSCharacter extends CollectedModels {
     public double getAttributeDoubleValue(String name) {
         Attribute attr = getAttributes().get(name);
         if (attr == null) {
-            return 0;
+            return Integer.MIN_VALUE;
         }
         return attr.getDoubleValue(this);
     }
