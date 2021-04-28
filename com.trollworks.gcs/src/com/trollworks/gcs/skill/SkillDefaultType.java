@@ -18,6 +18,7 @@ import java.util.Set;
 
 /** The types of possible skill defaults. */
 public enum SkillDefaultType {
+    // TODO: Eliminate
     /** The type for ST-based defaults. */
     ST {
         @Override
@@ -27,7 +28,7 @@ public enum SkillDefaultType {
 
         @Override
         public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.ST.getBaseSkillLevel(character);
+            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, "st");
             return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     },
@@ -40,7 +41,7 @@ public enum SkillDefaultType {
 
         @Override
         public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.DX.getBaseSkillLevel(character);
+            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, "dx");
             return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     },
@@ -53,7 +54,7 @@ public enum SkillDefaultType {
 
         @Override
         public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.IQ.getBaseSkillLevel(character);
+            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, "iq");
             return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     },
@@ -66,7 +67,7 @@ public enum SkillDefaultType {
 
         @Override
         public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.HT.getBaseSkillLevel(character);
+            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, "ht");
             return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     },
@@ -79,7 +80,7 @@ public enum SkillDefaultType {
 
         @Override
         public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.Will.getBaseSkillLevel(character);
+            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, "will");
             return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     },
@@ -92,7 +93,7 @@ public enum SkillDefaultType {
 
         @Override
         public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.Per.getBaseSkillLevel(character);
+            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, "per");
             return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     },
@@ -219,7 +220,7 @@ public enum SkillDefaultType {
 
         @Override
         public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            return finalLevel(skillDefault, SkillAttribute.Base10.getBaseSkillLevel(character));
+            return finalLevel(skillDefault, 10);
         }
     };
 

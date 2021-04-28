@@ -13,7 +13,6 @@ package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.skill.SkillAttribute;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -178,7 +177,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         modified |= mRow.setCastingTime(mCastingTimeField.getText());
         modified |= mRow.setResist(mResistField.getText());
         modified |= mRow.setDuration(mDurationField.getText());
-        modified |= mRow.setDifficulty(SkillAttribute.IQ, getDifficulty()); // Attribute is not relevant for Ritual Magic
+        modified |= mRow.setDifficulty("iq", getDifficulty()); // Attribute is not relevant for Ritual Magic
         modified |= mRow.setPrerequisiteSpellsCount(getPrerequisiteSpellsCount());
         if (mRow.getCharacter() != null || mRow.getTemplate() != null) {
             modified |= mRow.setRawPoints(getPoints());

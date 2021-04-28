@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillPointsTextCell;
 import com.trollworks.gcs.template.Template;
@@ -407,7 +408,7 @@ public enum SpellColumn {
 
                 StringBuilder builder = new StringBuilder();
                 if (!(spell instanceof RitualMagicSpell)) {
-                    builder.append(spell.getAttribute());
+                    builder.append(Skill.resolveAttributeName(spell.getDataFile(), spell.getAttribute()));
                 }
                 builder.append(Numbers.formatWithForcedSign(level));
                 return builder.toString();

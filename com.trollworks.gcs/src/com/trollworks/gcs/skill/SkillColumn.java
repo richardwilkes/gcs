@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
@@ -27,6 +28,7 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 
+import java.util.List;
 import javax.swing.SwingConstants;
 
 /** Definitions for skill columns. */
@@ -101,7 +103,15 @@ public enum SkillColumn {
 
         @Override
         public Object getData(Skill skill) {
-            return Integer.valueOf(skill.canHaveChildren() ? -1 : skill.getDifficulty().ordinal() + (skill.getAttribute().ordinal() << 8));
+            List<AttributeDef> ordered = AttributeDef.getOrdered(skill.getDataFile().getAttributeDefs());
+            int                count   = ordered.size();
+            int                i;
+            for (i = 0; i < count; i++) {
+                if (ordered.get(i).getID().equals(skill.getAttribute())) {
+                    break;
+                }
+            }
+            return Integer.valueOf(skill.canHaveChildren() ? -1 : skill.getDifficulty().ordinal() + (i << 8));
         }
 
         @Override
@@ -233,7 +243,7 @@ public enum SkillColumn {
                 }
                 builder = new StringBuilder();
                 if (!(skill instanceof Technique)) {
-                    builder.append(skill.getAttribute());
+                    builder.append( Skill.resolveAttributeName(skill.getDataFile(), skill.getAttribute()));
                 }
                 builder.append(Numbers.formatWithForcedSign(level));
                 return builder.toString();

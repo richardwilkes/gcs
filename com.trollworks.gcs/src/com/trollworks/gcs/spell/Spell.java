@@ -11,12 +11,13 @@
 
 package com.trollworks.gcs.spell;
 
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
-import com.trollworks.gcs.skill.SkillAttribute;
+import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
@@ -31,7 +32,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -61,7 +61,6 @@ public class Spell extends ListRow implements HasSourceReference {
     private static final   String KEY_DURATION         = "duration";
     protected static final String KEY_POINTS           = "points";
     private static final   String KEY_REFERENCE        = "reference";
-    private static final   String KEY_ATTRIBUTE        = "attribute";
     private static final   String KEY_DIFFICULTY       = "difficulty";
     private static final   String KEY_WEAPONS          = "weapons";
 
@@ -84,7 +83,7 @@ public class Spell extends ListRow implements HasSourceReference {
     private   String            mDuration;
     protected int               mPoints;
     protected SkillLevel        mLevel;
-    private   SkillAttribute    mAttribute;
+    private   String            mAttribute;
     private   String            mReference;
     private   SkillDifficulty   mDifficulty;
     private   List<WeaponStats> mWeapons;
@@ -98,7 +97,8 @@ public class Spell extends ListRow implements HasSourceReference {
     public Spell(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
         mName = I18n.Text("Spell");
-        mAttribute = SkillAttribute.IQ;
+        mAttribute = Skill.getDefaultAttribute("iq");
+        mDifficulty = SkillDifficulty.H;
         mTechLevel = null;
         mCollege = "";
         mPowerSource = isContainer ? "" : getDefaultPowerSource();
@@ -110,7 +110,6 @@ public class Spell extends ListRow implements HasSourceReference {
         mDuration = isContainer ? "" : getDefaultDuration();
         mPoints = 1;
         mReference = "";
-        mDifficulty = SkillDifficulty.H;
         mWeapons = new ArrayList<>();
         updateLevel(false);
     }
@@ -127,6 +126,7 @@ public class Spell extends ListRow implements HasSourceReference {
         super(dataFile, spell);
         mName = spell.mName;
         mAttribute = spell.mAttribute;
+        mDifficulty = spell.mDifficulty;
         mTechLevel = spell.mTechLevel;
         mCollege = spell.mCollege;
         mPowerSource = spell.mPowerSource;
@@ -138,7 +138,6 @@ public class Spell extends ListRow implements HasSourceReference {
         mDuration = spell.mDuration;
         mPoints = forSheet ? spell.mPoints : 1;
         mReference = spell.mReference;
-        mDifficulty = spell.mDifficulty;
         if (forSheet && dataFile instanceof GURPSCharacter) {
             if (mTechLevel != null) {
                 mTechLevel = ((GURPSCharacter) dataFile).getProfile().getTechLevel();
@@ -183,15 +182,52 @@ public class Spell extends ListRow implements HasSourceReference {
         }
         if (obj instanceof Spell && super.isEquivalentTo(obj)) {
             Spell row = (Spell) obj;
-            if (mDifficulty == row.mDifficulty && mPoints == row.mPoints && mLevel.isSameLevelAs(row.mLevel) && mAttribute == row.mAttribute) {
-                if (Objects.equals(mTechLevel, row.mTechLevel)) {
-                    if (mName.equals(row.mName) && mCollege.equals(row.mCollege) && mPowerSource.equals(row.mPowerSource) && mSpellClass.equals(row.mSpellClass) && mResist.equals(row.mResist) && mReference.equals(row.mReference)) {
-                        if (mCastingCost.equals(row.mCastingCost) && mMaintenance.equals(row.mMaintenance) && mCastingTime.equals(row.mCastingTime) && mDuration.equals(row.mDuration)) {
-                            return mWeapons.equals(row.mWeapons);
-                        }
-                    }
-                }
+            if (mDifficulty != row.mDifficulty) {
+                return false;
             }
+            if (mPoints != row.mPoints) {
+                return false;
+            }
+            if (!mAttribute.equals(row.mAttribute)) {
+                return false;
+            }
+            if (!mLevel.isSameLevelAs(row.mLevel)) {
+                return false;
+            }
+            if (!Objects.equals(mTechLevel, row.mTechLevel)) {
+                return false;
+            }
+            if (!mName.equals(row.mName)) {
+                return false;
+            }
+            if (!mCollege.equals(row.mCollege)) {
+                return false;
+            }
+            if (!mPowerSource.equals(row.mPowerSource)) {
+                return false;
+            }
+            if (!mSpellClass.equals(row.mSpellClass)) {
+                return false;
+            }
+            if (!mResist.equals(row.mResist)) {
+                return false;
+            }
+            if (!mReference.equals(row.mReference)) {
+                return false;
+            }
+            if (!mCastingCost.equals(row.mCastingCost)) {
+                return false;
+            }
+            if (!mMaintenance.equals(row.mMaintenance)) {
+                return false;
+            }
+            if (!mCastingTime.equals(row.mCastingTime)) {
+                return false;
+            }
+            if (!mDuration.equals(row.mDuration)) {
+                return false;
+            }
+            return mWeapons.equals(row.mWeapons);
         }
         return false;
     }
@@ -221,7 +257,7 @@ public class Spell extends ListRow implements HasSourceReference {
         boolean isContainer = canHaveChildren();
         super.prepareForLoad(state);
         mName = I18n.Text("Spell");
-        mAttribute = SkillAttribute.IQ;
+        mAttribute = Skill.getDefaultAttribute("iq");
         mTechLevel = null;
         mCollege = "";
         mPowerSource = isContainer ? "" : getDefaultPowerSource();
@@ -255,7 +291,6 @@ public class Spell extends ListRow implements HasSourceReference {
                     mTechLevel = "";
                 }
             }
-            mAttribute = Enums.extract(m.getString(KEY_ATTRIBUTE), SkillAttribute.values(), SkillAttribute.IQ);
             mCollege = m.getString(KEY_COLLEGE);
             mPowerSource = m.getString(KEY_POWER_SOURCE);
             mSpellClass = m.getString(KEY_SPELL_CLASS);
@@ -297,9 +332,6 @@ public class Spell extends ListRow implements HasSourceReference {
                 } else {
                     w.keyValue(KEY_TECH_LEVEL, "");
                 }
-            }
-            if (mAttribute != SkillAttribute.IQ) {
-                w.keyValue(KEY_ATTRIBUTE, Enums.toId(mAttribute));
             }
             w.keyValueNot(KEY_COLLEGE, mCollege, "");
             w.keyValueNot(KEY_POWER_SOURCE, mPowerSource, "");
@@ -392,13 +424,13 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param name        The name of the spell.
      * @return The calculated spell level.
      */
-    public static SkillLevel calculateLevel(GURPSCharacter character, int points, SkillAttribute attribute, SkillDifficulty difficulty, String college, String powerSource, String name, Set<String> categories) {
+    public static SkillLevel calculateLevel(GURPSCharacter character, int points, String attribute, SkillDifficulty difficulty, String college, String powerSource, String name, Set<String> categories) {
         StringBuilder toolTip       = new StringBuilder();
         int           relativeLevel = difficulty.getBaseRelativeLevel();
         int           level;
 
         if (character != null) {
-            level = attribute.getBaseSkillLevel(character);
+            level = Skill.resolveAttribute(character, attribute);
             if (difficulty == SkillDifficulty.W) {
                 points /= 3;
             }
@@ -691,17 +723,25 @@ public class Spell extends ListRow implements HasSourceReference {
     /** @param text The combined attribute/difficulty to set. */
     // Copied from Skill class
     public void setDifficultyFromText(String text) {
-        SkillAttribute[]  attribute  = SkillAttribute.values();
         SkillDifficulty[] difficulty = SkillDifficulty.values();
         String            input      = text.trim();
-        for (SkillAttribute element : attribute) {
+        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
             // We have to go backwards through the list to avoid the
             // regex grabbing the "H" in "VH".
             for (int j = difficulty.length - 1; j >= 0; j--) {
-                if (input.matches("(?i).*" + element.name() + ".*/.*" + difficulty[j].name() + ".*")) {
-                    setDifficulty(element, difficulty[j]);
+                if (input.matches("(?i).*" + attrDef.getName() + ".*/.*" + difficulty[j].name() + ".*")) {
+                    setDifficulty(attrDef.getID(), difficulty[j]);
                     return;
                 }
+            }
+        }
+        // Special-case for old file formats.
+        // We have to go backwards through the list to avoid the
+        // regex grabbing the "H" in "VH".
+        for (int j = difficulty.length - 1; j >= 0; j--) {
+            if (input.matches("(?i).*base10.*/.*" + difficulty[j].name() + ".*")) {
+                setDifficulty("10", difficulty[j]);
+                return;
             }
         }
     }
@@ -722,7 +762,10 @@ public class Spell extends ListRow implements HasSourceReference {
         if (this instanceof RitualMagicSpell) {
             return (localized ? mDifficulty.toString() : mDifficulty.name());
         }
-        return (localized ? mAttribute.toString() : mAttribute.name()) + "/" + (localized ? mDifficulty.toString() : mDifficulty.name());
+        if (localized) {
+            return Skill.resolveAttributeName(getDataFile(), mAttribute) + "/" + mDifficulty.toString();
+        }
+        return mAttribute + "/" + mDifficulty.name().toLowerCase();
     }
 
     @Override
@@ -763,7 +806,7 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     /** @return The attribute. */
-    public SkillAttribute getAttribute() {
+    public String getAttribute() {
         return mAttribute;
     }
 
@@ -777,8 +820,8 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param difficulty The difficulty to set.
      * @return Whether it was modified.
      */
-    public boolean setDifficulty(SkillAttribute attribute, SkillDifficulty difficulty) {
-        if (mAttribute != attribute || mDifficulty != difficulty) {
+    public boolean setDifficulty(String attribute, SkillDifficulty difficulty) {
+        if (mDifficulty != difficulty || !mAttribute.equals(attribute)) {
             mAttribute = attribute;
             mDifficulty = difficulty;
             updateLevel(false);
