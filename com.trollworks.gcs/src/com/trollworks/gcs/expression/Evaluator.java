@@ -12,16 +12,23 @@
 package com.trollworks.gcs.expression;
 
 import com.trollworks.gcs.expression.function.Abs;
+import com.trollworks.gcs.expression.function.Cbrt;
 import com.trollworks.gcs.expression.function.Ceil;
 import com.trollworks.gcs.expression.function.DisplayDice;
+import com.trollworks.gcs.expression.function.Exp;
 import com.trollworks.gcs.expression.function.ExpressionFunction;
 import com.trollworks.gcs.expression.function.Floor;
 import com.trollworks.gcs.expression.function.If;
+import com.trollworks.gcs.expression.function.Log;
+import com.trollworks.gcs.expression.function.Log10;
+import com.trollworks.gcs.expression.function.Log1p;
 import com.trollworks.gcs.expression.function.Max;
 import com.trollworks.gcs.expression.function.Min;
+import com.trollworks.gcs.expression.function.Pow;
 import com.trollworks.gcs.expression.function.Roll;
 import com.trollworks.gcs.expression.function.Round;
 import com.trollworks.gcs.expression.function.Signed;
+import com.trollworks.gcs.expression.function.Sqrt;
 import com.trollworks.gcs.expression.operator.Add;
 import com.trollworks.gcs.expression.operator.And;
 import com.trollworks.gcs.expression.operator.CloseParen;
@@ -77,15 +84,22 @@ public class Evaluator {
         addDefaultOperator(new Mod());
 
         addDefaultFunction(new Abs());
+        addDefaultFunction(new Cbrt());
         addDefaultFunction(new Ceil());
         addDefaultFunction(new DisplayDice());
+        addDefaultFunction(new Exp());
         addDefaultFunction(new Floor());
         addDefaultFunction(new If());
+        addDefaultFunction(new Log());
+        addDefaultFunction(new Log1p());
+        addDefaultFunction(new Log10());
         addDefaultFunction(new Max());
         addDefaultFunction(new Min());
+        addDefaultFunction(new Pow());
         addDefaultFunction(new Roll());
         addDefaultFunction(new Round());
         addDefaultFunction(new Signed());
+        addDefaultFunction(new Sqrt());
     }
 
     public static final void addDefaultOperator(Operator operator) {
