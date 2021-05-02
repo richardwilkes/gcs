@@ -1216,7 +1216,7 @@ public class TextTemplate {
                             if (!processDescription(key, out, spell)) {
                                 switch (key) {
                                 case KEY_CLASS -> writeEncodedText(out, spell.getSpellClass());
-                                case KEY_COLLEGE -> writeEncodedText(out, spell.getCollege());
+                                case KEY_COLLEGE -> writeEncodedText(out, String.join(", ", spell.getColleges()));
                                 case KEY_MANA_CAST -> writeEncodedText(out, spell.getCastingCost());
                                 case KEY_MANA_MAINTAIN -> writeEncodedText(out, spell.getMaintenance());
                                 case KEY_TIME_CAST -> writeEncodedText(out, spell.getCastingTime());

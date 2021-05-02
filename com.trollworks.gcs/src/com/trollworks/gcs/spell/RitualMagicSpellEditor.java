@@ -70,7 +70,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
 
         mBaseSkillNameField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Base Skill"), spell.getBaseSkillName(), I18n.Text("The name of the base skill, such as \"Ritual Magic\" or \"Thaumatology\""));
         mPrerequisiteSpellsCountField = createNumberField(wrapper2, wrapper2, I18n.Text("Prerequisite Count"), I18n.Text("The penalty to skill level based on the number of prerequisite spells"), mRow.getPrerequisiteSpellsCount(), 2);
-        mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
+        mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), String.join(", ", spell.getColleges()), I18n.Text("The college(s) the spell belongs to; separate multiple colleges with a comma"), 0);
         mPowerSourceField = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
         mClassField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
         mCastingCostField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
@@ -132,7 +132,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         int     columns      = forTemplate ? 8 : 6;
         JPanel  panel        = new JPanel(new ColumnLayout(forCharacter ? 10 : columns));
 
-        JLabel label = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
+        JLabel label             = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
         String difficultyTooltip = I18n.Text("The difficulty of the spell");
         label.setToolTipText(Text.wrapPlainTextForToolTip(difficultyTooltip));
         panel.add(label);
@@ -169,7 +169,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         if (mHasTechLevel != null) {
             modified |= mRow.setTechLevel(mHasTechLevel.isSelected() ? mTechLevel.getText() : null);
         }
-        modified |= mRow.setCollege(mCollegeField.getText());
+        modified |= mRow.setColleges(getColleges());
         modified |= mRow.setPowerSource(mPowerSourceField.getText());
         modified |= mRow.setSpellClass(mClassField.getText());
         modified |= mRow.setCastingCost(mCastingCostField.getText());
@@ -192,7 +192,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     }
 
     protected void recalculateLevel(JTextField levelField) {
-        SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mBaseSkillNameField.getText(), mCollegeField.getText(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getAdjustedPoints());
+        SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mBaseSkillNameField.getText(), getColleges(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getAdjustedPoints());
         levelField.setText(getDisplayLevel(level.getLevel(), level.getRelativeLevel()));
         levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
     }

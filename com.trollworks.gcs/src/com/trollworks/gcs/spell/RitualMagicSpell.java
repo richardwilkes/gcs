@@ -14,7 +14,6 @@ package com.trollworks.gcs.spell;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
@@ -29,7 +28,9 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -92,7 +93,7 @@ public class RitualMagicSpell extends Spell {
      */
     @Override
     public void updateLevel(boolean notify) {
-        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getBaseSkillName(), getCollege(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, getPoints());
+        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getBaseSkillName(), getColleges(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, getPoints());
         if (mLevel == null || !mLevel.isSameLevelAs(skillLevel)) {
             mLevel = skillLevel;
             if (notify) {
@@ -107,18 +108,45 @@ public class RitualMagicSpell extends Spell {
      * @param character         The character the spell will be attached to.
      * @param name              The name of the spell.
      * @param baseSkillName     The base name of the skill the Ritual Magic Spell defaults from.
-     * @param college           The college of the spell.
+     * @param colleges          The colleges of the spell.
      * @param powerSource       The power source of the spell.
      * @param difficulty        The difficulty of the spell.
      * @param prereqSpellsCount The number of prerequisite spells for the spell with this name.
      * @param points            The number of points spent in the spell.
      * @return The calculated spell level.
      */
-    public static SkillLevel calculateLevel(GURPSCharacter character, String name, String baseSkillName, String college, String powerSource, Set<String> categories, SkillDifficulty difficulty, int prereqSpellsCount, int points) {
-        if (college == null) {
-            college = "";
+    public static SkillLevel calculateLevel(GURPSCharacter character, String name, String baseSkillName, List<String> colleges, String powerSource, Set<String> categories, SkillDifficulty difficulty, int prereqSpellsCount, int points) {
+        if (colleges == null) {
+            colleges = new ArrayList<>();
         }
+        SkillLevel skillLevel = null;
+        if (colleges.isEmpty()) {
+            skillLevel = determineSkillLevelForCollege(character, name, baseSkillName, "", categories, difficulty, prereqSpellsCount, points);
+        } else {
+            for (String college : colleges) {
+                SkillLevel si = determineSkillLevelForCollege(character, name, baseSkillName, college, categories, difficulty, prereqSpellsCount, points);
+                if (skillLevel == null || skillLevel.mLevel < si.mLevel) {
+                    skillLevel = si;
+                }
+            }
+        }
+        // Apply bonuses for spells
+        if (character != null) {
+            StringBuilder tip         = new StringBuilder(skillLevel.mToolTip);
+            int           bonusLevels = 0;
+            for (String college : colleges) {
+                bonusLevels = Spell.getSpellBonusesFor(character, ID_COLLEGE, college, categories, tip);
+            }
+            bonusLevels += Spell.getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, tip);
+            bonusLevels += Spell.getSpellBonusesFor(character, ID_NAME, name, categories, tip);
+            skillLevel.mLevel += bonusLevels;
+            skillLevel.mRelativeLevel += bonusLevels;
+            skillLevel.mToolTip = tip.toString();
+        }
+        return skillLevel;
+    }
 
+    private static SkillLevel determineSkillLevelForCollege(GURPSCharacter character, String name, String baseSkillName, String college, Set<String> categories, SkillDifficulty difficulty, int prereqSpellsCount, int points) {
         SkillDefault def        = new SkillDefault("skill", college.isBlank() ? null : baseSkillName, college, -prereqSpellsCount);
         SkillLevel   skillLevel = Technique.calculateTechniqueLevel(character, name, college, categories, def, difficulty, points, false, true, 0);
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
@@ -129,21 +157,7 @@ public class RitualMagicSpell extends Spell {
         // calculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
         fallbackSkillLevel.mRelativeLevel += fallbackDef.getModifier();
 
-        if (skillLevel.mLevel < fallbackSkillLevel.mLevel) {
-            skillLevel = fallbackSkillLevel;
-        }
-
-        // And then apply bonuses for spells
-        if (character != null) {
-            StringBuilder tip         = new StringBuilder(skillLevel.mToolTip);
-            int           bonusLevels = Spell.getSpellBonusesFor(character, ID_COLLEGE, college, categories, tip);
-            bonusLevels += Spell.getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, tip);
-            bonusLevels += Spell.getSpellBonusesFor(character, ID_NAME, name, categories, tip);
-            skillLevel.mLevel += bonusLevels;
-            skillLevel.mRelativeLevel += bonusLevels;
-            skillLevel.mToolTip = tip.toString();
-        }
-        return skillLevel;
+        return skillLevel.mLevel >= fallbackSkillLevel.mLevel ? skillLevel : fallbackSkillLevel;
     }
 
     @Override
@@ -210,23 +224,29 @@ public class RitualMagicSpell extends Spell {
      * @return {@code true} if this technique has its default satisfied.
      */
     public boolean satisfied(StringBuilder builder, String prefix) {
-        String college = getCollege();
-        if (college == null || college.isBlank()) {
+        List<String> colleges = getColleges();
+        if (colleges.isEmpty()) {
             if (builder != null) {
                 builder.append(MessageFormat.format(I18n.Text("{0}Must be assigned to a college\n"), prefix));
             }
             return false;
         }
-
-        Skill skill = getCharacter().getBestSkillNamed(mBaseSkillName, college, false, new HashSet<>());
-        if (skill == null) {
-            skill = getCharacter().getBestSkillNamed(mBaseSkillName, null, false, new HashSet<>());
-            if (skill == null) {
-                if (builder != null) {
-                    builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1} ({2})\n"), prefix, mBaseSkillName, college));
-                }
-                return false;
+        GURPSCharacter character = getCharacter();
+        for (String college : colleges) {
+            if (character.getBestSkillNamed(mBaseSkillName, college, false, new HashSet<>()) != null) {
+                return true;
             }
+        }
+        if (character.getBestSkillNamed(mBaseSkillName, null, false, new HashSet<>()) == null) {
+            if (builder != null) {
+                builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1} ({2})"), prefix, mBaseSkillName, colleges.get(0)));
+                int size = colleges.size();
+                for (int i = 1; i < size; i++) {
+                    builder.append(MessageFormat.format(I18n.Text("or {1} ({2})"), mBaseSkillName, colleges.get(i)));
+                }
+                builder.append("\n");
+            }
+            return false;
         }
         return true;
     }

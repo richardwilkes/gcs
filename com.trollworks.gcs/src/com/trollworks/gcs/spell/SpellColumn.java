@@ -137,7 +137,7 @@ public enum SpellColumn {
         @Override
         public String getDataAsText(Spell spell) {
             if (!spell.canHaveChildren()) {
-                return spell.getCollege();
+                return String.join(", ", spell.getColleges());
             }
             return "";
         }

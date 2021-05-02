@@ -30,6 +30,7 @@ import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
+import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -44,10 +45,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
-    private static final   int    CURRENT_JSON_VERSION = 1;
+    private static final   int    CURRENT_JSON_VERSION = 2;
+    private static final   int    COLLEGE_LIST_VERSION = 2; // First version with college lists (post v4.29.1)
     public static final    String KEY_SPELL            = "spell";
     public static final    String KEY_SPELL_CONTAINER  = "spell_container";
     private static final   String KEY_NAME             = "name";
@@ -72,9 +75,11 @@ public class Spell extends ListRow implements HasSourceReference {
     public static final String ID_POINTS_COLLEGE      = "spell.college.points";
     public static final String ID_POINTS_POWER_SOURCE = "spell.power_source.points";
 
+    private static final Pattern COLLEGE_OR = Pattern.compile("\\s+or\\s+", Pattern.CASE_INSENSITIVE);
+
     private   String            mName;
     private   String            mTechLevel;
-    private   String            mCollege;
+    private   List<String>      mColleges;
     private   String            mPowerSource;
     private   String            mSpellClass;
     private   String            mResist;
@@ -101,7 +106,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mAttribute = Skill.getDefaultAttribute("iq");
         mDifficulty = SkillDifficulty.H;
         mTechLevel = null;
-        mCollege = "";
+        mColleges = new ArrayList<>();
         mPowerSource = isContainer ? "" : getDefaultPowerSource();
         mSpellClass = isContainer ? "" : getDefaultSpellClass();
         mResist = "";
@@ -129,7 +134,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mAttribute = spell.mAttribute;
         mDifficulty = spell.mDifficulty;
         mTechLevel = spell.mTechLevel;
-        mCollege = spell.mCollege;
+        mColleges = new ArrayList<>(spell.mColleges);
         mPowerSource = spell.mPowerSource;
         mSpellClass = spell.mSpellClass;
         mResist = spell.mResist;
@@ -201,7 +206,7 @@ public class Spell extends ListRow implements HasSourceReference {
             if (!mName.equals(row.mName)) {
                 return false;
             }
-            if (!mCollege.equals(row.mCollege)) {
+            if (!mColleges.equals(row.mColleges)) {
                 return false;
             }
             if (!mPowerSource.equals(row.mPowerSource)) {
@@ -260,7 +265,7 @@ public class Spell extends ListRow implements HasSourceReference {
         mName = I18n.Text("Spell");
         mAttribute = Skill.getDefaultAttribute("iq");
         mTechLevel = null;
-        mCollege = "";
+        mColleges = new ArrayList<>();
         mPowerSource = isContainer ? "" : getDefaultPowerSource();
         mSpellClass = isContainer ? "" : getDefaultSpellClass();
         mResist = "";
@@ -292,7 +297,27 @@ public class Spell extends ListRow implements HasSourceReference {
                     mTechLevel = "";
                 }
             }
-            mCollege = m.getString(KEY_COLLEGE);
+            if (state.mDataItemVersion >= COLLEGE_LIST_VERSION) {
+                JsonArray a    = m.getArray(KEY_COLLEGE);
+                int       size = a.size();
+                for (int i = 0; i < size; i++) {
+                    String s = a.getString(i);
+                    if (!s.isBlank()) {
+                        mColleges.add(s);
+                    }
+                }
+                Collections.sort(mColleges);
+            } else {
+                // Legacy (v4.29.1 and earlier)
+                String s = m.getString(KEY_COLLEGE);
+                if (!s.isBlank()) {
+                    for (String college : COLLEGE_OR.split(s)) {
+                        if (!college.isBlank()) {
+                            mColleges.add(college);
+                        }
+                    }
+                }
+            }
             mPowerSource = m.getString(KEY_POWER_SOURCE);
             mSpellClass = m.getString(KEY_SPELL_CLASS);
             mResist = m.getString(KEY_RESIST);
@@ -334,7 +359,14 @@ public class Spell extends ListRow implements HasSourceReference {
                     w.keyValue(KEY_TECH_LEVEL, "");
                 }
             }
-            w.keyValueNot(KEY_COLLEGE, mCollege, "");
+            if (!mColleges.isEmpty()) {
+                w.key(KEY_COLLEGE);
+                w.startArray();
+                for (String college : mColleges) {
+                    w.value(college);
+                }
+                w.endArray();
+            }
             w.keyValueNot(KEY_POWER_SOURCE, mPowerSource, "");
             w.keyValueNot(KEY_SPELL_CLASS, mSpellClass, "");
             w.keyValueNot(KEY_RESIST, mResist, "");
@@ -352,7 +384,7 @@ public class Spell extends ListRow implements HasSourceReference {
                 w.startMap();
                 w.keyValue("level", level);
                 StringBuilder builder = new StringBuilder();
-                int           rsl = getAdjustedRelativeLevel();
+                int           rsl     = getAdjustedRelativeLevel();
                 if (rsl == Integer.MIN_VALUE) {
                     builder.append("-");
                 } else {
@@ -418,7 +450,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return The calculated spell skill level. */
     private SkillLevel calculateLevelSelf() {
-        return calculateLevel(getCharacter(), getPoints(), mAttribute, mDifficulty, mCollege, mPowerSource, mName, getCategories());
+        return calculateLevel(getCharacter(), getPoints(), mAttribute, mDifficulty, mColleges, mPowerSource, mName, getCategories());
     }
 
     /**
@@ -440,12 +472,12 @@ public class Spell extends ListRow implements HasSourceReference {
      * @param character   The character the spell will be attached to.
      * @param points      The number of points spent in the spell.
      * @param difficulty  The difficulty of the spell.
-     * @param college     The college the spell belongs to.
+     * @param colleges    The colleges the spell belongs to.
      * @param powerSource The source of power for the spell.
      * @param name        The name of the spell.
      * @return The calculated spell level.
      */
-    public static SkillLevel calculateLevel(GURPSCharacter character, int points, String attribute, SkillDifficulty difficulty, String college, String powerSource, String name, Set<String> categories) {
+    public static SkillLevel calculateLevel(GURPSCharacter character, int points, String attribute, SkillDifficulty difficulty, List<String> colleges, String powerSource, String name, Set<String> categories) {
         StringBuilder toolTip       = new StringBuilder();
         int           relativeLevel = difficulty.getBaseRelativeLevel();
         int           level;
@@ -467,7 +499,9 @@ public class Spell extends ListRow implements HasSourceReference {
             }
 
             if (level != -1) {
-                relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college, categories, toolTip);
+                for (String college : colleges) {
+                    relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college, categories, toolTip);
+                }
                 relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, toolTip);
                 relativeLevel += getSpellBonusesFor(character, ID_NAME, name, categories, toolTip);
                 level += relativeLevel;
@@ -511,18 +545,20 @@ public class Spell extends ListRow implements HasSourceReference {
         return false;
     }
 
-    /** @return The college. */
-    public String getCollege() {
-        return mCollege;
+    /** @return The colleges. */
+    public List<String> getColleges() {
+        return mColleges;
     }
 
     /**
-     * @param college The college to set.
+     * @param colleges The colleges to set.
      * @return Whether it was changed.
      */
-    public boolean setCollege(String college) {
-        if (!mCollege.equals(college)) {
-            mCollege = college;
+    public boolean setColleges(List<String> colleges) {
+        colleges = new ArrayList<>(colleges);
+        Collections.sort(colleges);
+        if (!mColleges.equals(colleges)) {
+            mColleges = colleges;
             notifyOfChange();
             return true;
         }
@@ -658,7 +694,9 @@ public class Spell extends ListRow implements HasSourceReference {
         if (character != null) {
             StringBuilder tooltip    = new StringBuilder();
             Set<String>   categories = getCategories();
-            getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, getCollege(), categories, tooltip);
+            for (String college : getColleges()) {
+                getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, tooltip);
+            }
             getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, tooltip);
             getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, tooltip);
             if (!tooltip.isEmpty()) {
@@ -683,7 +721,9 @@ public class Spell extends ListRow implements HasSourceReference {
         GURPSCharacter character = getCharacter();
         if (character != null) {
             Set<String> categories = getCategories();
-            points += getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, getCollege(), categories, null);
+            for (String college : getColleges()) {
+                points += getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, null);
+            }
             points += getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, null);
             points += getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, null);
             if (points < 0) {
@@ -794,11 +834,13 @@ public class Spell extends ListRow implements HasSourceReference {
         if (getName().toLowerCase().contains(text)) {
             return true;
         }
-        if (getCollege().toLowerCase().contains(text)) {
-            return true;
-        }
         if (getSpellClass().toLowerCase().contains(text)) {
             return true;
+        }
+        for (String college : getColleges()) {
+            if (college.toLowerCase().contains(text)) {
+                return true;
+            }
         }
         return super.contains(text, lowerCaseOnly);
     }
@@ -806,11 +848,9 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-
         builder.append(getName());
         if (!canHaveChildren()) {
             String techLevel = getTechLevel();
-
             if (techLevel != null) {
                 builder.append("/TL");
                 if (!techLevel.isEmpty()) {
@@ -861,7 +901,9 @@ public class Spell extends ListRow implements HasSourceReference {
     public void fillWithNameableKeys(Set<String> set) {
         super.fillWithNameableKeys(set);
         extractNameables(set, mName);
-        extractNameables(set, mCollege);
+        for (String college : getColleges()) {
+            extractNameables(set, college);
+        }
         extractNameables(set, mPowerSource);
         extractNameables(set, mCastingCost);
         extractNameables(set, mMaintenance);
@@ -878,7 +920,11 @@ public class Spell extends ListRow implements HasSourceReference {
     public void applyNameableKeys(Map<String, String> map) {
         super.applyNameableKeys(map);
         mName = nameNameables(map, mName);
-        mCollege = nameNameables(map, mCollege);
+        List<String> colleges = new ArrayList<>();
+        for (String college : getColleges()) {
+            colleges.add(nameNameables(map, college));
+        }
+        setColleges(colleges);
         mPowerSource = nameNameables(map, mPowerSource);
         mSpellClass = nameNameables(map, mSpellClass);
         mCastingCost = nameNameables(map, mCastingCost);
