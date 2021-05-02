@@ -34,7 +34,7 @@ import java.util.zip.ZipInputStream;
 
 public class Library implements Comparable<Library> {
     public static final  Version       MINIMUM_LIBRARY_VERSION             = new Version();
-    public static final  Version       INCOMPATIBLE_FUTURE_LIBRARY_VERSION = new Version(3, 0, 0);
+    public static final  Version       INCOMPATIBLE_FUTURE_LIBRARY_VERSION = new Version(4, 0, 0);
     private static final String        RELEASE_FILE                        = "release.txt";
     private static final String        KEY_TITLE                           = "title";
     private static final String        KEY_PATH                            = "path";
