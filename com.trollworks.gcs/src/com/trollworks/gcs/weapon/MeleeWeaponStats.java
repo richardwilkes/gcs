@@ -98,6 +98,15 @@ public class MeleeWeaponStats extends WeaponStats {
         w.keyValueNot(KEY_REACH, mReach, "");
         w.keyValueNot(KEY_PARRY, mParry, "");
         w.keyValueNot(KEY_BLOCK, mBlock, "");
+
+        // Emit the calculated values for third parties
+        w.key("calc");
+        w.startMap();
+        w.keyValue("level", Math.max(getSkillLevel(), 0));
+        w.keyValue("parry", getResolvedParry(null));
+        w.keyValue("block", getResolvedBlock(null));
+        w.keyValue("damage", getDamage().getResolvedDamage());
+        w.endMap();
     }
 
     /** @return The parry. */

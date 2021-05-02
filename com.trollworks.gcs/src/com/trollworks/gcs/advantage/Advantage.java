@@ -328,6 +328,12 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             w.keyValueNot(KEY_USER_DESC, mUserDesc, "");
         }
         w.keyValueNot(KEY_REFERENCE, mReference, "");
+
+        // Emit the calculated values for third parties
+        w.key("calc");
+        w.startMap();
+        w.keyValue("points", getAdjustedPoints());
+        w.endMap();
     }
 
     /** @return The container type. */

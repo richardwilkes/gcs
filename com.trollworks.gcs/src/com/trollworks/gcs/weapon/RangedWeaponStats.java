@@ -111,6 +111,14 @@ public class RangedWeaponStats extends WeaponStats {
         w.keyValueNot(KEY_SHOTS, mShots, "");
         w.keyValueNot(KEY_BULK, mBulk, "");
         w.keyValueNot(KEY_RECOIL, mRecoil, "");
+
+        // Emit the calculated values for third parties
+        w.key("calc");
+        w.startMap();
+        w.keyValue("level", Math.max(getSkillLevel(), 0));
+        w.keyValue("range", getResolvedRange());
+        w.keyValue("damage", getDamage().getResolvedDamage());
+        w.endMap();
     }
 
     /** @return The accuracy. */
