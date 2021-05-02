@@ -91,8 +91,6 @@ public class TextTemplate {
     private static final String KEY_AMMO_TYPE                         = "AmmoType:";
     private static final String KEY_ATTACK_MODES_LOOP_END             = "ATTACK_MODES_LOOP_END";
     private static final String KEY_ATTACK_MODES_LOOP_START           = "ATTACK_MODES_LOOP_START";
-    private static final String KEY_ATTRIBUTE_LOOP_END                = "ATTRIBUTE_LOOP_END";
-    private static final String KEY_ATTRIBUTE_LOOP_START              = "ATTRIBUTE_LOOP_START";
     private static final String KEY_ATTRIBUTE_POINTS                  = "ATTRIBUTE_POINTS";
     private static final String KEY_BASIC_LIFT                        = "BASIC_LIFT";
     private static final String KEY_BASIC_MOVE                        = "BASIC_MOVE";
@@ -220,6 +218,8 @@ public class TextTemplate {
     private static final String KEY_PORTRAIT                          = "PORTRAIT";
     private static final String KEY_PORTRAIT_EMBEDDED                 = "PORTRAIT_EMBEDDED";
     private static final String KEY_PREFIX_DEPTH                      = "DEPTHx";
+    private static final String KEY_PRIMARY_ATTRIBUTE_LOOP_END        = "PRIMARY_ATTRIBUTE_LOOP_END";
+    private static final String KEY_PRIMARY_ATTRIBUTE_LOOP_START      = "PRIMARY_ATTRIBUTE_LOOP_START";
     private static final String KEY_QTY                               = "QTY";
     private static final String KEY_QUIRK_POINTS                      = "QUIRK_POINTS";
     private static final String KEY_QUIRKS_LOOP_END                   = "QUIRKS_LOOP_END";
@@ -240,6 +240,8 @@ public class TextTemplate {
     private static final String KEY_RSL                               = "RSL";
     private static final String KEY_RUNNING_SHOVE                     = "RUNNING_SHOVE";
     private static final String KEY_SATISFIED                         = "SATISFIED";
+    private static final String KEY_SECONDARY_ATTRIBUTE_LOOP_END      = "SECONDARY_ATTRIBUTE_LOOP_END";
+    private static final String KEY_SECONDARY_ATTRIBUTE_LOOP_START    = "SECONDARY_ATTRIBUTE_LOOP_START";
     private static final String KEY_SHIFT_SLIGHTLY                    = "SHIFT_SLIGHTLY";
     private static final String KEY_SHOTS                             = "SHOTS";
     private static final String KEY_SHOVE                             = "SHOVE";
@@ -699,8 +701,10 @@ public class TextTemplate {
                 processReactionLoop(out, extractUpToMarker(in, KEY_REACTION_LOOP_END));
             } else if (key.startsWith(KEY_CONDITIONAL_MODIFIERS_LOOP_START)) {
                 processConditionalModifiersLoop(out, extractUpToMarker(in, KEY_CONDITIONAL_MODIFIERS_LOOP_END));
-            } else if (key.startsWith(KEY_ATTRIBUTE_LOOP_START)) {
-                processAttributeLoop(out, extractUpToMarker(in, KEY_ATTRIBUTE_LOOP_END));
+            } else if (key.startsWith(KEY_PRIMARY_ATTRIBUTE_LOOP_START)) {
+                processAttributeLoop(out, extractUpToMarker(in, KEY_PRIMARY_ATTRIBUTE_LOOP_END), true);
+            } else if (key.startsWith(KEY_SECONDARY_ATTRIBUTE_LOOP_START)) {
+                processAttributeLoop(out, extractUpToMarker(in, KEY_SECONDARY_ATTRIBUTE_LOOP_END), false);
             } else if (key.startsWith(KEY_POINT_POOL_LOOP_START)) {
                 processPointPoolLoop(out, extractUpToMarker(in, KEY_POINT_POOL_LOOP_END));
             } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
@@ -1943,47 +1947,49 @@ public class TextTemplate {
         }
     }
 
-    private void processAttributeLoop(BufferedWriter out, String contents) throws IOException {
+    private void processAttributeLoop(BufferedWriter out, String contents, boolean primary) throws IOException {
         int                length           = contents.length();
         StringBuilder      keyBuffer        = new StringBuilder();
         boolean            lookForKeyMarker = true;
         GURPSCharacter     gch              = mSheet.getCharacter();
         List<AttributeDef> defs             = AttributeDef.getOrdered(gch.getSettings().getAttributes());
         for (AttributeDef def : defs) {
-            Attribute attr = gch.getAttributes().get(def.getID());
-            if (attr != null) {
-                for (int i = 0; i < length; i++) {
-                    char ch = contents.charAt(i);
-                    if (lookForKeyMarker) {
-                        if (ch == '@') {
-                            lookForKeyMarker = false;
-                        } else {
-                            out.append(ch);
-                        }
-                    } else {
-                        if (ch == '_' || Character.isLetterOrDigit(ch)) {
-                            keyBuffer.append(ch);
-                        } else {
-                            String key = keyBuffer.toString();
-                            i--;
-                            if (mEnhancedKeyParsing && ch == '@') {
-                                i++;        // Allow KEYs to be surrounded by @KEY@
+            if (def.getType() != AttributeType.POOL && def.isPrimary() == primary) {
+                Attribute attr = gch.getAttributes().get(def.getID());
+                if (attr != null) {
+                    for (int i = 0; i < length; i++) {
+                        char ch = contents.charAt(i);
+                        if (lookForKeyMarker) {
+                            if (ch == '@') {
+                                lookForKeyMarker = false;
+                            } else {
+                                out.append(ch);
                             }
-                            keyBuffer.setLength(0);
-                            lookForKeyMarker = true;
-                            switch (key) {
-                            case KEY_ID -> writeEncodedText(out, "pool_" + def.getID());
-                            case KEY_NAME -> writeEncodedText(out, def.getName());
-                            case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
-                            case KEY_VALUE -> {
-                                if (def.getType() == AttributeType.DECIMAL) {
-                                    writeEncodedText(out, Numbers.formatWithForcedSign(attr.getDoubleValue(gch)));
-                                } else {
-                                    writeEncodedText(out, Numbers.formatWithForcedSign(attr.getIntValue(gch)));
+                        } else {
+                            if (ch == '_' || Character.isLetterOrDigit(ch)) {
+                                keyBuffer.append(ch);
+                            } else {
+                                String key = keyBuffer.toString();
+                                i--;
+                                if (mEnhancedKeyParsing && ch == '@') {
+                                    i++;        // Allow KEYs to be surrounded by @KEY@
                                 }
-                            }
-                            case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
-                            default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                keyBuffer.setLength(0);
+                                lookForKeyMarker = true;
+                                switch (key) {
+                                case KEY_ID -> writeEncodedText(out, def.getID());
+                                case KEY_NAME -> writeEncodedText(out, def.getName());
+                                case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
+                                case KEY_VALUE -> {
+                                    if (def.getType() == AttributeType.DECIMAL) {
+                                        writeEncodedText(out, Numbers.formatWithForcedSign(attr.getDoubleValue(gch)));
+                                    } else {
+                                        writeEncodedText(out, Numbers.formatWithForcedSign(attr.getIntValue(gch)));
+                                    }
+                                }
+                                case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
+                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                }
                             }
                         }
                     }
@@ -2021,7 +2027,7 @@ public class TextTemplate {
                                 keyBuffer.setLength(0);
                                 lookForKeyMarker = true;
                                 switch (key) {
-                                case KEY_ID -> writeEncodedText(out, "pool_" + def.getID());
+                                case KEY_ID -> writeEncodedText(out, def.getID());
                                 case KEY_NAME -> writeEncodedText(out, def.getName());
                                 case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
                                 case KEY_CURRENT -> writeEncodedText(out, Numbers.formatWithForcedSign(attr.getCurrentIntValue(gch)));
