@@ -35,6 +35,14 @@ public class AttributeListPanel extends BandedPanel {
         fillAttributes();
     }
 
+    public Map<String, AttributeDef> getAttributes() {
+        return mAttributes;
+    }
+
+    public Runnable getAdjustCallback() {
+        return mAdjustCallback;
+    }
+
     @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return 16;

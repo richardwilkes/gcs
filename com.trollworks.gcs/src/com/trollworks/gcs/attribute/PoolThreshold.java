@@ -62,12 +62,10 @@ public class PoolThreshold implements Cloneable {
         mDivisor = m.getInt(KEY_DIVISOR);
         mAddition = m.getInt(KEY_ADDITION);
         mOps = new ArrayList<>();
-        if (m.has(KEY_OPS)) {
-            JsonArray a      = m.getArray(KEY_OPS);
-            int       length = a.size();
-            for (int i = 0; i < length; i++) {
-                mOps.add(Enums.extract(a.getString(i), ThresholdOps.values(), ThresholdOps.UNKNOWN));
-            }
+        JsonArray a      = m.getArray(KEY_OPS);
+        int       length = a.size();
+        for (int i = 0; i < length; i++) {
+            mOps.add(Enums.extract(a.getString(i), ThresholdOps.values(), ThresholdOps.UNKNOWN));
         }
     }
 
