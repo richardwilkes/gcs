@@ -67,6 +67,8 @@ public class AttributeEditor extends JPanel {
 
     public void reset(Map<String, AttributeDef> attributes) {
         mListPanel.reset(attributes);
+        mListPanel.getAdjustCallback().run();
+        revalidate();
         EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
     }
 
@@ -84,10 +86,7 @@ public class AttributeEditor extends JPanel {
                 if (!JSON_TYPE_NAME.equals(m.getString(DataFile.KEY_TYPE))) {
                     throw new IOException("invalid data type");
                 }
-                mListPanel.reset(AttributeDef.load(m.getArray(JSON_TYPE_NAME)));
-                mListPanel.getAdjustCallback().run();
-                revalidate();
-                EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
+                reset(AttributeDef.load(m.getArray(JSON_TYPE_NAME)));
             } catch (IOException ioe) {
                 Log.error(ioe);
                 WindowUtils.showError(this, I18n.Text("Unable to import attribute settings."));
