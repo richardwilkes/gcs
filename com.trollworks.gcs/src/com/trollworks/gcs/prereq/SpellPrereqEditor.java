@@ -24,7 +24,7 @@ import javax.swing.JComboBox;
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
     private static final String   CHANGE_TYPE = "ChangeSpellType";
-    private static final String[] TYPES       = {SpellPrereq.KEY_NAME, SpellPrereq.KEY_ANY, SpellPrereq.KEY_COLLEGE, SpellPrereq.KEY_COLLEGE_COUNT};
+    private static final String[] TYPES       = {SpellPrereq.KEY_NAME, SpellPrereq.KEY_ANY, SpellPrereq.KEY_COLLEGE, SpellPrereq.KEY_COLLEGE_COUNT, SpellPrereq.KEY_CATEGORY};
 
     /**
      * Creates a new spell prerequisite editor panel.
@@ -52,10 +52,7 @@ public class SpellPrereqEditor extends PrereqEditor {
 
         row = new FlexRow();
         row.add(addChangeTypePopup());
-        if (SpellPrereq.KEY_NAME.equals(type)) {
-            row.add(addStringCompareCombo(prereq.getStringCriteria(), ""));
-            row.add(addStringCompareField(prereq.getStringCriteria()));
-        } else if (SpellPrereq.KEY_COLLEGE.equals(type)) {
+        if (SpellPrereq.KEY_NAME.equals(type) || SpellPrereq.KEY_CATEGORY.equals(type) || SpellPrereq.KEY_COLLEGE.equals(type)) {
             row.add(addStringCompareCombo(prereq.getStringCriteria(), ""));
             row.add(addStringCompareField(prereq.getStringCriteria()));
         } else {
@@ -65,7 +62,7 @@ public class SpellPrereqEditor extends PrereqEditor {
     }
 
     private JComboBox<Object> addChangeTypePopup() {
-        String[] titles    = {I18n.Text("whose name"), I18n.Text("of any kind"), I18n.Text("whose college name"), I18n.Text("from different colleges")};
+        String[] titles    = {I18n.Text("whose name"), I18n.Text("of any kind"), I18n.Text("whose college name"), I18n.Text("from different colleges"), I18n.Text("whose category name")};
         int      selection = 0;
         String   current   = ((SpellPrereq) mPrereq).getType();
         int      length    = TYPES.length;
