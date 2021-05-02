@@ -32,6 +32,7 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
+import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -341,8 +342,28 @@ public class Spell extends ListRow implements HasSourceReference {
             w.keyValueNot(KEY_MAINTENANCE_COST, mMaintenance, "");
             w.keyValueNot(KEY_CASTING_TIME, mCastingTime, "");
             w.keyValueNot(KEY_DURATION, mDuration, "");
-            w.keyValueNot(KEY_POINTS, mPoints, 1);
+            w.keyValue(KEY_POINTS, mPoints);
             WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
+
+            // Emit the calculated values for third parties
+            int level = getLevel();
+            if (level > 0) {
+                w.key("calc");
+                w.startMap();
+                w.keyValue("level", level);
+                StringBuilder builder = new StringBuilder();
+                int           rsl = getAdjustedRelativeLevel();
+                if (rsl == Integer.MIN_VALUE) {
+                    builder.append("-");
+                } else {
+                    if (!(this instanceof RitualMagicSpell)) {
+                        builder.append(Skill.resolveAttributeName(getDataFile(), getAttribute()));
+                    }
+                    builder.append(Numbers.formatWithForcedSign(rsl));
+                }
+                w.keyValue("rsl", builder.toString());
+                w.endMap();
+            }
         }
     }
 
@@ -948,5 +969,34 @@ public class Spell extends ListRow implements HasSourceReference {
             }
         }
         return I18n.Text("Ritual: ") + ritual + time + cost;
+    }
+
+    public int getAdjustedRelativeLevel() {
+        if (!canHaveChildren()) {
+            if (getCharacter() != null) {
+                if (getLevel() < 0) {
+                    return Integer.MIN_VALUE;
+                }
+                return getRelativeLevel();
+            }
+        } else if (getTemplate() != null) {
+            int points = getPoints();
+            if (points > 0) {
+                SkillDifficulty difficulty = getDifficulty();
+                int             level      = difficulty.getBaseRelativeLevel();
+                if (difficulty == SkillDifficulty.W) {
+                    points /= 3;
+                }
+                if (points > 1) {
+                    if (points < 4) {
+                        level++;
+                    } else {
+                        level += 1 + points / 4;
+                    }
+                }
+                return level;
+            }
+        }
+        return Integer.MIN_VALUE;
     }
 }

@@ -153,11 +153,30 @@ public class Attribute {
         }
     }
 
-    public void toJSON(JsonWriter w) throws IOException {
+    public void toJSON(GURPSCharacter character, JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(KEY_ATTR_ID, mAttrID);
         w.keyValue(KEY_ADJ, mAdjustment);
         w.keyValue(KEY_DAMAGE, mDamage);
+
+        // Emit the calculated values for third parties
+        AttributeDef def = getAttrDef(character);
+        if (def != null) {
+            w.key("calc");
+            w.startMap();
+            AttributeType type = def.getType();
+            if (type == AttributeType.DECIMAL) {
+                w.keyValue("value", getDoubleValue(character));
+            } else {
+                w.keyValue("value", getIntValue(character));
+                if (type == AttributeType.POOL) {
+                    w.keyValue("current", getCurrentIntValue(character));
+                }
+            }
+            w.keyValue("points", getPointCost(character));
+            w.endMap();
+        }
+
         w.endMap();
     }
 }

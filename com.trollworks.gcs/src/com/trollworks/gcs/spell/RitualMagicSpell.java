@@ -196,11 +196,6 @@ public class RitualMagicSpell extends Spell {
         super.saveSelf(w, saveType);
         w.keyValue(KEY_BASE_SKILL_NAME, mBaseSkillName);
         w.keyValueNot(KEY_PREREQ_COUNT, mPrerequisiteSpellsCount, 0);
-        // Spells assume a default of 1 point, while RM assumes a default of 0, so we have to make
-        // sure it gets written
-        if (mPoints == 1) {
-            w.keyValue(KEY_POINTS, 1);
-        }
     }
 
     @Override

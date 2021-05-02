@@ -189,61 +189,20 @@ public enum SkillColumn {
 
         @Override
         public Object getData(Skill skill) {
-            return Integer.valueOf(getRelativeLevel(skill));
-        }
-
-        private int getRelativeLevel(Skill skill) {
-            if (!skill.canHaveChildren()) {
-                if (skill.getCharacter() != null) {
-                    if (skill.getLevel() < 0) {
-                        return Integer.MIN_VALUE;
-                    }
-                    int level = skill.getRelativeLevel();
-                    if (skill instanceof Technique) {
-                        level += ((Technique) skill).getDefault().getModifier();
-                    }
-                    return level;
-                } else if (skill.getTemplate() != null) {
-                    int points = skill.getPoints();
-                    if (points > 0) {
-                        SkillDifficulty difficulty = skill.getDifficulty();
-                        int             level;
-                        if (skill instanceof Technique) {
-                            if (difficulty != SkillDifficulty.A) {
-                                points--;
-                            }
-                            return points + ((Technique) skill).getDefault().getModifier();
-                        }
-                        level = difficulty.getBaseRelativeLevel();
-                        if (difficulty == SkillDifficulty.W) {
-                            points /= 3;
-                        }
-                        if (points > 1) {
-                            if (points < 4) {
-                                level++;
-                            } else {
-                                level += 1 + points / 4;
-                            }
-                        }
-                        return level;
-                    }
-                }
-            }
-            return Integer.MIN_VALUE;
+            return Integer.valueOf(skill.getAdjustedRelativeLevel());
         }
 
         @Override
         public String getDataAsText(Skill skill) {
             if (!skill.canHaveChildren()) {
-                int           level = getRelativeLevel(skill);
+                int           level = skill.getAdjustedRelativeLevel();
                 StringBuilder builder;
-
                 if (level == Integer.MIN_VALUE) {
                     return "-";
                 }
                 builder = new StringBuilder();
                 if (!(skill instanceof Technique)) {
-                    builder.append( Skill.resolveAttributeName(skill.getDataFile(), skill.getAttribute()));
+                    builder.append(Skill.resolveAttributeName(skill.getDataFile(), skill.getAttribute()));
                 }
                 builder.append(Numbers.formatWithForcedSign(level));
                 return builder.toString();

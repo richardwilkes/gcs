@@ -304,7 +304,7 @@ public class GURPSCharacter extends CollectedModels {
         for (AttributeDef def : AttributeDef.getOrdered(mSettings.getAttributes())) {
             Attribute attr = mAttributes.get(def.getID());
             if (attr != null) {
-                attr.toJSON(w);
+                attr.toJSON(this, w);
             }
         }
         w.endArray();

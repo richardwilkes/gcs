@@ -307,6 +307,26 @@ public class Skill extends ListRow implements HasSourceReference {
                 mDefaultedFrom.save(w, true);
             }
             WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
+
+            // Emit the calculated values for third parties
+            int level = getLevel();
+            if (level > 0) {
+                w.key("calc");
+                w.startMap();
+                w.keyValue("level", level);
+                StringBuilder builder = new StringBuilder();
+                int           rsl = getAdjustedRelativeLevel();
+                if (rsl == Integer.MIN_VALUE) {
+                    builder.append("-");
+                } else {
+                    if (!(this instanceof Technique)) {
+                        builder.append(resolveAttributeName(getDataFile(), getAttribute()));
+                    }
+                    builder.append(Numbers.formatWithForcedSign(rsl));
+                }
+                w.keyValue("rsl", builder.toString());
+                w.endMap();
+            }
         }
     }
 
@@ -934,5 +954,45 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     public String getToolTip(Column column) {
         return SkillColumn.values()[column.getID()].getToolTip(this);
+    }
+
+    public int getAdjustedRelativeLevel() {
+        if (!canHaveChildren()) {
+            if (getCharacter() != null) {
+                if (getLevel() < 0) {
+                    return Integer.MIN_VALUE;
+                }
+                int level = getRelativeLevel();
+                if (this instanceof Technique) {
+                    level += ((Technique) this).getDefault().getModifier();
+                }
+                return level;
+            } else if (getTemplate() != null) {
+                int points = getPoints();
+                if (points > 0) {
+                    SkillDifficulty difficulty = getDifficulty();
+                    int             level;
+                    if (this instanceof Technique) {
+                        if (difficulty != SkillDifficulty.A) {
+                            points--;
+                        }
+                        return points + ((Technique) this).getDefault().getModifier();
+                    }
+                    level = difficulty.getBaseRelativeLevel();
+                    if (difficulty == SkillDifficulty.W) {
+                        points /= 3;
+                    }
+                    if (points > 1) {
+                        if (points < 4) {
+                            level++;
+                        } else {
+                            level += 1 + points / 4;
+                        }
+                    }
+                    return level;
+                }
+            }
+        }
+        return Integer.MIN_VALUE;
     }
 }
