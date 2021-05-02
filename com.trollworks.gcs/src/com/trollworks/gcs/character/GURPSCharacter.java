@@ -544,12 +544,17 @@ public class GURPSCharacter extends CollectedModels {
                 }
             }
             int ndice = value / 8 + 1;
-            return new Dice(ndice, (value % 8 / 2 - 1)+Math.max(ndice,4));
-            /* 
-            Dice newdice = getThrust(strength);
-            newdice.add( newdice.getDieCount());
-            return newdice;
-            */
+            adds +=ndice + (value % 8 / 2 - 1)+1;
+            if(adds >=7 & strength >60){
+                int dicemod = adds/7;
+                adds -=(7 * dicemod);
+                ndice += dicemod*2;
+            }
+            if(adds >4){
+                adds-=4;
+                ndice+=1;
+            }
+            return new Dice(ndice, adds);
         }
         if (mSettings.useReducedSwing()) {
             if (strength < 10) {
