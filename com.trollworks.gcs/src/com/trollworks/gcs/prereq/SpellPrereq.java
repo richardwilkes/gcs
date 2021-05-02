@@ -164,7 +164,6 @@ public class SpellPrereq extends HasPrereq {
         if (exclude instanceof Spell) {
             techLevel = ((Spell) exclude).getTechLevel();
         }
-
         for (Spell spell : character.getSpellsIterator()) {
             if (exclude != spell && spell.getPoints() > 0) {
                 boolean ok;
@@ -184,11 +183,14 @@ public class SpellPrereq extends HasPrereq {
                     } else if (KEY_ANY.equals(mType)) {
                         count++;
                     } else if (KEY_COLLEGE.equals(mType)) {
-                        if (mStringCriteria.matches(spell.getCollege())) {
-                            count++;
+                        for (String college : spell.getColleges()) {
+                            if (mStringCriteria.matches(college)) {
+                                count++;
+                                break;
+                            }
                         }
                     } else if (Objects.equals(mType, KEY_COLLEGE_COUNT)) {
-                        colleges.add(spell.getCollege());
+                        colleges.addAll(spell.getColleges());
                     }
                 }
             }

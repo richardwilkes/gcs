@@ -73,7 +73,7 @@ public class Note extends ListRow implements HasSourceReference {
 
     public Note(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_NOTE_CONTAINER));
-        load(m, state);
+        load(dataFile, m, state);
     }
 
     @Override

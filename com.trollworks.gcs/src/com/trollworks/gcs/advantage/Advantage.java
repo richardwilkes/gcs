@@ -166,7 +166,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     public Advantage(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_ADVANTAGE_CONTAINER));
-        load(m, state);
+        load(dataFile, m, state);
     }
 
     @Override
@@ -328,6 +328,12 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             w.keyValueNot(KEY_USER_DESC, mUserDesc, "");
         }
         w.keyValueNot(KEY_REFERENCE, mReference, "");
+
+        // Emit the calculated values for third parties
+        w.key("calc");
+        w.startMap();
+        w.keyValue("points", getAdjustedPoints());
+        w.endMap();
     }
 
     /** @return The container type. */

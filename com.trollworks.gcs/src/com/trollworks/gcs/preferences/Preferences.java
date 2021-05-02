@@ -12,6 +12,7 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.GCS;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.datafile.ChangeableData;
@@ -60,11 +61,9 @@ public class Preferences extends ChangeableData {
     private static final int MINIMUM_VERSION = 1;
 
     private static final String DEPRECATED_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021
-    private static final String DEPRECATED_BASE_WILL_AND_PER_ON_10  = "base_will_and_per_on_10"; // January 23, 2021
 
+    private static final String ATTRIBUTES                      = "attributes";
     private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
-    private static final String BASE_WILL_ON_10                 = "base_will_on_10";
-    private static final String BASE_PER_ON_10                  = "base_per_on_10";
     private static final String BLOCK_LAYOUT                    = "block_layout";
     private static final String DEFAULT_LENGTH_UNITS            = "default_length_units";
     private static final String DEFAULT_PAGE_SETTINGS           = "default_page_settings";
@@ -95,7 +94,6 @@ public class Preferences extends ChangeableData {
     private static final String SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
     private static final String SHOW_SPELL_ADJ                  = "show_spell_adj";
     private static final String USE_TITLE_IN_FOOTER             = "use_title_in_footer";
-    private static final String EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_fp";
     private static final String THEME                           = "theme";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
     private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
@@ -112,8 +110,7 @@ public class Preferences extends ChangeableData {
     public static final String KEY_PREFIX           = "prefs.";
     public static final String KEY_PER_SHEET_PREFIX = KEY_PREFIX + "sheet.";
 
-    public static final String KEY_BASE_WILL_ON_10                 = KEY_PER_SHEET_PREFIX + BASE_WILL_ON_10;
-    public static final String KEY_BASE_PER_ON_10                  = KEY_PER_SHEET_PREFIX + BASE_PER_ON_10;
+    public static final String KEY_ATTRIBUTES                      = KEY_PER_SHEET_PREFIX + ATTRIBUTES;
     public static final String KEY_BLOCK_LAYOUT                    = KEY_PER_SHEET_PREFIX + BLOCK_LAYOUT;
     public static final String KEY_DEFAULT_LENGTH_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_LENGTH_UNITS;
     public static final String KEY_DEFAULT_WEIGHT_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_WEIGHT_UNITS;
@@ -126,7 +123,6 @@ public class Preferences extends ChangeableData {
     public static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_EQUIPMENT_MODIFIER_ADJ;
     public static final String KEY_SHOW_SPELL_ADJ                  = KEY_PER_SHEET_PREFIX + SHOW_SPELL_ADJ;
     public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
-    public static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = KEY_PER_SHEET_PREFIX + EXTRA_SPACE_AROUND_ENCUMBRANCE;
     public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
     public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
     public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
@@ -136,8 +132,6 @@ public class Preferences extends ChangeableData {
     public static final String KEY_USER_DESCRIPTION_DISPLAY        = KEY_PER_SHEET_PREFIX + USER_DESCRIPTION_DISPLAY;
 
     public static final boolean       DEFAULT_AUTO_FILL_PROFILE                 = true;
-    public static final boolean       DEFAULT_BASE_WILL_ON_10                   = false;
-    public static final boolean       DEFAULT_BASE_PER_ON_10                    = false;
     public static final boolean       DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL   = true;
     public static final int           DEFAULT_INITIAL_POINTS                    = 100;
     public static final int           DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
@@ -147,7 +141,6 @@ public class Preferences extends ChangeableData {
     public static final boolean       DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ       = false;
     public static final boolean       DEFAULT_SHOW_SPELL_ADJ                    = true;
     public static final boolean       DEFAULT_USE_TITLE_IN_FOOTER               = false;
-    public static final boolean       DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE    = false;
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
@@ -196,11 +189,10 @@ public class Preferences extends ChangeableData {
     private        String                           mDefaultPlayerName;
     private        String                           mDefaultTechLevel;
     private        String                           mDefaultPortraitPath;
+    private        Map<String, AttributeDef>        mAttributes;
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
     private        boolean                          mIncludeUnspentPointsInTotal;
-    private        boolean                          mBaseWillOn10;
-    private        boolean                          mBasePerOn10;
     private        boolean                          mUseMultiplicativeModifiers;
     private        boolean                          mUseModifyingDicePlusAdds;
     private        boolean                          mUseKnowYourOwnStrength;
@@ -215,7 +207,6 @@ public class Preferences extends ChangeableData {
     private        boolean                          mShowEquipmentModifierAdj;
     private        boolean                          mShowSpellAdj;
     private        boolean                          mUseTitleInFooter;
-    private        boolean                          mExtraSpaceAroundEncumbrance;
 
     public static synchronized Preferences getInstance() {
         if (INSTANCE == null) {
@@ -269,8 +260,6 @@ public class Preferences extends ChangeableData {
             mDefaultPageSettings = null;
         }
         mIncludeUnspentPointsInTotal = DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
-        mBaseWillOn10 = DEFAULT_BASE_WILL_ON_10;
-        mBasePerOn10 = DEFAULT_BASE_PER_ON_10;
         mUseMultiplicativeModifiers = DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
         mUseModifyingDicePlusAdds = DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS;
         mUseKnowYourOwnStrength = DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
@@ -285,7 +274,7 @@ public class Preferences extends ChangeableData {
         mShowEquipmentModifierAdj = DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ;
         mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
-        mExtraSpaceAroundEncumbrance = DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
+        mAttributes = AttributeDef.createStandardAttributes();
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -366,19 +355,15 @@ public class Preferences extends ChangeableData {
                                 mBaseWindowPositions.put(key, new BaseWindow.Position(m2.getMap(key)));
                             }
                         }
+                        if (m.has(ATTRIBUTES)) {
+                            mAttributes = AttributeDef.load(m.getArray(ATTRIBUTES));
+                        }
                         mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                         mDefaultPlayerName = m.getStringWithDefault(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                         mDefaultTechLevel = m.getStringWithDefault(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
                         mDefaultPortraitPath = m.getStringWithDefault(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                         mPNGResolution = m.getIntWithDefault(PNG_RESOLUTION, mPNGResolution);
                         mIncludeUnspentPointsInTotal = m.getBooleanWithDefault(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                        if (m.has(DEPRECATED_BASE_WILL_AND_PER_ON_10)) {
-                            mBaseWillOn10 = m.getBooleanWithDefault(DEPRECATED_BASE_WILL_AND_PER_ON_10, mBaseWillOn10);
-                            mBasePerOn10 = m.getBooleanWithDefault(DEPRECATED_BASE_WILL_AND_PER_ON_10, mBasePerOn10);
-                        } else {
-                            mBaseWillOn10 = m.getBooleanWithDefault(BASE_WILL_ON_10, mBaseWillOn10);
-                            mBasePerOn10 = m.getBooleanWithDefault(BASE_PER_ON_10, mBasePerOn10);
-                        }
                         mUseMultiplicativeModifiers = m.getBooleanWithDefault(USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
                         mUseModifyingDicePlusAdds = m.getBooleanWithDefault(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                         mUseKnowYourOwnStrength = m.getBooleanWithDefault(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -397,7 +382,6 @@ public class Preferences extends ChangeableData {
                         mShowEquipmentModifierAdj = m.getBooleanWithDefault(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
                         mShowSpellAdj = m.getBooleanWithDefault(SHOW_SPELL_ADJ, mShowSpellAdj);
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-                        mExtraSpaceAroundEncumbrance = m.getBooleanWithDefault(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                         if (m.has(THEME)) {
                             Theme.set(new Theme(m.getMap(THEME)));
                         }
@@ -519,14 +503,14 @@ public class Preferences extends ChangeableData {
                         }
                     }
                     w.endMap();
+                    w.key(ATTRIBUTES);
+                    AttributeDef.writeOrdered(w, mAttributes);
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                     w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                     w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
                     w.keyValue(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                     w.keyValue(PNG_RESOLUTION, mPNGResolution);
                     w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                    w.keyValue(BASE_WILL_ON_10, mBaseWillOn10);
-                    w.keyValue(BASE_PER_ON_10, mBasePerOn10);
                     w.keyValue(USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
                     w.keyValue(USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
                     w.keyValue(USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -539,7 +523,6 @@ public class Preferences extends ChangeableData {
                     w.keyValue(SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
                     w.keyValue(SHOW_SPELL_ADJ, mShowSpellAdj);
                     w.keyValue(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-                    w.keyValue(EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
                     w.key(THEME);
                     Theme.current().save(w);
@@ -863,30 +846,6 @@ public class Preferences extends ChangeableData {
         }
     }
 
-    /** @return Whether Will should be based on 10 rather than IQ. */
-    public boolean baseWillOn10() {
-        return mBaseWillOn10;
-    }
-
-    public void setBaseWillOn10(boolean baseWillOn10) {
-        if (mBaseWillOn10 != baseWillOn10) {
-            mBaseWillOn10 = baseWillOn10;
-            notifyOfChange();
-        }
-    }
-
-    /** @return Whether Per should be based on 10 rather than IQ. */
-    public boolean basePerOn10() {
-        return mBasePerOn10;
-    }
-
-    public void setBasePerOn10(boolean basePerOn10) {
-        if (mBasePerOn10 != basePerOn10) {
-            mBasePerOn10 = basePerOn10;
-            notifyOfChange();
-        }
-    }
-
     /** @return Whether to show the college column in the sheet display. */
     public boolean showCollegeInSheetSpells() {
         return mShowCollegeInSheetSpells;
@@ -958,18 +917,6 @@ public class Preferences extends ChangeableData {
     public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
-            notifyOfChange();
-        }
-    }
-
-    /** @return Whether or not to add extra space around FP/HP table. */
-    public boolean extraSpaceAroundEncumbrance() {
-        return mExtraSpaceAroundEncumbrance;
-    }
-
-    public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
-        if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
-            mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
             notifyOfChange();
         }
     }
@@ -1067,5 +1014,16 @@ public class Preferences extends ChangeableData {
 
     public void setUseNativePrintDialogs(boolean useNativePrintDialogs) {
         mUseNativePrintDialogs = useNativePrintDialogs;
+    }
+
+    public Map<String, AttributeDef> getAttributes() {
+        return mAttributes;
+    }
+
+    public void setAttributes(Map<String, AttributeDef> attributes) {
+        if (!mAttributes.equals(attributes)) {
+            mAttributes = AttributeDef.cloneMap(attributes);
+            notifyOfChange();
+        }
     }
 }

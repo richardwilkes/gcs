@@ -91,7 +91,7 @@ public class RowUndo extends AbstractUndoableEdit {
             LoadState state = new LoadState();
             state.mDataFileVersion = mDataFile.getJSONVersion();
             state.mForUndo = true;
-            mRow.load(m, state);
+            mRow.load(mDataFile, m, state);
         } catch (Exception exception) {
             Log.error(exception);
         }

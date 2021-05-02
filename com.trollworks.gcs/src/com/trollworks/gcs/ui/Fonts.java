@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
@@ -20,7 +21,9 @@ import com.trollworks.gcs.utility.text.Enums;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,24 +32,24 @@ import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
 public class Fonts {
+    /** The name of the Font Awesome Solid font. */
+    public static final  String             FONT_AWESOME_SOLID   = "Font Awesome 5 Free Solid";
     /** The standard text field font. */
-    public static final  String             KEY_STD_TEXT_FIELD    = "TextField.font";
+    public static final  String             KEY_STD_TEXT_FIELD   = "TextField.font";
     /** The label font. */
-    public static final  String             KEY_LABEL_PRIMARY     = "label.primary";
+    public static final  String             KEY_LABEL_PRIMARY    = "label.primary";
     /** The small label font. */
-    public static final  String             KEY_LABEL_SECONDARY   = "label.secondary";
+    public static final  String             KEY_LABEL_SECONDARY  = "label.secondary";
     /** The field font. */
-    public static final  String             KEY_FIELD_PRIMARY     = "field.primary";
+    public static final  String             KEY_FIELD_PRIMARY    = "field.primary";
     /** The field notes font. */
-    public static final  String             KEY_FIELD_SECONDARY   = "field.secondary";
+    public static final  String             KEY_FIELD_SECONDARY  = "field.secondary";
     /** The primary footer font. */
-    public static final  String             KEY_FOOTER_PRIMARY    = "footer.primary";
+    public static final  String             KEY_FOOTER_PRIMARY   = "footer.primary";
     /** The secondary footer font. */
-    public static final  String             KEY_FOOTER_SECONDARY  = "footer.secondary";
-    /** The notification key used when font change notifications are broadcast. */
-    public static final  String             FONT_NOTIFICATION_KEY = "FontsChanged";
-    private static final List<String>       KEYS                  = new ArrayList<>();
-    private static final Map<String, Fonts> DEFAULTS              = new HashMap<>();
+    public static final  String             KEY_FOOTER_SECONDARY = "footer.secondary";
+    private static final List<String>       KEYS                 = new ArrayList<>();
+    private static final Map<String, Fonts> DEFAULTS             = new HashMap<>();
     private              String             mDescription;
     private              Font               mDefaultFont;
 
@@ -57,6 +60,7 @@ public class Fonts {
 
     /** Loads the current font settings from the preferences file. */
     public static void loadFromPreferences() {
+        loadFont("Font Awesome 5 Free-Solid-900.otf");
         String name = getDefaultFont().getName();
         register(KEY_LABEL_PRIMARY, I18n.Text("Primary Labels"), new Font(name, Font.PLAIN, 9));
         register(KEY_LABEL_SECONDARY, I18n.Text("Secondary Labels"), new Font(name, Font.PLAIN, 8));
@@ -70,6 +74,15 @@ public class Fonts {
             if (info != null) {
                 UIManager.put(key, info.create());
             }
+        }
+    }
+
+    private static void loadFont(String name) {
+        try (InputStream in = Fonts.class.getModule().getResourceAsStream("/fonts/" + name)) {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+        } catch (Exception exception) {
+            Log.error("unable to load font for: " + name);
         }
     }
 

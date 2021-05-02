@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
@@ -53,25 +55,25 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Skill}s. */
 public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener, FocusListener {
-    private JTextField         mNameField;
-    private JTextField         mSpecializationField;
-    private JTextField         mNotesField;
-    private JTextField         mCategoriesField;
-    private JTextField         mReferenceField;
-    private JCheckBox          mHasTechLevel;
-    private JTextField         mTechLevel;
-    private String             mSavedTechLevel;
-    private JComboBox<Object>  mAttributePopup;
-    private JComboBox<Object>  mDifficultyPopup;
-    private JTextField         mPointsField;
-    private JTextField         mLevelField;
-    private JComboBox<Object>  mEncPenaltyPopup;
-    private JTabbedPane        mTabPanel;
-    private PrereqsPanel       mPrereqs;
-    private FeaturesPanel      mFeatures;
-    private Defaults           mDefaults;
-    private MeleeWeaponEditor  mMeleeWeapons;
-    private RangedWeaponEditor mRangedWeapons;
+    private JTextField                 mNameField;
+    private JTextField                 mSpecializationField;
+    private JTextField                 mNotesField;
+    private JTextField                 mCategoriesField;
+    private JTextField                 mReferenceField;
+    private JCheckBox                  mHasTechLevel;
+    private JTextField                 mTechLevel;
+    private String                     mSavedTechLevel;
+    private JComboBox<AttributeChoice> mAttributePopup;
+    private JComboBox<Object>          mDifficultyPopup;
+    private JTextField                 mPointsField;
+    private JTextField                 mLevelField;
+    private JComboBox<Object>          mEncPenaltyPopup;
+    private JTabbedPane                mTabPanel;
+    private PrereqsPanel               mPrereqs;
+    private FeaturesPanel              mFeatures;
+    private Defaults                   mDefaults;
+    private MeleeWeaponEditor          mMeleeWeapons;
+    private RangedWeaponEditor         mRangedWeapons;
 
     /**
      * Creates a new {@link Skill} editor.
@@ -111,7 +113,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
             mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
             mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-            mDefaults = new Defaults(mRow.getDefaults());
+            mDefaults = new Defaults(mRow.getDataFile(), mRow.getDefaults());
             mDefaults.addActionListener(this);
             Component panel = embedEditor(mDefaults);
             addTab(panel.getName(), panel);
@@ -179,10 +181,14 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private void createPointsFields(Container parent, boolean forCharacter) {
-        mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getRawPoints()), I18n.Text("The number of points spent on this skill"), 4);
+        mPointsField = createField(parent, parent, I18n.Text("Points"), Integer.toString(mRow.getRawPoints()),
+                I18n.Text("The number of points spent on this skill"), 4);
         NumberFilter.apply(mPointsField, false, false, false, 4);
         if (forCharacter) {
-            mLevelField = createField(parent, parent, I18n.Text("Level"), Skill.getSkillDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren()), editorLevelTooltip() + mRow.getLevelToolTip(), 8);
+            String level = Skill.getSkillDisplayLevel(mRow.getDataFile(), mRow.getLevel(),
+                    mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren());
+            mLevelField = createField(parent, parent, I18n.Text("Level"), level,
+                    editorLevelTooltip() + mRow.getLevelToolTip(), 8);
             mLevelField.setEnabled(false);
         }
     }
@@ -253,7 +259,20 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
         label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of learning this skill")));
 
-        mAttributePopup = createComboBox(wrapper, SkillAttribute.values(), mRow.getAttribute(), I18n.Text("The attribute this skill is based on"));
+        List<AttributeChoice> list = new ArrayList<>();
+        for (AttributeDef def : AttributeDef.getOrdered(mRow.getDataFile().getAttributeDefs())) {
+            list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
+        }
+        list.add(new AttributeChoice("10", "%s", "10"));
+        AttributeChoice current = list.get(0);
+        for (AttributeChoice attributeChoice : list) {
+            if (attributeChoice.getAttribute().equals(mRow.getAttribute())) {
+                current = attributeChoice;
+                break;
+            }
+        }
+
+        mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current, I18n.Text("The attribute this skill is based on"));
         wrapper.add(new JLabel(" /"));
         mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), I18n.Text("The relative difficulty of learning this skill"));
 
@@ -267,8 +286,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         return wrapper;
     }
 
-    private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection, String tooltip) {
-        JComboBox<Object> combo = new JComboBox<>(items);
+    private <T> JComboBox<T> createComboBox(Container parent, T[] items, T selection, String tooltip) {
+        JComboBox<T> combo = new JComboBox<>(items);
         combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
@@ -281,15 +300,20 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private void recalculateLevel() {
         if (mLevelField != null) {
-            SkillAttribute attribute = getSkillAttribute();
-            SkillLevel     level     = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(), mSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), mDefaults.getDefaults(), attribute, getSkillDifficulty(), getAdjustedSkillPoints(), new HashSet<>(), getEncumbrancePenaltyMultiplier());
-            mLevelField.setText(Skill.getSkillDisplayLevel(level.mLevel, level.mRelativeLevel, attribute, false));
+            String attribute = getSkillAttribute();
+            SkillLevel level = mRow.calculateLevel(mRow.getCharacter(), mNameField.getText(),
+                    mSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()),
+                    mDefaults.getDefaults(), attribute, getSkillDifficulty(), getAdjustedSkillPoints(),
+                    new HashSet<>(), getEncumbrancePenaltyMultiplier());
+            mLevelField.setText(Skill.getSkillDisplayLevel(mRow.getDataFile(), level.mLevel,
+                    level.mRelativeLevel, attribute, false));
             mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
         }
     }
 
-    private SkillAttribute getSkillAttribute() {
-        return (SkillAttribute) mAttributePopup.getSelectedItem();
+    private String getSkillAttribute() {
+        AttributeChoice choice = (AttributeChoice) mAttributePopup.getSelectedItem();
+        return choice != null ? choice.getAttribute() : Skill.getDefaultAttribute("dx");
     }
 
     private SkillDifficulty getSkillDifficulty() {

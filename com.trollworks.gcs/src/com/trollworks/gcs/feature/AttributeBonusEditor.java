@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
@@ -40,11 +41,9 @@ public class AttributeBonusEditor extends FeatureEditor {
     @Override
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         AttributeBonus bonus = (AttributeBonus) getFeature();
-
-        FlexRow row = new FlexRow();
+        FlexRow        row   = new FlexRow();
         row.add(addChangeBaseTypeCombo());
-        LeveledAmount      amount    = bonus.getAmount();
-        BonusAttributeType attribute = bonus.getAttribute();
+        LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999999, 999999));
         row.add(addLeveledAmountCombo(amount, false));
         row.add(new FlexSpacer(0, 0, true, false));
@@ -52,13 +51,9 @@ public class AttributeBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        int      length = BonusAttributeType.values().length;
-        String[] names  = new String[length];
-        for (int i = 0; i < length; i++) {
-            names[i] = I18n.Text("to ") + BonusAttributeType.values()[i];
-        }
-        row.add(addComboBox(CHANGE_ATTRIBUTE, names, names[attribute.ordinal()]));
-        if (BonusAttributeType.ST == attribute) {
+        String attribute = bonus.getAttribute();
+        row.add(addAttributePopup(getRow().getDataFile(), CHANGE_ATTRIBUTE, I18n.Text("to %s"), attribute, false));
+        if ("st".equals(attribute)) {
             row.add(addComboBox(CHANGE_LIMITATION, AttributeBonusLimitation.values(), bonus.getLimitation()));
         }
         row.add(new FlexSpacer(0, 0, true, false));
@@ -67,13 +62,21 @@ public class AttributeBonusEditor extends FeatureEditor {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
+        AttributeBonus feature = (AttributeBonus) getFeature();
+        String         command = event.getActionCommand();
         if (CHANGE_ATTRIBUTE.equals(command)) {
-            ((AttributeBonus) getFeature()).setAttribute(BonusAttributeType.values()[((JComboBox<?>) event.getSource()).getSelectedIndex()]);
-            Commitable.sendCommitToFocusOwner();
-            rebuild();
+            AttributeChoice selectedItem = (AttributeChoice) ((JComboBox<?>) event.getSource()).getSelectedItem();
+            if (selectedItem != null) {
+                feature.setAttribute(getRow().getDataFile(), selectedItem.getAttribute());
+                Commitable.sendCommitToFocusOwner();
+                rebuild();
+            }
         } else if (CHANGE_LIMITATION.equals(command)) {
-            ((AttributeBonus) getFeature()).setLimitation((AttributeBonusLimitation) ((JComboBox<?>) event.getSource()).getSelectedItem());
+            AttributeBonusLimitation selectedItem = (AttributeBonusLimitation) ((JComboBox<?>) event.getSource()).getSelectedItem();
+            if (selectedItem == null) {
+                selectedItem = AttributeBonusLimitation.NONE;
+            }
+            feature.setLimitation(selectedItem);
         } else {
             super.actionPerformed(event);
         }

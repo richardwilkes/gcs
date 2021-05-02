@@ -17,7 +17,6 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.skill.SkillDefault;
-import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.utility.Dice;
@@ -106,7 +105,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         bite.setReach("C");
         bite.setParry("No");
         bite.setBlock("No");
-        bite.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, 0), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, 0)));
+        bite.setDefaults(List.of(new SkillDefault("dx", null, null, 0), new SkillDefault("skill", "Brawling", null, 0)));
         return bite;
     }
 
@@ -120,7 +119,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         punch.setUsage(I18n.Text("Punch"));
         punch.setReach("C");
         punch.setParry("0");
-        punch.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, 0), new SkillDefault(SkillDefaultType.Skill, "Boxing", null, 0), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, 0), new SkillDefault(SkillDefaultType.Skill, "Karate", null, 0)));
+        punch.setDefaults(List.of(new SkillDefault("dx", null, null, 0), new SkillDefault("skill", "Boxing", null, 0), new SkillDefault("skill", "Brawling", null, 0), new SkillDefault("skill", "Karate", null, 0)));
         return punch;
     }
 
@@ -133,7 +132,7 @@ public class AddNaturalAttacksAdvantageCommand extends Command {
         kick.setUsage(I18n.Text("Kick"));
         kick.setReach("C,1");
         kick.setParry("No");
-        kick.setDefaults(List.of(new SkillDefault(SkillDefaultType.DX, null, null, -2), new SkillDefault(SkillDefaultType.Skill, "Brawling", null, -2), new SkillDefault(SkillDefaultType.Skill, "Karate", null, -2)));
+        kick.setDefaults(List.of(new SkillDefault("dx", null, null, -2), new SkillDefault("skill", "Brawling", null, -2), new SkillDefault("skill", "Karate", null, -2)));
         return kick;
     }
 }

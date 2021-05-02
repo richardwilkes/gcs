@@ -208,7 +208,7 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
     protected abstract void createFields(Container parent);
 
     private void createDefaults(Container parent) {
-        mDefaults = new Defaults(new ArrayList<>());
+        mDefaults = new Defaults(mOwner.getDataFile(), new ArrayList<>());
         mDefaults.removeAll();
         mDefaults.addActionListener(this);
         parent.add(mDefaults);

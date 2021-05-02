@@ -13,11 +13,15 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
+import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
+import com.trollworks.gcs.attribute.PoolThreshold;
+import com.trollworks.gcs.attribute.ThresholdOps;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
 import com.trollworks.gcs.feature.Bonus;
-import com.trollworks.gcs.feature.BonusAttributeType;
 import com.trollworks.gcs.feature.CostReduction;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
@@ -46,6 +50,7 @@ import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.SaveType;
+import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -60,6 +65,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -67,44 +73,25 @@ import java.util.regex.Pattern;
 public class GURPSCharacter extends CollectedModels {
     private static final int    CURRENT_JSON_VERSION = 1;
     private static final String KEY_ROOT             = "character";
+    private static final String KEY_ATTRIBUTES       = "attributes";
     private static final String KEY_CREATED_DATE     = "created_date";
     private static final String KEY_MODIFIED_DATE    = "modified_date";
-    private static final String KEY_HP_DAMAGE        = "hp_damage";
-    private static final String KEY_FP_DAMAGE        = "fp_damage";
-    private static final String KEY_TOTAL_POINTS     = "total_points";
-    private static final String KEY_HP_ADJ           = "HP_adj";
-    private static final String KEY_FP_ADJ           = "FP_adj";
-    private static final String KEY_ST               = "ST";
-    private static final String KEY_DX               = "DX";
-    private static final String KEY_IQ               = "IQ";
-    private static final String KEY_HT               = "HT";
-    private static final String KEY_WILL_ADJ         = "will_adj";
-    private static final String KEY_PER_ADJ          = "per_adj";
-    private static final String KEY_SPEED_ADJ        = "speed_adj";
-    private static final String KEY_MOVE_ADJ         = "move_adj";
     private static final String KEY_THIRD_PARTY_DATA = "third_party";
+    private static final String KEY_TOTAL_POINTS     = "total_points";
 
-    public static final String ATTRIBUTES_PREFIX    = "attr.";
-    public static final String ID_STRENGTH          = ATTRIBUTES_PREFIX + BonusAttributeType.ST.name();
-    public static final String ID_LIFTING_STRENGTH  = ID_STRENGTH + AttributeBonusLimitation.LIFTING_ONLY.name();
-    public static final String ID_STRIKING_STRENGTH = ID_STRENGTH + AttributeBonusLimitation.STRIKING_ONLY.name();
-    public static final String ID_DEXTERITY         = ATTRIBUTES_PREFIX + BonusAttributeType.DX.name();
-    public static final String ID_INTELLIGENCE      = ATTRIBUTES_PREFIX + BonusAttributeType.IQ.name();
-    public static final String ID_HEALTH            = ATTRIBUTES_PREFIX + BonusAttributeType.HT.name();
-    public static final String ID_PERCEPTION        = ATTRIBUTES_PREFIX + BonusAttributeType.PERCEPTION.name();
-    public static final String ID_VISION            = ATTRIBUTES_PREFIX + BonusAttributeType.VISION.name();
-    public static final String ID_HEARING           = ATTRIBUTES_PREFIX + BonusAttributeType.HEARING.name();
-    public static final String ID_TASTE_AND_SMELL   = ATTRIBUTES_PREFIX + BonusAttributeType.TASTE_SMELL.name();
-    public static final String ID_TOUCH             = ATTRIBUTES_PREFIX + BonusAttributeType.TOUCH.name();
-    public static final String ID_WILL              = ATTRIBUTES_PREFIX + BonusAttributeType.WILL.name();
-    public static final String ID_FRIGHT_CHECK      = ATTRIBUTES_PREFIX + BonusAttributeType.FRIGHT_CHECK.name();
-    public static final String ID_BASIC_SPEED       = ATTRIBUTES_PREFIX + BonusAttributeType.SPEED.name();
-    public static final String ID_BASIC_MOVE        = ATTRIBUTES_PREFIX + BonusAttributeType.MOVE.name();
-    public static final String ID_DODGE_BONUS       = ATTRIBUTES_PREFIX + BonusAttributeType.DODGE.name();
-    public static final String ID_PARRY_BONUS       = ATTRIBUTES_PREFIX + BonusAttributeType.PARRY.name();
-    public static final String ID_BLOCK_BONUS       = ATTRIBUTES_PREFIX + BonusAttributeType.BLOCK.name();
-    public static final String ID_HIT_POINTS        = ATTRIBUTES_PREFIX + BonusAttributeType.HP.name();
-    public static final String ID_FATIGUE_POINTS    = ATTRIBUTES_PREFIX + BonusAttributeType.FP.name();
+    // TODO: Eliminate these deprecated keys after a suitable waiting period; added April 15, 2021
+    private static final String KEY_DX        = "DX";
+    private static final String KEY_FP_ADJ    = "FP_adj";
+    private static final String KEY_FP_DAMAGE = "fp_damage";
+    private static final String KEY_HP_ADJ    = "HP_adj";
+    private static final String KEY_HP_DAMAGE = "hp_damage";
+    private static final String KEY_HT        = "HT";
+    private static final String KEY_IQ        = "IQ";
+    private static final String KEY_MOVE_ADJ  = "move_adj";
+    private static final String KEY_PER_ADJ   = "per_adj";
+    private static final String KEY_SPEED_ADJ = "speed_adj";
+    private static final String KEY_ST        = "ST";
+    private static final String KEY_WILL_ADJ  = "will_adj";
 
     private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
 
@@ -112,39 +99,9 @@ public class GURPSCharacter extends CollectedModels {
     private long                                mCreatedOn;
     private HashMap<String, ArrayList<Feature>> mFeatureMap;
     private JsonMap                             mThirdPartyData;
-    private int                                 mStrength;
-    private int                                 mStrengthBonus;
+    private Map<String, Attribute>              mAttributes;
     private int                                 mLiftingStrengthBonus;
     private int                                 mStrikingStrengthBonus;
-    private int                                 mStrengthCostReduction;
-    private int                                 mDexterity;
-    private int                                 mDexterityBonus;
-    private int                                 mDexterityCostReduction;
-    private int                                 mIntelligence;
-    private int                                 mIntelligenceBonus;
-    private int                                 mIntelligenceCostReduction;
-    private int                                 mHealth;
-    private int                                 mHealthBonus;
-    private int                                 mHealthCostReduction;
-    private int                                 mWillAdj;
-    private int                                 mWillBonus;
-    private int                                 mFrightCheckBonus;
-    private int                                 mPerAdj;
-    private int                                 mPerceptionBonus;
-    private int                                 mVisionBonus;
-    private int                                 mHearingBonus;
-    private int                                 mTasteAndSmellBonus;
-    private int                                 mTouchBonus;
-    private int                                 mHitPointsDamage;
-    private int                                 mHitPointsAdj;
-    private int                                 mHitPointBonus;
-    private int                                 mFatiguePoints;
-    private int                                 mFatiguePointsDamage;
-    private int                                 mFatiguePointBonus;
-    private double                              mSpeedAdj;
-    private double                              mSpeedBonus;
-    private int                                 mMoveAdj;
-    private int                                 mMoveBonus;
     private int                                 mDodgeBonus;
     private int                                 mParryBonus;
     private int                                 mBlockBonus;
@@ -190,12 +147,10 @@ public class GURPSCharacter extends CollectedModels {
         mSettings = new Settings(this);
         mFeatureMap = new HashMap<>();
         mTotalPoints = Preferences.getInstance().getInitialPoints();
-        mStrength = 10;
-        mDexterity = 10;
-        mIntelligence = 10;
-        mHealth = 10;
-        mHitPointsDamage = 0;
-        mFatiguePointsDamage = 0;
+        mAttributes = new HashMap<>();
+        for (String attrID : mSettings.getAttributes().keySet()) {
+            mAttributes.put(attrID, new Attribute(attrID));
+        }
         mProfile = new Profile(this, full);
         mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
@@ -208,6 +163,10 @@ public class GURPSCharacter extends CollectedModels {
         }
         mModifiedOn = System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR;
         mCreatedOn = mModifiedOn;
+    }
+
+    public Map<String, Attribute> getAttributes() {
+        return mAttributes;
     }
 
     @Override
@@ -266,19 +225,56 @@ public class GURPSCharacter extends CollectedModels {
         mSettings.load(m.getMap(Settings.KEY_ROOT));
         mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
         mProfile.load(m.getMap(Profile.KEY_PROFILE));
-        mHitPointsAdj = m.getInt(KEY_HP_ADJ);
-        mHitPointsDamage = m.getInt(KEY_HP_DAMAGE);
-        mFatiguePoints = m.getInt(KEY_FP_ADJ);
-        mFatiguePointsDamage = m.getInt(KEY_FP_DAMAGE);
+        if (m.has(KEY_ATTRIBUTES)) {
+            mAttributes = new HashMap<>();
+            JsonArray a      = m.getArray(KEY_ATTRIBUTES);
+            int       length = a.size();
+            for (int i = 0; i < length; i++) {
+                Attribute attr = new Attribute(a.getMap(i));
+                mAttributes.put(attr.getID(), attr);
+            }
+        } else {
+            for (String attrID : mSettings.getAttributes().keySet()) {
+                Attribute attr = mAttributes.get(attrID);
+                if (attr != null) {
+                    switch (attrID) {
+                    case "st":
+                        attr.initTo(m.getInt(KEY_ST) - 10, 0);
+                        break;
+                    case "dx":
+                        attr.initTo(m.getInt(KEY_DX) - 10, 0);
+                        break;
+                    case "iq":
+                        attr.initTo(m.getInt(KEY_IQ) - 10, 0);
+                        break;
+                    case "ht":
+                        attr.initTo(m.getInt(KEY_HT) - 10, 0);
+                        break;
+                    case "will":
+                        attr.initTo(m.getInt(KEY_WILL_ADJ), 0);
+                        break;
+                    case "per":
+                        attr.initTo(m.getInt(KEY_PER_ADJ), 0);
+                        break;
+                    case "basic_speed":
+                        attr.initTo(m.getDouble(KEY_SPEED_ADJ), 0);
+                        break;
+                    case "basic_move":
+                        attr.initTo(m.getInt(KEY_MOVE_ADJ), 0);
+                        break;
+                    case "hp":
+                        attr.initTo(m.getInt(KEY_HP_ADJ), m.getInt(KEY_HP_DAMAGE));
+                        break;
+                    case "fp":
+                        attr.initTo(m.getInt(KEY_FP_ADJ), m.getInt(KEY_FP_DAMAGE));
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
         mTotalPoints = m.getInt(KEY_TOTAL_POINTS);
-        mStrength = m.getInt(KEY_ST);
-        mDexterity = m.getInt(KEY_DX);
-        mIntelligence = m.getInt(KEY_IQ);
-        mHealth = m.getInt(KEY_HT);
-        mWillAdj = m.getInt(KEY_WILL_ADJ);
-        mPerAdj = m.getInt(KEY_PER_ADJ);
-        mSpeedAdj = m.getDouble(KEY_SPEED_ADJ);
-        mMoveAdj = m.getInt(KEY_MOVE_ADJ);
         loadModels(m, state);
         if (mPageSettings != null && m.has(PrintManager.KEY_ROOT)) {
             mPageSettings = new PrintManager(m.getMap(PrintManager.KEY_ROOT));
@@ -303,19 +299,16 @@ public class GURPSCharacter extends CollectedModels {
         w.keyValue(KEY_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.key(Profile.KEY_PROFILE);
         mProfile.save(w);
-        w.keyValueNot(KEY_HP_ADJ, mHitPointsAdj, 0);
-        w.keyValueNot(KEY_HP_DAMAGE, mHitPointsDamage, 0);
-        w.keyValueNot(KEY_FP_ADJ, mFatiguePoints, 0);
-        w.keyValueNot(KEY_FP_DAMAGE, mFatiguePointsDamage, 0);
+        w.key(KEY_ATTRIBUTES);
+        w.startArray();
+        for (AttributeDef def : AttributeDef.getOrdered(mSettings.getAttributes())) {
+            Attribute attr = mAttributes.get(def.getID());
+            if (attr != null) {
+                attr.toJSON(this, w);
+            }
+        }
+        w.endArray();
         w.keyValue(KEY_TOTAL_POINTS, mTotalPoints);
-        w.keyValue(KEY_ST, mStrength);
-        w.keyValue(KEY_DX, mDexterity);
-        w.keyValue(KEY_IQ, mIntelligence);
-        w.keyValue(KEY_HT, mHealth);
-        w.keyValueNot(KEY_WILL_ADJ, mWillAdj, 0);
-        w.keyValueNot(KEY_PER_ADJ, mPerAdj, 0);
-        w.keyValueNot(KEY_SPEED_ADJ, mSpeedAdj, 0);
-        w.keyValueNot(KEY_MOVE_ADJ, mMoveAdj, 0);
         saveModels(w, saveType);
         if (saveType != SaveType.HASH) {
             if (mPageSettings != null) {
@@ -359,46 +352,6 @@ public class GURPSCharacter extends CollectedModels {
         mSpellsUpdated = true;
     }
 
-    /** @return The strength (ST). */
-    public int getStrength() {
-        return mStrength + mStrengthBonus;
-    }
-
-    /**
-     * Sets the strength (ST).
-     *
-     * @param strength The new strength.
-     */
-    public void setStrength(int strength) {
-        int oldStrength = getStrength();
-        if (oldStrength != strength) {
-            postUndoEdit(I18n.Text("Strength Change"), (c, v) -> c.setStrength(((Integer) v).intValue()), Integer.valueOf(oldStrength), Integer.valueOf(strength));
-            mStrength = strength - mStrengthBonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The current strength bonus from features. */
-    public int getStrengthBonus() {
-        return mStrengthBonus;
-    }
-
-    /** @param bonus The new strength bonus. */
-    public void setStrengthBonus(int bonus) {
-        if (mStrengthBonus != bonus) {
-            mStrengthBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @param reduction The cost reduction for strength. */
-    public void setStrengthCostReduction(int reduction) {
-        if (mStrengthCostReduction != reduction) {
-            mStrengthCostReduction = reduction;
-            notifyOfChange();
-        }
-    }
-
     /** @return The current lifting strength bonus from features. */
     public int getLiftingStrengthBonus() {
         return mLiftingStrengthBonus;
@@ -425,29 +378,41 @@ public class GURPSCharacter extends CollectedModels {
         }
     }
 
-    /** @return The number of points spent on strength. */
-    public int getStrengthPoints() {
-        int reduction = mStrengthCostReduction;
-        if (!mSettings.useKnowYourOwnStrength()) {
-            reduction += mProfile.getSizeModifier() * 10;
+    public int getAttributeCurrentIntValue(String name) {
+        Attribute attr = getAttributes().get(name);
+        if (attr == null) {
+            return Integer.MIN_VALUE;
         }
-        return getPointsForAttribute(mStrength - 10, 10, reduction);
+        return attr.getCurrentIntValue(this);
     }
 
-    private static int getPointsForAttribute(int delta, int ptsPerLevel, int reduction) {
-        int amt = delta * ptsPerLevel;
-        if (reduction > 0 && delta > 0) {
-            if (reduction > 80) {
-                reduction = 80;
-            }
-            amt = (99 + amt * (100 - reduction)) / 100;
+    public int getAttributeIntValue(String name) {
+        Attribute attr = getAttributes().get(name);
+        if (attr == null) {
+            return Integer.MIN_VALUE;
         }
-        return amt;
+        return attr.getIntValue(this);
+    }
+
+    public double getAttributeDoubleValue(String name) {
+        Attribute attr = getAttributes().get(name);
+        if (attr == null) {
+            return Integer.MIN_VALUE;
+        }
+        return attr.getDoubleValue(this);
+    }
+
+    public int getAttributeCost(String name) {
+        Attribute attr = getAttributes().get(name);
+        if (attr == null) {
+            return 0;
+        }
+        return attr.getPointCost(this);
     }
 
     /** @return The basic thrusting damage. */
     public Dice getThrust() {
-        return getThrust(getStrength() + mStrikingStrengthBonus);
+        return getThrust(getAttributeIntValue("st") + mStrikingStrengthBonus);
     }
 
     /**
@@ -506,7 +471,7 @@ public class GURPSCharacter extends CollectedModels {
 
     /** @return The basic swinging damage. */
     public Dice getSwing() {
-        return getSwing(getStrength() + mStrikingStrengthBonus);
+        return getSwing(getAttributeIntValue("st") + mStrikingStrengthBonus);
     }
 
     /**
@@ -584,8 +549,8 @@ public class GURPSCharacter extends CollectedModels {
             multiplier = new Fixed6(2);
             roundAt = ten;
         }
-        int strength = getStrength() + mLiftingStrengthBonus;
-        if (isTired()) {
+        int strength = getAttributeIntValue("st") + mLiftingStrengthBonus;
+        if (isThresholdOpMet(ThresholdOps.HALVE_ST)) {
             boolean plusOne = strength % 2 != 0;
             strength /= 2;
             if (plusOne) {
@@ -666,102 +631,14 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     /**
-     * @return The character's basic speed.
-     */
-    public double getBasicSpeed() {
-        return mSpeedAdj + mSpeedBonus + getRawBasicSpeed();
-    }
-
-    private double getRawBasicSpeed() {
-        return (getDexterity() + getHealth()) / 4.0;
-    }
-
-    /**
-     * Sets the basic speed.
-     *
-     * @param speed The new basic speed.
-     */
-    public void setBasicSpeed(double speed) {
-        double oldBasicSpeed = getBasicSpeed();
-        if (oldBasicSpeed != speed) {
-            postUndoEdit(I18n.Text("Basic Speed Change"), (c, v) -> c.setBasicSpeed(((Double) v).doubleValue()), Double.valueOf(oldBasicSpeed), Double.valueOf(speed));
-            mSpeedAdj = speed - (mSpeedBonus + getRawBasicSpeed());
-            notifyOfChange();
-        }
-    }
-
-    /** @return The basic speed bonus. */
-    public double getBasicSpeedBonus() {
-        return mSpeedBonus;
-    }
-
-    /** @param bonus The basic speed bonus. */
-    public void setBasicSpeedBonus(double bonus) {
-        if (mSpeedBonus != bonus) {
-            mSpeedBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on basic speed. */
-    public int getBasicSpeedPoints() {
-        return (int) (mSpeedAdj * 20.0);
-    }
-
-    /**
-     * @return The character's basic move.
-     */
-    public int getBasicMove() {
-        return Math.max(mMoveAdj + mMoveBonus + getRawBasicMove(), 0);
-    }
-
-    private int getRawBasicMove() {
-        return (int) Math.floor(getBasicSpeed());
-    }
-
-    /**
-     * Sets the basic move.
-     *
-     * @param move The new basic move.
-     */
-    public void setBasicMove(int move) {
-        int oldBasicMove = getBasicMove();
-        if (oldBasicMove != move) {
-            postUndoEdit(I18n.Text("Basic Move Change"), (c, v) -> c.setBasicMove(((Integer) v).intValue()), Integer.valueOf(oldBasicMove), Integer.valueOf(move));
-            mMoveAdj = move - (mMoveBonus + getRawBasicMove());
-            notifyOfChange();
-        }
-    }
-
-    /** @return The basic move bonus. */
-    public int getBasicMoveBonus() {
-        return mMoveBonus;
-    }
-
-    /** @param bonus The basic move bonus. */
-    public void setBasicMoveBonus(int bonus) {
-        if (mMoveBonus != bonus) {
-            mMoveBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on basic move. */
-    public int getBasicMovePoints() {
-        return mMoveAdj * 5;
-    }
-
-    /**
      * @param encumbrance The encumbrance level.
      * @return The character's ground move for the specified encumbrance level.
      */
     public int getMove(Encumbrance encumbrance) {
-        int     initialMove = getBasicMove();
-        boolean reeling     = isReeling();
-        boolean tired       = isTired();
-        if (reeling || tired) {
-            int     divisor = (reeling && tired) ? 4 : 2;
-            boolean plusOne = initialMove % divisor != 0;
+        int initialMove = getAttributeIntValue("basic_move");
+        int divisor     = 2 * Math.min(countThresholdOpMet(ThresholdOps.HALVE_MOVE), 2);
+        if (divisor > 0) {
+            boolean plusOne = (initialMove % divisor) != 0;
             initialMove /= divisor;
             if (plusOne) {
                 initialMove++;
@@ -779,12 +656,10 @@ public class GURPSCharacter extends CollectedModels {
      * @return The character's dodge for the specified encumbrance level.
      */
     public int getDodge(Encumbrance encumbrance) {
-        int     dodge   = 3 + mDodgeBonus + (int) Math.floor(getBasicSpeed());
-        boolean reeling = isReeling();
-        boolean tired   = isTired();
-        if (reeling || tired) {
-            int     divisor = (reeling && tired) ? 4 : 2;
-            boolean plusOne = dodge % divisor != 0;
+        int dodge   = 3 + mDodgeBonus + getAttributeIntValue("basic_speed");
+        int divisor = 2 * Math.min(countThresholdOpMet(ThresholdOps.HALVE_DODGE), 2);
+        if (divisor > 0) {
+            boolean plusOne = (dodge % divisor) != 0;
             dodge /= divisor;
             if (plusOne) {
                 dodge++;
@@ -792,6 +667,7 @@ public class GURPSCharacter extends CollectedModels {
         }
         return Math.max(dodge + encumbrance.getEncumbrancePenalty(), 1);
     }
+
 
     /** @return The dodge bonus. */
     public int getDodgeBonus() {
@@ -963,141 +839,6 @@ public class GURPSCharacter extends CollectedModels {
         return data;
     }
 
-    /** @return The dexterity (DX). */
-    public int getDexterity() {
-        return mDexterity + mDexterityBonus;
-    }
-
-    /**
-     * Sets the dexterity (DX).
-     *
-     * @param dexterity The new dexterity.
-     */
-    public void setDexterity(int dexterity) {
-        int oldDexterity = getDexterity();
-        if (oldDexterity != dexterity) {
-            postUndoEdit(I18n.Text("Dexterity Change"), (c, v) -> c.setDexterity(((Integer) v).intValue()), Integer.valueOf(oldDexterity), Integer.valueOf(dexterity));
-            mDexterity = dexterity - mDexterityBonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The dexterity bonus. */
-    public int getDexterityBonus() {
-        return mDexterityBonus;
-    }
-
-    /** @param bonus The new dexterity bonus. */
-    public void setDexterityBonus(int bonus) {
-        if (mDexterityBonus != bonus) {
-            mDexterityBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @param reduction The cost reduction for dexterity. */
-    public void setDexterityCostReduction(int reduction) {
-        if (mDexterityCostReduction != reduction) {
-            mDexterityCostReduction = reduction;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on dexterity. */
-    public int getDexterityPoints() {
-        return getPointsForAttribute(mDexterity - 10, 20, mDexterityCostReduction);
-    }
-
-    /** @return The intelligence (IQ). */
-    public int getIntelligence() {
-        return mIntelligence + mIntelligenceBonus;
-    }
-
-    /**
-     * Sets the intelligence (IQ).
-     *
-     * @param intelligence The new intelligence.
-     */
-    public void setIntelligence(int intelligence) {
-        int oldIntelligence = getIntelligence();
-        if (oldIntelligence != intelligence) {
-            postUndoEdit(I18n.Text("Intelligence Change"), (c, v) -> c.setIntelligence(((Integer) v).intValue()), Integer.valueOf(oldIntelligence), Integer.valueOf(intelligence));
-            mIntelligence = intelligence - mIntelligenceBonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The intelligence bonus. */
-    public int getIntelligenceBonus() {
-        return mIntelligenceBonus;
-    }
-
-    /** @param bonus The new intelligence bonus. */
-    public void setIntelligenceBonus(int bonus) {
-        if (mIntelligenceBonus != bonus) {
-            mIntelligenceBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @param reduction The cost reduction for intelligence. */
-    public void setIntelligenceCostReduction(int reduction) {
-        if (mIntelligenceCostReduction != reduction) {
-            mIntelligenceCostReduction = reduction;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on intelligence. */
-    public int getIntelligencePoints() {
-        return getPointsForAttribute(mIntelligence - 10, 20, mIntelligenceCostReduction);
-    }
-
-    /** @return The health (HT). */
-    public int getHealth() {
-        return mHealth + mHealthBonus;
-    }
-
-    /**
-     * Sets the health (HT).
-     *
-     * @param health The new health.
-     */
-    public void setHealth(int health) {
-        int oldHealth = getHealth();
-        if (oldHealth != health) {
-            postUndoEdit(I18n.Text("Health Change"), (c, v) -> c.setHealth(((Integer) v).intValue()), Integer.valueOf(oldHealth), Integer.valueOf(health));
-            mHealth = health - mHealthBonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The health bonus. */
-    public int getHealthBonus() {
-        return mHealthBonus;
-    }
-
-    /** @param bonus The new health bonus. */
-    public void setHealthBonus(int bonus) {
-        if (mHealthBonus != bonus) {
-            mHealthBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @param reduction The cost reduction for health. */
-    public void setHealthCostReduction(int reduction) {
-        if (mHealthCostReduction != reduction) {
-            mHealthCostReduction = reduction;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on health. */
-    public int getHealthPoints() {
-        return getPointsForAttribute(mHealth - 10, 10, mHealthCostReduction);
-    }
-
     /** @return The total number of points this character has. */
     public int getTotalPoints() {
         return mTotalPoints;
@@ -1133,7 +874,10 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     private void calculateAttributePoints() {
-        mCachedAttributePoints = getStrengthPoints() + getDexterityPoints() + getIntelligencePoints() + getHealthPoints() + getWillPoints() + getPerceptionPoints() + getBasicSpeedPoints() + getBasicMovePoints() + getHitPointPoints() + getFatiguePointPoints();
+        mCachedAttributePoints = 0;
+        for (Attribute attr : mAttributes.values()) {
+            mCachedAttributePoints += attr.getPointCost(this);
+        }
     }
 
     /** @return The number of points spent on a racial package. */
@@ -1212,404 +956,6 @@ public class GURPSCharacter extends CollectedModels {
         for (Spell spell : getSpellsIterator()) {
             mCachedSpellPoints += spell.getRawPoints();
         }
-    }
-
-    public int getCurrentHitPoints() {
-        return getHitPointsAdj() - getHitPointsDamage();
-    }
-
-    /** @return The hit points (HP). */
-    public int getHitPointsAdj() {
-        return getStrength() + mHitPointsAdj + mHitPointBonus;
-    }
-
-    /**
-     * Sets the hit points (HP).
-     *
-     * @param hp The new hit points.
-     */
-    public void setHitPointsAdj(int hp) {
-        int oldHP = getHitPointsAdj();
-        if (oldHP != hp) {
-            postUndoEdit(I18n.Text("Hit Points Change"), (c, v) -> c.setHitPointsAdj(((Integer) v).intValue()), Integer.valueOf(oldHP), Integer.valueOf(hp));
-            mHitPointsAdj = hp - (getStrength() + mHitPointBonus);
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on hit points. */
-    public int getHitPointPoints() {
-        int pts = 2 * mHitPointsAdj;
-        if (!mSettings.useKnowYourOwnStrength()) {
-            int sizeModifier = mProfile.getSizeModifier();
-            if (sizeModifier > 0) {
-                int rem;
-                if (sizeModifier > 8) {
-                    sizeModifier = 8;
-                }
-                pts *= 10 - sizeModifier;
-                rem = pts % 10;
-                pts /= 10;
-                if (rem > 4) {
-                    pts++;
-                } else if (rem < -5) {
-                    pts--;
-                }
-            }
-        }
-        return pts;
-    }
-
-    /** @return The hit point bonus. */
-    public int getHitPointBonus() {
-        return mHitPointBonus;
-    }
-
-    /** @param bonus The hit point bonus. */
-    public void setHitPointBonus(int bonus) {
-        if (mHitPointBonus != bonus) {
-            mHitPointBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The hit points damage. */
-    public int getHitPointsDamage() {
-        return mHitPointsDamage;
-    }
-
-    /**
-     * Sets the hit points damage.
-     *
-     * @param damage The damage amount.
-     */
-    public void setHitPointsDamage(int damage) {
-        if (mHitPointsDamage != damage) {
-            postUndoEdit(I18n.Text("Current Hit Points Change"), (c, v) -> c.setHitPointsDamage(((Integer) v).intValue()), Integer.valueOf(mHitPointsDamage), Integer.valueOf(damage));
-            mHitPointsDamage = damage;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of hit points where "reeling" effects start. */
-    public int getReelingHitPoints() {
-        int hp        = getHitPointsAdj();
-        int threshold = hp / 3;
-        if (hp % 3 != 0) {
-            threshold++;
-        }
-        return Math.max(--threshold, 0);
-    }
-
-    public boolean isReeling() {
-        return getCurrentHitPoints() <= getReelingHitPoints();
-    }
-
-    public boolean isCollapsedFromHP() {
-        return getCurrentHitPoints() <= getUnconsciousChecksHitPoints();
-    }
-
-    public boolean isDeathCheck1() {
-        return getCurrentHitPoints() <= getDeathCheck1HitPoints();
-    }
-
-    public boolean isDeathCheck2() {
-        return getCurrentHitPoints() <= getDeathCheck2HitPoints();
-    }
-
-    public boolean isDeathCheck3() {
-        return getCurrentHitPoints() <= getDeathCheck3HitPoints();
-    }
-
-    public boolean isDeathCheck4() {
-        return getCurrentHitPoints() <= getDeathCheck4HitPoints();
-    }
-
-    public boolean isDead() {
-        return getCurrentHitPoints() <= getDeadHitPoints();
-    }
-
-    /** @return The number of hit points where unconsciousness checks must start being made. */
-    @SuppressWarnings("static-method")
-    public int getUnconsciousChecksHitPoints() {
-        return 0;
-    }
-
-    /** @return The number of hit points where the first death check must be made. */
-    public int getDeathCheck1HitPoints() {
-        return -1 * getHitPointsAdj();
-    }
-
-    /** @return The number of hit points where the second death check must be made. */
-    public int getDeathCheck2HitPoints() {
-        return -2 * getHitPointsAdj();
-    }
-
-    /** @return The number of hit points where the third death check must be made. */
-    public int getDeathCheck3HitPoints() {
-        return -3 * getHitPointsAdj();
-    }
-
-    /** @return The number of hit points where the fourth death check must be made. */
-    public int getDeathCheck4HitPoints() {
-        return -4 * getHitPointsAdj();
-    }
-
-    /** @return The number of hit points where the character is just dead. */
-    public int getDeadHitPoints() {
-        return -5 * getHitPointsAdj();
-    }
-
-    /** @return The will. */
-    public int getWillAdj() {
-        return mWillAdj + mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence());
-    }
-
-    /** @param willAdj The new will. */
-    public void setWillAdj(int willAdj) {
-        int oldWill = getWillAdj();
-        if (oldWill != willAdj) {
-            postUndoEdit(I18n.Text("Will Change"), (c, v) -> c.setWillAdj(((Integer) v).intValue()), Integer.valueOf(oldWill), Integer.valueOf(willAdj));
-            mWillAdj = willAdj - (mWillBonus + (mSettings.baseWillOn10() ? 10 : getIntelligence()));
-            notifyOfChange();
-        }
-    }
-
-    /** @return The will bonus. */
-    public int getWillBonus() {
-        return mWillBonus;
-    }
-
-    /** @param bonus The new will bonus. */
-    public void setWillBonus(int bonus) {
-        if (mWillBonus != bonus) {
-            mWillBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on will. */
-    public int getWillPoints() {
-        return mWillAdj * 5;
-    }
-
-    /** @return The fright check. */
-    public int getFrightCheck() {
-        return getWillAdj() + mFrightCheckBonus;
-    }
-
-    /** @return The fright check bonus. */
-    public int getFrightCheckBonus() {
-        return mFrightCheckBonus;
-    }
-
-    /** @param bonus The new fright check bonus. */
-    public void setFrightCheckBonus(int bonus) {
-        if (mFrightCheckBonus != bonus) {
-            mFrightCheckBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The vision. */
-    public int getVision() {
-        return getPerAdj() + mVisionBonus;
-    }
-
-    /** @return The vision bonus. */
-    public int getVisionBonus() {
-        return mVisionBonus;
-    }
-
-    /** @param bonus The new vision bonus. */
-    public void setVisionBonus(int bonus) {
-        if (mVisionBonus != bonus) {
-            mVisionBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The hearing. */
-    public int getHearing() {
-        return getPerAdj() + mHearingBonus;
-    }
-
-    /** @return The hearing bonus. */
-    public int getHearingBonus() {
-        return mHearingBonus;
-    }
-
-    /** @param bonus The new hearing bonus. */
-    public void setHearingBonus(int bonus) {
-        if (mHearingBonus != bonus) {
-            mHearingBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The touch perception. */
-    public int getTouch() {
-        return getPerAdj() + mTouchBonus;
-    }
-
-    /** @return The touch bonus. */
-    public int getTouchBonus() {
-        return mTouchBonus;
-    }
-
-    /** @param bonus The new touch bonus. */
-    public void setTouchBonus(int bonus) {
-        if (mTouchBonus != bonus) {
-            mTouchBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The taste and smell perception. */
-    public int getTasteAndSmell() {
-        return getPerAdj() + mTasteAndSmellBonus;
-    }
-
-    /** @return The taste and smell bonus. */
-    public int getTasteAndSmellBonus() {
-        return mTasteAndSmellBonus;
-    }
-
-    /** @param bonus The new taste and smell bonus. */
-    public void setTasteAndSmellBonus(int bonus) {
-        if (mTasteAndSmellBonus != bonus) {
-            mTasteAndSmellBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The perception (Per). */
-    public int getPerAdj() {
-        return mPerAdj + mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence());
-    }
-
-    /**
-     * Sets the perception.
-     *
-     * @param perAdj The new perception.
-     */
-    public void setPerAdj(int perAdj) {
-        int oldPerception = getPerAdj();
-        if (oldPerception != perAdj) {
-            postUndoEdit(I18n.Text("Perception Change"), (c, v) -> c.setPerAdj(((Integer) v).intValue()), Integer.valueOf(oldPerception), Integer.valueOf(perAdj));
-            mPerAdj = perAdj - (mPerceptionBonus + (mSettings.basePerOn10() ? 10 : getIntelligence()));
-            notifyOfChange();
-        }
-    }
-
-    /** @return The perception bonus. */
-    public int getPerceptionBonus() {
-        return mPerceptionBonus;
-    }
-
-    /** @param bonus The new perception bonus. */
-    public void setPerceptionBonus(int bonus) {
-        if (mPerceptionBonus != bonus) {
-            mPerceptionBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on perception. */
-    public int getPerceptionPoints() {
-        return mPerAdj * 5;
-    }
-
-    public int getCurrentFatiguePoints() {
-        return getFatiguePoints() - getFatiguePointsDamage();
-    }
-
-    /** @return The fatigue points (FP). */
-    public int getFatiguePoints() {
-        return getHealth() + mFatiguePoints + mFatiguePointBonus;
-    }
-
-    /**
-     * Sets the fatigue points (FP).
-     *
-     * @param fp The new fatigue points.
-     */
-    public void setFatiguePoints(int fp) {
-        int oldFP = getFatiguePoints();
-        if (oldFP != fp) {
-            postUndoEdit(I18n.Text("Fatigue Points Change"), (c, v) -> c.setFatiguePoints(((Integer) v).intValue()), Integer.valueOf(oldFP), Integer.valueOf(fp));
-            mFatiguePoints = fp - (getHealth() + mFatiguePointBonus);
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of points spent on fatigue points. */
-    public int getFatiguePointPoints() {
-        return 3 * mFatiguePoints;
-    }
-
-    /** @return The fatigue point bonus. */
-    public int getFatiguePointBonus() {
-        return mFatiguePointBonus;
-    }
-
-    /** @param bonus The fatigue point bonus. */
-    public void setFatiguePointBonus(int bonus) {
-        if (mFatiguePointBonus != bonus) {
-            mFatiguePointBonus = bonus;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The fatigue points damage. */
-    public int getFatiguePointsDamage() {
-        return mFatiguePointsDamage;
-    }
-
-    /**
-     * Sets the fatigue points damage.
-     *
-     * @param damage The damage amount.
-     */
-    public void setFatiguePointsDamage(int damage) {
-        if (mFatiguePointsDamage != damage) {
-            postUndoEdit(I18n.Text("Current Fatigue Points Change"), (c, v) -> c.setFatiguePointsDamage(((Integer) v).intValue()), Integer.valueOf(mFatiguePointsDamage), Integer.valueOf(damage));
-            mFatiguePointsDamage = damage;
-            notifyOfChange();
-        }
-    }
-
-    /** @return The number of fatigue points where "tired" effects start. */
-    public int getTiredFatiguePoints() {
-        int fp        = getFatiguePoints();
-        int threshold = fp / 3;
-        if (fp % 3 != 0) {
-            threshold++;
-        }
-        return Math.max(--threshold, 0);
-    }
-
-    public boolean isTired() {
-        return getCurrentFatiguePoints() <= getTiredFatiguePoints();
-    }
-
-    public boolean isCollapsedFromFP() {
-        return getCurrentFatiguePoints() <= getUnconsciousChecksFatiguePoints();
-    }
-
-    public boolean isUnconscious() {
-        return getCurrentFatiguePoints() <= getUnconsciousFatiguePoints();
-    }
-
-    /** @return The number of fatigue points where unconsciousness checks must start being made. */
-    @SuppressWarnings("static-method")
-    public int getUnconsciousChecksFatiguePoints() {
-        return 0;
-    }
-
-    /** @return The number of hit points where the character falls over, unconscious. */
-    public int getUnconsciousFatiguePoints() {
-        return -1 * getFatiguePoints();
     }
 
     /** @return The {@link Profile} data. */
@@ -1827,31 +1173,25 @@ public class GURPSCharacter extends CollectedModels {
         mFeatureMap = map;
         mSkillsUpdated = false;
         mSpellsUpdated = false;
-        setStrengthBonus(getIntegerBonusFor(ID_STRENGTH));
-        setStrengthCostReduction(getCostReductionFor(ID_STRENGTH));
-        setLiftingStrengthBonus(getIntegerBonusFor(ID_LIFTING_STRENGTH));
-        setStrikingStrengthBonus(getIntegerBonusFor(ID_STRIKING_STRENGTH));
-        setDexterityBonus(getIntegerBonusFor(ID_DEXTERITY));
-        setDexterityCostReduction(getCostReductionFor(ID_DEXTERITY));
-        setIntelligenceBonus(getIntegerBonusFor(ID_INTELLIGENCE));
-        setIntelligenceCostReduction(getCostReductionFor(ID_INTELLIGENCE));
-        setHealthBonus(getIntegerBonusFor(ID_HEALTH));
-        setHealthCostReduction(getCostReductionFor(ID_HEALTH));
-        setWillBonus(getIntegerBonusFor(ID_WILL));
-        setFrightCheckBonus(getIntegerBonusFor(ID_FRIGHT_CHECK));
-        setPerceptionBonus(getIntegerBonusFor(ID_PERCEPTION));
-        setVisionBonus(getIntegerBonusFor(ID_VISION));
-        setHearingBonus(getIntegerBonusFor(ID_HEARING));
-        setTasteAndSmellBonus(getIntegerBonusFor(ID_TASTE_AND_SMELL));
-        setTouchBonus(getIntegerBonusFor(ID_TOUCH));
-        setHitPointBonus(getIntegerBonusFor(ID_HIT_POINTS));
-        setFatiguePointBonus(getIntegerBonusFor(ID_FATIGUE_POINTS));
+        String strPrefix = Attribute.ID_ATTR_PREFIX + "st.";
+        setLiftingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.LIFTING_ONLY.name()));
+        setStrikingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.STRIKING_ONLY.name()));
+        for (Attribute attr : mAttributes.values()) {
+            String       attrID = Attribute.ID_ATTR_PREFIX + attr.getID();
+            AttributeDef def    = attr.getAttrDef(this);
+            if (def != null) {
+                if (def.getType() == AttributeType.DECIMAL) {
+                    attr.setBonus(this, getDoubleBonusFor(attrID));
+                } else {
+                    attr.setBonus(this, getIntegerBonusFor(attrID));
+                }
+                attr.setCostReduction(this, getCostReductionFor(attrID));
+            }
+        }
         mProfile.update();
-        setDodgeBonus(getIntegerBonusFor(ID_DODGE_BONUS));
-        setParryBonus(getIntegerBonusFor(ID_PARRY_BONUS));
-        setBlockBonus(getIntegerBonusFor(ID_BLOCK_BONUS));
-        setBasicSpeedBonus(getDoubleBonusFor(ID_BASIC_SPEED));
-        setBasicMoveBonus(getIntegerBonusFor(ID_BASIC_MOVE));
+        setDodgeBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "dodge"));
+        setParryBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "parry"));
+        setBlockBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "block"));
         mArmor.update();
         if (!mSkillsUpdated) {
             updateSkills();
@@ -2157,7 +1497,7 @@ public class GURPSCharacter extends CollectedModels {
      * @param before The original value.
      * @param after  The new value.
      */
-    void postUndoEdit(String name, CharacterSetter setter, Object before, Object after) {
+    public void postUndoEdit(String name, CharacterSetter setter, Object before, Object after) {
         StdUndoManager mgr = getUndoManager();
         if (!mgr.isInTransaction() && !before.equals(after)) {
             addEdit(new CharacterUndo(this, name, setter, before, after));
@@ -2197,5 +1537,31 @@ public class GURPSCharacter extends CollectedModels {
     @Override
     public DisplayOption notesDisplay() {
         return mSettings.notesDisplay();
+    }
+
+    public boolean isThresholdOpMet(ThresholdOps op) {
+        for (Attribute attr : mAttributes.values()) {
+            PoolThreshold threshold = attr.getCurrentThreshold(this);
+            if (threshold != null && threshold.getOps().contains(op)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int countThresholdOpMet(ThresholdOps op) {
+        int total = 0;
+        for (Attribute attr : mAttributes.values()) {
+            PoolThreshold threshold = attr.getCurrentThreshold(this);
+            if (threshold != null && threshold.getOps().contains(op)) {
+                total++;
+            }
+        }
+        return total;
+    }
+
+    @Override
+    public Map<String, AttributeDef> getAttributeDefs() {
+        return getSettings().getAttributes();
     }
 }

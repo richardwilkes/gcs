@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.criteria.DoubleCriteria;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
@@ -18,6 +20,7 @@ import com.trollworks.gcs.criteria.NumericCriteria;
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.criteria.WeightCriteria;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
@@ -73,6 +76,28 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         UIUtilities.setToPreferredSizeOnly(combo);
         add(combo);
         return combo;
+    }
+
+    protected JComboBox<AttributeChoice> addAttributePopup(DataFile dataFile, String command, String format, String attribute, boolean includeBlank) {
+        List<AttributeChoice> list = new ArrayList<>();
+        if (includeBlank) {
+            list.add(new AttributeChoice(" ", format, " "));
+        }
+        for (AttributeDef def : AttributeDef.getOrdered(dataFile.getAttributeDefs())) {
+            list.add(new AttributeChoice(def.getID(), format, def.getName()));
+        }
+        list.add(new AttributeChoice("sm", format, "Size Modifier"));
+        list.add(new AttributeChoice("dodge", format, "Dodge"));
+        list.add(new AttributeChoice("parry", format, "Parry"));
+        list.add(new AttributeChoice("block", format, "Block"));
+        AttributeChoice current = list.get(0);
+        for (AttributeChoice attributeChoice : list) {
+            if (attributeChoice.getAttribute().equals(attribute)) {
+                current = attributeChoice;
+                break;
+            }
+        }
+        return addComboBox(command, list.toArray(new AttributeChoice[0]), current);
     }
 
     /**

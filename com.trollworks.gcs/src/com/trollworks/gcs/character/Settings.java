@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.VersionException;
@@ -24,58 +25,55 @@ import com.trollworks.gcs.utility.units.WeightUnits;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Settings {
     private static final int    CURRENT_JSON_VERSION                = 1;
     private static final int    CURRENT_VERSION                     = 1;
     private static final int    MINIMUM_VERSION                     = 0;
     public static final  String KEY_ROOT                            = "settings";
+    private static final String KEY_ATTRIBUTES                      = "attributes";
+    public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
     public static final  String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
     public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
-    public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
-    public static final  String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
     public static final  String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
     public static final  String KEY_NOTES_DISPLAY                   = "notes_display";
-    public static final  String KEY_BASE_WILL_ON_10                 = "base_will_on_10";
-    public static final  String KEY_BASE_PER_ON_10                  = "base_per_on_10";
-    public static final  String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
-    public static final  String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
-    public static final  String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
-    public static final  String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
-    public static final  String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
-    public static final  String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
+    public static final  String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
     public static final  String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
     public static final  String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
-    public static final  String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
     public static final  String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
     public static final  String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
+    public static final  String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
+    public static final  String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
+    public static final  String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
+    public static final  String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
+    public static final  String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
+    public static final  String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
-    private static final String KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE  = "extra_space_around_encumbrance";
+    public static final  String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
 
     public static final String DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10"; // January 23, 2021
 
-    private GURPSCharacter mCharacter;
-    private LengthUnits    mDefaultLengthUnits;
-    private WeightUnits    mDefaultWeightUnits;
-    private List<String>   mBlockLayout;
-    private DisplayOption  mUserDescriptionDisplay;
-    private DisplayOption  mModifiersDisplay;
-    private DisplayOption  mNotesDisplay;
-    private boolean        mBaseWillOn10; // Home brew
-    private boolean        mBasePerOn10; // Home brew
-    private boolean        mUseMultiplicativeModifiers; // P102
-    private boolean        mUseModifyingDicePlusAdds; // B269
-    private boolean        mUseKnowYourOwnStrength; // PY83
-    private boolean        mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
-    private boolean        mUseThrustEqualsSwingMinus2; // Home brew
-    private boolean        mUseSimpleMetricConversions; // B9
-    private boolean        mShowCollegeInSpells;
-    private boolean        mShowDifficulty;
-    private boolean        mShowAdvantageModifierAdj;
-    private boolean        mShowEquipmentModifierAdj;
-    private boolean        mShowSpellAdj;
-    private boolean        mUseTitleInFooter;
-    private boolean        mExtraSpaceAroundEncumbrance;
+    private GURPSCharacter            mCharacter;
+    private LengthUnits               mDefaultLengthUnits;
+    private WeightUnits               mDefaultWeightUnits;
+    private List<String>              mBlockLayout;
+    private DisplayOption             mUserDescriptionDisplay;
+    private DisplayOption             mModifiersDisplay;
+    private DisplayOption             mNotesDisplay;
+    private Map<String, AttributeDef> mAttributes;
+    private boolean                   mUseMultiplicativeModifiers; // P102
+    private boolean                   mUseModifyingDicePlusAdds; // B269
+    private boolean                   mUseKnowYourOwnStrength; // PY83
+    private boolean                   mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
+    private boolean                   mUseThrustEqualsSwingMinus2; // Home brew
+    private boolean                   mUseSimpleMetricConversions; // B9
+    private boolean                   mShowCollegeInSpells;
+    private boolean                   mShowDifficulty;
+    private boolean                   mShowAdvantageModifierAdj;
+    private boolean                   mShowEquipmentModifierAdj;
+    private boolean                   mShowSpellAdj;
+    private boolean                   mUseTitleInFooter;
 
     public Settings(GURPSCharacter character) {
         Preferences prefs = Preferences.getInstance();
@@ -86,8 +84,7 @@ public class Settings {
         mUserDescriptionDisplay = prefs.getUserDescriptionDisplay();
         mModifiersDisplay = prefs.getModifiersDisplay();
         mNotesDisplay = prefs.getNotesDisplay();
-        mBaseWillOn10 = prefs.baseWillOn10();
-        mBasePerOn10 = prefs.basePerOn10();
+        mAttributes = AttributeDef.cloneMap(prefs.getAttributes());
         mUseMultiplicativeModifiers = prefs.useMultiplicativeModifiers();
         mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
         mUseKnowYourOwnStrength = prefs.useKnowYourOwnStrength();
@@ -100,7 +97,6 @@ public class Settings {
         mShowEquipmentModifierAdj = prefs.showEquipmentModifierAdj();
         mShowSpellAdj = prefs.showSpellAdj();
         mUseTitleInFooter = prefs.useTitleInFooter();
-        mExtraSpaceAroundEncumbrance = prefs.extraSpaceAroundEncumbrance();
     }
 
     void load(JsonMap m) throws IOException {
@@ -116,12 +112,8 @@ public class Settings {
         mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
         mModifiersDisplay = Enums.extract(m.getString(KEY_MODIFIERS_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
-        if (m.has(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10)) {
-            mBaseWillOn10 = m.getBoolean(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10);
-            mBasePerOn10 = m.getBoolean(DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10);
-        } else {
-            mBaseWillOn10 = m.getBoolean(KEY_BASE_WILL_ON_10);
-            mBasePerOn10 = m.getBoolean(KEY_BASE_PER_ON_10);
+        if (m.has(KEY_ATTRIBUTES)) {
+            mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
         }
         mUseMultiplicativeModifiers = m.getBoolean(KEY_USE_MULTIPLICATIVE_MODIFIERS);
         mUseModifyingDicePlusAdds = m.getBoolean(KEY_USE_MODIFYING_DICE_PLUS_ADDS);
@@ -139,7 +131,6 @@ public class Settings {
             mShowSpellAdj = Preferences.DEFAULT_SHOW_SPELL_ADJ;
         }
         mUseTitleInFooter = m.getBoolean(KEY_USE_TITLE_IN_FOOTER);
-        mExtraSpaceAroundEncumbrance = m.getBoolean(KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mBlockLayout = new ArrayList<>();
         JsonArray a     = m.getArray(KEY_BLOCK_LAYOUT);
         int       count = a.size();
@@ -156,8 +147,8 @@ public class Settings {
         w.keyValue(KEY_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
         w.keyValue(KEY_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
-        w.keyValue(KEY_BASE_WILL_ON_10, mBaseWillOn10);
-        w.keyValue(KEY_BASE_PER_ON_10, mBasePerOn10);
+        w.key(KEY_ATTRIBUTES);
+        AttributeDef.writeOrdered(w, mAttributes);
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -170,7 +161,6 @@ public class Settings {
         w.keyValue(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         w.keyValue(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         w.keyValue(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-        w.keyValue(KEY_EXTRA_SPACE_AROUND_ENCUMBRANCE, mExtraSpaceAroundEncumbrance);
         w.key(KEY_BLOCK_LAYOUT);
         w.startArray();
         for (String one : mBlockLayout) {
@@ -183,8 +173,6 @@ public class Settings {
     @SuppressWarnings("StringBufferReplaceableByString")
     public String optionsCode() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(mBaseWillOn10 ? 'W' : 'w');
-        buffer.append(mBasePerOn10 ? 'P' : 'p');
         buffer.append(mUseMultiplicativeModifiers ? 'M' : 'm');
         buffer.append(mUseModifyingDicePlusAdds ? 'D' : 'd');
         buffer.append(mUseKnowYourOwnStrength ? 'K' : 'k');
@@ -256,28 +244,6 @@ public class Settings {
     public void setNotesDisplay(DisplayOption notesDisplay) {
         if (mNotesDisplay != notesDisplay) {
             mNotesDisplay = notesDisplay;
-            mCharacter.notifyOfChange();
-        }
-    }
-
-    public boolean baseWillOn10() {
-        return mBaseWillOn10;
-    }
-
-    public void setBaseWillOn10(boolean baseWillOn10) {
-        if (mBaseWillOn10 != baseWillOn10) {
-            mBaseWillOn10 = baseWillOn10;
-            mCharacter.notifyOfChange();
-        }
-    }
-
-    public boolean basePerOn10() {
-        return mBasePerOn10;
-    }
-
-    public void setBasePerOn10(boolean basePerOn10) {
-        if (mBasePerOn10 != basePerOn10) {
-            mBasePerOn10 = basePerOn10;
             mCharacter.notifyOfChange();
         }
     }
@@ -414,13 +380,13 @@ public class Settings {
         }
     }
 
-    public boolean extraSpaceAroundEncumbrance() {
-        return mExtraSpaceAroundEncumbrance;
+    public Map<String, AttributeDef> getAttributes() {
+        return mAttributes;
     }
 
-    public void setExtraSpaceAroundEncumbrance(boolean extraSpaceAroundEncumbrance) {
-        if (mExtraSpaceAroundEncumbrance != extraSpaceAroundEncumbrance) {
-            mExtraSpaceAroundEncumbrance = extraSpaceAroundEncumbrance;
+    public void setAttributes(Map<String, AttributeDef> attributes) {
+        if (!mAttributes.equals(attributes)) {
+            mAttributes = AttributeDef.cloneMap(attributes);
             mCharacter.notifyOfChange();
         }
     }

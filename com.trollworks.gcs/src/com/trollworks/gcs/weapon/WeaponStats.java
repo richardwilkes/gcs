@@ -290,8 +290,7 @@ public abstract class WeaponStats {
         int           postAdj        = getSkillLevelPostAdjustment(character, primaryToolTip);
         int           best           = Integer.MIN_VALUE;
         for (SkillDefault skillDefault : getDefaults()) {
-            SkillDefaultType type  = skillDefault.getType();
-            int              level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+            int level = SkillDefaultType.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
             if (level != Integer.MIN_VALUE) {
                 level += preAdj;
                 level += postAdj;
@@ -320,7 +319,7 @@ public abstract class WeaponStats {
 
     protected int getSkillLevelBaseAdjustment(GURPSCharacter character, StringBuilder toolTip) {
         int adj   = 0;
-        int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
+        int minST = getMinStrengthValue() - (character.getAttributeIntValue("st") + character.getStrikingStrengthBonus());
         if (minST > 0) {
             adj -= minST;
         }

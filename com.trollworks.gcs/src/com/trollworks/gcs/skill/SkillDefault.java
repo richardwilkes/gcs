@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
@@ -31,13 +32,13 @@ public class SkillDefault {
     public static final String KEY_ADJ_LEVEL      = "adjusted_level";
     public static final String KEY_POINTS         = "points";
 
-    private SkillDefaultType mType;
-    private String           mName;
-    private String           mSpecialization;
-    private int              mModifier;
-    private int              mLevel;
-    private int              mAdjLevel;
-    private int              mPoints;
+    private String mType;
+    private String mName;
+    private String mSpecialization;
+    private int    mModifier;
+    private int    mLevel;
+    private int    mAdjLevel;
+    private int    mPoints;
 
     /**
      * Creates a new skill default.
@@ -49,7 +50,7 @@ public class SkillDefault {
      *                       default from a skill or the skill doesn't require a specialization.
      * @param modifier       The modifier to use.
      */
-    public SkillDefault(SkillDefaultType type, String name, String specialization, int modifier) {
+    public SkillDefault(String type, String name, String specialization, int modifier) {
         setType(type);
         setName(name);
         setSpecialization(specialization);
@@ -75,7 +76,7 @@ public class SkillDefault {
      * @param full {@code true} if all fields should be loaded.
      */
     public SkillDefault(JsonMap m, boolean full) {
-        mType = SkillDefaultType.getByName(m.getString(DataFile.KEY_TYPE));
+        setType(m.getString(DataFile.KEY_TYPE));
         mName = m.getString(KEY_NAME);
         mSpecialization = m.getString(KEY_SPECIALIZATION);
         mModifier = m.getInt(KEY_MODIFIER);
@@ -132,8 +133,8 @@ public class SkillDefault {
      */
     public void save(JsonWriter w, boolean full) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, mType.name());
-        if (mType.isSkillBased()) {
+        w.keyValue(DataFile.KEY_TYPE, mType);
+        if (SkillDefaultType.isSkillBased(mType)) {
             w.keyValueNot(KEY_NAME, mName, "");
             w.keyValueNot(KEY_SPECIALIZATION, mSpecialization, "");
         }
@@ -147,18 +148,18 @@ public class SkillDefault {
     }
 
     /** @return The type of default. */
-    public SkillDefaultType getType() {
+    public String getType() {
         return mType;
     }
 
     /** @param type The new type. */
-    public void setType(SkillDefaultType type) {
-        mType = type;
+    public void setType(String type) {
+        mType = AttributeDef.sanitizeID(type, false);
     }
 
     /** @return The full name of the skill to default from. */
-    public String getFullName() {
-        if (mType.isSkillBased()) {
+    public String getFullName(DataFile dataFile) {
+        if (SkillDefaultType.isSkillBased(mType)) {
             StringBuilder builder = new StringBuilder();
             builder.append(mName);
             if (!mSpecialization.isEmpty()) {
@@ -166,20 +167,19 @@ public class SkillDefault {
                 builder.append(mSpecialization);
                 builder.append(')');
             }
-            if (mType == SkillDefaultType.Parry) {
+            if ("parry".equalsIgnoreCase(mType)) {
                 builder.append(I18n.Text(" Parry"));
-            } else if (mType == SkillDefaultType.Block) {
+            } else if ("block".equalsIgnoreCase(mType)) {
                 builder.append(I18n.Text(" Block"));
             }
             return builder.toString();
         }
-        return mType.toString();
+        return Skill.resolveAttributeName(dataFile, mType);
     }
 
     /**
      * @return The name of the skill to default from. Only valid when {@link #getType()} returns a
-     *         {@link SkillDefaultType} whose {@link SkillDefaultType#isSkillBased()} method returns
-     *         {@code true}.
+     *         {@link SkillDefaultType} which is skill based.
      */
     public String getName() {
         return mName;
@@ -192,8 +192,7 @@ public class SkillDefault {
 
     /**
      * @return The specialization of the skill to default from. Only valid when {@link #getType()}
-     *         returns a {@link SkillDefaultType} whose {@link SkillDefaultType#isSkillBased()}
-     *         method returns {@code true}.
+     *         returns a {@link SkillDefaultType} which is skill based.
      */
     public String getSpecialization() {
         return mSpecialization;
@@ -221,7 +220,7 @@ public class SkillDefault {
         }
         if (obj instanceof SkillDefault) {
             SkillDefault sd = (SkillDefault) obj;
-            return mType == sd.mType && mModifier == sd.mModifier && mName.equals(sd.mName) && mSpecialization.equals(sd.mSpecialization);
+            return mModifier == sd.mModifier && mType.equals(sd.mType) && mName.equals(sd.mName) && mSpecialization.equals(sd.mSpecialization);
         }
         return false;
     }
@@ -241,11 +240,6 @@ public class SkillDefault {
     public void applyNameableKeys(Map<String, String> map) {
         setName(ListRow.nameNameables(map, getName()));
         setSpecialization(ListRow.nameNameables(map, getSpecialization()));
-    }
-
-    @Override
-    public String toString() {
-        return getFullName() + getModifierAsString();
     }
 
     public String getModifierAsString() {

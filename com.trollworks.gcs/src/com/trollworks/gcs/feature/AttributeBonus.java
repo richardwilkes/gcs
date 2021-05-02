@@ -11,12 +11,17 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeType;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 
 import java.io.IOException;
+import java.util.List;
 
 /** An attribute bonus. */
 public class AttributeBonus extends Bonus {
@@ -24,19 +29,20 @@ public class AttributeBonus extends Bonus {
     private static final String KEY_ATTRIBUTE  = "attribute";
     private static final String KEY_LIMITATION = "limitation";
 
-    private BonusAttributeType       mAttribute;
+    private String                   mAttribute;
     private AttributeBonusLimitation mLimitation;
 
     /** Creates a new attribute bonus. */
     public AttributeBonus() {
         super(1);
-        mAttribute = BonusAttributeType.ST;
+        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getAttributes());
+        mAttribute = list.isEmpty() ? "st" : list.get(0).getID();
         mLimitation = AttributeBonusLimitation.NONE;
     }
 
-    public AttributeBonus(JsonMap m) throws IOException {
+    public AttributeBonus(DataFile dataFile, JsonMap m) throws IOException {
         this();
-        loadSelf(m);
+        loadSelf(dataFile, m);
     }
 
     /**
@@ -57,7 +63,7 @@ public class AttributeBonus extends Bonus {
         }
         if (obj instanceof AttributeBonus && super.equals(obj)) {
             AttributeBonus ab = (AttributeBonus) obj;
-            return mAttribute == ab.mAttribute && mLimitation == ab.mLimitation;
+            return mAttribute.equals(ab.mAttribute) && mLimitation == ab.mLimitation;
         }
         return false;
     }
@@ -75,39 +81,41 @@ public class AttributeBonus extends Bonus {
     @Override
     public String getKey() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(GURPSCharacter.ATTRIBUTES_PREFIX);
-        buffer.append(mAttribute.name());
+        buffer.append(Attribute.ID_ATTR_PREFIX);
+        buffer.append(mAttribute);
         if (mLimitation != AttributeBonusLimitation.NONE) {
+            buffer.append(".");
             buffer.append(mLimitation.name());
         }
         return buffer.toString();
     }
 
     @Override
-    protected void loadSelf(JsonMap m) throws IOException {
-        setAttribute(Enums.extract(m.getString(KEY_ATTRIBUTE), BonusAttributeType.values(), BonusAttributeType.ST));
-        setLimitation(Enums.extract(m.getString(KEY_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE));
-        super.loadSelf(m);
+    protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
+        setAttribute(dataFile, m.getString(KEY_ATTRIBUTE));
+        mLimitation = Enums.extract(m.getString(KEY_LIMITATION), AttributeBonusLimitation.values(), AttributeBonusLimitation.NONE);
+        super.loadSelf(dataFile, m);
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(KEY_ATTRIBUTE, Enums.toId(mAttribute));
+        w.keyValue(KEY_ATTRIBUTE, mAttribute);
         if (mLimitation != AttributeBonusLimitation.NONE) {
             w.keyValue(KEY_LIMITATION, Enums.toId(mLimitation));
         }
     }
 
     /** @return The attribute this bonus applies to. */
-    public BonusAttributeType getAttribute() {
+    public String getAttribute() {
         return mAttribute;
     }
 
     /** @param attribute The attribute. */
-    public void setAttribute(BonusAttributeType attribute) {
-        mAttribute = attribute;
-        getAmount().setIntegerOnly(mAttribute.isIntegerOnly());
+    public void setAttribute(DataFile dataFile, String attribute) {
+        mAttribute = AttributeDef.sanitizeID(attribute, false);
+        AttributeDef def = dataFile.getAttributeDefs().get(attribute);
+        getAmount().setIntegerOnly(def == null || def.getType() != AttributeType.DECIMAL);
     }
 
     /** @return The limitation of this bonus. */
