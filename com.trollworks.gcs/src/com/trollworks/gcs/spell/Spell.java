@@ -75,7 +75,7 @@ public class Spell extends ListRow implements HasSourceReference {
     public static final String ID_POINTS_COLLEGE      = "spell.college.points";
     public static final String ID_POINTS_POWER_SOURCE = "spell.power_source.points";
 
-    private static final Pattern COLLEGE_OR = Pattern.compile("\\s+or\\s+", Pattern.CASE_INSENSITIVE);
+    private static final Pattern COLLEGE_OR = Pattern.compile("(\\s+or\\s+)|/", Pattern.CASE_INSENSITIVE);
 
     private   String            mName;
     private   String            mTechLevel;
