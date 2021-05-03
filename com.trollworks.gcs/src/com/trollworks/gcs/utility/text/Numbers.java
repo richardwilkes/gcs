@@ -264,7 +264,7 @@ public final class Numbers {
 
     /**
      * @param formatter The date/time formatter to use.
-     * @param buffer The string to convert.
+     * @param buffer    The string to convert.
      * @return The number of milliseconds since midnight, January 1, 1970.
      */
     public static long extractDateTime(DateTimeFormatter formatter, String buffer) {
@@ -280,7 +280,7 @@ public final class Numbers {
 
     /**
      * @param formatter The date/time formatter to use.
-     * @param dateTime The number of milliseconds since midnight, January 1, 1970.
+     * @param dateTime  The number of milliseconds since midnight, January 1, 1970.
      * @return The formatted string representing the date/time.
      */
     public static String formatDateTime(DateTimeFormatter formatter, long dateTime) {

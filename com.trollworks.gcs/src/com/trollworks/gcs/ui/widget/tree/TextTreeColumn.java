@@ -33,7 +33,9 @@ public class TextTreeColumn extends TreeColumn {
     private             WrappingMode  mWrappingMode;
 
     public enum WrappingMode {
-        NORMAL, WRAPPED, SINGLE_LINE
+        NORMAL,
+        WRAPPED,
+        SINGLE_LINE
     }
 
     /**

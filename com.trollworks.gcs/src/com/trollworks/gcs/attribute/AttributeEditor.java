@@ -45,7 +45,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
 public class AttributeEditor extends JPanel {
-    private static final int                JSON_VERSION   = 1;
     private static final String             JSON_TYPE_NAME = "attribute_settings";
     public static final  int                BUTTON_SIZE    = 14;
     private              AttributeListPanel mListPanel;
@@ -79,11 +78,11 @@ public class AttributeEditor extends JPanel {
             try (BufferedReader fileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
                 JsonMap   m     = Json.asMap(Json.parse(fileReader));
                 LoadState state = new LoadState();
-                state.mDataFileVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
-                if (state.mDataFileVersion > JSON_VERSION) {
+                state.mDataFileVersion = m.getInt(DataFile.VERSION);
+                if (state.mDataFileVersion > DataFile.CURRENT_VERSION) {
                     throw VersionException.createTooNew();
                 }
-                if (!JSON_TYPE_NAME.equals(m.getString(DataFile.KEY_TYPE))) {
+                if (!JSON_TYPE_NAME.equals(m.getString(DataFile.TYPE))) {
                     throw new IOException("invalid data type");
                 }
                 reset(AttributeDef.load(m.getArray(JSON_TYPE_NAME)));
@@ -105,8 +104,8 @@ public class AttributeEditor extends JPanel {
                 File transactionFile = transaction.getTransactionFile(path.toFile());
                 try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(transactionFile, StandardCharsets.UTF_8)), "\t")) {
                     w.startMap();
-                    w.keyValue(DataFile.KEY_TYPE, JSON_TYPE_NAME);
-                    w.keyValue(LoadState.ATTRIBUTE_VERSION, JSON_VERSION);
+                    w.keyValue(DataFile.TYPE, JSON_TYPE_NAME);
+                    w.keyValue(DataFile.VERSION, DataFile.CURRENT_VERSION);
                     w.key(JSON_TYPE_NAME);
                     AttributeDef.writeOrdered(w, mListPanel.getAttributes());
                     w.endMap();

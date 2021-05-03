@@ -34,9 +34,9 @@ public abstract class Feature {
      *
      * @param w The {@link JsonWriter} to use.
      */
-   public final void save(JsonWriter w) throws IOException {
+    public final void save(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        w.keyValue(DataFile.TYPE, getJSONTypeName());
         saveSelf(w);
         w.endMap();
     }

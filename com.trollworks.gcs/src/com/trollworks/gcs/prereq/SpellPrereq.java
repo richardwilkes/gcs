@@ -129,8 +129,8 @@ public class SpellPrereq extends HasPrereq {
 
     /**
      * @param type The type of comparison to make. Must be one of {@link #KEY_NAME}, {@link
-     *             #KEY_ANY}, {@link #KEY_CATEGORY}, {@link #KEY_COLLEGE}, or
-     *             {@link #KEY_COLLEGE_COUNT}.
+     *             #KEY_ANY}, {@link #KEY_CATEGORY}, {@link #KEY_COLLEGE}, or {@link
+     *             #KEY_COLLEGE_COUNT}.
      */
     public void setType(String type) {
         if (KEY_NAME.equals(type)) {

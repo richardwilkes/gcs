@@ -31,11 +31,10 @@ import java.util.Set;
 
 /** A note. */
 public class Note extends ListRow implements HasSourceReference {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    public static final  String KEY_NOTE             = "note";
-    public static final  String KEY_NOTE_CONTAINER   = "note_container";
-    private static final String KEY_TEXT             = "text";
-    private static final String KEY_REFERENCE        = "reference";
+    public static final  String KEY_NOTE           = "note";
+    public static final  String KEY_NOTE_CONTAINER = "note_container";
+    private static final String KEY_TEXT           = "text";
+    private static final String KEY_REFERENCE      = "reference";
 
     private String mText;
     private String mReference;
@@ -72,7 +71,7 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     public Note(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_NOTE_CONTAINER));
+        this(dataFile, m.getString(DataFile.TYPE).equals(KEY_NOTE_CONTAINER));
         load(dataFile, m, state);
     }
 
@@ -99,11 +98,6 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Note");
     }
@@ -124,7 +118,7 @@ public class Note extends ListRow implements HasSourceReference {
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
-            String type = m.getString(DataFile.KEY_TYPE);
+            String type = m.getString(DataFile.TYPE);
             if (KEY_NOTE.equals(type) || KEY_NOTE_CONTAINER.equals(type)) {
                 addChild(new Note(mDataFile, m, state));
             } else {

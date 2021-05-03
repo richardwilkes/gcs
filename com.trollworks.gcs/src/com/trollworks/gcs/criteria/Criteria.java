@@ -17,8 +17,8 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 import java.io.IOException;
 
 public abstract class Criteria {
-    protected static final String KEY_QUALIFIER     = "qualifier";
-    protected static final String ATTRIBUTE_COMPARE = "compare";
+    protected static final String KEY_COMPARE   = "compare";
+    protected static final String KEY_QUALIFIER = "qualifier";
 
     public abstract void load(JsonMap m) throws IOException;
 

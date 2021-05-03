@@ -19,8 +19,8 @@ public interface FileProxy {
     Path getBackingFile();
 
     /**
-     * Called to request the UI that displays the file associated with this {@link
-     * FileProxy} be brought to the foreground and given focus.
+     * Called to request the UI that displays the file associated with this {@link FileProxy} be
+     * brought to the foreground and given focus.
      */
     void toFrontAndFocus();
 

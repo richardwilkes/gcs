@@ -26,13 +26,6 @@ import java.io.IOException;
 
 /** A list of spells. */
 public class SpellList extends ListFile {
-    private static final int CURRENT_JSON_VERSION = 1;
-
-    @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
     @Override
     public String getJSONTypeName() {
         return "spell_list";
@@ -57,7 +50,7 @@ public class SpellList extends ListFile {
         int count = a.size();
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
-            String  type = m1.getString(DataFile.KEY_TYPE);
+            String  type = m1.getString(DataFile.TYPE);
             if (Spell.KEY_SPELL.equals(type) || Spell.KEY_SPELL_CONTAINER.equals(type)) {
                 model.addRow(new Spell(file, m1, state), true);
             } else if (RitualMagicSpell.KEY_RITUAL_MAGIC_SPELL.equals(type)) {

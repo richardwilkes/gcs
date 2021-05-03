@@ -17,11 +17,11 @@ import javax.swing.undo.CannotUndoException;
 
 /** Provides undo support for character fields. */
 public class CharacterUndo extends AbstractUndoableEdit {
-    private GURPSCharacter       mCharacter;
+    private GURPSCharacter  mCharacter;
     private String          mName;
     private CharacterSetter mSetter;
     private Object          mBefore;
-    private Object               mAfter;
+    private Object          mAfter;
 
     /**
      * Create a new character field undo edit.

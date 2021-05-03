@@ -25,8 +25,6 @@ import java.nio.file.Path;
 
 /** A template. */
 public class Template extends CollectedModels {
-    private static final int CURRENT_JSON_VERSION = 1;
-
     /** Creates a new template with only default values set. */
     public Template() {
     }
@@ -45,11 +43,6 @@ public class Template extends CollectedModels {
     @Override
     public String getJSONTypeName() {
         return "template";
-    }
-
-    @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
     }
 
     @Override

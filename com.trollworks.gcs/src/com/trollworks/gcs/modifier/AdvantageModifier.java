@@ -29,7 +29,6 @@ import java.io.IOException;
 
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
-    private static final int    CURRENT_JSON_VERSION   = 1;
     public static final  String KEY_MODIFIER           = "modifier";
     public static final  String KEY_MODIFIER_CONTAINER = "modifier_container";
     public static final  String KEY_COST               = "cost";
@@ -66,7 +65,7 @@ public class AdvantageModifier extends Modifier {
     }
 
     public AdvantageModifier(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
+        this(dataFile, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.TYPE)));
         load(dataFile, m, state);
     }
 
@@ -203,11 +202,6 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
-    @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mCostType = AdvantageModifierCostType.PERCENTAGE;
@@ -235,7 +229,7 @@ public class AdvantageModifier extends Modifier {
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
-            String type = m.getString(DataFile.KEY_TYPE);
+            String type = m.getString(DataFile.TYPE);
             if (KEY_MODIFIER.equals(type) || KEY_MODIFIER_CONTAINER.equals(type)) {
                 addChild(new AdvantageModifier(mDataFile, m, state));
             } else {

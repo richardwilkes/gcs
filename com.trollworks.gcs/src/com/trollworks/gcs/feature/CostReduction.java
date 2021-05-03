@@ -27,8 +27,9 @@ public class CostReduction extends Feature {
     public static final  String KEY_ROOT       = "cost_reduction";
     private static final String KEY_ATTRIBUTE  = "attribute";
     private static final String KEY_PERCENTAGE = "percentage";
-    private              String mAttribute;
-    private              int    mPercentage;
+
+    private String mAttribute;
+    private int    mPercentage;
 
     /** Creates a new cost reduction. */
     public CostReduction() {

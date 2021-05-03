@@ -71,7 +71,6 @@ import java.util.regex.Pattern;
 
 /** A GURPS character. */
 public class GURPSCharacter extends CollectedModels {
-    private static final int    CURRENT_JSON_VERSION = 1;
     private static final String KEY_ROOT             = "character";
     private static final String KEY_ATTRIBUTES       = "attributes";
     private static final String KEY_CREATED_DATE     = "created_date";
@@ -195,11 +194,6 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
-    @Override
     public String getJSONTypeName() {
         return KEY_ROOT;
     }
@@ -222,7 +216,7 @@ public class GURPSCharacter extends CollectedModels {
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         characterInitialize(false);
-        mSettings.load(m.getMap(Settings.KEY_ROOT));
+        mSettings.load(m.getMap(Settings.KEY_ROOT), state);
         mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
         mProfile.load(m.getMap(Profile.KEY_PROFILE));
         if (m.has(KEY_ATTRIBUTES)) {

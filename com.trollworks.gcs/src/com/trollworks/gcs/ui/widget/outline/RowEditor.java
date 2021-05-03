@@ -114,7 +114,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     /**
      * Creates a new {@link RowEditor}.
      *
-     * @param row The row being edited.
+     * @param row    The row being edited.
      * @param layout The layout to use.
      */
     protected RowEditor(T row, LayoutManager layout) {

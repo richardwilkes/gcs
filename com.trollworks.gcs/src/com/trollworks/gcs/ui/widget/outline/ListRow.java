@@ -34,7 +34,6 @@ import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
-import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -233,9 +232,6 @@ public abstract class ListRow extends Row {
         return result;
     }
 
-    /** @return The most recent version of the JSON data this object knows how to load. */
-    public abstract int getJSONVersion();
-
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();
 
@@ -280,11 +276,7 @@ public abstract class ListRow extends Row {
                 mID = UUID.randomUUID();
             }
         }
-        state.mDataItemVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
-        if (state.mDataItemVersion > getJSONVersion()) {
-            throw VersionException.createTooNew();
-        }
-        boolean isContainer = m.getString(DataFile.KEY_TYPE).endsWith("_container");
+        boolean isContainer = m.getString(DataFile.TYPE).endsWith("_container");
         setCanHaveChildren(isContainer);
         setOpen(isContainer);
         prepareForLoad(state);
@@ -304,7 +296,7 @@ public abstract class ListRow extends Row {
             int       count = a.size();
             for (int i = 0; i < count; i++) {
                 JsonMap m1   = a.getMap(i);
-                String  type = m1.getString(DataFile.KEY_TYPE);
+                String  type = m1.getString(DataFile.TYPE);
                 switch (type) {
                 case AttributeBonus.KEY_ROOT -> mFeatures.add(new AttributeBonus(dataFile, m1));
                 case DRBonus.KEY_ROOT -> mFeatures.add(new DRBonus(dataFile, m1));
@@ -376,8 +368,7 @@ public abstract class ListRow extends Row {
      */
     public void save(JsonWriter w, SaveType saveType) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
-        w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
+        w.keyValue(DataFile.TYPE, getJSONTypeName());
         w.keyValue(KEY_ID, mID.toString());
         saveSelf(w, saveType);
         if (!mPrereqList.isEmpty()) {

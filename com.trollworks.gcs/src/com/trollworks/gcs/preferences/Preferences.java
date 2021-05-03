@@ -16,6 +16,7 @@ import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.datafile.ChangeableData;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.ui.Fonts;
@@ -57,7 +58,6 @@ import javax.swing.ToolTipManager;
 
 /** Provides the implementation of preferences. Note: not all preferences emit notifications. */
 public class Preferences extends ChangeableData {
-    private static final int CURRENT_VERSION = 2;
     private static final int MINIMUM_VERSION = 1;
 
     private static final String DEPRECATED_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021
@@ -281,7 +281,7 @@ public class Preferences extends ChangeableData {
                 JsonMap m = Json.asMap(Json.parse(in));
                 if (!m.isEmpty()) {
                     int version = m.getInt(VERSION);
-                    if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION) {
+                    if (version >= MINIMUM_VERSION && version <= DataFile.CURRENT_VERSION) {
                         Version loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION));
                         if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
                             mLastSeenGCSVersion = loadVersion;
@@ -431,7 +431,7 @@ public class Preferences extends ChangeableData {
                 File file = trans.getTransactionFile(path.toFile());
                 try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)), "\t")) {
                     w.startMap();
-                    w.keyValue(VERSION, CURRENT_VERSION);
+                    w.keyValue(VERSION, DataFile.CURRENT_VERSION);
                     w.keyValue(LAST_SEEN_GCS_VERSION, mLastSeenGCSVersion.toString());
                     w.key(LIBRARIES);
                     w.startMap();

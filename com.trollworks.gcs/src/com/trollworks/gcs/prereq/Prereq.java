@@ -54,7 +54,7 @@ public abstract class Prereq {
     /**
      * Loads the prerequisite.
      *
-     * @param m The {@link JsonMap} to load from.
+     * @param m     The {@link JsonMap} to load from.
      * @param state The {@link LoadState} to use.
      */
     public abstract void loadSelf(JsonMap m, LoadState state) throws IOException;
@@ -66,7 +66,7 @@ public abstract class Prereq {
      */
     public final void save(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        w.keyValue(DataFile.TYPE, getJSONTypeName());
         saveSelf(w);
         w.endMap();
     }

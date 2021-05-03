@@ -56,7 +56,7 @@ public abstract class WeaponStats {
         int count = a.size();
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
-            String  type = m1.getString(DataFile.KEY_TYPE);
+            String  type = m1.getString(DataFile.TYPE);
             switch (type) {
             case MeleeWeaponStats.KEY_ROOT -> list.add(new MeleeWeaponStats(row, m1));
             case RangedWeaponStats.KEY_ROOT -> list.add(new RangedWeaponStats(row, m1));
@@ -155,7 +155,7 @@ public abstract class WeaponStats {
      */
     public final void save(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        w.keyValue(DataFile.TYPE, getJSONTypeName());
         w.key(WeaponDamage.KEY_ROOT);
         mDamage.save(w);
         w.keyValueNot(KEY_STRENGTH, mStrength, "");

@@ -19,7 +19,8 @@ public enum DisplayOption {
         public String toString() {
             return I18n.Text("Not Shown");
         }
-    }, INLINE {
+    },
+    INLINE {
         @Override
         public String toString() {
             return I18n.Text("Inline");
@@ -29,7 +30,8 @@ public enum DisplayOption {
         public boolean inline() {
             return true;
         }
-    }, TOOLTIP {
+    },
+    TOOLTIP {
         @Override
         public String toString() {
             return I18n.Text("Tooltip");
@@ -39,7 +41,8 @@ public enum DisplayOption {
         public boolean tooltip() {
             return true;
         }
-    }, INLINE_AND_TOOLTIP {
+    },
+    INLINE_AND_TOOLTIP {
         @Override
         public String toString() {
             return I18n.Text("Inline & Tooltip");

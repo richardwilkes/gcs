@@ -45,9 +45,16 @@ import javax.swing.undo.UndoableEdit;
 /** A common super class for all data file-based model objects. */
 public abstract class DataFile extends ChangeableData implements Undoable {
     /** The 'id' attribute. */
-    public static final String                     ATTRIBUTE_ID           = "id";
+    public static final String                     ID                     = "id";
+    /** The attribute used for versioning. */
+    public static final String                     VERSION                = "version";
+    /**
+     * The data file version used with the current release. Note that this is intentionally the same
+     * for all data files that GCS processes.
+     */
+    public static final int                        CURRENT_VERSION        = 2;
     /** Identifies the type of a JSON object. */
-    public static final String                     KEY_TYPE               = "type";
+    public static final String                     TYPE                   = "type";
     private             Path                       mPath;
     private             UUID                       mID                    = UUID.randomUUID();
     private             StdUndoManager             mUndoManager           = new StdUndoManager();
@@ -87,12 +94,12 @@ public abstract class DataFile extends ChangeableData implements Undoable {
      */
     public void load(JsonMap m, LoadState state) throws IOException {
         try {
-            mID = UUID.fromString(m.getString(ATTRIBUTE_ID));
+            mID = UUID.fromString(m.getString(ID));
         } catch (Exception exception) {
             mID = UUID.randomUUID();
         }
-        state.mDataFileVersion = m.getInt(LoadState.ATTRIBUTE_VERSION);
-        if (state.mDataFileVersion > getJSONVersion()) {
+        state.mDataFileVersion = m.getInt(VERSION);
+        if (state.mDataFileVersion > CURRENT_VERSION) {
             throw VersionException.createTooNew();
         }
         loadSelf(m, state);
@@ -141,9 +148,9 @@ public abstract class DataFile extends ChangeableData implements Undoable {
     public void save(JsonWriter w, SaveType saveType, boolean onlyIfNotEmpty) throws IOException {
         if (!onlyIfNotEmpty || !isEmpty()) {
             w.startMap();
-            w.keyValue(KEY_TYPE, getJSONTypeName());
-            w.keyValue(LoadState.ATTRIBUTE_VERSION, getJSONVersion());
-            w.keyValue(ATTRIBUTE_ID, mID.toString());
+            w.keyValue(TYPE, getJSONTypeName());
+            w.keyValue(VERSION, CURRENT_VERSION);
+            w.keyValue(ID, mID.toString());
             saveSelf(w, saveType);
             w.endMap();
         }
@@ -162,9 +169,6 @@ public abstract class DataFile extends ChangeableData implements Undoable {
     public boolean isEmpty() {
         return false;
     }
-
-    /** @return The most recent version of the JSON data this object knows how to load. */
-    public abstract int getJSONVersion();
 
     /** @return The type name to use for this data. */
     public abstract String getJSONTypeName();

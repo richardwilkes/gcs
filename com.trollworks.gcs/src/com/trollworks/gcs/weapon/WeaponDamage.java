@@ -67,7 +67,7 @@ public class WeaponDamage {
 
     public WeaponDamage(JsonMap m, WeaponStats owner) {
         mOwner = owner;
-        mType = m.getString(DataFile.KEY_TYPE);
+        mType = m.getString(DataFile.TYPE);
         mST = Enums.extract(m.getString(KEY_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
         if (m.has(KEY_BASE)) {
             mBase = new Dice(m.getString(KEY_BASE));
@@ -88,7 +88,7 @@ public class WeaponDamage {
      */
     public void save(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, mType);
+        w.keyValue(DataFile.TYPE, mType);
         if (mST != WeaponSTDamage.NONE) {
             w.keyValue(KEY_ST, mST.name().toLowerCase());
         }

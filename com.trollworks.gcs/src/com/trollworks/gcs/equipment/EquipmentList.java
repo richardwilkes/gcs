@@ -26,13 +26,7 @@ import java.io.IOException;
 
 /** A list of equipment. */
 public class EquipmentList extends ListFile {
-    private static final int    CURRENT_JSON_VERSION = 1;
-    public static final  String KEY_OTHER_ROOT       = "other_equipment_list";
-
-    @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
+    public static final String KEY_OTHER_ROOT = "other_equipment_list";
 
     @Override
     public String getJSONTypeName() {
@@ -58,7 +52,7 @@ public class EquipmentList extends ListFile {
         int count = a.size();
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
-            String  type = m1.getString(DataFile.KEY_TYPE);
+            String  type = m1.getString(DataFile.TYPE);
             if (Equipment.KEY_EQUIPMENT.equals(type) || Equipment.KEY_EQUIPMENT_CONTAINER.equals(type)) {
                 model.addRow(new Equipment(file, m1, state), true);
             } else {

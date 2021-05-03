@@ -46,7 +46,6 @@ import java.util.Set;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
-    private static final int    CURRENT_JSON_VERSION    = 1;
     public static final  String KEY_SKILL               = "skill";
     public static final  String KEY_SKILL_CONTAINER     = "skill_container";
     private static final String KEY_NAME                = "name";
@@ -163,7 +162,7 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     public Skill(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_SKILL_CONTAINER));
+        this(dataFile, m.getString(DataFile.TYPE).equals(KEY_SKILL_CONTAINER));
         load(dataFile, m, state);
     }
 
@@ -225,11 +224,6 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Skill");
     }
@@ -275,7 +269,7 @@ public class Skill extends ListRow implements HasSourceReference {
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
-            String type = m.getString(DataFile.KEY_TYPE);
+            String type = m.getString(DataFile.TYPE);
             if (KEY_SKILL.equals(type) || KEY_SKILL_CONTAINER.equals(type)) {
                 addChild(new Skill(mDataFile, m, state));
             } else if (Technique.KEY_TECHNIQUE.equals(type)) {
@@ -315,7 +309,7 @@ public class Skill extends ListRow implements HasSourceReference {
                 w.startMap();
                 w.keyValue("level", level);
                 StringBuilder builder = new StringBuilder();
-                int           rsl = getAdjustedRelativeLevel();
+                int           rsl     = getAdjustedRelativeLevel();
                 if (rsl == Integer.MIN_VALUE) {
                     builder.append("-");
                 } else {

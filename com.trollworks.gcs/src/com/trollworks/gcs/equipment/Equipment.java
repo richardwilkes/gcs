@@ -54,7 +54,6 @@ import java.util.Set;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
-    private static final int    CURRENT_JSON_VERSION         = 1;
     public static final  String KEY_EQUIPMENT                = "equipment";
     public static final  String KEY_EQUIPMENT_CONTAINER      = "equipment_container";
     private static final String KEY_WEAPONS                  = "weapons";
@@ -168,7 +167,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @param state    The {@link LoadState} to use.
      */
     public Equipment(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_EQUIPMENT_CONTAINER));
+        this(dataFile, m.getString(DataFile.TYPE).equals(KEY_EQUIPMENT_CONTAINER));
         load(dataFile, m, state);
     }
 
@@ -196,11 +195,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     public String getJSONTypeName() {
         return canHaveChildren() ? KEY_EQUIPMENT_CONTAINER : KEY_EQUIPMENT;
-    }
-
-    @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
     }
 
     @Override
@@ -273,7 +267,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
-            String type = m.getString(DataFile.KEY_TYPE);
+            String type = m.getString(DataFile.TYPE);
             if (KEY_EQUIPMENT.equals(type) || KEY_EQUIPMENT_CONTAINER.equals(type)) {
                 addChild(new Equipment(mDataFile, m, state));
             } else {

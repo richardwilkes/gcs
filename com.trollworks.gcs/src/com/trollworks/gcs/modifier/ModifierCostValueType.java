@@ -20,13 +20,15 @@ public enum ModifierCostValueType {
             String str = localized ? value.toLocalizedString() : value.toString();
             return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
         }
-    }, PERCENTAGE {
+    },
+    PERCENTAGE {
         @Override
         public String format(Fixed6 value, boolean localized) {
             String str = (localized ? value.toLocalizedString() : value.toString()) + "%";
             return value.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
         }
-    }, MULTIPLIER {
+    },
+    MULTIPLIER {
         @Override
         Fixed6 adjustValue(Fixed6 value) {
             return value.lessThanOrEqual(Fixed6.ZERO) ? Fixed6.ONE : value;
@@ -37,7 +39,8 @@ public enum ModifierCostValueType {
             value = adjustValue(value);
             return "x" + (localized ? value.toLocalizedString() : value.toString());
         }
-    }, CF {
+    },
+    CF {
         @Override
         public String format(Fixed6 value, boolean localized) {
             String str = (localized ? value.toLocalizedString() : value.toString()) + " CF";

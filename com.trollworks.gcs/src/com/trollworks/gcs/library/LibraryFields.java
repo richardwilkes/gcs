@@ -47,7 +47,9 @@ public class LibraryFields implements DocumentListener {
     private Color                 mNormalBackground;
 
     public enum LibraryType {
-        MASTER, USER, EXTRA
+        MASTER,
+        USER,
+        EXTRA
     }
 
     public LibraryFields(LibraryLocationsPanel owner, String title, String account, String repo, String path, LibraryType libType) {

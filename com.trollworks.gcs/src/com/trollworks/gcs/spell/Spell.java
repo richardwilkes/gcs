@@ -49,7 +49,6 @@ import java.util.regex.Pattern;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
-    private static final   int    CURRENT_JSON_VERSION = 2;
     private static final   int    COLLEGE_LIST_VERSION = 2; // First version with college lists (post v4.29.1)
     public static final    String KEY_SPELL            = "spell";
     public static final    String KEY_SPELL_CONTAINER  = "spell_container";
@@ -177,7 +176,7 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     public Spell(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_SPELL_CONTAINER));
+        this(dataFile, m.getString(DataFile.TYPE).equals(KEY_SPELL_CONTAINER));
         load(dataFile, m, state);
     }
 
@@ -249,11 +248,6 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
-    @Override
     public String getRowType() {
         return I18n.Text("Spell");
     }
@@ -297,7 +291,7 @@ public class Spell extends ListRow implements HasSourceReference {
                     mTechLevel = "";
                 }
             }
-            if (state.mDataItemVersion >= COLLEGE_LIST_VERSION) {
+            if (state.mDataFileVersion >= COLLEGE_LIST_VERSION) {
                 JsonArray a    = m.getArray(KEY_COLLEGE);
                 int       size = a.size();
                 for (int i = 0; i < size; i++) {
@@ -335,7 +329,7 @@ public class Spell extends ListRow implements HasSourceReference {
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
-            String type = m.getString(DataFile.KEY_TYPE);
+            String type = m.getString(DataFile.TYPE);
             if (KEY_SPELL.equals(type) || KEY_SPELL_CONTAINER.equals(type)) {
                 addChild(new Spell(mDataFile, m, state));
             } else if (RitualMagicSpell.KEY_RITUAL_MAGIC_SPELL.equals(type)) {

@@ -74,8 +74,8 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
 
     @Override
     public Dimension getPreferredSize() {
-        Scale scale = Scale.get(this);
-        Dimension size = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)), mText);
+        Scale     scale = Scale.get(this);
+        Dimension size  = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)), mText);
         if (mMargin != 0) {
             size.width += scale.scale(mMargin) * 2;
             size.height *= scale.scale(mMargin) * 2;

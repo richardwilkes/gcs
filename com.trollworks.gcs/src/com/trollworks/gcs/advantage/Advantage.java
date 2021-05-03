@@ -50,7 +50,6 @@ import java.util.Set;
 
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
-    private static final int    CURRENT_JSON_VERSION    = 1;
     public static final  String KEY_ADVANTAGE           = "advantage";
     public static final  String KEY_ADVANTAGE_CONTAINER = "advantage_container";
     private static final String KEY_REFERENCE           = "reference";
@@ -165,7 +164,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     public Advantage(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
-        this(dataFile, m.getString(DataFile.KEY_TYPE).equals(KEY_ADVANTAGE_CONTAINER));
+        this(dataFile, m.getString(DataFile.TYPE).equals(KEY_ADVANTAGE_CONTAINER));
         load(dataFile, m, state);
     }
 
@@ -193,11 +192,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     public String getJSONTypeName() {
         return canHaveChildren() ? KEY_ADVANTAGE_CONTAINER : KEY_ADVANTAGE;
-    }
-
-    @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
     }
 
     @Override
@@ -282,7 +276,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
-            String type = m.getString(DataFile.KEY_TYPE);
+            String type = m.getString(DataFile.TYPE);
             if (KEY_ADVANTAGE.equals(type) || KEY_ADVANTAGE_CONTAINER.equals(type)) {
                 addChild(new Advantage(mDataFile, m, state));
             } else {

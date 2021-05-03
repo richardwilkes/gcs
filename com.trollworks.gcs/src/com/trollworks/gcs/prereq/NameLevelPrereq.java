@@ -57,7 +57,7 @@ public abstract class NameLevelPrereq extends HasPrereq {
      * @param m      The {@link JsonMap} to load from.
      */
     public NameLevelPrereq(PrereqList parent, JsonMap m) throws IOException {
-        this(m.getString(DataFile.KEY_TYPE), parent);
+        this(m.getString(DataFile.TYPE), parent);
         initializeForLoad();
         loadSelf(m, new LoadState());
     }

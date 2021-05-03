@@ -76,7 +76,7 @@ public class SkillDefault {
      * @param full {@code true} if all fields should be loaded.
      */
     public SkillDefault(JsonMap m, boolean full) {
-        setType(m.getString(DataFile.KEY_TYPE));
+        setType(m.getString(DataFile.TYPE));
         mName = m.getString(KEY_NAME);
         mSpecialization = m.getString(KEY_SPECIALIZATION);
         mModifier = m.getInt(KEY_MODIFIER);
@@ -133,7 +133,7 @@ public class SkillDefault {
      */
     public void save(JsonWriter w, boolean full) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, mType);
+        w.keyValue(DataFile.TYPE, mType);
         if (SkillDefaultType.isSkillBased(mType)) {
             w.keyValueNot(KEY_NAME, mName, "");
             w.keyValueNot(KEY_SPECIALIZATION, mSpecialization, "");

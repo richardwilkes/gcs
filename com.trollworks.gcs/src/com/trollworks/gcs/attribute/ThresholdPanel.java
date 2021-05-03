@@ -41,7 +41,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
     private Runnable            mAdjustCallback;
     private FontAwesomeButton   mMoveUpButton;
     private FontAwesomeButton   mMoveDownButton;
-    private EditorField mStateField;
+    private EditorField         mStateField;
     private EditorField         mDivisorField;
     private JTextArea           mExplanationField;
 

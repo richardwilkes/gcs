@@ -14,7 +14,6 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -28,9 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Settings {
-    private static final int    CURRENT_JSON_VERSION                = 1;
-    private static final int    CURRENT_VERSION                     = 1;
-    private static final int    MINIMUM_VERSION                     = 0;
     public static final  String KEY_ROOT                            = "settings";
     private static final String KEY_ATTRIBUTES                      = "attributes";
     public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
@@ -51,8 +47,6 @@ public class Settings {
     public static final  String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
     public static final  String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
-
-    public static final String DEPRECATED_KEY_BASE_WILL_AND_PER_ON_10 = "base_will_and_per_on_10"; // January 23, 2021
 
     private GURPSCharacter            mCharacter;
     private LengthUnits               mDefaultLengthUnits;
@@ -99,14 +93,7 @@ public class Settings {
         mUseTitleInFooter = prefs.useTitleInFooter();
     }
 
-    void load(JsonMap m) throws IOException {
-        int version = m.getInt(LoadState.ATTRIBUTE_VERSION);
-        if (version < MINIMUM_VERSION) {
-            throw VersionException.createTooOld();
-        }
-        if (version > CURRENT_VERSION) {
-            throw VersionException.createTooNew();
-        }
+    void load(JsonMap m, LoadState state) {
         mDefaultLengthUnits = Enums.extract(m.getString(KEY_DEFAULT_LENGTH_UNITS), LengthUnits.values(), Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
         mDefaultWeightUnits = Enums.extract(m.getString(KEY_DEFAULT_WEIGHT_UNITS), WeightUnits.values(), Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
         mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
@@ -141,7 +128,6 @@ public class Settings {
 
     void save(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(LoadState.ATTRIBUTE_VERSION, CURRENT_JSON_VERSION);
         w.keyValue(KEY_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
         w.keyValue(KEY_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
         w.keyValue(KEY_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));

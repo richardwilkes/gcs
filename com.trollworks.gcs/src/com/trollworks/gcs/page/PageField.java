@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.CharacterSetter;
+import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
@@ -37,7 +37,7 @@ import javax.swing.plaf.basic.BasicTextFieldUI;
 
 /** A generic field for a page. */
 public class PageField extends JFormattedTextField implements PropertyChangeListener, ActionListener, Commitable {
-    private CharacterSheet       mSheet;
+    private CharacterSheet  mSheet;
     private String          mTag;
     private CharacterSetter mSetter;
 

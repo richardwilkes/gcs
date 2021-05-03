@@ -26,13 +26,6 @@ import java.io.IOException;
 
 /** Data Object to hold several {@link AdvantageModifier}s */
 public class AdvantageModifierList extends ListFile {
-    private static final int CURRENT_JSON_VERSION = 1;
-
-    @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
     @Override
     public String getJSONTypeName() {
         return "modifier_list";
@@ -59,7 +52,7 @@ public class AdvantageModifierList extends ListFile {
         int count = a.size();
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
-            String  type = m1.getString(DataFile.KEY_TYPE);
+            String  type = m1.getString(DataFile.TYPE);
             if (AdvantageModifier.KEY_MODIFIER.equals(type) || AdvantageModifier.KEY_MODIFIER_CONTAINER.equals(type)) {
                 model.addRow(new AdvantageModifier(file, m1, state), true);
             } else {

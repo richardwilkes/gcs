@@ -20,13 +20,13 @@ import java.io.IOException;
 
 /** Manages a leveled amount. */
 public class LeveledAmount {
-    /** The "per level" attribute. */
-    public static final  String  ATTRIBUTE_PER_LEVEL = "per_level";
-    private static final String  KEY_AMOUNT          = "amount";
-    private              double  mAmount;
-    private              int     mLevel;
-    private              boolean mPerLevel;
-    private              boolean mInteger;
+    private static final String KEY_AMOUNT    = "amount";
+    public static final  String KEY_PER_LEVEL = "per_level";
+
+    private double  mAmount;
+    private int     mLevel;
+    private boolean mPerLevel;
+    private boolean mInteger;
 
     /**
      * Creates a new leveled amount.
@@ -84,7 +84,7 @@ public class LeveledAmount {
         if (mInteger) {
             mAmount = Math.round(mAmount);
         }
-        mPerLevel = m.getBoolean(ATTRIBUTE_PER_LEVEL);
+        mPerLevel = m.getBoolean(KEY_PER_LEVEL);
     }
 
     public final void saveInline(JsonWriter w) throws IOException {
@@ -93,7 +93,7 @@ public class LeveledAmount {
         } else {
             w.keyValue(KEY_AMOUNT, getAmount());
         }
-        w.keyValueNot(ATTRIBUTE_PER_LEVEL, mPerLevel, false);
+        w.keyValueNot(KEY_PER_LEVEL, mPerLevel, false);
     }
 
     /** @return Whether the amount should be applied per level. */

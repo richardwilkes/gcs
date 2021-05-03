@@ -62,7 +62,7 @@ public class OpenCommand extends Command implements OpenFilesHandler {
         if (path != null) {
             try {
                 LibraryExplorerDockable library = LibraryExplorerDockable.get();
-                FileProxy proxy = library == null ? null : library.open(path);
+                FileProxy               proxy   = library == null ? null : library.open(path);
                 if (proxy != null) {
                     proxy.toFrontAndFocus();
                     Preferences.getInstance().addRecentFile(path);

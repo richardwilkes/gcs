@@ -27,15 +27,23 @@ import javax.swing.JComponent;
 
 /** A generic prerequisite editor panel. */
 public abstract class PrereqEditor extends EditorPanel {
-    private static final String            CHANGE_BASE_TYPE = "ChangeBaseType";
-    private static final String            CHANGE_HAS       = "ChangeHas";
-    private static final Class<?>[]        BASE_TYPES       = new Class<?>[]{AttributePrereq.class, AdvantagePrereq.class, SkillPrereq.class, SpellPrereq.class, ContainedWeightPrereq.class, ContainedQuantityPrereq.class};
+    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";
+    private static final String     CHANGE_HAS       = "ChangeHas";
+    private static final Class<?>[] BASE_TYPES       = new Class<?>[]{
+            AttributePrereq.class,
+            AdvantagePrereq.class,
+            SkillPrereq.class,
+            SpellPrereq.class,
+            ContainedWeightPrereq.class,
+            ContainedQuantityPrereq.class
+    };
+
     /** The prerequisite this panel represents. */
-    protected            Prereq            mPrereq;
+    protected Prereq            mPrereq;
     /** The row this prerequisite will be attached to. */
-    protected            ListRow           mRow;
-    private              int               mDepth;
-    private              JComboBox<Object> mBaseTypeCombo;
+    protected ListRow           mRow;
+    private   int               mDepth;
+    private   JComboBox<Object> mBaseTypeCombo;
 
     /**
      * Creates a new prerequisite editor panel.

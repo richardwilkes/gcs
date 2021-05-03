@@ -72,8 +72,8 @@ public class ThemePreferences extends PreferencePanel implements ActionListener 
         mColorWells = new ArrayList<>();
         int max = ThemeColor.ALL.size();
         cols /= 2;
-        int maxPerCol = max / cols;
-        int excess    = max % (maxPerCol * cols);
+        int maxPerCol  = max / cols;
+        int excess     = max % (maxPerCol * cols);
         int iterations = maxPerCol;
         if (excess != 0) {
             iterations++;

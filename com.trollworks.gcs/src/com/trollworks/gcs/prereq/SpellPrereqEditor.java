@@ -24,7 +24,13 @@ import javax.swing.JComboBox;
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
     private static final String   CHANGE_TYPE = "ChangeSpellType";
-    private static final String[] TYPES       = {SpellPrereq.KEY_NAME, SpellPrereq.KEY_ANY, SpellPrereq.KEY_COLLEGE, SpellPrereq.KEY_COLLEGE_COUNT, SpellPrereq.KEY_CATEGORY};
+    private static final String[] TYPES       = {
+            SpellPrereq.KEY_NAME,
+            SpellPrereq.KEY_ANY,
+            SpellPrereq.KEY_COLLEGE,
+            SpellPrereq.KEY_COLLEGE_COUNT,
+            SpellPrereq.KEY_CATEGORY
+    };
 
     /**
      * Creates a new spell prerequisite editor panel.

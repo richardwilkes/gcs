@@ -15,14 +15,10 @@ import com.trollworks.gcs.utility.units.WeightUnits;
 
 /** Temporary storage for data needed at load time. */
 public class LoadState {
-    /** The attribute used for versioning. */
-    public static final String      ATTRIBUTE_VERSION = "version";
     /** The data file version. */
-    public              int         mDataFileVersion;
-    /** The data item version. Used for individual items within a file. */
-    public              int         mDataItemVersion;
+    public int         mDataFileVersion;
     /** Whether the load is happening to restore undo state. */
-    public              boolean     mForUndo;
+    public boolean     mForUndo;
     /** The default weight units to use. */
-    public              WeightUnits mDefWeightUnits;
+    public WeightUnits mDefWeightUnits;
 }
