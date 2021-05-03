@@ -64,7 +64,7 @@ public class CopyToTemplateCommand extends Command {
         if (outline != null) {
             OutlineModel outlineModel = outline.getModel();
             if (outlineModel.hasSelection()) {
-                TemplateDockable template = TemplateDockable.getLastActivated();
+                TemplateDockable template = getTemplate();
                 if (template != null) {
                     template.addRows(outlineModel.getSelectionAsList(true));
                 }
