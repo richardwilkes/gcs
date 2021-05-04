@@ -34,6 +34,8 @@ import javax.swing.UIManager;
 public class Fonts {
     /** The name of the Font Awesome Solid font. */
     public static final  String             FONT_AWESOME_SOLID   = "Font Awesome 5 Free Solid";
+    /** The name of the Roboto font. */
+    public static final  String             ROBOTO               = "Roboto";
     /** The standard text field font. */
     public static final  String             KEY_STD_TEXT_FIELD   = "TextField.font";
     /** The label font. */
@@ -60,29 +62,42 @@ public class Fonts {
 
     /** Loads the current font settings from the preferences file. */
     public static void loadFromPreferences() {
-        loadFont("Font Awesome 5 Free-Solid-900.otf");
-        String name = getDefaultFont().getName();
-        register(KEY_LABEL_PRIMARY, I18n.Text("Primary Labels"), new Font(name, Font.PLAIN, 9));
-        register(KEY_LABEL_SECONDARY, I18n.Text("Secondary Labels"), new Font(name, Font.PLAIN, 8));
-        register(KEY_FIELD_PRIMARY, I18n.Text("Primary Fields"), new Font(name, Font.PLAIN, 9));
-        register(KEY_FIELD_SECONDARY, I18n.Text("Secondary Fields"), new Font(name, Font.PLAIN, 8));
-        register(KEY_FOOTER_PRIMARY, I18n.Text("Primary Footer"), new Font(name, Font.BOLD, 8));
-        register(KEY_FOOTER_SECONDARY, I18n.Text("Secondary Footer"), new Font(name, Font.PLAIN, 6));
+        String[] embeddedFonts = {
+                "Font Awesome 5 Free-Solid-900.otf",
+                "Roboto-Black.ttf",
+                "Roboto-BlackItalic.ttf",
+                "Roboto-Bold.ttf",
+                "Roboto-BoldItalic.ttf",
+                "Roboto-Italic.ttf",
+                "Roboto-Light.ttf",
+                "Roboto-LightItalic.ttf",
+                "Roboto-Medium.ttf",
+                "Roboto-MediumItalic.ttf",
+                "Roboto-Regular.ttf",
+                "Roboto-Thin.ttf",
+                "Roboto-ThinItalic.ttf"
+        };
+        for (String embeddedFont : embeddedFonts) {
+            try (InputStream in = Fonts.class.getModule().getResourceAsStream("/fonts/" + embeddedFont)) {
+                Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+            } catch (Exception exception) {
+                Log.error("unable to load font: " + embeddedFont);
+            }
+        }
+
+        register(KEY_LABEL_PRIMARY, I18n.Text("Primary Labels"), new Font(ROBOTO, Font.PLAIN, 9));
+        register(KEY_LABEL_SECONDARY, I18n.Text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 8));
+        register(KEY_FIELD_PRIMARY, I18n.Text("Primary Fields"), new Font(ROBOTO, Font.BOLD, 9));
+        register(KEY_FIELD_SECONDARY, I18n.Text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 8));
+        register(KEY_FOOTER_PRIMARY, I18n.Text("Primary Footer"), new Font(ROBOTO, Font.BOLD, 8));
+        register(KEY_FOOTER_SECONDARY, I18n.Text("Secondary Footer"), new Font(ROBOTO, Font.PLAIN, 6));
         Preferences prefs = Preferences.getInstance();
         for (String key : KEYS) {
             Info info = prefs.getFontInfo(key);
             if (info != null) {
                 UIManager.put(key, info.create());
             }
-        }
-    }
-
-    private static void loadFont(String name) {
-        try (InputStream in = Fonts.class.getModule().getResourceAsStream("/fonts/" + name)) {
-            Font font = Font.createFont(Font.TRUETYPE_FONT, in);
-            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
-        } catch (Exception exception) {
-            Log.error("unable to load font for: " + name);
         }
     }
 
