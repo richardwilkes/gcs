@@ -10,7 +10,6 @@
  */
 
 open module com.trollworks.gcs {
-    requires com.lowagie.text;
     requires java.datatransfer;
     requires java.desktop;
     requires java.management;

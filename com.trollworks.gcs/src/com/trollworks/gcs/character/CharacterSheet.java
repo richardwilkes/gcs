@@ -11,11 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.pdf.DefaultFontMapper;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
@@ -93,8 +88,6 @@ import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -796,57 +789,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             row.setOpen(false);
         }
         rebuild();
-    }
-
-    /**
-     * @param path The path to save to.
-     * @return {@code true} on success.
-     */
-    public boolean saveAsPDF(Path path) {
-        Set<Row> changed = expandAllContainers();
-        try {
-            PrintManager settings = mCharacter.getPageSettings();
-            PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
-            float        width    = (float) format.getWidth();
-            float        height   = (float) format.getHeight();
-
-            adjustToPageSetupChanges(true);
-            setPrinting(true);
-
-            Document pdfDoc = new Document(new com.lowagie.text.Rectangle(width, height));
-            try (OutputStream out = Files.newOutputStream(path)) {
-                PdfWriter      writer  = PdfWriter.getInstance(pdfDoc, out);
-                int            pageNum = 0;
-                PdfContentByte cb;
-
-                pdfDoc.open();
-                cb = writer.getDirectContent();
-                while (true) {
-                    PdfTemplate template = cb.createTemplate(width, height);
-                    Graphics2D  g2d      = template.createGraphics(width, height, new DefaultFontMapper());
-
-                    if (print(g2d, format, pageNum) == NO_SUCH_PAGE) {
-                        g2d.dispose();
-                        break;
-                    }
-                    if (pageNum != 0) {
-                        pdfDoc.newPage();
-                    }
-                    g2d.setClip(0, 0, (int) width, (int) height);
-                    print(g2d, format, pageNum++);
-                    g2d.dispose();
-                    cb.addTemplate(template, 0, 0);
-                }
-                pdfDoc.close();
-            }
-            return true;
-        } catch (Exception exception) {
-            Log.error(exception);
-            return false;
-        } finally {
-            setPrinting(false);
-            closeContainers(changed);
-        }
     }
 
     /**

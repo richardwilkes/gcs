@@ -34,14 +34,13 @@ import java.util.StringTokenizer;
 
 public class Export implements Runnable {
     List<Path> mFiles;
-    boolean    mGeneratePDF;
     boolean    mGeneratePNG;
     boolean    mGenerateText;
     Path       mTemplate;
     String     mMargins;
     String     mPaper;
 
-    public static void process(List<Path> files, boolean generatePDF, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
+    public static void process(List<Path> files, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
         if (files.isEmpty()) {
             System.err.println(I18n.Text("must specify one or more sheet files to process"));
             System.exit(1);
@@ -52,16 +51,15 @@ public class Export implements Runnable {
             // This is run on the event queue since much of the sheet logic assumes a UI
             // environment and would otherwise cause concurrent modification exceptions, as the
             // detection of whether it was safe to modify data would be inaccurate.
-            EventQueue.invokeAndWait(new Export(files, generatePDF, generatePNG, generateText, template, margins, paper));
+            EventQueue.invokeAndWait(new Export(files, generatePNG, generateText, template, margins, paper));
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
             System.exit(1);
         }
     }
 
-    private Export(List<Path> files, boolean generatePDF, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
+    private Export(List<Path> files, boolean generatePNG, boolean generateText, Path template, String margins, String paper) {
         mFiles = files;
-        mGeneratePDF = generatePDF;
         mGeneratePNG = generatePNG;
         mGenerateText = generateText;
         mTemplate = mGenerateText ? template : null;
@@ -70,7 +68,7 @@ public class Export implements Runnable {
     }
 
     public void run() {
-        if (mGenerateText || mGeneratePDF || mGeneratePNG) {
+        if (mGenerateText || mGeneratePNG) {
             double[] paperSize   = getPaperSize();
             double[] marginsInfo = getMargins();
             Timing   timing      = new Timing();
@@ -112,17 +110,6 @@ public class Export implements Runnable {
                         success = new TextTemplate(sheet).export(output, mTemplate);
                         System.out.println(timing);
                         System.out.printf(I18n.Text("    Used text template file: %s\n"), mTemplate.normalize().toAbsolutePath());
-                        if (success) {
-                            System.out.printf(I18n.Text("    Created: %s\n"), output);
-                        }
-                    }
-                    if (mGeneratePDF) {
-                        System.out.print(I18n.Text("  Creating PDF... "));
-                        System.out.flush();
-                        output = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, false), FileType.PDF.getExtension()));
-                        timing.reset();
-                        success = sheet.saveAsPDF(output);
-                        System.out.println(timing);
                         if (success) {
                             System.out.printf(I18n.Text("    Created: %s\n"), output);
                         }
