@@ -124,7 +124,7 @@ public class PrereqList extends Prereq {
             int       count = a.size();
             for (int i = 0; i < count; i++) {
                 JsonMap m1 = a.getMap(i);
-                switch (m1.getString(DataFile.KEY_TYPE)) {
+                switch (m1.getString(DataFile.TYPE)) {
                 case KEY_ROOT -> mPrereqs.add(new PrereqList(this, state.mDefWeightUnits, m1));
                 case AdvantagePrereq.KEY_ROOT -> mPrereqs.add(new AdvantagePrereq(this, m1));
                 case AttributePrereq.KEY_ROOT -> mPrereqs.add(new AttributePrereq(this, m1));

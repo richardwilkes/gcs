@@ -11,14 +11,18 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
@@ -33,15 +37,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -49,8 +56,6 @@ import javax.swing.event.DocumentListener;
 public class SettingsEditor extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, DataChangeListener, Runnable {
     private GURPSCharacter           mCharacter;
     private Settings                 mSettings;
-    private JCheckBox                mBaseWillOn10;
-    private JCheckBox                mBasePerOn10;
     private JCheckBox                mUseMultiplicativeModifiers;
     private JCheckBox                mUseModifyingDicePlusAdds;
     private JCheckBox                mUseKnowYourOwnStrength;
@@ -64,13 +69,13 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JCheckBox                mShowEquipmentModifierAdj;
     private JCheckBox                mShowSpellAdj;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
-    private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
     private JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
     private JComboBox<DisplayOption> mModifiersDisplayCombo;
     private JComboBox<DisplayOption> mNotesDisplayCombo;
     private JTextArea                mBlockLayoutField;
+    private AttributeEditor          mAttributeEditor;
     private JButton                  mResetButton;
     private boolean                  mUpdatePending;
 
@@ -113,52 +118,65 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     }
 
     private void addTopPanel() {
-        JPanel panel = new JPanel(new PrecisionLayout().setColumns(2).setMargins(10));
-        mShowCollegeInSpells = addCheckBox(panel, I18n.Text("Show the College column in the spells list"), null, mSettings.showCollegeInSpells());
-        mShowDifficulty = addCheckBox(panel, I18n.Text("Show the Difficulty column in the skills and spells lists"), null, mSettings.showDifficulty());
-        mShowAdvantageModifierAdj = addCheckBox(panel, I18n.Text("Show the advantage modifier cost adjustments in the advantage list"), null, mSettings.showAdvantageModifierAdj());
-        mShowEquipmentModifierAdj = addCheckBox(panel, I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists"), null, mSettings.showEquipmentModifierAdj());
-        mShowSpellAdj = addCheckBox(panel, I18n.Text("Show the spell ritual, cost and time adjustments in the spell list"), null, mSettings.showSpellAdj());
-        mShowTitleInsteadOfNameInPageFooter = addCheckBox(panel, I18n.Text("Show the title rather than the name in the page footer"), null, mSettings.useTitleInFooter());
-        mExtraSpaceAroundEncumbrance = addCheckBox(panel, I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table"), null, mSettings.extraSpaceAroundEncumbrance());
-        mBaseWillOn10 = addCheckBox(panel, I18n.Text("Base Will on 10 and not IQ"), null, mSettings.baseWillOn10());
-        mBasePerOn10 = addCheckBox(panel, I18n.Text("Base Perception on 10 and not IQ"), null, mSettings.basePerOn10());
-        mUseMultiplicativeModifiers = addCheckBox(panel, I18n.Text("Use Multiplicative Modifiers from PW102 (note: changes point value)"), null, mSettings.useMultiplicativeModifiers());
-        mUseModifyingDicePlusAdds = addCheckBox(panel, I18n.Text("Use Modifying Dice + Adds from B269"), null, mSettings.useModifyingDicePlusAdds());
-        mUseKnowYourOwnStrength = addCheckBox(panel, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
-        mUseReducedSwing = addCheckBox(panel, I18n.Text("Use the reduced swing rules from Adjusting Swing Damage in Dungeon Fantasy"), "From noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
-        mUsePhoenixSwing = addCheckBox(panel, I18n.Text("Use PhoenixFlame's rescaled Swing Damage"), null, mSettings.usePhoenixSwing());
-        mUseThrustEqualsSwingMinus2 = addCheckBox(panel, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
-        mUseSimpleMetricConversions = addCheckBox(panel, I18n.Text("Use the simple metric conversion rules from B9"), null, mSettings.useSimpleMetricConversions());
-
-        addLabel(panel, I18n.Text("Length Units"));
-        mLengthUnitsCombo = addCombo(panel, LengthUnits.values(), mSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
-
-        addLabel(panel, I18n.Text("Weight Units"));
-        mWeightUnitsCombo = addCombo(panel, WeightUnits.values(), mSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
-
-        addLabel(panel, I18n.Text("Show User Description"));
+        JPanel left = new JPanel(new PrecisionLayout().setColumns(2));
+        mShowCollegeInSpells = addCheckBox(left, I18n.Text("Show the College column"), null, mSettings.showCollegeInSpells());
+        mShowDifficulty = addCheckBox(left, I18n.Text("Show the Difficulty column"), null, mSettings.showDifficulty());
+        mShowAdvantageModifierAdj = addCheckBox(left, I18n.Text("Show advantage modifier cost adjustments"), null, mSettings.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj = addCheckBox(left, I18n.Text("Show equipment modifier cost & weight adjustments"), null, mSettings.showEquipmentModifierAdj());
+        mShowSpellAdj = addCheckBox(left, I18n.Text("Show spell ritual, cost & time adjustments"), null, mSettings.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter = addCheckBox(left, I18n.Text("Show the title instead of the name in the footer"), null, mSettings.useTitleInFooter());
+        addLabel(left, I18n.Text("Show User Description"));
         String tooltip = I18n.Text("Where to display this information");
-        mUserDescriptionDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.userDescriptionDisplay(), tooltip);
+        mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSettings.userDescriptionDisplay(), tooltip);
+        addLabel(left, I18n.Text("Show Modifiers"));
+        mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSettings.modifiersDisplay(), tooltip);
+        addLabel(left, I18n.Text("Show Notes"));
+        mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSettings.notesDisplay(), tooltip);
 
-        addLabel(panel, I18n.Text("Show Modifiers"));
-        mModifiersDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.modifiersDisplay(), tooltip);
+        JPanel right = new JPanel(new PrecisionLayout().setColumns(2));
+        mUseMultiplicativeModifiers = addCheckBox(right, I18n.Text("Use Multiplicative Modifiers (PW102; changes point value)"), null, mSettings.useMultiplicativeModifiers());
+        mUseModifyingDicePlusAdds = addCheckBox(right, I18n.Text("Use Modifying Dice + Adds (B269)"), null, mSettings.useModifyingDicePlusAdds());
+        mUseKnowYourOwnStrength = addCheckBox(right, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
+        mUseReducedSwing = addCheckBox(right, I18n.Text("Use the reduced swing rules"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
+        mUsePhoenixSwing = addCheckBox(panel, I18n.Text("Use PhoenixFlame's rescaled Swing Damage"), null, mSettings.usePhoenixSwing());
+        mUseThrustEqualsSwingMinus2 = addCheckBox(right, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
+        mUseSimpleMetricConversions = addCheckBox(right, I18n.Text("Use the simple metric conversion rules (B9)"), null, mSettings.useSimpleMetricConversions());
+        addLabel(right, I18n.Text("Length Units"));
+        mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
+        addLabel(right, I18n.Text("Weight Units"));
+        mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
 
-        addLabel(panel, I18n.Text("Show Notes"));
-        mNotesDisplayCombo = addCombo(panel, DisplayOption.values(), mSettings.notesDisplay(), tooltip);
+        JPanel top = new JPanel(new PrecisionLayout().setColumns(2));
+        top.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        top.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        JLabel label = new JLabel(I18n.Text("Block Layout"));
-        label.setOpaque(false);
-        panel.add(label, new PrecisionLayoutData().setHorizontalSpan(2));
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
+        panel.add(top, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+
+        mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), () -> {
+            Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
+            Map<String, Attribute> newAttributes = new HashMap<>();
+            for (String key : mCharacter.getSettings().getAttributes().keySet()) {
+                Attribute attribute = oldAttributes.get(key);
+                newAttributes.put(key, attribute != null ? attribute : new Attribute(key));
+            }
+            oldAttributes.clear();
+            oldAttributes.putAll(newAttributes);
+            mCharacter.notifyOfChange();
+            adjustResetButton();
+        });
+        panel.add(mAttributeEditor, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new JTextArea(Preferences.linesToString(mSettings.blockLayout()));
         mBlockLayoutField.setToolTipText(blockLayoutTooltip);
+        mBlockLayoutField.setBorder(new EmptyBorder(0, 4, 0, 4));
         mBlockLayoutField.getDocument().addDocumentListener(this);
-        mBlockLayoutField.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
-        panel.add(mBlockLayoutField, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true));
+        JScrollPane scroller = new JScrollPane(mBlockLayoutField, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        panel.add(new Label(I18n.Text("Block Layout")), new PrecisionLayoutData());
+        panel.add(scroller, new PrecisionLayoutData().setHeightHint(scroller.getPreferredSize().height).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        getContentPane().add(panel);
+        getContentPane().add(panel, BorderLayout.CENTER);
     }
 
     private void addResetPanel() {
@@ -210,12 +228,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             mSettings.setShowSpellAdj(mShowSpellAdj.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             mSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
-        } else if (source == mExtraSpaceAroundEncumbrance) {
-            mSettings.setExtraSpaceAroundEncumbrance(mExtraSpaceAroundEncumbrance.isSelected());
-        } else if (source == mBaseWillOn10) {
-            mSettings.setBaseWillOn10(mBaseWillOn10.isSelected());
-        } else if (source == mBasePerOn10) {
-            mSettings.setBasePerOn10(mBasePerOn10.isSelected());
         } else if (source == mUseMultiplicativeModifiers) {
             mSettings.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
         } else if (source == mUseModifyingDicePlusAdds) {
@@ -247,9 +259,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mShowEquipmentModifierAdj.isSelected() == prefs.showEquipmentModifierAdj();
         atDefaults = atDefaults && mShowSpellAdj.isSelected() == prefs.showSpellAdj();
         atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == prefs.useTitleInFooter();
-        atDefaults = atDefaults && mExtraSpaceAroundEncumbrance.isSelected() == prefs.extraSpaceAroundEncumbrance();
-        atDefaults = atDefaults && mBaseWillOn10.isSelected() == prefs.baseWillOn10();
-        atDefaults = atDefaults && mBasePerOn10.isSelected() == prefs.basePerOn10();
         atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == prefs.useMultiplicativeModifiers();
         atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == prefs.useKnowYourOwnStrength();
         atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == prefs.useThrustEqualsSwingMinus2();
@@ -262,6 +271,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == prefs.getModifiersDisplay();
         atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == prefs.getNotesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(prefs.getBlockLayout()));
+        atDefaults = atDefaults && mSettings.getAttributes().equals(Preferences.getInstance().getAttributes());
         return atDefaults;
     }
 
@@ -279,31 +289,33 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         } else if (source == mNotesDisplayCombo) {
             mSettings.setNotesDisplay((DisplayOption) mNotesDisplayCombo.getSelectedItem());
         } else if (source == mResetButton) {
-            Preferences prefs = Preferences.getInstance();
-            mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
-            mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
-            mShowDifficulty.setSelected(prefs.showDifficulty());
-            mShowAdvantageModifierAdj.setSelected(prefs.showAdvantageModifierAdj());
-            mShowEquipmentModifierAdj.setSelected(prefs.showEquipmentModifierAdj());
-            mShowSpellAdj.setSelected(prefs.showSpellAdj());
-            mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
-            mExtraSpaceAroundEncumbrance.setSelected(prefs.extraSpaceAroundEncumbrance());
-            mBaseWillOn10.setSelected(prefs.baseWillOn10());
-            mBasePerOn10.setSelected(prefs.basePerOn10());
-            mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
-            mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
-            mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());
-            mUseReducedSwing.setSelected(prefs.useReducedSwing());
-            mUsePhoenixSwing.setSelected(prefs.usePhoenixSwing());
-            mUseSimpleMetricConversions.setSelected(prefs.useSimpleMetricConversions());
-            mLengthUnitsCombo.setSelectedItem(prefs.getDefaultLengthUnits());
-            mWeightUnitsCombo.setSelectedItem(prefs.getDefaultWeightUnits());
-            mUserDescriptionDisplayCombo.setSelectedItem(prefs.getUserDescriptionDisplay());
-            mModifiersDisplayCombo.setSelectedItem(prefs.getModifiersDisplay());
-            mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
-            mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
+            reset();
         }
         adjustResetButton();
+    }
+
+    private void reset() {
+        Preferences prefs = Preferences.getInstance();
+        mUseModifyingDicePlusAdds.setSelected(prefs.useModifyingDicePlusAdds());
+        mShowCollegeInSpells.setSelected(prefs.showCollegeInSheetSpells());
+        mShowDifficulty.setSelected(prefs.showDifficulty());
+        mShowAdvantageModifierAdj.setSelected(prefs.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj.setSelected(prefs.showEquipmentModifierAdj());
+        mShowSpellAdj.setSelected(prefs.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter.setSelected(prefs.useTitleInFooter());
+        mUseMultiplicativeModifiers.setSelected(prefs.useMultiplicativeModifiers());
+        mUseKnowYourOwnStrength.setSelected(prefs.useKnowYourOwnStrength());
+        mUseThrustEqualsSwingMinus2.setSelected(prefs.useThrustEqualsSwingMinus2());
+        mUseReducedSwing.setSelected(prefs.useReducedSwing());
+        mUsePhoenixSwing.setSelected(prefs.usePhoenixSwing());
+        mUseSimpleMetricConversions.setSelected(prefs.useSimpleMetricConversions());
+        mLengthUnitsCombo.setSelectedItem(prefs.getDefaultLengthUnits());
+        mWeightUnitsCombo.setSelectedItem(prefs.getDefaultWeightUnits());
+        mUserDescriptionDisplayCombo.setSelectedItem(prefs.getUserDescriptionDisplay());
+        mModifiersDisplayCombo.setSelectedItem(prefs.getModifiersDisplay());
+        mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
+        mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
+        mAttributeEditor.reset(AttributeDef.cloneMap(prefs.getAttributes()));
     }
 
     @Override

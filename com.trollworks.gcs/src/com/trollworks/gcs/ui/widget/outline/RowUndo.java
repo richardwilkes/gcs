@@ -89,9 +89,9 @@ public class RowUndo extends AbstractUndoableEdit {
         try (GZIPInputStream s = new GZIPInputStream(new ByteArrayInputStream(buffer))) {
             JsonMap   m     = Json.asMap(Json.parse(s));
             LoadState state = new LoadState();
-            state.mDataFileVersion = mDataFile.getJSONVersion();
+            state.mDataFileVersion = DataFile.CURRENT_VERSION;
             state.mForUndo = true;
-            mRow.load(m, state);
+            mRow.load(mDataFile, m, state);
         } catch (Exception exception) {
             Log.error(exception);
         }

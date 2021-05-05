@@ -49,7 +49,8 @@ public enum ReactionColumn {
             }
             return new ListTextCell(SwingConstants.RIGHT, false);
         }
-    }, REACTION {
+    },
+    REACTION {
         @Override
         public String toString() {
             return I18n.Text("Reaction");

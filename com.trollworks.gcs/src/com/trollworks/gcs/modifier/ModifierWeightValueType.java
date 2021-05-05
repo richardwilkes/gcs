@@ -22,13 +22,15 @@ public enum ModifierWeightValueType {
             String str = localized ? fraction.toLocalizedString() : fraction.toString();
             return fraction.mNumerator.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
         }
-    }, PERCENTAGE_ADDER {
+    },
+    PERCENTAGE_ADDER {
         @Override
         public String format(Fraction fraction, boolean localized) {
             String str = (localized ? fraction.toLocalizedString() : fraction.toString()) + "%";
             return fraction.mNumerator.greaterThanOrEqual(Fixed6.ZERO) ? "+" + str : str;
         }
-    }, PERCENTAGE_MULTIPLIER {
+    },
+    PERCENTAGE_MULTIPLIER {
         @Override
         Fraction adjustFraction(Fraction fraction) {
             return fraction.mNumerator.lessThanOrEqual(Fixed6.ZERO) ? new Fraction(new Fixed6(100), Fixed6.ONE) : fraction;
@@ -39,7 +41,8 @@ public enum ModifierWeightValueType {
             fraction = adjustFraction(fraction);
             return "x" + (localized ? fraction.toLocalizedString() : fraction.toString()) + "%";
         }
-    }, MULTIPLIER {
+    },
+    MULTIPLIER {
         @Override
         Fraction adjustFraction(Fraction fraction) {
             return fraction.mNumerator.lessThanOrEqual(Fixed6.ZERO) ? new Fraction(Fixed6.ONE, Fixed6.ONE) : fraction;

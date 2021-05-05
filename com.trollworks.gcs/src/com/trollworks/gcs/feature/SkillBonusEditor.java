@@ -60,7 +60,7 @@ public class SkillBonusEditor extends FeatureEditor {
     }
 
     private void rebuildWeaponsWithName(FlexGrid grid, FlexRow row) {
-        SkillBonus bonus = (SkillBonus) getFeature();
+        SkillBonus     bonus    = (SkillBonus) getFeature();
         StringCriteria criteria = bonus.getNameCriteria();
         row.add(addStringCompareCombo(criteria, null));
         row.add(addStringCompareField(criteria));
@@ -82,7 +82,7 @@ public class SkillBonusEditor extends FeatureEditor {
     }
 
     private void rebuildSkillsWithName(FlexGrid grid, FlexRow row) {
-        SkillBonus bonus = (SkillBonus) getFeature();
+        SkillBonus     bonus    = (SkillBonus) getFeature();
         StringCriteria criteria = bonus.getNameCriteria();
         row.add(addStringCompareCombo(criteria, null));
         row.add(addStringCompareField(criteria));

@@ -40,22 +40,21 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class Bundler {
-    private static final String GCS_VERSION               = "4.29.1";
-    private static       String JDK_MAJOR_VERSION         = "16";
-    private static final String JDK_MAJOR_VERSION_WINDOWS = "15"; // Due to bug in JDK 16 jpackage
-    private static final String ITEXT_VERSION             = "2.1.7";
-    private static final String LINUX                     = "linux";
-    private static final String MACOS                     = "macos";
-    private static final String WINDOWS                   = "windows";
-    private static final Path   DIST_DIR                  = Paths.get("out", "dist");
-    private static final Path   BUILD_DIR                 = DIST_DIR.resolve("build");
-    private static final Path   MODULE_DIR                = DIST_DIR.resolve("modules");
-    private static final Path   EXTRA_DIR                 = DIST_DIR.resolve("extra");
-    private static final Path   I18N_DIR                  = EXTRA_DIR.resolve("i18n");
-    private static final Path   MANIFEST                  = BUILD_DIR.resolve("com.trollworks.gcs.manifest");
-    private static final Path   JRE                       = BUILD_DIR.resolve("jre");
-    private static final String YEARS                     = "1998-" + DateTimeFormatter.ofPattern("yyyy").format(Instant.now().atZone(ZoneId.systemDefault()));
-    private static final char[] HEX_DIGITS                = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    private static final String GCS_VERSION       = "4.29.1";
+    private static final String JDK_MAJOR_VERSION = "15";
+    private static final String ITEXT_VERSION     = "2.1.7";
+    private static final String LINUX             = "linux";
+    private static final String MACOS             = "macos";
+    private static final String WINDOWS           = "windows";
+    private static final Path   DIST_DIR          = Paths.get("out", "dist");
+    private static final Path   BUILD_DIR         = DIST_DIR.resolve("build");
+    private static final Path   MODULE_DIR        = DIST_DIR.resolve("modules");
+    private static final Path   EXTRA_DIR         = DIST_DIR.resolve("extra");
+    private static final Path   I18N_DIR          = EXTRA_DIR.resolve("i18n");
+    private static final Path   MANIFEST          = BUILD_DIR.resolve("com.trollworks.gcs.manifest");
+    private static final Path   JRE               = BUILD_DIR.resolve("jre");
+    private static final String YEARS             = "1998-" + DateTimeFormatter.ofPattern("yyyy").format(Instant.now().atZone(ZoneId.systemDefault()));
+    private static final char[] HEX_DIGITS        = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     private static       String OS;
     private static       Path   PKG;
     private static       Path   NO_INSTALLER_PKG;
@@ -147,7 +146,6 @@ public final class Bundler {
             PKG = Paths.get("GCS-" + GCS_VERSION + ".msi");
             NO_INSTALLER_PKG = Paths.get("GCS");
             ICON_TYPE = "ico";
-            JDK_MAJOR_VERSION = JDK_MAJOR_VERSION_WINDOWS;
         } else if (osName.startsWith("Linux")) {
             OS = LINUX;
             PKG = Paths.get("gcs-" + GCS_VERSION + "-1_amd64.deb");

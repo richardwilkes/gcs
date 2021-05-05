@@ -35,6 +35,7 @@ public class SpellPrereq extends HasPrereq {
     public static final  String KEY_ROOT          = "spell_prereq";
     public static final  String KEY_NAME          = "name";
     public static final  String KEY_ANY           = "any";
+    public static final  String KEY_CATEGORY      = "category";
     public static final  String KEY_COLLEGE       = "college";
     public static final  String KEY_COLLEGE_COUNT = "college_count";
     private static final String KEY_QUANTITY      = "quantity";
@@ -115,7 +116,7 @@ public class SpellPrereq extends HasPrereq {
     public void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
         w.keyValue(KEY_SUB_TYPE, mType);
-        if (KEY_NAME.equals(mType) || KEY_COLLEGE.equals(mType)) {
+        if (KEY_NAME.equals(mType) || KEY_CATEGORY.equals(mType) || KEY_COLLEGE.equals(mType)) {
             mStringCriteria.save(w, KEY_QUALIFIER);
         }
         mQuantityCriteria.save(w, KEY_QUANTITY);
@@ -128,13 +129,16 @@ public class SpellPrereq extends HasPrereq {
 
     /**
      * @param type The type of comparison to make. Must be one of {@link #KEY_NAME}, {@link
-     *             #KEY_ANY}, {@link #KEY_COLLEGE}, or {@link #KEY_COLLEGE_COUNT}.
+     *             #KEY_ANY}, {@link #KEY_CATEGORY}, {@link #KEY_COLLEGE}, or {@link
+     *             #KEY_COLLEGE_COUNT}.
      */
     public void setType(String type) {
         if (KEY_NAME.equals(type)) {
             mType = KEY_NAME;
         } else if (KEY_ANY.equals(type)) {
             mType = KEY_ANY;
+        } else if (KEY_CATEGORY.equals(type)) {
+            mType = KEY_CATEGORY;
         } else if (KEY_COLLEGE.equals(type)) {
             mType = KEY_COLLEGE;
         } else if (KEY_COLLEGE_COUNT.equals(type)) {
@@ -160,15 +164,12 @@ public class SpellPrereq extends HasPrereq {
         String      techLevel = null;
         int         count     = 0;
         boolean     satisfied;
-
         if (exclude instanceof Spell) {
             techLevel = ((Spell) exclude).getTechLevel();
         }
-
         for (Spell spell : character.getSpellsIterator()) {
             if (exclude != spell && spell.getPoints() > 0) {
                 boolean ok;
-
                 if (techLevel != null) {
                     String otherTL = spell.getTechLevel();
 
@@ -183,12 +184,22 @@ public class SpellPrereq extends HasPrereq {
                         }
                     } else if (KEY_ANY.equals(mType)) {
                         count++;
+                    } else if (KEY_CATEGORY.equals(mType)) {
+                        for (String category : spell.getCategories()) {
+                            if (mStringCriteria.matches(category)) {
+                                count++;
+                                break;
+                            }
+                        }
                     } else if (KEY_COLLEGE.equals(mType)) {
-                        if (mStringCriteria.matches(spell.getCollege())) {
-                            count++;
+                        for (String college : spell.getColleges()) {
+                            if (mStringCriteria.matches(college)) {
+                                count++;
+                                break;
+                            }
                         }
                     } else if (Objects.equals(mType, KEY_COLLEGE_COUNT)) {
-                        colleges.add(spell.getCollege());
+                        colleges.addAll(spell.getColleges());
                     }
                 }
             }
@@ -209,6 +220,8 @@ public class SpellPrereq extends HasPrereq {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose name {4}\n"), prefix, hasText(), mQuantityCriteria.toString(""), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
             } else if (Objects.equals(mType, KEY_ANY)) {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} of any kind\n"), prefix, hasText(), mQuantityCriteria.toString(""), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells));
+            } else if (Objects.equals(mType, KEY_CATEGORY)) {
+                builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose category {4}\n"), prefix, hasText(), mQuantityCriteria.toString(""), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
             } else if (Objects.equals(mType, KEY_COLLEGE)) {
                 builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} {3} whose college {4}\n"), prefix, hasText(), mQuantityCriteria.toString(""), mQuantityCriteria.getQualifier() == 1 ? oneSpell : multipleSpells, mStringCriteria.toString()));
             } else if (Objects.equals(mType, KEY_COLLEGE_COUNT)) {
@@ -220,14 +233,14 @@ public class SpellPrereq extends HasPrereq {
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {
-        if (!Objects.equals(mType, KEY_COLLEGE_COUNT)) {
+        if (!Objects.equals(mType, KEY_COLLEGE_COUNT) && !Objects.equals(mType, KEY_ANY)) {
             ListRow.extractNameables(set, mStringCriteria.getQualifier());
         }
     }
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
-        if (!Objects.equals(mType, KEY_COLLEGE_COUNT)) {
+        if (!Objects.equals(mType, KEY_COLLEGE_COUNT) && !Objects.equals(mType, KEY_ANY)) {
             mStringCriteria.setQualifier(ListRow.nameNameables(map, mStringCriteria.getQualifier()));
         }
     }

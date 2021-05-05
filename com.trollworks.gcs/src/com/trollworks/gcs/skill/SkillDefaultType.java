@@ -11,236 +11,55 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.ui.UIUtilities;
 
+import java.awt.Container;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import javax.swing.JComboBox;
 
-/** The types of possible skill defaults. */
-public enum SkillDefaultType {
-    /** The type for ST-based defaults. */
-    ST {
-        @Override
-        public String toString() {
-            return I18n.Text("ST");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.ST.getBaseSkillLevel(character);
-            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
-        }
-    },
-    /** The type for DX-based defaults. */
-    DX {
-        @Override
-        public String toString() {
-            return I18n.Text("DX");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.DX.getBaseSkillLevel(character);
-            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
-        }
-    },
-    /** The type for IQ-based defaults. */
-    IQ {
-        @Override
-        public String toString() {
-            return I18n.Text("IQ");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.IQ.getBaseSkillLevel(character);
-            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
-        }
-    },
-    /** The type for HT-based defaults. */
-    HT {
-        @Override
-        public String toString() {
-            return I18n.Text("HT");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.HT.getBaseSkillLevel(character);
-            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
-        }
-    },
-    /** The type for Will-based defaults. */
-    Will {
-        @Override
-        public String toString() {
-            return I18n.Text("Will");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.Will.getBaseSkillLevel(character);
-            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
-        }
-    },
-    /** The type for Perception-based defaults. */
-    Per {
-        @Override
-        public String toString() {
-            return I18n.Text("Perception");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int level = SkillAttribute.Per.getBaseSkillLevel(character);
-            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
-        }
-    },
-    /** The type for Skill-based defaults. */
-    Skill {
-        @Override
-        public String toString() {
-            return I18n.Text("Skill named");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int best = Integer.MIN_VALUE;
-            for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
-                int level = skill.getLevel();
-                if (level > best) {
-                    best = level;
-                }
-            }
-            return finalLevel(skillDefault, best);
-        }
-
-        @Override
-        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int best = Integer.MIN_VALUE;
-            for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
-                if (skill.getLevel() > best) {
-                    int level = skill.getLevel(excludes);
-                    if (level > best) {
-                        best = level;
-                    }
-                }
-            }
-            return finalLevel(skillDefault, best);
-        }
-
-        @Override
-        public boolean isSkillBased() {
-            return true;
-        }
-    },
-    /** The type for Parry-based defaults. */
-    Parry {
-        @Override
-        public String toString() {
-            return I18n.Text("Parrying skill named");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int best = Integer.MIN_VALUE;
-            for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
-                int level = skill.getLevel();
-                if (level > best) {
-                    best = level;
-                }
-            }
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
-        }
-
-        @Override
-        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int best = Integer.MIN_VALUE;
-            for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
-                if (skill.getLevel() > best) {
-                    int level = skill.getLevel(excludes);
-                    if (level > best) {
-                        best = level;
-                    }
-                }
-            }
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
-        }
-
-        @Override
-        public boolean isSkillBased() {
-            return true;
-        }
-    },
-    /** The type for Block-based defaults. */
-    Block {
-        @Override
-        public String toString() {
-            return I18n.Text("Blocking skill named");
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int best = Integer.MIN_VALUE;
-            for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
-                int level = skill.getLevel();
-                if (level > best) {
-                    best = level;
-                }
-            }
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
-        }
-
-        @Override
-        public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            int best = Integer.MIN_VALUE;
-            for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
-                if (skill.getLevel() > best) {
-                    int level = skill.getLevel(excludes);
-                    if (level > best) {
-                        best = level;
-                    }
-                }
-            }
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
-        }
-
-        @Override
-        public boolean isSkillBased() {
-            return true;
-        }
-    },
-    /** The type for 10-based defaults. */
-    Base10 {
-        @Override
-        public String toString() {
-            return "10";
-        }
-
-        @Override
-        public int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-            return finalLevel(skillDefault, SkillAttribute.Base10.getBaseSkillLevel(character));
-        }
-    };
-
-    /**
-     * @param name The name of a {@link SkillDefaultType}, as returned from {@link #name()} or
-     *             {@link #toString()}.
-     * @return The matching {@link SkillDefaultType}, or {@link #Skill} if a match cannot be found.
-     */
-    public static final SkillDefaultType getByName(String name) {
-        for (SkillDefaultType type : values()) {
-            if (type.name().equalsIgnoreCase(name) || type.toString().equalsIgnoreCase(name)) {
-                return type;
-            }
-        }
-        return Skill;
+/** Handling of skill defaults based on type. */
+public final class SkillDefaultType {
+    private SkillDefaultType() {
     }
 
-    /** @return Whether the {@link SkillDefaultType} is based on another skill or not. */
-    @SuppressWarnings("static-method")
-    public boolean isSkillBased() {
-        return false;
+    public static JComboBox<AttributeChoice> createCombo(Container parent, DataFile dataFile, String currentType, String actionCommand, ActionListener listener, boolean editable) {
+        List<AttributeChoice> list = new ArrayList<>();
+        for (AttributeDef def : AttributeDef.getOrdered(dataFile.getAttributeDefs())) {
+            list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
+        }
+        list.add(new AttributeChoice("skill", "%s", "Skill"));
+        list.add(new AttributeChoice("parry", "%s", "Parry"));
+        list.add(new AttributeChoice("block", "%s", "Block"));
+        list.add(new AttributeChoice("10", "%s", "10"));
+        AttributeChoice current = list.get(0);
+        for (AttributeChoice attributeChoice : list) {
+            if (attributeChoice.getAttribute().equals(currentType)) {
+                current = attributeChoice;
+                break;
+            }
+        }
+        JComboBox<AttributeChoice> combo = new JComboBox<>(list.toArray(new AttributeChoice[0]));
+        combo.setOpaque(false);
+        combo.setSelectedItem(current);
+        combo.setActionCommand(actionCommand);
+        combo.addActionListener(listener);
+        combo.setMaximumRowCount(list.size());
+        UIUtilities.setToPreferredSizeOnly(combo);
+        combo.setEnabled(editable);
+        parent.add(combo);
+        return combo;
+    }
+
+    /** @return Whether the type is based on another skill or not. */
+    public static boolean isSkillBased(String type) {
+        return "skill".equalsIgnoreCase(type) || "parry".equalsIgnoreCase(type) || "block".equalsIgnoreCase(type);
     }
 
     /**
@@ -252,7 +71,23 @@ public enum SkillDefaultType {
      * @param ruleOf20      {@code true} if the rule of 20 should apply.
      * @return The base skill level for this {@link SkillDefaultType}.
      */
-    public abstract int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20);
+    public static int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
+        int    best;
+        String type = skillDefault.getType();
+        switch (type) {
+        case "parry":
+            best = getBestFast(character, skillDefault, requirePoints, excludes);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
+        case "block":
+            best = getBestFast(character, skillDefault, requirePoints, excludes);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
+        case "skill":
+            return finalLevel(skillDefault, getBestFast(character, skillDefault, requirePoints, excludes));
+        default:
+            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, type);
+            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
+        }
+    }
 
     /**
      * @param character     The character to work with.
@@ -263,17 +98,47 @@ public enum SkillDefaultType {
      * @param ruleOf20      {@code true} if the rule of 20 should apply.
      * @return The base skill level for this {@link SkillDefaultType}.
      */
-    public int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
-        return getSkillLevelFast(character, skillDefault, requirePoints, excludes, ruleOf20);
+    public static int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
+        int best;
+        switch (skillDefault.getType()) {
+        case "parry":
+            best = getBest(character, skillDefault, requirePoints, excludes);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
+        case "block":
+            best = getBest(character, skillDefault, requirePoints, excludes);
+            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
+        case "skill":
+            return finalLevel(skillDefault, getBest(character, skillDefault, requirePoints, excludes));
+        default:
+            return getSkillLevelFast(character, skillDefault, requirePoints, excludes, ruleOf20);
+        }
     }
 
-    /**
-     * @param skillDefault The {@link SkillDefault}.
-     * @param level        The level without the default modifier.
-     * @return The final level.
-     */
-    @SuppressWarnings("static-method")
-    protected int finalLevel(SkillDefault skillDefault, int level) {
+    private static int getBest(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes) {
+        int best = Integer.MIN_VALUE;
+        for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
+            if (skill.getLevel() > best) {
+                int level = skill.getLevel(excludes);
+                if (level > best) {
+                    best = level;
+                }
+            }
+        }
+        return best;
+    }
+
+    private static int getBestFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes) {
+        int best = Integer.MIN_VALUE;
+        for (Skill skill : character.getSkillNamed(skillDefault.getName(), skillDefault.getSpecialization(), requirePoints, excludes)) {
+            int level = skill.getLevel();
+            if (level > best) {
+                best = level;
+            }
+        }
+        return best;
+    }
+
+    private static int finalLevel(SkillDefault skillDefault, int level) {
         if (level != Integer.MIN_VALUE) {
             level += skillDefault.getModifier();
         }

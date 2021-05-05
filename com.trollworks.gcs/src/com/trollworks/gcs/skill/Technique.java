@@ -86,13 +86,12 @@ public class Technique extends Skill {
     }
 
     private static int getBaseLevel(GURPSCharacter character, SkillDefault def, boolean requirePoints) {
-        SkillDefaultType type = def.getType();
-        if (type == SkillDefaultType.Skill) {
+        if ("skill".equals(def.getType())) {
             Skill skill = getBaseSkill(character, def, requirePoints);
             return skill != null ? skill.getLevel() : Integer.MIN_VALUE;
         }
         // Take the modifier back out, as we wanted the base, not the final value.
-        return type.getSkillLevelFast(character, def, true, null, false) - def.getModifier();
+        return SkillDefaultType.getSkillLevelFast(character, def, true, null, false) - def.getModifier();
     }
 
     /**
@@ -117,7 +116,7 @@ public class Technique extends Skill {
      */
     public Technique(DataFile dataFile) {
         super(dataFile, false);
-        mDefault = new SkillDefault(SkillDefaultType.Skill, I18n.Text("Skill"), null, 0);
+        mDefault = new SkillDefault("skill", I18n.Text("Skill"), null, 0);
         updateLevel(false);
     }
 
@@ -143,7 +142,7 @@ public class Technique extends Skill {
 
     public Technique(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile);
-        load(m, state);
+        load(dataFile, m, state);
         if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
             mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
         }
@@ -181,7 +180,7 @@ public class Technique extends Skill {
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mDefault = new SkillDefault(SkillDefaultType.Skill, I18n.Text("Skill"), null, 0);
+        mDefault = new SkillDefault("skill", I18n.Text("Skill"), null, 0);
         mLimited = false;
         mLimitModifier = 0;
     }
@@ -213,14 +212,15 @@ public class Technique extends Skill {
      * @return {@code true} if this technique has its default satisfied.
      */
     public boolean satisfied(StringBuilder builder, String prefix) {
-        if (mDefault.getType().isSkillBased()) {
+        if (SkillDefaultType.isSkillBased(mDefault.getType())) {
             Skill   skill     = getCharacter().getBestSkillNamed(mDefault.getName(), mDefault.getSpecialization(), false, new HashSet<>());
             boolean satisfied = skill != null && (skill instanceof Technique || skill.getPoints() > 0);
             if (!satisfied && builder != null) {
+                String fullName = mDefault.getFullName(getDataFile());
                 if (skill == null) {
-                    builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1}\n"), prefix, mDefault.getFullName()));
+                    builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1}\n"), prefix, fullName));
                 } else {
-                    builder.append(MessageFormat.format(I18n.Text("{0}Requires at least 1 point in the skill named {1}\n"), prefix, mDefault.getFullName()));
+                    builder.append(MessageFormat.format(I18n.Text("{0}Requires at least 1 point in the skill named {1}\n"), prefix, fullName));
                 }
             }
             return satisfied;
@@ -250,7 +250,7 @@ public class Technique extends Skill {
 
     @Override
     public String getSpecialization() {
-        return mDefault.getFullName();
+        return mDefault.getFullName(getDataFile());
     }
 
     @Override
@@ -363,7 +363,8 @@ public class Technique extends Skill {
             buffer.append(' ');
         }
         buffer.append(I18n.Text("Default: "));
-        buffer.append(mDefault);
+        buffer.append(mDefault.getFullName(getDataFile()));
+        buffer.append(mDefault.getModifierAsString());
         return buffer.toString();
     }
 

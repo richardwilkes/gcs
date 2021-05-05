@@ -67,7 +67,7 @@ public class WeaponDamage {
 
     public WeaponDamage(JsonMap m, WeaponStats owner) {
         mOwner = owner;
-        mType = m.getString(DataFile.KEY_TYPE);
+        mType = m.getString(DataFile.TYPE);
         mST = Enums.extract(m.getString(KEY_ST), WeaponSTDamage.values(), WeaponSTDamage.NONE);
         if (m.has(KEY_BASE)) {
             mBase = new Dice(m.getString(KEY_BASE));
@@ -88,7 +88,7 @@ public class WeaponDamage {
      */
     public void save(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, mType);
+        w.keyValue(DataFile.TYPE, mType);
         if (mST != WeaponSTDamage.NONE) {
             w.keyValue(KEY_ST, mST.name().toLowerCase());
         }
@@ -259,7 +259,7 @@ public class WeaponDamage {
                 Set<WeaponBonus> bonusSet   = new HashSet<>();
                 Set<String>      categories = mOwner.getCategories();
                 int              maxST      = mOwner.getMinStrengthValue() * 3;
-                int              st         = character.getStrength() + character.getStrikingStrengthBonus();
+                int              st         = character.getAttributeIntValue("st") + character.getStrikingStrengthBonus();
                 Dice             base       = new Dice(0, 0);
 
                 if (maxST > 0 && maxST < st) {
@@ -310,9 +310,8 @@ public class WeaponDamage {
                 int          best        = Integer.MIN_VALUE;
                 SkillDefault bestDefault = null;
                 for (SkillDefault skillDefault : mOwner.getDefaults()) {
-                    SkillDefaultType type = skillDefault.getType();
-                    if (type.isSkillBased()) {
-                        int level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+                    if (SkillDefaultType.isSkillBased(skillDefault.getType())) {
+                        int level = SkillDefaultType.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
                         if (level > best) {
                             best = level;
                             bestDefault = skillDefault;

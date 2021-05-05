@@ -56,7 +56,7 @@ public abstract class WeaponStats {
         int count = a.size();
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
-            String  type = m1.getString(DataFile.KEY_TYPE);
+            String  type = m1.getString(DataFile.TYPE);
             switch (type) {
             case MeleeWeaponStats.KEY_ROOT -> list.add(new MeleeWeaponStats(row, m1));
             case RangedWeaponStats.KEY_ROOT -> list.add(new RangedWeaponStats(row, m1));
@@ -155,7 +155,7 @@ public abstract class WeaponStats {
      */
     public final void save(JsonWriter w) throws IOException {
         w.startMap();
-        w.keyValue(DataFile.KEY_TYPE, getJSONTypeName());
+        w.keyValue(DataFile.TYPE, getJSONTypeName());
         w.key(WeaponDamage.KEY_ROOT);
         mDamage.save(w);
         w.keyValueNot(KEY_STRENGTH, mStrength, "");
@@ -290,8 +290,7 @@ public abstract class WeaponStats {
         int           postAdj        = getSkillLevelPostAdjustment(character, primaryToolTip);
         int           best           = Integer.MIN_VALUE;
         for (SkillDefault skillDefault : getDefaults()) {
-            SkillDefaultType type  = skillDefault.getType();
-            int              level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+            int level = SkillDefaultType.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
             if (level != Integer.MIN_VALUE) {
                 level += preAdj;
                 level += postAdj;
@@ -320,7 +319,7 @@ public abstract class WeaponStats {
 
     protected int getSkillLevelBaseAdjustment(GURPSCharacter character, StringBuilder toolTip) {
         int adj   = 0;
-        int minST = getMinStrengthValue() - (character.getStrength() + character.getStrikingStrengthBonus());
+        int minST = getMinStrengthValue() - (character.getAttributeIntValue("st") + character.getStrikingStrengthBonus());
         if (minST > 0) {
             adj -= minST;
         }

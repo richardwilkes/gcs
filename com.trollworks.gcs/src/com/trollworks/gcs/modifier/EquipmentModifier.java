@@ -30,7 +30,6 @@ import com.trollworks.gcs.utility.units.WeightValue;
 import java.io.IOException;
 
 public class EquipmentModifier extends Modifier {
-    private static final int    CURRENT_JSON_VERSION   = 1;
     public static final  String KEY_MODIFIER           = "eqp_modifier";
     public static final  String KEY_MODIFIER_CONTAINER = "eqp_modifier_container";
     public static final  String KEY_COST_ADJ           = "cost";
@@ -69,9 +68,9 @@ public class EquipmentModifier extends Modifier {
         }
     }
 
-    public EquipmentModifier(DataFile file, JsonMap m, LoadState state) throws IOException {
-        this(file, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.KEY_TYPE)));
-        load(m, state);
+    public EquipmentModifier(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
+        this(dataFile, KEY_MODIFIER_CONTAINER.equals(m.getString(DataFile.TYPE)));
+        load(dataFile, m, state);
     }
 
     /**
@@ -200,11 +199,6 @@ public class EquipmentModifier extends Modifier {
     }
 
     @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
-    @Override
     public Object getData(Column column) {
         return EquipmentModifierColumnID.values()[column.getID()].getData(this);
     }
@@ -243,7 +237,7 @@ public class EquipmentModifier extends Modifier {
     @Override
     protected void loadChild(JsonMap m, LoadState state) throws IOException {
         if (!state.mForUndo) {
-            String type = m.getString(DataFile.KEY_TYPE);
+            String type = m.getString(DataFile.TYPE);
             if (KEY_MODIFIER.equals(type) || KEY_MODIFIER_CONTAINER.equals(type)) {
                 addChild(new EquipmentModifier(mDataFile, m, state));
             } else {

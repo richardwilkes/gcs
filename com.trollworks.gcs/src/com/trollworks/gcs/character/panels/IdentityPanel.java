@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.page.DropPanel;

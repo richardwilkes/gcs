@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.character.panels;
 
+import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
@@ -73,7 +73,7 @@ public class DescriptionPanel extends DropPanel {
             LengthValue length = profile.getHeight();
             LengthValue result;
             do {
-                result = profile.getRandomHeight(gch.getStrength(), profile.getSizeModifier());
+                result = profile.getRandomHeight(gch.getAttributeIntValue("st"), profile.getSizeModifier());
             } while (result.equals(length));
             profile.setHeight(result);
         });
@@ -81,7 +81,7 @@ public class DescriptionPanel extends DropPanel {
             WeightValue weight = profile.getWeight();
             WeightValue result;
             do {
-                result = profile.getRandomWeight(gch.getStrength(), profile.getSizeModifier(), profile.getWeightMultiplier());
+                result = profile.getRandomWeight(gch.getAttributeIntValue("st"), profile.getSizeModifier(), profile.getWeightMultiplier());
             } while (result.equals(weight));
             profile.setWeight(result);
         });

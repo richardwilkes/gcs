@@ -11,9 +11,11 @@
 
 package com.trollworks.gcs.spell;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.skill.SkillAttribute;
+import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -41,7 +43,7 @@ import javax.swing.SwingConstants;
 
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends BaseSpellEditor<Spell> {
-    protected JComboBox<SkillAttribute> mAttributePopup;
+    protected JComboBox<AttributeChoice> mAttributePopup;
 
     /**
      * Creates a new {@link Spell} editor.
@@ -67,7 +69,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         fields.add(wrapper1);
         if (notContainer) {
             createTechLevelFields(wrapper1);
-            mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), spell.getCollege(), I18n.Text("The college the spell belongs to"), 0);
+            mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), String.join(", ", spell.getColleges()), I18n.Text("The college(s) the spell belongs to; separate multiple colleges with a comma"), 0);
             mPowerSourceField = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
             mClassField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
             mCastingCostField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
@@ -140,7 +142,20 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of the spell")));
         panel.add(label);
 
-        mAttributePopup = createComboBox(panel, SkillAttribute.values(), mRow.getAttribute(), I18n.Text("The attribute this spell is based on"));
+        List<AttributeChoice> list = new ArrayList<>();
+        for (AttributeDef def : AttributeDef.getOrdered(mRow.getDataFile().getAttributeDefs())) {
+            list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
+        }
+        list.add(new AttributeChoice("10", "%s", "10"));
+        AttributeChoice current = list.get(0);
+        for (AttributeChoice attributeChoice : list) {
+            if (attributeChoice.getAttribute().equals(mRow.getAttribute())) {
+                current = attributeChoice;
+                break;
+            }
+        }
+
+        mAttributePopup = createComboBox(panel, list.toArray(new AttributeChoice[0]), current, I18n.Text("The attribute this spell is based on"));
         panel.add(new JLabel(" /"));
         mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.Text("The difficulty of the spell"));
 
@@ -154,15 +169,17 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         return panel;
     }
 
-    protected SkillAttribute getAttribute() {
-        return (SkillAttribute) mAttributePopup.getSelectedItem();
+    protected String getAttribute() {
+        AttributeChoice choice = (AttributeChoice) mAttributePopup.getSelectedItem();
+        return choice != null ? choice.getAttribute() : Skill.getDefaultAttribute("iq");
     }
 
-    public static String getDisplayLevel(SkillAttribute attribute, int level, int relativeLevel) {
+    private String getDisplayLevel(String attribute, int level, int relativeLevel) {
         if (level < 0) {
             return "-";
         }
-        return Numbers.format(level) + "/" + attribute + Numbers.formatWithForcedSign(relativeLevel);
+        return Numbers.format(level) + "/" + Skill.resolveAttributeName(mRow.getDataFile(), attribute) +
+                Numbers.formatWithForcedSign(relativeLevel);
     }
 
     @Override
@@ -175,7 +192,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             if (mHasTechLevel != null) {
                 modified |= mRow.setTechLevel(mHasTechLevel.isSelected() ? mTechLevel.getText() : null);
             }
-            modified |= mRow.setCollege(mCollegeField.getText());
+            modified |= mRow.setColleges(getColleges());
             modified |= mRow.setPowerSource(mPowerSourceField.getText());
             modified |= mRow.setSpellClass(mClassField.getText());
             modified |= mRow.setCastingCost(mCastingCostField.getText());
@@ -214,8 +231,10 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
 
     @Override
     protected void recalculateLevel(JTextField levelField) {
-        SkillAttribute attribute = getAttribute();
-        SkillLevel     level     = Spell.calculateLevel(mRow.getCharacter(), getAdjustedPoints(), attribute, getDifficulty(), mCollegeField.getText(), mPowerSourceField.getText(), mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
+        String attribute = getAttribute();
+        SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getAdjustedPoints(),
+                attribute, getDifficulty(), getColleges(), mPowerSourceField.getText(),
+                mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
         levelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
         levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
     }

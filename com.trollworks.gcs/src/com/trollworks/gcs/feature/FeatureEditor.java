@@ -37,12 +37,13 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
-    private static final String            CHANGE_BASE_TYPE  = "ChangeBaseType";
-    private static       FeatureType       LAST_FEATURE_TYPE = FeatureType.SKILL_LEVEL_BONUS;
-    private              ListRow           mRow;
-    private              Feature           mFeature;
-    private              JComboBox<Object> mBaseTypeCombo;
-    private              JComboBox<Object> mLeveledAmountCombo;
+    private static final String      CHANGE_BASE_TYPE  = "ChangeBaseType";
+    private static       FeatureType LAST_FEATURE_TYPE = FeatureType.SKILL_LEVEL_BONUS;
+
+    private ListRow           mRow;
+    private Feature           mFeature;
+    private JComboBox<Object> mBaseTypeCombo;
+    private JComboBox<Object> mLeveledAmountCombo;
 
     /**
      * Creates a new {@link FeatureEditor}.
@@ -156,7 +157,7 @@ public abstract class FeatureEditor extends EditorPanel {
      */
     protected JComboBox<Object> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
         String per = usePerDie ? I18n.Text("per die") : I18n.Text("per level");
-        mLeveledAmountCombo = addComboBox(LeveledAmount.ATTRIBUTE_PER_LEVEL, new Object[]{" ", per}, amt.isPerLevel() ? per : " ");
+        mLeveledAmountCombo = addComboBox(LeveledAmount.KEY_PER_LEVEL, new Object[]{" ", per}, amt.isPerLevel() ? per : " ");
         mLeveledAmountCombo.putClientProperty(LeveledAmount.class, amt);
         return mLeveledAmountCombo;
     }
@@ -194,7 +195,7 @@ public abstract class FeatureEditor extends EditorPanel {
     public void actionPerformed(ActionEvent event) {
         String     command = event.getActionCommand();
         JComponent parent  = (JComponent) getParent();
-        if (LeveledAmount.ATTRIBUTE_PER_LEVEL.equals(command)) {
+        if (LeveledAmount.KEY_PER_LEVEL.equals(command)) {
             ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountCombo.getSelectedIndex() == 1);
         } else if (CHANGE_BASE_TYPE.equals(command)) {
             LAST_FEATURE_TYPE = (FeatureType) mBaseTypeCombo.getSelectedItem();

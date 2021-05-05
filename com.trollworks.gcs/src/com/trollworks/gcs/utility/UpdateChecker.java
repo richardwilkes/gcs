@@ -37,7 +37,11 @@ public class UpdateChecker implements Runnable {
     private static boolean NEW_APP_VERSION_AVAILABLE;
     private        Mode    mMode;
 
-    private enum Mode {CHECK, NOTIFY, DONE}
+    private enum Mode {
+        CHECK,
+        NOTIFY,
+        DONE
+    }
 
     /**
      * Initiates a check for updates.
@@ -154,7 +158,7 @@ public class UpdateChecker implements Runnable {
             String update = I18n.Text("Update");
             mMode = Mode.DONE;
             if (isNewAppVersionAvailable()) {
-                JTextPane   markdown = new JTextPane(new MarkdownDocument(getAppReleaseNotes()));
+                JTextPane markdown = new JTextPane(new MarkdownDocument(getAppReleaseNotes()));
                 markdown.setBorder(new EmptyBorder(4));
                 Dimension   size     = markdown.getPreferredSize();
                 JScrollPane scroller = new JScrollPane(markdown);

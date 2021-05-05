@@ -49,12 +49,12 @@ public abstract class NumericCriteria extends Criteria {
 
     @Override
     public void load(JsonMap m) throws IOException {
-        setType(Enums.extract(m.getString(ATTRIBUTE_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
+        setType(Enums.extract(m.getString(KEY_COMPARE), NumericCompareType.values(), NumericCompareType.AT_LEAST));
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
-        w.keyValue(ATTRIBUTE_COMPARE, Enums.toId(mType));
+        w.keyValue(KEY_COMPARE, Enums.toId(mType));
     }
 
     /**

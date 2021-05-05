@@ -24,12 +24,11 @@ import com.trollworks.gcs.character.panels.AttributesPanel;
 import com.trollworks.gcs.character.panels.DescriptionPanel;
 import com.trollworks.gcs.character.panels.DoubleOutlinePanel;
 import com.trollworks.gcs.character.panels.EncumbrancePanel;
-import com.trollworks.gcs.character.panels.FatiguePointsPanel;
 import com.trollworks.gcs.character.panels.HitLocationPanel;
-import com.trollworks.gcs.character.panels.HitPointsPanel;
 import com.trollworks.gcs.character.panels.IdentityPanel;
 import com.trollworks.gcs.character.panels.LiftPanel;
 import com.trollworks.gcs.character.panels.MiscPanel;
+import com.trollworks.gcs.character.panels.PointPoolsPanel;
 import com.trollworks.gcs.character.panels.PointsPanel;
 import com.trollworks.gcs.character.panels.PortraitPanel;
 import com.trollworks.gcs.character.panels.SingleOutlinePanel;
@@ -214,19 +213,17 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         wrapper.add(new DescriptionPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setHorizontalSpan(2));
         pageAssembler.addToContent(wrapper, null, null);
 
-        boolean extraSpaceAroundEncumbrance = mCharacter.getSettings().extraSpaceAroundEncumbrance();
-
-        wrapper = new Wrapper(new PrecisionLayout().setColumns(4).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper.add(new AttributesPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
-        Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new FatiguePointsPanel(this), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundEncumbrance));
-        wrapper2.add(new HitPointsPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(!extraSpaceAroundEncumbrance));
-        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(!extraSpaceAroundEncumbrance).setFillAlignment());
+        wrapper = new Wrapper(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
+        Wrapper wrapper2 = new Wrapper(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
+        wrapper2.add(new AttributesPanel(this, true), new PrecisionLayoutData().setGrabVerticalSpace(false).setGrabHorizontalSpace(true).setFillAlignment());
+        wrapper2.add(new AttributesPanel(this, false), new PrecisionLayoutData().setGrabVerticalSpace(false).setGrabHorizontalSpace(true).setFillAlignment());
+        wrapper2.add(new PointPoolsPanel(this), new PrecisionLayoutData().setHorizontalSpan(2).setGrabSpace(true).setFillAlignment());
+        wrapper.add(wrapper2, new PrecisionLayoutData().setFillAlignment());
         wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
-        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundEncumbrance));
-        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(extraSpaceAroundEncumbrance));
-        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(extraSpaceAroundEncumbrance).setFillAlignment());
+        wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
+        wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
+        wrapper.add(wrapper2, new PrecisionLayoutData().setGrabSpace(true).setFillAlignment());
         pageAssembler.addToContent(wrapper, null, null);
 
         // Add the various outline blocks, based on the layout preference.

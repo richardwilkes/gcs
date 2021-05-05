@@ -323,7 +323,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         // drawing code.
         try {
             super.paint(g);
-        } catch(Throwable throwable) {
+        } catch (Throwable throwable) {
             Log.error(throwable);
         }
     }

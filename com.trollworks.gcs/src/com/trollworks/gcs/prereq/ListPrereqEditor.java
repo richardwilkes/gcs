@@ -75,7 +75,7 @@ public class ListPrereqEditor extends PrereqEditor {
 
     @Override
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
-        PrereqList prereqList     = (PrereqList) mPrereq;
+        PrereqList prereqList = (PrereqList) mPrereq;
         left.add(addComboBox(WHEN_TL, new Object[]{" ", tlIs(), tlIsAtLeast(), tlIsAtMost()}, mapWhenTLToString()));
         if (prereqList.isWhenTLEnabled()) {
             left.add(addNumericCompareField(prereqList.getWhenTLCriteria(), 0, 99, false));

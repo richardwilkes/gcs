@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
@@ -50,27 +51,27 @@ import javax.swing.text.Document;
 
 /** The detailed editor for {@link Technique}s. */
 public class TechniqueEditor extends RowEditor<Technique> implements ActionListener, DocumentListener {
-    private JTextField         mNameField;
-    private JTextField         mNotesField;
-    private JTextField         mCategoriesField;
-    private JTextField         mReferenceField;
-    private JComboBox<Object>  mDifficultyCombo;
-    private JTextField         mPointsField;
-    private JTextField         mLevelField;
-    private JPanel             mDefaultPanel;
-    private LinkedLabel        mDefaultPanelLabel;
-    private JComboBox<Object>  mDefaultTypeCombo;
-    private JTextField         mDefaultNameField;
-    private JTextField         mDefaultSpecializationField;
-    private JTextField         mDefaultModifierField;
-    private JCheckBox          mLimitCheckbox;
-    private JTextField         mLimitField;
-    private JTabbedPane        mTabPanel;
-    private PrereqsPanel       mPrereqs;
-    private FeaturesPanel      mFeatures;
-    private SkillDefaultType   mLastDefaultType;
-    private MeleeWeaponEditor  mMeleeWeapons;
-    private RangedWeaponEditor mRangedWeapons;
+    private JTextField                 mNameField;
+    private JTextField                 mNotesField;
+    private JTextField                 mCategoriesField;
+    private JTextField                 mReferenceField;
+    private JComboBox<Object>          mDifficultyCombo;
+    private JTextField                 mPointsField;
+    private JTextField                 mLevelField;
+    private JPanel                     mDefaultPanel;
+    private LinkedLabel                mDefaultPanelLabel;
+    private JComboBox<AttributeChoice> mDefaultTypeCombo;
+    private JTextField                 mDefaultNameField;
+    private JTextField                 mDefaultSpecializationField;
+    private JTextField                 mDefaultModifierField;
+    private JCheckBox                  mLimitCheckbox;
+    private JTextField                 mLimitField;
+    private JTabbedPane                mTabPanel;
+    private PrereqsPanel               mPrereqs;
+    private FeaturesPanel              mFeatures;
+    private String                     mLastDefaultType;
+    private MeleeWeaponEditor          mMeleeWeapons;
+    private RangedWeaponEditor         mRangedWeapons;
 
     /**
      * Creates a new {@link Technique} editor.
@@ -121,9 +122,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private void createDefaults(Container parent) {
         mDefaultPanel = new JPanel(new ColumnLayout(4));
         mDefaultPanelLabel = new LinkedLabel(I18n.Text("Defaults To"));
-        mDefaultTypeCombo = createComboBox(mDefaultPanel, SkillDefaultType.values(), mRow.getDefault().getType());
-        mDefaultTypeCombo.setEnabled(mIsEditable);
-
+        mDefaultTypeCombo = SkillDefaultType.createCombo(mDefaultPanel, mRow.getDataFile(), mRow.getDefault().getType(), "", this, mIsEditable);
         parent.add(mDefaultPanelLabel);
         parent.add(mDefaultPanel);
         rebuildDefaultPanel();
@@ -139,8 +138,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         return combo;
     }
 
-    private SkillDefaultType getDefaultType() {
-        return (SkillDefaultType) mDefaultTypeCombo.getSelectedItem();
+    private String getDefaultType() {
+        AttributeChoice choice = (AttributeChoice) mDefaultTypeCombo.getSelectedItem();
+        if (choice != null) {
+            return choice.getAttribute();
+        }
+        return "skill";
     }
 
     private String getSpecialization() {
@@ -161,7 +164,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         boolean      skillBased;
 
         mLastDefaultType = getDefaultType();
-        skillBased = mLastDefaultType.isSkillBased();
+        skillBased = SkillDefaultType.isSkillBased(mLastDefaultType);
         Commitable.sendCommitToFocusOwner();
         while (mDefaultPanel.getComponentCount() > 1) {
             mDefaultPanel.remove(1);
@@ -295,8 +298,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private SkillDefault createNewDefault() {
-        SkillDefaultType type = getDefaultType();
-        if (type.isSkillBased()) {
+        String type = getDefaultType();
+        if (SkillDefaultType.isSkillBased(type)) {
             return new SkillDefault(type, mDefaultNameField.getText(), mDefaultSpecializationField.getText(), getDefaultModifier());
         }
         return new SkillDefault(type, null, null, getDefaultModifier());
@@ -363,15 +366,13 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Override
     public void actionPerformed(ActionEvent event) {
         Object src = event.getSource();
-
         if (src == mLimitCheckbox) {
             mLimitField.setEnabled(mLimitCheckbox.isSelected());
         } else if (src == mDefaultTypeCombo) {
-            if (mLastDefaultType != getDefaultType()) {
+            if (!mLastDefaultType.equals(getDefaultType())) {
                 rebuildDefaultPanel();
             }
         }
-
         if (src == mDifficultyCombo || src == mPointsField || src == mDefaultNameField || src == mDefaultModifierField || src == mLimitCheckbox || src == mLimitField || src == mDefaultSpecializationField || src == mDefaultTypeCombo) {
             recalculateLevel();
         }

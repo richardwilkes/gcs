@@ -86,7 +86,7 @@ public class PrintCommand extends Command implements PrintFilesHandler {
         @Override
         public void run() {
             LibraryExplorerDockable library = LibraryExplorerDockable.get();
-            FileProxy               proxy   = library == null ? null : (FileProxy)library.getDockableFor(mPath);
+            FileProxy               proxy   = library == null ? null : (FileProxy) library.getDockableFor(mPath);
             if (proxy != null) {
                 print(proxy.getPrintProxy());
             } else if (System.currentTimeMillis() - mStart < TimeUnit.MILLISECONDS.convert(2, TimeUnit.MINUTES)) {

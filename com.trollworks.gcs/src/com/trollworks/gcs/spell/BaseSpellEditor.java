@@ -34,6 +34,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -345,5 +348,17 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     @Override
     public void focusLost(FocusEvent event) {
         adjustForSource(event.getSource());
+    }
+
+    protected List<String> getColleges() {
+        List<String> colleges = new ArrayList<>();
+        for (String college : mCollegeField.getText().split(",")) {
+            college = college.trim();
+            if (!college.isEmpty()) {
+                colleges.add(college);
+            }
+        }
+        Collections.sort(colleges);
+        return colleges;
     }
 }

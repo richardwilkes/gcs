@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.utility.I18n;
 
@@ -22,13 +23,16 @@ import java.util.List;
 
 /** Displays and edits {@link SkillDefault} objects. */
 public class Defaults extends BandedPanel implements ActionListener {
+    private DataFile mDataFile;
+
     /**
      * Creates a new skill defaults editor.
      *
      * @param defaults The initial defaults to display.
      */
-    public Defaults(List<SkillDefault> defaults) {
+    public Defaults(DataFile dataFile, List<SkillDefault> defaults) {
         super(I18n.Text("Defaults"));
+        mDataFile = dataFile;
         setDefaults(defaults);
     }
 
@@ -36,10 +40,10 @@ public class Defaults extends BandedPanel implements ActionListener {
     public void setDefaults(List<SkillDefault> defaults) {
         removeAll();
         for (SkillDefault skillDefault : defaults) {
-            add(new SkillDefaultEditor(new SkillDefault(skillDefault)));
+            add(new SkillDefaultEditor(mDataFile, new SkillDefault(skillDefault)));
         }
         if (getComponentCount() == 0) {
-            add(new SkillDefaultEditor());
+            add(new SkillDefaultEditor(mDataFile));
         }
         revalidate();
         repaint();

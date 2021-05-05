@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.Alignment;
@@ -35,20 +37,21 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A skill default editor panel. */
 public class SkillDefaultEditor extends EditorPanel {
-    private static SkillDefaultType LAST_ITEM_TYPE = SkillDefaultType.DX;
-    private        SkillDefault     mDefault;
-    private        EditorField      mSkillNameField;
-    private        EditorField      mSpecializationField;
-    private        EditorField      mModifierField;
+    private static String       LAST_ITEM_TYPE = "";
+    private        DataFile     mDataFile;
+    private        SkillDefault mDefault;
+    private        EditorField  mSkillNameField;
+    private        EditorField  mSpecializationField;
+    private        EditorField  mModifierField;
 
     /** @param type The last item type created or switched to. */
-    public static void setLastItemType(SkillDefaultType type) {
+    public static void setLastItemType(String type) {
         LAST_ITEM_TYPE = type;
     }
 
     /** Creates a new placeholder {@link SkillDefaultEditor}. */
-    public SkillDefaultEditor() {
-        this(null);
+    public SkillDefaultEditor(DataFile dataFile) {
+        this(dataFile, null);
     }
 
     /**
@@ -56,7 +59,8 @@ public class SkillDefaultEditor extends EditorPanel {
      *
      * @param skillDefault The skill default to edit.
      */
-    public SkillDefaultEditor(SkillDefault skillDefault) {
+    public SkillDefaultEditor(DataFile dataFile, SkillDefault skillDefault) {
+        mDataFile = dataFile;
         mDefault = skillDefault;
         rebuild();
     }
@@ -72,15 +76,9 @@ public class SkillDefaultEditor extends EditorPanel {
             add(or);
             grid.add(or, 0, 0);
 
-            FlexRow          row       = new FlexRow();
-            SkillDefaultType current   = mDefault.getType();
-            JComboBox<?>     typeCombo = new JComboBox<Object>(SkillDefaultType.values());
-            typeCombo.setOpaque(false);
-            typeCombo.setSelectedItem(current);
-            typeCombo.setActionCommand(SkillDefault.KEY_TYPE);
-            typeCombo.addActionListener(this);
-            UIUtilities.setToPreferredSizeOnly(typeCombo);
-            add(typeCombo);
+            FlexRow                    row       = new FlexRow();
+            String                     current   = mDefault.getType();
+            JComboBox<AttributeChoice> typeCombo = SkillDefaultType.createCombo(this, mDataFile, current, SkillDefault.KEY_TYPE, this, true);
             row.add(typeCombo);
             grid.add(row, 0, 1);
 
@@ -88,7 +86,7 @@ public class SkillDefaultEditor extends EditorPanel {
             UIUtilities.setToPreferredSizeOnly(mModifierField);
             add(mModifierField);
 
-            if (current.isSkillBased()) {
+            if ("skill".equalsIgnoreCase(current)) {
                 row.add(new FlexSpacer(0, 0, true, false));
                 row = new FlexRow();
                 row.setInsets(new Insets(0, 20, 0, 0));
@@ -139,9 +137,9 @@ public class SkillDefaultEditor extends EditorPanel {
     }
 
     private void addDefault() {
-        SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, LAST_ITEM_TYPE.isSkillBased() ? "" : null, null, 0); //$NON-NLS-1$
+        SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, SkillDefaultType.isSkillBased(LAST_ITEM_TYPE) ? "" : null, null, 0); //$NON-NLS-1$
         JComponent   parent       = (JComponent) getParent();
-        parent.add(new SkillDefaultEditor(skillDefault));
+        parent.add(new SkillDefaultEditor(mDataFile, skillDefault));
         if (mDefault == null) {
             parent.remove(this);
         }
@@ -154,7 +152,7 @@ public class SkillDefaultEditor extends EditorPanel {
         JComponent parent = (JComponent) getParent();
         parent.remove(this);
         if (parent.getComponentCount() == 0) {
-            parent.add(new SkillDefaultEditor());
+            parent.add(new SkillDefaultEditor(mDataFile));
         }
         parent.revalidate();
         parent.repaint();
@@ -183,15 +181,18 @@ public class SkillDefaultEditor extends EditorPanel {
         Object src     = event.getSource();
         String command = event.getActionCommand();
         if (SkillDefault.KEY_TYPE.equals(command)) {
-            SkillDefaultType current = mDefault.getType();
-            SkillDefaultType value   = (SkillDefaultType) ((JComboBox<?>) src).getSelectedItem();
-            if (current != value) {
-                Commitable.sendCommitToFocusOwner();
-                mDefault.setType(value);
-                rebuild();
-                notifyActionListeners();
+            AttributeChoice choice = (AttributeChoice) ((JComboBox<?>) src).getSelectedItem();
+            if (choice != null) {
+                String value   = choice.getAttribute();
+                String current = mDefault.getType();
+                if (!current.equals(value)) {
+                    Commitable.sendCommitToFocusOwner();
+                    mDefault.setType(value);
+                    rebuild();
+                    notifyActionListeners();
+                }
+                setLastItemType(value);
             }
-            setLastItemType(value);
         } else {
             super.actionPerformed(event);
         }

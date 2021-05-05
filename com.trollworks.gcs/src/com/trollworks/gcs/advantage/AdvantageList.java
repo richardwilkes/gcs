@@ -26,13 +26,6 @@ import java.io.IOException;
 
 /** A list of Advantages. */
 public class AdvantageList extends ListFile {
-    private static final int CURRENT_JSON_VERSION = 1;
-
-    @Override
-    public int getJSONVersion() {
-        return CURRENT_JSON_VERSION;
-    }
-
     @Override
     public String getJSONTypeName() {
         return "advantage_list";
@@ -57,7 +50,7 @@ public class AdvantageList extends ListFile {
         int count = a.size();
         for (int i = 0; i < count; i++) {
             JsonMap m1   = a.getMap(i);
-            String  type = m1.getString(DataFile.KEY_TYPE);
+            String  type = m1.getString(DataFile.TYPE);
             if (Advantage.KEY_ADVANTAGE.equals(type) || Advantage.KEY_ADVANTAGE_CONTAINER.equals(type)) {
                 model.addRow(new Advantage(file, m1, state), true);
             } else {

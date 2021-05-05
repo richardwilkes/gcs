@@ -13,7 +13,6 @@ package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -32,10 +31,11 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -50,7 +50,6 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JCheckBox                mShowEquipmentModifierAdj;
     private JCheckBox                mShowSpellAdj;
     private JCheckBox                mShowTitleInsteadOfNameInPageFooter;
-    private JCheckBox                mExtraSpaceAroundEncumbrance;
     private JComboBox<Scales>        mUIScaleCombo;
     private JComboBox<LengthUnits>   mLengthUnitsCombo;
     private JComboBox<WeightUnits>   mWeightUnitsCombo;
@@ -71,13 +70,12 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         Preferences prefs = Preferences.getInstance();
 
         mIncludeUnspentPointsInTotal = addCheckBox(I18n.Text("Character point total display includes unspent points"), prefs.includeUnspentPointsInTotal());
-        mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column in character sheet spells list *"), prefs.showCollegeInSheetSpells());
-        mShowDifficulty = addCheckBox(I18n.Text("Show the Difficulty column in character sheet skills and spells lists *"), prefs.showDifficulty());
-        mShowAdvantageModifierAdj = addCheckBox(I18n.Text("Show the advantage modifier cost adjustments in the advantage list *"), prefs.showAdvantageModifierAdj());
-        mShowEquipmentModifierAdj = addCheckBox(I18n.Text("Show the equipment modifier cost and weight adjustments in the equipment lists *"), prefs.showEquipmentModifierAdj());
-        mShowSpellAdj = addCheckBox(I18n.Text("Show the spell ritual, cost and time adjustments in the spell list *"), prefs.showSpellAdj());
-        mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title rather than the name in the page footer on character sheets *"), prefs.useTitleInFooter());
-        mExtraSpaceAroundEncumbrance = addCheckBox(I18n.Text("Add extra space around Encumbrance table rather than around FP/HP table *"), prefs.extraSpaceAroundEncumbrance());
+        mShowCollegeInSheetSpells = addCheckBox(I18n.Text("Show the College column *"), prefs.showCollegeInSheetSpells());
+        mShowDifficulty = addCheckBox(I18n.Text("Show the Difficulty column *"), prefs.showDifficulty());
+        mShowAdvantageModifierAdj = addCheckBox(I18n.Text("Show advantage modifier cost adjustments *"), prefs.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj = addCheckBox(I18n.Text("Show equipment modifier cost & weight adjustments *"), prefs.showEquipmentModifierAdj());
+        mShowSpellAdj = addCheckBox(I18n.Text("Show spell ritual, cost & time adjustments *"), prefs.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter = addCheckBox(I18n.Text("Show the title instead of the name in the footer *"), prefs.useTitleInFooter());
 
         addLabel(I18n.Text("Initial Scale"));
         mUIScaleCombo = addCombo(Scales.values(), prefs.getInitialUIScale(), null);
@@ -136,9 +134,10 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JTextArea addTextArea(String value, String tooltip) {
         JTextArea field = new JTextArea(value);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        field.setBorder(new EmptyBorder(0, 4, 0, 4));
         field.getDocument().addDocumentListener(this);
-        field.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 4, 0, 4)));
-        add(field, new PrecisionLayoutData().setHorizontalSpan(2).setGrabSpace(true).setFillAlignment());
+        JScrollPane scroller = new JScrollPane(field, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setHeightHint(scroller.getPreferredSize().height).setFillAlignment().setGrabSpace(true));
         return field;
     }
 
@@ -213,8 +212,6 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
             Preferences.getInstance().setShowSpellAdj(mShowSpellAdj.isSelected());
         } else if (source == mShowTitleInsteadOfNameInPageFooter) {
             Preferences.getInstance().setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
-        } else if (source == mExtraSpaceAroundEncumbrance) {
-            Preferences.getInstance().setExtraSpaceAroundEncumbrance(mExtraSpaceAroundEncumbrance.isSelected());
         }
         adjustResetButton();
     }
@@ -228,7 +225,6 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mShowEquipmentModifierAdj.setSelected(Preferences.DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ);
         mShowSpellAdj.setSelected(Preferences.DEFAULT_SHOW_SPELL_ADJ);
         mShowTitleInsteadOfNameInPageFooter.setSelected(Preferences.DEFAULT_USE_TITLE_IN_FOOTER);
-        mExtraSpaceAroundEncumbrance.setSelected(Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE);
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
         mLengthUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
         mWeightUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
@@ -248,7 +244,6 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         atDefault = atDefault && prefs.showAdvantageModifierAdj() == Preferences.DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ;
         atDefault = atDefault && prefs.showEquipmentModifierAdj() == Preferences.DEFAULT_SHOW_EQUIPMENT_MODIFIER_ADJ;
         atDefault = atDefault && prefs.showSpellAdj() == Preferences.DEFAULT_SHOW_SPELL_ADJ;
-        atDefault = atDefault && prefs.extraSpaceAroundEncumbrance() == Preferences.DEFAULT_EXTRA_SPACE_AROUND_ENCUMBRANCE;
         atDefault = atDefault && prefs.getInitialUIScale() == Preferences.DEFAULT_INITIAL_UI_SCALE;
         atDefault = atDefault && prefs.getDefaultLengthUnits() == Preferences.DEFAULT_DEFAULT_LENGTH_UNITS;
         atDefault = atDefault && prefs.getDefaultWeightUnits() == Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS;

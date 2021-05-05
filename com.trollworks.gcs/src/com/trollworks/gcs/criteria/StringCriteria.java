@@ -63,7 +63,7 @@ public class StringCriteria extends Criteria {
     @Override
     public void load(JsonMap m) {
         setQualifier(m.getString(KEY_QUALIFIER));
-        setType(Enums.extract(m.getString(ATTRIBUTE_COMPARE), StringCompareType.values(), StringCompareType.ANY));
+        setType(Enums.extract(m.getString(KEY_COMPARE), StringCompareType.values(), StringCompareType.ANY));
     }
 
     @Override
@@ -75,7 +75,7 @@ public class StringCriteria extends Criteria {
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
-        w.keyValue(ATTRIBUTE_COMPARE, Enums.toId(mType));
+        w.keyValue(KEY_COMPARE, Enums.toId(mType));
         w.keyValueNot(KEY_QUALIFIER, mQualifier, "");
     }
 

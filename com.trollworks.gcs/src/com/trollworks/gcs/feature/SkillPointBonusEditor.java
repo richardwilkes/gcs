@@ -35,7 +35,7 @@ public class SkillPointBonusEditor extends FeatureEditor {
     @Override
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         SkillPointBonus bonus = (SkillPointBonus) getFeature();
-        int i = 0;
+        int             i     = 0;
 
         FlexRow row = new FlexRow();
         row.add(addChangeBaseTypeCombo());

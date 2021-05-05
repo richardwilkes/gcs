@@ -56,9 +56,13 @@ public class BandedPanel extends ActionPanel implements Scrollable {
             bounds.y = compBounds.y;
             bounds.height = compBounds.height;
             int logical = i / step;
-            gc.setColor((logical % 2 != 0) ? ThemeColor.BANDING : Color.WHITE);
+            gc.setColor(getBandingColor(logical % 2 != 0));
             gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
+    }
+
+    protected Color getBandingColor(boolean odd) {
+        return odd ? ThemeColor.BANDING : Color.WHITE;
     }
 
     private int getStep() {

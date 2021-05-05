@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
@@ -41,12 +42,7 @@ public class CostReductionEditor extends FeatureEditor {
         CostReduction feature = (CostReduction) getFeature();
         FlexRow       row     = new FlexRow();
         row.add(addChangeBaseTypeCombo());
-        int      length = CostReduction.TYPES.length;
-        String[] names  = new String[length];
-        for (int i = 0; i < length; i++) {
-            names[i] = CostReduction.TYPES[i].toString();
-        }
-        row.add(addComboBox(CHANGE_ATTRIBUTE, names, feature.getAttribute().name()));
+        row.add(addAttributePopup(getRow().getDataFile(), CHANGE_ATTRIBUTE, "%s", feature.getAttribute(), false));
         String[] percents = new String[16];
         for (int i = 0; i < 16; i++) {
             percents[i] = MessageFormat.format(I18n.Text("by {0}%"), Integer.valueOf((i + 1) * 5));
@@ -58,11 +54,15 @@ public class CostReductionEditor extends FeatureEditor {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
+        CostReduction cr      = (CostReduction) getFeature();
+        String        command = event.getActionCommand();
         if (CHANGE_ATTRIBUTE.equals(command)) {
-            ((CostReduction) getFeature()).setAttribute(CostReduction.TYPES[((JComboBox<?>) event.getSource()).getSelectedIndex()]);
+            AttributeChoice selectedItem = (AttributeChoice) ((JComboBox<?>) event.getSource()).getSelectedItem();
+            if (selectedItem != null) {
+                cr.setAttribute(selectedItem.getAttribute());
+            }
         } else if (CHANGE_PERCENTAGE.equals(command)) {
-            ((CostReduction) getFeature()).setPercentage((((JComboBox<?>) event.getSource()).getSelectedIndex() + 1) * 5);
+            cr.setPercentage((((JComboBox<?>) event.getSource()).getSelectedIndex() + 1) * 5);
         } else {
             super.actionPerformed(event);
         }

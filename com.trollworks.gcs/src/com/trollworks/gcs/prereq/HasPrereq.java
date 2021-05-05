@@ -20,8 +20,7 @@ import java.io.IOException;
 
 /** An abstract prerequisite class for whether or not the specific item is present. */
 public abstract class HasPrereq extends Prereq {
-    /** The "has" attribute name. */
-    protected static final String  ATTRIBUTE_HAS = "has";
+    protected static final String  KEY_HAS = "has";
     private                boolean mHas;
 
     /**
@@ -63,12 +62,12 @@ public abstract class HasPrereq extends Prereq {
 
     @Override
     public void loadSelf(JsonMap m, LoadState state) throws IOException {
-        mHas = m.getBoolean(ATTRIBUTE_HAS);
+        mHas = m.getBoolean(KEY_HAS);
     }
 
     @Override
     public void saveSelf(JsonWriter w) throws IOException {
-        w.keyValue(ATTRIBUTE_HAS, mHas);
+        w.keyValue(KEY_HAS, mHas);
     }
 
     /**

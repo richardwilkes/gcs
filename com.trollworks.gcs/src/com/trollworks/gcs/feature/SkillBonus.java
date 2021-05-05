@@ -13,6 +13,7 @@ package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCompareType;
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -45,9 +46,9 @@ public class SkillBonus extends Bonus {
         mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
-    public SkillBonus(JsonMap m) throws IOException {
+    public SkillBonus(DataFile dataFile, JsonMap m) throws IOException {
         this();
-        loadSelf(m);
+        loadSelf(dataFile, m);
     }
 
     /**
@@ -113,8 +114,8 @@ public class SkillBonus extends Bonus {
     }
 
     @Override
-    protected void loadSelf(JsonMap m) throws IOException {
-        super.loadSelf(m);
+    protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
+        super.loadSelf(dataFile, m);
         mSkillSelectionType = Enums.extract(m.getString(KEY_SELECTION_TYPE), SkillSelectionType.values(), SkillSelectionType.SKILLS_WITH_NAME);
         if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
             mNameCriteria.load(m.getMap(KEY_NAME));

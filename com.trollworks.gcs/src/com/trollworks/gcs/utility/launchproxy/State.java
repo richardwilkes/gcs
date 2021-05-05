@@ -12,5 +12,7 @@
 package com.trollworks.gcs.utility.launchproxy;
 
 enum State {
-    INVALID, LAUNCH, TOOK_OVER_FOR,
+    INVALID,
+    LAUNCH,
+    TOOK_OVER_FOR,
 }

@@ -98,6 +98,15 @@ public class MeleeWeaponStats extends WeaponStats {
         w.keyValueNot(KEY_REACH, mReach, "");
         w.keyValueNot(KEY_PARRY, mParry, "");
         w.keyValueNot(KEY_BLOCK, mBlock, "");
+
+        // Emit the calculated values for third parties
+        w.key("calc");
+        w.startMap();
+        w.keyValue("level", Math.max(getSkillLevel(), 0));
+        w.keyValue("parry", getResolvedParry(null));
+        w.keyValue("block", getResolvedBlock(null));
+        w.keyValue("damage", getDamage().getResolvedDamage());
+        w.endMap();
     }
 
     /** @return The parry. */
@@ -112,10 +121,10 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /** @return The parry, fully resolved for the user's skills, if possible. */
     public String getResolvedParry(StringBuilder toolTip) {
-        return getResolvedValue(mParry, SkillDefaultType.Parry, toolTip);
+        return getResolvedValue(mParry, "parry", toolTip);
     }
 
-    private String getResolvedValue(String input, SkillDefaultType baseDefaultType, StringBuilder toolTip) {
+    private String getResolvedValue(String input, String baseDefaultType, StringBuilder toolTip) {
         DataFile df = getOwner().getDataFile();
         if (df instanceof GURPSCharacter) {
             GURPSCharacter  character  = (GURPSCharacter) df;
@@ -158,19 +167,19 @@ public class MeleeWeaponStats extends WeaponStats {
                                 StringBuilder secondaryToolTip = null;
                                 int           preAdj           = getSkillLevelBaseAdjustment(character, primaryToolTip);
                                 int           postAdj          = getSkillLevelPostAdjustment(character, primaryToolTip);
-                                int           adj              = 3 + (baseDefaultType == SkillDefaultType.Parry ? character.getParryBonus() : character.getBlockBonus());
+                                int           adj              = 3 + ("parry".equals(baseDefaultType) ? character.getParryBonus() : character.getBlockBonus());
                                 int           best             = Integer.MIN_VALUE;
                                 for (SkillDefault skillDefault : getDefaults()) {
-                                    SkillDefaultType type  = skillDefault.getType();
-                                    int              level = type.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
+                                    int level = SkillDefaultType.getSkillLevelFast(character, skillDefault, false, new HashSet<>(), true);
                                     if (level != Integer.MIN_VALUE) {
                                         level += preAdj;
-                                        if (type != baseDefaultType) {
+                                        String type = skillDefault.getType();
+                                        if (!baseDefaultType.equals(type)) {
                                             level = level / 2 + adj;
                                         }
                                         level += postAdj;
                                         StringBuilder possibleToolTip = null;
-                                        if (type == SkillDefaultType.Skill && "Karate".equals(skillDefault.getName())) {
+                                        if ("skill".equals(type) && "Karate".equals(skillDefault.getName())) {
                                             if (toolTip != null) {
                                                 possibleToolTip = new StringBuilder();
                                             }
@@ -240,7 +249,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     /** @return The block, fully resolved for the user's skills, if possible. */
     public String getResolvedBlock(StringBuilder toolTip) {
-        return getResolvedValue(mBlock, SkillDefaultType.Block, toolTip);
+        return getResolvedValue(mBlock, "block", toolTip);
     }
 
     /**

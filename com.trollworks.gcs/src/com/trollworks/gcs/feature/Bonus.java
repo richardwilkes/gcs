@@ -12,6 +12,7 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.criteria.StringCriteria;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -70,7 +71,7 @@ public abstract class Bonus extends Feature {
         return super.hashCode();
     }
 
-    protected void loadSelf(JsonMap m) throws IOException {
+    protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
         mAmount.load(m);
     }
 

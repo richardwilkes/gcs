@@ -13,7 +13,10 @@ package com.trollworks.gcs.utility;
 
 /** Defines constants for each platform we support. */
 public enum Platform {
-    LINUX, MAC, WINDOWS, UNKNOWN;
+    LINUX,
+    MAC,
+    WINDOWS,
+    UNKNOWN;
 
     private static final Platform CURRENT;
 
