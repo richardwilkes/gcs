@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.preferences;
 
+import com.trollworks.gcs.page.PageSettingsEditor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -59,7 +60,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         mPNGResolutionCombo = addPNGResolutionPopup();
 
         mPageSettingsEditor = new PageSettingsEditor(prefs.getPageSettings(), this::adjustResetButton);
-        add(mPageSettingsEditor, new PrecisionLayoutData().setHorizontalSpan(3));
+        add(mPageSettingsEditor, new PrecisionLayoutData().setHorizontalSpan(3).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     private void addLabel(String text, String tooltip) {

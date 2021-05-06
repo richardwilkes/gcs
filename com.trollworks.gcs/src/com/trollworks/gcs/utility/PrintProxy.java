@@ -11,7 +11,8 @@
 
 package com.trollworks.gcs.utility;
 
-import java.awt.print.PageFormat;
+import com.trollworks.gcs.page.PageSettings;
+
 import java.awt.print.Printable;
 
 /** Objects that want to be printable must implement this interface. */
@@ -19,8 +20,8 @@ public interface PrintProxy extends Printable {
     /** @return The title of the print job. */
     String getPrintJobTitle();
 
-    /** @return The {@link PageFormat} to use when printing. */
-    PageFormat createPageFormat();
+    /** @return The {@link PageSettings} to use. */
+    PageSettings getPageSettings();
 
     /** @return {@code true} when printing is in progress. */
     boolean isPrinting();

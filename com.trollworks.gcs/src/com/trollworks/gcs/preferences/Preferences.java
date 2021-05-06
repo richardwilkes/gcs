@@ -18,6 +18,7 @@ import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.library.Library;
+import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.Theme;

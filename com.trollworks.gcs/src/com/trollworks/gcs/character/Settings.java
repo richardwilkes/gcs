@@ -14,7 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.ChangeNotifier;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.preferences.PageSettings;
+import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;

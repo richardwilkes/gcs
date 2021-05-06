@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.preferences.PageSettings;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Graphics;

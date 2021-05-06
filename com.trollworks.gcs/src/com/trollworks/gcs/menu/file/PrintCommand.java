@@ -13,6 +13,7 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileProxy;
@@ -29,6 +30,8 @@ import java.awt.print.PrinterJob;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.standard.DialogTypeSelection;
 
 /** Provides the "Print..." command. */
 public class PrintCommand extends Command implements PrintFilesHandler {
@@ -60,10 +63,14 @@ public class PrintCommand extends Command implements PrintFilesHandler {
         if (proxy != null) {
             PrinterJob job = PrinterJob.getPrinterJob();
             job.setJobName(proxy.getPrintJobTitle());
+            PageSettings                 pageSettings = proxy.getPageSettings();
+            HashPrintRequestAttributeSet set          = new HashPrintRequestAttributeSet();
+            set.add(pageSettings.getPaperSize().getMediaSizeName());
+            set.add(DialogTypeSelection.NATIVE);
             if (job.printDialog()) {
                 try {
                     proxy.setPrinting(true);
-                    job.setPrintable(proxy, proxy.createPageFormat());
+                    job.setPrintable(proxy, pageSettings.createPageFormat());
                     job.print();
                 } catch (PrinterException exception) {
                     WindowUtils.showError(UIUtilities.getComponentForDialog(proxy), I18n.Text("Printing failed!"));

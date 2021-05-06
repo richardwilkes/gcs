@@ -37,7 +37,7 @@ import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
-import com.trollworks.gcs.preferences.PageSettings;
+import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
@@ -824,11 +824,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             setPrinting(false);
             closeContainers(changed);
         }
-    }
-
-    @Override
-    public PageFormat createPageFormat() {
-        return mCharacter.getSettings().getPageSettings().createPageFormat();
     }
 
     @Override
