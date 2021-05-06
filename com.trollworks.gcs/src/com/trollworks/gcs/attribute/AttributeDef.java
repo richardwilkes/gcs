@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.attribute;
 
-import com.trollworks.gcs.character.CharacterVariableResolver;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.expression.EvaluationException;
 import com.trollworks.gcs.expression.Evaluator;
+import com.trollworks.gcs.expression.VariableResolver;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -320,19 +320,13 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         }
     }
 
-    public double getBaseValue(CharacterVariableResolver resolver) {
-        Evaluator evaluator = new Evaluator(resolver);
-        String    exclude   = Attribute.ID_ATTR_PREFIX + mID;
-        resolver.addExclusion(exclude);
-        double value;
+    public double getBaseValue(VariableResolver resolver) {
         try {
-            value = evaluator.evaluateToNumber(mAttributeBase);
+            return new Evaluator(resolver).evaluateToNumber(mAttributeBase);
         } catch (EvaluationException ex) {
             Log.error(ex);
-            value = 0;
+            return 0;
         }
-        resolver.removeExclusion(exclude);
-        return value;
     }
 
     public int computeCost(GURPSCharacter character, double value, int sm, int costReduction) {

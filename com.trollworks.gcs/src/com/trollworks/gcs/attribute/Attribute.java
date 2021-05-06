@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.attribute;
 
-import com.trollworks.gcs.character.CharacterVariableResolver;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -95,7 +94,7 @@ public class Attribute {
     public double getDoubleValue(GURPSCharacter character) {
         AttributeDef def = getAttrDef(character);
         if (def != null) {
-            return def.getBaseValue(new CharacterVariableResolver(character)) + mAdjustment + mBonus;
+            return def.getBaseValue(character) + mAdjustment + mBonus;
         }
         return 0;
     }
@@ -106,7 +105,7 @@ public class Attribute {
             AttributeDef def = getAttrDef(character);
             if (def != null) {
                 character.postUndoEdit(String.format(I18n.Text("%s Change"), def.getName()), (c, v) -> setIntValue(c, ((Integer) v).intValue()), Integer.valueOf(old), Integer.valueOf(value));
-                mAdjustment = value - (def.getBaseValue(new CharacterVariableResolver(character)) + mBonus);
+                mAdjustment = value - (def.getBaseValue(character) + mBonus);
                 character.notifyOfChange();
             }
         }
@@ -118,7 +117,7 @@ public class Attribute {
             AttributeDef def = getAttrDef(character);
             if (def != null) {
                 character.postUndoEdit(String.format(I18n.Text("%s Change"), def.getName()), (c, v) -> setDoubleValue(c, ((Double) v).doubleValue()), Double.valueOf(old), Double.valueOf(value));
-                mAdjustment = value - (def.getBaseValue(new CharacterVariableResolver(character)) + mBonus);
+                mAdjustment = value - (def.getBaseValue(character) + mBonus);
                 character.notifyOfChange();
             }
         }

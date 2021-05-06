@@ -20,6 +20,7 @@ import com.trollworks.gcs.attribute.PoolThreshold;
 import com.trollworks.gcs.attribute.ThresholdOps;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.expression.VariableResolver;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.CostReduction;
@@ -48,6 +49,7 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -61,6 +63,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +71,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /** A GURPS character. */
-public class GURPSCharacter extends CollectedModels {
+public class GURPSCharacter extends CollectedModels implements VariableResolver {
     private static final String KEY_ROOT             = "character";
     private static final String KEY_ATTRIBUTES       = "attributes";
     private static final String KEY_CREATED_DATE     = "created_date";
@@ -92,6 +95,7 @@ public class GURPSCharacter extends CollectedModels {
 
     private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
 
+    private Set<String>                         mVariableResolverExclusions;
     private long                                mModifiedOn;
     private long                                mCreatedOn;
     private HashMap<String, ArrayList<Feature>> mFeatureMap;
@@ -139,6 +143,7 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     private void characterInitialize(boolean full) {
+        mVariableResolverExclusions = new HashSet<>();
         mSettings = new Settings(this);
         mFeatureMap = new HashMap<>();
         mTotalPoints = Preferences.getInstance().getInitialPoints();
@@ -1529,5 +1534,44 @@ public class GURPSCharacter extends CollectedModels {
     @Override
     public Map<String, AttributeDef> getAttributeDefs() {
         return getSettings().getAttributes();
+    }
+
+    @Override
+    public String resolveVariable(String variableName) {
+        if (mVariableResolverExclusions.contains(variableName)) {
+            Log.error("attempt to resolve variable via itself: $" + variableName);
+            return "";
+        }
+        mVariableResolverExclusions.add(variableName);
+        try {
+            if ("sm".equals(variableName)) {
+                return String.valueOf(getProfile().getSizeModifier());
+            }
+            String[]  parts = variableName.split("\\.", 2);
+            Attribute attr  = getAttributes().get(parts[0]);
+            if (attr == null) {
+                Log.error("no such variable: $" + variableName);
+                return "";
+            }
+            AttributeDef def = attr.getAttrDef(this);
+            if (def == null) {
+                Log.error("no such variable definition: $" + variableName);
+                return "";
+            }
+            if (def.getType() == AttributeType.POOL && parts.length > 1) {
+                switch (parts[1]) {
+                case "current":
+                    return String.valueOf(attr.getCurrentIntValue(this));
+                case "maximum":
+                    return String.valueOf(attr.getIntValue(this));
+                default:
+                    Log.error("no such variable: $" + variableName);
+                    return "";
+                }
+            }
+            return String.valueOf(attr.getDoubleValue(this));
+        } finally {
+            mVariableResolverExclusions.remove(variableName);
+        }
     }
 }
