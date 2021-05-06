@@ -11,24 +11,17 @@
 
 package com.trollworks.gcs.utility;
 
-import com.trollworks.gcs.ui.print.PrintManager;
+import com.trollworks.gcs.page.PageSettings;
 
 import java.awt.print.Printable;
 
-/** Objects that want to be printable by the framework must implement this interface. */
+/** Objects that want to be printable must implement this interface. */
 public interface PrintProxy extends Printable {
-    /** @return The {@link PrintManager} to use. */
-    PrintManager getPrintManager();
-
     /** @return The title of the print job. */
     String getPrintJobTitle();
 
-    /**
-     * Called when the page setup has changed.
-     *
-     * @param willPrint {@code true} when this call will be immediately followed by printing.
-     */
-    void adjustToPageSetupChanges(boolean willPrint);
+    /** @return The {@link PageSettings} to use. */
+    PageSettings getPageSettings();
 
     /** @return {@code true} when printing is in progress. */
     boolean isPrinting();

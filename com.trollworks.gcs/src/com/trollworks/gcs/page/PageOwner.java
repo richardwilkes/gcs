@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Graphics;
@@ -23,7 +22,7 @@ public interface PageOwner {
     Scale getScale();
 
     /** @return The page settings. */
-    PrintManager getPageSettings();
+    PageSettings getPageSettings();
 
     /**
      * Called so the page owner can draw headers, footers, etc.

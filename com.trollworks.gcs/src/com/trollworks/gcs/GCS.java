@@ -114,7 +114,6 @@ public final class GCS {
      */
     public static void main(String[] args) {
         boolean      showVersion  = false;
-        boolean      generatePDF  = false;
         boolean      generatePNG  = false;
         boolean      generateText = false;
         boolean      loadSave     = false;
@@ -177,7 +176,6 @@ public final class GCS {
                         msgs.add(I18n.Text("missing argument for --paper"));
                     }
                 }
-                case "--pdf" -> generatePDF = true;
                 case "--png" -> generatePNG = true;
                 case "--text" -> {
                     generateText = true;
@@ -226,8 +224,8 @@ public final class GCS {
             System.exit(0);
         }
 
-        if (generatePDF || generatePNG || generateText) {
-            Export.process(files, generatePDF, generatePNG, generateText, template, margins, paper);
+        if (generatePNG || generateText) {
+            Export.process(files, generatePNG, generateText, template, margins, paper);
             System.exit(0);
         }
 

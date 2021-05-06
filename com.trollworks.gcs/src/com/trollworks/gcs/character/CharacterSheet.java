@@ -11,11 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.pdf.DefaultFontMapper;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
@@ -42,6 +37,7 @@ import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
+import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
@@ -55,7 +51,6 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.Wrapper;
@@ -92,9 +87,6 @@ import java.awt.Transparency;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.print.PageFormat;
-import java.awt.print.Paper;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -648,7 +640,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             mLastPage = -1;
             return NO_SUCH_PAGE;
         }
-
         // We do the following trick to avoid going through the work twice,
         // as we are called twice for each page, the first of which doesn't
         // seem to be used.
@@ -734,8 +725,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    public PrintManager getPageSettings() {
-        return mCharacter.getPageSettings();
+    public PageSettings getPageSettings() {
+        return mCharacter.getSettings().getPageSettings();
     }
 
     /** @return The character being displayed. */
@@ -758,16 +749,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             repaint();
             setSize(size);
         }
-    }
-
-    private static PageFormat createDefaultPageFormat() {
-        Paper      paper  = new Paper();
-        PageFormat format = new PageFormat();
-        format.setOrientation(PageFormat.PORTRAIT);
-        paper.setSize(8.5 * 72.0, 11.0 * 72.0);
-        paper.setImageableArea(0.25 * 72.0, 0.25 * 72.0, 8 * 72.0, 10.5 * 72.0);
-        format.setPaper(paper);
-        return format;
     }
 
     private Set<Row> expandAllContainers() {
@@ -799,57 +780,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     /**
-     * @param path The path to save to.
-     * @return {@code true} on success.
-     */
-    public boolean saveAsPDF(Path path) {
-        Set<Row> changed = expandAllContainers();
-        try {
-            PrintManager settings = mCharacter.getPageSettings();
-            PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
-            float        width    = (float) format.getWidth();
-            float        height   = (float) format.getHeight();
-
-            adjustToPageSetupChanges(true);
-            setPrinting(true);
-
-            Document pdfDoc = new Document(new com.lowagie.text.Rectangle(width, height));
-            try (OutputStream out = Files.newOutputStream(path)) {
-                PdfWriter      writer  = PdfWriter.getInstance(pdfDoc, out);
-                int            pageNum = 0;
-                PdfContentByte cb;
-
-                pdfDoc.open();
-                cb = writer.getDirectContent();
-                while (true) {
-                    PdfTemplate template = cb.createTemplate(width, height);
-                    Graphics2D  g2d      = template.createGraphics(width, height, new DefaultFontMapper());
-
-                    if (print(g2d, format, pageNum) == NO_SUCH_PAGE) {
-                        g2d.dispose();
-                        break;
-                    }
-                    if (pageNum != 0) {
-                        pdfDoc.newPage();
-                    }
-                    g2d.setClip(0, 0, (int) width, (int) height);
-                    print(g2d, format, pageNum++);
-                    g2d.dispose();
-                    cb.addTemplate(template, 0, 0);
-                }
-                pdfDoc.close();
-            }
-            return true;
-        } catch (Exception exception) {
-            Log.error(exception);
-            return false;
-        } finally {
-            setPrinting(false);
-            closeContainers(changed);
-        }
-    }
-
-    /**
      * @param path         The path to save to.
      * @param createdPaths The paths that were created.
      * @return {@code true} on success.
@@ -858,8 +788,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         Set<Row> changed = expandAllContainers();
         try {
             int          dpi      = Preferences.getInstance().getPNGResolution();
-            PrintManager settings = mCharacter.getPageSettings();
-            PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
+            PageSettings settings = mCharacter.getSettings().getPageSettings();
+            PageFormat   format   = settings.createPageFormat();
             int          width    = (int) (format.getWidth() / 72.0 * dpi);
             int          height   = (int) (format.getHeight() / 72.0 * dpi);
             Img          buffer   = Img.create(width, height, Transparency.OPAQUE);
@@ -868,7 +798,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
             path = path.getParent();
 
-            adjustToPageSetupChanges(true);
             setPrinting(true);
 
             while (true) {
@@ -898,11 +827,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    public PrintManager getPrintManager() {
-        return mCharacter.getPageSettings();
-    }
-
-    @Override
     public String getPrintJobTitle() {
         Dockable dockable = UIUtilities.getAncestorOfType(this, Dockable.class);
         if (dockable != null) {
@@ -916,27 +840,18 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    public void adjustToPageSetupChanges(boolean willPrint) {
-        PrintManager pm = getPrintManager();
-        Preferences.getInstance().setDefaultPageSettings(pm);
-        if (!mCharacter.getLastPageSettingsAsString().equals(pm.toString())) {
-            mCharacter.setModified(true);
-        }
-        if (willPrint) {
-            mSavedScale = getScale();
-            setScale(Scales.ACTUAL_SIZE.getScale());
-            mOkToPaint = false;
-        }
-        rebuild();
-    }
-
-    @Override
     public boolean isPrinting() {
         return mIsPrinting;
     }
 
     @Override
     public void setPrinting(boolean printing) {
+        if (printing) {
+            mSavedScale = getScale();
+            setScale(Scales.ACTUAL_SIZE.getScale());
+            mOkToPaint = false;
+            rebuild();
+        }
         mIsPrinting = printing;
         if (!printing) {
             mOkToPaint = true;

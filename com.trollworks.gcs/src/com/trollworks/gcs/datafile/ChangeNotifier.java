@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2021 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2021 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -9,8 +9,8 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-module com.trollworks.gcs {
-    requires java.datatransfer;
-    requires java.desktop;
-    requires jdk.httpserver;
+package com.trollworks.gcs.datafile;
+
+public interface ChangeNotifier {
+    void notifyOfChange();
 }

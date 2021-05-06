@@ -16,6 +16,7 @@ import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.page.PageSettingsEditor;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -73,8 +74,9 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
     private JComboBox<DisplayOption> mModifiersDisplayCombo;
     private JComboBox<DisplayOption> mNotesDisplayCombo;
-    private JTextArea                mBlockLayoutField;
-    private AttributeEditor          mAttributeEditor;
+    private JTextArea          mBlockLayoutField;
+    private PageSettingsEditor mPageSettingsEditor;
+    private AttributeEditor    mAttributeEditor;
     private JButton                  mResetButton;
     private boolean                  mUpdatePending;
 
@@ -150,6 +152,9 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
         panel.add(top, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+
+        mPageSettingsEditor = new PageSettingsEditor(mSettings.getPageSettings(), this::adjustResetButton);
+        panel.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
 
         mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), () -> {
             Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
@@ -266,6 +271,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == prefs.getModifiersDisplay();
         atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == prefs.getNotesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(prefs.getBlockLayout()));
+        atDefaults = atDefaults && mPageSettingsEditor.isSetToDefaults();
         atDefaults = atDefaults && mSettings.getAttributes().equals(Preferences.getInstance().getAttributes());
         return atDefaults;
     }
@@ -309,6 +315,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mModifiersDisplayCombo.setSelectedItem(prefs.getModifiersDisplay());
         mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
         mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
+        mPageSettingsEditor.reset();
         mAttributeEditor.reset(AttributeDef.cloneMap(prefs.getAttributes()));
     }
 

@@ -68,11 +68,6 @@ public class WeightValue extends UnitsValue<WeightUnits> {
     }
 
     @Override
-    public WeightUnits getDefaultUnits() {
-        return WeightUnits.LB;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;

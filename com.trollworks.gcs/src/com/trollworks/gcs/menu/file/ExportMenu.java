@@ -50,10 +50,8 @@ public class ExportMenu extends JMenu implements MenuListener {
         removeAll();
         boolean shouldEnable = Command.getTarget(SheetDockable.class) != null;
         ExportToGURPSCalculatorCommand.INSTANCE.setEnabled(shouldEnable);
-        ExportToPDFCommand.INSTANCE.setEnabled(shouldEnable);
         ExportToPNGCommand.INSTANCE.setEnabled(shouldEnable);
         add(ExportToGURPSCalculatorCommand.INSTANCE);
-        add(ExportToPDFCommand.INSTANCE);
         add(ExportToPNGCommand.INSTANCE);
         boolean needSep = true;
         for (Library lib : Library.LIBRARIES) {
