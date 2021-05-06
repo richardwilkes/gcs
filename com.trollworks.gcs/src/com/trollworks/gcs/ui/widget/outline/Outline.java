@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
+import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -21,7 +22,6 @@ import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
-import com.trollworks.gcs.ui.print.PrintUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Icons;
@@ -404,7 +404,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         boolean   active     = isFocusOwner();
         int       first      = getFirstRowToDisplay();
         int       last       = getLastRowToDisplay();
-        boolean   isPrinting = PrintUtilities.isPrinting(this);
+        boolean   isPrinting = Page.isPrinting(this);
         boolean   showIndent = showIndent();
 
         for (int rowIndex = first; rowIndex <= last; rowIndex++) {
@@ -485,7 +485,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         boolean   active     = isFocusOwner();
         int       first      = getFirstRowToDisplay();
         int       last       = getLastRowToDisplay();
-        boolean   isPrinting = PrintUtilities.isPrinting(this);
+        boolean   isPrinting = Page.isPrinting(this);
 
         for (int rowIndex = first; rowIndex <= last; rowIndex++) {
             Row row = mModel.getRowAtIndex(rowIndex);

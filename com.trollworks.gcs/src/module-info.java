@@ -9,11 +9,8 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-open module com.trollworks.gcs {
+module com.trollworks.gcs {
     requires java.datatransfer;
     requires java.desktop;
-    requires java.management;
-    requires java.prefs;
-    requires java.xml;
     requires jdk.httpserver;
 }

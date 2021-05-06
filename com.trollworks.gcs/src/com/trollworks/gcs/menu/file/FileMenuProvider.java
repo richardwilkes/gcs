@@ -43,7 +43,6 @@ public final class FileMenuProvider {
         cmds.add(SaveAsCommand.INSTANCE);
         cmds.add(ExportToGURPSCalculatorCommand.INSTANCE);
         cmds.add(ExportToPNGCommand.INSTANCE);
-        cmds.add(PageSetupCommand.INSTANCE);
         cmds.add(PrintCommand.INSTANCE);
         if (!Platform.isMacintosh()) {
             cmds.add(QuitCommand.INSTANCE);
@@ -72,7 +71,6 @@ public final class FileMenuProvider {
         menu.add(new DynamicMenuItem(SaveAsCommand.INSTANCE));
         menu.add(new ExportMenu());
         menu.addSeparator();
-        menu.add(new DynamicMenuItem(PageSetupCommand.INSTANCE));
         menu.add(new DynamicMenuItem(PrintCommand.INSTANCE));
         if (!Platform.isMacintosh()) {
             menu.addSeparator();

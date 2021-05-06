@@ -14,7 +14,6 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.I18n;
@@ -25,6 +24,8 @@ import java.awt.desktop.PrintFilesEvent;
 import java.awt.desktop.PrintFilesHandler;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -57,11 +58,18 @@ public class PrintCommand extends Command implements PrintFilesHandler {
     /** @param proxy The {@link PrintProxy} to print. */
     public static void print(PrintProxy proxy) {
         if (proxy != null) {
-            PrintManager mgr = proxy.getPrintManager();
-            if (mgr != null) {
-                mgr.print(proxy);
-            } else {
-                WindowUtils.showError(UIUtilities.getComponentForDialog(proxy), I18n.Text("There is no system printer available."));
+            PrinterJob job = PrinterJob.getPrinterJob();
+            job.setJobName(proxy.getPrintJobTitle());
+            if (job.printDialog()) {
+                try {
+                    proxy.setPrinting(true);
+                    job.setPrintable(proxy, proxy.createPageFormat());
+                    job.print();
+                } catch (PrinterException exception) {
+                    WindowUtils.showError(UIUtilities.getComponentForDialog(proxy), I18n.Text("Printing failed!"));
+                } finally {
+                    proxy.setPrinting(false);
+                }
             }
         }
     }

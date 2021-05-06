@@ -21,8 +21,6 @@ import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.Theme;
-import com.trollworks.gcs.ui.print.PageOrientation;
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.FileType;
@@ -66,7 +64,6 @@ public class Preferences extends ChangeableData {
     private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
     private static final String BLOCK_LAYOUT                    = "block_layout";
     private static final String DEFAULT_LENGTH_UNITS            = "default_length_units";
-    private static final String DEFAULT_PAGE_SETTINGS           = "default_page_settings";
     private static final String DEFAULT_PLAYER_NAME             = "default_player_name";
     private static final String DEFAULT_PORTRAIT_PATH           = "default_portrait_path";
     private static final String DEFAULT_TECH_LEVEL              = "default_tech_level";
@@ -85,6 +82,7 @@ public class Preferences extends ChangeableData {
     private static final String MODIFIERS_DISPLAY               = "modifiers_display";
     private static final String NOTES_DISPLAY                   = "notes_display";
     private static final String OPEN_ROW_KEYS                   = "open_row_keys";
+    private static final String PAGE                            = "page";
     private static final String PDF_REFS                        = "pdf_refs";
     private static final String PNG_RESOLUTION                  = "png_resolution";
     private static final String RECENT_FILES                    = "recent_files";
@@ -99,37 +97,12 @@ public class Preferences extends ChangeableData {
     private static final String USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
     private static final String USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
     private static final String USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
-    private static final String USE_NATIVE_PRINT_DIALOGS        = "use_native_print_dialogs";
     private static final String USE_REDUCED_SWING               = "use_reduced_swing";
     private static final String USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
     private static final String USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
     private static final String USER_DESCRIPTION_DISPLAY        = "user_description_display";
     private static final String VERSION                         = "version";
     private static final String WINDOW_POSITIONS                = "window_positions";
-
-    public static final String KEY_PREFIX           = "prefs.";
-    public static final String KEY_PER_SHEET_PREFIX = KEY_PREFIX + "sheet.";
-
-    public static final String KEY_ATTRIBUTES                      = KEY_PER_SHEET_PREFIX + ATTRIBUTES;
-    public static final String KEY_BLOCK_LAYOUT                    = KEY_PER_SHEET_PREFIX + BLOCK_LAYOUT;
-    public static final String KEY_DEFAULT_LENGTH_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_LENGTH_UNITS;
-    public static final String KEY_DEFAULT_WEIGHT_UNITS            = KEY_PER_SHEET_PREFIX + DEFAULT_WEIGHT_UNITS;
-    public static final String KEY_INCLUDE_UNSPENT_POINTS_IN_TOTAL = KEY_PREFIX + INCLUDE_UNSPENT_POINTS_IN_TOTAL;
-    public static final String KEY_MODIFIERS_DISPLAY               = KEY_PER_SHEET_PREFIX + MODIFIERS_DISPLAY;
-    public static final String KEY_NOTES_DISPLAY                   = KEY_PER_SHEET_PREFIX + NOTES_DISPLAY;
-    public static final String KEY_SHOW_COLLEGE_IN_SHEET_SPELLS    = KEY_PER_SHEET_PREFIX + SHOW_COLLEGE_IN_SHEET_SPELLS;
-    public static final String KEY_SHOW_DIFFICULTY                 = KEY_PER_SHEET_PREFIX + SHOW_DIFFICULTY;
-    public static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_ADVANTAGE_MODIFIER_ADJ;
-    public static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = KEY_PER_SHEET_PREFIX + SHOW_EQUIPMENT_MODIFIER_ADJ;
-    public static final String KEY_SHOW_SPELL_ADJ                  = KEY_PER_SHEET_PREFIX + SHOW_SPELL_ADJ;
-    public static final String KEY_USE_TITLE_IN_FOOTER             = KEY_PER_SHEET_PREFIX + USE_TITLE_IN_FOOTER;
-    public static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = KEY_PER_SHEET_PREFIX + USE_KNOW_YOUR_OWN_STRENGTH;
-    public static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = KEY_PER_SHEET_PREFIX + USE_MODIFYING_DICE_PLUS_ADDS;
-    public static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = KEY_PER_SHEET_PREFIX + USE_MULTIPLICATIVE_MODIFIERS;
-    public static final String KEY_USE_REDUCED_SWING               = KEY_PER_SHEET_PREFIX + USE_REDUCED_SWING;
-    public static final String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = KEY_PER_SHEET_PREFIX + USE_SIMPLE_METRIC_CONVERSIONS;
-    public static final String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = KEY_PER_SHEET_PREFIX + USE_THRUST_EQUALS_SWING_MINUS_2;
-    public static final String KEY_USER_DESCRIPTION_DISPLAY        = KEY_PER_SHEET_PREFIX + USER_DESCRIPTION_DISPLAY;
 
     public static final boolean       DEFAULT_AUTO_FILL_PROFILE                 = true;
     public static final boolean       DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL   = true;
@@ -144,7 +117,6 @@ public class Preferences extends ChangeableData {
     public static final boolean       DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH        = false;
     public static final boolean       DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS      = false;
     public static final boolean       DEFAULT_USE_MULTIPLICATIVE_MODIFIERS      = false;
-    public static final boolean       DEFAULT_USE_NATIVE_PRINT_DIALOGS          = false;
     public static final boolean       DEFAULT_USE_REDUCED_SWING                 = false;
     public static final boolean       DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS     = true;
     public static final boolean       DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2   = false;
@@ -184,12 +156,12 @@ public class Preferences extends ChangeableData {
     private        Map<String, String>              mKeyBindingOverrides;
     private        Map<String, Fonts.Info>          mFontInfo;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
-    private        PrintManager                     mDefaultPageSettings;
     private        String                           mGURPSCalculatorKey;
     private        String                           mDefaultPlayerName;
     private        String                           mDefaultTechLevel;
     private        String                           mDefaultPortraitPath;
     private        Map<String, AttributeDef>        mAttributes;
+    private        PageSettings                     mPageSettings;
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
     private        boolean                          mIncludeUnspentPointsInTotal;
@@ -200,7 +172,6 @@ public class Preferences extends ChangeableData {
     private        boolean                          mUseThrustEqualsSwingMinus2;
     private        boolean                          mUseSimpleMetricConversions;
     private        boolean                          mAutoFillProfile;
-    private        boolean                          mUseNativePrintDialogs;
     private        boolean                          mShowCollegeInSheetSpells;
     private        boolean                          mShowDifficulty;
     private        boolean                          mShowAdvantageModifierAdj;
@@ -254,11 +225,6 @@ public class Preferences extends ChangeableData {
         mFontInfo = new HashMap<>();
         mKeyBindingOverrides = new HashMap<>();
         mBaseWindowPositions = new HashMap<>();
-        try {
-            mDefaultPageSettings = new PrintManager(PageOrientation.PORTRAIT, 0.25, LengthUnits.IN);
-        } catch (Exception exception) {
-            mDefaultPageSettings = null;
-        }
         mIncludeUnspentPointsInTotal = DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
         mUseMultiplicativeModifiers = DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
         mUseModifyingDicePlusAdds = DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS;
@@ -267,7 +233,6 @@ public class Preferences extends ChangeableData {
         mUseThrustEqualsSwingMinus2 = DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2;
         mUseSimpleMetricConversions = DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS;
         mAutoFillProfile = DEFAULT_AUTO_FILL_PROFILE;
-        mUseNativePrintDialogs = DEFAULT_USE_NATIVE_PRINT_DIALOGS;
         mShowCollegeInSheetSpells = DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS;
         mShowDifficulty = DEFAULT_SHOW_DIFFICULTY;
         mShowAdvantageModifierAdj = DEFAULT_SHOW_ADVANTAGE_MODIFIER_ADJ;
@@ -275,6 +240,7 @@ public class Preferences extends ChangeableData {
         mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         mAttributes = AttributeDef.createStandardAttributes();
+        mPageSettings = new PageSettings(this);
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
             try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -358,6 +324,9 @@ public class Preferences extends ChangeableData {
                         if (m.has(ATTRIBUTES)) {
                             mAttributes = AttributeDef.load(m.getArray(ATTRIBUTES));
                         }
+                        if (m.has(PAGE)) {
+                            mPageSettings.load(m.getMap(PAGE));
+                        }
                         mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                         mDefaultPlayerName = m.getStringWithDefault(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                         mDefaultTechLevel = m.getStringWithDefault(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
@@ -375,7 +344,6 @@ public class Preferences extends ChangeableData {
                         } else {
                             mAutoFillProfile = m.getBooleanWithDefault(AUTO_FILL_PROFILE, mAutoFillProfile);
                         }
-                        mUseNativePrintDialogs = m.getBooleanWithDefault(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
                         mShowCollegeInSheetSpells = m.getBooleanWithDefault(SHOW_COLLEGE_IN_SHEET_SPELLS, mShowCollegeInSheetSpells);
                         mShowDifficulty = m.getBooleanWithDefault(SHOW_DIFFICULTY, mShowDifficulty);
                         mShowAdvantageModifierAdj = m.getBooleanWithDefault(SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
@@ -384,9 +352,6 @@ public class Preferences extends ChangeableData {
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                         if (m.has(THEME)) {
                             Theme.set(new Theme(m.getMap(THEME)));
-                        }
-                        if (m.has(DEFAULT_PAGE_SETTINGS)) {
-                            mDefaultPageSettings = new PrintManager(m.getMap(DEFAULT_PAGE_SETTINGS));
                         }
                     }
                 }
@@ -505,6 +470,8 @@ public class Preferences extends ChangeableData {
                     w.endMap();
                     w.key(ATTRIBUTES);
                     AttributeDef.writeOrdered(w, mAttributes);
+                    w.key(PAGE);
+                    mPageSettings.save(w);
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                     w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                     w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
@@ -526,11 +493,6 @@ public class Preferences extends ChangeableData {
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
                     w.key(THEME);
                     Theme.current().save(w);
-                    w.keyValue(USE_NATIVE_PRINT_DIALOGS, mUseNativePrintDialogs);
-                    if (mDefaultPageSettings != null) {
-                        w.key(DEFAULT_PAGE_SETTINGS);
-                        mDefaultPageSettings.toJSON(w, LengthUnits.IN);
-                    }
                     w.endMap();
                 }
             } catch (IOException ioe) {
@@ -827,14 +789,6 @@ public class Preferences extends ChangeableData {
         mBaseWindowPositions.put(key, info);
     }
 
-    public PrintManager getDefaultPageSettings() {
-        return mDefaultPageSettings;
-    }
-
-    public void setDefaultPageSettings(PrintManager defaultPageSettings) {
-        mDefaultPageSettings = defaultPageSettings != null ? new PrintManager(defaultPageSettings) : null;
-    }
-
     public boolean includeUnspentPointsInTotal() {
         return mIncludeUnspentPointsInTotal;
     }
@@ -1008,14 +962,6 @@ public class Preferences extends ChangeableData {
         mAutoFillProfile = autoFillProfile;
     }
 
-    public boolean useNativePrintDialogs() {
-        return mUseNativePrintDialogs;
-    }
-
-    public void setUseNativePrintDialogs(boolean useNativePrintDialogs) {
-        mUseNativePrintDialogs = useNativePrintDialogs;
-    }
-
     public Map<String, AttributeDef> getAttributes() {
         return mAttributes;
     }
@@ -1025,5 +971,9 @@ public class Preferences extends ChangeableData {
             mAttributes = AttributeDef.cloneMap(attributes);
             notifyOfChange();
         }
+    }
+
+    public PageSettings getPageSettings() {
+        return mPageSettings;
     }
 }

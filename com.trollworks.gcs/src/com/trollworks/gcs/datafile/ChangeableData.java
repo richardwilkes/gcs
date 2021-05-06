@@ -14,7 +14,7 @@ package com.trollworks.gcs.datafile;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ChangeableData {
+public class ChangeableData implements ChangeNotifier {
     private Set<DataChangeListener> mChangeListeners;
 
     public final synchronized void addChangeListener(DataChangeListener listener) {
@@ -31,6 +31,7 @@ public class ChangeableData {
         }
     }
 
+    @Override
     public void notifyOfChange() {
         DataChangeListener[] listeners;
         synchronized (this) {

@@ -16,7 +16,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
@@ -69,9 +68,7 @@ public class Export implements Runnable {
 
     public void run() {
         if (mGenerateText || mGeneratePNG) {
-            double[] paperSize   = getPaperSize();
-            double[] marginsInfo = getMargins();
-            Timing   timing      = new Timing();
+            Timing timing = new Timing();
             GraphicsUtilities.setHeadlessPrintMode(true);
             for (Path path : mFiles) {
                 if (!FileType.SHEET.matchExtension(PathUtils.getExtension(path)) || !Files.isReadable(path)) {
@@ -84,20 +81,12 @@ public class Export implements Runnable {
                 try {
                     GURPSCharacter character = new GURPSCharacter(path);
                     CharacterSheet sheet     = new CharacterSheet(character);
-                    PrintManager   settings  = character.getPageSettings();
                     Path           output;
                     boolean        success;
 
                     sheet.addNotify(); // Required to allow layout to work
                     sheet.rebuild();
                     sheet.getCharacter().processFeaturesAndPrereqs();
-
-                    if (paperSize != null && settings != null) {
-                        settings.setPageSize(paperSize, LengthUnits.IN);
-                    }
-                    if (marginsInfo != null && settings != null) {
-                        settings.setPageMargins(marginsInfo, LengthUnits.IN);
-                    }
                     sheet.rebuild();
                     sheet.setSize(sheet.getPreferredSize());
 

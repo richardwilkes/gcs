@@ -9,24 +9,8 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.ui.print;
+package com.trollworks.gcs.datafile;
 
-class ObjectWrapper<T> {
-    private String mTitle;
-    private T      mObject;
-
-    ObjectWrapper(String title, T object) {
-        mTitle = title;
-        mObject = object;
-    }
-
-    /** @return The object. */
-    public T getObject() {
-        return mObject;
-    }
-
-    @Override
-    public String toString() {
-        return mTitle;
-    }
+public interface ChangeNotifier {
+    void notifyOfChange();
 }

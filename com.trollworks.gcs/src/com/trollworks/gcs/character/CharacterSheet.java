@@ -37,6 +37,7 @@ import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
+import com.trollworks.gcs.preferences.PageSettings;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
@@ -50,7 +51,6 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.Wrapper;
@@ -87,7 +87,6 @@ import java.awt.Transparency;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.print.PageFormat;
-import java.awt.print.Paper;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -641,7 +640,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             mLastPage = -1;
             return NO_SUCH_PAGE;
         }
-
         // We do the following trick to avoid going through the work twice,
         // as we are called twice for each page, the first of which doesn't
         // seem to be used.
@@ -727,8 +725,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    public PrintManager getPageSettings() {
-        return mCharacter.getPageSettings();
+    public PageSettings getPageSettings() {
+        return mCharacter.getSettings().getPageSettings();
     }
 
     /** @return The character being displayed. */
@@ -751,16 +749,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             repaint();
             setSize(size);
         }
-    }
-
-    private static PageFormat createDefaultPageFormat() {
-        Paper      paper  = new Paper();
-        PageFormat format = new PageFormat();
-        format.setOrientation(PageFormat.PORTRAIT);
-        paper.setSize(8.5 * 72.0, 11.0 * 72.0);
-        paper.setImageableArea(0.25 * 72.0, 0.25 * 72.0, 8 * 72.0, 10.5 * 72.0);
-        format.setPaper(paper);
-        return format;
     }
 
     private Set<Row> expandAllContainers() {
@@ -800,8 +788,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         Set<Row> changed = expandAllContainers();
         try {
             int          dpi      = Preferences.getInstance().getPNGResolution();
-            PrintManager settings = mCharacter.getPageSettings();
-            PageFormat   format   = settings != null ? settings.createPageFormat() : createDefaultPageFormat();
+            PageSettings settings = mCharacter.getSettings().getPageSettings();
+            PageFormat   format   = settings.createPageFormat();
             int          width    = (int) (format.getWidth() / 72.0 * dpi);
             int          height   = (int) (format.getHeight() / 72.0 * dpi);
             Img          buffer   = Img.create(width, height, Transparency.OPAQUE);
@@ -810,7 +798,6 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
             path = path.getParent();
 
-            adjustToPageSetupChanges(true);
             setPrinting(true);
 
             while (true) {
@@ -840,8 +827,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    public PrintManager getPrintManager() {
-        return mCharacter.getPageSettings();
+    public PageFormat createPageFormat() {
+        return mCharacter.getSettings().getPageSettings().createPageFormat();
     }
 
     @Override
@@ -858,27 +845,18 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     }
 
     @Override
-    public void adjustToPageSetupChanges(boolean willPrint) {
-        PrintManager pm = getPrintManager();
-        Preferences.getInstance().setDefaultPageSettings(pm);
-        if (!mCharacter.getLastPageSettingsAsString().equals(pm.toString())) {
-            mCharacter.setModified(true);
-        }
-        if (willPrint) {
-            mSavedScale = getScale();
-            setScale(Scales.ACTUAL_SIZE.getScale());
-            mOkToPaint = false;
-        }
-        rebuild();
-    }
-
-    @Override
     public boolean isPrinting() {
         return mIsPrinting;
     }
 
     @Override
     public void setPrinting(boolean printing) {
+        if (printing) {
+            mSavedScale = getScale();
+            setScale(Scales.ACTUAL_SIZE.getScale());
+            mOkToPaint = false;
+            rebuild();
+        }
         mIsPrinting = printing;
         if (!printing) {
             mOkToPaint = true;

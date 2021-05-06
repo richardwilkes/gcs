@@ -12,7 +12,9 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.datafile.ChangeNotifier;
 import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.preferences.PageSettings;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -26,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Settings {
+public class Settings implements ChangeNotifier {
     public static final  String KEY_ROOT                            = "settings";
     private static final String KEY_ATTRIBUTES                      = "attributes";
     public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
@@ -34,6 +36,7 @@ public class Settings {
     public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
     public static final  String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
     public static final  String KEY_NOTES_DISPLAY                   = "notes_display";
+    private static final String KEY_PAGE                            = "page";
     public static final  String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
     public static final  String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
     public static final  String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
@@ -56,6 +59,7 @@ public class Settings {
     private DisplayOption             mModifiersDisplay;
     private DisplayOption             mNotesDisplay;
     private Map<String, AttributeDef> mAttributes;
+    private PageSettings              mPageSettings;
     private boolean                   mUseMultiplicativeModifiers; // P102
     private boolean                   mUseModifyingDicePlusAdds; // B269
     private boolean                   mUseKnowYourOwnStrength; // PY83
@@ -79,6 +83,7 @@ public class Settings {
         mModifiersDisplay = prefs.getModifiersDisplay();
         mNotesDisplay = prefs.getNotesDisplay();
         mAttributes = AttributeDef.cloneMap(prefs.getAttributes());
+        mPageSettings = new PageSettings(this, prefs.getPageSettings());
         mUseMultiplicativeModifiers = prefs.useMultiplicativeModifiers();
         mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
         mUseKnowYourOwnStrength = prefs.useKnowYourOwnStrength();
@@ -101,6 +106,9 @@ public class Settings {
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
+        }
+        if (m.has(KEY_PAGE)) {
+            mPageSettings.load(m.getMap(KEY_PAGE));
         }
         mUseMultiplicativeModifiers = m.getBoolean(KEY_USE_MULTIPLICATIVE_MODIFIERS);
         mUseModifyingDicePlusAdds = m.getBoolean(KEY_USE_MODIFYING_DICE_PLUS_ADDS);
@@ -135,6 +143,8 @@ public class Settings {
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
         w.key(KEY_ATTRIBUTES);
         AttributeDef.writeOrdered(w, mAttributes);
+        w.key(KEY_PAGE);
+        mPageSettings.save(w);
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -156,6 +166,10 @@ public class Settings {
         w.endMap();
     }
 
+    public void notifyOfChange() {
+        mCharacter.notifyOfChange();
+    }
+
     @SuppressWarnings("StringBufferReplaceableByString")
     public String optionsCode() {
         StringBuilder buffer = new StringBuilder();
@@ -175,7 +189,7 @@ public class Settings {
     public void setDefaultLengthUnits(LengthUnits defaultLengthUnits) {
         if (mDefaultLengthUnits != defaultLengthUnits) {
             mDefaultLengthUnits = defaultLengthUnits;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -186,7 +200,7 @@ public class Settings {
     public void setDefaultWeightUnits(WeightUnits defaultWeightUnits) {
         if (mDefaultWeightUnits != defaultWeightUnits) {
             mDefaultWeightUnits = defaultWeightUnits;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -197,7 +211,7 @@ public class Settings {
     public void setBlockLayout(List<String> blockLayout) {
         if (!mBlockLayout.equals(blockLayout)) {
             mBlockLayout = new ArrayList<>(blockLayout);
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -208,7 +222,7 @@ public class Settings {
     public void setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
         if (mUserDescriptionDisplay != userDescriptionDisplay) {
             mUserDescriptionDisplay = userDescriptionDisplay;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -219,7 +233,7 @@ public class Settings {
     public void setModifiersDisplay(DisplayOption modifiersDisplay) {
         if (mModifiersDisplay != modifiersDisplay) {
             mModifiersDisplay = modifiersDisplay;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -230,7 +244,7 @@ public class Settings {
     public void setNotesDisplay(DisplayOption notesDisplay) {
         if (mNotesDisplay != notesDisplay) {
             mNotesDisplay = notesDisplay;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -241,7 +255,7 @@ public class Settings {
     public void setUseMultiplicativeModifiers(boolean useMultiplicativeModifiers) {
         if (mUseMultiplicativeModifiers != useMultiplicativeModifiers) {
             mUseMultiplicativeModifiers = useMultiplicativeModifiers;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -252,7 +266,7 @@ public class Settings {
     public void setUseModifyingDicePlusAdds(boolean useModifyingDicePlusAdds) {
         if (mUseModifyingDicePlusAdds != useModifyingDicePlusAdds) {
             mUseModifyingDicePlusAdds = useModifyingDicePlusAdds;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -263,7 +277,7 @@ public class Settings {
     public void setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
         if (mUseKnowYourOwnStrength != useKnowYourOwnStrength) {
             mUseKnowYourOwnStrength = useKnowYourOwnStrength;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -274,7 +288,7 @@ public class Settings {
     public void setUseReducedSwing(boolean useReducedSwing) {
         if (mUseReducedSwing != useReducedSwing) {
             mUseReducedSwing = useReducedSwing;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -285,7 +299,7 @@ public class Settings {
     public void setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
         if (mUseThrustEqualsSwingMinus2 != useThrustEqualsSwingMinus2) {
             mUseThrustEqualsSwingMinus2 = useThrustEqualsSwingMinus2;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -296,7 +310,7 @@ public class Settings {
     public void setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
         if (mUseSimpleMetricConversions != useSimpleMetricConversions) {
             mUseSimpleMetricConversions = useSimpleMetricConversions;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -307,7 +321,7 @@ public class Settings {
     public void setShowCollegeInSpells(boolean show) {
         if (mShowCollegeInSpells != show) {
             mShowCollegeInSpells = show;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -318,7 +332,7 @@ public class Settings {
     public void setShowDifficulty(boolean show) {
         if (mShowDifficulty != show) {
             mShowDifficulty = show;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -329,7 +343,7 @@ public class Settings {
     public void setShowAdvantageModifierAdj(boolean show) {
         if (mShowAdvantageModifierAdj != show) {
             mShowAdvantageModifierAdj = show;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -340,7 +354,7 @@ public class Settings {
     public void setShowEquipmentModifierAdj(boolean show) {
         if (mShowEquipmentModifierAdj != show) {
             mShowEquipmentModifierAdj = show;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -351,7 +365,7 @@ public class Settings {
     public void setShowSpellAdj(boolean show) {
         if (mShowSpellAdj != show) {
             mShowSpellAdj = show;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -362,7 +376,7 @@ public class Settings {
     public void setUseTitleInFooter(boolean show) {
         if (mUseTitleInFooter != show) {
             mUseTitleInFooter = show;
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
     }
 
@@ -373,7 +387,11 @@ public class Settings {
     public void setAttributes(Map<String, AttributeDef> attributes) {
         if (!mAttributes.equals(attributes)) {
             mAttributes = AttributeDef.cloneMap(attributes);
-            mCharacter.notifyOfChange();
+            notifyOfChange();
         }
+    }
+
+    public PageSettings getPageSettings() {
+        return mPageSettings;
     }
 }

@@ -41,7 +41,6 @@ import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.Dice;
@@ -55,7 +54,6 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
-import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 
@@ -119,8 +117,6 @@ public class GURPSCharacter extends CollectedModels {
     private int                                 mCachedSkillPoints;
     private int                                 mCachedSpellPoints;
     private int                                 mCachedRacePoints;
-    private PrintManager                        mPageSettings;
-    private String                              mPageSettingsString;
     private boolean                             mSkillsUpdated;
     private boolean                             mSpellsUpdated;
 
@@ -154,12 +150,6 @@ public class GURPSCharacter extends CollectedModels {
         mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
-        mPageSettings = Preferences.getInstance().getDefaultPageSettings();
-        mPageSettingsString = "{}";
-        if (mPageSettings != null) {
-            mPageSettings = new PrintManager(mPageSettings);
-            mPageSettingsString = mPageSettings.toString();
-        }
         mModifiedOn = System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR;
         mCreatedOn = mModifiedOn;
     }
@@ -172,15 +162,6 @@ public class GURPSCharacter extends CollectedModels {
     public void notifyOfChange() {
         setModifiedOn(System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR);
         super.notifyOfChange();
-    }
-
-    /** @return The page settings. May return {@code null} if no printer has been defined. */
-    public PrintManager getPageSettings() {
-        return mPageSettings;
-    }
-
-    public String getLastPageSettingsAsString() {
-        return mPageSettingsString;
     }
 
     @Override
@@ -270,10 +251,6 @@ public class GURPSCharacter extends CollectedModels {
         }
         mTotalPoints = m.getInt(KEY_TOTAL_POINTS);
         loadModels(m, state);
-        if (mPageSettings != null && m.has(PrintManager.KEY_ROOT)) {
-            mPageSettings = new PrintManager(m.getMap(PrintManager.KEY_ROOT));
-            mPageSettingsString = mPageSettings.toString();
-        }
         // Loop through the skills and update their levels. It is necessary to do this here and not
         // as they are loaded, since references to defaults won't work until the entire list is
         // available.
@@ -305,11 +282,6 @@ public class GURPSCharacter extends CollectedModels {
         w.keyValue(KEY_TOTAL_POINTS, mTotalPoints);
         saveModels(w, saveType);
         if (saveType != SaveType.HASH) {
-            if (mPageSettings != null) {
-                w.key(PrintManager.KEY_ROOT);
-                mPageSettings.save(w, LengthUnits.IN);
-                mPageSettingsString = mPageSettings.toString();
-            }
             w.keyValueNotEmpty(KEY_THIRD_PARTY_DATA, mThirdPartyData);
         }
     }

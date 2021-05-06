@@ -20,12 +20,9 @@ import com.trollworks.gcs.utility.text.Text;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.net.URI;
 import java.text.MessageFormat;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -34,14 +31,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The sheet preferences panel. */
-public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener, ItemListener {
-    private static final int[]             DPI                       = {72, 96, 144, 150, 200, 300};
-    public static final  String            BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
-    public static final  String            GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
-    private              JComboBox<String> mPNGResolutionCombo;
-    private              JButton           mGurpsCalculatorLink;
-    private              JTextField        mGurpsCalculatorKey;
-    private              JCheckBox         mUseNativePrinter;
+public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener {
+    private static final int[]              DPI                       = {72, 96, 144, 150, 200, 300};
+    public static final  String             BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
+    public static final  String             GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
+    private              JComboBox<String>  mPNGResolutionCombo;
+    private              JButton            mGurpsCalculatorLink;
+    private              JTextField         mGurpsCalculatorKey;
+    private              PageSettingsEditor mPageSettingsEditor;
 
     /**
      * Creates a new {@link OutputPreferences}.
@@ -61,7 +58,8 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         addLabel(I18n.Text("Image Resolution"), pngDPIMsg());
         mPNGResolutionCombo = addPNGResolutionPopup();
 
-        mUseNativePrinter = addCheckBox(I18n.Text("Use platform native print dialogs (settings cannot be saved)"), I18n.Text("<html><body>Whether or not the native print dialogs should be used.<br>Choosing this option will prevent the program from saving<br>and restoring print settings with the document.</body></html>"), prefs.useNativePrintDialogs());
+        mPageSettingsEditor = new PageSettingsEditor(prefs.getPageSettings(), this::adjustResetButton);
+        add(mPageSettingsEditor, new PrecisionLayoutData().setHorizontalSpan(3));
     }
 
     private void addLabel(String text, String tooltip) {
@@ -85,15 +83,6 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         button.addActionListener(this);
         add(button);
         return button;
-    }
-
-    private JCheckBox addCheckBox(String title, String tooltip, boolean checked) {
-        JCheckBox checkbox = new JCheckBox(title, checked);
-        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        checkbox.setOpaque(false);
-        checkbox.addItemListener(this);
-        add(checkbox, new PrecisionLayoutData().setHorizontalSpan(3));
-        return checkbox;
     }
 
     private JComboBox<String> addPNGResolutionPopup() {
@@ -145,15 +134,15 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
                 break;
             }
         }
-        mUseNativePrinter.setSelected(false);
+        mPageSettingsEditor.reset();
     }
 
     @Override
     public boolean isSetToDefaults() {
         Preferences prefs      = Preferences.getInstance();
         boolean     atDefaults = prefs.getPNGResolution() == Preferences.DEFAULT_PNG_RESOLUTION;
-        atDefaults = atDefaults && prefs.useNativePrintDialogs() == Preferences.DEFAULT_USE_NATIVE_PRINT_DIALOGS;
         atDefaults = atDefaults && mGurpsCalculatorKey.getText() != null && mGurpsCalculatorKey.getText().isEmpty();
+        atDefaults = atDefaults && mPageSettingsEditor.isSetToDefaults();
         return atDefaults;
     }
 
@@ -173,14 +162,5 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     @Override
     public void removeUpdate(DocumentEvent event) {
         changedUpdate(event);
-    }
-
-    @Override
-    public void itemStateChanged(ItemEvent event) {
-        Object source = event.getSource();
-        if (source == mUseNativePrinter) {
-            Preferences.getInstance().setUseNativePrintDialogs(mUseNativePrinter.isSelected());
-        }
-        adjustResetButton();
     }
 }
