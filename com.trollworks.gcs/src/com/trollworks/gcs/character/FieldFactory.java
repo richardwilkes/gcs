@@ -25,6 +25,7 @@ import javax.swing.text.DefaultFormatterFactory;
 public final class FieldFactory {
     public static final long                    TIMESTAMP_FACTOR  = 60000; // milliseconds -> minutes
     public static final DefaultFormatterFactory DATETIME          = new DefaultFormatterFactory(new DateTimeFormatter(TIMESTAMP_FACTOR));
+    public static final DefaultFormatterFactory LENGTH            = new DefaultFormatterFactory(new HeightFormatter(false));
     public static final DefaultFormatterFactory HEIGHT            = new DefaultFormatterFactory(new HeightFormatter(true));
     public static final DefaultFormatterFactory WEIGHT            = new DefaultFormatterFactory(new WeightFormatter(true));
     public static final DefaultFormatterFactory SM                = new DefaultFormatterFactory(new IntegerFormatter(-99, 9999, true));

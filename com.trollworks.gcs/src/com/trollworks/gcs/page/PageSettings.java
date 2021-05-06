@@ -17,6 +17,7 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.LengthUnits;
+import com.trollworks.gcs.utility.units.LengthValue;
 
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
@@ -30,24 +31,17 @@ public class PageSettings {
     private static final String LEFT_MARGIN   = "left_margin";
     private static final String RIGHT_MARGIN  = "right_margin";
     private static final String ORIENTATION   = "orientation";
-    private static final String UNITS         = "units";
 
-    private static final Fixed6          DEFAULT_HEIGHT        = new Fixed6(11);
-    private static final Fixed6          DEFAULT_TOP_MARGIN    = new Fixed6(0.25);
-    private static final Fixed6          DEFAULT_BOTTOM_MARGIN = new Fixed6(0.25);
-    private static final Fixed6          DEFAULT_LEFT_MARGIN   = new Fixed6(0.25);
-    private static final Fixed6          DEFAULT_RIGHT_MARGIN  = new Fixed6(0.25);
-    private static final PageOrientation DEFAULT_ORIENTATION   = PageOrientation.PORTRAIT;
-    private static final LengthUnits     DEFAULT_UNITS         = LengthUnits.IN;
+    private static final LengthValue     DEFAULT_MARGIN      = new LengthValue(new Fixed6(0.25), LengthUnits.IN);
+    private static final PageOrientation DEFAULT_ORIENTATION = PageOrientation.PORTRAIT;
 
     private ChangeNotifier  mNotifier;
     private PaperSize       mPaperSize;
-    private Fixed6          mTopMargin;
-    private Fixed6          mLeftMargin;
-    private Fixed6          mBottomMargin;
-    private Fixed6          mRightMargin;
+    private LengthValue     mTopMargin;
+    private LengthValue     mLeftMargin;
+    private LengthValue     mBottomMargin;
+    private LengthValue     mRightMargin;
     private PageOrientation mOrientation;
-    private LengthUnits     mUnits;
 
     public PageSettings(ChangeNotifier notifier) {
         mNotifier = notifier;
@@ -57,12 +51,11 @@ public class PageSettings {
     public PageSettings(ChangeNotifier notifier, PageSettings other) {
         mNotifier = notifier;
         mPaperSize = other.mPaperSize;
-        mTopMargin = other.mTopMargin;
-        mLeftMargin = other.mLeftMargin;
-        mBottomMargin = other.mBottomMargin;
-        mRightMargin = other.mRightMargin;
+        mTopMargin = new LengthValue(other.mTopMargin);
+        mLeftMargin = new LengthValue(other.mLeftMargin);
+        mBottomMargin = new LengthValue(other.mBottomMargin);
+        mRightMargin = new LengthValue(other.mRightMargin);
         mOrientation = other.mOrientation;
-        mUnits = other.mUnits;
     }
 
     public void load(JsonMap m) {
@@ -75,12 +68,11 @@ public class PageSettings {
             }
         }
         mPaperSize = found != null ? found : PaperSize.getDefaultPaperSize();
-        mTopMargin = new Fixed6(m.getString(TOP_MARGIN), DEFAULT_TOP_MARGIN, false);
-        mLeftMargin = new Fixed6(m.getString(LEFT_MARGIN), DEFAULT_LEFT_MARGIN, false);
-        mBottomMargin = new Fixed6(m.getString(BOTTOM_MARGIN), DEFAULT_BOTTOM_MARGIN, false);
-        mRightMargin = new Fixed6(m.getString(RIGHT_MARGIN), DEFAULT_RIGHT_MARGIN, false);
+        mTopMargin = LengthValue.extract(m.getString(TOP_MARGIN), false);
+        mLeftMargin = LengthValue.extract(m.getString(LEFT_MARGIN), false);
+        mBottomMargin = LengthValue.extract(m.getString(BOTTOM_MARGIN), false);
+        mRightMargin = LengthValue.extract(m.getString(RIGHT_MARGIN), false);
         mOrientation = Enums.extract(m.getString(ORIENTATION), PageOrientation.values(), DEFAULT_ORIENTATION);
-        mUnits = Enums.extract(m.getString(UNITS), LengthUnits.values(), DEFAULT_UNITS);
     }
 
     public void save(JsonWriter w) throws IOException {
@@ -91,18 +83,16 @@ public class PageSettings {
         w.keyValue(BOTTOM_MARGIN, mBottomMargin.toString());
         w.keyValue(RIGHT_MARGIN, mRightMargin.toString());
         w.keyValue(ORIENTATION, Enums.toId(mOrientation));
-        w.keyValue(UNITS, Enums.toId(mUnits));
         w.endMap();
     }
 
     public void reset() {
         mPaperSize = PaperSize.getDefaultPaperSize();
-        mTopMargin = DEFAULT_TOP_MARGIN;
-        mLeftMargin = DEFAULT_LEFT_MARGIN;
-        mBottomMargin = DEFAULT_BOTTOM_MARGIN;
-        mRightMargin = DEFAULT_RIGHT_MARGIN;
+        mTopMargin = DEFAULT_MARGIN;
+        mLeftMargin = DEFAULT_MARGIN;
+        mBottomMargin = DEFAULT_MARGIN;
+        mRightMargin = DEFAULT_MARGIN;
         mOrientation = DEFAULT_ORIENTATION;
-        mUnits = DEFAULT_UNITS;
     }
 
     public PaperSize getPaperSize() {
@@ -124,62 +114,62 @@ public class PageSettings {
         }
     }
 
-    public Fixed6 getTopMargin() {
+    public LengthValue getTopMargin() {
         return mTopMargin;
     }
 
     public int getTopMarginPts() {
-        return (int) LengthUnits.PT.convert(mUnits, mTopMargin).asLong();
+        return (int) LengthUnits.PT.convert(mTopMargin.getUnits(), mTopMargin.getValue()).asLong();
     }
 
-    public void setTopMargin(Fixed6 topMargin) {
-        if (mTopMargin != topMargin) {
-            mTopMargin = topMargin;
+    public void setTopMargin(LengthValue topMargin) {
+        if (!mTopMargin.equals(topMargin)) {
+            mTopMargin = new LengthValue(topMargin);
             mNotifier.notifyOfChange();
         }
     }
 
-    public Fixed6 getLeftMargin() {
+    public LengthValue getLeftMargin() {
         return mLeftMargin;
     }
 
     public int getLeftMarginPts() {
-        return (int) LengthUnits.PT.convert(mUnits, mLeftMargin).asLong();
+        return (int) LengthUnits.PT.convert(mLeftMargin.getUnits(), mLeftMargin.getValue()).asLong();
     }
 
-    public void setLeftMargin(Fixed6 leftMargin) {
-        if (mLeftMargin != leftMargin) {
-            mLeftMargin = leftMargin;
+    public void setLeftMargin(LengthValue leftMargin) {
+        if (!mLeftMargin.equals(leftMargin)) {
+            mLeftMargin = new LengthValue(leftMargin);
             mNotifier.notifyOfChange();
         }
     }
 
-    public Fixed6 getBottomMargin() {
+    public LengthValue getBottomMargin() {
         return mBottomMargin;
     }
 
     public int getBottomMarginPts() {
-        return (int) LengthUnits.PT.convert(mUnits, mBottomMargin).asLong();
+        return (int) LengthUnits.PT.convert(mBottomMargin.getUnits(), mBottomMargin.getValue()).asLong();
     }
 
-    public void setBottomMargin(Fixed6 bottomMargin) {
-        if (mBottomMargin != bottomMargin) {
-            mBottomMargin = bottomMargin;
+    public void setBottomMargin(LengthValue bottomMargin) {
+        if (!mBottomMargin.equals(bottomMargin)) {
+            mBottomMargin = new LengthValue(bottomMargin);
             mNotifier.notifyOfChange();
         }
     }
 
-    public Fixed6 getRightMargin() {
+    public LengthValue getRightMargin() {
         return mRightMargin;
     }
 
     public int getRightMarginPts() {
-        return (int) LengthUnits.PT.convert(mUnits, mRightMargin).asLong();
+        return (int) LengthUnits.PT.convert(mRightMargin.getUnits(), mRightMargin.getValue()).asLong();
     }
 
-    public void setRightMargin(Fixed6 rightMargin) {
-        if (mRightMargin != rightMargin) {
-            mRightMargin = rightMargin;
+    public void setRightMargin(LengthValue rightMargin) {
+        if (!mRightMargin.equals(rightMargin)) {
+            mRightMargin = new LengthValue(rightMargin);
             mNotifier.notifyOfChange();
         }
     }
@@ -191,17 +181,6 @@ public class PageSettings {
     public void setPageOrientation(PageOrientation orientation) {
         if (mOrientation != orientation) {
             mOrientation = orientation;
-            mNotifier.notifyOfChange();
-        }
-    }
-
-    public LengthUnits getUnits() {
-        return mUnits;
-    }
-
-    public void setUnits(LengthUnits units) {
-        if (mUnits != units) {
-            mUnits = units;
             mNotifier.notifyOfChange();
         }
     }
@@ -230,10 +209,7 @@ public class PageSettings {
         if (!mRightMargin.equals(that.mRightMargin)) {
             return false;
         }
-        if (mOrientation != that.mOrientation) {
-            return false;
-        }
-        return mUnits == that.mUnits;
+        return mOrientation == that.mOrientation;
     }
 
     @Override
@@ -244,7 +220,6 @@ public class PageSettings {
         result = 31 * result + mBottomMargin.hashCode();
         result = 31 * result + mRightMargin.hashCode();
         result = 31 * result + mOrientation.hashCode();
-        result = 31 * result + mUnits.hashCode();
         return result;
     }
 

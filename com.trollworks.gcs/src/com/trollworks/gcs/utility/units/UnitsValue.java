@@ -96,14 +96,6 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
         mValue = mValue.sub(mUnits.convert(other.mUnits, other.mValue));
     }
 
-    /**
-     * @return The default units to use during a load if nothing matches. {@code null} may be
-     *         returned to indicate an error should occur instead.
-     */
-    public T getDefaultUnits() {
-        return null;
-    }
-
     @Override
     public int compareTo(UnitsValue<T> other) {
         if (this == other) {
@@ -139,6 +131,8 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        int result = mValue.hashCode();
+        result = 31 * result + mUnits.hashCode();
+        return result;
     }
 }
