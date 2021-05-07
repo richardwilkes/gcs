@@ -12,7 +12,9 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.attribute.AttributeChoice;
+import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.Alignment;
@@ -29,6 +31,8 @@ import com.trollworks.gcs.utility.text.IntegerFormatter;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
@@ -37,15 +41,24 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A skill default editor panel. */
 public class SkillDefaultEditor extends EditorPanel {
-    private static String       LAST_ITEM_TYPE = "";
+    private static String       LAST_ITEM_TYPE;
     private        DataFile     mDataFile;
     private        SkillDefault mDefault;
     private        EditorField  mSkillNameField;
     private        EditorField  mSpecializationField;
     private        EditorField  mModifierField;
 
+    public static synchronized String getLastItemType(DataFile dataFile) {
+        if (LAST_ITEM_TYPE == null) {
+            Map<String, AttributeDef> defs    = (dataFile != null) ? dataFile.getAttributeDefs() : Preferences.getInstance().getAttributes();
+            List<AttributeDef>        ordered = AttributeDef.getOrdered(defs);
+            LAST_ITEM_TYPE = ordered.isEmpty() ? "st" : ordered.get(0).getID();
+        }
+        return LAST_ITEM_TYPE;
+    }
+
     /** @param type The last item type created or switched to. */
-    public static void setLastItemType(String type) {
+    public static synchronized void setLastItemType(String type) {
         LAST_ITEM_TYPE = type;
     }
 
@@ -137,7 +150,8 @@ public class SkillDefaultEditor extends EditorPanel {
     }
 
     private void addDefault() {
-        SkillDefault skillDefault = new SkillDefault(LAST_ITEM_TYPE, SkillDefaultType.isSkillBased(LAST_ITEM_TYPE) ? "" : null, null, 0); //$NON-NLS-1$
+        String       lastItemType = getLastItemType(mDataFile);
+        SkillDefault skillDefault = new SkillDefault(lastItemType, SkillDefaultType.isSkillBased(lastItemType) ? "" : null, null, 0); //$NON-NLS-1$
         JComponent   parent       = (JComponent) getParent();
         parent.add(new SkillDefaultEditor(mDataFile, skillDefault));
         if (mDefault == null) {
