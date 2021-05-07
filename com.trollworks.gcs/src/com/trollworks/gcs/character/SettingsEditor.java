@@ -138,7 +138,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mUseModifyingDicePlusAdds = addCheckBox(right, I18n.Text("Use Modifying Dice + Adds (B269)"), null, mSettings.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(right, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSettings.useKnowYourOwnStrength());
         mUseReducedSwing = addCheckBox(right, I18n.Text("Use the reduced swing rules"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", mSettings.useReducedSwing());
-        mUsePhoenixSwing = addCheckBox(panel, I18n.Text("Use PhoenixFlame's rescaled Swing Damage"), null, mSettings.usePhoenixSwing());
+        mUsePhoenixSwing = addCheckBox(right, I18n.Text("Use PhoenixFlame's rescaled Swing Damage"), null, mSettings.usePhoenixSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(right, I18n.Text("Use Thrust = Swing - 2"), null, mSettings.useThrustEqualsSwingMinus2());
         mUseSimpleMetricConversions = addCheckBox(right, I18n.Text("Use the simple metric conversion rules (B9)"), null, mSettings.useSimpleMetricConversions());
         addLabel(right, I18n.Text("Length Units"));

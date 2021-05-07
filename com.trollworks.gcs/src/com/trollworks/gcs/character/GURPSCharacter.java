@@ -489,31 +489,26 @@ public class GURPSCharacter extends CollectedModels {
      * @return The basic thrusting damage.
      */
     public Dice getSwing(int strength) {
-        if(mSettings.usePhoenixSwing() & strength > 12 & strength < 100){
+        if(mSettings.usePhoenixSwing() & strength > 12 & strength < 61){
 
-            int adds = 1 - (strength % 2);
+            int adds = (int) Math.ceil((strength-17.0)/2.0);
             if (strength < 19){
-                return new Dice(1,(-(6 - (strength - 1) / 2))+2+adds);
+                return new Dice(1,(-(6 - (strength - 1) / 2))+2+ (1 - (strength % 2)));
             }
-            int value = strength -= 11;
-            if (strength > 50) {
-                value--;
-                if (strength > 79) {
-                    value -= 1 + (strength - 80) / 5;
-                }
+            int value = strength - 11; // This is derived the same way that thrust damage is derived
+            int ndice = value / 8 + 1; // Same as above
+            int baseadds = value % 8 / 2 -1;
+            int bonusdice = (ndice + baseadds) /5; // work out the bonus dice, whenever adds hits 5 it needs to be +1 die so we'll do that first
+            int bonusadds = ndice+bonusdice + baseadds;
+            if (bonusadds > 4){
+                bonusdice += bonusadds/5;
+                bonusadds = (bonusadds/5) + bonusdice % 5;
             }
-            int ndice = value / 8 + 1;
-            adds +=ndice + (value % 8 / 2 - 1)+1;
-            if(adds >=7 & strength >60){
-                int dicemod = adds/7;
-                adds -=(7 * dicemod);
-                ndice += dicemod*2;
-            }
-            if(adds >4){
-                adds-=4;
-                ndice+=1;
-            }
-            return new Dice(ndice, adds);
+            
+            
+    
+            return new Dice(ndice+bonusdice, bonusadds);
+
         }
         if (mSettings.useReducedSwing()) {
             if (strength < 10) {
