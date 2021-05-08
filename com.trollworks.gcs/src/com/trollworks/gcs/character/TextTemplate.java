@@ -110,6 +110,7 @@ public class TextTemplate {
     private static final String KEY_CATEGORIES                        = "CATEGORIES";
     private static final String KEY_CLASS                             = "CLASS";
     private static final String KEY_COLLEGE                           = "COLLEGE";
+    private static final String KEY_COMBINED_NAME                     = "COMBINED_NAME";
     private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_END    = "CONDITIONAL_MODIFIERS_LOOP_END";
     private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_START  = "CONDITIONAL_MODIFIERS_LOOP_START";
     private static final String KEY_CONTINUE_ID                       = "CONTINUE_ID";
@@ -151,6 +152,7 @@ public class TextTemplate {
     private static final String KEY_EQUIPMENT_LOOP_END                = "EQUIPMENT_LOOP_END";
     private static final String KEY_EQUIPMENT_LOOP_START              = "EQUIPMENT_LOOP_START";
     private static final String KEY_EQUIPPED                          = "EQUIPPED";
+    private static final String KEY_EQUIPPED_FONT_AWESOME             = "EQUIPPED_FA";
     private static final String KEY_EQUIPPED_NUM                      = "EQUIPPED_NUM";
     private static final String KEY_EXCLUDE_CATEGORIES                = "EXCLUDE_CATEGORIES_";
     private static final String KEY_EYES                              = "EYES";
@@ -1706,6 +1708,11 @@ public class TextTemplate {
                                         out.write("✓");
                                     }
                                     break;
+                                case KEY_EQUIPPED_FONT_AWESOME:
+                                    if (carried && equipment.isEquipped()) {
+                                        out.write("<i class=\"fas fa-check-circle\"></i>");
+                                    }
+                                    break;
                                 case KEY_EQUIPPED_NUM:
                                     out.write(carried && equipment.isEquipped() ? '1' : '0');
                                     break;
@@ -1980,11 +1987,12 @@ public class TextTemplate {
                                 case KEY_ID -> writeEncodedText(out, def.getID());
                                 case KEY_NAME -> writeEncodedText(out, def.getName());
                                 case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
+                                case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
                                 case KEY_VALUE -> {
                                     if (def.getType() == AttributeType.DECIMAL) {
-                                        writeEncodedText(out, Numbers.formatWithForcedSign(attr.getDoubleValue(gch)));
+                                        writeEncodedText(out, Numbers.format(attr.getDoubleValue(gch)));
                                     } else {
-                                        writeEncodedText(out, Numbers.formatWithForcedSign(attr.getIntValue(gch)));
+                                        writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
                                     }
                                 }
                                 case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
@@ -2030,7 +2038,8 @@ public class TextTemplate {
                                 case KEY_ID -> writeEncodedText(out, def.getID());
                                 case KEY_NAME -> writeEncodedText(out, def.getName());
                                 case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
-                                case KEY_CURRENT -> writeEncodedText(out, Numbers.formatWithForcedSign(attr.getCurrentIntValue(gch)));
+                                case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
+                                case KEY_CURRENT -> writeEncodedText(out, Numbers.format(attr.getCurrentIntValue(gch)));
                                 case KEY_MAXIMUM -> writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
                                 case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));

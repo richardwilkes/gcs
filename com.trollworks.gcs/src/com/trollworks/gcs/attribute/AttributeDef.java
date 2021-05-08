@@ -255,6 +255,16 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         }
     }
 
+    public String getCombinedName() {
+        String combinedName = mFullName;
+        if (combinedName.isBlank()) {
+            combinedName = mName;
+        } else if (!mName.isBlank() && !combinedName.equals(mName)) {
+            combinedName = String.format("%s (%s)", combinedName, mName);
+        }
+        return combinedName;
+    }
+
     public String getName() {
         return mName;
     }
