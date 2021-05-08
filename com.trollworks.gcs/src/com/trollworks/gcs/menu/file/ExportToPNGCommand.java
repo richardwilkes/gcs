@@ -29,7 +29,7 @@ public class ExportToPNGCommand extends Command {
     public static final ExportToPNGCommand INSTANCE = new ExportToPNGCommand();
 
     private ExportToPNGCommand() {
-        super(I18n.Text("Export to PNG Image(s)…"), "ToPNG");
+        super(I18n.Text("PNG Image(s)…"), "ToPNG");
     }
 
     @Override
