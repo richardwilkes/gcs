@@ -16,8 +16,10 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.HeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultiCell;
@@ -36,7 +38,7 @@ public enum EquipmentColumn {
     EQUIPPED {
         @Override
         public String toString() {
-            return I18n.Text("✓");
+            return "\uf058";
         }
 
         @Override
@@ -47,6 +49,11 @@ public enum EquipmentColumn {
         @Override
         public Cell getCell() {
             return new CheckCell(SwingConstants.CENTER, false);
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -61,14 +68,14 @@ public enum EquipmentColumn {
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return equipment.isEquipped() ? "✓" : "";
+            return equipment.isEquipped() ? "\uf058" : "";
         }
     },
     /** The quantity. */
     QUANTITY {
         @Override
         public String toString() {
-            return I18n.Text("Qty");
+            return "\uf3ef";
         }
 
         @Override
@@ -79,6 +86,11 @@ public enum EquipmentColumn {
         @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_BRANDS, sheetOrTemplate);
         }
 
         @Override
@@ -279,7 +291,7 @@ public enum EquipmentColumn {
     VALUE {
         @Override
         public String toString() {
-            return I18n.Text("$");
+            return "\uf155";
         }
 
         @Override
@@ -290,6 +302,11 @@ public enum EquipmentColumn {
         @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -306,7 +323,7 @@ public enum EquipmentColumn {
     WEIGHT {
         @Override
         public String toString() {
-            return I18n.Text("Weight");
+            return "\uf5cd";
         }
 
         @Override
@@ -317,6 +334,11 @@ public enum EquipmentColumn {
         @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -333,7 +355,7 @@ public enum EquipmentColumn {
     EXT_VALUE {
         @Override
         public String toString() {
-            return I18n.Text("∑ $");
+            return "\uf5fd \uf155";
         }
 
         @Override
@@ -344,6 +366,11 @@ public enum EquipmentColumn {
         @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -365,7 +392,7 @@ public enum EquipmentColumn {
     EXT_WEIGHT {
         @Override
         public String toString() {
-            return I18n.Text("∑ Weight");
+            return "\uf5fd \uf5cd";
         }
 
         @Override
@@ -376,6 +403,11 @@ public enum EquipmentColumn {
         @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.RIGHT, false);
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -429,7 +461,7 @@ public enum EquipmentColumn {
     REFERENCE {
         @Override
         public String toString() {
-            return I18n.Text("Ref");
+            return "\uf02e";
         }
 
         @Override
@@ -445,6 +477,11 @@ public enum EquipmentColumn {
         @Override
         public Cell getCell() {
             return new PageRefCell();
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -496,6 +533,11 @@ public enum EquipmentColumn {
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();
 
+    /** @return The {@link Cell} used to display the header. */
+    public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+        return new ListHeaderCell(sheetOrTemplate);
+    }
+
     /**
      * @param dataFile The {@link DataFile} to use.
      * @param carried  {@code true} for the carried equipment, {@code false} for the other
@@ -527,7 +569,7 @@ public enum EquipmentColumn {
         for (EquipmentColumn one : values()) {
             if (one.shouldDisplay(dataFile, carried)) {
                 Column column = new Column(one.ordinal(), one.toString(dataFile, carried), one.getToolTip(), one.getCell());
-                column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
+                column.setHeaderCell(one.getHeaderCell(sheetOrTemplate));
                 model.addColumn(column);
                 if (one.isHierarchyColumn()) {
                     model.setHierarchyColumn(column);

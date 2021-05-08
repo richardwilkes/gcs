@@ -32,6 +32,10 @@ import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
 public class Fonts {
+    /** The name of the Font Awesome Brands font. */
+    public static final  String             FONT_AWESOME_BRANDS  = "Font Awesome 5 Brands Regular";
+    /** The name of the Font Awesome Regular font. */
+    public static final  String             FONT_AWESOME_REGULAR = "Font Awesome 5 Free Regular";
     /** The name of the Font Awesome Solid font. */
     public static final  String             FONT_AWESOME_SOLID   = "Font Awesome 5 Free Solid";
     /** The name of the Roboto font. */
@@ -63,6 +67,8 @@ public class Fonts {
     /** Loads the current font settings from the preferences file. */
     public static void loadFromPreferences() {
         String[] embeddedFonts = {
+                "Font Awesome 5 Brands-Regular-400.otf",
+                "Font Awesome 5 Free-Regular-400.otf",
                 "Font Awesome 5 Free-Solid-900.otf",
                 "Roboto-Black.ttf",
                 "Roboto-BlackItalic.ttf",
