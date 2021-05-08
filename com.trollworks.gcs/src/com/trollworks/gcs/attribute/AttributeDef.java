@@ -334,7 +334,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
             costReduction += sm * mCostAdjPercentPerSM;
             if (costReduction < 0) {
                 costReduction = 0;
-            } else if (costReduction < 80) {
+            } else if (costReduction > 80) {
                 costReduction = 80;
             }
         }
