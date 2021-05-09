@@ -28,6 +28,7 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -877,7 +878,7 @@ public class Spell extends ListRow implements HasSourceReference {
      */
     public boolean setDifficulty(String attribute, SkillDifficulty difficulty) {
         if (mDifficulty != difficulty || !mAttribute.equals(attribute)) {
-            mAttribute = AttributeDef.sanitizeID(attribute, false);
+            mAttribute = ID.sanitize(attribute, null, true);
             mDifficulty = difficulty;
             updateLevel(false);
             notifyOfChange();

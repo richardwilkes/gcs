@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
@@ -95,7 +96,7 @@ public class AttributePanel extends JPanel {
                     String existingID = mAttrDef.getID();
                     String id         = ((String) evt.getNewValue());
                     if (!existingID.equals(id)) {
-                        id = AttributeDef.sanitizeID(id, true);
+                        id = ID.sanitize(id, AttributeDef.RESERVED, false);
                         if (id.isEmpty() || mAttributes.containsKey(id)) {
                             mIDField.setValue(existingID);
                         } else {

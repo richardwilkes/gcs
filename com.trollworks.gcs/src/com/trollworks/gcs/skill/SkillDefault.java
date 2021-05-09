@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
@@ -154,7 +154,7 @@ public class SkillDefault {
 
     /** @param type The new type. */
     public void setType(String type) {
-        mType = AttributeDef.sanitizeID(type, false);
+        mType = ID.sanitize(type, null, true);
     }
 
     /** @return The full name of the skill to default from. */
