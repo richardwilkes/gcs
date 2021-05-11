@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
@@ -24,15 +23,13 @@ import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable extends CollectedOutlinesDockable implements DataChangeListener {
-    private static SheetDockable               LAST_ACTIVATED;
-    private        CharacterSheet              mSheet;
-    private        JComboBox<HitLocationTable> mHitLocationTableCombo;
+public class SheetDockable extends CollectedOutlinesDockable {
+    private static SheetDockable  LAST_ACTIVATED;
+    private        CharacterSheet mSheet;
 
     /** Creates a new {@link SheetDockable}. */
     public SheetDockable(GURPSCharacter character) {
@@ -53,17 +50,12 @@ public class SheetDockable extends CollectedOutlinesDockable implements DataChan
         StdUndoManager undoManager = getUndoManager();
         undoManager.discardAllEdits();
         character.setUndoManager(undoManager);
-        character.addChangeListener(this);
     }
 
     @Override
     protected Toolbar createToolbar() {
         Toolbar toolbar = super.createToolbar();
-        mHitLocationTableCombo = new JComboBox<>(HitLocationTable.ALL.toArray(new HitLocationTable[0]));
-        mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
-        mHitLocationTableCombo.addActionListener((event) -> getDataFile().getProfile().setHitLocationTable((HitLocationTable) mHitLocationTableCombo.getSelectedItem()));
-        toolbar.add(mHitLocationTableCombo);
-        toolbar.add(new IconButton(Images.GEAR, I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())));
+        toolbar.add(new IconButton(Images.GEAR, I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())), 0);
         return toolbar;
     }
 
@@ -80,7 +72,6 @@ public class SheetDockable extends CollectedOutlinesDockable implements DataChan
             if (editor != null) {
                 editor.attemptClose();
             }
-            mSheet.getCharacter().removeChangeListener(this);
             mSheet.dispose();
         }
         return closed;
@@ -139,10 +130,5 @@ public class SheetDockable extends CollectedOutlinesDockable implements DataChan
         if (mSheet.getCharacter().processFeaturesAndPrereqs()) {
             mSheet.repaint();
         }
-    }
-
-    @Override
-    public void dataWasChanged() {
-        mHitLocationTableCombo.setSelectedItem(getDataFile().getProfile().getHitLocationTable());
     }
 }

@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -49,24 +50,26 @@ import javax.imageio.ImageIO;
 
 /** Holds the character profile. */
 public class Profile {
-    public static final  String KEY_PROFILE     = "profile";
-    private static final String KEY_AGE         = "age";
-    private static final String KEY_BIRTHDAY    = "birthday";
-    private static final String KEY_BODY_TYPE   = "body_type";
-    private static final String KEY_EYES        = "eyes";
-    private static final String KEY_GENDER      = "gender";
-    private static final String KEY_HAIR        = "hair";
-    private static final String KEY_HANDEDNESS  = "handedness";
-    private static final String KEY_HEIGHT      = "height";
-    private static final String KEY_NAME        = "name";
-    private static final String KEY_PLAYER_NAME = "player_name";
-    private static final String KEY_PORTRAIT    = "portrait";
-    private static final String KEY_RELIGION    = "religion";
-    private static final String KEY_SKIN        = "skin";
-    private static final String KEY_SM          = "SM";
-    private static final String KEY_TITLE       = "title";
-    private static final String KEY_TL          = "tech_level";
-    private static final String KEY_WEIGHT      = "weight";
+    public static final  String KEY_PROFILE       = "profile";
+    private static final String KEY_AGE           = "age";
+    private static final String KEY_BIRTHDAY      = "birthday";
+    private static final String KEY_EYES          = "eyes";
+    private static final String KEY_GENDER        = "gender";
+    private static final String KEY_HAIR          = "hair";
+    private static final String KEY_HANDEDNESS    = "handedness";
+    private static final String KEY_HEIGHT        = "height";
+    private static final String KEY_HIT_LOCATIONS = "hit_locations";
+    private static final String KEY_NAME          = "name";
+    private static final String KEY_PLAYER_NAME   = "player_name";
+    private static final String KEY_PORTRAIT      = "portrait";
+    private static final String KEY_RELIGION      = "religion";
+    private static final String KEY_SKIN          = "skin";
+    private static final String KEY_SM            = "SM";
+    private static final String KEY_TITLE         = "title";
+    private static final String KEY_TL            = "tech_level";
+    private static final String KEY_WEIGHT        = "weight";
+
+    private static final String KEY_BODY_TYPE = "body_type"; // Deprecated May 9, 2021
 
     public static final  int               PORTRAIT_HEIGHT      = 96; // Height of the portrait, in 1/72nds of an inch
     public static final  int               PORTRAIT_WIDTH       = 3 * PORTRAIT_HEIGHT / 4; // Width of the portrait, in 1/72nds of an inch
@@ -92,7 +95,7 @@ public class Profile {
     private String           mReligion;
     private String           mPlayerName;
     private String           mTechLevel;
-    private HitLocationTable mHitLocationTable;
+    private HitLocationTable mHitLocations;
 
     Profile(GURPSCharacter character, boolean full) {
         mCharacter = character;
@@ -100,8 +103,8 @@ public class Profile {
         mPortrait = null;
         mTitle = "";
         mReligion = "";
-        mHitLocationTable = HitLocationTable.HUMANOID;
         Preferences prefs = Preferences.getInstance();
+        mHitLocations = prefs.getHitLocations().clone();
         mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         if (full) {
             mAge = Numbers.format(getRandomAge());
@@ -148,12 +151,23 @@ public class Profile {
         mWeight = WeightValue.extract(m.getString(KEY_WEIGHT), false);
         mSizeModifier = m.getInt(KEY_SM);
         mGender = m.getString(KEY_GENDER);
-        mHitLocationTable = HitLocationTable.MAP.get(m.getString(KEY_BODY_TYPE));
-        if (mHitLocationTable == null) {
-            mHitLocationTable = HitLocationTable.HUMANOID;
-        }
         mTechLevel = m.getString(KEY_TL);
         mReligion = m.getString(KEY_RELIGION);
+
+        // Legacy; GCS v4.29.1 or earlier
+        if (m.has(KEY_BODY_TYPE)) {
+            String bodyType = m.getString(KEY_BODY_TYPE);
+            if (bodyType.startsWith("winged_")) {
+                bodyType = bodyType.substring(7) + ".winged";
+            }
+            HitLocationTable table = HitLocationTable.lookupStdTable(bodyType);
+            if (table != null) {
+                mHitLocations = table;
+            }
+        } else if (m.has(KEY_HIT_LOCATIONS)) {
+            mHitLocations = new HitLocationTable(m.getMap(KEY_HIT_LOCATIONS));
+        }
+
         if (m.has(KEY_PORTRAIT)) {
             try {
                 mPortrait = createPortrait(Img.create(new ByteArrayInputStream(Base64.getDecoder().decode(m.getString(KEY_PORTRAIT)))));
@@ -183,9 +197,10 @@ public class Profile {
         }
         w.keyValueNot(KEY_SM, mSizeModifier, 0);
         w.keyValueNot(KEY_GENDER, mGender, "");
-        w.keyValue(KEY_BODY_TYPE, mHitLocationTable.getKey());
         w.keyValueNot(KEY_TL, mTechLevel, "");
         w.keyValueNot(KEY_RELIGION, mReligion, "");
+        w.key(KEY_HIT_LOCATIONS);
+        mHitLocations.toJSON(w, mCharacter);
         if (mCustomPortrait && mPortrait != null) {
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 ImageIO.write(mPortrait.getRetina(), FileType.PNG.getExtension(), baos);
@@ -763,16 +778,16 @@ public class Profile {
         }
     }
 
-    /** @return The hit location table. */
-    public HitLocationTable getHitLocationTable() {
-        return mHitLocationTable;
+    /** @return The hit locations. */
+    public HitLocationTable getHitLocations() {
+        return mHitLocations;
     }
 
-    /** @param table The hit location table. */
-    public void setHitLocationTable(HitLocationTable table) {
-        if (mHitLocationTable != table) {
-            mCharacter.postUndoEdit(I18n.Text("Body Type Change"), (c, v) -> c.getProfile().setHitLocationTable((HitLocationTable) v), mHitLocationTable, table);
-            mHitLocationTable = table;
+    /** @param locations The hit locations. */
+    public void setHitLocationTable(HitLocationTable locations) {
+        if (!mHitLocations.equals(locations)) {
+            mCharacter.postUndoEdit(I18n.Text("Body Type Change"), (c, v) -> c.getProfile().setHitLocationTable((HitLocationTable) v), mHitLocations.clone(), locations);
+            mHitLocations = locations.clone();
             mCharacter.notifyOfChange();
         }
     }

@@ -75,7 +75,7 @@ public class PageSettings {
         mOrientation = Enums.extract(m.getString(ORIENTATION), PageOrientation.values(), DEFAULT_ORIENTATION);
     }
 
-    public void save(JsonWriter w) throws IOException {
+    public void toJSON(JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(PAPER_SIZE, mPaperSize.getKey());
         w.keyValue(TOP_MARGIN, mTopMargin.toString());

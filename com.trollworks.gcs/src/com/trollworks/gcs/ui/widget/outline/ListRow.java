@@ -51,14 +51,15 @@ import java.util.UUID;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row {
-    private static final String KEY_ID         = "id";
-    private static final String KEY_OPEN       = "open";
-    private static final String KEY_NOTES      = "notes";
-    private static final String KEY_CATEGORIES = "categories";
-    private static final String KEY_FEATURES   = "features";
-    private static final String KEY_DEFAULTS   = "defaults";
-    private static final String KEY_CHILDREN   = "children";
-    private static final String KEY_PREREQS    = "prereqs";
+    private static final int    LAST_CUSTOMIZABLE_HIT_LOCATIONS_VERSION = 1; // Last version before customizable hit locations (v4.29.1 and earlier)
+    private static final String KEY_ID                                  = "id";
+    private static final String KEY_OPEN                                = "open";
+    private static final String KEY_NOTES                               = "notes";
+    private static final String KEY_CATEGORIES                          = "categories";
+    private static final String KEY_FEATURES                            = "features";
+    private static final String KEY_DEFAULTS                            = "defaults";
+    private static final String KEY_CHILDREN                            = "children";
+    private static final String KEY_PREREQS                             = "prereqs";
 
     protected DataFile           mDataFile;
     private   UUID               mID;
@@ -299,7 +300,7 @@ public abstract class ListRow extends Row {
                 String  type = m1.getString(DataFile.TYPE);
                 switch (type) {
                 case AttributeBonus.KEY_ROOT -> mFeatures.add(new AttributeBonus(dataFile, m1));
-                case DRBonus.KEY_ROOT -> mFeatures.add(new DRBonus(dataFile, m1));
+                case DRBonus.KEY_ROOT -> loadDRBonus(dataFile, state, m1);
                 case ReactionBonus.KEY_ROOT -> mFeatures.add(new ReactionBonus(dataFile, m1));
                 case ConditionalModifier.KEY_ROOT -> mFeatures.add(new ConditionalModifier(dataFile, m1));
                 case SkillBonus.KEY_ROOT -> mFeatures.add(new SkillBonus(dataFile, m1));
@@ -332,6 +333,88 @@ public abstract class ListRow extends Row {
             }
         }
         finishedLoading(state);
+    }
+
+    private void loadDRBonus(DataFile dataFile, LoadState state, JsonMap m) throws IOException {
+        DRBonus bonus = new DRBonus(dataFile, m);
+        if (state.mDataFileVersion <= LAST_CUSTOMIZABLE_HIT_LOCATIONS_VERSION) {
+            switch (bonus.getLocation()) {
+            case "eyes":
+                bonus.setLocation("eye");
+                break;
+            case "arms":
+                bonus.setLocation("arm");
+                break;
+            case "hands":
+                bonus.setLocation("hand");
+                break;
+            case "legs":
+                bonus.setLocation("leg");
+                break;
+            case "feet":
+                bonus.setLocation("foot");
+                break;
+            case "wings":
+                bonus.setLocation("wing");
+                break;
+            case "fins":
+                bonus.setLocation("fin");
+                break;
+            case "torso":
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("vitals");
+                break;
+            case "full_body":
+                bonus.setLocation("eye");
+                mFeatures.add(bonus);
+                // Intentional fall-through
+            case "full_body_except_eyes":
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("skull");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("face");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("neck");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("torso");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("vitals");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("groin");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("arm");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("hand");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("leg");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("foot");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("tail");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("wing");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("fin");
+                mFeatures.add(bonus);
+                bonus = new DRBonus(bonus);
+                bonus.setLocation("brain");
+                break;
+            }
+        }
+        mFeatures.add(bonus);
     }
 
     protected abstract void loadSelf(JsonMap m, LoadState state) throws IOException;

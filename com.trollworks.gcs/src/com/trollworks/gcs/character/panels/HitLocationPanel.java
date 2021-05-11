@@ -11,12 +11,11 @@
 
 package com.trollworks.gcs.character.panels;
 
-import com.trollworks.gcs.character.Armor;
+import com.trollworks.gcs.body.HitLocation;
+import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.HitLocationTable;
-import com.trollworks.gcs.character.HitLocationTableEntry;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
@@ -41,7 +40,7 @@ public class HitLocationPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), String.format(I18n.Text("%s Locations"), sheet.getCharacter().getProfile().getHitLocationTable().toString()));
+        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), String.format(I18n.Text("Locations: %s"), sheet.getCharacter().getProfile().getHitLocations().getName()));
 
         addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.HEADER);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
@@ -52,11 +51,11 @@ public class HitLocationPanel extends DropPanel {
         createHeader(I18n.Text("DR"), null);
 
         GURPSCharacter   character = sheet.getCharacter();
-        Armor            armor     = character.getArmor();
-        HitLocationTable table     = character.getProfile().getHitLocationTable();
+        HitLocationTable table     = character.getProfile().getHitLocations();
         boolean          band      = false;
-        for (HitLocationTableEntry entry : table.getEntries()) {
-            PageLabel first = createLabel(entry.getRoll(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), entry.getName()), true);
+        for (HitLocation location : table.getLocations()) {
+            String    name  = location.getTableName();
+            PageLabel first = createLabel(location.getRollRange(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), name), true);
             if (band) {
                 band = false;
                 addHorizontalBackground(first, ThemeColor.BANDING);
@@ -64,11 +63,14 @@ public class HitLocationPanel extends DropPanel {
                 band = true;
             }
             createDivider();
-            createLabel(entry.getName(), Text.wrapPlainTextForToolTip(entry.getLocation().getDescription()), true);
+            createLabel(name, Text.wrapPlainTextForToolTip(location.getDescription()), true);
             createDivider();
-            createLabel(Integer.toString(entry.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), entry.getName()), false);
+            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), name), false);
             createDivider();
-            createDRField(sheet, armor.getValueForID(entry.getKey()), MessageFormat.format(I18n.Text("<html><body>The total DR protecting the <b>{0}</b> hit location</body></html>"), entry.getName()));
+            StringBuilder tooltip = new StringBuilder();
+            int           dr      = location.getDR(character, tooltip);
+            //noinspection DynamicRegexReplaceableByCompiledPattern
+            createDRField(sheet, Integer.valueOf(dr), String.format(I18n.Text("<html><body>The DR covering the <b>%s</b> hit location%s</body></html>"), name, tooltip.toString().replaceAll("\n", "<br>")));
         }
     }
 

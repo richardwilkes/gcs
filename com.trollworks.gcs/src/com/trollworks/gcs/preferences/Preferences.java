@@ -13,6 +13,7 @@ package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.datafile.ChangeableData;
@@ -72,6 +73,7 @@ public class Preferences extends ChangeableData {
     private static final String DIVIDER_POSITION                = "divider_position";
     private static final String FONTS                           = "fonts";
     private static final String GURPS_CALCULATOR_KEY            = "gurps_calculator_key";
+    private static final String HIT_LOCATIONS                   = "hit_locations";
     private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL = "include_unspent_points_in_total";
     private static final String INITIAL_POINTS                  = "initial_points";
     private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
@@ -162,6 +164,7 @@ public class Preferences extends ChangeableData {
     private        String                           mDefaultTechLevel;
     private        String                           mDefaultPortraitPath;
     private        Map<String, AttributeDef>        mAttributes;
+    private        HitLocationTable                 mHitLocations;
     private        PageSettings                     mPageSettings;
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
@@ -241,6 +244,7 @@ public class Preferences extends ChangeableData {
         mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         mAttributes = AttributeDef.createStandardAttributes();
+        mHitLocations = HitLocationTable.createHumanoidTable();
         mPageSettings = new PageSettings(this);
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
@@ -324,6 +328,9 @@ public class Preferences extends ChangeableData {
                         }
                         if (m.has(ATTRIBUTES)) {
                             mAttributes = AttributeDef.load(m.getArray(ATTRIBUTES));
+                        }
+                        if (m.has(HIT_LOCATIONS)) {
+                            mHitLocations = new HitLocationTable(m.getMap(HIT_LOCATIONS));
                         }
                         if (m.has(PAGE)) {
                             mPageSettings.load(m.getMap(PAGE));
@@ -471,8 +478,10 @@ public class Preferences extends ChangeableData {
                     w.endMap();
                     w.key(ATTRIBUTES);
                     AttributeDef.writeOrdered(w, mAttributes);
+                    w.key(HIT_LOCATIONS);
+                    mHitLocations.toJSON(w, null);
                     w.key(PAGE);
-                    mPageSettings.save(w);
+                    mPageSettings.toJSON(w);
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                     w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                     w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
@@ -970,6 +979,17 @@ public class Preferences extends ChangeableData {
     public void setAttributes(Map<String, AttributeDef> attributes) {
         if (!mAttributes.equals(attributes)) {
             mAttributes = AttributeDef.cloneMap(attributes);
+            notifyOfChange();
+        }
+    }
+
+    public HitLocationTable getHitLocations() {
+        return mHitLocations;
+    }
+
+    public void setHitLocations(HitLocationTable hitLocations) {
+        if (!mHitLocations.equals(hitLocations)) {
+            mHitLocations = hitLocations;
             notifyOfChange();
         }
     }

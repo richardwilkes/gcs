@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.datafile.ChangeNotifier;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.page.PageSettings;
@@ -34,6 +35,7 @@ public class Settings implements ChangeNotifier {
     public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
     public static final  String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
     public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
+    private static final String KEY_HIT_LOCATIONS                   = "hit_locations";
     public static final  String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
     public static final  String KEY_NOTES_DISPLAY                   = "notes_display";
     private static final String KEY_PAGE                            = "page";
@@ -59,6 +61,7 @@ public class Settings implements ChangeNotifier {
     private DisplayOption             mModifiersDisplay;
     private DisplayOption             mNotesDisplay;
     private Map<String, AttributeDef> mAttributes;
+    private HitLocationTable          mHitLocations;
     private PageSettings              mPageSettings;
     private boolean                   mUseMultiplicativeModifiers; // P102
     private boolean                   mUseModifyingDicePlusAdds; // B269
@@ -83,6 +86,7 @@ public class Settings implements ChangeNotifier {
         mModifiersDisplay = prefs.getModifiersDisplay();
         mNotesDisplay = prefs.getNotesDisplay();
         mAttributes = AttributeDef.cloneMap(prefs.getAttributes());
+        mHitLocations = prefs.getHitLocations().clone();
         mPageSettings = new PageSettings(this, prefs.getPageSettings());
         mUseMultiplicativeModifiers = prefs.useMultiplicativeModifiers();
         mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
@@ -106,6 +110,9 @@ public class Settings implements ChangeNotifier {
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
+        }
+        if (m.has(KEY_HIT_LOCATIONS)) {
+            mHitLocations = new HitLocationTable(m.getMap(KEY_HIT_LOCATIONS));
         }
         if (m.has(KEY_PAGE)) {
             mPageSettings.load(m.getMap(KEY_PAGE));
@@ -134,7 +141,7 @@ public class Settings implements ChangeNotifier {
         }
     }
 
-    void save(JsonWriter w) throws IOException {
+    void toJSON(JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(KEY_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
         w.keyValue(KEY_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
@@ -143,8 +150,10 @@ public class Settings implements ChangeNotifier {
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
         w.key(KEY_ATTRIBUTES);
         AttributeDef.writeOrdered(w, mAttributes);
+        w.key(KEY_HIT_LOCATIONS);
+        mHitLocations.toJSON(w, mCharacter);
         w.key(KEY_PAGE);
-        mPageSettings.save(w);
+        mPageSettings.toJSON(w);
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -387,6 +396,17 @@ public class Settings implements ChangeNotifier {
     public void setAttributes(Map<String, AttributeDef> attributes) {
         if (!mAttributes.equals(attributes)) {
             mAttributes = AttributeDef.cloneMap(attributes);
+            notifyOfChange();
+        }
+    }
+
+    public HitLocationTable getHitLocations() {
+        return mHitLocations;
+    }
+
+    public void setHitLocations(HitLocationTable hitLocations) {
+        if (!mHitLocations.equals(hitLocations)) {
+            mHitLocations = hitLocations;
             notifyOfChange();
         }
     }

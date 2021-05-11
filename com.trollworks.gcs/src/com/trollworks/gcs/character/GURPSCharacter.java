@@ -109,7 +109,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private int                                 mTotalPoints;
     private Settings                            mSettings;
     private Profile                             mProfile;
-    private Armor                               mArmor;
     private WeightValue                         mCachedWeightCarried;
     private WeightValue                         mCachedWeightCarriedForSkills;
     private Fixed6                              mCachedWealthCarried;
@@ -152,7 +151,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             mAttributes.put(attrID, new Attribute(attrID));
         }
         mProfile = new Profile(this, full);
-        mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mModifiedOn = System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR;
@@ -270,7 +268,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.key(Settings.KEY_ROOT);
-        mSettings.save(w);
+        mSettings.toJSON(w);
         w.keyValue(KEY_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.keyValue(KEY_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.key(Profile.KEY_PROFILE);
@@ -938,11 +936,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         return mSettings;
     }
 
-    /** @return The {@link Armor} stats. */
-    public Armor getArmor() {
-        return mArmor;
-    }
-
     /**
      * Searches the character's current advantages list for the specified name.
      *
@@ -1163,7 +1156,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         setDodgeBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "dodge"));
         setParryBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "parry"));
         setBlockBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "block"));
-        mArmor.update();
         if (!mSkillsUpdated) {
             updateSkills();
         }

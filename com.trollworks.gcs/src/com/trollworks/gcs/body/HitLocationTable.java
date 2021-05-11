@@ -11,25 +11,72 @@
 
 package com.trollworks.gcs.body;
 
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class HitLocationTable {
-    private String            mID;
-    private String            mName;
-    private Dice              mRoll;
-    private List<HitLocation> mLocations;
-    private HitLocation       mOwningLocation;
+public class HitLocationTable implements Cloneable {
+    private static final String                        KEY_ID        = "id";
+    private static final String                        KEY_NAME      = "name";
+    private static final String                        KEY_ROLL      = "roll";
+    private static final String                        KEY_LOCATIONS = "locations";
+    private static       List<HitLocationTable>        STD_TABLES_LIST;
+    private static       Map<String, HitLocationTable> STD_TABLES_MAP;
+    private              String                        mID;
+    private              String                        mName;
+    private              Dice                          mRoll;
+    private              List<HitLocation>             mLocations;
+    private              HitLocation                   mOwningLocation;
+    private              Map<String, HitLocation>      mLocationLookup;
 
     public HitLocationTable(String id, String name, Dice roll) {
         setID(id);
         mName = name;
         mRoll = roll.clone();
         mLocations = new ArrayList<>();
+    }
+
+    public HitLocationTable(JsonMap m) {
+        setID(m.getString(KEY_ID));
+        mName = m.getString(KEY_NAME);
+        mRoll = new Dice(m.getString(KEY_ROLL));
+        mLocations = new ArrayList<>();
+        JsonArray a    = m.getArray(KEY_LOCATIONS);
+        int       size = a.size();
+        for (int i = 0; i < size; i++) {
+            addLocation(new HitLocation(a.getMap(i)));
+        }
+        update();
+    }
+
+    public void toJSON(JsonWriter w, GURPSCharacter character) throws IOException {
+        w.startMap();
+        w.keyValue(KEY_ID, mID);
+        w.keyValue(KEY_NAME, mName);
+        w.keyValue(KEY_ROLL, mRoll.toString(false));
+        w.key(KEY_LOCATIONS);
+        w.startArray();
+        for (HitLocation location : mLocations) {
+            location.toJSON(w, character);
+        }
+        w.endArray();
+        w.endMap();
+    }
+
+    public void update() {
+        updateRollRanges();
+        mLocationLookup = new HashMap<>();
+        populateMap(mLocationLookup);
     }
 
     public String getID() {
@@ -73,7 +120,7 @@ public class HitLocationTable {
         mOwningLocation = owningLocation;
     }
 
-    public void updateRollRanges() {
+    private void updateRollRanges() {
         int start = mRoll.min(false);
         for (HitLocation location : mLocations) {
             String rollRange;
@@ -92,13 +139,87 @@ public class HitLocationTable {
         }
     }
 
-    public void populateMap(Map<String, HitLocation> map) {
+    protected void populateMap(Map<String, HitLocation> map) {
         for (HitLocation location : mLocations) {
             location.populateMap(map);
         }
     }
 
-    public static final List<HitLocationTable> createStdTables() {
+    public List<HitLocation> getUniqueHitLocations() {
+        if (mLocationLookup == null) {
+            update();
+        }
+        List<HitLocation> locations = new ArrayList<>(mLocationLookup.values());
+        Collections.sort(locations);
+        return locations;
+    }
+
+    public HitLocation lookupLocationByID(String id) {
+        if (mLocationLookup == null) {
+            update();
+        }
+        return mLocationLookup.get(id);
+    }
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
+    public HitLocationTable clone() {
+        HitLocationTable other = new HitLocationTable(mID, mName, mRoll);
+        for (HitLocation location : other.mLocations) {
+            other.addLocation(location.clone());
+        }
+        other.update();
+        return other;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        HitLocationTable that = (HitLocationTable) other;
+        if (!mID.equals(that.mID)) {
+            return false;
+        }
+        if (!mName.equals(that.mName)) {
+            return false;
+        }
+        if (!mRoll.equals(that.mRoll)) {
+            return false;
+        }
+        return mLocations.equals(that.mLocations);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mID.hashCode();
+        result = 31 * result + mName.hashCode();
+        result = 31 * result + mRoll.hashCode();
+        result = 31 * result + mLocations.hashCode();
+        return result;
+    }
+
+    public static final synchronized List<HitLocationTable> getStdTables() {
+        if (STD_TABLES_LIST == null) {
+            STD_TABLES_LIST = Collections.unmodifiableList(createStdTables());
+        }
+        return STD_TABLES_LIST;
+    }
+
+    public static final synchronized HitLocationTable lookupStdTable(String id) {
+        if (STD_TABLES_MAP == null) {
+            STD_TABLES_MAP = new HashMap<>();
+            for (HitLocationTable table : getStdTables()) {
+                STD_TABLES_MAP.put(table.getID(), table);
+            }
+        }
+        return STD_TABLES_MAP.get(id);
+    }
+
+    private static List<HitLocationTable> createStdTables() {
         List<HitLocationTable> tables = new ArrayList<>();
         tables.add(createArachnoidTable());
         tables.add(createAvianTable());
@@ -119,25 +240,26 @@ public class HitLocationTable {
         return tables;
     }
 
-    public static final HitLocationTable createArachnoidTable() {
+    private static HitLocationTable createArachnoidTable() {
         HitLocationTable table = new HitLocationTable("arachnoid", I18n.Text("Arachnoid"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("brain", I18n.Text("Brain"), 2, -7, 1, getBrainDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Leg 1-2"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Leg 1-2"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 3, 0, 0, ""));
         table.addLocation(new HitLocation("groin", I18n.Text("Groin"), 1, -3, 0, getGroinDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Leg 3-4"), 2, -2, 0, getLimbDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Leg 5-6"), 2, -2, 0, getLimbDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Leg 7-8"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Leg 3-4"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Leg 5-6"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Leg 7-8"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createAvianTable() {
+    private static HitLocationTable createAvianTable() {
         HitLocationTable table = new HitLocationTable("avian", I18n.Text("Avian"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
@@ -148,12 +270,13 @@ public class HitLocationTable {
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 2, -4, 0, getExtremityDescription()));
         table.addLocation(new HitLocation("tail", I18n.Text("Tail"), 2, -3, 0, getTailDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createCancroidTable() {
+    private static HitLocationTable createCancroidTable() {
         HitLocationTable table = new HitLocationTable("cancroid", I18n.Text("Cancroid"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
@@ -162,80 +285,85 @@ public class HitLocationTable {
         table.addLocation(new HitLocation("leg", I18n.Text("Leg"), 4, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 2, -4, 0, getExtremityDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createCentaurTable() {
+    private static HitLocationTable createCentaurTable() {
         HitLocationTable table = new HitLocationTable("centaur", I18n.Text("Centaur"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 3, 0, 0, ""));
         table.addLocation(new HitLocation("groin", I18n.Text("Groin"), 1, -3, 0, getGroinDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("arm", I18n.Text("Arm"), 2, -2, 0, getArmDescription()));
         table.addLocation(new HitLocation("hand", I18n.Text("Extremity"), 2, -4, 0, getHandDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createHexapodTable() {
+    private static HitLocationTable createHexapodTable() {
         HitLocationTable table = new HitLocationTable("hexapod", I18n.Text("Hexapod"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 2, 0, 0, ""));
-        table.addLocation(new HitLocation("leg", I18n.Text("Midleg"), 1, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Midleg"), 1, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("groin", I18n.Text("Groin"), 1, -3, 0, getGroinDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 2, -4, 0, getExtremityDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Midleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Midleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createWingedHexapodTable() {
+    private static HitLocationTable createWingedHexapodTable() {
         HitLocationTable table = new HitLocationTable("hexapod.winged", I18n.Text("Hexapod, Winged"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 2, 0, 0, ""));
-        table.addLocation(new HitLocation("leg", I18n.Text("Midleg"), 1, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Midleg"), 1, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("wing", I18n.Text("Wing"), 1, -2, 0, getWingDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Midleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Midleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 2, -4, 0, getExtremityDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
     public static final HitLocationTable createHumanoidTable() {
         HitLocationTable table = new HitLocationTable("humanoid", I18n.Text("Humanoid"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Right Leg"), 2, -2, 0, getLimbDescription()));
-        table.addLocation(new HitLocation("arm", I18n.Text("Right Arm"), 1, -2, 0, getArmDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Right Leg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("arm", I18n.Text("Arm"), I18n.Text("Right Arm"), 1, -2, 0, getArmDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 2, 0, 0, ""));
         table.addLocation(new HitLocation("groin", I18n.Text("Groin"), 1, -3, 0, getGroinDescription()));
-        table.addLocation(new HitLocation("arm", I18n.Text("Left Arm"), 1, -2, 0, getArmDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Left Leg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("arm", I18n.Text("Arm"), I18n.Text("Left Arm"), 1, -2, 0, getArmDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Left Leg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("hand", I18n.Text("Hand"), 1, -4, 0, getHandDescription()));
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 1, -4, 0, getExtremityDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 2, -5, 0, getNeckDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createIchthyoidTable() {
+    private static HitLocationTable createIchthyoidTable() {
         HitLocationTable table = new HitLocationTable("ichthyoid", I18n.Text("Ichthyoid"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -8, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -8, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("fin", I18n.Text("Fin"), 1, -4, 0, getFinDescription()));
@@ -243,60 +371,64 @@ public class HitLocationTable {
         table.addLocation(new HitLocation("fin", I18n.Text("Fin"), 4, -4, 0, getFinDescription()));
         table.addLocation(new HitLocation("tail", I18n.Text("Tail"), 2, -3, 0, getTailDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createOctopodTable() {
+    private static HitLocationTable createOctopodTable() {
         HitLocationTable table = new HitLocationTable("octopod", I18n.Text("Octopod"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -8, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -8, 0, getEyeDescription()));
         table.addLocation(new HitLocation("brain", I18n.Text("Brain"), 2, -7, 1, getBrainDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
-        table.addLocation(new HitLocation("arm", I18n.Text("Arm 1-2"), 2, -2, 0, getArmDescription()));
+        table.addLocation(new HitLocation("arm", I18n.Text("Arm"), I18n.Text("Arm 1-2"), 2, -2, 0, getArmDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 4, 0, 0, ""));
-        table.addLocation(new HitLocation("arm", I18n.Text("Arm 3-4"), 2, -2, 0, getArmDescription()));
-        table.addLocation(new HitLocation("arm", I18n.Text("Arm 5-6"), 2, -2, 0, getArmDescription()));
-        table.addLocation(new HitLocation("arm", I18n.Text("Arm 7-8"), 2, -2, 0, getArmDescription()));
+        table.addLocation(new HitLocation("arm", I18n.Text("Arm"), I18n.Text("Arm 3-4"), 2, -2, 0, getArmDescription()));
+        table.addLocation(new HitLocation("arm", I18n.Text("Arm"), I18n.Text("Arm 5-6"), 2, -2, 0, getArmDescription()));
+        table.addLocation(new HitLocation("arm", I18n.Text("Arm"), I18n.Text("Arm 7-8"), 2, -2, 0, getArmDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createQuadrupedTable() {
+    private static HitLocationTable createQuadrupedTable() {
         HitLocationTable table = new HitLocationTable("quadruped", I18n.Text("Quadruped"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 3, 0, 0, ""));
         table.addLocation(new HitLocation("groin", I18n.Text("Groin"), 1, -3, 0, getGroinDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 2, -4, 0, getExtremityDescription()));
         table.addLocation(new HitLocation("tail", I18n.Text("Tail"), 2, -3, 0, getTailDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createWingedQuadrupedTable() {
+    private static HitLocationTable createWingedQuadrupedTable() {
         HitLocationTable table = new HitLocationTable("quadruped.winged", I18n.Text("Quadruped, Winged"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Foreleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 3, 0, 0, ""));
         table.addLocation(new HitLocation("wing", I18n.Text("Wing"), 1, -2, 0, getWingDescription()));
-        table.addLocation(new HitLocation("leg", I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
+        table.addLocation(new HitLocation("leg", I18n.Text("Leg"), I18n.Text("Hindleg"), 2, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 2, -4, 0, getExtremityDescription()));
         table.addLocation(new HitLocation("tail", I18n.Text("Tail"), 2, -3, 0, getTailDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
 
-    public static final HitLocationTable createScorpionTable() {
+    private static HitLocationTable createScorpionTable() {
         HitLocationTable table = new HitLocationTable("scorpion", I18n.Text("scorpion"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
@@ -306,12 +438,13 @@ public class HitLocationTable {
         table.addLocation(new HitLocation("leg", I18n.Text("Leg"), 4, -2, 0, getLimbDescription()));
         table.addLocation(new HitLocation("foot", I18n.Text("Foot"), 2, -4, 0, getExtremityDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createSnakemenTable() {
+    private static HitLocationTable createSnakemenTable() {
         HitLocationTable table = new HitLocationTable("snakemen", I18n.Text("Snakemen"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
@@ -321,43 +454,47 @@ public class HitLocationTable {
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 2, 0, 0, ""));
         table.addLocation(new HitLocation("hand", I18n.Text("Hand"), 2, -4, 0, getHandDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createSquidTable() {
+    private static HitLocationTable createSquidTable() {
         HitLocationTable table = new HitLocationTable("squid", I18n.Text("Squid"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -8, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -8, 0, getEyeDescription()));
         table.addLocation(new HitLocation("brain", I18n.Text("Brain"), 2, -7, 1, getBrainDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
-        table.addLocation(new HitLocation("arm", I18n.Text("Arm 1-2"), 2, -2, 0, getArmDescription()));
+        table.addLocation(new HitLocation("arm", I18n.Text("Arm"), 2, -2, 0, getArmDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 4, 0, 0, ""));
         table.addLocation(new HitLocation("hand", I18n.Text("Extremity"), 4, -2, 0, getArmDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 2, 0, 0, ""));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createVeriformTable() {
+    private static HitLocationTable createVeriformTable() {
         HitLocationTable table = new HitLocationTable("vermiform", I18n.Text("Vermiform"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 3, -5, 0, getNeckDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 10, 0, 0, ""));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 
-    public static final HitLocationTable createWingedVeriformTable() {
+    private static HitLocationTable createWingedVeriformTable() {
         HitLocationTable table = new HitLocationTable("vermiform.winged", I18n.Text("Vermiform, Winged"), new Dice(3));
-        table.addLocation(new HitLocation("eyes", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
+        table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 3, -5, 0, getNeckDescription()));
         table.addLocation(new HitLocation("torso", I18n.Text("Torso"), 6, 0, 0, ""));
         table.addLocation(new HitLocation("wing", I18n.Text("Wing"), 4, -2, 0, getWingDescription()));
         table.addLocation(new HitLocation("vitals", I18n.Text("Vitals"), 0, -3, 0, getVitalsDescription()));
+        table.update();
         return table;
     }
 

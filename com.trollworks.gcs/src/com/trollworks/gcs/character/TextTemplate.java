@@ -17,6 +17,8 @@ import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.attribute.PoolThreshold;
+import com.trollworks.gcs.body.HitLocation;
+import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
@@ -554,7 +556,12 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSwing().toString());
             break;
         case KEY_GENERAL_DR:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getArmor().getTorsoDR()));
+            int torsoDR = 0;
+            HitLocation torsoLocation = gurpsCharacter.getProfile().getHitLocations().lookupLocationByID("torso");
+            if (torsoLocation != null) {
+                torsoDR = torsoLocation.getDR(gurpsCharacter, null);
+            }
+            writeEncodedText(out, Numbers.format(torsoDR));
             break;
         case KEY_CURRENT_DODGE:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel(false))));
@@ -656,7 +663,7 @@ public class TextTemplate {
         case KEY_CAMPAIGN_DEPRECATED:
             break;
         case KEY_BODY_TYPE:
-            writeEncodedText(out, gurpsCharacter.getProfile().getHitLocationTable().toString());
+            writeEncodedText(out, gurpsCharacter.getProfile().getHitLocations().getName());
             break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
@@ -906,8 +913,8 @@ public class TextTemplate {
         StringBuilder    keyBuffer        = new StringBuilder();
         boolean          lookForKeyMarker = true;
         int              currentID        = 0;
-        HitLocationTable table            = gurpsCharacter.getProfile().getHitLocationTable();
-        for (HitLocationTableEntry entry : table.getEntries()) {
+        HitLocationTable table            = gurpsCharacter.getProfile().getHitLocations();
+        for (HitLocation location : table.getLocations()) {
             currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -929,15 +936,15 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_ROLL -> writeEncodedText(out, entry.getRoll());
-                        case KEY_WHERE -> writeEncodedText(out, entry.getName());
-                        case KEY_PENALTY -> writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
-                        case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getArmor().getValueForID(entry.getKey())).intValue()));
+                        case KEY_ROLL -> writeEncodedText(out, location.getRollRange());
+                        case KEY_WHERE -> writeEncodedText(out, location.getTableName());
+                        case KEY_PENALTY -> writeEncodedText(out, Numbers.format(location.getHitPenalty()));
+                        case KEY_DR -> writeEncodedText(out, Numbers.format(location.getDR(gurpsCharacter, null)));
                         case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         // Show the equipment that is providing the DR bonus
-                        case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
+                        case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(location).replace(NEWLINE, COMMA_SEPARATOR));
                         case KEY_EQUIPMENT_FORMATTED -> {
-                            String loc = hitLocationEquipment(entry);
+                            String loc = hitLocationEquipment(location);
                             if (!loc.isEmpty()) {
                                 writeEncodedText(out, PARAGRAPH_START + loc.replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
                             }
@@ -950,20 +957,17 @@ public class TextTemplate {
         }
     }
 
+    // TODO: Revisit this method, as the custom hit locations are different...
+
     /* A kludgy method to relate a hitlocation to the armor that is providing the DR for that hit location. */
-    private String hitLocationEquipment(HitLocationTableEntry entry) {
+    private String hitLocationEquipment(HitLocation location) {
         StringBuilder sb    = new StringBuilder();
         boolean       first = true;
         for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
             if (equipment.isEquipped()) {
                 for (Feature feature : equipment.getFeatures()) {
                     if (feature instanceof DRBonus) {
-                        String locationKey = entry.getLocation().getKey();
-                        if (locationKey.equals(HitLocation.VITALS.getKey())) {
-                            // Assume Vitals uses the same equipment as Torso
-                            locationKey = HitLocation.TORSO.getKey();
-                        }
-                        if (locationKey.endsWith(((DRBonus) feature).getLocation().name())) {
+                        if (location.getID().equals(((DRBonus) feature).getLocation())) {
                             // HUGE Kludge. Only way I could equate the 2
                             // different HitLocations. I know that one is derived
                             // from the other, so this check will ALWAYS work.
