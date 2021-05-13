@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.WidgetHelpers;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.text.Text;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -201,15 +201,8 @@ public class AttributePanel extends JPanel {
         right.add(remove);
     }
 
-    private void addLabel(Container container, String title, String tooltip) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        label.setOpaque(false);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        container.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-    }
-
     private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
-        addLabel(container, title, tooltip);
+        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment());
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {

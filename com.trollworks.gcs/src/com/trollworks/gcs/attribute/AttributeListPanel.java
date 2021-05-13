@@ -14,6 +14,7 @@ package com.trollworks.gcs.attribute;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
+import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -106,7 +107,7 @@ public class AttributeListPanel extends BandedPanel {
                 id = "id" + ++counter;
             }
         }
-        AttributeDef def = new AttributeDef(id, AttributeType.INTEGER, "name", "description", "10", order, 0, 0);
+        AttributeDef def = new AttributeDef(id, AttributeType.INTEGER, I18n.Text("name"), I18n.Text("description"), "10", order, 0, 0);
         mAttributes.put(def.getID(), def);
         mAdjustCallback.run();
         add(new AttributePanel(mAttributes, def, mAdjustCallback), new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());

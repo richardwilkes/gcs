@@ -33,6 +33,7 @@ public class FileType {
     public static final FileType                  SPELL              = new FileType(I18n.Text("Spells Library"), Images.SPL_FILE, true, true, "spl");
     public static final FileType                  NOTE               = new FileType(I18n.Text("Notes Library"), Images.NOT_FILE, true, true, "not");
     public static final FileType                  ATTRIBUTE_SETTINGS = new FileType(I18n.Text("Attribute Settings"), Images.FILE, true, false, "gas");
+    public static final FileType                  HIT_LOCATIONS      = new FileType(I18n.Text("Hit Locations"), Images.FILE, true, false, "ghl");
     public static final FileType                  PDF                = new FileType(I18n.Text("PDF Files"), Images.PDF_FILE, false, true, "pdf");
     public static final FileType                  PNG                = new FileType(I18n.Text("PNG Files"), Images.FILE, false, false, "png");
     public static final FileType                  JPEG               = new FileType(I18n.Text("JPEG Files"), Images.FILE, false, false, "jpg", "jpeg");

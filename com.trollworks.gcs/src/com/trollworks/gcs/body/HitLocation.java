@@ -174,7 +174,7 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
         mOwningTable = table;
     }
 
-    public HitLocationTable setSubTable() {
+    public HitLocationTable getSubTable() {
         return mSubTable;
     }
 

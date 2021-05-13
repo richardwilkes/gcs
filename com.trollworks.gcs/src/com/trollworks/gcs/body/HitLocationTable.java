@@ -112,6 +112,11 @@ public class HitLocationTable implements Cloneable {
         location.setOwningTable(this);
     }
 
+    public void removeLocation(HitLocation location) {
+        mLocations.remove(location);
+        location.setOwningTable(null);
+    }
+
     public HitLocation getOwningLocation() {
         return mOwningLocation;
     }
@@ -131,7 +136,7 @@ public class HitLocationTable implements Cloneable {
             default -> rollRange = start + "-" + (start + slots - 1);
             }
             location.setRollRange(rollRange);
-            HitLocationTable subTable = location.setSubTable();
+            HitLocationTable subTable = location.getSubTable();
             if (subTable != null) {
                 subTable.updateRollRanges();
             }
@@ -165,11 +170,22 @@ public class HitLocationTable implements Cloneable {
     @Override
     public HitLocationTable clone() {
         HitLocationTable other = new HitLocationTable(mID, mName, mRoll);
-        for (HitLocation location : other.mLocations) {
+        for (HitLocation location : mLocations) {
             other.addLocation(location.clone());
         }
         other.update();
         return other;
+    }
+
+    public void resetTo(HitLocationTable other) {
+        mID = other.mID;
+        mName = other.mName;
+        mRoll = other.mRoll;
+        mLocations = new ArrayList<>();
+        for (HitLocation location : other.mLocations) {
+            addLocation(location.clone());
+        }
+        update();
     }
 
     @Override
@@ -325,7 +341,7 @@ public class HitLocationTable implements Cloneable {
     }
 
     private static HitLocationTable createWingedHexapodTable() {
-        HitLocationTable table = new HitLocationTable("hexapod.winged", I18n.Text("Hexapod, Winged"), new Dice(3));
+        HitLocationTable table = new HitLocationTable("hexapod_winged", I18n.Text("Hexapod, Winged"), new Dice(3));
         table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("neck", I18n.Text("Neck"), 1, -5, 0, getNeckDescription()));
@@ -409,7 +425,7 @@ public class HitLocationTable implements Cloneable {
     }
 
     private static HitLocationTable createWingedQuadrupedTable() {
-        HitLocationTable table = new HitLocationTable("quadruped.winged", I18n.Text("Quadruped, Winged"), new Dice(3));
+        HitLocationTable table = new HitLocationTable("quadruped_winged", I18n.Text("Quadruped, Winged"), new Dice(3));
         table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
@@ -427,7 +443,7 @@ public class HitLocationTable implements Cloneable {
 
 
     private static HitLocationTable createScorpionTable() {
-        HitLocationTable table = new HitLocationTable("scorpion", I18n.Text("scorpion"), new Dice(3));
+        HitLocationTable table = new HitLocationTable("scorpion", I18n.Text("Scorpion"), new Dice(3));
         table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));
@@ -486,7 +502,7 @@ public class HitLocationTable implements Cloneable {
     }
 
     private static HitLocationTable createWingedVeriformTable() {
-        HitLocationTable table = new HitLocationTable("vermiform.winged", I18n.Text("Vermiform, Winged"), new Dice(3));
+        HitLocationTable table = new HitLocationTable("vermiform_winged", I18n.Text("Vermiform, Winged"), new Dice(3));
         table.addLocation(new HitLocation("eye", I18n.Text("Eyes"), 0, -9, 0, getEyeDescription()));
         table.addLocation(new HitLocation("skull", I18n.Text("Skull"), 2, -7, 2, getSkullDescription()));
         table.addLocation(new HitLocation("face", I18n.Text("Face"), 1, -5, 0, getFaceDescription()));

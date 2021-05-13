@@ -18,6 +18,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.WidgetHelpers;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -29,9 +31,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -43,7 +43,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
     private FontAwesomeButton   mMoveDownButton;
     private EditorField         mStateField;
     private EditorField         mDivisorField;
-    private JTextArea           mExplanationField;
+    private MultiLineTextField  mExplanationField;
 
     public ThresholdPanel(List<PoolThreshold> thresholds, PoolThreshold threshold, Runnable adjustCallback) {
         super(new PrecisionLayout().setColumns(3).setMargins(0));
@@ -184,18 +184,9 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         return field;
     }
 
-    private JTextArea addTextArea(Container container, String title, String tooltip, String text) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        label.setOpaque(false);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        container.add(label, new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        JTextArea area = new JTextArea(text);
-        area.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        area.setBorder(UIManager.getBorder("FormattedTextField.border"));
-        area.setTabSize(2);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.getDocument().addDocumentListener(this);
+    private MultiLineTextField addTextArea(Container container, String title, String tooltip, String text) {
+        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        MultiLineTextField area = new MultiLineTextField(text, tooltip, this);
         container.add(area, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return area;
     }

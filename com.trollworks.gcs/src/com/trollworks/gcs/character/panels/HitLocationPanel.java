@@ -15,7 +15,6 @@ import com.trollworks.gcs.body.HitLocation;
 import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
@@ -28,19 +27,22 @@ import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.text.MessageFormat;
 import javax.swing.SwingConstants;
 
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
+    private static float colorAdjustment = -0.1f;
+
     /**
      * Creates a new hit location panel.
      *
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), String.format(I18n.Text("Locations: %s"), sheet.getCharacter().getProfile().getHitLocations().getName()));
+        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), sheet.getCharacter().getProfile().getHitLocations().getName());
 
         addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.HEADER);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
@@ -50,28 +52,30 @@ public class HitLocationPanel extends DropPanel {
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         createHeader(I18n.Text("DR"), null);
 
-        GURPSCharacter   character = sheet.getCharacter();
-        HitLocationTable table     = character.getProfile().getHitLocations();
-        boolean          band      = false;
+        addTable(sheet, sheet.getCharacter().getProfile().getHitLocations(), 0, ThemeColor.BANDING, Color.WHITE, false);
+    }
+
+    private boolean addTable(CharacterSheet sheet, HitLocationTable table, int depth, Color band1Color, Color band2Color, boolean band) {
         for (HitLocation location : table.getLocations()) {
-            String    name  = location.getTableName();
-            PageLabel first = createLabel(location.getRollRange(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), name), true);
-            if (band) {
-                band = false;
-                addHorizontalBackground(first, ThemeColor.BANDING);
-            } else {
-                band = true;
-            }
+            String    name   = location.getTableName();
+            String    prefix = Text.makeFiller(depth * 3, ' ');
+            PageLabel first  = createLabel(prefix + location.getRollRange(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), name), SwingConstants.LEFT);
+            addHorizontalBackground(first, band ? band1Color : band2Color);
+            band = !band;
             createDivider();
-            createLabel(name, Text.wrapPlainTextForToolTip(location.getDescription()), true);
+            createLabel(prefix + name, Text.wrapPlainTextForToolTip(location.getDescription()), SwingConstants.LEFT);
             createDivider();
-            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), name), false);
+            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), name), SwingConstants.RIGHT);
             createDivider();
             StringBuilder tooltip = new StringBuilder();
-            int           dr      = location.getDR(character, tooltip);
+            int           dr      = location.getDR(sheet.getCharacter(), tooltip);
             //noinspection DynamicRegexReplaceableByCompiledPattern
             createDRField(sheet, Integer.valueOf(dr), String.format(I18n.Text("<html><body>The DR covering the <b>%s</b> hit location%s</body></html>"), name, tooltip.toString().replaceAll("\n", "<br>")));
+            if (location.getSubTable() != null) {
+                band = addTable(sheet, location.getSubTable(), depth + 1, band1Color, band2Color, band);
+            }
         }
+        return band;
     }
 
     @Override
@@ -94,10 +98,10 @@ public class HitLocationPanel extends DropPanel {
         return panel;
     }
 
-    private PageLabel createLabel(String title, String tooltip, boolean center) {
+    private PageLabel createLabel(String title, String tooltip, int alignment) {
         PageLabel label = new PageLabel(title, null);
         label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        label.setHorizontalAlignment(center ? SwingConstants.CENTER : SwingConstants.RIGHT);
+        label.setHorizontalAlignment(alignment);
         add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         return label;
     }
