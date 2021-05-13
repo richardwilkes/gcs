@@ -17,10 +17,9 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
@@ -53,7 +52,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;
     private JComboBox<String> mCategoryCombo;
-    private IconButton        mLockButton;
+    private FontAwesomeButton mLockButton;
     private JScrollPane       mScroller;
     private ListOutline       mOutline;
     private boolean           mUpdatePending;
@@ -70,6 +69,14 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         Preferences    prefs   = Preferences.getInstance();
         mToolbar = new Toolbar();
+        mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf09c", 16, I18n.Text("Switches between allowing editing and not"), () -> {
+            OutlineModel model = mOutline.getModel();
+            model.setLocked(!model.isLocked());
+            mLockButton.setText(model.isLocked() ? "\uf023" : "\uf09c");
+        });
+        mToolbar.add(mLockButton);
+        mToolbar.add(new FontAwesomeButton("\uf0e8", 16, I18n.Text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
+        mToolbar.add(new FontAwesomeButton("\uf337", 16, I18n.Text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(prefs.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
@@ -84,14 +91,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mToolbar.add(mScaleCombo);
         createFilterField();
         createCategoryCombo();
-        mLockButton = new IconButton(outlineModel.isLocked() ? Images.LOCKED : Images.UNLOCKED, I18n.Text("Switches between allowing editing and not"), () -> {
-            OutlineModel model = mOutline.getModel();
-            model.setLocked(!model.isLocked());
-            mLockButton.setIcon(model.isLocked() ? Images.LOCKED : Images.UNLOCKED);
-        });
-        mToolbar.add(mLockButton);
-        mToolbar.add(new IconButton(Images.TOGGLE_OPEN, I18n.Text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
-        mToolbar.add(new IconButton(Images.SIZE_TO_FIT, I18n.Text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
         add(mToolbar, BorderLayout.NORTH);
         mScroller = new JScrollPane(content);
         mScroller.setBorder(null);

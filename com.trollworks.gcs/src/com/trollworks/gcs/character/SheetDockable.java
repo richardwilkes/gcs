@@ -13,8 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
@@ -55,7 +54,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
     @Override
     protected Toolbar createToolbar() {
         Toolbar toolbar = super.createToolbar();
-        toolbar.add(new IconButton(Images.GEAR, I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())), 0);
+        toolbar.add(new FontAwesomeButton("\uf013", 16, I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())), 0);
         return toolbar;
     }
 

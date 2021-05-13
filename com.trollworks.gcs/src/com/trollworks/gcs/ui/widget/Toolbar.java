@@ -30,7 +30,7 @@ import javax.swing.border.CompoundBorder;
 public class Toolbar extends JPanel implements LayoutManager2 {
     public static final  String                 LAYOUT_FILL         = "fill";
     public static final  String                 LAYOUT_EXTRA_BEFORE = "extra_before";
-    private static final int                    GAP                 = 2;
+    private static final int                    GAP                 = 8;
     private              Map<Component, String> mConstraints        = new HashMap<>();
 
     public Toolbar() {
@@ -38,7 +38,7 @@ public class Toolbar extends JPanel implements LayoutManager2 {
         super.setLayout(this);
         setOpaque(true);
         setBackground(DockColors.BACKGROUND);
-        setBorder(new CompoundBorder(new LineBorder(DockColors.SHADOW, 0, 0, 1, 0), new EmptyBorder(0, 4, 0, 4)));
+        setBorder(new CompoundBorder(new LineBorder(DockColors.SHADOW, 0, 0, 1, 0), new EmptyBorder(0, GAP, 0, GAP)));
     }
 
     @Override
@@ -206,7 +206,7 @@ public class Toolbar extends JPanel implements LayoutManager2 {
         int height = getHeight();
         for (int i = 0; i < count; i++) {
             x += extraBefore[i];
-            comps[i].setBounds(x, insets.top + (height - (insets.top + heights[i] + insets.bottom)) / 2, widths[i], heights[i]);
+            comps[i].setBounds(x, (height - heights[i]) / 2, widths[i], heights[i]);
             x += widths[i] + GAP;
         }
     }

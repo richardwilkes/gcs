@@ -19,14 +19,15 @@ import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.utility.I18n;
 
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 
 /** The character identity panel. */
 public class IdentityPanel extends DropPanel {
@@ -44,9 +45,7 @@ public class IdentityPanel extends DropPanel {
     }
 
     private void createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
-        IconButton button = new IconButton(Images.RANDOMIZE, null, randomizer);
-        button.setToolTipText(String.format(I18n.Text("Randomize %s"), title));
-        add(button);
+        add(new FontAwesomeButton("\uf074", UIManager.getFont(Fonts.KEY_LABEL_PRIMARY).getSize() * 8 / 10, String.format(I18n.Text("Randomize %s"), title), randomizer));
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
         add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayoutData());
     }

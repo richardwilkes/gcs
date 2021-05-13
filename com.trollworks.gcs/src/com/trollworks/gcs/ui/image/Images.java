@@ -43,26 +43,19 @@ public final class Images {
     public static final RetinaIcon GCS_FILE              = getRetina("gcs_file");
     public static final RetinaIcon GCS_MARKER            = getRetina("gcs_marker");
     public static final RetinaIcon GCT_FILE              = getRetina("gct_file");
-    public static final RetinaIcon GEAR                  = getRetina("gear");
-    public static final RetinaIcon LOCKED                = getRetina("locked");
     public static final RetinaIcon MENTAL_TYPE           = getRetina("mental_type");
     public static final RetinaIcon MORE                  = getRetina("more");
     public static final RetinaIcon NOT_FILE              = getRetina("not_file");
     public static final RetinaIcon NOT_MARKER            = getRetina("not_marker");
     public static final RetinaIcon PDF_FILE              = getRetina("pdf_file");
     public static final RetinaIcon PHYSICAL_TYPE         = getRetina("physical_type");
-    public static final RetinaIcon RANDOMIZE             = getRetina("randomize");
-    public static final RetinaIcon REFRESH               = getRetina("refresh");
     public static final RetinaIcon REMOVE                = getRetina("remove");
-    public static final RetinaIcon SIZE_TO_FIT           = getRetina("size_to_fit");
     public static final RetinaIcon SKL_FILE              = getRetina("skl_file");
     public static final RetinaIcon SKL_MARKER            = getRetina("skl_marker");
     public static final RetinaIcon SOCIAL_TYPE           = getRetina("social_type");
     public static final RetinaIcon SPL_FILE              = getRetina("spl_file");
     public static final RetinaIcon SPL_MARKER            = getRetina("spl_marker");
     public static final RetinaIcon SUPERNATURAL_TYPE     = getRetina("supernatural_type");
-    public static final RetinaIcon TOGGLE_OPEN           = getRetina("toggle_open");
-    public static final RetinaIcon UNLOCKED              = getRetina("unlocked");
     public static final Img        DEFAULT_PORTRAIT      = get("default_portrait");
 
     private Images() {

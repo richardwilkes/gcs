@@ -103,12 +103,6 @@ public class TextCell implements Cell {
         Font  font      = scale.scale(getFont(row, column));
         int   minHeight = TextDrawing.getPreferredSize(font, "Mg").height;
         int   height    = TextDrawing.getPreferredSize(font, getPresentationText(outline, row, column)).height;
-        if (row != null) {
-            int disclosureHeight = scale.scale(outline.getModel().getIndentWidth());
-            if (height < disclosureHeight) {
-                height = disclosureHeight;
-            }
-        }
         return Math.max(minHeight, height);
     }
 
