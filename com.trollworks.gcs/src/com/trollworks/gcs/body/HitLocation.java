@@ -147,7 +147,14 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
         if (mDRBonus != 0 && toolTip != null) {
             toolTip.append("\n").append(mChoiceName).append(" [").append(Numbers.formatWithForcedSign(mDRBonus)).append("]");
         }
-        return character.getIntegerBonusFor(KEY_PREFIX + mID, toolTip) + mDRBonus;
+        int dr = character.getIntegerBonusFor(KEY_PREFIX + mID, toolTip) + mDRBonus;
+        if (mOwningTable != null) {
+            HitLocation owningLocation = mOwningTable.getOwningLocation();
+            if (owningLocation != null) {
+                dr += owningLocation.getDR(character, toolTip);
+            }
+        }
+        return dr;
     }
 
     public int getDRBonus() {
