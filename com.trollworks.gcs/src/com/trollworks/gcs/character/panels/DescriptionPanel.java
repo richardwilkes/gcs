@@ -120,13 +120,13 @@ public class DescriptionPanel extends DropPanel {
         button.setToolTipText(String.format(I18n.Text("Randomize %s"), title));
         parent.add(button);
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_PAGE);
-        parent.add(new PageLabel(title + ":", field), new PrecisionLayoutData().setEndHorizontalAlignment());
+        parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment());
         parent.add(field, createFieldLayout());
     }
 
     private void createField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter) {
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_PAGE);
-        parent.add(new PageLabel(title + ":", field), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
+        parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
         parent.add(field, createFieldLayout());
     }
 

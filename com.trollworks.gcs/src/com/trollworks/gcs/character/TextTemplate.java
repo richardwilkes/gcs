@@ -204,7 +204,6 @@ public class TextTemplate {
     private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
     private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
     private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
-    private static final String KEY_OPTIONS_CODE                      = "OPTIONS_CODE";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
     private static final String KEY_OTHER_VALUE                       = "OTHER_EQUIPMENT_VALUE";
@@ -293,28 +292,31 @@ public class TextTemplate {
     private static final String KEY_SUFFIX_CURLY   = "_CURLY";
     private static final String KEY_SUFFIX_PAREN   = "_PAREN";
 
-    // TODO: Eliminate these deprecated keys after a suitable waiting period; last added to May 30, 2020
+    // TODO: Eliminate these deprecated keys after a suitable waiting period; added May 30, 2020
     private static final String KEY_EARNED_POINTS_DEPRECATED = "EARNED_POINTS";
     private static final String KEY_CAMPAIGN_DEPRECATED      = "CAMPAIGN";
     private static final String KEY_RACE_DEPRECATED          = "RACE";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; added April 15, 2021
-    private static final String KEY_BASIC_FP      = "BASIC_FP";
-    private static final String KEY_BASIC_HP      = "BASIC_HP";
-    private static final String KEY_DEAD          = "DEAD";
-    private static final String KEY_DEATH_CHECK_1 = "DEATH_CHECK_1";
-    private static final String KEY_DEATH_CHECK_2 = "DEATH_CHECK_2";
-    private static final String KEY_DEATH_CHECK_3 = "DEATH_CHECK_3";
-    private static final String KEY_DEATH_CHECK_4 = "DEATH_CHECK_4";
-    private static final String KEY_FP            = "FP";
-    private static final String KEY_FP_COLLAPSE   = "FP_COLLAPSE";
-    private static final String KEY_FP_POINTS     = "FP_POINTS";
-    private static final String KEY_HP            = "HP";
-    private static final String KEY_HP_COLLAPSE   = "HP_COLLAPSE";
-    private static final String KEY_HP_POINTS     = "HP_POINTS";
-    private static final String KEY_REELING       = "REELING";
-    private static final String KEY_TIRED         = "TIRED";
-    private static final String KEY_UNCONSCIOUS   = "UNCONSCIOUS";
+    private static final String KEY_BASIC_FP_DEPRECATED      = "BASIC_FP";
+    private static final String KEY_BASIC_HP_DEPRECATED      = "BASIC_HP";
+    private static final String KEY_DEAD_DEPRECATED          = "DEAD";
+    private static final String KEY_DEATH_CHECK_1_DEPRECATED = "DEATH_CHECK_1";
+    private static final String KEY_DEATH_CHECK_2_DEPRECATED = "DEATH_CHECK_2";
+    private static final String KEY_DEATH_CHECK_3_DEPRECATED = "DEATH_CHECK_3";
+    private static final String KEY_DEATH_CHECK_4_DEPRECATED = "DEATH_CHECK_4";
+    private static final String KEY_FP_DEPRECATED            = "FP";
+    private static final String KEY_FP_COLLAPSE_DEPRECATED   = "FP_COLLAPSE";
+    private static final String KEY_FP_POINTS_DEPRECATED     = "FP_POINTS";
+    private static final String KEY_HP_DEPRECATED            = "HP";
+    private static final String KEY_HP_COLLAPSE_DEPRECATED   = "HP_COLLAPSE";
+    private static final String KEY_HP_POINTS_DEPRECATED     = "HP_POINTS";
+    private static final String KEY_REELING_DEPRECATED       = "REELING";
+    private static final String KEY_TIRED_DEPRECATED         = "TIRED";
+    private static final String KEY_UNCONSCIOUS_DEPRECATED   = "UNCONSCIOUS";
+
+    // TODO: Eliminate these deprecated keys after a suitable waiting period; added May 12, 2021
+    private static final String KEY_OPTIONS_CODE_DEPRECATED = "OPTIONS_CODE";
 
     private CharacterSheet mSheet;
     private boolean        mEncodeText         = true;
@@ -410,9 +412,6 @@ public class TextTemplate {
         case KEY_PLAYER:
             writeEncodedText(out, description.getPlayerName());
             break;
-        case KEY_OPTIONS_CODE:
-            writeEncodedText(out, gurpsCharacter.getSettings().optionsCode());
-            break;
         case KEY_CREATED_ON:
             writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn() * FieldFactory.TIMESTAMP_FACTOR));
             break;
@@ -443,10 +442,10 @@ public class TextTemplate {
         case KEY_WILL_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("will")));
             break;
-        case KEY_FP_POINTS:
+        case KEY_FP_POINTS_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("fp")));
             break;
-        case KEY_HP_POINTS:
+        case KEY_HP_POINTS_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("hp")));
             break;
         case KEY_BASIC_SPEED_POINTS:
@@ -575,46 +574,46 @@ public class TextTemplate {
         case KEY_BEST_CURRENT_BLOCK:
             writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
             break;
-        case KEY_FP:
+        case KEY_FP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("fp")));
             break;
-        case KEY_BASIC_FP:
+        case KEY_BASIC_FP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fp")));
             break;
-        case KEY_TIRED:
+        case KEY_TIRED_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Tired"));
             break;
-        case KEY_FP_COLLAPSE:
+        case KEY_FP_COLLAPSE_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Collapse"));
             break;
-        case KEY_UNCONSCIOUS:
+        case KEY_UNCONSCIOUS_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Unconscious"));
             break;
-        case KEY_HP:
+        case KEY_HP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("hp")));
             break;
-        case KEY_BASIC_HP:
+        case KEY_BASIC_HP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hp")));
             break;
-        case KEY_REELING:
+        case KEY_REELING_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Reeling"));
             break;
-        case KEY_HP_COLLAPSE:
+        case KEY_HP_COLLAPSE_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Collapse"));
             break;
-        case KEY_DEATH_CHECK_1:
+        case KEY_DEATH_CHECK_1_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(1)));
             break;
-        case KEY_DEATH_CHECK_2:
+        case KEY_DEATH_CHECK_2_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(2)));
             break;
-        case KEY_DEATH_CHECK_3:
+        case KEY_DEATH_CHECK_3_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(3)));
             break;
-        case KEY_DEATH_CHECK_4:
+        case KEY_DEATH_CHECK_4_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(4)));
             break;
-        case KEY_DEAD:
+        case KEY_DEAD_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Dead"));
             break;
         case KEY_BASIC_LIFT:
@@ -661,6 +660,7 @@ public class TextTemplate {
             break;
         case KEY_RACE_DEPRECATED:
         case KEY_CAMPAIGN_DEPRECATED:
+        case KEY_OPTIONS_CODE_DEPRECATED:
             break;
         case KEY_BODY_TYPE:
             writeEncodedText(out, gurpsCharacter.getProfile().getHitLocations().getName());

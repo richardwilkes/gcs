@@ -179,18 +179,6 @@ public class Settings implements ChangeNotifier {
         mCharacter.notifyOfChange();
     }
 
-    @SuppressWarnings("StringBufferReplaceableByString")
-    public String optionsCode() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(mUseMultiplicativeModifiers ? 'M' : 'm');
-        buffer.append(mUseModifyingDicePlusAdds ? 'D' : 'd');
-        buffer.append(mUseKnowYourOwnStrength ? 'K' : 'k');
-        buffer.append(mUseReducedSwing ? 'S' : 's');
-        buffer.append(mUseThrustEqualsSwingMinus2 ? 'T' : 't');
-        buffer.append(mUseSimpleMetricConversions ? 'C' : 'c');
-        return buffer.toString();
-    }
-
     public LengthUnits defaultLengthUnits() {
         return mDefaultLengthUnits;
     }

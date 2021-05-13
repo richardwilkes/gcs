@@ -50,7 +50,6 @@ import javax.imageio.ImageIO;
 
 /** Holds the character profile. */
 public class Profile {
-    public static final  String KEY_PROFILE       = "profile";
     private static final String KEY_AGE           = "age";
     private static final String KEY_BIRTHDAY      = "birthday";
     private static final String KEY_EYES          = "eyes";
@@ -60,6 +59,7 @@ public class Profile {
     private static final String KEY_HEIGHT        = "height";
     private static final String KEY_HIT_LOCATIONS = "hit_locations";
     private static final String KEY_NAME          = "name";
+    private static final String KEY_ORGANIZATION  = "organization";
     private static final String KEY_PLAYER_NAME   = "player_name";
     private static final String KEY_PORTRAIT      = "portrait";
     private static final String KEY_RELIGION      = "religion";
@@ -81,6 +81,7 @@ public class Profile {
     private RetinaIcon       mPortrait;
     private String           mName;
     private String           mTitle;
+    private String           mOrganization;
     private String           mAge;
     private String           mBirthday;
     private String           mEyeColor;
@@ -102,6 +103,7 @@ public class Profile {
         mCustomPortrait = false;
         mPortrait = null;
         mTitle = "";
+        mOrganization = "";
         mReligion = "";
         Preferences prefs = Preferences.getInstance();
         mHitLocations = prefs.getHitLocations().clone();
@@ -141,6 +143,7 @@ public class Profile {
         mPlayerName = m.getString(KEY_PLAYER_NAME);
         mName = m.getString(KEY_NAME);
         mTitle = m.getString(KEY_TITLE);
+        mOrganization = m.getString(KEY_ORGANIZATION);
         mAge = m.getString(KEY_AGE);
         mBirthday = m.getString(KEY_BIRTHDAY);
         mEyeColor = m.getString(KEY_EYES);
@@ -183,6 +186,7 @@ public class Profile {
         w.keyValueNot(KEY_PLAYER_NAME, mPlayerName, "");
         w.keyValueNot(KEY_NAME, mName, "");
         w.keyValueNot(KEY_TITLE, mTitle, "");
+        w.keyValueNot(KEY_ORGANIZATION, mOrganization, "");
         w.keyValueNot(KEY_AGE, mAge, "");
         w.keyValueNot(KEY_BIRTHDAY, mBirthday, "");
         w.keyValueNot(KEY_EYES, mEyeColor, "");
@@ -369,6 +373,24 @@ public class Profile {
         if (!mTitle.equals(title)) {
             mCharacter.postUndoEdit(I18n.Text("Title Change"), (c, v) -> c.getProfile().setTitle((String) v), mTitle, title);
             mTitle = title;
+            mCharacter.notifyOfChange();
+        }
+    }
+
+    /** @return The organization. */
+    public String getOrganization() {
+        return mOrganization;
+    }
+
+    /**
+     * Sets the organization.
+     *
+     * @param organization The new organization.
+     */
+    public void setOrganization(String organization) {
+        if (!mOrganization.equals(organization)) {
+            mCharacter.postUndoEdit(I18n.Text("Organization Change"), (c, v) -> c.getProfile().setOrganization((String) v), mOrganization, organization);
+            mOrganization = organization;
             mCharacter.notifyOfChange();
         }
     }

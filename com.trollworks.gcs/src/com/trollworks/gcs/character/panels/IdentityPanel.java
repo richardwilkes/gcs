@@ -40,23 +40,23 @@ public class IdentityPanel extends DropPanel {
         Profile profile = sheet.getCharacter().getProfile();
         createRandomizableField(sheet, profile.getName(), I18n.Text("Name"), "character name", (c, v) -> c.getProfile().setName((String) v), () -> profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.Text("Female")))));
         createStringField(sheet, profile.getTitle(), I18n.Text("Title"), "character title", (c, v) -> c.getProfile().setTitle((String) v));
-        createStringField(sheet, profile.getPlayerName(), I18n.Text("Player"), "player", (c, v) -> c.getProfile().setPlayerName((String) v));
+        createStringField(sheet, profile.getOrganization(), I18n.Text("Organization"), "organization", (c, v) -> c.getProfile().setOrganization((String) v));
     }
 
     private void createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
         IconButton button = new IconButton(Images.RANDOMIZE, null, randomizer);
         button.setToolTipText(String.format(I18n.Text("Randomize %s"), title));
         add(button);
-        add(new PageLabel(title + ":"), new PrecisionLayoutData().setEndHorizontalAlignment());
-        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayout());
+        add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
+        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayoutData());
     }
 
     private void createStringField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter) {
-        add(new PageLabel(title + ":"), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
-        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayout());
+        add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
+        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayoutData());
     }
 
-    private PrecisionLayoutData createFieldLayout() {
+    private PrecisionLayoutData createFieldLayoutData() {
         return new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setLeftMargin(4);
     }
 }

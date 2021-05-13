@@ -76,6 +76,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private static final String KEY_ATTRIBUTES       = "attributes";
     private static final String KEY_CREATED_DATE     = "created_date";
     private static final String KEY_MODIFIED_DATE    = "modified_date";
+    private static final String KEY_PROFILE          = "profile";
     private static final String KEY_THIRD_PARTY_DATA = "third_party";
     private static final String KEY_TOTAL_POINTS     = "total_points";
 
@@ -202,7 +203,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         characterInitialize(false);
         mSettings.load(m.getMap(Settings.KEY_ROOT), state);
         mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
-        mProfile.load(m.getMap(Profile.KEY_PROFILE));
+        mProfile.load(m.getMap(KEY_PROFILE));
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = new HashMap<>();
             JsonArray a      = m.getArray(KEY_ATTRIBUTES);
@@ -271,7 +272,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         mSettings.toJSON(w);
         w.keyValue(KEY_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.keyValue(KEY_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
-        w.key(Profile.KEY_PROFILE);
+        w.key(KEY_PROFILE);
         mProfile.save(w);
         w.key(KEY_ATTRIBUTES);
         w.startArray();
