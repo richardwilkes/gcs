@@ -28,10 +28,6 @@ public final class Images {
     public static final RetinaIcon ADQ_FILE              = getRetina("adq_file");
     public static final RetinaIcon ADQ_MARKER            = getRetina("adq_marker");
     public static final RetinaIcon COLLAPSE              = getRetina("collapse");
-    public static final RetinaIcon DISCLOSURE_DOWN       = getRetina("disclosure_down");
-    public static final RetinaIcon DISCLOSURE_DOWN_ROLL  = getRetina("disclosure_down_roll");
-    public static final RetinaIcon DISCLOSURE_RIGHT      = getRetina("disclosure_right");
-    public static final RetinaIcon DISCLOSURE_RIGHT_ROLL = getRetina("disclosure_right_roll");
     public static final RetinaIcon DOCK_CLOSE            = getRetina("dock_close");
     public static final RetinaIcon DOCK_MAXIMIZE         = getRetina("dock_maximize");
     public static final RetinaIcon DOCK_RESTORE          = getRetina("dock_restore");

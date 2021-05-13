@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.widget.Icons;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.Color;
@@ -105,12 +104,9 @@ public class TextCell implements Cell {
         int   minHeight = TextDrawing.getPreferredSize(font, "Mg").height;
         int   height    = TextDrawing.getPreferredSize(font, getPresentationText(outline, row, column)).height;
         if (row != null) {
-            RetinaIcon icon = Icons.getDisclosure(true, true);
-            if (icon != null) {
-                int iconHeight = scale.scale(icon.getIconHeight());
-                if (height < iconHeight) {
-                    height = iconHeight;
-                }
+            int disclosureHeight = scale.scale(outline.getModel().getIndentWidth());
+            if (height < disclosureHeight) {
+                height = disclosureHeight;
             }
         }
         return Math.max(minHeight, height);

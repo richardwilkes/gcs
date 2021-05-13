@@ -16,15 +16,16 @@ import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.Selection;
+import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.ActionPanel;
-import com.trollworks.gcs.ui.widget.Icons;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
 import com.trollworks.gcs.utility.Geometry;
@@ -36,6 +37,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
@@ -87,6 +89,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     public static final  String            CMD_POTENTIAL_CONTENT_SIZE_CHANGE = "Outline.ContentSizeMayHaveChanged";
     private static final int               DIVIDER_HIT_SLOP                  = 2;
     private static final int               AUTO_SCROLL_MARGIN                = 10;
+    private static final int               INDENT_WIDTH                      = 14;
     private              OutlineModel      mModel;
     /** The header panel. */
     protected            OutlineHeader     mHeaderPanel;
@@ -169,7 +172,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         mDragChildInsertIndex = -1;
         mLastRow = -1;
         mModel.setShowIndent(showIndent);
-        mModel.setIndentWidth(Icons.getDisclosure(true, true).getIconWidth());
+        mModel.setIndentWidth(INDENT_WIDTH);
 
         setActionCommand(CMD_OPEN_SELECTION);
         setBackground(ThemeColor.PAGE);
@@ -432,8 +435,10 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                                         colBounds.x += shift;
                                         colBounds.width -= shift;
                                         if (row.canHaveChildren()) {
-                                            RetinaIcon disclosure = getDisclosureControl(row);
-                                            disclosure.paintIcon(this, gc, colBounds.x - scale.scale(disclosure.getIconWidth()), colBounds.y + (colBounds.height - scale.scale(disclosure.getIconHeight())) / 2);
+                                            gc.setColor(row == mRollRow ? FontAwesomeButton.ROLLOVER_COLOR : Color.BLACK);
+                                            int disclosureSize = scale.scale(mModel.getIndentWidth());
+                                            gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
+                                            TextDrawing.draw(gc, new Rectangle(colBounds.x - disclosureSize, colBounds.y - scale.scale(2), disclosureSize, disclosureSize), getDisclosure(row), SwingConstants.CENTER, SwingConstants.CENTER);
                                         }
                                     }
                                     col.drawRowCell(this, gc, colBounds, row, rowSelected, active);
@@ -822,8 +827,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         return -1;
     }
 
-    private RetinaIcon getDisclosureControl(Row row) {
-        return Icons.getDisclosure(row.isOpen(), row == mRollRow);
+    private String getDisclosure(Row row) {
+        return row.isOpen() ? "\uf0d7" : "\uf0da";
     }
 
     /**
@@ -837,7 +842,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         if (showIndent() && column != null && row != null && row.canHaveChildren() && mModel.isHierarchyColumn(column)) {
             Scale scale = Scale.get(this);
             int   right = getColumnStart(column) + scale.scale(mModel.getIndentWidth(row, column));
-            return x <= right && x >= right - scale.scale(getDisclosureControl(row).getIconWidth());
+            return x <= right && x >= right - scale.scale(mModel.getIndentWidth());
         }
         return false;
     }
