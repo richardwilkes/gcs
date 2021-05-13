@@ -204,6 +204,7 @@ public class TextTemplate {
     private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
     private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
     private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
+    private static final String KEY_ORGANIZATION                      = "ORGANIZATION";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
     private static final String KEY_OTHER_VALUE                       = "OTHER_EQUIPMENT_VALUE";
@@ -405,6 +406,9 @@ public class TextTemplate {
             break;
         case KEY_TITLE:
             writeEncodedText(out, description.getTitle());
+            break;
+        case KEY_ORGANIZATION:
+            writeEncodedText(out, description.getOrganization());
             break;
         case KEY_RELIGION:
             writeEncodedText(out, description.getReligion());
