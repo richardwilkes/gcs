@@ -186,8 +186,13 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
     }
 
     public void setSubTable(HitLocationTable table) {
+        if (table == null && mSubTable != null) {
+            mSubTable.setOwningLocation(null);
+        }
         mSubTable = table;
-        mSubTable.setOwningLocation(this);
+        if (mSubTable != null) {
+            mSubTable.setOwningLocation(this);
+        }
     }
 
     protected void populateMap(Map<String, HitLocation> map) {

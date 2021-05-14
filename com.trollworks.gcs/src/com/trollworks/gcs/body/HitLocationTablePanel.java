@@ -11,7 +11,11 @@
 
 package com.trollworks.gcs.body;
 
+import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
@@ -25,6 +29,7 @@ import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.text.DiceFormatter;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -37,25 +42,18 @@ import javax.swing.text.DefaultFormatterFactory;
 public class HitLocationTablePanel extends BandedPanel {
     private HitLocationTable mLocations;
     private Runnable         mAdjustCallback;
-    private EditorField      mIDField;
+    private EditorField      mFirstField;
 
     public HitLocationTablePanel(HitLocationTable locations, Runnable adjustCallback) {
         super("hit-locations");
         setLayout(new PrecisionLayout());
         mLocations = locations;
         mAdjustCallback = adjustCallback;
-        fill();
-    }
-
-    private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
-        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment());
-        EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
-        PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
-        if (protoValue == null) {
-            layoutData.setGrabHorizontalSpace(true);
+        if (isSubTable()) {
+            setBorder(new LineBorder(Color.LIGHT_GRAY));
+            setBackground(Colors.adjustSaturation(ThemeColor.BANDING, -0.05f));
         }
-        container.add(field, layoutData);
-        return field;
+        fill();
     }
 
     public HitLocationTable getHitLocations() {
@@ -88,39 +86,44 @@ public class HitLocationTablePanel extends BandedPanel {
     }
 
     private void fill() {
-        Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(7).setMargins(0));
+        mFirstField = null;
+        Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(isSubTable() ? 5 : 7).setMargins(0));
         wrapper.add(new FontAwesomeButton("\uf055", HitLocationEditor.BUTTON_SIZE, I18n.Text("Add Hit Location"), this::addHitLocation));
-        mIDField = addField(wrapper,
-                I18n.Text("ID"),
-                I18n.Text("An ID for the hit location table"),
-                mLocations.getID(),
-                Text.makeFiller(8, 'm'),
-                FieldFactory.STRING,
-                (evt) -> {
-                    String existingID = mLocations.getID();
-                    String id         = ((String) evt.getNewValue());
-                    if (!existingID.equals(id)) {
-                        id = ID.sanitize(id, null, false);
-                        if (id.isEmpty()) {
-                            mIDField.setValue(existingID);
-                        } else {
-                            mLocations.setID(id);
-                            mIDField.setValue(id);
-                            mAdjustCallback.run();
+        if (isSubTable()) {
+            wrapper.add(WidgetHelpers.createLabel(I18n.Text("Sub-Table"), null), new PrecisionLayoutData().setFillHorizontalAlignment());
+        } else {
+            mFirstField = addField(wrapper,
+                    I18n.Text("ID"),
+                    I18n.Text("An ID for the hit location table"),
+                    mLocations.getID(),
+                    Text.makeFiller(8, 'm'),
+                    FieldFactory.STRING,
+                    (evt) -> {
+                        String existingID = mLocations.getID();
+                        String id         = ((String) evt.getNewValue());
+                        if (!existingID.equals(id)) {
+                            id = ID.sanitize(id, null, false);
+                            if (id.isEmpty()) {
+                                mFirstField.setValue(existingID);
+                            } else {
+                                mLocations.setID(id);
+                                mFirstField.setValue(id);
+                                mAdjustCallback.run();
+                            }
                         }
-                    }
-                });
-        addField(wrapper,
-                I18n.Text("Name"),
-                I18n.Text("The name of this hit location table"),
-                mLocations.getName(),
-                null,
-                FieldFactory.STRING,
-                (evt) -> {
-                    mLocations.setName((String) evt.getNewValue());
-                    mAdjustCallback.run();
-                });
-        addField(wrapper,
+                    });
+            addField(wrapper,
+                    I18n.Text("Name"),
+                    I18n.Text("The name of this hit location table"),
+                    mLocations.getName(),
+                    null,
+                    FieldFactory.STRING,
+                    (evt) -> {
+                        mLocations.setName((String) evt.getNewValue());
+                        mAdjustCallback.run();
+                    });
+        }
+        EditorField field = addField(wrapper,
                 I18n.Text("Roll"),
                 I18n.Text("The dice to roll on the table"),
                 mLocations.getRoll(),
@@ -130,11 +133,38 @@ public class HitLocationTablePanel extends BandedPanel {
                     mLocations.setRoll((Dice) evt.getNewValue());
                     mAdjustCallback.run();
                 });
+        if (mFirstField == null) {
+            mFirstField = field;
+        }
+        if (isSubTable()) {
+            FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", AttributeEditor.BUTTON_SIZE, I18n.Text("Remove"), () -> {
+                getParent().remove(this);
+                mLocations.getOwningLocation().setSubTable(null);
+                mAdjustCallback.run();
+            });
+            wrapper.add(remove);
+        }
         add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
         for (HitLocation location : mLocations.getLocations()) {
             add(new HitLocationPanel(location, mAdjustCallback), new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         }
         adjustButtons();
+    }
+
+    private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment());
+        EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
+        PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
+        if (protoValue == null) {
+            layoutData.setGrabHorizontalSpace(true);
+        }
+        container.add(field, layoutData);
+        return field;
+    }
+
+    private boolean isSubTable() {
+        return mLocations.getOwningLocation() != null;
     }
 
     public void adjustButtons() {
@@ -166,7 +196,15 @@ public class HitLocationTablePanel extends BandedPanel {
         adjustButtons();
     }
 
-    public void focusIDField() {
-        mIDField.requestFocusInWindow();
+    public void focusFirstField() {
+        mFirstField.requestFocusInWindow();
+    }
+
+    @Override
+    protected Color getBandingColor(boolean odd) {
+        if (isSubTable()) {
+            return Colors.adjustSaturation(ThemeColor.BANDING, odd ? 0.05f : -0.05f);
+        }
+        return super.getBandingColor(odd);
     }
 }

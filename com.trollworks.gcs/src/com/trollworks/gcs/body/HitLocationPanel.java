@@ -226,7 +226,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         mCenter.add(subTable, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         mAdjustCallback.run();
         scrollRectToVisible(new Rectangle(0, getPreferredSize().height - 1, 1, 1));
-        subTable.focusIDField();
+        subTable.focusFirstField();
         subTable.adjustButtons();
     }
 

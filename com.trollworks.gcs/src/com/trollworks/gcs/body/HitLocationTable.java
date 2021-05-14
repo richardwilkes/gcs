@@ -123,6 +123,10 @@ public class HitLocationTable implements Cloneable {
 
     public void setOwningLocation(HitLocation owningLocation) {
         mOwningLocation = owningLocation;
+        if (mOwningLocation != null) {
+            mID = "";
+            mName = "";
+        }
     }
 
     private void updateRollRanges() {
