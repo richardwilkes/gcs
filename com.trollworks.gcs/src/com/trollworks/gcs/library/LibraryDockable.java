@@ -69,14 +69,14 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         Preferences    prefs   = Preferences.getInstance();
         mToolbar = new Toolbar();
-        mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf09c", 16, I18n.Text("Switches between allowing editing and not"), () -> {
+        mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf09c", I18n.Text("Switches between allowing editing and not"), () -> {
             OutlineModel model = mOutline.getModel();
             model.setLocked(!model.isLocked());
             mLockButton.setText(model.isLocked() ? "\uf023" : "\uf09c");
         });
         mToolbar.add(mLockButton);
-        mToolbar.add(new FontAwesomeButton("\uf0e8", 16, I18n.Text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
-        mToolbar.add(new FontAwesomeButton("\uf337", 16, I18n.Text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
+        mToolbar.add(new FontAwesomeButton("\uf0e8", I18n.Text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
+        mToolbar.add(new FontAwesomeButton("\uf337", I18n.Text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(prefs.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {

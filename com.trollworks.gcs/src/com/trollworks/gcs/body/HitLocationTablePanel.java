@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.body;
 
-import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -88,7 +87,7 @@ public class HitLocationTablePanel extends BandedPanel {
     private void fill() {
         mFirstField = null;
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(isSubTable() ? 5 : 7).setMargins(0));
-        wrapper.add(new FontAwesomeButton("\uf055", HitLocationEditor.BUTTON_SIZE, I18n.Text("Add Hit Location"), this::addHitLocation));
+        wrapper.add(new FontAwesomeButton("\uf055", I18n.Text("Add Hit Location"), this::addHitLocation));
         if (isSubTable()) {
             wrapper.add(WidgetHelpers.createLabel(I18n.Text("Sub-Table"), null), new PrecisionLayoutData().setFillHorizontalAlignment());
         } else {
@@ -137,7 +136,7 @@ public class HitLocationTablePanel extends BandedPanel {
             mFirstField = field;
         }
         if (isSubTable()) {
-            FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", AttributeEditor.BUTTON_SIZE, I18n.Text("Remove"), () -> {
+            FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
                 getParent().remove(this);
                 mLocations.getOwningLocation().setSubTable(null);
                 mAdjustCallback.run();

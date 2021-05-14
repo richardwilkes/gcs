@@ -109,8 +109,8 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel.setDeletableProxy(this);
         Toolbar toolbar = new Toolbar();
         mSearch = new Search(this);
-        toolbar.add(new FontAwesomeButton("\uf0e8", 16, I18n.Text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
-        toolbar.add(new FontAwesomeButton("\uf2f1", 16, I18n.Text("Refresh"), this::refresh));
+        toolbar.add(new FontAwesomeButton("\uf0e8", I18n.Text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
+        toolbar.add(new FontAwesomeButton("\uf2f1", I18n.Text("Refresh"), this::refresh));
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);

@@ -85,10 +85,10 @@ public class ListPrereqEditor extends PrereqEditor {
 
         grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-        FontAwesomeButton button = new FontAwesomeButton("\uf141", 16, I18n.Text("Add a prerequisite list to this list"), this::addPrereqList);
+        FontAwesomeButton button = new FontAwesomeButton("\uf141", I18n.Text("Add a prerequisite list to this list"), this::addPrereqList);
         add(button);
         right.add(button);
-        button = new FontAwesomeButton("\uf055", 16, I18n.Text("Add a prerequisite to this list"), this::addPrereq);
+        button = new FontAwesomeButton("\uf055", I18n.Text("Add a prerequisite to this list"), this::addPrereq);
         add(button);
         right.add(button);
     }

@@ -49,7 +49,6 @@ import javax.swing.ScrollPaneConstants;
 
 public class HitLocationEditor extends JPanel {
     private static final String                JSON_TYPE_NAME = "hit_locations";
-    public static final  int                   BUTTON_SIZE    = 14;
     private              HitLocationTablePanel mLocationsPanel;
     private              JScrollPane           mScroller;
 
@@ -57,8 +56,8 @@ public class HitLocationEditor extends JPanel {
         super(new PrecisionLayout().setColumns(4).setMargins(0).setHorizontalSpacing(10));
         setOpaque(false);
         add(new Label(I18n.Text("Hit Locations") + extraTitle));
-        add(new FontAwesomeButton("\uf56e", BUTTON_SIZE, I18n.Text("Export Hit Locations"), this::exportData));
-        add(new FontAwesomeButton("\uf56f", BUTTON_SIZE, I18n.Text("Import Hit Locations"), this::importData));
+        add(new FontAwesomeButton("\uf56e", I18n.Text("Export Hit Locations"), this::exportData));
+        add(new FontAwesomeButton("\uf56f", I18n.Text("Import Hit Locations"), this::importData));
         addStdChoicesCombo();
         mLocationsPanel = new HitLocationTablePanel(locations, adjustCallback);
         mScroller = new JScrollPane(mLocationsPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);

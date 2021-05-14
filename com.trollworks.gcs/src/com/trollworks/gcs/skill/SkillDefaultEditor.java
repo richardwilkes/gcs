@@ -121,10 +121,10 @@ public class SkillDefaultEditor extends EditorPanel {
 
             row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove this default"), this::removeDefault);
+            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", I18n.Text("Remove this default"), this::removeDefault);
             add(button);
             row.add(button);
-            button = new FontAwesomeButton("\uf055", 16, I18n.Text("Add a default"), this::addDefault);
+            button = new FontAwesomeButton("\uf055", I18n.Text("Add a default"), this::addDefault);
             add(button);
             row.add(button);
             grid.add(row, 0, 2);
@@ -133,7 +133,7 @@ public class SkillDefaultEditor extends EditorPanel {
             FlexRow row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
             row.add(new FlexSpacer(0, 0, true, false));
-            FontAwesomeButton button = new FontAwesomeButton("\uf055", 16, I18n.Text("Add a default"), this::addDefault);
+            FontAwesomeButton button = new FontAwesomeButton("\uf055", I18n.Text("Add a default"), this::addDefault);
             add(button);
             row.add(button);
             row.apply(this);

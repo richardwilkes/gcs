@@ -60,7 +60,7 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
         }
         mShowTabsButton = new ShowTabsButton();
         add(mShowTabsButton);
-        mMaximizeRestoreButton = new FontAwesomeButton("\uf2d0", 14, "", this::maximize);
+        mMaximizeRestoreButton = new FontAwesomeButton("\uf2d0", "", this::maximize);
         add(mMaximizeRestoreButton);
         setDropTarget(new DropTarget(this, DnDConstants.ACTION_MOVE, this));
         adjustToRestoredState();

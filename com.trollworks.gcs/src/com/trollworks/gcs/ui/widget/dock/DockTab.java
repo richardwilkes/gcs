@@ -62,7 +62,7 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
         setBorder(new EmptyBorder(2, 1, 0, 1));
         addContainerListener(this);
         mTitle = new JLabel(getFullTitle(), dockable.getTitleIcon(), SwingConstants.LEFT);
-        FontAwesomeButton closeButton = new FontAwesomeButton("\uf057", 14, I18n.Text("Close"), this::attemptClose);
+        FontAwesomeButton closeButton = new FontAwesomeButton("\uf057", I18n.Text("Close"), this::attemptClose);
         add(mTitle, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHeightHint(Math.max(mTitle.getPreferredSize().height, closeButton.getPreferredSize().height)));
         if (dockable instanceof CloseHandler) {
             add(closeButton, new PrecisionLayoutData().setEndHorizontalAlignment());

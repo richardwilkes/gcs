@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.body;
 
-import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -54,7 +53,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.Text("Move Up"), () -> {
             HitLocationTablePanel parent = (HitLocationTablePanel) getParent();
             int                   index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -68,7 +67,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.Text("Move Down"), () -> {
             HitLocationTablePanel parent = (HitLocationTablePanel) getParent();
             int                   index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -82,7 +81,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
             }
         });
         left.add(mMoveDownButton);
-        mAddSubTableButton = new FontAwesomeButton("\uf055", AttributeEditor.BUTTON_SIZE, I18n.Text("Add Hit Location Sub-Table"), this::addSubHitLocations);
+        mAddSubTableButton = new FontAwesomeButton("\uf055", I18n.Text("Add Hit Location Sub-Table"), this::addSubHitLocations);
         left.add(mAddSubTableButton);
 
         mCenter = new JPanel(new PrecisionLayout());
@@ -183,7 +182,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", AttributeEditor.BUTTON_SIZE, I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
             getParent().remove(this);
             mLocation.getOwningTable().removeLocation(mLocation);
             mAdjustCallback.run();

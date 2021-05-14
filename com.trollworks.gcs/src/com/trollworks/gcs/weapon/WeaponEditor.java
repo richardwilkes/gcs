@@ -81,10 +81,10 @@ public abstract class WeaponEditor extends JPanel implements ActionListener, Pro
         super(new PrecisionLayout());
         mOwner = owner;
         mWeaponClass = weaponClass;
-        mAddButton = new FontAwesomeButton("\uf055", 16, I18n.Text("Add an attack"), this::addWeapon);
-        mDeleteButton = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
+        mAddButton = new FontAwesomeButton("\uf055", I18n.Text("Add an attack"), this::addWeapon);
+        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
-        mDuplicateButton = new FontAwesomeButton("\uf24d", 16, I18n.Text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
+        mDuplicateButton = new FontAwesomeButton("\uf24d", I18n.Text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
         mDuplicateButton.setEnabled(false);
         JPanel left = new JPanel(new PrecisionLayout());
         left.add(mAddButton);

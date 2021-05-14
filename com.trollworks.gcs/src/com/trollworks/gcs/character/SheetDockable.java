@@ -54,7 +54,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
     @Override
     protected Toolbar createToolbar() {
         Toolbar toolbar = super.createToolbar();
-        toolbar.add(new FontAwesomeButton("\uf013", 16, I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())), 0);
+        toolbar.add(new FontAwesomeButton("\uf013", I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())), 0);
         return toolbar;
     }
 

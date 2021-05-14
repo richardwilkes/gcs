@@ -46,7 +46,6 @@ import javax.swing.ScrollPaneConstants;
 
 public class AttributeEditor extends JPanel {
     private static final String             JSON_TYPE_NAME = "attribute_settings";
-    public static final  int                BUTTON_SIZE    = 14;
     private              AttributeListPanel mListPanel;
     private              JScrollPane        mScroller;
 
@@ -54,9 +53,9 @@ public class AttributeEditor extends JPanel {
         super(new PrecisionLayout().setColumns(4).setMargins(0).setHorizontalSpacing(10));
         setOpaque(false);
         add(new Label(I18n.Text("Attributes") + extraTitle));
-        add(new FontAwesomeButton("\uf055", BUTTON_SIZE, I18n.Text("Add Attribute"), () -> mListPanel.addAttribute()));
-        add(new FontAwesomeButton("\uf56e", BUTTON_SIZE, I18n.Text("Export Attribute Settings"), this::exportData));
-        add(new FontAwesomeButton("\uf56f", BUTTON_SIZE, I18n.Text("Import Attribute Settings"), this::importData));
+        add(new FontAwesomeButton("\uf055", I18n.Text("Add Attribute"), () -> mListPanel.addAttribute()));
+        add(new FontAwesomeButton("\uf56e", I18n.Text("Export Attribute Settings"), this::exportData));
+        add(new FontAwesomeButton("\uf56f", I18n.Text("Import Attribute Settings"), this::importData));
         mListPanel = new AttributeListPanel(attributes, adjustCallback);
         mScroller = new JScrollPane(mListPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         int minHeight = new AttributePanel(null, new AttributeDef(new JsonMap(), 0), null).getPreferredSize().height + 8;

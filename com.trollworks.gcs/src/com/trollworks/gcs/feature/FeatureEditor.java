@@ -83,11 +83,11 @@ public abstract class FeatureEditor extends EditorPanel {
         FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
-            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove this feature"), this::removeFeature);
+            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", I18n.Text("Remove this feature"), this::removeFeature);
             add(button);
             right.add(button);
         }
-        FontAwesomeButton button = new FontAwesomeButton("\uf055", 16, I18n.Text("Add a feature"), this::addFeature);
+        FontAwesomeButton button = new FontAwesomeButton("\uf055", I18n.Text("Add a feature"), this::addFeature);
         add(button);
         right.add(button);
         grid.add(right, 0, 1);

@@ -47,6 +47,10 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
     private             boolean  mPressed;
     private             boolean  mRollover;
 
+    public FontAwesomeButton(String text, String tooltip, Runnable clickFunction) {
+        this(text, 14, tooltip, clickFunction);
+    }
+
     public FontAwesomeButton(String text, int size, String tooltip, Runnable clickFunction) {
         setOpaque(false);
         setBackground(null);
@@ -174,6 +178,7 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
                 click();
             }
             repaint();
+            updateRollOver();
         }
     }
 

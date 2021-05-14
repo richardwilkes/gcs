@@ -55,7 +55,7 @@ public class AttributePanel extends JPanel {
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.Text("Move Up"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -66,7 +66,7 @@ public class AttributePanel extends JPanel {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.Text("Move Down"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -77,7 +77,7 @@ public class AttributePanel extends JPanel {
             }
         });
         left.add(mMoveDownButton);
-        mAddThresholdButton = new FontAwesomeButton("\uf055", AttributeEditor.BUTTON_SIZE, I18n.Text("Add Pool Threshold"), this::addThreshold);
+        mAddThresholdButton = new FontAwesomeButton("\uf055", I18n.Text("Add Pool Threshold"), this::addThreshold);
         left.add(mAddThresholdButton);
 
         mCenter = new JPanel(new PrecisionLayout());
@@ -193,7 +193,7 @@ public class AttributePanel extends JPanel {
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", AttributeEditor.BUTTON_SIZE, I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
             getParent().remove(this);
             mAttributes.remove(mAttrDef.getID());
             adjustCallback.run();
