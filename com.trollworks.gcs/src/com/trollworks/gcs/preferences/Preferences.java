@@ -109,7 +109,7 @@ public class Preferences extends ChangeableData {
 
     public static final boolean       DEFAULT_AUTO_FILL_PROFILE                 = true;
     public static final boolean       DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL   = true;
-    public static final int           DEFAULT_INITIAL_POINTS                    = 100;
+    public static final int           DEFAULT_INITIAL_POINTS                    = 250;
     public static final int           DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
     public static final boolean       DEFAULT_SHOW_COLLEGE_IN_SHEET_SPELLS      = false;
     public static final boolean       DEFAULT_SHOW_DIFFICULTY                   = false;
@@ -138,7 +138,7 @@ public class Preferences extends ChangeableData {
 
     public static final int MAX_RECENT_FILES        = 20;
     public static final int MINIMUM_TOOLTIP_TIMEOUT = 1;
-    public static final int MAXIMUM_TOOLTIP_TIMEOUT = 9999;
+    public static final int MAXIMUM_TOOLTIP_TIMEOUT = 999;
 
     private static Preferences                      INSTANCE;
     private        Version                          mLastSeenGCSVersion;
