@@ -12,13 +12,12 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.EditorPanel;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -84,11 +83,11 @@ public abstract class FeatureEditor extends EditorPanel {
         FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
-            IconButton button = new IconButton(Images.REMOVE, I18n.Text("Remove this feature"), this::removeFeature);
+            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove this feature"), this::removeFeature);
             add(button);
             right.add(button);
         }
-        IconButton button = new IconButton(Images.ADD, I18n.Text("Add a feature"), this::addFeature);
+        FontAwesomeButton button = new FontAwesomeButton("\uf055", 16, I18n.Text("Add a feature"), this::addFeature);
         add(button);
         right.add(button);
         grid.add(right, 0, 1);

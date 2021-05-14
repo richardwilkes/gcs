@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.ui.image.Img;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.ui.widget.WiderToolTipUI;
 import com.trollworks.gcs.utility.Log;
@@ -85,13 +86,13 @@ public final class UIUtilities {
         if (comp instanceof Container) {
             Container container = (Container) comp;
             int       count     = container.getComponentCount();
-
             for (int i = 0; i < count; i++) {
                 disableControls(container.getComponent(i));
             }
         }
-
-        if (comp instanceof AbstractButton || comp instanceof JComboBox || comp instanceof JTextField || comp instanceof IconButton) {
+        if (comp instanceof AbstractButton || comp instanceof JComboBox ||
+                comp instanceof JTextField || comp instanceof IconButton ||
+                comp instanceof FontAwesomeButton) {
             comp.setEnabled(false);
         }
     }

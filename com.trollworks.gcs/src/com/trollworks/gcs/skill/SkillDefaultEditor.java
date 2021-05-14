@@ -16,7 +16,6 @@ import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.Alignment;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
@@ -24,7 +23,7 @@ import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.EditorPanel;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 
@@ -122,10 +121,10 @@ public class SkillDefaultEditor extends EditorPanel {
 
             row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-            IconButton button = new IconButton(Images.REMOVE, I18n.Text("Remove this default"), this::removeDefault);
+            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", 16, I18n.Text("Remove this default"), this::removeDefault);
             add(button);
             row.add(button);
-            button = new IconButton(Images.ADD, I18n.Text("Add a default"), this::addDefault);
+            button = new FontAwesomeButton("\uf055", 16, I18n.Text("Add a default"), this::addDefault);
             add(button);
             row.add(button);
             grid.add(row, 0, 2);
@@ -134,7 +133,7 @@ public class SkillDefaultEditor extends EditorPanel {
             FlexRow row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
             row.add(new FlexSpacer(0, 0, true, false));
-            IconButton button = new IconButton(Images.ADD, I18n.Text("Add a default"), this::addDefault);
+            FontAwesomeButton button = new FontAwesomeButton("\uf055", 16, I18n.Text("Add a default"), this::addDefault);
             add(button);
             row.add(button);
             row.apply(this);

@@ -39,10 +39,6 @@ public class IconButton extends JComponent implements MouseListener, MouseMotion
     private boolean    mPressed;
     private boolean    mShowBorder;
 
-    public IconButton(Img img, String tooltip, Runnable clickFunction) {
-        this(new RetinaIcon(img, null), tooltip, clickFunction);
-    }
-
     public IconButton(RetinaIcon icon, String tooltip, Runnable clickFunction) {
         setOpaque(false);
         setBackground(null);
