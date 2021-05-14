@@ -77,7 +77,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JComboBox<DisplayOption> mNotesDisplayCombo;
     private JTextArea                mBlockLayoutField;
     private PageSettingsEditor       mPageSettingsEditor;
-    private AttributeEditor mAttributeEditor;
+    private AttributeEditor          mAttributeEditor;
     private HitLocationEditor        mHitLocationsEditor;
     private JButton                  mResetButton;
     private boolean                  mUpdatePending;
