@@ -12,13 +12,14 @@
 package com.trollworks.gcs.preferences;
 
 import com.trollworks.gcs.character.DisplayOption;
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scales;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
@@ -27,13 +28,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -56,7 +58,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private JComboBox<DisplayOption> mUserDescriptionDisplayCombo;
     private JComboBox<DisplayOption> mModifiersDisplayCombo;
     private JComboBox<DisplayOption> mNotesDisplayCombo;
-    private JTextField               mToolTipTimeout;
+    private EditorField              mToolTipTimeout;
     private JTextArea                mBlockLayoutField;
 
     /**
@@ -87,7 +89,15 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mWeightUnitsCombo = addCombo(WeightUnits.values(), prefs.getDefaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
 
         addLabel(I18n.Text("Tooltip Timeout (seconds)"));
-        mToolTipTimeout = addTextField(Integer.valueOf(prefs.getToolTipTimeout()).toString());
+        mToolTipTimeout = addField(Integer.valueOf(prefs.getToolTipTimeout()), Integer.valueOf(Preferences.MAXIMUM_TOOLTIP_TIMEOUT), FieldFactory.POSINT6, (evt) -> {
+            int value = ((Integer) evt.getNewValue()).intValue();
+            int revised = Math.min(Math.max(value, Preferences.MINIMUM_TOOLTIP_TIMEOUT), Preferences.MAXIMUM_TOOLTIP_TIMEOUT);
+            Preferences.getInstance().setToolTipTimeout(revised);
+            adjustResetButton();
+            if (value != revised) {
+                mToolTipTimeout.setValue(Integer.valueOf(revised));
+            }
+        });
 
         addLabel(I18n.Text("Show User Description *"));
         mUserDescriptionDisplayCombo = addCombo(DisplayOption.values(), prefs.getUserDescriptionDisplay(), I18n.Text("Where to display this information"));
@@ -124,10 +134,9 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         return checkbox;
     }
 
-    private JTextField addTextField(String value) {
-        JTextField field = new JTextField(value);
-        field.getDocument().addDocumentListener(this);
-        add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+    private EditorField addField(Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+        EditorField field = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, null);
+        add(field);
         return field;
     }
 
@@ -179,8 +188,6 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         Document    document = event.getDocument();
         if (mBlockLayoutField.getDocument() == document) {
             prefs.setBlockLayout(List.of(mBlockLayoutField.getText().split("\n")));
-        } else if (mToolTipTimeout.getDocument() == document) {
-            prefs.setToolTipTimeout(Numbers.extractInteger(mToolTipTimeout.getText(), Preferences.DEFAULT_TOOLTIP_TIMEOUT, Preferences.MINIMUM_TOOLTIP_TIMEOUT, Preferences.MAXIMUM_TOOLTIP_TIMEOUT, true));
         }
         adjustResetButton();
     }
@@ -228,7 +235,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
         mUIScaleCombo.setSelectedItem(Preferences.DEFAULT_INITIAL_UI_SCALE);
         mLengthUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
         mWeightUnitsCombo.setSelectedItem(Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
-        mToolTipTimeout.setText(Integer.toString(Preferences.DEFAULT_TOOLTIP_TIMEOUT));
+        mToolTipTimeout.setValue(Integer.valueOf(Preferences.DEFAULT_TOOLTIP_TIMEOUT));
         mBlockLayoutField.setText(Preferences.linesToString(Preferences.DEFAULT_BLOCK_LAYOUT));
         mUserDescriptionDisplayCombo.setSelectedItem(Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
         mModifiersDisplayCombo.setSelectedItem(Preferences.DEFAULT_MODIFIERS_DISPLAY);
