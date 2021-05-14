@@ -13,7 +13,6 @@ package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.IconButton;
 import com.trollworks.gcs.ui.widget.WiderToolTipUI;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
@@ -91,8 +90,7 @@ public final class UIUtilities {
             }
         }
         if (comp instanceof AbstractButton || comp instanceof JComboBox ||
-                comp instanceof JTextField || comp instanceof IconButton ||
-                comp instanceof FontAwesomeButton) {
+                comp instanceof JTextField || comp instanceof FontAwesomeButton) {
             comp.setEnabled(false);
         }
     }

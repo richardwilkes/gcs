@@ -14,8 +14,7 @@ package com.trollworks.gcs.ui.widget.dock;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.text.Text;
@@ -39,12 +38,12 @@ import javax.swing.border.CompoundBorder;
 
 /** The header for a {@link DockContainer}. */
 public class DockHeader extends JPanel implements LayoutManager, DropTargetListener {
-    private static final int            MINIMUM_TAB_WIDTH = 60;
-    private static final int            GAP               = 4;
-    private              IconButton     mMaximizeRestoreButton;
-    private              ShowTabsButton mShowTabsButton;
-    private              Dockable       mDragDockable;
-    private              int            mDragInsertIndex;
+    private static final int               MINIMUM_TAB_WIDTH = 60;
+    private static final int               GAP               = 4;
+    private              FontAwesomeButton mMaximizeRestoreButton;
+    private              ShowTabsButton    mShowTabsButton;
+    private              Dockable          mDragDockable;
+    private              int               mDragInsertIndex;
 
     /**
      * Creates a new {@link DockHeader} for the specified {@link DockContainer}.
@@ -61,7 +60,7 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
         }
         mShowTabsButton = new ShowTabsButton();
         add(mShowTabsButton);
-        mMaximizeRestoreButton = new IconButton(Images.DOCK_MAXIMIZE, "", this::maximize);
+        mMaximizeRestoreButton = new FontAwesomeButton("\uf2d0", 14, "", this::maximize);
         add(mMaximizeRestoreButton);
         setDropTarget(new DropTarget(this, DnDConstants.ACTION_MOVE, this));
         adjustToRestoredState();
@@ -112,14 +111,14 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
     /** Called when the owning {@link DockContainer} is set to the maximized state. */
     void adjustToMaximizedState() {
         mMaximizeRestoreButton.setClickFunction(this::restore);
-        mMaximizeRestoreButton.setIcon(Images.DOCK_RESTORE);
+        mMaximizeRestoreButton.setText("\uf2d2");
         mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Restore")));
     }
 
     /** Called when the owning {@link DockContainer} is restored from the maximized state. */
     void adjustToRestoredState() {
         mMaximizeRestoreButton.setClickFunction(this::maximize);
-        mMaximizeRestoreButton.setIcon(Images.DOCK_MAXIMIZE);
+        mMaximizeRestoreButton.setText("\uf2d0");
         mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Maximize")));
     }
 
