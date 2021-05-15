@@ -18,6 +18,7 @@ import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.preferences.OutputPreferences;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.preferences.QuickExport;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -68,7 +69,10 @@ public class ExportToGURPSCalculatorCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        SheetDockable dockable = getTarget(SheetDockable.class);
+        performExport(getTarget(SheetDockable.class));
+    }
+
+    public static void performExport(SheetDockable dockable) {
         if (dockable != null) {
             CharacterSheet sheet     = dockable.getSheet();
             GURPSCharacter character = sheet.getCharacter();
@@ -128,6 +132,7 @@ public class ExportToGURPSCalculatorCommand extends Command {
                                     throw new IOException("Bad response from the web server for GCS file write");
                                 }
                             }
+                            dockable.recordQuickExport(new QuickExport());
                             showResult(true);
                         } else {
                             showResult(false);
@@ -145,7 +150,7 @@ public class ExportToGURPSCalculatorCommand extends Command {
         }
     }
 
-    private void showResult(boolean success) {
+    private static void showResult(boolean success) {
         String message = success ? I18n.Text("Export to GURPS Calculator was successful.") : I18n.Text("There was an error exporting to GURPS Calculator. Please try again later.");
         String key     = Preferences.getInstance().getGURPSCalculatorKey();
         if (key == null || !UUID_PATTERN.matcher(key).matches()) {
@@ -170,12 +175,12 @@ public class ExportToGURPSCalculatorCommand extends Command {
         JOptionPane.showMessageDialog(Command.getFocusOwner(), messagePane, success ? I18n.Text("Success") : I18n.Text("Error"), success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
     }
 
-    public String get(String path) throws IOException {
+    public static String get(String path) throws IOException {
         URLConnection connection = prepare(path);
         return retrieveResponse(connection);
     }
 
-    public String post(String path, String body) throws IOException {
+    public static String post(String path, String body) throws IOException {
         URLConnection connection = prepare(path);
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
@@ -185,7 +190,7 @@ public class ExportToGURPSCalculatorCommand extends Command {
         return retrieveResponse(connection);
     }
 
-    public String post(String path, byte[] body) throws IOException {
+    public static String post(String path, byte[] body) throws IOException {
         URLConnection connection = prepare(path);
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
@@ -195,13 +200,13 @@ public class ExportToGURPSCalculatorCommand extends Command {
         return retrieveResponse(connection);
     }
 
-    private URLConnection prepare(String path) throws IOException {
+    private static URLConnection prepare(String path) throws IOException {
         URLConnection connection = new URL(OutputPreferences.BASE_GURPS_CALCULATOR_URL + "/" + path + "/").openConnection();
         connection.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.toString());
         return connection;
     }
 
-    private String retrieveResponse(URLConnection connection) throws IOException {
+    private static String retrieveResponse(URLConnection connection) throws IOException {
         try (InputStream stream = connection.getInputStream()) {
             try (Scanner s = new Scanner(stream, StandardCharsets.UTF_8)) {
                 s.useDelimiter("\\A");

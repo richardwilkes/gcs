@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.character;
 
+import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.preferences.QuickExport;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -22,13 +24,15 @@ import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.nio.file.Path;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
 /** A list of advantages and disadvantages from a library. */
 public class SheetDockable extends CollectedOutlinesDockable {
-    private static SheetDockable  LAST_ACTIVATED;
-    private        CharacterSheet mSheet;
+    private static SheetDockable     LAST_ACTIVATED;
+    private        CharacterSheet    mSheet;
+    private        FontAwesomeButton mQuickExportButton;
 
     /** Creates a new {@link SheetDockable}. */
     public SheetDockable(GURPSCharacter character) {
@@ -54,7 +58,10 @@ public class SheetDockable extends CollectedOutlinesDockable {
     @Override
     protected Toolbar createToolbar() {
         Toolbar toolbar = super.createToolbar();
+        mQuickExportButton = new FontAwesomeButton("\uf56e", "<html><body>" + I18n.Text("Quick Export<br>Export to the same location using the last used output template for this sheet") + "</body></html>", this::quickExport);
         toolbar.add(new FontAwesomeButton("\uf013", I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())), 0);
+        toolbar.add(mQuickExportButton, 1);
+        updateQuickExport();
         return toolbar;
     }
 
@@ -129,5 +136,33 @@ public class SheetDockable extends CollectedOutlinesDockable {
         if (mSheet.getCharacter().processFeaturesAndPrereqs()) {
             mSheet.repaint();
         }
+    }
+
+    public void updateQuickExport() {
+        boolean enabled = false;
+        Path    path    = mSheet.getCharacter().getPath();
+        if (path != null) {
+            QuickExport qe = Preferences.getInstance().getQuickExport(path.toAbsolutePath().toString());
+            if (qe != null) {
+                enabled = qe.isValid();
+            }
+        }
+        mQuickExportButton.setEnabled(enabled);
+    }
+
+    private void quickExport() {
+        updateQuickExport();
+        if (mQuickExportButton.isEnabled()) {
+            Path        path = mSheet.getCharacter().getPath();
+            QuickExport qe   = Preferences.getInstance().getQuickExport(path.toAbsolutePath().toString());
+            if (qe != null) {
+                qe.export(this);
+            }
+        }
+    }
+
+    public void recordQuickExport(QuickExport qe) {
+        Preferences.getInstance().putQuickExport(mSheet.getCharacter(), qe);
+        updateQuickExport();
     }
 }

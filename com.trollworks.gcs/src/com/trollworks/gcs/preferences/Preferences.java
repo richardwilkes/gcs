@@ -16,6 +16,7 @@ import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.library.Library;
@@ -88,6 +89,7 @@ public class Preferences extends ChangeableData {
     private static final String PAGE                            = "page";
     private static final String PDF_REFS                        = "pdf_refs";
     private static final String PNG_RESOLUTION                  = "png_resolution";
+    private static final String QUICK_EXPORTS                   = "quick_exports";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHOW_COLLEGE_IN_SHEET_SPELLS    = "show_college_in_sheet_spells";
     private static final String SHOW_DIFFICULTY                 = "show_difficulty";
@@ -139,6 +141,7 @@ public class Preferences extends ChangeableData {
     public static final int MAX_RECENT_FILES        = 20;
     public static final int MINIMUM_TOOLTIP_TIMEOUT = 1;
     public static final int MAXIMUM_TOOLTIP_TIMEOUT = 999;
+    public static final int MAX_QUICK_EXPORTS       = 100;
 
     private static Preferences                      INSTANCE;
     private        Version                          mLastSeenGCSVersion;
@@ -154,6 +157,7 @@ public class Preferences extends ChangeableData {
     private        WeightUnits                      mDefaultWeightUnits;
     private        List<String>                     mBlockLayout;
     private        List<Path>                       mRecentFiles;
+    private        Map<String, QuickExport>         mQuickExports;
     private        Path                             mLastDir;
     private        Map<String, PDFRef>              mPdfRefs;
     private        Map<String, String>              mKeyBindingOverrides;
@@ -219,6 +223,7 @@ public class Preferences extends ChangeableData {
         mDefaultWeightUnits = DEFAULT_DEFAULT_WEIGHT_UNITS;
         mBlockLayout = new ArrayList<>(DEFAULT_BLOCK_LAYOUT);
         mRecentFiles = new ArrayList<>();
+        mQuickExports = new HashMap<>();
         mLastDir = Paths.get(System.getProperty("user.home", ".")).normalize().toAbsolutePath();
         mGURPSCalculatorKey = "";
         mDefaultPlayerName = DEFAULT_DEFAULT_PLAYER_NAME;
@@ -270,7 +275,6 @@ public class Preferences extends ChangeableData {
                             mLibraryExplorerDividerPosition = m2.getIntWithDefault(DIVIDER_POSITION, mLibraryExplorerDividerPosition);
                             JsonArray a      = m2.getArray(OPEN_ROW_KEYS);
                             int       length = a.size();
-                            mLibraryExplorerOpenRowKeys = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
                                 mLibraryExplorerOpenRowKeys.add(a.getString(i));
                             }
@@ -292,7 +296,6 @@ public class Preferences extends ChangeableData {
                         if (m.has(RECENT_FILES)) {
                             JsonArray a      = m.getArray(RECENT_FILES);
                             int       length = a.size();
-                            mRecentFiles = new ArrayList<>();
                             for (int i = 0; i < length; i++) {
                                 mRecentFiles.add(Paths.get(a.getString(i)).normalize().toAbsolutePath());
                             }
@@ -300,21 +303,18 @@ public class Preferences extends ChangeableData {
                         mLastDir = Paths.get(m.getStringWithDefault(LAST_DIR, mLastDir.toString())).normalize().toAbsolutePath();
                         if (m.has(PDF_REFS)) {
                             JsonMap m2 = m.getMap(PDF_REFS);
-                            mPdfRefs = new HashMap<>();
                             for (String key : m2.keySet()) {
                                 mPdfRefs.put(key, new PDFRef(m2.getMap(key)));
                             }
                         }
                         if (m.has(KEY_BINDINGS)) {
                             JsonMap m2 = m.getMap(KEY_BINDINGS);
-                            mKeyBindingOverrides = new HashMap<>();
                             for (String key : m2.keySet()) {
                                 mKeyBindingOverrides.put(key, m2.getString(key));
                             }
                         }
                         if (m.has(FONTS)) {
                             JsonMap m2 = m.getMap(FONTS);
-                            mFontInfo = new HashMap<>();
                             for (String key : m2.keySet()) {
                                 mFontInfo.put(key, new Fonts.Info(m2.getMap(key)));
                             }
@@ -360,6 +360,15 @@ public class Preferences extends ChangeableData {
                         mUseTitleInFooter = m.getBooleanWithDefault(USE_TITLE_IN_FOOTER, mUseTitleInFooter);
                         if (m.has(THEME)) {
                             Theme.set(new Theme(m.getMap(THEME)));
+                        }
+                        if (m.has(QUICK_EXPORTS)) {
+                            JsonMap m2 = m.getMap(QUICK_EXPORTS);
+                            for (String key : m2.keySet()) {
+                                QuickExport qe = new QuickExport(m2.getMap(key));
+                                if (qe.isValid()) {
+                                    mQuickExports.put(key, qe);
+                                }
+                            }
                         }
                     }
                 }
@@ -503,6 +512,16 @@ public class Preferences extends ChangeableData {
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
                     w.key(THEME);
                     Theme.current().save(w);
+                    pruneQuickExports();
+                    if (!mQuickExports.isEmpty()) {
+                        w.key(QUICK_EXPORTS);
+                        w.startMap();
+                        for (Map.Entry<String, QuickExport> entry : mQuickExports.entrySet()) {
+                            w.key(entry.getKey());
+                            entry.getValue().toJSON(w);
+                        }
+                        w.endMap();
+                    }
                     w.endMap();
                 }
             } catch (IOException ioe) {
@@ -996,5 +1015,32 @@ public class Preferences extends ChangeableData {
 
     public PageSettings getPageSettings() {
         return mPageSettings;
+    }
+
+    public QuickExport getQuickExport(String path) {
+        return mQuickExports.get(path);
+    }
+
+    public void putQuickExport(GURPSCharacter character, QuickExport qe) {
+        Path path = character.getPath();
+        if (path != null) {
+            mQuickExports.put(path.toAbsolutePath().toString(), qe);
+        }
+    }
+
+    public void pruneQuickExports() {
+        int size = mQuickExports.size();
+        if (size > MAX_QUICK_EXPORTS) {
+            List<QuickExport> all = new ArrayList<>(size);
+            for (Map.Entry<String, QuickExport> entry : mQuickExports.entrySet()) {
+                QuickExport qe = entry.getValue();
+                qe.setKey(entry.getKey());
+                all.add(qe);
+            }
+            Collections.sort(all);
+            for (int i = MAX_QUICK_EXPORTS; i < size; i++) {
+                mQuickExports.remove(all.get(i).getKey());
+            }
+        }
     }
 }

@@ -16,6 +16,7 @@ import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.preferences.QuickExport;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -40,19 +41,25 @@ public class ExportToTextTemplateCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        SheetDockable sheet = getTarget(SheetDockable.class);
-        if (sheet != null) {
-            String name = PathUtils.cleanNameForFile(sheet.getSheet().getCharacter().getProfile().getName());
+        SheetDockable dockable = getTarget(SheetDockable.class);
+        if (dockable != null) {
+            String name = PathUtils.cleanNameForFile(dockable.getSheet().getCharacter().getProfile().getName());
             if (name.isBlank()) {
                 name = "untitled";
             }
             String ext  = PathUtils.getExtension(mTemplatePath);
-            Path   path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), Preferences.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.Text(" Files"), ext));
+            Path   path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Preferences.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.Text(" Files"), ext));
             if (path != null) {
-                if (!new TextTemplate(sheet.getSheet()).export(path, mTemplatePath)) {
-                    WindowUtils.showError(sheet, String.format(I18n.Text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(mTemplatePath, false)));
-                }
+                performExport(dockable, mTemplatePath, path);
             }
+        }
+    }
+
+    public static void performExport(SheetDockable dockable, Path templatePath, Path exportPath) {
+        if (new TextTemplate(dockable.getSheet()).export(exportPath, templatePath)) {
+            dockable.recordQuickExport(new QuickExport(templatePath, exportPath));
+        } else {
+            WindowUtils.showError(dockable, String.format(I18n.Text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(templatePath, false)));
         }
     }
 }
