@@ -14,7 +14,7 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.body.HitLocationEditor;
-import com.trollworks.gcs.body.HitLocationTable;
+import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -206,7 +206,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseReducedSwing.setSelected(Preferences.DEFAULT_USE_REDUCED_SWING);
         mUseSimpleMetricConversions.setSelected(Preferences.DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
         mAttributeEditor.reset(AttributeDef.createStandardAttributes());
-        mHitLocationsEditor.reset(HitLocationTable.createHumanoidTable());
+        mHitLocationsEditor.reset(LibraryHitLocationTables.getHumanoid());
     }
 
     @Override
@@ -222,7 +222,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
         atDefault = atDefault && prefs.autoFillProfile() == Preferences.DEFAULT_AUTO_FILL_PROFILE;
         atDefault = atDefault && prefs.getAttributes().equals(AttributeDef.createStandardAttributes());
-        atDefault = atDefault && prefs.getHitLocations().equals(HitLocationTable.createHumanoidTable());
+        atDefault = atDefault && prefs.getHitLocations().equals(LibraryHitLocationTables.getHumanoid());
         return atDefault;
     }
 }

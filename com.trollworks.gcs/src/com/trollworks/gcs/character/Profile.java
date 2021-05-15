@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.body.HitLocationTable;
+import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -163,9 +164,10 @@ public class Profile {
             if (bodyType.startsWith("winged_")) {
                 bodyType = bodyType.substring(7) + ".winged";
             }
-            HitLocationTable table = HitLocationTable.lookupStdTable(bodyType);
-            if (table != null) {
-                mHitLocations = table;
+            for (HitLocationTable table : LibraryHitLocationTables.get()) {
+                if (bodyType.equals(table.getID())) {
+                    mHitLocations = table.clone();
+                }
             }
         } else if (m.has(KEY_HIT_LOCATIONS)) {
             mHitLocations = new HitLocationTable(m.getMap(KEY_HIT_LOCATIONS));

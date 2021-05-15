@@ -14,6 +14,7 @@ package com.trollworks.gcs.preferences;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.body.HitLocationTable;
+import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -249,7 +250,7 @@ public class Preferences extends ChangeableData {
         mShowSpellAdj = DEFAULT_SHOW_SPELL_ADJ;
         mUseTitleInFooter = DEFAULT_USE_TITLE_IN_FOOTER;
         mAttributes = AttributeDef.createStandardAttributes();
-        mHitLocations = HitLocationTable.createHumanoidTable();
+        mHitLocations = LibraryHitLocationTables.getHumanoid().clone();
         mPageSettings = new PageSettings(this);
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
