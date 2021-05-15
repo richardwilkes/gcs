@@ -54,7 +54,7 @@ public class DRBonusEditor extends FeatureEditor {
         GURPSCharacter   character = getRow().getCharacter();
         HitLocationTable locations;
         if (character != null) {
-            locations = character.getProfile().getHitLocations();
+            locations = character.getSettings().getHitLocations();
         } else {
             locations = Preferences.getInstance().getHitLocations();
         }

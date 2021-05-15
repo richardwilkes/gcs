@@ -12,6 +12,7 @@
 package com.trollworks.gcs.body;
 
 import com.trollworks.gcs.library.Library;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -33,6 +34,7 @@ public final class LibraryHitLocationTables {
     public static List<HitLocationTable> get() {
         List<HitLocationTable> tables = new ArrayList<>();
         mHumanoid = null;
+        Preferences.getInstance(); // Just to ensure the libraries list is initialized
         for (Library lib : Library.LIBRARIES) {
             Path dir = lib.getPath().resolve("Hit Locations");
             if (Files.isDirectory(dir)) {

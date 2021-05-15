@@ -51,24 +51,23 @@ import javax.imageio.ImageIO;
 
 /** Holds the character profile. */
 public class Profile {
-    private static final String KEY_AGE           = "age";
-    private static final String KEY_BIRTHDAY      = "birthday";
-    private static final String KEY_EYES          = "eyes";
-    private static final String KEY_GENDER        = "gender";
-    private static final String KEY_HAIR          = "hair";
-    private static final String KEY_HANDEDNESS    = "handedness";
-    private static final String KEY_HEIGHT        = "height";
-    private static final String KEY_HIT_LOCATIONS = "hit_locations";
-    private static final String KEY_NAME          = "name";
-    private static final String KEY_ORGANIZATION  = "organization";
-    private static final String KEY_PLAYER_NAME   = "player_name";
-    private static final String KEY_PORTRAIT      = "portrait";
-    private static final String KEY_RELIGION      = "religion";
-    private static final String KEY_SKIN          = "skin";
-    private static final String KEY_SM            = "SM";
-    private static final String KEY_TITLE         = "title";
-    private static final String KEY_TL            = "tech_level";
-    private static final String KEY_WEIGHT        = "weight";
+    private static final String KEY_AGE          = "age";
+    private static final String KEY_BIRTHDAY     = "birthday";
+    private static final String KEY_EYES         = "eyes";
+    private static final String KEY_GENDER       = "gender";
+    private static final String KEY_HAIR         = "hair";
+    private static final String KEY_HANDEDNESS   = "handedness";
+    private static final String KEY_HEIGHT       = "height";
+    private static final String KEY_NAME         = "name";
+    private static final String KEY_ORGANIZATION = "organization";
+    private static final String KEY_PLAYER_NAME  = "player_name";
+    private static final String KEY_PORTRAIT     = "portrait";
+    private static final String KEY_RELIGION     = "religion";
+    private static final String KEY_SKIN         = "skin";
+    private static final String KEY_SM           = "SM";
+    private static final String KEY_TITLE        = "title";
+    private static final String KEY_TL           = "tech_level";
+    private static final String KEY_WEIGHT       = "weight";
 
     private static final String KEY_BODY_TYPE = "body_type"; // Deprecated May 9, 2021
 
@@ -77,27 +76,26 @@ public class Profile {
     private static final DateTimeFormatter MONTH_AND_DAY_FORMAT = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, FULL).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).toFormatter();
     private static final Random            RANDOM               = new Random();
 
-    private GURPSCharacter   mCharacter;
-    private boolean          mCustomPortrait;
-    private RetinaIcon       mPortrait;
-    private String           mName;
-    private String           mTitle;
-    private String           mOrganization;
-    private String           mAge;
-    private String           mBirthday;
-    private String           mEyeColor;
-    private String           mHair;
-    private String           mSkinColor;
-    private String           mHandedness;
-    private LengthValue      mHeight;
-    private WeightValue      mWeight;
-    private int              mSizeModifier;
-    private int              mSizeModifierBonus;
-    private String           mGender;
-    private String           mReligion;
-    private String           mPlayerName;
-    private String           mTechLevel;
-    private HitLocationTable mHitLocations;
+    private GURPSCharacter mCharacter;
+    private boolean        mCustomPortrait;
+    private RetinaIcon     mPortrait;
+    private String         mName;
+    private String         mTitle;
+    private String         mOrganization;
+    private String         mAge;
+    private String         mBirthday;
+    private String         mEyeColor;
+    private String         mHair;
+    private String         mSkinColor;
+    private String         mHandedness;
+    private LengthValue    mHeight;
+    private WeightValue    mWeight;
+    private int            mSizeModifier;
+    private int            mSizeModifierBonus;
+    private String         mGender;
+    private String         mReligion;
+    private String         mPlayerName;
+    private String         mTechLevel;
 
     Profile(GURPSCharacter character, boolean full) {
         mCharacter = character;
@@ -107,7 +105,6 @@ public class Profile {
         mOrganization = "";
         mReligion = "";
         Preferences prefs = Preferences.getInstance();
-        mHitLocations = prefs.getHitLocations().clone();
         mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         if (full) {
             mAge = Numbers.format(getRandomAge());
@@ -166,11 +163,10 @@ public class Profile {
             }
             for (HitLocationTable table : LibraryHitLocationTables.get()) {
                 if (bodyType.equals(table.getID())) {
-                    mHitLocations = table.clone();
+                    mCharacter.getSettings().setHitLocations(table.clone());
+                    break;
                 }
             }
-        } else if (m.has(KEY_HIT_LOCATIONS)) {
-            mHitLocations = new HitLocationTable(m.getMap(KEY_HIT_LOCATIONS));
         }
 
         if (m.has(KEY_PORTRAIT)) {
@@ -205,8 +201,6 @@ public class Profile {
         w.keyValueNot(KEY_GENDER, mGender, "");
         w.keyValueNot(KEY_TL, mTechLevel, "");
         w.keyValueNot(KEY_RELIGION, mReligion, "");
-        w.key(KEY_HIT_LOCATIONS);
-        mHitLocations.toJSON(w, mCharacter);
         if (mCustomPortrait && mPortrait != null) {
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 ImageIO.write(mPortrait.getRetina(), FileType.PNG.getExtension(), baos);
@@ -799,20 +793,6 @@ public class Profile {
             return Img.create(new File(path));
         } catch (IOException exception) {
             return null;
-        }
-    }
-
-    /** @return The hit locations. */
-    public HitLocationTable getHitLocations() {
-        return mHitLocations;
-    }
-
-    /** @param locations The hit locations. */
-    public void setHitLocationTable(HitLocationTable locations) {
-        if (!mHitLocations.equals(locations)) {
-            mCharacter.postUndoEdit(I18n.Text("Body Type Change"), (c, v) -> c.getProfile().setHitLocationTable((HitLocationTable) v), mHitLocations.clone(), locations);
-            mHitLocations = locations.clone();
-            mCharacter.notifyOfChange();
         }
     }
 }

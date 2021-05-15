@@ -560,7 +560,7 @@ public class TextTemplate {
             break;
         case KEY_GENERAL_DR:
             int torsoDR = 0;
-            HitLocation torsoLocation = gurpsCharacter.getProfile().getHitLocations().lookupLocationByID("torso");
+            HitLocation torsoLocation = gurpsCharacter.getSettings().getHitLocations().lookupLocationByID("torso");
             if (torsoLocation != null) {
                 torsoDR = torsoLocation.getDR(gurpsCharacter, null);
             }
@@ -667,7 +667,7 @@ public class TextTemplate {
         case KEY_OPTIONS_CODE_DEPRECATED:
             break;
         case KEY_BODY_TYPE:
-            writeEncodedText(out, gurpsCharacter.getProfile().getHitLocations().getName());
+            writeEncodedText(out, gurpsCharacter.getSettings().getHitLocations().getName());
             break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
@@ -917,7 +917,7 @@ public class TextTemplate {
         StringBuilder    keyBuffer        = new StringBuilder();
         boolean          lookForKeyMarker = true;
         int              currentID        = 0;
-        HitLocationTable table            = gurpsCharacter.getProfile().getHitLocations();
+        HitLocationTable table            = gurpsCharacter.getSettings().getHitLocations();
         for (HitLocation location : table.getLocations()) {
             currentID++;
             for (int i = 0; i < length; i++) {
