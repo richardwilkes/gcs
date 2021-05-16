@@ -38,6 +38,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
 /** Various utility methods for the UI. */
@@ -55,6 +56,15 @@ public final class UIUtilities {
         }
         Theme.current(); // Just here to ensure the theme is loaded
         Fonts.loadFromPreferences();
+        UIDefaults defaults       = UIManager.getDefaults();
+        Font       systemTextFont = UIManager.getFont("TextField.font");
+        for (String name : new String[]{
+                "TextArea",
+                "TextField",
+                "TextPane"
+        }) {
+            defaults.put(name + ".font", systemTextFont);
+        }
         WiderToolTipUI.installIfNeeded();
     }
 
