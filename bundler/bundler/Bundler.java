@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class Bundler {
-    private static final String GCS_VERSION       = "4.29.1";
+    private static final String GCS_VERSION       = "4.30.0";
     private static final String JDK_MAJOR_VERSION = "15";
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
@@ -687,6 +687,8 @@ public final class Bundler {
         args.add(PKG.toAbsolutePath().toString());
         args.add("--primary-bundle-id");
         args.add("com.trollworks.gcs");
+        args.add("--username");
+        args.add("wilkes@me.com");
         args.add("--password");
         args.add("@keychain:gcs_app_pw");
         List<String> lines     = runCmd(args);
@@ -715,6 +717,8 @@ public final class Bundler {
         args.add("altool");
         args.add("--notarization-info");
         args.add(requestID);
+        args.add("--username");
+        args.add("wilkes@me.com");
         args.add("--password");
         args.add("@keychain:gcs_app_pw");
         boolean success = false;
