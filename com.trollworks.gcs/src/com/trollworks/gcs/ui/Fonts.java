@@ -210,7 +210,7 @@ public class Fonts {
         }
 
         public Info(JsonMap m) {
-            mName = m.getStringWithDefault(NAME, "SansSerif");
+            mName = m.getStringWithDefault(NAME, ROBOTO);
             mStyle = Enums.extract(m.getString(STYLE), FontStyle.values(), FontStyle.PLAIN);
             mSize = m.getIntWithDefault(SIZE, 9);
             if (mSize < 1) {
