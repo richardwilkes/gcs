@@ -40,8 +40,6 @@ public class Fonts {
     public static final  String             FONT_AWESOME_SOLID   = "Font Awesome 5 Free Solid";
     /** The name of the Roboto font. */
     public static final  String             ROBOTO               = "Roboto";
-    /** The standard text field font. */
-    public static final  String             KEY_STD_TEXT_FIELD   = "TextField.font";
     /** The label font. */
     public static final  String             KEY_LABEL_PRIMARY    = "label.primary";
     /** The small label font. */
@@ -133,9 +131,9 @@ public class Fonts {
         return true;
     }
 
-    /** @return The default font to use. */
-    public static Font getDefaultFont() {
-        return UIManager.getFont(KEY_STD_TEXT_FIELD);
+    /** @return The default system font to use. */
+    public static Font getDefaultSystemFont() {
+        return UIManager.getFont("TextField.font");
     }
 
     /** @return The available font keys. */

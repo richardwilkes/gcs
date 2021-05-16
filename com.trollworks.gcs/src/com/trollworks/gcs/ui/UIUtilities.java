@@ -50,14 +50,12 @@ public final class UIUtilities {
         System.setProperty("apple.laf.useScreenMenuBar", Boolean.TRUE.toString());
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            Font current = UIManager.getFont(Fonts.KEY_STD_TEXT_FIELD);
-            UIManager.getDefaults().put(Fonts.KEY_STD_TEXT_FIELD, new Font("SansSerif", current.getStyle(), current.getSize()));
-            WiderToolTipUI.installIfNeeded();
         } catch (Exception ex) {
             Log.error(ex);
         }
         Theme.current(); // Just here to ensure the theme is loaded
         Fonts.loadFromPreferences();
+        WiderToolTipUI.installIfNeeded();
     }
 
     /**

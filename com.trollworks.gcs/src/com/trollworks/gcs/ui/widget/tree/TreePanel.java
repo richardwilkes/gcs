@@ -91,7 +91,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              HashSet<TreeContainerRow> mOpenRows               = new HashSet<>();
     private              HashSet<TreeRow>          mSelectedRows           = new HashSet<>();
     private              Map<TreeRow, Integer>     mRowHeightMap           = new HashMap<>();
-    private              int                       mRowHeight              = TextTreeColumn.VMARGIN + TextDrawing.getFontHeight(Fonts.getDefaultFont()) + TextTreeColumn.VMARGIN;
+    private              int                       mRowHeight              = TextTreeColumn.VMARGIN + TextDrawing.getFontHeight(Fonts.getDefaultSystemFont()) + TextTreeColumn.VMARGIN;
     private              int                       mMouseOverColumnDivider = -1;
     private              int                       mDragColumnDivider      = -1;
     private              int                       mAllowedRowDragTypes    = DnDConstants.ACTION_COPY_OR_MOVE;
