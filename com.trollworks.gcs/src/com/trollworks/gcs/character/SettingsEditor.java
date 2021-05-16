@@ -185,7 +185,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mBlockLayoutField.getDocument().addDocumentListener(this);
         JScrollPane scroller = new JScrollPane(mBlockLayoutField, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         panel.add(new Label(I18n.Text("Block Layout")), new PrecisionLayoutData());
-        panel.add(scroller, new PrecisionLayoutData().setHeightHint(scroller.getPreferredSize().height).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        panel.add(scroller, new PrecisionLayoutData().setHeightHint(68).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         getContentPane().add(panel, BorderLayout.CENTER);
     }

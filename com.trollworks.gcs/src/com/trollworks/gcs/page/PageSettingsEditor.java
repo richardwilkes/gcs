@@ -41,20 +41,14 @@ public class PageSettingsEditor extends JPanel {
     private              JComboBox<LengthUnits>     mUnits;
 
     public PageSettingsEditor(PageSettings settings, Runnable adjustCallback) {
-        super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0));
+        super(new PrecisionLayout().setColumns(6).setMargins(4, 0, 4, 0));
         setOpaque(false);
         mSettings = settings;
         mAdjustCallback = adjustCallback;
-
         mPaperSize = addCombo(I18n.Text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (evt) -> {
             mSettings.setPaperSize(((PaperSize) mPaperSize.getSelectedItem()));
             mAdjustCallback.run();
         });
-        mOrientation = addCombo(I18n.Text("Orientation"), PageOrientation.values(), mSettings.getPageOrientation(), (evt) -> {
-            mSettings.setPageOrientation((PageOrientation) mOrientation.getSelectedItem());
-            mAdjustCallback.run();
-        });
-
         LengthValue proto = new LengthValue(new Fixed6(99.99), LengthUnits.IN);
         mTopMargin = addField(I18n.Text("Top Margin"), null, mSettings.getTopMargin(), proto, FieldFactory.LENGTH, (evt) -> {
             mSettings.setTopMargin((LengthValue) evt.getNewValue());
@@ -62,6 +56,10 @@ public class PageSettingsEditor extends JPanel {
         });
         mBottomMargin = addField(I18n.Text("Bottom Margin"), null, mSettings.getBottomMargin(), proto, FieldFactory.LENGTH, (evt) -> {
             mSettings.setBottomMargin((LengthValue) evt.getNewValue());
+            mAdjustCallback.run();
+        });
+        mOrientation = addCombo(I18n.Text("Orientation"), PageOrientation.values(), mSettings.getPageOrientation(), (evt) -> {
+            mSettings.setPageOrientation((PageOrientation) mOrientation.getSelectedItem());
             mAdjustCallback.run();
         });
         mLeftMargin = addField(I18n.Text("Left Margin"), null, mSettings.getLeftMargin(), proto, FieldFactory.LENGTH, (evt) -> {
