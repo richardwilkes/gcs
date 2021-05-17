@@ -31,7 +31,7 @@ public final class LibraryHitLocationTables {
     private LibraryHitLocationTables() {
     }
 
-    public static List<HitLocationTable> get() {
+    public static synchronized List<HitLocationTable> get() {
         List<HitLocationTable> tables = new ArrayList<>();
         mHumanoid = null;
         Preferences.getInstance(); // Just to ensure the libraries list is initialized
@@ -66,7 +66,7 @@ public final class LibraryHitLocationTables {
         return tables;
     }
 
-    public static HitLocationTable getHumanoid() {
+    public static synchronized HitLocationTable getHumanoid() {
         if (mHumanoid == null) {
             mHumanoid = createHumanoidTable();
         }
