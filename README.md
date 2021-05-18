@@ -26,12 +26,27 @@ a given release, so be sure to review them again with the version you plan to bu
 
 4. Build and bundle the code for your platform:
 
-   macOS and Linux:
+   **macOS**
+
    ```
    % cd gcs
    % ./bundle.sh
    ```
-   Windows:
+
+   **Linux**
+
+   If you get a message similar to "Error: Invalid or unsupported type: [null]" in the
+   application packaging step when trying to run this on Linux, your distribution likely does not
+   have the debian packaging tools installed. You'll either need to install them, or use the
+   `--unpackaged` option when running `bundle.sh`
+   
+   ```
+   % cd gcs
+   % ./bundle.sh
+   ```
+
+   **Windows**
+
    ```
    > cd gcs
    > .\bundle.bat
