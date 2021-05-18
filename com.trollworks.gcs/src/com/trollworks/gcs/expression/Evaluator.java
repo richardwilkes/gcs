@@ -22,6 +22,7 @@ import com.trollworks.gcs.expression.function.If;
 import com.trollworks.gcs.expression.function.Log;
 import com.trollworks.gcs.expression.function.Log10;
 import com.trollworks.gcs.expression.function.Log1p;
+import com.trollworks.gcs.expression.function.LookupAdvantageLevel;
 import com.trollworks.gcs.expression.function.Max;
 import com.trollworks.gcs.expression.function.Min;
 import com.trollworks.gcs.expression.function.Pow;
@@ -93,6 +94,7 @@ public class Evaluator {
         addDefaultFunction(new Log());
         addDefaultFunction(new Log1p());
         addDefaultFunction(new Log10());
+        addDefaultFunction(new LookupAdvantageLevel());
         addDefaultFunction(new Max());
         addDefaultFunction(new Min());
         addDefaultFunction(new Pow());
