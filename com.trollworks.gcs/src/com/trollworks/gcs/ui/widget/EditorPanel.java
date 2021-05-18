@@ -90,12 +90,16 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         list.add(new AttributeChoice("dodge", format, "Dodge"));
         list.add(new AttributeChoice("parry", format, "Parry"));
         list.add(new AttributeChoice("block", format, "Block"));
-        AttributeChoice current = list.get(0);
+        AttributeChoice current = null;
         for (AttributeChoice attributeChoice : list) {
             if (attributeChoice.getAttribute().equals(attribute)) {
                 current = attributeChoice;
                 break;
             }
+        }
+        if (current == null) {
+            list.add(new AttributeChoice(attribute, format, attribute));
+            current = list.get(list.size() - 1);
         }
         return addComboBox(command, list.toArray(new AttributeChoice[0]), current);
     }

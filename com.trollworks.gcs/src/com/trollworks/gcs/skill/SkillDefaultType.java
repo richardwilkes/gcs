@@ -38,12 +38,16 @@ public final class SkillDefaultType {
         list.add(new AttributeChoice("parry", "%s", "Parry"));
         list.add(new AttributeChoice("block", "%s", "Block"));
         list.add(new AttributeChoice("10", "%s", "10"));
-        AttributeChoice current = list.get(0);
+        AttributeChoice current = null;
         for (AttributeChoice attributeChoice : list) {
             if (attributeChoice.getAttribute().equals(currentType)) {
                 current = attributeChoice;
                 break;
             }
+        }
+        if (current == null) {
+            list.add(new AttributeChoice(currentType, "%s", currentType));
+            current = list.get(list.size() - 1);
         }
         JComboBox<AttributeChoice> combo = new JComboBox<>(list.toArray(new AttributeChoice[0]));
         combo.setOpaque(false);

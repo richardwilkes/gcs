@@ -777,29 +777,44 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     /** @param text The combined attribute/difficulty to set. */
-    // Copied from Skill class
+    // Copied from Skill class (mostly)
     public void setDifficultyFromText(String text) {
-        SkillDifficulty[] difficulty = SkillDifficulty.values();
-        String            input      = text.trim();
-        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
-            // We have to go backwards through the list to avoid the
-            // regex grabbing the "H" in "VH".
-            for (int j = difficulty.length - 1; j >= 0; j--) {
-                if (input.matches("(?i).*" + attrDef.getName() + ".*/.*" + difficulty[j].name() + ".*")) {
-                    setDifficulty(attrDef.getID(), difficulty[j]);
-                    return;
+        String[]        parts      = text.split("/", 2);
+        SkillDifficulty difficulty = SkillDifficulty.A;
+        if (parts.length == 2) {
+            String diffText = parts[1].trim();
+            for (SkillDifficulty d : SkillDifficulty.values()) {
+                if (d.name().equalsIgnoreCase(diffText)) {
+                    difficulty = d;
+                    break;
                 }
             }
         }
-        // Special-case for old file formats.
-        // We have to go backwards through the list to avoid the
-        // regex grabbing the "H" in "VH".
-        for (int j = difficulty.length - 1; j >= 0; j--) {
-            if (input.matches("(?i).*base10.*/.*" + difficulty[j].name() + ".*")) {
-                setDifficulty("10", difficulty[j]);
-                return;
+        String attrText;
+        if (parts.length > 0) {
+            attrText = parts[0].trim();
+        } else {
+            attrText = Skill.getDefaultAttribute("iq");
+        }
+        AttributeDef attr = null;
+        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+            if (attrDef.getID().equalsIgnoreCase(attrText)) {
+                attr = attrDef;
+                break;
             }
         }
+        if (attr == null) {
+            for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+                if (attrDef.getName().equalsIgnoreCase(attrText)) {
+                    attr = attrDef;
+                    break;
+                }
+            }
+        }
+        if (attr != null) {
+            attrText = attr.getID();
+        }
+        setDifficulty(attrText, difficulty);
     }
 
     /** @return The formatted attribute/difficulty. */

@@ -13,7 +13,6 @@ package com.trollworks.gcs.expression.function;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.expression.EvaluationException;
 import com.trollworks.gcs.expression.Evaluator;
 import com.trollworks.gcs.expression.VariableResolver;
 

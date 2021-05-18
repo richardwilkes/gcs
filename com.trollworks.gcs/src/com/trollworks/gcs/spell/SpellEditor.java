@@ -147,12 +147,17 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
         }
         list.add(new AttributeChoice("10", "%s", "10"));
-        AttributeChoice current = list.get(0);
+        String currentAttr = mRow.getAttribute();
+        AttributeChoice current = null;
         for (AttributeChoice attributeChoice : list) {
-            if (attributeChoice.getAttribute().equals(mRow.getAttribute())) {
+            if (attributeChoice.getAttribute().equals(currentAttr)) {
                 current = attributeChoice;
                 break;
             }
+        }
+        if (current == null) {
+            list.add(new AttributeChoice(currentAttr, "%s", currentAttr));
+            current = list.get(list.size() - 1);
         }
 
         mAttributePopup = createComboBox(panel, list.toArray(new AttributeChoice[0]), current, I18n.Text("The attribute this spell is based on"));
