@@ -92,7 +92,10 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mAttributeEditor = new AttributeEditor(prefs.getAttributes(), this::adjustResetButton, "*");
         add(mAttributeEditor, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
 
-        mHitLocationsEditor = new HitLocationEditor(prefs.getHitLocations(), this::adjustResetButton, "*");
+        mHitLocationsEditor = new HitLocationEditor(prefs.getHitLocations(), () -> {
+            prefs.getHitLocations().update();
+            adjustResetButton();
+        }, "*");
         add(mHitLocationsEditor, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
 
         JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));

@@ -173,6 +173,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         panel.add(mAttributeEditor, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mHitLocationsEditor = new HitLocationEditor(mSettings.getHitLocations(), () -> {
+            mSettings.getHitLocations().update();
             mCharacter.notifyOfChange();
             adjustResetButton();
         }, "");

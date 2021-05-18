@@ -60,6 +60,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index - 1);
                 List<HitLocation> locations = mLocation.getOwningTable().getLocations();
+                index--; // There is a non-item row before the list in the panel, so compensate for it
                 locations.remove(index);
                 locations.add(index - 1, mLocation);
                 parent.adjustForReordering();
@@ -74,6 +75,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index + 1);
                 List<HitLocation> locations = mLocation.getOwningTable().getLocations();
+                index--; // There is a non-item row before the list in the panel, so compensate for it
                 locations.remove(index);
                 locations.add(index + 1, mLocation);
                 parent.adjustForReordering();
