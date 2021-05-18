@@ -167,6 +167,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             }
             oldAttributes.clear();
             oldAttributes.putAll(newAttributes);
+            mAttributeEditor.adjustButtons();
             mCharacter.notifyOfChange();
             adjustResetButton();
         }, "");

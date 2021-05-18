@@ -62,7 +62,7 @@ public class AttributePanel extends JPanel {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index - 1);
                 parent.renumber();
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveUpButton);
@@ -73,7 +73,7 @@ public class AttributePanel extends JPanel {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index + 1);
                 parent.renumber();
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveDownButton);
@@ -105,7 +105,7 @@ public class AttributePanel extends JPanel {
                             id = mAttrDef.getID();
                             mAttributes.put(id, mAttrDef);
                             mIDField.setValue(id);
-                            adjustCallback.run();
+                            mAdjustCallback.run();
                         }
                     }
                 });
@@ -117,7 +117,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.STRING,
                 (evt) -> {
                     mAttrDef.setName((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Full Name"),
@@ -127,7 +127,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.STRING,
                 (evt) -> {
                     mAttrDef.setFullName((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
@@ -139,7 +139,7 @@ public class AttributePanel extends JPanel {
                     mAttrDef.setType((AttributeType) evt.getItem());
                     if (mAttrDef.getType() == AttributeType.POOL) {
                         if (mThresholdListPanel == null) {
-                            mThresholdListPanel = new ThresholdListPanel(mAttrDef, adjustCallback);
+                            mThresholdListPanel = new ThresholdListPanel(mAttrDef, mAdjustCallback);
                             mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
                             mThresholdListPanel.revalidate();
                         }
@@ -151,7 +151,7 @@ public class AttributePanel extends JPanel {
                     if (owner != null) {
                         owner.adjustButtons();
                     }
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Base"),
@@ -161,7 +161,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.STRING,
                 (evt) -> {
                     mAttrDef.setAttributeBase((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Cost"),
@@ -171,7 +171,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.POSINT6,
                 (evt) -> {
                     mAttrDef.setCostPerPoint(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("SM Reduction"),
@@ -181,12 +181,12 @@ public class AttributePanel extends JPanel {
                 FieldFactory.PERCENT_REDUCTION,
                 (evt) -> {
                     mAttrDef.setCostAdjPercentPerSM(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         if (mAttrDef.getType() == AttributeType.POOL) {
-            mThresholdListPanel = new ThresholdListPanel(mAttrDef, adjustCallback);
+            mThresholdListPanel = new ThresholdListPanel(mAttrDef, mAdjustCallback);
             mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         }
 
@@ -196,7 +196,7 @@ public class AttributePanel extends JPanel {
         FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
             getParent().remove(this);
             mAttributes.remove(mAttrDef.getID());
-            adjustCallback.run();
+            mAdjustCallback.run();
         });
         right.add(remove);
     }
@@ -228,6 +228,9 @@ public class AttributePanel extends JPanel {
         mMoveUpButton.setEnabled(!isFirst);
         mMoveDownButton.setEnabled(!isLast);
         mAddThresholdButton.setEnabled(mAttrDef.getType() == AttributeType.POOL);
+        if (mThresholdListPanel != null) {
+            mThresholdListPanel.adjustButtons();
+        }
     }
 
     public void addThreshold() {

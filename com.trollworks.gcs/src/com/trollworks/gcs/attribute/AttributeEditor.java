@@ -80,6 +80,10 @@ public class AttributeEditor extends JPanel {
         add(combo);
     }
 
+    public void adjustButtons() {
+        mListPanel.adjustButtons();
+    }
+
     public void reset(Map<String, AttributeDef> attributes) {
         mListPanel.reset(attributes);
         mListPanel.getAdjustCallback().run();

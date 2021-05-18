@@ -63,7 +63,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 mThresholds.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index - 1);
                 mThresholds.add(index - 1, mThreshold);
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveUpButton);
@@ -75,7 +75,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 mThresholds.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index + 1);
                 mThresholds.add(index + 1, mThreshold);
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveDownButton);
@@ -94,7 +94,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 FieldFactory.STRING,
                 (evt) -> {
                     mThreshold.setState((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Multiplier"),
@@ -104,7 +104,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 FieldFactory.INT6,
                 (evt) -> {
                     mThreshold.setMultiplier(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         mDivisorField = addField(wrapper,
                 I18n.Text("Divisor"),
@@ -118,7 +118,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                         mDivisorField.setValue(evt.getOldValue());
                     } else {
                         mThreshold.setDivisor(value);
-                        adjustCallback.run();
+                        mAdjustCallback.run();
                     }
                 });
         addField(wrapper,
@@ -129,7 +129,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 FieldFactory.INT6,
                 (evt) -> {
                     mThreshold.setAddition(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
@@ -160,7 +160,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
             if (index != -1) {
                 parent.remove(this);
                 mThresholds.remove(index);
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         right.add(remove);
