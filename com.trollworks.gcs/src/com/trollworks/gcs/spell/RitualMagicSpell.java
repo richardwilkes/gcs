@@ -133,10 +133,7 @@ public class RitualMagicSpell extends Spell {
         // Apply bonuses for spells
         if (character != null) {
             StringBuilder tip         = new StringBuilder(skillLevel.mToolTip);
-            int           bonusLevels = 0;
-            for (String college : colleges) {
-                bonusLevels = Spell.getSpellBonusesFor(character, ID_COLLEGE, college, categories, tip);
-            }
+            int           bonusLevels = Spell.getBestCollegeSpellBonus(character, categories, colleges, tip);
             bonusLevels += Spell.getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, tip);
             bonusLevels += Spell.getSpellBonusesFor(character, ID_NAME, name, categories, tip);
             skillLevel.mLevel += bonusLevels;

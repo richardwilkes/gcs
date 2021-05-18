@@ -494,9 +494,7 @@ public class Spell extends ListRow implements HasSourceReference {
             }
 
             if (level != -1) {
-                for (String college : colleges) {
-                    relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college, categories, toolTip);
-                }
+                relativeLevel += getBestCollegeSpellBonus(character, categories, colleges, toolTip);
                 relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, toolTip);
                 relativeLevel += getSpellBonusesFor(character, ID_NAME, name, categories, toolTip);
                 level += relativeLevel;
@@ -520,6 +518,46 @@ public class Spell extends ListRow implements HasSourceReference {
         level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase(), toolTip);
         level += character.getSpellPointComparedIntegerBonusFor(id + '*', qualifier, categories, toolTip);
         return level;
+    }
+
+    public static int getBestCollegeSpellBonus(GURPSCharacter character, Set<String> categories, List<String> colleges, StringBuilder tooltip) {
+        int    best        = Integer.MIN_VALUE;
+        String bestTooltip = "";
+        for (String college : colleges) {
+            StringBuilder buffer = tooltip != null ? new StringBuilder() : null;
+            int           pts    = getSpellBonusesFor(character, ID_COLLEGE, college, categories, buffer);
+            if (best < pts) {
+                best = pts;
+                if (buffer != null) {
+                    bestTooltip = buffer.toString();
+                }
+            }
+        }
+        if (tooltip != null) {
+            tooltip.append(bestTooltip);
+        }
+        return best == Integer.MIN_VALUE ? 0 : best;
+    }
+
+    public int getBestCollegeSpellPointBonus(StringBuilder tooltip) {
+        GURPSCharacter character   = getCharacter();
+        Set<String>    categories  = getCategories();
+        int            best        = Integer.MIN_VALUE;
+        String         bestTooltip = "";
+        for (String college : getColleges()) {
+            StringBuilder buffer = tooltip != null ? new StringBuilder() : null;
+            int           pts    = getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, buffer);
+            if (best < pts) {
+                best = pts;
+                if (buffer != null) {
+                    bestTooltip = buffer.toString();
+                }
+            }
+        }
+        if (tooltip != null) {
+            tooltip.append(bestTooltip);
+        }
+        return best == Integer.MIN_VALUE ? 0 : best;
     }
 
     /** @return The name. */
@@ -689,9 +727,7 @@ public class Spell extends ListRow implements HasSourceReference {
         if (character != null) {
             StringBuilder tooltip    = new StringBuilder();
             Set<String>   categories = getCategories();
-            for (String college : getColleges()) {
-                getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, tooltip);
-            }
+            getBestCollegeSpellPointBonus(tooltip);
             getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, tooltip);
             getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, tooltip);
             if (!tooltip.isEmpty()) {
@@ -716,9 +752,7 @@ public class Spell extends ListRow implements HasSourceReference {
         GURPSCharacter character = getCharacter();
         if (character != null) {
             Set<String> categories = getCategories();
-            for (String college : getColleges()) {
-                points += getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, null);
-            }
+            points += getBestCollegeSpellPointBonus(null);
             points += getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, null);
             points += getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, null);
             if (points < 0) {
