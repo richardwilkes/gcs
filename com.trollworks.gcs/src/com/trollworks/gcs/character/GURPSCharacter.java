@@ -759,6 +759,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         mCachedWealthCarried = Fixed6.ZERO;
         for (Row one : getEquipmentModel().getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
+            equipment.update();
             WeightValue weight    = new WeightValue(equipment.getExtendedWeight(false));
             if (useSimpleMetricConversions()) {
                 weight = defaultWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
@@ -789,7 +790,9 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         Fixed6 savedWealth = mCachedWealthNotCarried;
         mCachedWealthNotCarried = Fixed6.ZERO;
         for (Row one : getOtherEquipmentModel().getTopLevelRows()) {
-            mCachedWealthNotCarried = mCachedWealthNotCarried.add(((Equipment) one).getExtendedValue());
+            Equipment equipment = (Equipment) one;
+            equipment.update();
+            mCachedWealthNotCarried = mCachedWealthNotCarried.add(equipment.getExtendedValue());
         }
         if (notify) {
             if (!mCachedWealthNotCarried.equals(savedWealth)) {

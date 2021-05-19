@@ -13,8 +13,10 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
+import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -63,5 +65,14 @@ public class Template extends CollectedModels {
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         saveModels(w, saveType);
+    }
+
+    public void recalculate() {
+        for (Row one : getEquipmentModel().getTopLevelRows()) {
+            ((Equipment) one).update();
+        }
+        for (Row one : getOtherEquipmentModel().getTopLevelRows()) {
+            ((Equipment) one).update();
+        }
     }
 }

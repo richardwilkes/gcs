@@ -185,12 +185,13 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         createReactionsOutline();
         createConditionalModifiersOutline();
 
+        mCharacter.recalculate();
+
         int    descColID = EquipmentColumn.DESCRIPTION.ordinal();
         Column column    = getEquipmentOutline().getModel().getColumnWithID(descColID);
         column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, true));
         column = getOtherEquipmentOutline().getModel().getColumnWithID(descColID);
         column.setName(EquipmentColumn.DESCRIPTION.toString(mCharacter, false));
-        mCharacter.recalculate();
 
         // Clear out the old pages
         removeAll();

@@ -72,6 +72,7 @@ public class TemplateSheet extends CollectedOutlines {
 
     @Override
     public void rebuild() {
+        mTemplate.recalculate();
         syncOutline(getAdvantagesOutline());
         syncOutline(getSkillsOutline());
         SpellOutline spellOutline = getSpellsOutline();
