@@ -116,7 +116,7 @@ public class AttributeBonus extends Bonus {
     public void setAttribute(DataFile dataFile, String attribute) {
         mAttribute = ID.sanitize(attribute, null, true);
         AttributeDef def = dataFile.getAttributeDefs().get(attribute);
-        getAmount().setIntegerOnly(def == null || def.getType() != AttributeType.DECIMAL);
+        getAmount().setDecimal(def != null && def.getType() == AttributeType.DECIMAL);
     }
 
     /** @return The limitation of this bonus. */

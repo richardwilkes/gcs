@@ -133,14 +133,14 @@ public abstract class FeatureEditor extends EditorPanel {
         AbstractFormatter formatter;
         Object            value;
         Object            prototype;
-        if (amt.isIntegerOnly()) {
-            formatter = new IntegerFormatter(min, max, true);
-            value = Integer.valueOf(amt.getIntegerAmount());
-            prototype = Integer.valueOf(max);
-        } else {
+        if (amt.isDecimal()) {
             formatter = new DoubleFormatter(min, max, true);
             value = Double.valueOf(amt.getAmount());
             prototype = Double.valueOf(max + 0.25);
+        } else {
+            formatter = new IntegerFormatter(min, max, true);
+            value = Integer.valueOf(amt.getIntegerAmount());
+            prototype = Integer.valueOf(max);
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, prototype, null);
         field.putClientProperty(LeveledAmount.class, amt);
@@ -221,10 +221,10 @@ public abstract class FeatureEditor extends EditorPanel {
             EditorField   field = (EditorField) event.getSource();
             LeveledAmount amt   = (LeveledAmount) field.getClientProperty(LeveledAmount.class);
             if (amt != null) {
-                if (amt.isIntegerOnly()) {
-                    amt.setAmount(((Integer) field.getValue()).intValue());
-                } else {
+                if (amt.isDecimal()) {
                     amt.setAmount(((Double) field.getValue()).doubleValue());
+                } else {
+                    amt.setAmount(((Integer) field.getValue()).intValue());
                 }
                 notifyActionListeners();
             } else {
