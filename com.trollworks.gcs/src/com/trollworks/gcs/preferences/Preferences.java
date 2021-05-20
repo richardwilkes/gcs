@@ -311,7 +311,9 @@ public class Preferences extends ChangeableData {
                         if (m.has(KEY_BINDINGS)) {
                             JsonMap m2 = m.getMap(KEY_BINDINGS);
                             for (String key : m2.keySet()) {
-                                mKeyBindingOverrides.put(key, m2.getString(key));
+                                if (key != null && !key.isBlank()) {
+                                    mKeyBindingOverrides.put(key, m2.getString(key));
+                                }
                             }
                         }
                         if (m.has(FONTS)) {
@@ -804,7 +806,7 @@ public class Preferences extends ChangeableData {
     }
 
     public void setKeyBindingOverride(String key, String override) {
-        if (override == null) {
+        if (override == null || override.isBlank()) {
             mKeyBindingOverrides.remove(key);
         } else {
             mKeyBindingOverrides.put(key, override);

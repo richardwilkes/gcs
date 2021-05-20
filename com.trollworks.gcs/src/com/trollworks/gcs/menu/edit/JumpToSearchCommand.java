@@ -23,7 +23,7 @@ public class JumpToSearchCommand extends Command {
     public static final JumpToSearchCommand INSTANCE = new JumpToSearchCommand();
 
     private JumpToSearchCommand() {
-        super(I18n.Text("Jump To Search"), null, KeyEvent.VK_J);
+        super(I18n.Text("Jump To Search"), "jump_to_search", KeyEvent.VK_J);
     }
 
     @Override
