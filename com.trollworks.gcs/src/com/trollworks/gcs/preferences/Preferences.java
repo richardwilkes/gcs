@@ -191,6 +191,17 @@ public class Preferences extends ChangeableData {
     public static synchronized Preferences getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new Preferences();
+            // Have to do the pruning of invalid quick exports here, since the isValid() call
+            // uses preferences to determine some validity.
+            List<String> toRemove = new ArrayList<>();
+            for (Map.Entry<String, QuickExport> entry : INSTANCE.mQuickExports.entrySet()) {
+                if (!entry.getValue().isValid()) {
+                    toRemove.add(entry.getKey());
+                }
+            }
+            for (String key : toRemove) {
+                INSTANCE.mQuickExports.remove(key);
+            }
         }
         return INSTANCE;
     }
@@ -367,10 +378,7 @@ public class Preferences extends ChangeableData {
                         if (m.has(QUICK_EXPORTS)) {
                             JsonMap m2 = m.getMap(QUICK_EXPORTS);
                             for (String key : m2.keySet()) {
-                                QuickExport qe = new QuickExport(m2.getMap(key));
-                                if (qe.isValid()) {
-                                    mQuickExports.put(key, qe);
-                                }
+                                mQuickExports.put(key, new QuickExport(m2.getMap(key)));
                             }
                         }
                     }
