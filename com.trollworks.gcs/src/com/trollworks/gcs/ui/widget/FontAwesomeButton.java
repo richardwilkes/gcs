@@ -37,13 +37,19 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 public class FontAwesomeButton extends JComponent implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
-    private String   mText;
-    private Runnable mClickFunction;
-    private int      mSize;
-    private int      mMargin;
-    private boolean  mInMouseDown;
-    private boolean  mPressed;
-    private boolean  mRollover;
+    public static final Color    ROLLOVER_COLOR = new Color(54, 137, 131);
+    public static final Color    PRESSED_COLOR  = new Color(70, 171, 196);
+    private             String   mText;
+    private             Runnable mClickFunction;
+    private             int      mSize;
+    private             int      mMargin;
+    private             boolean  mInMouseDown;
+    private             boolean  mPressed;
+    private             boolean  mRollover;
+
+    public FontAwesomeButton(String text, String tooltip, Runnable clickFunction) {
+        this(text, 14, tooltip, clickFunction);
+    }
 
     public FontAwesomeButton(String text, int size, String tooltip, Runnable clickFunction) {
         setOpaque(false);
@@ -109,9 +115,9 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
         Color color;
         if (isEnabled()) {
             if (mInMouseDown && mPressed) {
-                color = new Color(70, 171, 196);
+                color = PRESSED_COLOR;
             } else if (mRollover) {
-                color = new Color(54, 137, 131);
+                color = ROLLOVER_COLOR;
             } else {
                 color = Color.BLACK;
             }
@@ -172,6 +178,7 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
                 click();
             }
             repaint();
+            updateRollOver();
         }
     }
 

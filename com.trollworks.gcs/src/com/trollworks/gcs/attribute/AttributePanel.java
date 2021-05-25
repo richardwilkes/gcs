@@ -18,7 +18,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.WidgetHelpers;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
@@ -29,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -54,29 +55,29 @@ public class AttributePanel extends JPanel {
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.Text("Move Up"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index - 1);
                 parent.renumber();
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.Text("Move Down"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index + 1);
                 parent.renumber();
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveDownButton);
-        mAddThresholdButton = new FontAwesomeButton("\uf055", AttributeEditor.BUTTON_SIZE, I18n.Text("Add Pool Threshold"), this::addThreshold);
+        mAddThresholdButton = new FontAwesomeButton("\uf055", I18n.Text("Add Pool Threshold"), this::addThreshold);
         left.add(mAddThresholdButton);
 
         mCenter = new JPanel(new PrecisionLayout());
@@ -95,7 +96,7 @@ public class AttributePanel extends JPanel {
                     String existingID = mAttrDef.getID();
                     String id         = ((String) evt.getNewValue());
                     if (!existingID.equals(id)) {
-                        id = AttributeDef.sanitizeID(id, true);
+                        id = ID.sanitize(id, AttributeDef.RESERVED, false);
                         if (id.isEmpty() || mAttributes.containsKey(id)) {
                             mIDField.setValue(existingID);
                         } else {
@@ -104,7 +105,7 @@ public class AttributePanel extends JPanel {
                             id = mAttrDef.getID();
                             mAttributes.put(id, mAttrDef);
                             mIDField.setValue(id);
-                            adjustCallback.run();
+                            mAdjustCallback.run();
                         }
                     }
                 });
@@ -116,7 +117,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.STRING,
                 (evt) -> {
                     mAttrDef.setName((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Full Name"),
@@ -126,7 +127,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.STRING,
                 (evt) -> {
                     mAttrDef.setFullName((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
@@ -138,7 +139,7 @@ public class AttributePanel extends JPanel {
                     mAttrDef.setType((AttributeType) evt.getItem());
                     if (mAttrDef.getType() == AttributeType.POOL) {
                         if (mThresholdListPanel == null) {
-                            mThresholdListPanel = new ThresholdListPanel(mAttrDef, adjustCallback);
+                            mThresholdListPanel = new ThresholdListPanel(mAttrDef, mAdjustCallback);
                             mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
                             mThresholdListPanel.revalidate();
                         }
@@ -150,7 +151,7 @@ public class AttributePanel extends JPanel {
                     if (owner != null) {
                         owner.adjustButtons();
                     }
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Base"),
@@ -160,7 +161,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.STRING,
                 (evt) -> {
                     mAttrDef.setAttributeBase((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Cost"),
@@ -170,7 +171,7 @@ public class AttributePanel extends JPanel {
                 FieldFactory.POSINT6,
                 (evt) -> {
                     mAttrDef.setCostPerPoint(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("SM Reduction"),
@@ -180,35 +181,28 @@ public class AttributePanel extends JPanel {
                 FieldFactory.PERCENT_REDUCTION,
                 (evt) -> {
                     mAttrDef.setCostAdjPercentPerSM(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         if (mAttrDef.getType() == AttributeType.POOL) {
-            mThresholdListPanel = new ThresholdListPanel(mAttrDef, adjustCallback);
+            mThresholdListPanel = new ThresholdListPanel(mAttrDef, mAdjustCallback);
             mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         }
 
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", AttributeEditor.BUTTON_SIZE, I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
             getParent().remove(this);
             mAttributes.remove(mAttrDef.getID());
-            adjustCallback.run();
+            mAdjustCallback.run();
         });
         right.add(remove);
     }
 
-    private void addLabel(Container container, String title, String tooltip) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        label.setOpaque(false);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        container.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-    }
-
     private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
-        addLabel(container, title, tooltip);
+        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment());
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {
@@ -234,6 +228,9 @@ public class AttributePanel extends JPanel {
         mMoveUpButton.setEnabled(!isFirst);
         mMoveDownButton.setEnabled(!isLast);
         mAddThresholdButton.setEnabled(mAttrDef.getType() == AttributeType.POOL);
+        if (mThresholdListPanel != null) {
+            mThresholdListPanel.adjustButtons();
+        }
     }
 
     public void addThreshold() {

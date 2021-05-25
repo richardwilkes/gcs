@@ -251,7 +251,7 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
     /** @return The {@link Font} to use for the header. */
     @SuppressWarnings("static-method")
     public Font getHeaderFont() {
-        return Fonts.getDefaultFont();
+        return Fonts.getDefaultSystemFont();
     }
 
     /** @return The {@link Color} to use for the sorter controls. */

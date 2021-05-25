@@ -60,92 +60,100 @@ public class NumericComparator implements Comparator<String> {
         if (right == null) {
             right = "";
         }
-        char[] chars0          = left.toCharArray();
-        char[] chars1          = right.toCharArray();
-        int    pos0            = 0;
-        int    pos1            = 0;
-        int    len0            = chars0.length;
-        int    len1            = chars1.length;
-        int    result          = 0;
-        int    secondaryResult = 0;
-        char   c0;
-        char   c1;
+        if (mCaseless ? left.equalsIgnoreCase(right) : left.equals(right)) {
+            return 0;
+        }
+        if (naturalLess(left, right, mCaseless)) {
+            return -1;
+        }
+        return 1;
+    }
 
-        while (result == 0 && pos0 < len0 && pos1 < len1) {
-            boolean normalCompare = true;
-
-            c0 = chars0[pos0++];
-            c1 = chars1[pos1++];
-
-            if (isDigit(c0) && isDigit(c1)) {
-                int count0 = 1;
-                int count1 = 1;
-
-                while (pos0 < len0) {
-                    c0 = chars0[pos0];
-                    if (isDigit(c0)) {
-                        count0++;
-                        pos0++;
-                    } else {
-                        break;
+    // NaturalLess compares two strings using natural ordering. This means that
+    // "a2" < "a12".
+    //
+    // Non-digit sequences and numbers are compared separately. The former are
+    // compared byte-wise, while the latter are compared numerically (except that
+    // the number of leading zeros is used as a tie-breaker, so "2" < "02").
+    //
+    // Limitations:
+    //  - only ASCII digits (0-9) are considered.
+    //
+    // Original algorithm:
+    //    https://github.com/fvbommel/util/blob/master/sortorder/natsort.go
+    private static boolean naturalLess(String s1, String s2, boolean caseInsensitive) {
+        int l1 = s1.length();
+        int l2 = s2.length();
+        int i1 = 0;
+        int i2 = 0;
+        while (i1 < l1 && i2 < l2) {
+            char    c1 = s1.charAt(i1);
+            char    c2 = s2.charAt(i2);
+            boolean d1 = isDigit(c1);
+            boolean d2 = isDigit(c2);
+            if (d1 != d2) { // Digits before other characters
+                return d1; // True if LHS is a digit, false if the RHS is one.
+            }
+            if (!d1) {
+                if (caseInsensitive) {
+                    if (c1 >= 'a' && c1 <= 'z') {
+                        c1 -= 'a' - 'A';
+                    }
+                    if (c2 >= 'a' && c2 <= 'z') {
+                        c2 -= 'a' - 'A';
                     }
                 }
-
-                while (pos1 < len1) {
-                    c1 = chars1[pos1];
-                    if (isDigit(c1)) {
-                        count1++;
-                        pos1++;
-                    } else {
-                        break;
-                    }
+                if (c1 != c2) {
+                    return c1 < c2;
                 }
-
-                try {
-                    normalCompare = false;
-                    result = Long.compare(Long.parseLong(left.substring(pos0 - count0, pos0)), Long.parseLong(right.substring(pos1 - count1, pos1)));
-                    if (result == 0 && secondaryResult == 0) {
-                        secondaryResult = count0 - count1;
-                    }
-                } catch (NumberFormatException nfex) {
-                    pos0 -= count0;
-                    pos1 -= count1;
-                    c0 = chars0[pos0++];
-                    c1 = chars1[pos1++];
+                i1++;
+                i2++;
+            } else { // Digits
+                // Eat zeros.
+                while (i1 < l1 && s1.charAt(i1) == '0') {
+                    i1++;
+                }
+                while (i2 < l2 && s2.charAt(i2) == '0') {
+                    i2++;
+                }
+                // Eat all digits.
+                int nz1 = i1;
+                int nz2 = i2;
+                while (i1 < l1 && isDigit(s1.charAt(i1))) {
+                    i1++;
+                }
+                while (i2 < l2 && isDigit(s2.charAt(i2))) {
+                    i2++;
+                }
+                // If lengths of numbers with non-zero prefix differ, the shorter
+                // one is less.
+                int len1 = i1 - nz1;
+                int len2 = i2 - nz2;
+                if (len1 != len2) {
+                    return len1 < len2;
+                }
+                // If they're not equal, string comparison is correct.
+                String nr1 = s1.substring(nz1, i1);
+                String nr2 = s2.substring(nz2, i2);
+                if (!nr1.equals(nr2)) {
+                    return nr1.compareTo(nr2) < 0;
+                }
+                // Otherwise, the one with less zeros is less.
+                // Because everything up to the number is equal, comparing the index
+                // after the zeros is sufficient.
+                if (nz1 != nz2) {
+                    return nz1 < nz2;
                 }
             }
-
-            if (normalCompare) {
-                if (mCaseless) {
-                    int c0Val = Character.isLowerCase(c0) ? Character.toUpperCase(c0) : c0;
-                    int c1Val = Character.isLowerCase(c1) ? Character.toUpperCase(c1) : c1;
-                    result = c0Val - c1Val;
-                } else {
-                    result = c0 - c1;
-                }
-            }
+            // They're identical so far, so continue comparing.
         }
-
-        // string without suffix comes first
-        if (result == 0) {
-            result = len0 - pos0 - (len1 - pos1);
+        // So far they are identical. At least one is ended. If the other continues,
+        // it sorts last. If the are the same length and the caseInsensitive flag
+        // was set, compare again, but without the flag.
+        if (caseInsensitive && l1 == l2) {
+            return naturalLess(s1, s2, false);
         }
-
-        // tie breaker
-        if (result == 0) {
-            result = secondaryResult;
-            if (result == 0 && mCaseless) {
-                return compareStrings(left, right);
-            }
-        }
-
-        if (result < 0) {
-            result = -1;
-        } else if (result > 0) {
-            result = 1;
-        }
-
-        return result;
+        return l1 < l2;
     }
 
     private static boolean isDigit(char ch) {

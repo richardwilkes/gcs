@@ -14,9 +14,12 @@ package com.trollworks.gcs.notes;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.PageRefCell;
+import com.trollworks.gcs.equipment.FontAwesomeCell;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.HeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.Outline;
@@ -65,7 +68,7 @@ public enum NoteColumn {
     REFERENCE {
         @Override
         public String toString() {
-            return I18n.Text("Ref");
+            return "\uf02e";
         }
 
         @Override
@@ -81,6 +84,11 @@ public enum NoteColumn {
         @Override
         public Cell getCell() {
             return new PageRefCell();
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -130,6 +138,11 @@ public enum NoteColumn {
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();
 
+    /** @return The {@link Cell} used to display the header. */
+    public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+        return new ListHeaderCell(sheetOrTemplate);
+    }
+
     /**
      * Adds all relevant {@link Column}s to a {@link Outline}.
      *
@@ -142,7 +155,7 @@ public enum NoteColumn {
         OutlineModel   model           = outline.getModel();
         for (NoteColumn one : values()) {
             Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());
-            column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
+            column.setHeaderCell(one.getHeaderCell(sheetOrTemplate));
             model.addColumn(column);
         }
     }

@@ -15,13 +15,15 @@ import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.print.PrintManager;
-import com.trollworks.gcs.utility.units.LengthUnits;
+import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.utility.PrintProxy;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.print.PageFormat;
 import javax.swing.JPanel;
 
 /** A printer page. */
@@ -38,12 +40,13 @@ public class Page extends JPanel {
         mOwner = owner;
         setOpaque(true);
         setBackground(ThemeColor.PAGE);
-        PrintManager pageSettings = mOwner.getPageSettings();
-        Insets       insets       = mOwner.getPageAdornmentsInsets(this);
-        double[]     margins      = pageSettings != null ? pageSettings.getPageMargins(LengthUnits.PT) : new double[]{36.0, 36.0, 36.0, 36.0};
-        setBorder(new EmptyBorder(insets.top + (int) margins[0], insets.left + (int) margins[1], insets.bottom + (int) margins[2], insets.right + (int) margins[3]));
-        double[]  size     = mOwner.getScale().scale(pageSettings != null ? pageSettings.getPageSize(LengthUnits.PT) : new double[]{8.5 * 72.0, 11.0 * 72.0});
-        Dimension pageSize = new Dimension((int) size[0], (int) size[1]);
+        PageFormat fmt    = mOwner.getPageSettings().createPageFormat();
+        Insets     insets = mOwner.getPageAdornmentsInsets(this);
+        setBorder(new EmptyBorder(insets.top + (int) fmt.getImageableY(), insets.left + (int) fmt.getImageableX(),
+                insets.bottom + (int) (fmt.getHeight() - (fmt.getImageableY() + fmt.getImageableHeight())),
+                insets.right + (int) (fmt.getWidth() - (fmt.getImageableX() + fmt.getImageableWidth()))));
+        Scale     scale    = mOwner.getScale();
+        Dimension pageSize = new Dimension(scale.scale((int) fmt.getWidth()), scale.scale((int) fmt.getHeight()));
         UIUtilities.setOnlySize(this, pageSize);
         setSize(pageSize);
     }
@@ -52,5 +55,14 @@ public class Page extends JPanel {
     protected void paintComponent(Graphics gc) {
         super.paintComponent(GraphicsUtilities.prepare(gc));
         mOwner.drawPageAdornments(this, gc);
+    }
+
+    /**
+     * @param component The {@link Component} to check.
+     * @return If the {@link Component} or one of its ancestors is currently printing.
+     */
+    public static boolean isPrinting(Component component) {
+        PrintProxy proxy = UIUtilities.getSelfOrAncestorOfType(component, PrintProxy.class);
+        return proxy != null && proxy.isPrinting();
     }
 }

@@ -179,7 +179,7 @@ public enum SelfControlRollAdjustments {
             criteria = bonus.getSpecializationCriteria();
             criteria.setType(StringCompareType.ANY);
             LeveledAmount amount = bonus.getAmount();
-            amount.setIntegerOnly(true);
+            amount.setDecimal(false);
             amount.setPerLevel(false);
             amount.setAmount(cr.ordinal() - SelfControlRoll.NONE_REQUIRED.ordinal());
             list.add(bonus);

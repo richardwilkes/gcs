@@ -20,6 +20,7 @@ import com.trollworks.gcs.attribute.PoolThreshold;
 import com.trollworks.gcs.attribute.ThresholdOps;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
+import com.trollworks.gcs.expression.VariableResolver;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.CostReduction;
@@ -41,7 +42,6 @@ import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.print.PrintManager;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.Dice;
@@ -49,13 +49,13 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
-import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 
@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,11 +71,12 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /** A GURPS character. */
-public class GURPSCharacter extends CollectedModels {
+public class GURPSCharacter extends CollectedModels implements VariableResolver {
     private static final String KEY_ROOT             = "character";
     private static final String KEY_ATTRIBUTES       = "attributes";
     private static final String KEY_CREATED_DATE     = "created_date";
     private static final String KEY_MODIFIED_DATE    = "modified_date";
+    private static final String KEY_PROFILE          = "profile";
     private static final String KEY_THIRD_PARTY_DATA = "third_party";
     private static final String KEY_TOTAL_POINTS     = "total_points";
 
@@ -94,6 +96,7 @@ public class GURPSCharacter extends CollectedModels {
 
     private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
 
+    private Set<String>                         mVariableResolverExclusions;
     private long                                mModifiedOn;
     private long                                mCreatedOn;
     private HashMap<String, ArrayList<Feature>> mFeatureMap;
@@ -107,7 +110,6 @@ public class GURPSCharacter extends CollectedModels {
     private int                                 mTotalPoints;
     private Settings                            mSettings;
     private Profile                             mProfile;
-    private Armor                               mArmor;
     private WeightValue                         mCachedWeightCarried;
     private WeightValue                         mCachedWeightCarriedForSkills;
     private Fixed6                              mCachedWealthCarried;
@@ -119,8 +121,6 @@ public class GURPSCharacter extends CollectedModels {
     private int                                 mCachedSkillPoints;
     private int                                 mCachedSpellPoints;
     private int                                 mCachedRacePoints;
-    private PrintManager                        mPageSettings;
-    private String                              mPageSettingsString;
     private boolean                             mSkillsUpdated;
     private boolean                             mSpellsUpdated;
 
@@ -143,6 +143,7 @@ public class GURPSCharacter extends CollectedModels {
     }
 
     private void characterInitialize(boolean full) {
+        mVariableResolverExclusions = new HashSet<>();
         mSettings = new Settings(this);
         mFeatureMap = new HashMap<>();
         mTotalPoints = Preferences.getInstance().getInitialPoints();
@@ -151,15 +152,8 @@ public class GURPSCharacter extends CollectedModels {
             mAttributes.put(attrID, new Attribute(attrID));
         }
         mProfile = new Profile(this, full);
-        mArmor = new Armor(this);
         mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
         mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
-        mPageSettings = Preferences.getInstance().getDefaultPageSettings();
-        mPageSettingsString = "{}";
-        if (mPageSettings != null) {
-            mPageSettings = new PrintManager(mPageSettings);
-            mPageSettingsString = mPageSettings.toString();
-        }
         mModifiedOn = System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR;
         mCreatedOn = mModifiedOn;
     }
@@ -172,15 +166,6 @@ public class GURPSCharacter extends CollectedModels {
     public void notifyOfChange() {
         setModifiedOn(System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR);
         super.notifyOfChange();
-    }
-
-    /** @return The page settings. May return {@code null} if no printer has been defined. */
-    public PrintManager getPageSettings() {
-        return mPageSettings;
-    }
-
-    public String getLastPageSettingsAsString() {
-        return mPageSettingsString;
     }
 
     @Override
@@ -218,7 +203,7 @@ public class GURPSCharacter extends CollectedModels {
         characterInitialize(false);
         mSettings.load(m.getMap(Settings.KEY_ROOT), state);
         mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
-        mProfile.load(m.getMap(Profile.KEY_PROFILE));
+        mProfile.load(m.getMap(KEY_PROFILE));
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = new HashMap<>();
             JsonArray a      = m.getArray(KEY_ATTRIBUTES);
@@ -270,10 +255,6 @@ public class GURPSCharacter extends CollectedModels {
         }
         mTotalPoints = m.getInt(KEY_TOTAL_POINTS);
         loadModels(m, state);
-        if (mPageSettings != null && m.has(PrintManager.KEY_ROOT)) {
-            mPageSettings = new PrintManager(m.getMap(PrintManager.KEY_ROOT));
-            mPageSettingsString = mPageSettings.toString();
-        }
         // Loop through the skills and update their levels. It is necessary to do this here and not
         // as they are loaded, since references to defaults won't work until the entire list is
         // available.
@@ -288,10 +269,10 @@ public class GURPSCharacter extends CollectedModels {
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.key(Settings.KEY_ROOT);
-        mSettings.save(w);
+        mSettings.toJSON(w);
         w.keyValue(KEY_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.keyValue(KEY_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
-        w.key(Profile.KEY_PROFILE);
+        w.key(KEY_PROFILE);
         mProfile.save(w);
         w.key(KEY_ATTRIBUTES);
         w.startArray();
@@ -305,11 +286,6 @@ public class GURPSCharacter extends CollectedModels {
         w.keyValue(KEY_TOTAL_POINTS, mTotalPoints);
         saveModels(w, saveType);
         if (saveType != SaveType.HASH) {
-            if (mPageSettings != null) {
-                w.key(PrintManager.KEY_ROOT);
-                mPageSettings.save(w, LengthUnits.IN);
-                mPageSettingsString = mPageSettings.toString();
-            }
             w.keyValueNotEmpty(KEY_THIRD_PARTY_DATA, mThirdPartyData);
         }
     }
@@ -820,6 +796,7 @@ public class GURPSCharacter extends CollectedModels {
         mCachedWealthCarried = Fixed6.ZERO;
         for (Row one : getEquipmentModel().getTopLevelRows()) {
             Equipment   equipment = (Equipment) one;
+            equipment.update();
             WeightValue weight    = new WeightValue(equipment.getExtendedWeight(false));
             if (useSimpleMetricConversions()) {
                 weight = defaultWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
@@ -850,7 +827,9 @@ public class GURPSCharacter extends CollectedModels {
         Fixed6 savedWealth = mCachedWealthNotCarried;
         mCachedWealthNotCarried = Fixed6.ZERO;
         for (Row one : getOtherEquipmentModel().getTopLevelRows()) {
-            mCachedWealthNotCarried = mCachedWealthNotCarried.add(((Equipment) one).getExtendedValue());
+            Equipment equipment = (Equipment) one;
+            equipment.update();
+            mCachedWealthNotCarried = mCachedWealthNotCarried.add(equipment.getExtendedValue());
         }
         if (notify) {
             if (!mCachedWealthNotCarried.equals(savedWealth)) {
@@ -996,11 +975,6 @@ public class GURPSCharacter extends CollectedModels {
 
     public Settings getSettings() {
         return mSettings;
-    }
-
-    /** @return The {@link Armor} stats. */
-    public Armor getArmor() {
-        return mArmor;
     }
 
     /**
@@ -1223,7 +1197,6 @@ public class GURPSCharacter extends CollectedModels {
         setDodgeBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "dodge"));
         setParryBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "parry"));
         setBlockBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "block"));
-        mArmor.update();
         if (!mSkillsUpdated) {
             updateSkills();
         }
@@ -1594,5 +1567,44 @@ public class GURPSCharacter extends CollectedModels {
     @Override
     public Map<String, AttributeDef> getAttributeDefs() {
         return getSettings().getAttributes();
+    }
+
+    @Override
+    public String resolveVariable(String variableName) {
+        if (mVariableResolverExclusions.contains(variableName)) {
+            Log.error("attempt to resolve variable via itself: $" + variableName);
+            return "";
+        }
+        mVariableResolverExclusions.add(variableName);
+        try {
+            if ("sm".equals(variableName)) {
+                return String.valueOf(getProfile().getSizeModifier());
+            }
+            String[]  parts = variableName.split("\\.", 2);
+            Attribute attr  = getAttributes().get(parts[0]);
+            if (attr == null) {
+                Log.error("no such variable: $" + variableName);
+                return "";
+            }
+            AttributeDef def = attr.getAttrDef(this);
+            if (def == null) {
+                Log.error("no such variable definition: $" + variableName);
+                return "";
+            }
+            if (def.getType() == AttributeType.POOL && parts.length > 1) {
+                switch (parts[1]) {
+                case "current":
+                    return String.valueOf(attr.getCurrentIntValue(this));
+                case "maximum":
+                    return String.valueOf(attr.getIntValue(this));
+                default:
+                    Log.error("no such variable: $" + variableName);
+                    return "";
+                }
+            }
+            return String.valueOf(attr.getDoubleValue(this));
+        } finally {
+            mVariableResolverExclusions.remove(variableName);
+        }
     }
 }

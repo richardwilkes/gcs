@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -50,12 +51,9 @@ public class ExportMenu extends JMenu implements MenuListener {
         removeAll();
         boolean shouldEnable = Command.getTarget(SheetDockable.class) != null;
         ExportToGURPSCalculatorCommand.INSTANCE.setEnabled(shouldEnable);
-        ExportToPDFCommand.INSTANCE.setEnabled(shouldEnable);
         ExportToPNGCommand.INSTANCE.setEnabled(shouldEnable);
         add(ExportToGURPSCalculatorCommand.INSTANCE);
-        add(ExportToPDFCommand.INSTANCE);
         add(ExportToPNGCommand.INSTANCE);
-        boolean needSep = true;
         for (Library lib : Library.LIBRARIES) {
             List<Command> cmds = new ArrayList<>();
             Path          dir  = lib.getPath().resolve("Output Templates");
@@ -73,16 +71,14 @@ public class ExportMenu extends JMenu implements MenuListener {
                 cmds.sort((c1, c2) -> NumericComparator.caselessCompareStrings(PathUtils.getLeafName(c1.getTitle(), true), PathUtils.getLeafName(c2.getTitle(), true)));
             }
             if (!cmds.isEmpty()) {
-                if (needSep) {
-                    addSeparator();
-                    needSep = false;
-                }
-                JMenu menu = new JMenu(String.format(I18n.Text("%s Output Templates"), lib.getTitle()));
+                addSeparator();
+                JMenuItem header = new JMenuItem(String.format(I18n.Text("%s Output Templates"), lib.getTitle()));
+                header.setEnabled(false);
+                add(header);
                 for (Command cmd : cmds) {
                     cmd.setEnabled(shouldEnable);
-                    menu.add(cmd);
+                    add(cmd);
                 }
-                add(menu);
             }
         }
     }

@@ -23,9 +23,11 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Provides standard file dialog handling. */
@@ -76,6 +78,13 @@ public final class StdFileDialog {
                 FileNameExtensionFilter filter = filters[0];
                 if (!filter.accept(path.toFile())) {
                     path = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, true), filter.getExtensions()[0]));
+                }
+            }
+            if (Files.exists(path)) {
+                String   cancel  = I18n.Text("Cancel");
+                Object[] options = {I18n.Text("Replace"), cancel};
+                if (WindowUtils.showConfirmDialog(comp, String.format(I18n.Text("%s already exists!\nDo you want to overwrite it?"), path), I18n.Text("Already exists!"), JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.NO_OPTION) {
+                    return null;
                 }
             }
             Preferences.getInstance().addRecentFile(path);

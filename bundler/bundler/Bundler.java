@@ -40,9 +40,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public final class Bundler {
-    private static final String GCS_VERSION       = "4.29.1";
+    private static final String GCS_VERSION       = "4.31.1";
     private static final String JDK_MAJOR_VERSION = "15";
-    private static final String ITEXT_VERSION     = "2.1.7";
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
     private static final String WINDOWS           = "windows";
@@ -249,7 +248,6 @@ public final class Bundler {
         System.out.flush();
         long timing = System.nanoTime();
         copyResourceTree(Paths.get("com.trollworks.gcs", "resources"), BUILD_DIR.resolve("com.trollworks.gcs"));
-        copyResourceTree(Paths.get("third_party", "com.lowagie.text", "resources"), BUILD_DIR.resolve("com.lowagie.text"));
         showTiming(timing);
     }
 
@@ -289,7 +287,6 @@ public final class Bundler {
         args.add(BUILD_DIR.resolve("com.trollworks.gcs").toString());
         args.add(".");
         runNoOutputCmd(args);
-        buildJar("com.lowagie.text", ITEXT_VERSION);
         showTiming(timing);
     }
 
@@ -306,20 +303,6 @@ public final class Bundler {
             exception.printStackTrace(System.err);
             System.exit(1);
         }
-    }
-
-    private static void buildJar(String pkg, String version) {
-        List<String> args = new ArrayList<>();
-        args.add("jar");
-        args.add("--create");
-        args.add("--file");
-        args.add(MODULE_DIR.resolve(pkg + "-" + version + ".jar").toString());
-        args.add("--module-version");
-        args.add(version);
-        args.add("-C");
-        args.add(BUILD_DIR.resolve(pkg).toString());
-        args.add(".");
-        runNoOutputCmd(args);
     }
 
     private static void extractLocalizationTemplate() {
@@ -704,6 +687,8 @@ public final class Bundler {
         args.add(PKG.toAbsolutePath().toString());
         args.add("--primary-bundle-id");
         args.add("com.trollworks.gcs");
+        args.add("--username");
+        args.add("wilkes@me.com");
         args.add("--password");
         args.add("@keychain:gcs_app_pw");
         List<String> lines     = runCmd(args);
@@ -732,6 +717,8 @@ public final class Bundler {
         args.add("altool");
         args.add("--notarization-info");
         args.add(requestID);
+        args.add("--username");
+        args.add("wilkes@me.com");
         args.add("--password");
         args.add("@keychain:gcs_app_pw");
         boolean success = false;

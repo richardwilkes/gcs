@@ -13,6 +13,8 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.attribute.Attribute;
+import com.trollworks.gcs.body.HitLocationTable;
+import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -49,58 +51,59 @@ import javax.imageio.ImageIO;
 
 /** Holds the character profile. */
 public class Profile {
-    public static final  String KEY_PROFILE     = "profile";
-    private static final String KEY_AGE         = "age";
-    private static final String KEY_BIRTHDAY    = "birthday";
-    private static final String KEY_BODY_TYPE   = "body_type";
-    private static final String KEY_EYES        = "eyes";
-    private static final String KEY_GENDER      = "gender";
-    private static final String KEY_HAIR        = "hair";
-    private static final String KEY_HANDEDNESS  = "handedness";
-    private static final String KEY_HEIGHT      = "height";
-    private static final String KEY_NAME        = "name";
-    private static final String KEY_PLAYER_NAME = "player_name";
-    private static final String KEY_PORTRAIT    = "portrait";
-    private static final String KEY_RELIGION    = "religion";
-    private static final String KEY_SKIN        = "skin";
-    private static final String KEY_SM          = "SM";
-    private static final String KEY_TITLE       = "title";
-    private static final String KEY_TL          = "tech_level";
-    private static final String KEY_WEIGHT      = "weight";
+    private static final String KEY_AGE          = "age";
+    private static final String KEY_BIRTHDAY     = "birthday";
+    private static final String KEY_EYES         = "eyes";
+    private static final String KEY_GENDER       = "gender";
+    private static final String KEY_HAIR         = "hair";
+    private static final String KEY_HANDEDNESS   = "handedness";
+    private static final String KEY_HEIGHT       = "height";
+    private static final String KEY_NAME         = "name";
+    private static final String KEY_ORGANIZATION = "organization";
+    private static final String KEY_PLAYER_NAME  = "player_name";
+    private static final String KEY_PORTRAIT     = "portrait";
+    private static final String KEY_RELIGION     = "religion";
+    private static final String KEY_SKIN         = "skin";
+    private static final String KEY_SM           = "SM";
+    private static final String KEY_TITLE        = "title";
+    private static final String KEY_TL           = "tech_level";
+    private static final String KEY_WEIGHT       = "weight";
+
+    private static final String KEY_BODY_TYPE = "body_type"; // Deprecated May 9, 2021
 
     public static final  int               PORTRAIT_HEIGHT      = 96; // Height of the portrait, in 1/72nds of an inch
     public static final  int               PORTRAIT_WIDTH       = 3 * PORTRAIT_HEIGHT / 4; // Width of the portrait, in 1/72nds of an inch
     private static final DateTimeFormatter MONTH_AND_DAY_FORMAT = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, FULL).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).toFormatter();
     private static final Random            RANDOM               = new Random();
 
-    private GURPSCharacter   mCharacter;
-    private boolean          mCustomPortrait;
-    private RetinaIcon       mPortrait;
-    private String           mName;
-    private String           mTitle;
-    private String           mAge;
-    private String           mBirthday;
-    private String           mEyeColor;
-    private String           mHair;
-    private String           mSkinColor;
-    private String           mHandedness;
-    private LengthValue      mHeight;
-    private WeightValue      mWeight;
-    private int              mSizeModifier;
-    private int              mSizeModifierBonus;
-    private String           mGender;
-    private String           mReligion;
-    private String           mPlayerName;
-    private String           mTechLevel;
-    private HitLocationTable mHitLocationTable;
+    private GURPSCharacter mCharacter;
+    private boolean        mCustomPortrait;
+    private RetinaIcon     mPortrait;
+    private String         mName;
+    private String         mTitle;
+    private String         mOrganization;
+    private String         mAge;
+    private String         mBirthday;
+    private String         mEyeColor;
+    private String         mHair;
+    private String         mSkinColor;
+    private String         mHandedness;
+    private LengthValue    mHeight;
+    private WeightValue    mWeight;
+    private int            mSizeModifier;
+    private int            mSizeModifierBonus;
+    private String         mGender;
+    private String         mReligion;
+    private String         mPlayerName;
+    private String         mTechLevel;
 
     Profile(GURPSCharacter character, boolean full) {
         mCharacter = character;
         mCustomPortrait = false;
         mPortrait = null;
         mTitle = "";
+        mOrganization = "";
         mReligion = "";
-        mHitLocationTable = HitLocationTable.HUMANOID;
         Preferences prefs = Preferences.getInstance();
         mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         if (full) {
@@ -138,6 +141,7 @@ public class Profile {
         mPlayerName = m.getString(KEY_PLAYER_NAME);
         mName = m.getString(KEY_NAME);
         mTitle = m.getString(KEY_TITLE);
+        mOrganization = m.getString(KEY_ORGANIZATION);
         mAge = m.getString(KEY_AGE);
         mBirthday = m.getString(KEY_BIRTHDAY);
         mEyeColor = m.getString(KEY_EYES);
@@ -148,12 +152,23 @@ public class Profile {
         mWeight = WeightValue.extract(m.getString(KEY_WEIGHT), false);
         mSizeModifier = m.getInt(KEY_SM);
         mGender = m.getString(KEY_GENDER);
-        mHitLocationTable = HitLocationTable.MAP.get(m.getString(KEY_BODY_TYPE));
-        if (mHitLocationTable == null) {
-            mHitLocationTable = HitLocationTable.HUMANOID;
-        }
         mTechLevel = m.getString(KEY_TL);
         mReligion = m.getString(KEY_RELIGION);
+
+        // Legacy; GCS v4.29.1 or earlier
+        if (m.has(KEY_BODY_TYPE)) {
+            String bodyType = m.getString(KEY_BODY_TYPE);
+            if (bodyType.startsWith("winged_")) {
+                bodyType = bodyType.substring(7) + ".winged";
+            }
+            for (HitLocationTable table : LibraryHitLocationTables.get()) {
+                if (bodyType.equals(table.getID())) {
+                    mCharacter.getSettings().setHitLocations(table.clone());
+                    break;
+                }
+            }
+        }
+
         if (m.has(KEY_PORTRAIT)) {
             try {
                 mPortrait = createPortrait(Img.create(new ByteArrayInputStream(Base64.getDecoder().decode(m.getString(KEY_PORTRAIT)))));
@@ -169,6 +184,7 @@ public class Profile {
         w.keyValueNot(KEY_PLAYER_NAME, mPlayerName, "");
         w.keyValueNot(KEY_NAME, mName, "");
         w.keyValueNot(KEY_TITLE, mTitle, "");
+        w.keyValueNot(KEY_ORGANIZATION, mOrganization, "");
         w.keyValueNot(KEY_AGE, mAge, "");
         w.keyValueNot(KEY_BIRTHDAY, mBirthday, "");
         w.keyValueNot(KEY_EYES, mEyeColor, "");
@@ -183,7 +199,6 @@ public class Profile {
         }
         w.keyValueNot(KEY_SM, mSizeModifier, 0);
         w.keyValueNot(KEY_GENDER, mGender, "");
-        w.keyValue(KEY_BODY_TYPE, mHitLocationTable.getKey());
         w.keyValueNot(KEY_TL, mTechLevel, "");
         w.keyValueNot(KEY_RELIGION, mReligion, "");
         if (mCustomPortrait && mPortrait != null) {
@@ -354,6 +369,24 @@ public class Profile {
         if (!mTitle.equals(title)) {
             mCharacter.postUndoEdit(I18n.Text("Title Change"), (c, v) -> c.getProfile().setTitle((String) v), mTitle, title);
             mTitle = title;
+            mCharacter.notifyOfChange();
+        }
+    }
+
+    /** @return The organization. */
+    public String getOrganization() {
+        return mOrganization;
+    }
+
+    /**
+     * Sets the organization.
+     *
+     * @param organization The new organization.
+     */
+    public void setOrganization(String organization) {
+        if (!mOrganization.equals(organization)) {
+            mCharacter.postUndoEdit(I18n.Text("Organization Change"), (c, v) -> c.getProfile().setOrganization((String) v), mOrganization, organization);
+            mOrganization = organization;
             mCharacter.notifyOfChange();
         }
     }
@@ -760,20 +793,6 @@ public class Profile {
             return Img.create(new File(path));
         } catch (IOException exception) {
             return null;
-        }
-    }
-
-    /** @return The hit location table. */
-    public HitLocationTable getHitLocationTable() {
-        return mHitLocationTable;
-    }
-
-    /** @param table The hit location table. */
-    public void setHitLocationTable(HitLocationTable table) {
-        if (mHitLocationTable != table) {
-            mCharacter.postUndoEdit(I18n.Text("Body Type Change"), (c, v) -> c.getProfile().setHitLocationTable((HitLocationTable) v), mHitLocationTable, table);
-            mHitLocationTable = table;
-            mCharacter.notifyOfChange();
         }
     }
 }

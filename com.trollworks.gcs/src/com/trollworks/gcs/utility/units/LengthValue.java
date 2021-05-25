@@ -83,11 +83,6 @@ public class LengthValue extends UnitsValue<LengthUnits> {
     }
 
     @Override
-    public LengthUnits getDefaultUnits() {
-        return LengthUnits.FT_IN;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;

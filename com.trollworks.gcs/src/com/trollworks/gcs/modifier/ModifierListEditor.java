@@ -13,9 +13,8 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.ActionPanel;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -38,8 +37,8 @@ import javax.swing.ScrollPaneConstants;
 public abstract class ModifierListEditor extends ActionPanel implements ActionListener {
     private DataFile        mOwner;
     private ModifierOutline mOutline;
-    IconButton mAddButton;
-    boolean    mModified;
+    FontAwesomeButton mAddButton;
+    boolean           mModified;
 
     protected ModifierListEditor(DataFile owner, List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
         super(new BorderLayout());
@@ -70,7 +69,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     protected abstract void addColumns(Outline outline);
 
     private Component createOutline(List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
-        mAddButton = new IconButton(Images.ADD, I18n.Text("Add a modifier"), this::addModifier);
+        mAddButton = new FontAwesomeButton("\uf055", 12, I18n.Text("Add a modifier"), this::addModifier);
 
         mOutline = new ModifierOutline();
         OutlineModel model = mOutline.getModel();

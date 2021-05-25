@@ -14,8 +14,10 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeEditor;
+import com.trollworks.gcs.body.HitLocationEditor;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.page.PageSettingsEditor;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -75,7 +77,9 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JComboBox<DisplayOption> mModifiersDisplayCombo;
     private JComboBox<DisplayOption> mNotesDisplayCombo;
     private JTextArea                mBlockLayoutField;
+    private PageSettingsEditor       mPageSettingsEditor;
     private AttributeEditor          mAttributeEditor;
+    private HitLocationEditor        mHitLocationsEditor;
     private JButton                  mResetButton;
     private boolean                  mUpdatePending;
 
@@ -153,6 +157,9 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
         panel.add(top, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
 
+        mPageSettingsEditor = new PageSettingsEditor(mSettings.getPageSettings(), this::adjustResetButton);
+        panel.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+
         mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), () -> {
             Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
             Map<String, Attribute> newAttributes = new HashMap<>();
@@ -162,10 +169,18 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
             }
             oldAttributes.clear();
             oldAttributes.putAll(newAttributes);
+            mAttributeEditor.adjustButtons();
             mCharacter.notifyOfChange();
             adjustResetButton();
-        });
+        }, "");
         panel.add(mAttributeEditor, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
+
+        mHitLocationsEditor = new HitLocationEditor(mSettings.getHitLocations(), () -> {
+            mSettings.getHitLocations().update();
+            mCharacter.notifyOfChange();
+            adjustResetButton();
+        }, "");
+        panel.add(mHitLocationsEditor, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new JTextArea(Preferences.linesToString(mSettings.blockLayout()));
@@ -174,7 +189,7 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mBlockLayoutField.getDocument().addDocumentListener(this);
         JScrollPane scroller = new JScrollPane(mBlockLayoutField, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         panel.add(new Label(I18n.Text("Block Layout")), new PrecisionLayoutData());
-        panel.add(scroller, new PrecisionLayoutData().setHeightHint(scroller.getPreferredSize().height).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        panel.add(scroller, new PrecisionLayoutData().setHeightHint(68).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         getContentPane().add(panel, BorderLayout.CENTER);
     }
@@ -271,7 +286,9 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == prefs.getModifiersDisplay();
         atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == prefs.getNotesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(prefs.getBlockLayout()));
+        atDefaults = atDefaults && mPageSettingsEditor.isSetToDefaults();
         atDefaults = atDefaults && mSettings.getAttributes().equals(Preferences.getInstance().getAttributes());
+        atDefaults = atDefaults && mSettings.getHitLocations().equals(Preferences.getInstance().getHitLocations());
         return atDefaults;
     }
 
@@ -315,7 +332,9 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mModifiersDisplayCombo.setSelectedItem(prefs.getModifiersDisplay());
         mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
         mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
+        mPageSettingsEditor.reset();
         mAttributeEditor.reset(AttributeDef.cloneMap(prefs.getAttributes()));
+        mHitLocationsEditor.reset(prefs.getHitLocations());
     }
 
     @Override

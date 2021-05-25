@@ -22,11 +22,12 @@ import java.io.IOException;
 public class LeveledAmount {
     private static final String KEY_AMOUNT    = "amount";
     public static final  String KEY_PER_LEVEL = "per_level";
+    public static final  String KEY_DECIMAL   = "decimal";
 
     private double  mAmount;
     private int     mLevel;
     private boolean mPerLevel;
-    private boolean mInteger;
+    private boolean mDecimal;
 
     /**
      * Creates a new leveled amount.
@@ -37,7 +38,7 @@ public class LeveledAmount {
         mPerLevel = false;
         mLevel = 0;
         mAmount = amount;
-        mInteger = false;
+        mDecimal = true;
     }
 
     /**
@@ -47,7 +48,7 @@ public class LeveledAmount {
      */
     public LeveledAmount(int amount) {
         this((double) amount);
-        mInteger = true;
+        mDecimal = false;
     }
 
     /**
@@ -59,7 +60,7 @@ public class LeveledAmount {
         mPerLevel = other.mPerLevel;
         mLevel = other.mLevel;
         mAmount = other.mAmount;
-        mInteger = other.mInteger;
+        mDecimal = other.mDecimal;
     }
 
     @Override
@@ -69,7 +70,7 @@ public class LeveledAmount {
         }
         if (obj instanceof LeveledAmount) {
             LeveledAmount amt = (LeveledAmount) obj;
-            return mPerLevel == amt.mPerLevel && mInteger == amt.mInteger && mLevel == amt.mLevel && mAmount == amt.mAmount;
+            return mPerLevel == amt.mPerLevel && mDecimal == amt.mDecimal && mLevel == amt.mLevel && mAmount == amt.mAmount;
         }
         return false;
     }
@@ -80,19 +81,21 @@ public class LeveledAmount {
     }
 
     public final void load(JsonMap m) {
+        mDecimal = m.getBoolean(KEY_DECIMAL);
         mAmount = m.getDouble(KEY_AMOUNT);
-        if (mInteger) {
+        if (!mDecimal) {
             mAmount = Math.round(mAmount);
         }
         mPerLevel = m.getBoolean(KEY_PER_LEVEL);
     }
 
     public final void saveInline(JsonWriter w) throws IOException {
-        if (mInteger) {
-            w.keyValue(KEY_AMOUNT, getIntegerAmount());
-        } else {
+        if (mDecimal) {
             w.keyValue(KEY_AMOUNT, getAmount());
+        } else {
+            w.keyValue(KEY_AMOUNT, getIntegerAmount());
         }
+        w.keyValueNot(KEY_DECIMAL, mDecimal, false);
         w.keyValueNot(KEY_PER_LEVEL, mPerLevel, false);
     }
 
@@ -116,15 +119,15 @@ public class LeveledAmount {
         mLevel = level;
     }
 
-    /** @return Whether this is an integer representation only. */
-    public boolean isIntegerOnly() {
-        return mInteger;
+    /** @return Whether this is a decimal value. */
+    public boolean isDecimal() {
+        return mDecimal;
     }
 
-    /** @param integerOnly Whether this is an integer representation only. */
-    public void setIntegerOnly(boolean integerOnly) {
-        mInteger = integerOnly;
-        if (mInteger) {
+    /** @param decimal Whether this is a decimal value. */
+    public void setDecimal(boolean decimal) {
+        mDecimal = decimal;
+        if (!mDecimal) {
             mAmount = Math.round(mAmount);
         }
     }
@@ -153,24 +156,24 @@ public class LeveledAmount {
         if (isPerLevel()) {
             String full;
             String perLevel;
-            if (mInteger) {
-                full = Numbers.formatWithForcedSign(getIntegerAdjustedAmount());
-                perLevel = Numbers.formatWithForcedSign(getIntegerAmount());
-            } else {
+            if (mDecimal) {
                 full = Numbers.formatWithForcedSign(getAdjustedAmount());
                 perLevel = Numbers.formatWithForcedSign(getAmount());
+            } else {
+                full = Numbers.formatWithForcedSign(getIntegerAdjustedAmount());
+                perLevel = Numbers.formatWithForcedSign(getIntegerAmount());
             }
             return String.format(I18n.Text("%s (%s per %s)"), full, perLevel, what);
         }
-        if (mInteger) {
-            return Numbers.formatWithForcedSign(getIntegerAmount());
+        if (mDecimal) {
+            return Numbers.formatWithForcedSign(getAmount());
         }
-        return Numbers.formatWithForcedSign(getAmount());
+        return Numbers.formatWithForcedSign(getIntegerAmount());
     }
 
     /** @param amount The amount. */
     public void setAmount(double amount) {
-        mAmount = mInteger ? Math.round(amount) : amount;
+        mAmount = mDecimal ? amount : Math.round(amount);
     }
 
     /** @param amount The amount. */

@@ -61,10 +61,7 @@ public class Scale {
      * @return The scaled font.
      */
     public Font scale(Font font) {
-        if (mScale == 1) {
-            return font;
-        }
-        return font.deriveFont((float) Math.floor(font.getSize() * mScale));
+        return font.deriveFont((float) Math.floor(font.getSize() * getScaler()));
     }
 
     /**
@@ -72,9 +69,6 @@ public class Scale {
      * @return The scaled insets.
      */
     public Insets scale(Insets insets) {
-        if (mScale == 1) {
-            return insets;
-        }
         return new Insets(scale(insets.top), scale(insets.left), scale(insets.bottom), scale(insets.right));
     }
 
@@ -83,9 +77,6 @@ public class Scale {
      * @return The scaled values.
      */
     public double[] scale(double[] values) {
-        if (mScale == 1) {
-            return values;
-        }
         int      length = values.length;
         double[] scaled = new double[length];
         for (int i = 0; i < length; i++) {
@@ -99,7 +90,7 @@ public class Scale {
      * @return The scaled value.
      */
     public int scale(int value) {
-        return (int) (value * mScale);
+        return (int) (value * getScaler());
     }
 
     /**
@@ -107,6 +98,17 @@ public class Scale {
      * @return The scaled value.
      */
     public double scale(double value) {
-        return value * mScale;
+        return value * getScaler();
+    }
+
+    private double getScaler() {
+        return mScale;
+        /*
+        For more accurate scaling to real-life dimensions, should do this instead:
+
+        return mScale * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0;
+
+        However, this currently causes problems in parts of the interface that aren't the sheet.
+         */
     }
 }

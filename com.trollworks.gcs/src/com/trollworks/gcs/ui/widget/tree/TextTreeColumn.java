@@ -222,7 +222,7 @@ public class TextTreeColumn extends TreeColumn {
      */
     @SuppressWarnings("static-method")
     public Font getFont(TreeRow row) {
-        return Fonts.getDefaultFont();
+        return Fonts.getDefaultSystemFont();
     }
 
     /**

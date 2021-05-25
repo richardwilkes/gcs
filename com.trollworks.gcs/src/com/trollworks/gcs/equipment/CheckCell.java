@@ -11,20 +11,34 @@
 
 package com.trollworks.gcs.equipment;
 
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowUndo;
 
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import javax.swing.SwingConstants;
 
 public class CheckCell extends ListTextCell {
     public CheckCell(int alignment, boolean wrapped) {
         super(alignment, wrapped);
+    }
 
+    @Override
+    public Font getFont(Row row, Column column) {
+        Font font = super.getFont(row, column);
+        font = new Font(Fonts.FONT_AWESOME_SOLID, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
+        return font;
+    }
+
+    @Override
+    public int getVAlignment() {
+        return SwingConstants.CENTER;
     }
 
     @Override

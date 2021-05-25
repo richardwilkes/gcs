@@ -88,7 +88,7 @@ public class FontPanel extends ActionPanel implements ActionListener {
     public Font getCurrentFont() {
         String name = (String) mFontNameMenu.getSelectedItem();
         if (name == null) {
-            name = "SansSerif";
+            name = Fonts.ROBOTO;
         }
         Fonts.FontStyle style = (Fonts.FontStyle) mFontStyleMenu.getSelectedItem();
         if (style == null) {

@@ -28,6 +28,7 @@ import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -493,9 +494,7 @@ public class Spell extends ListRow implements HasSourceReference {
             }
 
             if (level != -1) {
-                for (String college : colleges) {
-                    relativeLevel += getSpellBonusesFor(character, ID_COLLEGE, college, categories, toolTip);
-                }
+                relativeLevel += getBestCollegeSpellBonus(character, categories, colleges, toolTip);
                 relativeLevel += getSpellBonusesFor(character, ID_POWER_SOURCE, powerSource, categories, toolTip);
                 relativeLevel += getSpellBonusesFor(character, ID_NAME, name, categories, toolTip);
                 level += relativeLevel;
@@ -519,6 +518,46 @@ public class Spell extends ListRow implements HasSourceReference {
         level += character.getIntegerBonusFor(id + '/' + qualifier.toLowerCase(), toolTip);
         level += character.getSpellPointComparedIntegerBonusFor(id + '*', qualifier, categories, toolTip);
         return level;
+    }
+
+    public static int getBestCollegeSpellBonus(GURPSCharacter character, Set<String> categories, List<String> colleges, StringBuilder tooltip) {
+        int    best        = Integer.MIN_VALUE;
+        String bestTooltip = "";
+        for (String college : colleges) {
+            StringBuilder buffer = tooltip != null ? new StringBuilder() : null;
+            int           pts    = getSpellBonusesFor(character, ID_COLLEGE, college, categories, buffer);
+            if (best < pts) {
+                best = pts;
+                if (buffer != null) {
+                    bestTooltip = buffer.toString();
+                }
+            }
+        }
+        if (tooltip != null) {
+            tooltip.append(bestTooltip);
+        }
+        return best == Integer.MIN_VALUE ? 0 : best;
+    }
+
+    public int getBestCollegeSpellPointBonus(StringBuilder tooltip) {
+        GURPSCharacter character   = getCharacter();
+        Set<String>    categories  = getCategories();
+        int            best        = Integer.MIN_VALUE;
+        String         bestTooltip = "";
+        for (String college : getColleges()) {
+            StringBuilder buffer = tooltip != null ? new StringBuilder() : null;
+            int           pts    = getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, buffer);
+            if (best < pts) {
+                best = pts;
+                if (buffer != null) {
+                    bestTooltip = buffer.toString();
+                }
+            }
+        }
+        if (tooltip != null) {
+            tooltip.append(bestTooltip);
+        }
+        return best == Integer.MIN_VALUE ? 0 : best;
     }
 
     /** @return The name. */
@@ -688,9 +727,7 @@ public class Spell extends ListRow implements HasSourceReference {
         if (character != null) {
             StringBuilder tooltip    = new StringBuilder();
             Set<String>   categories = getCategories();
-            for (String college : getColleges()) {
-                getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, tooltip);
-            }
+            getBestCollegeSpellPointBonus(tooltip);
             getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, tooltip);
             getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, tooltip);
             if (!tooltip.isEmpty()) {
@@ -715,9 +752,7 @@ public class Spell extends ListRow implements HasSourceReference {
         GURPSCharacter character = getCharacter();
         if (character != null) {
             Set<String> categories = getCategories();
-            for (String college : getColleges()) {
-                points += getSpellPointBonusesFor(character, ID_POINTS_COLLEGE, college, categories, null);
-            }
+            points += getBestCollegeSpellPointBonus(null);
             points += getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, null);
             points += getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, null);
             if (points < 0) {
@@ -776,29 +811,44 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     /** @param text The combined attribute/difficulty to set. */
-    // Copied from Skill class
+    // Copied from Skill class (mostly)
     public void setDifficultyFromText(String text) {
-        SkillDifficulty[] difficulty = SkillDifficulty.values();
-        String            input      = text.trim();
-        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
-            // We have to go backwards through the list to avoid the
-            // regex grabbing the "H" in "VH".
-            for (int j = difficulty.length - 1; j >= 0; j--) {
-                if (input.matches("(?i).*" + attrDef.getName() + ".*/.*" + difficulty[j].name() + ".*")) {
-                    setDifficulty(attrDef.getID(), difficulty[j]);
-                    return;
+        String[]        parts      = text.split("/", 2);
+        SkillDifficulty difficulty = SkillDifficulty.A;
+        if (parts.length == 2) {
+            String diffText = parts[1].trim();
+            for (SkillDifficulty d : SkillDifficulty.values()) {
+                if (d.name().equalsIgnoreCase(diffText)) {
+                    difficulty = d;
+                    break;
                 }
             }
         }
-        // Special-case for old file formats.
-        // We have to go backwards through the list to avoid the
-        // regex grabbing the "H" in "VH".
-        for (int j = difficulty.length - 1; j >= 0; j--) {
-            if (input.matches("(?i).*base10.*/.*" + difficulty[j].name() + ".*")) {
-                setDifficulty("10", difficulty[j]);
-                return;
+        String attrText;
+        if (parts.length > 0) {
+            attrText = parts[0].trim();
+        } else {
+            attrText = Skill.getDefaultAttribute("iq");
+        }
+        AttributeDef attr = null;
+        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+            if (attrDef.getID().equalsIgnoreCase(attrText)) {
+                attr = attrDef;
+                break;
             }
         }
+        if (attr == null) {
+            for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+                if (attrDef.getName().equalsIgnoreCase(attrText)) {
+                    attr = attrDef;
+                    break;
+                }
+            }
+        }
+        if (attr != null) {
+            attrText = attr.getID();
+        }
+        setDifficulty(attrText, difficulty);
     }
 
     /** @return The formatted attribute/difficulty. */
@@ -877,7 +927,7 @@ public class Spell extends ListRow implements HasSourceReference {
      */
     public boolean setDifficulty(String attribute, SkillDifficulty difficulty) {
         if (mDifficulty != difficulty || !mAttribute.equals(attribute)) {
-            mAttribute = AttributeDef.sanitizeID(attribute, false);
+            mAttribute = ID.sanitize(attribute, null, true);
             mDifficulty = difficulty;
             updateLevel(false);
             notifyOfChange();

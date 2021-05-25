@@ -17,6 +17,8 @@ import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.attribute.PoolThreshold;
+import com.trollworks.gcs.body.HitLocation;
+import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentColumn;
 import com.trollworks.gcs.feature.DRBonus;
@@ -110,6 +112,7 @@ public class TextTemplate {
     private static final String KEY_CATEGORIES                        = "CATEGORIES";
     private static final String KEY_CLASS                             = "CLASS";
     private static final String KEY_COLLEGE                           = "COLLEGE";
+    private static final String KEY_COMBINED_NAME                     = "COMBINED_NAME";
     private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_END    = "CONDITIONAL_MODIFIERS_LOOP_END";
     private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_START  = "CONDITIONAL_MODIFIERS_LOOP_START";
     private static final String KEY_CONTINUE_ID                       = "CONTINUE_ID";
@@ -151,6 +154,7 @@ public class TextTemplate {
     private static final String KEY_EQUIPMENT_LOOP_END                = "EQUIPMENT_LOOP_END";
     private static final String KEY_EQUIPMENT_LOOP_START              = "EQUIPMENT_LOOP_START";
     private static final String KEY_EQUIPPED                          = "EQUIPPED";
+    private static final String KEY_EQUIPPED_FONT_AWESOME             = "EQUIPPED_FA";
     private static final String KEY_EQUIPPED_NUM                      = "EQUIPPED_NUM";
     private static final String KEY_EXCLUDE_CATEGORIES                = "EXCLUDE_CATEGORIES_";
     private static final String KEY_EYES                              = "EYES";
@@ -200,7 +204,7 @@ public class TextTemplate {
     private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
     private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
     private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
-    private static final String KEY_OPTIONS_CODE                      = "OPTIONS_CODE";
+    private static final String KEY_ORGANIZATION                      = "ORGANIZATION";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
     private static final String KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
     private static final String KEY_OTHER_VALUE                       = "OTHER_EQUIPMENT_VALUE";
@@ -289,28 +293,31 @@ public class TextTemplate {
     private static final String KEY_SUFFIX_CURLY   = "_CURLY";
     private static final String KEY_SUFFIX_PAREN   = "_PAREN";
 
-    // TODO: Eliminate these deprecated keys after a suitable waiting period; last added to May 30, 2020
+    // TODO: Eliminate these deprecated keys after a suitable waiting period; added May 30, 2020
     private static final String KEY_EARNED_POINTS_DEPRECATED = "EARNED_POINTS";
     private static final String KEY_CAMPAIGN_DEPRECATED      = "CAMPAIGN";
     private static final String KEY_RACE_DEPRECATED          = "RACE";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; added April 15, 2021
-    private static final String KEY_BASIC_FP      = "BASIC_FP";
-    private static final String KEY_BASIC_HP      = "BASIC_HP";
-    private static final String KEY_DEAD          = "DEAD";
-    private static final String KEY_DEATH_CHECK_1 = "DEATH_CHECK_1";
-    private static final String KEY_DEATH_CHECK_2 = "DEATH_CHECK_2";
-    private static final String KEY_DEATH_CHECK_3 = "DEATH_CHECK_3";
-    private static final String KEY_DEATH_CHECK_4 = "DEATH_CHECK_4";
-    private static final String KEY_FP            = "FP";
-    private static final String KEY_FP_COLLAPSE   = "FP_COLLAPSE";
-    private static final String KEY_FP_POINTS     = "FP_POINTS";
-    private static final String KEY_HP            = "HP";
-    private static final String KEY_HP_COLLAPSE   = "HP_COLLAPSE";
-    private static final String KEY_HP_POINTS     = "HP_POINTS";
-    private static final String KEY_REELING       = "REELING";
-    private static final String KEY_TIRED         = "TIRED";
-    private static final String KEY_UNCONSCIOUS   = "UNCONSCIOUS";
+    private static final String KEY_BASIC_FP_DEPRECATED      = "BASIC_FP";
+    private static final String KEY_BASIC_HP_DEPRECATED      = "BASIC_HP";
+    private static final String KEY_DEAD_DEPRECATED          = "DEAD";
+    private static final String KEY_DEATH_CHECK_1_DEPRECATED = "DEATH_CHECK_1";
+    private static final String KEY_DEATH_CHECK_2_DEPRECATED = "DEATH_CHECK_2";
+    private static final String KEY_DEATH_CHECK_3_DEPRECATED = "DEATH_CHECK_3";
+    private static final String KEY_DEATH_CHECK_4_DEPRECATED = "DEATH_CHECK_4";
+    private static final String KEY_FP_DEPRECATED            = "FP";
+    private static final String KEY_FP_COLLAPSE_DEPRECATED   = "FP_COLLAPSE";
+    private static final String KEY_FP_POINTS_DEPRECATED     = "FP_POINTS";
+    private static final String KEY_HP_DEPRECATED            = "HP";
+    private static final String KEY_HP_COLLAPSE_DEPRECATED   = "HP_COLLAPSE";
+    private static final String KEY_HP_POINTS_DEPRECATED     = "HP_POINTS";
+    private static final String KEY_REELING_DEPRECATED       = "REELING";
+    private static final String KEY_TIRED_DEPRECATED         = "TIRED";
+    private static final String KEY_UNCONSCIOUS_DEPRECATED   = "UNCONSCIOUS";
+
+    // TODO: Eliminate these deprecated keys after a suitable waiting period; added May 12, 2021
+    private static final String KEY_OPTIONS_CODE_DEPRECATED = "OPTIONS_CODE";
 
     private CharacterSheet mSheet;
     private boolean        mEncodeText         = true;
@@ -400,14 +407,14 @@ public class TextTemplate {
         case KEY_TITLE:
             writeEncodedText(out, description.getTitle());
             break;
+        case KEY_ORGANIZATION:
+            writeEncodedText(out, description.getOrganization());
+            break;
         case KEY_RELIGION:
             writeEncodedText(out, description.getReligion());
             break;
         case KEY_PLAYER:
             writeEncodedText(out, description.getPlayerName());
-            break;
-        case KEY_OPTIONS_CODE:
-            writeEncodedText(out, gurpsCharacter.getSettings().optionsCode());
             break;
         case KEY_CREATED_ON:
             writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn() * FieldFactory.TIMESTAMP_FACTOR));
@@ -439,10 +446,10 @@ public class TextTemplate {
         case KEY_WILL_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("will")));
             break;
-        case KEY_FP_POINTS:
+        case KEY_FP_POINTS_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("fp")));
             break;
-        case KEY_HP_POINTS:
+        case KEY_HP_POINTS_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("hp")));
             break;
         case KEY_BASIC_SPEED_POINTS:
@@ -552,7 +559,12 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSwing().toString());
             break;
         case KEY_GENERAL_DR:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getArmor().getTorsoDR()));
+            int torsoDR = 0;
+            HitLocation torsoLocation = gurpsCharacter.getSettings().getHitLocations().lookupLocationByID("torso");
+            if (torsoLocation != null) {
+                torsoDR = torsoLocation.getDR(gurpsCharacter, null);
+            }
+            writeEncodedText(out, Numbers.format(torsoDR));
             break;
         case KEY_CURRENT_DODGE:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel(false))));
@@ -566,46 +578,46 @@ public class TextTemplate {
         case KEY_BEST_CURRENT_BLOCK:
             writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
             break;
-        case KEY_FP:
+        case KEY_FP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("fp")));
             break;
-        case KEY_BASIC_FP:
+        case KEY_BASIC_FP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fp")));
             break;
-        case KEY_TIRED:
+        case KEY_TIRED_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Tired"));
             break;
-        case KEY_FP_COLLAPSE:
+        case KEY_FP_COLLAPSE_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Collapse"));
             break;
-        case KEY_UNCONSCIOUS:
+        case KEY_UNCONSCIOUS_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Unconscious"));
             break;
-        case KEY_HP:
+        case KEY_HP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("hp")));
             break;
-        case KEY_BASIC_HP:
+        case KEY_BASIC_HP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hp")));
             break;
-        case KEY_REELING:
+        case KEY_REELING_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Reeling"));
             break;
-        case KEY_HP_COLLAPSE:
+        case KEY_HP_COLLAPSE_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Collapse"));
             break;
-        case KEY_DEATH_CHECK_1:
+        case KEY_DEATH_CHECK_1_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(1)));
             break;
-        case KEY_DEATH_CHECK_2:
+        case KEY_DEATH_CHECK_2_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(2)));
             break;
-        case KEY_DEATH_CHECK_3:
+        case KEY_DEATH_CHECK_3_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(3)));
             break;
-        case KEY_DEATH_CHECK_4:
+        case KEY_DEATH_CHECK_4_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(4)));
             break;
-        case KEY_DEAD:
+        case KEY_DEAD_DEPRECATED:
             deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Dead"));
             break;
         case KEY_BASIC_LIFT:
@@ -652,9 +664,10 @@ public class TextTemplate {
             break;
         case KEY_RACE_DEPRECATED:
         case KEY_CAMPAIGN_DEPRECATED:
+        case KEY_OPTIONS_CODE_DEPRECATED:
             break;
         case KEY_BODY_TYPE:
-            writeEncodedText(out, gurpsCharacter.getProfile().getHitLocationTable().toString());
+            writeEncodedText(out, gurpsCharacter.getSettings().getHitLocations().getName());
             break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
@@ -904,8 +917,8 @@ public class TextTemplate {
         StringBuilder    keyBuffer        = new StringBuilder();
         boolean          lookForKeyMarker = true;
         int              currentID        = 0;
-        HitLocationTable table            = gurpsCharacter.getProfile().getHitLocationTable();
-        for (HitLocationTableEntry entry : table.getEntries()) {
+        HitLocationTable table            = gurpsCharacter.getSettings().getHitLocations();
+        for (HitLocation location : table.getLocations()) {
             currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -927,15 +940,15 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_ROLL -> writeEncodedText(out, entry.getRoll());
-                        case KEY_WHERE -> writeEncodedText(out, entry.getName());
-                        case KEY_PENALTY -> writeEncodedText(out, Numbers.format(entry.getHitPenalty()));
-                        case KEY_DR -> writeEncodedText(out, Numbers.format(((Integer) gurpsCharacter.getArmor().getValueForID(entry.getKey())).intValue()));
+                        case KEY_ROLL -> writeEncodedText(out, location.getRollRange());
+                        case KEY_WHERE -> writeEncodedText(out, location.getTableName());
+                        case KEY_PENALTY -> writeEncodedText(out, Numbers.format(location.getHitPenalty()));
+                        case KEY_DR -> writeEncodedText(out, Numbers.format(location.getDR(gurpsCharacter, null)));
                         case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         // Show the equipment that is providing the DR bonus
-                        case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(entry).replace(NEWLINE, COMMA_SEPARATOR));
+                        case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(location).replace(NEWLINE, COMMA_SEPARATOR));
                         case KEY_EQUIPMENT_FORMATTED -> {
-                            String loc = hitLocationEquipment(entry);
+                            String loc = hitLocationEquipment(location);
                             if (!loc.isEmpty()) {
                                 writeEncodedText(out, PARAGRAPH_START + loc.replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
                             }
@@ -948,20 +961,17 @@ public class TextTemplate {
         }
     }
 
+    // TODO: Revisit this method, as the custom hit locations are different...
+
     /* A kludgy method to relate a hitlocation to the armor that is providing the DR for that hit location. */
-    private String hitLocationEquipment(HitLocationTableEntry entry) {
+    private String hitLocationEquipment(HitLocation location) {
         StringBuilder sb    = new StringBuilder();
         boolean       first = true;
         for (Equipment equipment : mSheet.getCharacter().getEquipmentIterator()) {
             if (equipment.isEquipped()) {
                 for (Feature feature : equipment.getFeatures()) {
                     if (feature instanceof DRBonus) {
-                        String locationKey = entry.getLocation().getKey();
-                        if (locationKey.equals(HitLocation.VITALS.getKey())) {
-                            // Assume Vitals uses the same equipment as Torso
-                            locationKey = HitLocation.TORSO.getKey();
-                        }
-                        if (locationKey.endsWith(((DRBonus) feature).getLocation().name())) {
+                        if (location.getID().equals(((DRBonus) feature).getLocation())) {
                             // HUGE Kludge. Only way I could equate the 2
                             // different HitLocations. I know that one is derived
                             // from the other, so this check will ALWAYS work.
@@ -1706,6 +1716,11 @@ public class TextTemplate {
                                         out.write("✓");
                                     }
                                     break;
+                                case KEY_EQUIPPED_FONT_AWESOME:
+                                    if (carried && equipment.isEquipped()) {
+                                        out.write("<i class=\"fas fa-check-circle\"></i>");
+                                    }
+                                    break;
                                 case KEY_EQUIPPED_NUM:
                                     out.write(carried && equipment.isEquipped() ? '1' : '0');
                                     break;
@@ -1980,11 +1995,12 @@ public class TextTemplate {
                                 case KEY_ID -> writeEncodedText(out, def.getID());
                                 case KEY_NAME -> writeEncodedText(out, def.getName());
                                 case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
+                                case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
                                 case KEY_VALUE -> {
                                     if (def.getType() == AttributeType.DECIMAL) {
-                                        writeEncodedText(out, Numbers.formatWithForcedSign(attr.getDoubleValue(gch)));
+                                        writeEncodedText(out, Numbers.format(attr.getDoubleValue(gch)));
                                     } else {
-                                        writeEncodedText(out, Numbers.formatWithForcedSign(attr.getIntValue(gch)));
+                                        writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
                                     }
                                 }
                                 case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
@@ -2030,7 +2046,8 @@ public class TextTemplate {
                                 case KEY_ID -> writeEncodedText(out, def.getID());
                                 case KEY_NAME -> writeEncodedText(out, def.getName());
                                 case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
-                                case KEY_CURRENT -> writeEncodedText(out, Numbers.formatWithForcedSign(attr.getCurrentIntValue(gch)));
+                                case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
+                                case KEY_CURRENT -> writeEncodedText(out, Numbers.format(attr.getCurrentIntValue(gch)));
                                 case KEY_MAXIMUM -> writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
                                 case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
                                 default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));

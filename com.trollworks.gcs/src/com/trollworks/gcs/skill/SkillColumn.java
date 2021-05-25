@@ -11,15 +11,17 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
+import com.trollworks.gcs.equipment.FontAwesomeCell;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.HeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultiCell;
@@ -28,7 +30,6 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 
-import java.util.List;
 import javax.swing.SwingConstants;
 
 /** Definitions for skill columns. */
@@ -103,15 +104,7 @@ public enum SkillColumn {
 
         @Override
         public Object getData(Skill skill) {
-            List<AttributeDef> ordered = AttributeDef.getOrdered(skill.getDataFile().getAttributeDefs());
-            int                count   = ordered.size();
-            int                i;
-            for (i = 0; i < count; i++) {
-                if (ordered.get(i).getID().equals(skill.getAttribute())) {
-                    break;
-                }
-            }
-            return Integer.valueOf(skill.canHaveChildren() ? -1 : skill.getDifficulty().ordinal() + (i << 8));
+            return getDataAsText(skill);
         }
 
         @Override
@@ -288,7 +281,7 @@ public enum SkillColumn {
     REFERENCE {
         @Override
         public String toString() {
-            return I18n.Text("Ref");
+            return "\uf02e";
         }
 
         @Override
@@ -304,6 +297,11 @@ public enum SkillColumn {
         @Override
         public Cell getCell() {
             return new PageRefCell();
+        }
+
+        @Override
+        public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -349,6 +347,11 @@ public enum SkillColumn {
     /** @return The {@link Cell} used to display the data. */
     public abstract Cell getCell();
 
+    /** @return The {@link Cell} used to display the header. */
+    public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
+        return new ListHeaderCell(sheetOrTemplate);
+    }
+
     /**
      * @param dataFile The {@link DataFile} to use.
      * @return Whether this column should be displayed for the specified data file.
@@ -367,7 +370,7 @@ public enum SkillColumn {
         for (SkillColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell());
-                column.setHeaderCell(new ListHeaderCell(sheetOrTemplate));
+                column.setHeaderCell(one.getHeaderCell(sheetOrTemplate));
                 model.addColumn(column);
             }
         }

@@ -11,25 +11,23 @@
 
 package com.trollworks.gcs.feature;
 
-import com.trollworks.gcs.character.Armor;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Enums;
 
 import java.io.IOException;
 
 /** A DR bonus. */
 public class DRBonus extends Bonus {
-    public static final  String KEY_ROOT     = "dr_bonus";
-    private static final String KEY_LOCATION = "location";
+    public static final  String KEY_ROOT                                = "dr_bonus";
+    private static final String KEY_LOCATION                            = "location";
 
-    private HitLocation mLocation;
+    private String mLocation;
 
     /** Creates a new DR bonus. */
     public DRBonus() {
         super(1);
-        mLocation = HitLocation.TORSO;
+        mLocation = "torso";
     }
 
     public DRBonus(DataFile dataFile, JsonMap m) throws IOException {
@@ -53,7 +51,7 @@ public class DRBonus extends Bonus {
             return true;
         }
         if (obj instanceof DRBonus && super.equals(obj)) {
-            return mLocation == ((DRBonus) obj).mLocation;
+            return mLocation.equals(((DRBonus) obj).mLocation);
         }
         return false;
     }
@@ -65,7 +63,7 @@ public class DRBonus extends Bonus {
 
     @Override
     public String getKey() {
-        return Armor.DR_PREFIX + mLocation.name();
+        return com.trollworks.gcs.body.HitLocation.KEY_PREFIX + mLocation;
     }
 
     @Override
@@ -76,22 +74,22 @@ public class DRBonus extends Bonus {
     @Override
     protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
         super.loadSelf(dataFile, m);
-        setLocation(Enums.extract(m.getString(KEY_LOCATION), HitLocation.values(), HitLocation.TORSO));
+        mLocation = m.getString(KEY_LOCATION);
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
-        w.keyValue(KEY_LOCATION, Enums.toId(mLocation));
+        w.keyValue(KEY_LOCATION, mLocation);
     }
 
     /** @return The location protected by the DR. */
-    public HitLocation getLocation() {
+    public String getLocation() {
         return mLocation;
     }
 
     /** @param location The location. */
-    public void setLocation(HitLocation location) {
+    public void setLocation(String location) {
         mLocation = location;
     }
 }

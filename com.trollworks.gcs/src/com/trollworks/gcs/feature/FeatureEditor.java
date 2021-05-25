@@ -12,13 +12,12 @@
 package com.trollworks.gcs.feature;
 
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.EditorPanel;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -84,11 +83,11 @@ public abstract class FeatureEditor extends EditorPanel {
         FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
-            IconButton button = new IconButton(Images.REMOVE, I18n.Text("Remove this feature"), this::removeFeature);
+            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", I18n.Text("Remove this feature"), this::removeFeature);
             add(button);
             right.add(button);
         }
-        IconButton button = new IconButton(Images.ADD, I18n.Text("Add a feature"), this::addFeature);
+        FontAwesomeButton button = new FontAwesomeButton("\uf055", I18n.Text("Add a feature"), this::addFeature);
         add(button);
         right.add(button);
         grid.add(right, 0, 1);
@@ -134,14 +133,14 @@ public abstract class FeatureEditor extends EditorPanel {
         AbstractFormatter formatter;
         Object            value;
         Object            prototype;
-        if (amt.isIntegerOnly()) {
-            formatter = new IntegerFormatter(min, max, true);
-            value = Integer.valueOf(amt.getIntegerAmount());
-            prototype = Integer.valueOf(max);
-        } else {
+        if (amt.isDecimal()) {
             formatter = new DoubleFormatter(min, max, true);
             value = Double.valueOf(amt.getAmount());
             prototype = Double.valueOf(max + 0.25);
+        } else {
+            formatter = new IntegerFormatter(min, max, true);
+            value = Integer.valueOf(amt.getIntegerAmount());
+            prototype = Integer.valueOf(max);
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, prototype, null);
         field.putClientProperty(LeveledAmount.class, amt);
@@ -222,10 +221,10 @@ public abstract class FeatureEditor extends EditorPanel {
             EditorField   field = (EditorField) event.getSource();
             LeveledAmount amt   = (LeveledAmount) field.getClientProperty(LeveledAmount.class);
             if (amt != null) {
-                if (amt.isIntegerOnly()) {
-                    amt.setAmount(((Integer) field.getValue()).intValue());
-                } else {
+                if (amt.isDecimal()) {
                     amt.setAmount(((Double) field.getValue()).doubleValue());
+                } else {
+                    amt.setAmount(((Integer) field.getValue()).intValue());
                 }
                 notifyActionListeners();
             } else {

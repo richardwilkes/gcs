@@ -87,6 +87,11 @@ public class JsonMap extends JsonCollection {
         return Json.asLong(get(key));
     }
 
+    public long getLongWithDefault(String key, long def) {
+        Object value = get(key);
+        return value != null ? Json.asLong(value) : def;
+    }
+
     /**
      * @param key The key to retrieve.
      * @return The value associated with the key or zero if no key matches or the value cannot be

@@ -11,11 +11,12 @@
 
 package com.trollworks.gcs.attribute;
 
-import com.trollworks.gcs.character.CharacterVariableResolver;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.expression.EvaluationException;
 import com.trollworks.gcs.expression.Evaluator;
+import com.trollworks.gcs.expression.VariableResolver;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -42,7 +43,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     private static final String KEY_COST_ADJ_PERCENT_PER_SM = "cost_adj_percent_per_sm";
     private static final String KEY_THRESHOLDS              = "thresholds";
 
-    private static final Set<String> RESERVED = new HashSet<>();
+    public static final Set<String> RESERVED = new HashSet<>();
 
     private String              mID;
     private AttributeType       mType;
@@ -209,35 +210,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     }
 
     public void setID(String id) {
-        mID = sanitizeID(id, true);
-    }
-
-    public static String sanitizeID(String id, boolean noReserved) {
-        if (!noReserved) {
-            id = id.trim();
-            try {
-                Integer.parseInt(id);
-                return id;
-            } catch (NumberFormatException nfex) {
-                // continue
-            }
-        }
-        StringBuilder buffer = new StringBuilder();
-        int           length = id.length();
-        for (int i = 0; i < length; i++) {
-            char ch = id.charAt(i);
-            if (ch >= 'A' && ch <= 'Z') {
-                ch = Character.toLowerCase(ch);
-            }
-            if (ch == '_' || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9' && !buffer.isEmpty())) {
-                buffer.append(ch);
-            }
-        }
-        id = buffer.toString();
-        if (noReserved && RESERVED.contains(id)) {
-            id += "_";
-        }
-        return id;
+        mID = ID.sanitize(id, RESERVED, false);
     }
 
     public AttributeType getType() {
@@ -253,6 +226,16 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         } else {
             mThresholds = null;
         }
+    }
+
+    public String getCombinedName() {
+        String combinedName = mFullName;
+        if (combinedName.isBlank()) {
+            combinedName = mName;
+        } else if (!mName.isBlank() && !combinedName.equals(mName)) {
+            combinedName = String.format("%s (%s)", combinedName, mName);
+        }
+        return combinedName;
     }
 
     public String getName() {
@@ -320,19 +303,13 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         }
     }
 
-    public double getBaseValue(CharacterVariableResolver resolver) {
-        Evaluator evaluator = new Evaluator(resolver);
-        String    exclude   = Attribute.ID_ATTR_PREFIX + mID;
-        resolver.addExclusion(exclude);
-        double value;
+    public double getBaseValue(VariableResolver resolver) {
         try {
-            value = evaluator.evaluateToNumber(mAttributeBase);
+            return new Evaluator(resolver).evaluateToNumber(mAttributeBase);
         } catch (EvaluationException ex) {
             Log.error(ex);
-            value = 0;
+            return 0;
         }
-        resolver.removeExclusion(exclude);
-        return value;
     }
 
     public int computeCost(GURPSCharacter character, double value, int sm, int costReduction) {
@@ -340,7 +317,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
             costReduction += sm * mCostAdjPercentPerSM;
             if (costReduction < 0) {
                 costReduction = 0;
-            } else if (costReduction < 80) {
+            } else if (costReduction > 80) {
                 costReduction = 80;
             }
         }

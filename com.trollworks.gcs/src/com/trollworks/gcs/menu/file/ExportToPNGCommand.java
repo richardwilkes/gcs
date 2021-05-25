@@ -14,6 +14,7 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.preferences.QuickExport;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -29,7 +30,7 @@ public class ExportToPNGCommand extends Command {
     public static final ExportToPNGCommand INSTANCE = new ExportToPNGCommand();
 
     private ExportToPNGCommand() {
-        super(I18n.Text("Export to PNG Image(s)…"), "ToPNG");
+        super(I18n.Text("PNG Image(s)…"), "ToPNG");
     }
 
     @Override
@@ -38,18 +39,24 @@ public class ExportToPNGCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        SheetDockable sheet = getTarget(SheetDockable.class);
-        if (sheet != null) {
-            String name = PathUtils.cleanNameForFile(sheet.getSheet().getCharacter().getProfile().getName());
+        SheetDockable dockable = getTarget(SheetDockable.class);
+        if (dockable != null) {
+            String name = PathUtils.cleanNameForFile(dockable.getSheet().getCharacter().getProfile().getName());
             if (name.isBlank()) {
                 name = "untitled";
             }
-            Path path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(sheet), getTitle(), Preferences.getInstance().getLastDir().resolve(name), FileType.PNG.getFilter());
+            Path path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Preferences.getInstance().getLastDir().resolve(name), FileType.PNG.getFilter());
             if (path != null) {
-                if (!sheet.getSheet().saveAsPNG(path, new ArrayList<>())) {
-                    WindowUtils.showError(sheet, I18n.Text("An error occurred while trying to export the sheet as PNG."));
-                }
+                performExport(dockable, path);
             }
+        }
+    }
+
+    public static void performExport(SheetDockable dockable, Path exportPath) {
+        if (dockable.getSheet().saveAsPNG(exportPath, new ArrayList<>())) {
+            dockable.recordQuickExport(new QuickExport(exportPath));
+        } else {
+            WindowUtils.showError(dockable, I18n.Text("An error occurred while trying to export the sheet as PNG."));
         }
     }
 }

@@ -18,6 +18,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.WidgetHelpers;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -29,9 +31,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -43,7 +43,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
     private FontAwesomeButton   mMoveDownButton;
     private EditorField         mStateField;
     private EditorField         mDivisorField;
-    private JTextArea           mExplanationField;
+    private MultiLineTextField  mExplanationField;
 
     public ThresholdPanel(List<PoolThreshold> thresholds, PoolThreshold threshold, Runnable adjustCallback) {
         super(new PrecisionLayout().setColumns(3).setMargins(0));
@@ -55,7 +55,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.Text("Move Up"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -63,11 +63,11 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 mThresholds.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index - 1);
                 mThresholds.add(index - 1, mThreshold);
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", AttributeEditor.BUTTON_SIZE, I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.Text("Move Down"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -75,7 +75,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 mThresholds.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index + 1);
                 mThresholds.add(index + 1, mThreshold);
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         left.add(mMoveDownButton);
@@ -94,7 +94,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 FieldFactory.STRING,
                 (evt) -> {
                     mThreshold.setState((String) evt.getNewValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         addField(wrapper,
                 I18n.Text("Multiplier"),
@@ -104,7 +104,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 FieldFactory.INT6,
                 (evt) -> {
                     mThreshold.setMultiplier(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         mDivisorField = addField(wrapper,
                 I18n.Text("Divisor"),
@@ -118,7 +118,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                         mDivisorField.setValue(evt.getOldValue());
                     } else {
                         mThreshold.setDivisor(value);
-                        adjustCallback.run();
+                        mAdjustCallback.run();
                     }
                 });
         addField(wrapper,
@@ -129,7 +129,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                 FieldFactory.INT6,
                 (evt) -> {
                     mThreshold.setAddition(((Integer) evt.getNewValue()).intValue());
-                    adjustCallback.run();
+                    mAdjustCallback.run();
                 });
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
@@ -154,13 +154,13 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", AttributeEditor.BUTTON_SIZE, I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1) {
                 parent.remove(this);
                 mThresholds.remove(index);
-                adjustCallback.run();
+                mAdjustCallback.run();
             }
         });
         right.add(remove);
@@ -184,18 +184,9 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         return field;
     }
 
-    private JTextArea addTextArea(Container container, String title, String tooltip, String text) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        label.setOpaque(false);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        container.add(label, new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        JTextArea area = new JTextArea(text);
-        area.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        area.setBorder(UIManager.getBorder("FormattedTextField.border"));
-        area.setTabSize(2);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.getDocument().addDocumentListener(this);
+    private MultiLineTextField addTextArea(Container container, String title, String tooltip, String text) {
+        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        MultiLineTextField area = new MultiLineTextField(text, tooltip, this);
         container.add(area, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return area;
     }

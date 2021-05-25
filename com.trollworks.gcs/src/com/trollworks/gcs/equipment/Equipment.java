@@ -25,11 +25,11 @@ import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.modifier.ModifierCostValueType;
 import com.trollworks.gcs.modifier.ModifierWeightValueType;
 import com.trollworks.gcs.skill.SkillDefault;
+import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Fixed6;
@@ -122,10 +122,11 @@ public class Equipment extends ListRow implements HasSourceReference {
      */
     public Equipment(DataFile dataFile, Equipment equipment, boolean deep) {
         super(dataFile, equipment);
+        boolean forTemplate = dataFile instanceof Template;
         boolean forSheet = dataFile instanceof GURPSCharacter;
         mEquipped = !forSheet || equipment.mEquipped;
-        mQuantity = forSheet ? equipment.mQuantity : 1;
-        mUses = forSheet ? equipment.mUses : equipment.mMaxUses;
+        mQuantity = (forSheet || forTemplate) ? equipment.mQuantity : 1;
+        mUses = (forSheet || forTemplate) ? equipment.mUses : equipment.mMaxUses;
         mMaxUses = equipment.mMaxUses;
         mDescription = equipment.mDescription;
         mTechLevel = equipment.mTechLevel;
@@ -230,8 +231,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         } else if (mUses < 0) {
             mUses = 0;
         }
-        updateExtendedValue(false);
-        updateExtendedWeight(false);
+        update();
         super.finishedLoading(state);
     }
 
@@ -305,8 +305,98 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public void update() {
-        updateExtendedValue(true);
-        updateExtendedWeight(true);
+        updateExtendedValue();
+        updateExtendedWeight();
+    }
+
+    private boolean updateExtendedValue() {
+        Fixed6 savedValue = mExtendedValue;
+        int    count      = getChildCount();
+        mExtendedValue = new Fixed6(mQuantity).mul(getAdjustedValue());
+        for (int i = 0; i < count; i++) {
+            Equipment child = (Equipment) getChild(i);
+            child.updateExtendedValue();
+            mExtendedValue = mExtendedValue.add(child.mExtendedValue);
+        }
+        if (!mExtendedValue.equals(savedValue)) {
+            notifyOfChange();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean updateExtendedWeight() {
+        WeightValue saved          = mExtendedWeight;
+        WeightValue savedForSkills = mExtendedWeightForSkills;
+        int         count          = getChildCount();
+        WeightUnits units          = mWeight.getUnits();
+        mExtendedWeight = new WeightValue(getAdjustedWeight(false).getValue().mul(new Fixed6(mQuantity)), units);
+        mExtendedWeightForSkills = new WeightValue(getAdjustedWeight(true).getValue().mul(new Fixed6(mQuantity)), units);
+        WeightValue contained          = new WeightValue(Fixed6.ZERO, units);
+        WeightValue containedForSkills = new WeightValue(Fixed6.ZERO, units);
+        for (int i = 0; i < count; i++) {
+            Equipment one = (Equipment) getChild(i);
+            one.updateExtendedWeight();
+            WeightValue weight = one.mExtendedWeight;
+            if (mDataFile.useSimpleMetricConversions()) {
+                weight = units.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
+            }
+            contained.add(weight);
+            weight = one.mExtendedWeightForSkills;
+            if (mDataFile.useSimpleMetricConversions()) {
+                weight = units.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
+            }
+            containedForSkills.add(weight);
+        }
+        Fixed6      percentage = Fixed6.ZERO;
+        WeightValue reduction  = new WeightValue(Fixed6.ZERO, units);
+        for (Feature feature : getFeatures()) {
+            if (feature instanceof ContainedWeightReduction) {
+                ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
+                if (cwr.isPercentage()) {
+                    percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
+                } else {
+                    reduction.add(cwr.getAbsoluteReduction(mDataFile.defaultWeightUnits()));
+                }
+            }
+        }
+        for (EquipmentModifier modifier : getModifiers()) {
+            if (modifier.isEnabled()) {
+                for (Feature feature : modifier.getFeatures()) {
+                    if (feature instanceof ContainedWeightReduction) {
+                        ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
+                        if (cwr.isPercentage()) {
+                            percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
+                        } else {
+                            reduction.add(cwr.getAbsoluteReduction(mDataFile.defaultWeightUnits()));
+                        }
+                    }
+                }
+            }
+        }
+        if (percentage.greaterThan(Fixed6.ZERO)) {
+            Fixed6 oneHundred = new Fixed6(100);
+            if (percentage.greaterThanOrEqual(oneHundred)) {
+                contained = new WeightValue(Fixed6.ZERO, units);
+                containedForSkills = new WeightValue(Fixed6.ZERO, units);
+            } else {
+                contained.subtract(new WeightValue(contained.getValue().mul(percentage).div(oneHundred), contained.getUnits()));
+                containedForSkills.subtract(new WeightValue(containedForSkills.getValue().mul(percentage).div(oneHundred), containedForSkills.getUnits()));
+            }
+        }
+        contained.subtract(reduction);
+        containedForSkills.subtract(reduction);
+        if (contained.getNormalizedValue().greaterThan(Fixed6.ZERO)) {
+            mExtendedWeight.add(contained);
+        }
+        if (containedForSkills.getNormalizedValue().greaterThan(Fixed6.ZERO)) {
+            mExtendedWeightForSkills.add(containedForSkills);
+        }
+        if (!saved.equals(mExtendedWeight) || !savedForSkills.equals(mExtendedWeightForSkills)) {
+            notifyOfChange();
+            return true;
+        }
+        return false;
     }
 
     /** @return The quantity. */
@@ -321,8 +411,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setQuantity(int quantity) {
         if (quantity != mQuantity) {
             mQuantity = quantity;
-            updateContainingWeights(false);
-            updateContainingValues(false);
             notifyOfChange();
             return true;
         }
@@ -513,7 +601,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setValue(Fixed6 value) {
         if (!mValue.equals(value)) {
             mValue = value;
-            updateContainingValues(false);
             notifyOfChange();
             return true;
         }
@@ -615,133 +702,10 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setWeight(WeightValue weight) {
         if (!mWeight.equals(weight)) {
             mWeight = new WeightValue(weight);
-            updateContainingWeights(false);
             notifyOfChange();
             return true;
         }
         return false;
-    }
-
-    private boolean updateExtendedWeight(boolean okToNotify) {
-        WeightValue saved          = mExtendedWeight;
-        WeightValue savedForSkills = mExtendedWeightForSkills;
-        int         count          = getChildCount();
-        WeightUnits units          = mWeight.getUnits();
-        mExtendedWeight = new WeightValue(getAdjustedWeight(false).getValue().mul(new Fixed6(mQuantity)), units);
-        mExtendedWeightForSkills = new WeightValue(getAdjustedWeight(true).getValue().mul(new Fixed6(mQuantity)), units);
-        WeightValue contained          = new WeightValue(Fixed6.ZERO, units);
-        WeightValue containedForSkills = new WeightValue(Fixed6.ZERO, units);
-        for (int i = 0; i < count; i++) {
-            Equipment   one    = (Equipment) getChild(i);
-            WeightValue weight = one.mExtendedWeight;
-            if (mDataFile.useSimpleMetricConversions()) {
-                weight = units.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
-            }
-            contained.add(weight);
-            weight = one.mExtendedWeightForSkills;
-            if (mDataFile.useSimpleMetricConversions()) {
-                weight = units.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
-            }
-            containedForSkills.add(weight);
-        }
-        Fixed6      percentage = Fixed6.ZERO;
-        WeightValue reduction  = new WeightValue(Fixed6.ZERO, units);
-        for (Feature feature : getFeatures()) {
-            if (feature instanceof ContainedWeightReduction) {
-                ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
-                if (cwr.isPercentage()) {
-                    percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
-                } else {
-                    reduction.add(cwr.getAbsoluteReduction(mDataFile.defaultWeightUnits()));
-                }
-            }
-        }
-        for (EquipmentModifier modifier : getModifiers()) {
-            if (modifier.isEnabled()) {
-                for (Feature feature : modifier.getFeatures()) {
-                    if (feature instanceof ContainedWeightReduction) {
-                        ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
-                        if (cwr.isPercentage()) {
-                            percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
-                        } else {
-                            reduction.add(cwr.getAbsoluteReduction(mDataFile.defaultWeightUnits()));
-                        }
-                    }
-                }
-            }
-        }
-        if (percentage.greaterThan(Fixed6.ZERO)) {
-            Fixed6 oneHundred = new Fixed6(100);
-            if (percentage.greaterThanOrEqual(oneHundred)) {
-                contained = new WeightValue(Fixed6.ZERO, units);
-                containedForSkills = new WeightValue(Fixed6.ZERO, units);
-            } else {
-                contained.subtract(new WeightValue(contained.getValue().mul(percentage).div(oneHundred), contained.getUnits()));
-                containedForSkills.subtract(new WeightValue(containedForSkills.getValue().mul(percentage).div(oneHundred), containedForSkills.getUnits()));
-            }
-        }
-        contained.subtract(reduction);
-        containedForSkills.subtract(reduction);
-        if (contained.getNormalizedValue().greaterThan(Fixed6.ZERO)) {
-            mExtendedWeight.add(contained);
-        }
-        if (containedForSkills.getNormalizedValue().greaterThan(Fixed6.ZERO)) {
-            mExtendedWeightForSkills.add(containedForSkills);
-        }
-        if (getParent() instanceof Equipment) {
-            ((Equipment) getParent()).updateContainingWeights(okToNotify);
-        }
-        if (!saved.equals(mExtendedWeight) || !savedForSkills.equals(mExtendedWeightForSkills)) {
-            if (okToNotify) {
-                notifyOfChange();
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private void updateContainingWeights(boolean okToNotify) {
-        Row parent = this;
-        while (parent instanceof Equipment) {
-            Equipment parentRow = (Equipment) parent;
-            if (parentRow.updateExtendedWeight(okToNotify)) {
-                parent = parentRow.getParent();
-            } else {
-                break;
-            }
-        }
-    }
-
-    private boolean updateExtendedValue(boolean okToNotify) {
-        Fixed6 savedValue = mExtendedValue;
-        int    count      = getChildCount();
-        mExtendedValue = new Fixed6(mQuantity).mul(getAdjustedValue());
-        for (int i = 0; i < count; i++) {
-            Equipment child = (Equipment) getChild(i);
-            mExtendedValue = mExtendedValue.add(child.mExtendedValue);
-        }
-        if (getParent() instanceof Equipment) {
-            ((Equipment) getParent()).updateContainingValues(okToNotify);
-        }
-        if (!mExtendedValue.equals(savedValue)) {
-            if (okToNotify) {
-                notifyOfChange();
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private void updateContainingValues(boolean okToNotify) {
-        Row parent = this;
-        while (parent instanceof Equipment) {
-            Equipment parentRow = (Equipment) parent;
-            if (parentRow.updateExtendedValue(okToNotify)) {
-                parent = parentRow.getParent();
-            } else {
-                break;
-            }
-        }
     }
 
     /** @return The extended weight. */
@@ -762,7 +726,6 @@ public class Equipment extends ListRow implements HasSourceReference {
     public boolean setWeightIgnoredForSkills(boolean ignore) {
         if (mWeightIgnoredForSkills != ignore) {
             mWeightIgnoredForSkills = ignore;
-            updateContainingWeights(false);
             notifyOfChange();
             return true;
         }

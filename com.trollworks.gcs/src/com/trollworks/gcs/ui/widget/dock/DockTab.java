@@ -16,11 +16,10 @@ import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
-import com.trollworks.gcs.ui.widget.IconButton;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumericComparator;
 import com.trollworks.gcs.utility.text.Text;
@@ -63,7 +62,7 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
         setBorder(new EmptyBorder(2, 1, 0, 1));
         addContainerListener(this);
         mTitle = new JLabel(getFullTitle(), dockable.getTitleIcon(), SwingConstants.LEFT);
-        IconButton closeButton = new IconButton(Images.DOCK_CLOSE, I18n.Text("Close"), this::attemptClose);
+        FontAwesomeButton closeButton = new FontAwesomeButton("\uf057", I18n.Text("Close"), this::attemptClose);
         add(mTitle, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHeightHint(Math.max(mTitle.getPreferredSize().height, closeButton.getPreferredSize().height)));
         if (dockable instanceof CloseHandler) {
             add(closeButton, new PrecisionLayoutData().setEndHorizontalAlignment());

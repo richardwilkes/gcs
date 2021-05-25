@@ -31,6 +31,9 @@ public class DiceFormatter extends JFormattedTextField.AbstractFormatter {
 
     @Override
     public String valueToString(Object value) {
-        return value instanceof Dice ? ((Dice) value).toString(mCharacter.getSettings().useModifyingDicePlusAdds()) : "";
+        if (value instanceof Dice) {
+            return ((Dice) value).toString(mCharacter != null && mCharacter.getSettings().useModifyingDicePlusAdds());
+        }
+        return "";
     }
 }

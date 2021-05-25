@@ -278,6 +278,24 @@ public class Dice implements Cloneable {
         return (result + mAltModifier) * mMultiplier;
     }
 
+    public int min(boolean convertModifiersToExtraDice) {
+        int result = 0;
+        updateAlt(convertModifiersToExtraDice);
+        if (mSides > 0) {
+            result = mAltCount;
+        }
+        return (result + mAltModifier) * mMultiplier;
+    }
+
+    public int max(boolean convertModifiersToExtraDice) {
+        int result = 0;
+        updateAlt(convertModifiersToExtraDice);
+        if (mSides > 0) {
+            result = mAltCount * mSides;
+        }
+        return (result + mAltModifier) * mMultiplier;
+    }
+
     public String toString() {
         return toString(Preferences.getInstance().useModifyingDicePlusAdds());
     }

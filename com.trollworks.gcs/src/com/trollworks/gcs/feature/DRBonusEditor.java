@@ -11,6 +11,10 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.body.HitLocation;
+import com.trollworks.gcs.body.HitLocationTable;
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
@@ -47,7 +51,14 @@ public class DRBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        row.add(addComboBox(CHANGE_LOCATION, HitLocation.values(), ((DRBonus) getFeature()).getLocation()));
+        GURPSCharacter   character = getRow().getCharacter();
+        HitLocationTable locations;
+        if (character != null) {
+            locations = character.getSettings().getHitLocations();
+        } else {
+            locations = Preferences.getInstance().getHitLocations();
+        }
+        row.add(addComboBox(CHANGE_LOCATION, locations.getUniqueHitLocations().toArray(new HitLocation[0]), locations.lookupLocationByID(((DRBonus) getFeature()).getLocation())));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 0);
     }
@@ -56,7 +67,10 @@ public class DRBonusEditor extends FeatureEditor {
     public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
         if (CHANGE_LOCATION.equals(command)) {
-            ((DRBonus) getFeature()).setLocation((HitLocation) ((JComboBox<?>) event.getSource()).getSelectedItem());
+            HitLocation location = (HitLocation) ((JComboBox<?>) event.getSource()).getSelectedItem();
+            if (location != null) {
+                ((DRBonus) getFeature()).setLocation(location.getID());
+            }
         } else {
             super.actionPerformed(event);
         }
