@@ -466,25 +466,27 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      */
     public Dice getSwing(int strength) {
         if(mSettings.usePhoenixSwing() & strength > 12 & strength < 61){
-
-            int adds = (int) Math.ceil((strength-17.0)/2.0);
+            int value=strength;
+            //int adds = (int) Math.ceil((strength-17.0)/2.0);
+            int evens = 1- strength % 2;
             if (strength < 19){
                 return new Dice(1,(-(6 - (strength - 1) / 2))+2+ (1 - (strength % 2)));
+            }  
+            value -= 11;
+            if (strength > 50) {
+                value--;
+                if (strength > 79) {
+                    value -= 1 + (strength - 80) / 5;
+                }
             }
-            int value = strength - 11; // This is derived the same way that thrust damage is derived
-            int ndice = value / 8 + 1; // Same as above
-            int baseadds = value % 8 / 2 -1;
-            int bonusdice = (ndice + baseadds) /5; // work out the bonus dice, whenever adds hits 5 it needs to be +1 die so we'll do that first
-            int bonusadds = ndice+bonusdice + baseadds;
-            if (bonusadds > 4){
-                bonusdice += bonusadds/5;
-                bonusadds = (bonusadds/5) + bonusdice % 5;
+            int ndice = value / 8 + 1;
+            int baseadds= (value % 8 / 2) + ndice + evens;
+            while (baseadds > 5){ //CURSED while loop
+                ndice += 1;
+                baseadds -=4;
             }
-            
-            
-    
-            return new Dice(ndice+bonusdice, bonusadds);
 
+            return new Dice(ndice, baseadds);
         }
         if (mSettings.useReducedSwing()) {
             if (strength < 10) {
