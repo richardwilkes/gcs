@@ -12,10 +12,12 @@
 package com.trollworks.gcs.notes;
 
 import com.trollworks.gcs.datafile.PageRefCell;
+import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -24,13 +26,12 @@ import com.trollworks.gcs.utility.text.Text;
 import java.awt.Dimension;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 /** The detailed editor for {@link Note}s. */
 public class NoteEditor extends RowEditor<Note> {
-    private JTextArea  mEditor;
-    private JTextField mReferenceField;
+    private MultiLineTextField mEditor;
+    private JTextField         mReferenceField;
 
     /**
      * Creates a new {@link Note} editor.
@@ -42,24 +43,18 @@ public class NoteEditor extends RowEditor<Note> {
         add(new JLabel(note.getIcon(true)), new PrecisionLayoutData().setVerticalSpan(3).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         add(new LinkedLabel(I18n.Text("Note Content")), new PrecisionLayoutData().setHorizontalSpan(2));
-        mEditor = new JTextArea(note.getDescription());
-        mEditor.setLineWrap(true);
-        mEditor.setWrapStyleWord(true);
+        mEditor = new MultiLineTextField(note.getDescription(), null, null);
         mEditor.setEnabled(mIsEditable);
+        Dimension workspaceSize = Workspace.get().getSize();
+        workspaceSize.width = Math.max(workspaceSize.width - 200, 300);
+        workspaceSize.height = Math.max(workspaceSize.height - 200, 200);
+        Dimension size = TextDrawing.getPreferredSize(mEditor.getFont(), mEditor.getText());
+        size.width = Math.min(size.width + 64, workspaceSize.width);
+        size.height = Math.min(size.height + 64, workspaceSize.height);
         JScrollPane scroller = new JScrollPane(mEditor);
-        Dimension   size     = Workspace.get().getSize();
-        size.width -= 200;
-        if (size.width > 750) {
-            size.width = 750;
-        }
-        size.height -= 200;
-        if (size.height > 750) {
-            size.height = 750;
-        }
-        if (size.width > 300 && size.height > 200) {
-            scroller.setPreferredSize(size);
-        }
-        add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment().setGrabSpace(true).setMinimumWidth(300).setMinimumHeight(200));
+        add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment()
+                .setGrabSpace(true).setMinimumWidth(300).setMinimumHeight(200)
+                .setWidthHint(size.width).setHeightHint(size.height));
 
         add(new LinkedLabel(I18n.Text("Page Reference"), mReferenceField));
         mReferenceField = new JTextField(Text.makeFiller(6, 'M'));

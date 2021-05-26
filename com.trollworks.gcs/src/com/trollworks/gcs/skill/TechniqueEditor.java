@@ -17,9 +17,11 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -51,9 +53,9 @@ import javax.swing.text.Document;
 
 /** The detailed editor for {@link Technique}s. */
 public class TechniqueEditor extends RowEditor<Technique> implements ActionListener, DocumentListener {
-    private JTextField                 mNameField;
-    private JTextField                 mNotesField;
-    private JTextField                 mCategoriesField;
+    private JTextField         mNameField;
+    private MultiLineTextField mNotesField;
+    private JTextField         mCategoriesField;
     private JTextField                 mReferenceField;
     private JComboBox<Object>          mDifficultyCombo;
     private JTextField                 mPointsField;
@@ -87,7 +89,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         Container wrapper;
 
         mNameField = createCorrectableField(fields, fields, I18n.Text("Name"), technique.getName(), I18n.Text("The base name of the technique, without any notes or specialty information"));
-        mNotesField = createField(fields, fields, I18n.Text("Notes"), technique.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this technique"), 0);
+        mNotesField = new MultiLineTextField(technique.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this technique"), this);
+        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
+        label.setBorder(new EmptyBorder(2, 0, 0, 0));
+        label.setAlignmentY(0);
+        fields.add(label);
+        fields.add(mNotesField);
         mCategoriesField = createField(fields, fields, I18n.Text("Categories"), technique.getCategoriesAsString(), I18n.Text("The category or categories the technique belongs to (separate multiple categories with a comma)"), 0);
         createDefaults(fields);
         createLimits(fields);
@@ -378,8 +385,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         }
     }
 
-    @Override
-    public void changedUpdate(DocumentEvent event) {
+    private void docChanged(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
             LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
@@ -389,12 +395,17 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     @Override
+    public void changedUpdate(DocumentEvent event) {
+        docChanged(event);
+    }
+
+    @Override
     public void insertUpdate(DocumentEvent event) {
-        changedUpdate(event);
+        docChanged(event);
     }
 
     @Override
     public void removeUpdate(DocumentEvent event) {
-        changedUpdate(event);
+        docChanged(event);
     }
 }

@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.I18n;
@@ -65,7 +66,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private JCheckBox                             mHalfLevel;
     private EditorField                           mLevelPointsField;
     private EditorField                           mPointsField;
-    private EditorField                           mNotesField;
+    private MultiLineTextField                    mNotesField;
     private EditorField                           mCategoriesField;
     private EditorField                           mReferenceField;
     private JTabbedPane                           mTabPanel;
@@ -169,8 +170,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             }
         }
 
-        mNotesField = createField(advantage.getNotes(), null, I18n.Text("Any notes that you would like to show up in the list along with this advantage"));
-        add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        mNotesField = new MultiLineTextField(advantage.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this advantage"), this);
+        add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mCategoriesField = createField(advantage.getCategoriesAsString(), null, I18n.Text("The category or categories the advantage belongs to (separate multiple categories with a comma)"));
@@ -399,7 +400,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mRow.setModifiers(mModifiers.getModifiers());
         }
         modified |= mRow.setReference((String) mReferenceField.getValue());
-        modified |= mRow.setNotes((String) mNotesField.getValue());
+        modified |= mRow.setNotes(mNotesField.getText());
         modified |= mRow.setCategories((String) mCategoriesField.getValue());
         if (mUserDesc != null) {
             modified |= mRow.setUserDesc(mUserDesc);
@@ -509,23 +510,25 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         return mEnabledCheckBox.isSelected();
     }
 
+    private void docChanged(DocumentEvent event) {
+        if (mNameField.getDocument() == event.getDocument()) {
+            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+        }
+    }
+
     @Override
     public void changedUpdate(DocumentEvent event) {
-        nameChanged();
+        docChanged(event);
     }
 
     @Override
     public void insertUpdate(DocumentEvent event) {
-        nameChanged();
+        docChanged(event);
     }
 
     @Override
     public void removeUpdate(DocumentEvent event) {
-        nameChanged();
-    }
-
-    private void nameChanged() {
-        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+        docChanged(event);
     }
 
     @Override

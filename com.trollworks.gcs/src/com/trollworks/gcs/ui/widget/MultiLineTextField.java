@@ -13,6 +13,8 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
@@ -22,9 +24,15 @@ public class MultiLineTextField extends JTextArea {
         super(text);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         setBorder(UIManager.getBorder("FormattedTextField.border"));
-        setTabSize(2);
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
+        setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS));
+        setFocusTraversalKeysEnabled(true);
         setLineWrap(true);
         setWrapStyleWord(true);
-        getDocument().addDocumentListener(listener);
+        if (listener != null) {
+            getDocument().addDocumentListener(listener);
+        }
+        setMinimumSize(new Dimension(50, 16));
     }
 }

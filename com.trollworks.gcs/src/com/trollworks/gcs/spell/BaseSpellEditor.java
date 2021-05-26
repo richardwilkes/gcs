@@ -17,6 +17,7 @@ import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -60,7 +61,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected JTextField                 mCastingTimeField;
     protected JTextField                 mDurationField;
     protected JComboBox<SkillDifficulty> mDifficultyCombo;
-    protected JTextField                 mNotesField;
+    protected MultiLineTextField         mNotesField;
     protected JTextField                 mCategoriesField;
     protected JTextField                 mPointsField;
     protected JTextField                 mLevelField;

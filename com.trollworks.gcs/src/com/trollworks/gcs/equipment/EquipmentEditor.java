@@ -17,8 +17,10 @@ import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.modifier.EquipmentModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Fixed6;
@@ -64,7 +66,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private JTextField                  mExtValueField;
     private JTextField                  mWeightField;
     private JTextField                  mExtWeightField;
-    private JTextField                  mNotesField;
+    private MultiLineTextField          mNotesField;
     private JTextField                  mCategoriesField;
     private JTextField                  mReferenceField;
     private JTabbedPane                 mTabPanel;
@@ -95,7 +97,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mDescriptionField = createCorrectableField(fields, I18n.Text("Name"), equipment.getDescription(), I18n.Text("The name/description of the equipment, without any notes"));
         createSecondLineFields(fields);
         createValueAndWeightFields(fields);
-        mNotesField = createField(fields, fields, I18n.Text("Notes"), equipment.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), 0);
+        mNotesField = new MultiLineTextField(equipment.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), this);
+        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
+        label.setAlignmentY(0);
+        label.setBorder(new EmptyBorder(2, 0, 0, 0));
+        fields.add(label);
+        fields.add(mNotesField);
         mCategoriesField = createField(fields, fields, I18n.Text("Categories"), equipment.getCategoriesAsString(), I18n.Text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
 
         boolean forCharacterOrTemplate = equipment.getCharacter() != null || equipment.getTemplate() != null;
@@ -350,23 +357,25 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mExtWeightField.setText(weight.toString());
     }
 
+    private void docChanged(DocumentEvent event) {
+        if (mDescriptionField.getDocument() == event.getDocument()) {
+            LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+        }
+    }
+
     @Override
     public void changedUpdate(DocumentEvent event) {
-        descriptionChanged();
+        docChanged(event);
     }
 
     @Override
     public void insertUpdate(DocumentEvent event) {
-        descriptionChanged();
+        docChanged(event);
     }
 
     @Override
     public void removeUpdate(DocumentEvent event) {
-        descriptionChanged();
-    }
-
-    private void descriptionChanged() {
-        LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+        docChanged(event);
     }
 
     @Override

@@ -15,8 +15,10 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
@@ -42,18 +44,18 @@ import javax.swing.event.DocumentListener;
 
 /** Editor for {@link AdvantageModifier}s. */
 public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implements ActionListener, DocumentListener {
-    private JTextField        mNameField;
-    private JCheckBox         mEnabledField;
-    private JTextField        mNotesField;
-    private JTextField        mReferenceField;
-    private JTextField        mCostField;
-    private JTextField        mLevelField;
-    private JTextField        mCostModifierField;
-    private FeaturesPanel     mFeatures;
-    private JTabbedPane       mTabPanel;
-    private JComboBox<Object> mCostType;
-    private JComboBox<Object> mAffects;
-    private int               mLastLevel;
+    private JTextField         mNameField;
+    private JCheckBox          mEnabledField;
+    private MultiLineTextField mNotesField;
+    private JTextField         mReferenceField;
+    private JTextField         mCostField;
+    private JTextField         mLevelField;
+    private JTextField         mCostModifierField;
+    private FeaturesPanel      mFeatures;
+    private JTabbedPane        mTabPanel;
+    private JComboBox<Object>  mCostType;
+    private JComboBox<Object>  mAffects;
+    private int                mLastLevel;
 
     /**
      * Creates a new {@link AdvantageModifierEditor}.
@@ -63,6 +65,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     public AdvantageModifierEditor(AdvantageModifier modifier) {
         super(modifier);
 
+        JPanel     wrapper;
         JPanel     content = new JPanel(new ColumnLayout(2));
         JPanel     fields  = new JPanel(new ColumnLayout(2));
         JLabel     iconLabel;
@@ -71,10 +74,9 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
 
         if (modifier.canHaveChildren()) {
             mNameField = createCorrectableField(fields, fields, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of container"));
-            mNotesField = createField(fields, fields, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
-            mReferenceField = createField(fields, fields, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("advantage modifier")), 6);
+            wrapper = fields;
         } else {
-            JPanel wrapper = new JPanel(new ColumnLayout(2));
+            wrapper = new JPanel(new ColumnLayout(2));
             mNameField = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
             mEnabledField = new JCheckBox(I18n.Text("Enabled"), modifier.isEnabled());
             mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
@@ -85,10 +87,22 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
             createCostModifierFields(fields);
 
             wrapper = new JPanel(new ColumnLayout(3));
-            mNotesField = createField(fields, wrapper, I18n.Text("Notes"), modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), 0);
-            mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("advantage modifier")), 6);
+        }
+
+        mNotesField = new MultiLineTextField(modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), this);
+        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
+        label.setBorder(new EmptyBorder(2, 0, 0, 0));
+        label.setAlignmentY(0);
+        fields.add(label);
+        if (fields != wrapper) {
             fields.add(wrapper);
         }
+        wrapper.add(mNotesField);
+        mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("advantage modifier")), 6);
+        mReferenceField.setAlignmentY(0);
+        label = ((LinkedLabel) wrapper.getComponent(wrapper.getComponentCount() - 2));
+        label.setBorder(new EmptyBorder(2, 0, 0, 0));
+        label.setAlignmentY(0);
 
         iconLabel.setVerticalAlignment(SwingConstants.TOP);
         iconLabel.setAlignmentY(-1.0f);
@@ -319,22 +333,24 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         return Numbers.extractInteger(mLevelField.getText(), 0, true);
     }
 
+    private void docChanged(DocumentEvent event) {
+        if (mNameField.getDocument() == event.getDocument()) {
+            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+        }
+    }
+
     @Override
     public void changedUpdate(DocumentEvent event) {
-        nameChanged();
+        docChanged(event);
     }
 
     @Override
     public void insertUpdate(DocumentEvent event) {
-        nameChanged();
+        docChanged(event);
     }
 
     @Override
     public void removeUpdate(DocumentEvent event) {
-        nameChanged();
-    }
-
-    private void nameChanged() {
-        LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+        docChanged(event);
     }
 }

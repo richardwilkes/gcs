@@ -16,8 +16,10 @@ import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -83,7 +85,12 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         ptsPanel = createPointsFields();
         fields.add(ptsPanel);
 
-        mNotesField = createField(wrapper3, wrapper3, I18n.Text("Notes"), spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), 0);
+        mNotesField = new MultiLineTextField(spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), this);
+        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
+        label.setBorder(new EmptyBorder(2, 0, 0, 0));
+        label.setAlignmentY(0);
+        wrapper3.add(label);
+        wrapper3.add(mNotesField);
         mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), spell.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
         mReferenceField = createField(ptsPanel, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("spell")), 6);
         noGapWrapper.add(new JPanel());
