@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.preferences;
 
+import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.page.PageSettingsEditor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -32,7 +33,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The sheet preferences panel. */
-public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener {
+public class OutputPreferences extends PreferencePanel implements ActionListener, DocumentListener, PageSettingsEditor.ResetPageSettings {
     private static final int[]              DPI                       = {72, 96, 144, 150, 200, 300};
     public static final  String             BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
     public static final  String             GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
@@ -59,7 +60,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         addLabel(I18n.Text("Image Resolution"), pngDPIMsg());
         mPNGResolutionCombo = addPNGResolutionPopup();
 
-        mPageSettingsEditor = new PageSettingsEditor(prefs.getPageSettings(), this::adjustResetButton);
+        mPageSettingsEditor = new PageSettingsEditor(prefs.getPageSettings(), this::adjustResetButton, this);
         add(mPageSettingsEditor, new PrecisionLayoutData().setHorizontalSpan(3).setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
@@ -143,7 +144,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         Preferences prefs      = Preferences.getInstance();
         boolean     atDefaults = prefs.getPNGResolution() == Preferences.DEFAULT_PNG_RESOLUTION;
         atDefaults = atDefaults && mGurpsCalculatorKey.getText() != null && mGurpsCalculatorKey.getText().isEmpty();
-        atDefaults = atDefaults && mPageSettingsEditor.isSetToDefaults();
+        atDefaults = atDefaults && prefs.getPageSettings().equals(new PageSettings(null));
         return atDefaults;
     }
 
@@ -163,5 +164,10 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     @Override
     public void removeUpdate(DocumentEvent event) {
         changedUpdate(event);
+    }
+
+    @Override
+    public void resetPageSettings(PageSettings settings) {
+        settings.reset();
     }
 }

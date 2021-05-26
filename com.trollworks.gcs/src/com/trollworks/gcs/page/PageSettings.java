@@ -50,12 +50,7 @@ public class PageSettings {
 
     public PageSettings(ChangeNotifier notifier, PageSettings other) {
         mNotifier = notifier;
-        mPaperSize = other.mPaperSize;
-        mTopMargin = new LengthValue(other.mTopMargin);
-        mLeftMargin = new LengthValue(other.mLeftMargin);
-        mBottomMargin = new LengthValue(other.mBottomMargin);
-        mRightMargin = new LengthValue(other.mRightMargin);
-        mOrientation = other.mOrientation;
+        copy(other);
     }
 
     public void load(JsonMap m) {
@@ -84,6 +79,15 @@ public class PageSettings {
         w.keyValue(RIGHT_MARGIN, mRightMargin.toString());
         w.keyValue(ORIENTATION, Enums.toId(mOrientation));
         w.endMap();
+    }
+
+    public void copy(PageSettings other) {
+        mPaperSize = other.mPaperSize;
+        mTopMargin = new LengthValue(other.mTopMargin);
+        mLeftMargin = new LengthValue(other.mLeftMargin);
+        mBottomMargin = new LengthValue(other.mBottomMargin);
+        mRightMargin = new LengthValue(other.mRightMargin);
+        mOrientation = other.mOrientation;
     }
 
     public void reset() {

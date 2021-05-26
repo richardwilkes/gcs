@@ -32,6 +32,7 @@ public class PageSettingsEditor extends JPanel {
     private static final Fixed6                     HUNDRED = new Fixed6(100);
     private              PageSettings               mSettings;
     private              Runnable                   mAdjustCallback;
+    private              ResetPageSettings          mResetCallback;
     private              EditorField                mTopMargin;
     private              EditorField                mLeftMargin;
     private              EditorField                mBottomMargin;
@@ -40,11 +41,16 @@ public class PageSettingsEditor extends JPanel {
     private              JComboBox<PageOrientation> mOrientation;
     private              JComboBox<LengthUnits>     mUnits;
 
-    public PageSettingsEditor(PageSettings settings, Runnable adjustCallback) {
+    public interface ResetPageSettings {
+        void resetPageSettings(PageSettings settings);
+    }
+
+    public PageSettingsEditor(PageSettings settings, Runnable adjustCallback, ResetPageSettings resetCallback) {
         super(new PrecisionLayout().setColumns(6).setMargins(4, 0, 4, 0));
         setOpaque(false);
         mSettings = settings;
         mAdjustCallback = adjustCallback;
+        mResetCallback = resetCallback;
         mPaperSize = addCombo(I18n.Text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (evt) -> {
             mSettings.setPaperSize(((PaperSize) mPaperSize.getSelectedItem()));
             mAdjustCallback.run();
@@ -105,16 +111,12 @@ public class PageSettingsEditor extends JPanel {
     }
 
     public void reset() {
-        mSettings.reset();
+        mResetCallback.resetPageSettings(mSettings);
         mPaperSize.setSelectedItem(mSettings.getPaperSize());
         mOrientation.setSelectedItem(mSettings.getPageOrientation());
         mTopMargin.setValue(mSettings.getTopMargin());
         mLeftMargin.setValue(mSettings.getLeftMargin());
         mBottomMargin.setValue(mSettings.getBottomMargin());
         mRightMargin.setValue(mSettings.getRightMargin());
-    }
-
-    public boolean isSetToDefaults() {
-        return mSettings.equals(new PageSettings(null));
     }
 }
