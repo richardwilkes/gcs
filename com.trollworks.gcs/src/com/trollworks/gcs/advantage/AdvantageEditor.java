@@ -133,7 +133,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             mLevelTypeCombo.addActionListener(this);
             wrapper.add(mLevelTypeCombo);
 
-            mLevelField = createField(0, 999, mLastLevel, I18n.Text("The level of this advantage"));
+            mLevelField = createField(0, 9999, mLastLevel, I18n.Text("The level of this advantage"));
             wrapper.add(new LinkedLabel(I18n.Text("Level"), mLevelField));
             wrapper.add(mLevelField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
