@@ -49,12 +49,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.Document;
 
 /** The detailed editor for {@link Advantage}s. */
 public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, PropertyChangeListener {
@@ -67,6 +67,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private EditorField                           mLevelPointsField;
     private EditorField                           mPointsField;
     private MultiLineTextField                    mNotesField;
+    private MultiLineTextField                    mUserDescField;
     private EditorField                           mCategoriesField;
     private EditorField                           mReferenceField;
     private JTabbedPane                           mTabPanel;
@@ -258,7 +259,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
         if (mRow.getDataFile() instanceof GURPSCharacter) {
             mUserDesc = mRow.getUserDesc();
-            addTab(I18n.Text("User Description"), createUserDescEditor());
+            mUserDescField = new MultiLineTextField(mUserDesc, null, this);
+            addTab(I18n.Text("User Description"), new JScrollPane(mUserDescField));
         }
 
         if (!mIsEditable) {
@@ -273,30 +275,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private void addTab(String title, Component panel) {
         mTabPanel.addTab(title, panel);
         mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
-    }
-
-    private JScrollPane createUserDescEditor() {
-        JTextArea editor = new JTextArea(mUserDesc);
-        editor.setLineWrap(true);
-        editor.setWrapStyleWord(true);
-        editor.setEnabled(mIsEditable);
-        editor.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void removeUpdate(DocumentEvent event) {
-                mUserDesc = editor.getText();
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent event) {
-                mUserDesc = editor.getText();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent event) {
-                mUserDesc = editor.getText();
-            }
-        });
-        return new JScrollPane(editor);
     }
 
     private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
@@ -511,8 +489,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void docChanged(DocumentEvent event) {
-        if (mNameField.getDocument() == event.getDocument()) {
+        Document doc = event.getDocument();
+        if (mNameField.getDocument() == doc) {
             LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+        } else if (mUserDescField.getDocument() == doc) {
+            mUserDesc = mUserDescField.getText();
         }
     }
 
