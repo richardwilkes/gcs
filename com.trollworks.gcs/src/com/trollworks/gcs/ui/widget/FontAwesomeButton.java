@@ -23,6 +23,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -86,6 +87,9 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
             size.width += scale.scale(mMargin) * 2;
             size.height *= scale.scale(mMargin) * 2;
         }
+        Insets insets = getInsets();
+        size.width += insets.left + insets.right;
+        size.height += insets.top + insets.bottom;
         return size;
     }
 
@@ -110,8 +114,11 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
     @Override
     protected void paintComponent(Graphics gc) {
         Rectangle bounds = getBounds();
-        bounds.x = 0;
-        bounds.y = 0;
+        Insets insets = getInsets();
+        bounds.x = insets.left;
+        bounds.y = insets.top;
+        bounds.width -= insets.left + insets.right;
+        bounds.height -= insets.top + insets.bottom;
         Color color;
         if (isEnabled()) {
             if (mInMouseDown && mPressed) {

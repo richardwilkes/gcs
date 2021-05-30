@@ -27,15 +27,7 @@ public class AdvantageModifierListEditor extends ModifierListEditor {
         return new AdvantageModifierListEditor(advantage.getDataFile(), advantage.getParent() != null ? ((Advantage) advantage.getParent()).getAllModifiers() : null, advantage.getModifiers());
     }
 
-    /**
-     * Creates a new {@link AdvantageModifierListEditor} editor.
-     *
-     * @param owner             The owning row.
-     * @param readOnlyModifiers The list of {@link AdvantageModifier}s from parents, which are not
-     *                          to be modified.
-     * @param modifiers         The list of {@link AdvantageModifier}s to modify.
-     */
-    public AdvantageModifierListEditor(DataFile owner, List<AdvantageModifier> readOnlyModifiers, List<AdvantageModifier> modifiers) {
+    private AdvantageModifierListEditor(DataFile owner, List<AdvantageModifier> readOnlyModifiers, List<AdvantageModifier> modifiers) {
         super(owner, readOnlyModifiers, modifiers);
     }
 

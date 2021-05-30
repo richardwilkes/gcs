@@ -18,11 +18,11 @@ import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
-import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -31,18 +31,13 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends BaseSpellEditor<Spell> {
@@ -55,109 +50,62 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
      */
     public SpellEditor(Spell spell) {
         super(spell);
+    }
 
-        boolean   notContainer = !spell.canHaveChildren();
-        Container content      = new JPanel(new ColumnLayout(2));
-        Container fields       = new JPanel(new ColumnLayout());
-        Container wrapper1     = new JPanel(new ColumnLayout(notContainer ? 3 : 2));
-        Container wrapper2     = new JPanel(new ColumnLayout(4));
-        Container wrapper3     = new JPanel(new ColumnLayout(2));
-        Container noGapWrapper = new JPanel(new ColumnLayout(2, 0, 0));
-        Container ptsPanel     = null;
-        JLabel    icon         = new JLabel(spell.getIcon(true));
-        Dimension size         = new Dimension();
-        Container refParent    = wrapper3;
-
-        mNameField = createCorrectableField(wrapper1, wrapper1, I18n.Text("Name"), spell.getName(), I18n.Text("The name of the spell, without any notes"));
-        fields.add(wrapper1);
-        if (notContainer) {
-            createTechLevelFields(wrapper1);
-            mCollegeField = createField(wrapper2, wrapper2, I18n.Text("College"), String.join(", ", spell.getColleges()), I18n.Text("The college(s) the spell belongs to; separate multiple colleges with a comma"), 0);
-            mPowerSourceField = createField(wrapper2, wrapper2, I18n.Text("Power Source"), spell.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
-            mClassField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Class"), spell.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
-            mCastingCostField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Cost"), spell.getCastingCost(), I18n.Text("The casting cost of the spell"));
-            mMaintenanceField = createField(wrapper2, wrapper2, I18n.Text("Maintenance Cost"), spell.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
-            mCastingTimeField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Casting Time"), spell.getCastingTime(), I18n.Text("The casting time of the spell"));
-            mResistField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Resist"), spell.getResist(), I18n.Text("The resistance roll, if any"));
-            mDurationField = createCorrectableField(wrapper2, wrapper2, I18n.Text("Duration"), spell.getDuration(), I18n.Text("The duration of the spell once its cast"));
-            fields.add(wrapper2);
-
-            ptsPanel = createPointsFields();
-            fields.add(ptsPanel);
-            refParent = ptsPanel;
-        }
-
-        mNotesField = new MultiLineTextField(spell.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), this);
-        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
-        label.setBorder(new EmptyBorder(2, 0, 0, 0));
-        label.setAlignmentY(0);
-        wrapper3.add(label);
-        wrapper3.add(mNotesField);
-        mCategoriesField = createField(wrapper3, wrapper3, I18n.Text("Categories"), spell.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
-        mReferenceField = createField(refParent, noGapWrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("spell")), 6);
-        noGapWrapper.add(new JPanel());
-        refParent.add(noGapWrapper);
-        fields.add(wrapper3);
-
-        determineLargest(wrapper1, 3, size);
-        determineLargest(wrapper2, 4, size);
-        if (ptsPanel != null) {
-            determineLargest(ptsPanel, 100, size);
-        }
-        determineLargest(wrapper3, 2, size);
-        applySize(wrapper1, 3, size);
-        applySize(wrapper2, 4, size);
-        if (ptsPanel != null) {
-            applySize(ptsPanel, 100, size);
-        }
-        applySize(wrapper3, 2, size);
-
-        icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1.0f);
-        content.add(icon);
-        content.add(fields);
-        add(content);
-
-        if (notContainer) {
-            mTabPanel = new JTabbedPane();
+    @Override
+    protected void addContentSelf(ScrollContent outer) {
+        outer.add(createTop(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        if (!mRow.canHaveChildren()) {
             mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
-            mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-            Component panel = embedEditor(mPrereqs);
-            addTab(panel.getName(), panel);
-            addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
-            addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
-            if (!mIsEditable) {
-                UIUtilities.disableControls(mMeleeWeapons);
-                UIUtilities.disableControls(mRangedWeapons);
-            }
-            UIUtilities.selectTab(mTabPanel, getLastTabName());
-            add(mTabPanel);
+            addSection(outer, mPrereqs);
+            List<WeaponStats> weapons = mRow.getWeapons();
+            mMeleeWeapons = new MeleeWeaponEditor(mRow, weapons);
+            addSection(outer, mMeleeWeapons);
+            mRangedWeapons = new RangedWeaponEditor(mRow, weapons);
+            addSection(outer, mRangedWeapons);
         }
     }
 
-    private void addTab(String title, Component panel) {
-        mTabPanel.addTab(title, panel);
-        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
+    private JPanel createTop() {
+        boolean notContainer = !mRow.canHaveChildren();
+        JPanel  panel        = new JPanel(new PrecisionLayout().setMargins(0).setColumns(4));
+        JPanel  wrapper      = new JPanel(new PrecisionLayout().setMargins(0).setColumns(notContainer ? 2 : 1));
+        mNameField = createCorrectableField(panel, wrapper, I18n.Text("Name"), mRow.getName(), I18n.Text("The name of the spell, without any notes"));
+        if (notContainer) {
+            createTechLevelFields(wrapper);
+        }
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        if (notContainer) {
+            mCollegeField = createField(panel, panel, I18n.Text("College"), String.join(", ", mRow.getColleges()), I18n.Text("The college(s) the spell belongs to; separate multiple colleges with a comma"), 0);
+            mPowerSourceField = createField(panel, panel, I18n.Text("Power Source"), mRow.getPowerSource(), I18n.Text("The source of power for the spell"), 0);
+            mClassField = createCorrectableField(panel, panel, I18n.Text("Class"), mRow.getSpellClass(), I18n.Text("The class of spell (Area, Missile, etc.)"));
+            mResistField = createCorrectableField(panel, panel, I18n.Text("Resistance"), mRow.getResist(), I18n.Text("The resistance roll, if any"));
+            mCastingCostField = createCorrectableField(panel, panel, I18n.Text("Casting Cost"), mRow.getCastingCost(), I18n.Text("The casting cost of the spell"));
+            mCastingTimeField = createCorrectableField(panel, panel, I18n.Text("Casting Time"), mRow.getCastingTime(), I18n.Text("The casting time of the spell"));
+            mMaintenanceField = createField(panel, panel, I18n.Text("Maintenance Cost"), mRow.getMaintenance(), I18n.Text("The cost to maintain a spell after its initial duration"), 0);
+            mDurationField = createCorrectableField(panel, panel, I18n.Text("Duration"), mRow.getDuration(), I18n.Text("The duration of the spell once its cast"));
+            createPointsFields(panel);
+        }
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this spell"), this);
+        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        wrapper = new JPanel(new PrecisionLayout().setMargins(0));
+        mCategoriesField = createField(panel, wrapper, I18n.Text("Categories"), mRow.getCategoriesAsString(), I18n.Text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        wrapper = new JPanel(new PrecisionLayout().setMargins(0));
+        mReferenceField = createField(panel, wrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("spell")), 0);
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        return panel;
     }
 
-    protected Container createPointsFields() {
-        boolean forCharacter = mRow.getCharacter() != null;
-        boolean forTemplate  = mRow.getTemplate() != null;
-        int     columns      = forTemplate ? 8 : 6;
-        JPanel  panel        = new JPanel(new ColumnLayout(forCharacter ? 10 : columns));
-
-        JLabel label = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of the spell")));
-        panel.add(label);
-
+    private void createPointsFields(Container parent) {
         List<AttributeChoice> list = new ArrayList<>();
         for (AttributeDef def : AttributeDef.getOrdered(mRow.getDataFile().getAttributeDefs())) {
             list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
         }
         list.add(new AttributeChoice("10", "%s", "10"));
-        String currentAttr = mRow.getAttribute();
-        AttributeChoice current = null;
+        String          currentAttr = mRow.getAttribute();
+        AttributeChoice current     = null;
         for (AttributeChoice attributeChoice : list) {
             if (attributeChoice.getAttribute().equals(currentAttr)) {
                 current = attributeChoice;
@@ -169,10 +117,19 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             current = list.get(list.size() - 1);
         }
 
+        boolean forCharacter = mRow.getCharacter() != null;
+        boolean forTemplate  = mRow.getTemplate() != null;
+        int     columns      = 3;
+        if (forCharacter || forTemplate) {
+            columns += 2;
+        }
+        if (forCharacter) {
+            columns += 2;
+        }
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(panel, list.toArray(new AttributeChoice[0]), current, I18n.Text("The attribute this spell is based on"));
-        panel.add(new JLabel(" /"));
+        panel.add(new JLabel("/"));
         mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.Text("The difficulty of the spell"));
-
         if (forCharacter || forTemplate) {
             mPointsField = createNumberField(panel, panel, I18n.Text("Points"), I18n.Text("The number of points spent on this spell"), mRow.getRawPoints(), 4);
             if (forCharacter) {
@@ -180,7 +137,9 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
                 mLevelField.setEnabled(false);
             }
         }
-        return panel;
+
+        addLabel(parent, I18n.Text("Difficulty"), null);
+        parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
     }
 
     protected String getAttribute() {

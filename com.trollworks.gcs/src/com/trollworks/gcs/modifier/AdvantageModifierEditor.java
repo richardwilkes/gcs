@@ -13,32 +13,28 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -64,65 +60,37 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
      */
     public AdvantageModifierEditor(AdvantageModifier modifier) {
         super(modifier);
+        addContent();
+    }
 
-        JPanel     wrapper;
-        JPanel     content = new JPanel(new ColumnLayout(2));
-        JPanel     fields  = new JPanel(new ColumnLayout(2));
-        JLabel     iconLabel;
-        RetinaIcon icon    = modifier.getIcon(true);
-        iconLabel = icon != null ? new JLabel(icon) : new JLabel();
-
-        if (modifier.canHaveChildren()) {
-            mNameField = createCorrectableField(fields, fields, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of container"));
-            wrapper = fields;
+    @Override
+    protected void addContentSelf(ScrollContent outer) {
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        if (mRow.canHaveChildren()) {
+            mNameField = createCorrectableField(panel, panel, I18n.Text("Name"), mRow.getName(), I18n.Text("Name of container"));
         } else {
-            wrapper = new JPanel(new ColumnLayout(2));
-            mNameField = createCorrectableField(fields, wrapper, I18n.Text("Name"), modifier.getName(), I18n.Text("Name of Modifier"));
-            mEnabledField = new JCheckBox(I18n.Text("Enabled"), modifier.isEnabled());
+            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            mNameField = createCorrectableField(panel, wrapper, I18n.Text("Name"), mRow.getName(), I18n.Text("Name of Modifier"));
+            mEnabledField = new JCheckBox(I18n.Text("Enabled"), mRow.isEnabled());
             mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
             mEnabledField.setEnabled(mIsEditable);
             wrapper.add(mEnabledField);
-            fields.add(wrapper);
+            panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-            createCostModifierFields(fields);
-
-            wrapper = new JPanel(new ColumnLayout(3));
+            createCostModifierFields(panel);
         }
 
-        mNotesField = new MultiLineTextField(modifier.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), this);
-        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
-        label.setBorder(new EmptyBorder(2, 0, 0, 0));
-        label.setAlignmentY(0);
-        fields.add(label);
-        if (fields != wrapper) {
-            fields.add(wrapper);
-        }
-        wrapper.add(mNotesField);
-        mReferenceField = createField(wrapper, wrapper, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("advantage modifier")), 6);
-        mReferenceField.setAlignmentY(0);
-        label = ((LinkedLabel) wrapper.getComponent(wrapper.getComponentCount() - 2));
-        label.setBorder(new EmptyBorder(2, 0, 0, 0));
-        label.setAlignmentY(0);
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), this);
+        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        iconLabel.setVerticalAlignment(SwingConstants.TOP);
-        iconLabel.setAlignmentY(-1.0f);
-        content.add(iconLabel);
-        content.add(fields);
-        add(content);
+        mReferenceField = createField(panel, panel, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("advantage modifier")), 6);
+        outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        if (!modifier.canHaveChildren()) {
-            mTabPanel = new JTabbedPane();
+        if (!mRow.canHaveChildren()) {
             mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-            Component panel = embedEditor(mFeatures);
-            addTab(panel.getName(), panel);
-            UIUtilities.selectTab(mTabPanel, getLastTabName());
-            add(mTabPanel);
+            addSection(outer, mFeatures);
         }
-    }
-
-    private void addTab(String title, Component panel) {
-        mTabPanel.addTab(title, panel);
-        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
     }
 
     @Override
@@ -152,22 +120,12 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         return mCostType.getSelectedIndex() == 0;
     }
 
-    @Override
-    public void finished() {
-        if (mTabPanel != null) {
-            updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
-        }
-    }
-
     private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
         JTextField field = new JTextField(text);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
-        LinkedLabel label = new LinkedLabel(title);
-        label.setLink(field);
-        labelParent.add(label);
-        fieldParent.add(field);
+        addLabel(labelParent, title, field);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
@@ -190,20 +148,13 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
-        return field;
-    }
-
-    private JScrollPane embedEditor(Container editor) {
-        JScrollPane scrollPanel = new JScrollPane(editor);
-        scrollPanel.setMinimumSize(new Dimension(500, 120));
-        scrollPanel.setName(editor.toString());
-        if (!mIsEditable) {
-            UIUtilities.disableControls(editor);
+        addLabel(labelParent, title, field);
+        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
+        if (maxChars == 0) {
+            ld.setGrabHorizontalSpace(true);
         }
-        return scrollPanel;
+        fieldParent.add(field, ld);
+        return field;
     }
 
     private JTextField createNumberField(Container labelParent, Container fieldParent, String title, boolean allowSign, int value, String tooltip, int maxDigits) {
@@ -214,8 +165,8 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         field.setEnabled(mIsEditable);
         NumberFilter.apply(field, false, allowSign, true, maxDigits);
         field.addActionListener(this);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
+        addLabel(labelParent, title, field);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
@@ -227,13 +178,13 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         field.setEnabled(mIsEditable);
         NumberFilter.apply(field, true, false, true, maxDigits);
         field.addActionListener(this);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
+        addLabel(labelParent, title, field);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
     private void createCostModifierFields(Container parent) {
-        JPanel wrapper = new JPanel(new ColumnLayout(7));
+        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(7));
         mLastLevel = mRow.getLevels();
         if (mLastLevel < 1) {
             mLastLevel = 1;
@@ -250,7 +201,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
             mLevelField.setText("");
             mLevelField.setEnabled(false);
         }
-        parent.add(wrapper);
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection) {
@@ -259,7 +210,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
         UIUtilities.setToPreferredSizeOnly(combo);
-        parent.add(combo);
+        parent.add(combo, new PrecisionLayoutData().setFillHorizontalAlignment());
         return combo;
     }
 

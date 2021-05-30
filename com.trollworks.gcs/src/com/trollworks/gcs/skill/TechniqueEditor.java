@@ -17,11 +17,13 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -32,9 +34,7 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -43,19 +43,16 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 /** The detailed editor for {@link Technique}s. */
 public class TechniqueEditor extends RowEditor<Technique> implements ActionListener, DocumentListener {
-    private JTextField         mNameField;
-    private MultiLineTextField mNotesField;
-    private JTextField         mCategoriesField;
+    private JTextField                 mNameField;
+    private MultiLineTextField         mNotesField;
+    private JTextField                 mCategoriesField;
     private JTextField                 mReferenceField;
     private JComboBox<Object>          mDifficultyCombo;
     private JTextField                 mPointsField;
@@ -68,7 +65,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private JTextField                 mDefaultModifierField;
     private JCheckBox                  mLimitCheckbox;
     private JTextField                 mLimitField;
-    private JTabbedPane                mTabPanel;
     private PrereqsPanel               mPrereqs;
     private FeaturesPanel              mFeatures;
     private String                     mLastDefaultType;
@@ -82,56 +78,41 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
      */
     public TechniqueEditor(Technique technique) {
         super(technique);
-
-        JPanel    content = new JPanel(new ColumnLayout(2));
-        JPanel    fields  = new JPanel(new ColumnLayout(2));
-        JLabel    icon    = new JLabel(technique.getIcon(true));
-        Container wrapper;
-
-        mNameField = createCorrectableField(fields, fields, I18n.Text("Name"), technique.getName(), I18n.Text("The base name of the technique, without any notes or specialty information"));
-        mNotesField = new MultiLineTextField(technique.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this technique"), this);
-        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
-        label.setBorder(new EmptyBorder(2, 0, 0, 0));
-        label.setAlignmentY(0);
-        fields.add(label);
-        fields.add(mNotesField);
-        mCategoriesField = createField(fields, fields, I18n.Text("Categories"), technique.getCategoriesAsString(), I18n.Text("The category or categories the technique belongs to (separate multiple categories with a comma)"), 0);
-        createDefaults(fields);
-        createLimits(fields);
-        wrapper = createDifficultyPopups(fields);
-        mReferenceField = createField(wrapper, wrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("technique")), 6);
-        icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1.0f);
-        content.add(icon);
-        content.add(fields);
-        add(content);
-
-        mTabPanel = new JTabbedPane();
-        mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-        mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-        mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
-        mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-        Component panel = embedEditor(mPrereqs);
-        addTab(panel.getName(), panel);
-        panel = embedEditor(mFeatures);
-        addTab(panel.getName(), panel);
-        addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
-        addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
-        UIUtilities.selectTab(mTabPanel, getLastTabName());
-        add(mTabPanel);
+        addContent();
     }
 
-    private void addTab(String title, Component panel) {
-        mTabPanel.addTab(title, panel);
-        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
+    @Override
+    protected void addContentSelf(ScrollContent outer) {
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+
+        mNameField = createCorrectableField(panel, panel, I18n.Text("Name"), mRow.getName(), I18n.Text("The base name of the technique, without any notes or specialty information"));
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this technique"), this);
+        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mCategoriesField = createField(panel, panel, I18n.Text("Categories"), mRow.getCategoriesAsString(), I18n.Text("The category or categories the technique belongs to (separate multiple categories with a comma)"), 0);
+        createDefaults(panel);
+        createLimits(panel);
+        createDifficultyPopups(panel);
+        mReferenceField = createField(panel, panel, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("technique")), 6);
+        outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+        mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
+        addSection(outer, mPrereqs);
+        mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+        addSection(outer, mFeatures);
+        List<WeaponStats> weapons = mRow.getWeapons();
+        mMeleeWeapons = new MeleeWeaponEditor(mRow, weapons);
+        addSection(outer, mMeleeWeapons);
+        mRangedWeapons = new RangedWeaponEditor(mRow, weapons);
+        addSection(outer, mRangedWeapons);
     }
 
     private void createDefaults(Container parent) {
-        mDefaultPanel = new JPanel(new ColumnLayout(4));
+        mDefaultPanel = new JPanel(new PrecisionLayout().setMargins(0));
         mDefaultPanelLabel = new LinkedLabel(I18n.Text("Defaults To"));
         mDefaultTypeCombo = SkillDefaultType.createCombo(mDefaultPanel, mRow.getDataFile(), mRow.getDefault().getType(), "", this, mIsEditable);
-        parent.add(mDefaultPanelLabel);
-        parent.add(mDefaultPanel);
+        parent.add(mDefaultPanelLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(mDefaultPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         rebuildDefaultPanel();
     }
 
@@ -140,7 +121,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setToPreferredSizeOnly(combo);
         parent.add(combo);
         return combo;
     }
@@ -182,73 +162,54 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
             mDefaultPanelLabel.setLink(mDefaultNameField);
         }
         mDefaultModifierField = createNumberField(mDefaultPanel, I18n.Text("The amount to adjust the default skill level by"), def.getModifier());
-        if (!skillBased) {
-            mDefaultPanel.add(new JPanel());
-            mDefaultPanel.add(new JPanel());
-        }
+        ((PrecisionLayout) mDefaultPanel.getLayout()).setColumns(mDefaultPanel.getComponentCount());
         mDefaultPanel.revalidate();
     }
 
     private void createLimits(Container parent) {
-        JPanel wrapper = new JPanel(new ColumnLayout(3));
+        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
         mLimitCheckbox = new JCheckBox(I18n.Text("Cannot exceed default skill level by more than"), mRow.isLimited());
         mLimitCheckbox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether to limit the maximum level that can be achieved or not")));
         mLimitCheckbox.addActionListener(this);
-        mLimitCheckbox.setEnabled(mIsEditable);
 
         mLimitField = createNumberField(wrapper, I18n.Text("The maximum amount above the default skill level that this technique can be raised"), mRow.getLimitModifier());
-        mLimitField.setEnabled(mIsEditable && mLimitCheckbox.isSelected());
+        mLimitField.setEnabled(mLimitCheckbox.isSelected());
         mLimitField.addActionListener(this);
 
         wrapper.add(mLimitCheckbox);
         wrapper.add(mLimitField);
-        wrapper.add(new JPanel());
         parent.add(new JLabel());
-        parent.add(wrapper);
-    }
-
-    private JScrollPane embedEditor(Container editor) {
-        JScrollPane scrollPanel = new JScrollPane(editor);
-
-        scrollPanel.setMinimumSize(new Dimension(500, 120));
-        scrollPanel.setName(editor.toString());
-        if (!mIsEditable) {
-            UIUtilities.disableControls(editor);
-        }
-        return scrollPanel;
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
         JTextField field = new JTextField(text);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
-
         if (labelParent != null) {
-            LinkedLabel label = new LinkedLabel(title);
-            label.setLink(field);
-            labelParent.add(label);
+            addLabel(labelParent, title, field);
         }
-
-        fieldParent.add(field);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
     private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-
         if (maxChars > 0) {
             UIUtilities.setToPreferredSizeOnly(field);
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
         field.addActionListener(this);
         if (labelParent != null) {
-            labelParent.add(new LinkedLabel(title, field));
+            addLabel(labelParent, title, field);
         }
-        fieldParent.add(field);
+        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
+        if (maxChars == 0) {
+            ld.setGrabHorizontalSpace(true);
+        }
+        fieldParent.add(field, ld);
         return field;
     }
 
@@ -273,27 +234,16 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         }
     }
 
-    private Container createDifficultyPopups(Container parent) {
-        GURPSCharacter character              = mRow.getCharacter();
-        int            columns                = character != null ? 8 : 6;
-        boolean        forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
-        JLabel         label                  = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
-        JPanel         wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? columns : 4));
-
-        label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of learning this technique")));
-
+    private void createDifficultyPopups(Container parent) {
+        GURPSCharacter character = mRow.getCharacter();
+        JPanel         wrapper   = new JPanel(new PrecisionLayout().setMargins(0).setColumns(1 + (character != null ? 4 : 2)));
         mDifficultyCombo = createComboBox(wrapper, new Object[]{SkillDifficulty.A, SkillDifficulty.H}, mRow.getDifficulty());
         mDifficultyCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The relative difficulty of learning this technique")));
-        mDifficultyCombo.setEnabled(mIsEditable);
-
-        if (forCharacterOrTemplate) {
+        if (character != null || mRow.getTemplate() != null) {
             createPointsFields(wrapper, character != null);
         }
-        wrapper.add(new JPanel());
-
-        parent.add(label);
-        parent.add(wrapper);
-        return wrapper;
+        addLabel(parent, I18n.Text("Difficulty"), null);
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     private void recalculateLevel() {
@@ -361,13 +311,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         list.addAll(mRangedWeapons.getWeapons());
         modified |= mRow.setWeapons(list);
         return modified;
-    }
-
-    @Override
-    public void finished() {
-        if (mTabPanel != null) {
-            updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
-        }
     }
 
     @Override

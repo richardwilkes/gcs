@@ -28,13 +28,7 @@ public class EquipmentModifierListEditor extends ModifierListEditor {
         return new EquipmentModifierListEditor(equipment.getDataFile(), equipment.getModifiers());
     }
 
-    /**
-     * Creates a new {@link EquipmentModifierListEditor} editor.
-     *
-     * @param owner     The owning row.
-     * @param modifiers The list of {@link EquipmentModifier}s to modify.
-     */
-    public EquipmentModifierListEditor(DataFile owner, List<EquipmentModifier> modifiers) {
+    private EquipmentModifierListEditor(DataFile owner, List<EquipmentModifier> modifiers) {
         super(owner, new ArrayList<EquipmentModifier>(), modifiers);
     }
 

@@ -14,6 +14,7 @@ package com.trollworks.gcs.modifier;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.EditorHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultiCell;
@@ -237,9 +238,7 @@ public enum EquipmentModifierColumnID {
         for (EquipmentModifierColumnID one : values()) {
             if (one.shouldDisplay(forEditor)) {
                 Column column = new Column(one.ordinal(), one.toString(), one.getToolTip(), one.getCell(forEditor));
-                if (!forEditor) {
-                    column.setHeaderCell(new ListHeaderCell(false));
-                }
+                column.setHeaderCell(forEditor ? new EditorHeaderCell() : new ListHeaderCell(false));
                 model.addColumn(column);
             }
         }

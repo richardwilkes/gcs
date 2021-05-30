@@ -35,25 +35,6 @@ public class RangedWeaponEditor extends WeaponEditor {
     private EditorField mRecoil;
 
     /**
-     * Creates a new ranged weapon editor for the specified row.
-     *
-     * @param row The row to edit ranged weapon statistics for.
-     * @return The editor, or {@code null} if the row is not appropriate.
-     */
-    public static RangedWeaponEditor createEditor(ListRow row) {
-        if (row instanceof Equipment) {
-            return new RangedWeaponEditor(row, ((Equipment) row).getWeapons());
-        } else if (row instanceof Advantage) {
-            return new RangedWeaponEditor(row, ((Advantage) row).getWeapons());
-        } else if (row instanceof Spell) {
-            return new RangedWeaponEditor(row, ((Spell) row).getWeapons());
-        } else if (row instanceof Skill) {
-            return new RangedWeaponEditor(row, ((Skill) row).getWeapons());
-        }
-        return null;
-    }
-
-    /**
      * Creates a new {@link RangedWeaponStats} editor.
      *
      * @param owner   The owning row.

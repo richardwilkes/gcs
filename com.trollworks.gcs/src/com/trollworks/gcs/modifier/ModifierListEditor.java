@@ -13,10 +13,16 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.border.LineBorder;
+import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
+import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredIterator;
@@ -25,14 +31,12 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
+import javax.swing.border.CompoundBorder;
 
 public abstract class ModifierListEditor extends ActionPanel implements ActionListener {
     private DataFile        mOwner;
@@ -43,8 +47,37 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     protected ModifierListEditor(DataFile owner, List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
         super(new BorderLayout());
         mOwner = owner;
-        add(createOutline(readOnlyModifiers, modifiers), BorderLayout.CENTER);
-        setName(toString());
+
+        mOutline = new ModifierOutline();
+        OutlineModel model = mOutline.getModel();
+        addColumns(mOutline);
+
+        if (readOnlyModifiers != null) {
+            for (Modifier modifier : readOnlyModifiers) {
+                if (modifier.isEnabled()) {
+                    Modifier romod = modifier.cloneModifier(false);
+                    romod.setReadOnly(true);
+                    model.addRow(romod);
+                }
+            }
+        }
+        for (Modifier modifier : modifiers) {
+            model.addRow(modifier.cloneModifier(false));
+        }
+        mOutline.addActionListener(this);
+
+        OutlineHeader header = mOutline.getHeaderPanel();
+        header.setIgnoreResizeOK(true);
+        header.setBackground(ThemeColor.HEADER);
+        header.setForeground(ThemeColor.ON_HEADER);
+        add(header, BorderLayout.NORTH);
+        add(mOutline, BorderLayout.CENTER);
+
+        mAddButton = new FontAwesomeButton("\uf055", I18n.Text("Add a modifier"), this::addModifier);
+        mAddButton.setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 1, 0, 0, 0), new EmptyBorder(1)));
+        add(mAddButton, BorderLayout.SOUTH);
+
+        setBorder(new TitledBorder(Fonts.getDefaultSystemFont(), toString()));
     }
 
     /** @return Whether a {@link Modifier} was modified. */
@@ -67,33 +100,6 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     }
 
     protected abstract void addColumns(Outline outline);
-
-    private Component createOutline(List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
-        mAddButton = new FontAwesomeButton("\uf055", 12, I18n.Text("Add a modifier"), this::addModifier);
-
-        mOutline = new ModifierOutline();
-        OutlineModel model = mOutline.getModel();
-        addColumns(mOutline);
-
-        if (readOnlyModifiers != null) {
-            for (Modifier modifier : readOnlyModifiers) {
-                if (modifier.isEnabled()) {
-                    Modifier romod = modifier.cloneModifier(false);
-                    romod.setReadOnly(true);
-                    model.addRow(romod);
-                }
-            }
-        }
-        for (Modifier modifier : modifiers) {
-            model.addRow(modifier.cloneModifier(false));
-        }
-        mOutline.addActionListener(this);
-
-        JScrollPane scroller = new JScrollPane(mOutline, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scroller.setColumnHeaderView(mOutline.getHeaderPanel());
-        scroller.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, mAddButton);
-        return scroller;
-    }
 
     private void openDetailEditor() {
         List<ListRow> rows = new ArrayList<>();

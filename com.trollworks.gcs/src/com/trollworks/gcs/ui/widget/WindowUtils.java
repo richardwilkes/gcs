@@ -121,7 +121,8 @@ public final class WindowUtils {
         pane.setInitialValue(initialValue);
         pane.setComponentOrientation((parentComponent == null ? JOptionPane.getRootFrame() : parentComponent).getComponentOrientation());
 
-        JDialog dialog = pane.createDialog(getWindowForComponent(parentComponent), title);
+        Window  owningWindow = getWindowForComponent(parentComponent);
+        JDialog dialog       = pane.createDialog(owningWindow, title);
         WindowSizeEnforcer.monitor(dialog);
         pane.selectInitialValue();
         dialog.setResizable(resizable);
@@ -139,6 +140,7 @@ public final class WindowUtils {
         if (focusOwner == null) {
             focusOwner = parentComponent;
         }
+        packAndCenterWindowOn(dialog, owningWindow);
         dialog.setVisible(true);
         dialog.dispose();
         if (focusOwner != null) {

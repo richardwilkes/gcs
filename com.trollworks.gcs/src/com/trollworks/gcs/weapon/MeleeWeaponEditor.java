@@ -32,25 +32,6 @@ public class MeleeWeaponEditor extends WeaponEditor {
     private EditorField mBlock;
 
     /**
-     * Creates a new melee weapon editor for the specified row.
-     *
-     * @param row The row to edit melee weapon statistics for.
-     * @return The editor, or {@code null} if the row is not appropriate.
-     */
-    public static MeleeWeaponEditor createEditor(ListRow row) {
-        if (row instanceof Equipment) {
-            return new MeleeWeaponEditor(row, ((Equipment) row).getWeapons());
-        } else if (row instanceof Advantage) {
-            return new MeleeWeaponEditor(row, ((Advantage) row).getWeapons());
-        } else if (row instanceof Spell) {
-            return new MeleeWeaponEditor(row, ((Spell) row).getWeapons());
-        } else if (row instanceof Skill) {
-            return new MeleeWeaponEditor(row, ((Skill) row).getWeapons());
-        }
-        return null;
-    }
-
-    /**
      * Creates a new {@link MeleeWeaponStats} editor.
      *
      * @param owner   The owning row.

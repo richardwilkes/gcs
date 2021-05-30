@@ -15,11 +15,11 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
@@ -28,7 +28,6 @@ import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -42,8 +41,6 @@ import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -66,7 +63,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected JTextField                 mPointsField;
     protected JTextField                 mLevelField;
     protected JTextField                 mReferenceField;
-    protected JTabbedPane                mTabPanel;
     protected PrereqsPanel               mPrereqs;
     protected JCheckBox                  mHasTechLevel;
     protected JTextField                 mTechLevel;
@@ -81,6 +77,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected BaseSpellEditor(T row) {
         super(row);
+        addContent();
     }
 
     protected static void determineLargest(Container panel, int every, Dimension size) {
@@ -128,16 +125,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         return (SkillDifficulty) mDifficultyCombo.getSelectedItem();
     }
 
-    protected JScrollPane embedEditor(Component editor) {
-        JScrollPane scrollPanel = new JScrollPane(editor);
-        scrollPanel.setMinimumSize(new Dimension(500, 120));
-        scrollPanel.setName(editor.toString());
-        if (!mIsEditable) {
-            UIUtilities.disableControls(editor);
-        }
-        return scrollPanel;
-    }
-
     /**
      * Utility function to create a text field (with a label) and set a few properties.
      *
@@ -155,11 +142,14 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
         field.addActionListener(this);
         field.addFocusListener(this);
+        addLabel(labelParent, title, field);
+        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
+        if (maxChars == 0) {
+            ld.setGrabHorizontalSpace(true);
+        }
+        fieldParent.add(field, ld);
         return field;
     }
 
@@ -192,16 +182,11 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
         JTextField field = new JTextField(text);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
         field.addActionListener(this);
         field.addFocusListener(this);
-
-        LinkedLabel label = new LinkedLabel(title);
-        label.setLink(field);
-
-        labelParent.add(label);
-        fieldParent.add(field);
+        addLabel(labelParent, title, field);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
@@ -219,8 +204,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setToPreferredSizeOnly(combo);
-        combo.setEnabled(mIsEditable);
         parent.add(combo);
         return combo;
     }
@@ -231,25 +214,20 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      * @param parent Container for the widgets.
      */
     protected void createTechLevelFields(Container parent) {
-        OutlineModel   owner     = mRow.getOwner();
-        GURPSCharacter character = mRow.getCharacter();
-        boolean        enabled   = !owner.isLocked();
-        boolean        hasTL;
-
         mSavedTechLevel = mRow.getTechLevel();
-        hasTL = mSavedTechLevel != null;
+        boolean hasTL = mSavedTechLevel != null;
         if (!hasTL) {
             mSavedTechLevel = "";
         }
 
+        GURPSCharacter character = mRow.getCharacter();
         if (character != null) {
-            JPanel wrapper = new JPanel(new ColumnLayout(2));
+            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level"), hasTL);
             UIUtilities.setToPreferredSizeOnly(mHasTechLevel);
             String tlTooltip = I18n.Text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mHasTechLevel.setEnabled(enabled);
             mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
 
@@ -257,7 +235,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             UIUtilities.setToPreferredSizeOnly(mTechLevel);
             mTechLevel.setText(mSavedTechLevel);
             mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mTechLevel.setEnabled(enabled && hasTL);
+            mTechLevel.setEnabled(hasTL);
             wrapper.add(mTechLevel);
             UIUtilities.setToPreferredSizeOnly(wrapper);
             parent.add(wrapper);
@@ -269,7 +247,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             mTechLevel = new JTextField(mSavedTechLevel);
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level Required"), hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this spell requires tech level specialization")));
-            mHasTechLevel.setEnabled(enabled);
             mHasTechLevel.addActionListener(this);
             parent.add(mHasTechLevel);
         }
@@ -304,13 +281,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }
-        }
-    }
-
-    @Override
-    public void finished() {
-        if (mTabPanel != null) {
-            updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
         }
     }
 

@@ -18,12 +18,13 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
@@ -33,9 +34,7 @@ import com.trollworks.gcs.weapon.MeleeWeaponEditor;
 import com.trollworks.gcs.weapon.RangedWeaponEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -48,10 +47,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -70,7 +66,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private JTextField                 mPointsField;
     private JTextField                 mLevelField;
     private JComboBox<Object>          mEncPenaltyPopup;
-    private JTabbedPane                mTabPanel;
     private PrereqsPanel               mPrereqs;
     private FeaturesPanel              mFeatures;
     private Defaults                   mDefaults;
@@ -84,87 +79,53 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
      */
     public SkillEditor(Skill skill) {
         super(skill);
+        addContent();
+    }
 
-        JPanel    content      = new JPanel(new ColumnLayout(2));
-        JPanel    fields       = new JPanel(new ColumnLayout(2));
-        JLabel    icon         = new JLabel(skill.getIcon(true));
-        boolean   notContainer = !skill.canHaveChildren();
-        Container wrapper;
-
-        mNameField = createCorrectableField(fields, I18n.Text("Name"), skill.getName(), I18n.Text("The base name of the skill, without any notes or specialty information"));
-        if (notContainer) {
-            wrapper = new JPanel(new ColumnLayout(2));
-            mSpecializationField = createField(fields, wrapper, I18n.Text("Specialization"), skill.getSpecialization(), I18n.Text("The specialization, if any, taken for this skill"), 0);
+    @Override
+    protected void addContentSelf(ScrollContent outer) {
+        JPanel  panel       = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        boolean isContainer = mRow.canHaveChildren();
+        mNameField = createCorrectableField(panel, I18n.Text("Name"), mRow.getName(), I18n.Text("The base name of the skill, without any notes or specialty information"));
+        if (!isContainer) {
+            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            mSpecializationField = createField(panel, wrapper, I18n.Text("Specialization"), mRow.getSpecialization(), I18n.Text("The specialization, if any, taken for this skill"), 0);
             createTechLevelFields(wrapper);
-            fields.add(wrapper);
-            mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(fields);
+            panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
-        mNotesField = new MultiLineTextField(skill.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this skill"), this);
-        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
-        label.setBorder(new EmptyBorder(2, 0, 0, 0));
-        label.setAlignmentY(0);
-        fields.add(label);
-        fields.add(mNotesField);
-        mCategoriesField = createField(fields, fields, I18n.Text("Categories"), skill.getCategoriesAsString(), I18n.Text("The category or categories the skill belongs to (separate multiple categories with a comma)"), 0);
-        wrapper = notContainer ? createDifficultyPopups(fields) : fields;
-        mReferenceField = createField(wrapper, wrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("skill")), 6);
-        icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1.0f);
-        content.add(icon);
-        content.add(fields);
-        add(content);
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this skill"), this);
+        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mCategoriesField = createField(panel, panel, I18n.Text("Categories"), mRow.getCategoriesAsString(), I18n.Text("The category or categories the skill belongs to (separate multiple categories with a comma)"), 0);
+        if (!isContainer) {
+            createDifficultyPopups(panel);
+            mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(panel);
+        }
+        mReferenceField = createField(panel, panel, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("skill")), 0);
+        outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        if (notContainer) {
-            mTabPanel = new JTabbedPane();
+        if (!isContainer) {
             mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
-            mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+            addSection(outer, mPrereqs);
             mDefaults = new Defaults(mRow.getDataFile(), mRow.getDefaults());
             mDefaults.addActionListener(this);
-            Component panel = embedEditor(mDefaults);
-            addTab(panel.getName(), panel);
-            panel = embedEditor(mPrereqs);
-            addTab(panel.getName(), panel);
-            panel = embedEditor(mFeatures);
-            addTab(panel.getName(), panel);
-            addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
-            addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
-            if (!mIsEditable) {
-                UIUtilities.disableControls(mMeleeWeapons);
-                UIUtilities.disableControls(mRangedWeapons);
-            }
-            UIUtilities.selectTab(mTabPanel, getLastTabName());
-            add(mTabPanel);
+            addSection(outer, mDefaults);
+            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+            addSection(outer, mFeatures);
+            List<WeaponStats> weapons = mRow.getWeapons();
+            mMeleeWeapons = new MeleeWeaponEditor(mRow, weapons);
+            addSection(outer, mMeleeWeapons);
+            mRangedWeapons = new RangedWeaponEditor(mRow, weapons);
+            addSection(outer, mRangedWeapons);
         }
-    }
-
-    private void addTab(String title, Component panel) {
-        mTabPanel.addTab(title, panel);
-        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
-    }
-
-    private JScrollPane embedEditor(Container editor) {
-        JScrollPane scrollPanel = new JScrollPane(editor);
-        scrollPanel.setMinimumSize(new Dimension(500, 120));
-        scrollPanel.setName(editor.toString());
-        if (!mIsEditable) {
-            UIUtilities.disableControls(editor);
-        }
-        return scrollPanel;
     }
 
     private JTextField createCorrectableField(Container parent, String title, String text, String tooltip) {
         JTextField field = new JTextField(text);
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
-
-        LinkedLabel label = new LinkedLabel(title);
-        label.setLink(field);
-
-        parent.add(label);
-        parent.add(field);
+        parent.add(new LinkedLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
@@ -175,11 +136,14 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             field.setText(text);
         }
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.setEnabled(mIsEditable);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
         field.addActionListener(this);
         field.addFocusListener(this);
+        labelParent.add(new LinkedLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
+        if (maxChars == 0) {
+            ld.setGrabHorizontalSpace(true);
+        }
+        fieldParent.add(field, ld);
         return field;
     }
 
@@ -201,9 +165,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private void createTechLevelFields(Container parent) {
-        OutlineModel   owner     = mRow.getOwner();
         GURPSCharacter character = mRow.getCharacter();
-        boolean        enabled   = !owner.isLocked();
         boolean        hasTL;
 
         mSavedTechLevel = mRow.getTechLevel();
@@ -213,12 +175,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
 
         if (character != null) {
-            JPanel wrapper = new JPanel(new ColumnLayout(2));
+            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
             String tlTooltip = I18n.Text("Whether this skill requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level"), hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mHasTechLevel.setEnabled(enabled);
             mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
 
@@ -226,7 +187,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             UIUtilities.setToPreferredSizeOnly(mTechLevel);
             mTechLevel.setText(mSavedTechLevel);
             mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mTechLevel.setEnabled(enabled && hasTL);
+            mTechLevel.setEnabled(hasTL);
             wrapper.add(mTechLevel);
             parent.add(wrapper);
 
@@ -237,7 +198,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             mTechLevel = new JTextField(mSavedTechLevel);
             mHasTechLevel = new JCheckBox(I18n.Text("Tech Level Required"), hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this skill requires tech level specialization")));
-            mHasTechLevel.setEnabled(enabled);
             mHasTechLevel.addActionListener(this);
             parent.add(mHasTechLevel);
         }
@@ -251,28 +211,20 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             items[i] = MessageFormat.format(I18n.Text("Penalty equal to {0} times the current encumbrance level"), Integer.valueOf(i));
         }
         LinkedLabel label = new LinkedLabel(I18n.Text("Encumbrance"));
-        parent.add(label);
+        parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
         JComboBox<Object> popup = createComboBox(parent, items, items[mRow.getEncumbrancePenaltyMultiplier()], I18n.Text("The encumbrance penalty multiplier"));
         label.setLink(popup);
         return popup;
     }
 
-    private Container createDifficultyPopups(Container parent) {
-        GURPSCharacter character              = mRow.getCharacter();
-        boolean        forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
-        JLabel         label                  = new JLabel(I18n.Text("Difficulty"), SwingConstants.RIGHT);
-        int            columns                = character != null ? 10 : 8;
-        JPanel         wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? columns : 6));
-
-        label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The difficulty of learning this skill")));
-
-        List<AttributeChoice> list        = new ArrayList<>();
-        String                currentAttr = mRow.getAttribute();
+    private void createDifficultyPopups(Container parent) {
+        List<AttributeChoice> list = new ArrayList<>();
         for (AttributeDef def : AttributeDef.getOrdered(mRow.getDataFile().getAttributeDefs())) {
             list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
         }
         list.add(new AttributeChoice("10", "%s", "10"));
-        AttributeChoice current = null;
+        AttributeChoice current     = null;
+        String          currentAttr = mRow.getAttribute();
         for (AttributeChoice attributeChoice : list) {
             if (attributeChoice.getAttribute().equals(currentAttr)) {
                 current = attributeChoice;
@@ -284,18 +236,26 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             current = list.get(list.size() - 1);
         }
 
+        GURPSCharacter character              = mRow.getCharacter();
+        int            columns                = 3;
+        boolean        forCharacterOrTemplate = character != null || mRow.getTemplate() != null;
+        if (forCharacterOrTemplate) {
+            columns += 2;
+            if (character != null) {
+                columns += 2;
+            }
+        }
+        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current, I18n.Text("The attribute this skill is based on"));
-        wrapper.add(new JLabel(" /"));
+        wrapper.add(new JLabel("/"));
         mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), I18n.Text("The relative difficulty of learning this skill"));
 
         if (forCharacterOrTemplate) {
             createPointsFields(wrapper, character != null);
         }
-        wrapper.add(new JPanel());
 
-        parent.add(label);
-        parent.add(wrapper);
-        return wrapper;
+        addLabel(parent, I18n.Text("Difficulty"), null);
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     private <T> JComboBox<T> createComboBox(Container parent, T[] items, T selection, String tooltip) {
@@ -304,8 +264,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setToPreferredSizeOnly(combo);
-        combo.setEnabled(mIsEditable);
         parent.add(combo);
         return combo;
     }
@@ -390,13 +348,6 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             modified |= mRow.setWeapons(list);
         }
         return modified;
-    }
-
-    @Override
-    public void finished() {
-        if (mTabPanel != null) {
-            updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
-        }
     }
 
     @Override
