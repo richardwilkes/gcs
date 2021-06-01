@@ -305,7 +305,7 @@ public final class WindowUtils {
         int       height   = Math.max(prefSize.height, minSize.height);
         int       x;
         int       y;
-        if (centeredOn != null) {
+        if (centeredOn != null && centeredOn.isShowing()) {
             Point     where = centeredOn.getLocationOnScreen();
             Dimension size  = centeredOn.getSize();
             x = where.x + (size.width - width) / 2;
