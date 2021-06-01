@@ -32,7 +32,6 @@ import java.awt.event.FocusListener;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -45,7 +44,6 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private MultiLineTextField mNotesField;
     private JTextField         mReferenceField;
     private FeaturesPanel      mFeatures;
-    private JTabbedPane        mTabPanel;
     private JComboBox<Object>  mCostType;
     private JTextField         mCostAmountField;
     private JComboBox<Object>  mWeightType;

@@ -33,7 +33,6 @@ import java.text.MessageFormat;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -48,7 +47,6 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     private JTextField         mLevelField;
     private JTextField         mCostModifierField;
     private FeaturesPanel      mFeatures;
-    private JTabbedPane        mTabPanel;
     private JComboBox<Object>  mCostType;
     private JComboBox<Object>  mAffects;
     private int                mLastLevel;
