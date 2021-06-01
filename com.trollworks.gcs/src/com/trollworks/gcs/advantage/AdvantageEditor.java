@@ -17,7 +17,6 @@ import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.AdvantageModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -25,16 +24,17 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.weapon.MeleeWeaponEditor;
-import com.trollworks.gcs.weapon.RangedWeaponEditor;
+import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
+import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
-import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -47,8 +47,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -70,11 +68,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private MultiLineTextField                    mUserDescField;
     private EditorField                           mCategoriesField;
     private EditorField                           mReferenceField;
-    private JTabbedPane                           mTabPanel;
     private PrereqsPanel                          mPrereqs;
     private FeaturesPanel                         mFeatures;
-    private MeleeWeaponEditor                     mMeleeWeapons;
-    private RangedWeaponEditor                    mRangedWeapons;
+    private MeleeWeaponListEditor                 mMeleeWeapons;
+    private RangedWeaponListEditor                mRangedWeapons;
     private AdvantageModifierListEditor           mModifiers;
     private int                                   mLastLevel;
     private int                                   mLastPointsPerLevel;
@@ -96,192 +93,198 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
      * @param advantage The {@link Advantage} to edit.
      */
     public AdvantageEditor(Advantage advantage) {
-        super(advantage, new PrecisionLayout().setColumns(3).setMargins(0));
-        boolean notContainer = !advantage.canHaveChildren();
-        add(new JLabel(advantage.getIcon(true)), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setVerticalSpan(notContainer ? 6 : 5));
+        super(advantage);
+        addContent();
+    }
 
-        mNameField = createField(advantage.getName(), null, I18n.Text("The name of the advantage, without any notes"));
+    @Override
+    protected void addContentSelf(ScrollContent outer) {
+        outer.add(createTopSection(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        boolean isContainer = mRow.canHaveChildren();
+        if (!isContainer) {
+            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
+            addSection(outer, mPrereqs);
+            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
+            addSection(outer, mFeatures);
+        }
+        mModifiers = AdvantageModifierListEditor.createEditor(mRow);
+        mModifiers.addActionListener(this);
+        addSection(outer, mModifiers);
+        if (!isContainer) {
+            List<WeaponStats> weapons = mRow.getWeapons();
+            mMeleeWeapons = new MeleeWeaponListEditor(mRow, weapons);
+            addSection(outer, mMeleeWeapons);
+            mRangedWeapons = new RangedWeaponListEditor(mRow, weapons);
+            addSection(outer, mRangedWeapons);
+            updatePoints();
+        }
+    }
+
+    private JPanel createTopSection() {
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        addPrimaryCommonFields(panel);
+        if (mRow.canHaveChildren()) {
+            addSecondaryCommonFields(panel);
+            addContainerTypeFields(panel);
+        } else {
+            addPointFields(panel);
+            addSecondaryCommonFields(panel);
+            addTypeFields(panel);
+        }
+        return panel;
+    }
+
+    private void addPrimaryCommonFields(Container parent) {
+        mNameField = createField(mRow.getName(), null, I18n.Text("The name of the advantage, without any notes"));
         mNameField.getDocument().addDocumentListener(this);
-        add(new LinkedLabel(I18n.Text("Name"), mNameField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.Text("Name"), mNameField);
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mNameField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mEnabledCheckBox = new JCheckBox(I18n.Text("Enabled"));
-        mEnabledCheckBox.setSelected(advantage.isSelfEnabled());
+        mEnabledCheckBox.setSelected(mRow.isSelfEnabled());
         mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")));
-        mEnabledCheckBox.setEnabled(mIsEditable);
         mEnabledCheckBox.addActionListener(this);
         wrapper.add(mEnabledCheckBox);
-        add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+    }
 
-        if (notContainer) {
-            mLastLevel = mRow.getLevels();
-            mLastHalfLevel = mRow.hasHalfLevel();
-            mLastPointsPerLevel = mRow.getPointsPerLevel();
-            if (mLastLevel < 0) {
-                mLastLevel = 1;
-                mLastHalfLevel = false;
-            }
-
-            mBasePointsField = createField(-9999, 9999, mRow.getPoints(), I18n.Text("The base point cost of this advantage"));
-            add(new LinkedLabel(I18n.Text("Base Point Cost"), mBasePointsField), new PrecisionLayoutData().setFillHorizontalAlignment());
-            wrapper = new JPanel(new PrecisionLayout().setColumns(10).setMargins(0));
-            wrapper.add(mBasePointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-
-            mLevelTypeCombo = new JComboBox<>(Levels.values());
-            Levels levels = mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS;
-            mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? levels : Levels.NO_LEVELS);
-            mLevelTypeCombo.setEnabled(mIsEditable);
-            mLevelTypeCombo.addActionListener(this);
-            wrapper.add(mLevelTypeCombo);
-
-            mLevelField = createField(0, 9999, mLastLevel, I18n.Text("The level of this advantage"));
-            wrapper.add(new LinkedLabel(I18n.Text("Level"), mLevelField));
-            wrapper.add(mLevelField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-
-            mHalfLevel = new JCheckBox("+½");
-            mHalfLevel.setSelected(mLastHalfLevel);
-            mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Add a half Level")));
-            mHalfLevel.setEnabled(mIsEditable && advantage.allowHalfLevels());
-            mHalfLevel.addActionListener(this);
-            wrapper.add(mHalfLevel);
-
-            mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, I18n.Text("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used"));
-            wrapper.add(new LinkedLabel(I18n.Text("Point Cost Per Level"), mLevelPointsField));
-            wrapper.add(mLevelPointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-
-            mShouldRoundCostDown = new JCheckBox(I18n.Text("Round Down"));
-            mShouldRoundCostDown.setSelected(advantage.shouldRoundCostDown());
-            mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Round point costs down if selected, round them up if not (most things in GURPS round up)")));
-            mShouldRoundCostDown.setEnabled(mIsEditable);
-            mShouldRoundCostDown.addActionListener(this);
-            wrapper.add(mShouldRoundCostDown);
-
-            mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), I18n.Text("The total point cost of this advantage"));
-            mPointsField.setEnabled(false);
-            wrapper.add(new LinkedLabel(I18n.Text("Total"), mPointsField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
-            wrapper.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
-
-            add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-
-            if (!mRow.isLeveled()) {
-                mLevelField.setText("");
-                mLevelField.setEnabled(false);
-                mLevelPointsField.setText("");
-                mLevelPointsField.setEnabled(false);
-            }
+    private void addPointFields(Container parent) {
+        mLastLevel = mRow.getLevels();
+        mLastHalfLevel = mRow.hasHalfLevel();
+        mLastPointsPerLevel = mRow.getPointsPerLevel();
+        if (mLastLevel < 0) {
+            mLastLevel = 1;
+            mLastHalfLevel = false;
         }
 
-        mNotesField = new MultiLineTextField(advantage.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this advantage"), this);
-        add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
-        add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), I18n.Text("The total point cost of this advantage"));
+        mPointsField.setEnabled(false);
+        addLabel(parent, I18n.Text("Point Cost"), mPointsField);
+        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(10).setMargins(0));
+        wrapper.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
 
-        mCategoriesField = createField(advantage.getCategoriesAsString(), null, I18n.Text("The category or categories the advantage belongs to (separate multiple categories with a comma)"));
-        add(new LinkedLabel(I18n.Text("Categories"), mCategoriesField), new PrecisionLayoutData().setFillHorizontalAlignment());
-        add(mCategoriesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mBasePointsField = createField(-9999, 9999, mRow.getPoints(), I18n.Text("The base point cost of this advantage"));
+        addLabel(wrapper, I18n.Text("Base"), mBasePointsField);
+        wrapper.add(mBasePointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+        mLevelTypeCombo = new JComboBox<>(Levels.values());
+        Levels levels = mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS;
+        mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? levels : Levels.NO_LEVELS);
+        mLevelTypeCombo.addActionListener(this);
+        wrapper.add(mLevelTypeCombo);
+
+        mLevelField = createField(0, 9999, mLastLevel, I18n.Text("The level of this advantage"));
+        addLabel(wrapper, I18n.Text("Level"), mLevelField);
+        wrapper.add(mLevelField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+        mHalfLevel = new JCheckBox("+½");
+        mHalfLevel.setSelected(mLastHalfLevel);
+        mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Add a half Level")));
+        mHalfLevel.setEnabled(mRow.allowHalfLevels());
+        mHalfLevel.addActionListener(this);
+        wrapper.add(mHalfLevel);
+
+        mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, I18n.Text("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used"));
+        addLabel(wrapper, I18n.Text("Per Level"), mLevelPointsField);
+        wrapper.add(mLevelPointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+        mShouldRoundCostDown = new JCheckBox(I18n.Text("Round Down"));
+        mShouldRoundCostDown.setSelected(mRow.shouldRoundCostDown());
+        mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Round point costs down if selected, round them up if not (most things in GURPS round up)")));
+        mShouldRoundCostDown.addActionListener(this);
+        wrapper.add(mShouldRoundCostDown);
+
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+        if (!mRow.isLeveled()) {
+            mLevelField.setText("");
+            mLevelField.setEnabled(false);
+            mLevelPointsField.setText("");
+            mLevelPointsField.setEnabled(false);
+        }
+    }
+
+    private void addSecondaryCommonFields(Container parent) {
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this advantage"), this);
+        parent.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        parent.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+        if (mRow.getDataFile() instanceof GURPSCharacter) {
+            mUserDesc = mRow.getUserDesc();
+            mUserDescField = new MultiLineTextField(mUserDesc, I18n.Text("Additional notes for your own reference. These only exist in character sheets and will be removed if transferred to a data list or template"), this);
+            parent.add(new LinkedLabel(I18n.Text("User Description"), mUserDescField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+            parent.add(mUserDescField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        }
+
+        mCategoriesField = createField(mRow.getCategoriesAsString(), null, I18n.Text("The category or categories the advantage belongs to (separate multiple categories with a comma)"));
+        parent.add(new LinkedLabel(I18n.Text("Categories"), mCategoriesField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(mCategoriesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mCRCombo = new JComboBox<>(SelfControlRoll.values());
         mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
-        mCRCombo.setEnabled(mIsEditable);
         mCRCombo.addActionListener(this);
-        add(new LinkedLabel(I18n.Text("Self-Control Roll"), mCRCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        parent.add(new LinkedLabel(I18n.Text("Self-Control Roll"), mCRCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mCRCombo);
         mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
         mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Adjustments that are applied due to Self-Control Roll limitations")));
         mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
-        mCRAdjCombo.setEnabled(mIsEditable && mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
+        mCRAdjCombo.setEnabled(mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
         wrapper.add(mCRAdjCombo);
-        add(wrapper);
-
-        if (notContainer) {
-            JLabel label = new JLabel(I18n.Text("Type"), SwingConstants.RIGHT);
-            label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of advantage this is")));
-            add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-
-            wrapper = new JPanel(new PrecisionLayout().setColumns(12).setMargins(0));
-            mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.Text("Mental"));
-            wrapper.add(mMentalType);
-            wrapper.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
-
-            mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, I18n.Text("Physical"));
-            wrapper.add(mPhysicalType);
-            wrapper.add(createTypeLabel(Images.PHYSICAL_TYPE, mPhysicalType));
-
-            mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, I18n.Text("Social"));
-            wrapper.add(mSocialType);
-            wrapper.add(createTypeLabel(Images.SOCIAL_TYPE, mSocialType));
-
-            mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, I18n.Text("Exotic"));
-            wrapper.add(mExoticType);
-            wrapper.add(createTypeLabel(Images.EXOTIC_TYPE, mExoticType));
-
-            mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, I18n.Text("Supernatural"));
-            wrapper.add(mSupernaturalType);
-            wrapper.add(createTypeLabel(Images.SUPERNATURAL_TYPE, mSupernaturalType));
-        } else {
-            mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
-            mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
-            mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of container this is")));
-            add(new LinkedLabel(I18n.Text("Container Type"), mContainerTypeCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
-            wrapper = new JPanel(new PrecisionLayout().setColumns(3).setMargins(0));
-            wrapper.add(mContainerTypeCombo);
-        }
-
-        mReferenceField = createField(mRow.getReference(), "MMMMMM", I18n.Text("Page Reference"));
-        wrapper.add(new LinkedLabel(I18n.Text("Ref"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
-        wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-
-        mTabPanel = new JTabbedPane();
-        mModifiers = AdvantageModifierListEditor.createEditor(mRow);
-        mModifiers.addActionListener(this);
-        if (notContainer) {
-            mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
-            mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-            mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
-            mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-            Component panel = embedEditor(mPrereqs);
-            addTab(panel.getName(), panel);
-            panel = embedEditor(mFeatures);
-            addTab(panel.getName(), panel);
-            addTab(mModifiers.getName(), mModifiers);
-            addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
-            addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
-
-            if (!mIsEditable) {
-                UIUtilities.disableControls(mMeleeWeapons);
-                UIUtilities.disableControls(mRangedWeapons);
-            }
-            updatePoints();
-        } else {
-            addTab(mModifiers.getName(), mModifiers);
-        }
-
-        if (mRow.getDataFile() instanceof GURPSCharacter) {
-            mUserDesc = mRow.getUserDesc();
-            mUserDescField = new MultiLineTextField(mUserDesc, null, this);
-            addTab(I18n.Text("User Description"), new JScrollPane(mUserDescField));
-        }
-
-        if (!mIsEditable) {
-            UIUtilities.disableControls(mModifiers);
-        }
-
-        UIUtilities.selectTab(mTabPanel, getLastTabName());
-
-        add(mTabPanel, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true).setMinimumHeight(32));
+        parent.add(wrapper);
     }
 
-    private void addTab(String title, Component panel) {
-        mTabPanel.addTab(title, panel);
-        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
+    private void addTypeFields(Container parent) {
+        JLabel label = new JLabel(I18n.Text("Type"), SwingConstants.RIGHT);
+        label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of advantage this is")));
+        parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+
+        mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.Text("Mental"));
+        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(12).setMargins(0));
+        wrapper.add(mMentalType);
+        wrapper.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
+
+        mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, I18n.Text("Physical"));
+        wrapper.add(mPhysicalType);
+        wrapper.add(createTypeLabel(Images.PHYSICAL_TYPE, mPhysicalType));
+
+        mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, I18n.Text("Social"));
+        wrapper.add(mSocialType);
+        wrapper.add(createTypeLabel(Images.SOCIAL_TYPE, mSocialType));
+
+        mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, I18n.Text("Exotic"));
+        wrapper.add(mExoticType);
+        wrapper.add(createTypeLabel(Images.EXOTIC_TYPE, mExoticType));
+
+        mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, I18n.Text("Supernatural"));
+        wrapper.add(mSupernaturalType);
+        wrapper.add(createTypeLabel(Images.SUPERNATURAL_TYPE, mSupernaturalType));
+        addRefField(wrapper);
+
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+    }
+
+    private void addContainerTypeFields(Container parent) {
+        mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
+        mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
+        mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The type of container this is")));
+        parent.add(new LinkedLabel(I18n.Text("Container Type"), mContainerTypeCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(3).setMargins(0));
+        wrapper.add(mContainerTypeCombo);
+        addRefField(wrapper);
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+    }
+
+    private void addRefField(Container parent) {
+        mReferenceField = createField(mRow.getReference(), "MMMMMM", I18n.Text("Page Reference"));
+        parent.add(new LinkedLabel(I18n.Text("Ref"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
+        parent.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
         JCheckBox button = new JCheckBox();
         button.setSelected(selected);
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        button.setEnabled(mIsEditable);
         return button;
     }
 
@@ -296,21 +299,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         return label;
     }
 
-    private JScrollPane embedEditor(JPanel editor) {
-        JScrollPane scroller = new JScrollPane(editor);
-        scroller.setName(editor.toString());
-        if (!mIsEditable) {
-            UIUtilities.disableControls(editor);
-        }
-        return scroller;
-    }
-
     private EditorField createField(String text, String prototype, String tooltip) {
         DefaultFormatter formatter = new DefaultFormatter();
         formatter.setOverwriteMode(false);
-        EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, text, prototype, tooltip);
-        field.setEnabled(mIsEditable);
-        return field;
+        return new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, text, prototype, tooltip);
     }
 
     private EditorField createField(int min, int max, int value, String tooltip) {
@@ -318,9 +310,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         if (min < 0 || max < 0) {
             proto = -proto;
         }
-        EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, false)), this, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(proto), tooltip);
-        field.setEnabled(mIsEditable);
-        return field;
+        return new EditorField(new DefaultFormatterFactory(new IntegerFormatter(min, max, false)), this, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(proto), tooltip);
     }
 
     @Override
@@ -384,13 +374,6 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             modified |= mRow.setUserDesc(mUserDesc);
         }
         return modified;
-    }
-
-    @Override
-    public void finished() {
-        if (mTabPanel != null) {
-            updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
-        }
     }
 
     @Override

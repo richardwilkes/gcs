@@ -52,7 +52,7 @@ public class HitLocationPanel extends DropPanel {
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         createHeader(I18n.Text("DR"), null);
 
-        addTable(sheet, sheet.getCharacter().getSettings().getHitLocations(), 0, ThemeColor.BANDING, Color.WHITE, false);
+        addTable(sheet, sheet.getCharacter().getSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.PAGE, false);
     }
 
     private boolean addTable(CharacterSheet sheet, HitLocationTable table, int depth, Color band1Color, Color band2Color, boolean band) {

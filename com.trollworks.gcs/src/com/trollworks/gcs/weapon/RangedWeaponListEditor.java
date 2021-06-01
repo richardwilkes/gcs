@@ -11,13 +11,9 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
@@ -26,7 +22,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /** An editor for ranged weapon statistics. */
-public class RangedWeaponEditor extends WeaponEditor {
+public class RangedWeaponListEditor extends WeaponListEditor {
     private EditorField mAccuracy;
     private EditorField mRange;
     private EditorField mRateOfFire;
@@ -35,65 +31,28 @@ public class RangedWeaponEditor extends WeaponEditor {
     private EditorField mRecoil;
 
     /**
-     * Creates a new ranged weapon editor for the specified row.
-     *
-     * @param row The row to edit ranged weapon statistics for.
-     * @return The editor, or {@code null} if the row is not appropriate.
-     */
-    public static RangedWeaponEditor createEditor(ListRow row) {
-        if (row instanceof Equipment) {
-            return new RangedWeaponEditor(row, ((Equipment) row).getWeapons());
-        } else if (row instanceof Advantage) {
-            return new RangedWeaponEditor(row, ((Advantage) row).getWeapons());
-        } else if (row instanceof Spell) {
-            return new RangedWeaponEditor(row, ((Spell) row).getWeapons());
-        } else if (row instanceof Skill) {
-            return new RangedWeaponEditor(row, ((Skill) row).getWeapons());
-        }
-        return null;
-    }
-
-    /**
      * Creates a new {@link RangedWeaponStats} editor.
      *
      * @param owner   The owning row.
      * @param weapons The weapons to modify.
      */
-    public RangedWeaponEditor(ListRow owner, List<WeaponStats> weapons) {
+    public RangedWeaponListEditor(ListRow owner, List<WeaponStats> weapons) {
         super(owner, weapons, RangedWeaponStats.class);
     }
 
     @Override
     protected void createFields(Container parent) {
-        JPanel panel   = new JPanel(new ColumnLayout(5));
-        String tooltip = I18n.Text("Accuracy");
-        mAccuracy = createTextField("99+99*", tooltip);
-        parent.add(new LinkedLabel(tooltip, mAccuracy));
-        panel.add(mAccuracy);
-        tooltip = I18n.Text("Rate of Fire");
-        mRateOfFire = createTextField("999*", tooltip);
-        panel.add(new LinkedLabel(tooltip, mRateOfFire));
-        panel.add(mRateOfFire);
-        tooltip = I18n.Text("Range");
-        mRange = createTextField(null, tooltip);
-        panel.add(new LinkedLabel(tooltip, mRange));
-        panel.add(mRange);
-        parent.add(panel);
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
+        mAccuracy = addField(parent, panel, "99+99*", I18n.Text("Accuracy"));
+        mRateOfFire = addField(panel, panel, "999*", I18n.Text("Rate of Fire"));
+        mRange = addField(panel, panel, null, I18n.Text("Range"));
+        parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        panel = new JPanel(new ColumnLayout(5));
-        tooltip = I18n.Text("Recoil");
-        mRecoil = createTextField("9999", tooltip);
-        parent.add(new LinkedLabel(tooltip, mRecoil));
-        panel.add(mRecoil);
-        tooltip = I18n.Text("Shots");
-        mShots = createTextField(null, tooltip);
-        panel.add(new LinkedLabel(tooltip, mShots));
-        panel.add(mShots);
-        tooltip = I18n.Text("Bulk");
-        mBulk = createTextField("9999", tooltip);
-        panel.add(new LinkedLabel(tooltip, mBulk));
-        panel.add(mBulk);
-        parent.add(panel);
+        panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
+        mRecoil = addField(parent, panel, "9999", I18n.Text("Recoil"));
+        mShots = addField(panel, panel, null, I18n.Text("Shots"));
+        mBulk = addField(panel, panel, "9999", I18n.Text("Bulk"));
+        parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     @Override
@@ -169,17 +128,6 @@ public class RangedWeaponEditor extends WeaponEditor {
         mBulk.setEnabled(enabled);
         mRecoil.setEnabled(enabled);
         super.enableFields(enabled);
-    }
-
-    @Override
-    protected void blankFields() {
-        mAccuracy.setValue("");
-        mRange.setValue("");
-        mRateOfFire.setValue("");
-        mShots.setValue("");
-        mBulk.setValue("");
-        mRecoil.setValue("");
-        super.blankFields();
     }
 
     @Override

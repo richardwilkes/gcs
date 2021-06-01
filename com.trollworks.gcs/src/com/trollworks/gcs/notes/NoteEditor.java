@@ -12,25 +12,23 @@
 package com.trollworks.gcs.notes;
 
 import com.trollworks.gcs.datafile.PageRefCell;
-import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.Workspace;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Component;
 import java.awt.Dimension;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /** The detailed editor for {@link Note}s. */
 public class NoteEditor extends RowEditor<Note> {
-    private MultiLineTextField mEditor;
+    private MultiLineTextField mDescriptionField;
     private JTextField         mReferenceField;
 
     /**
@@ -39,40 +37,38 @@ public class NoteEditor extends RowEditor<Note> {
      * @param note The {@link Note} to edit.
      */
     public NoteEditor(Note note) {
-        super(note, new PrecisionLayout().setColumns(3).setMargins(0));
-        add(new JLabel(note.getIcon(true)), new PrecisionLayoutData().setVerticalSpan(3).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        super(note);
+        addContent();
+        Component scroller = getComponent(0);
+        Dimension size     = scroller.getPreferredSize();
+        if (size.width < 600) {
+            size.width = 600;
+        }
+        if (size.height < 400) {
+            size.height = 400;
+        }
+        scroller.setPreferredSize(size);
+    }
 
-        add(new LinkedLabel(I18n.Text("Note Content")), new PrecisionLayoutData().setHorizontalSpan(2));
-        mEditor = new MultiLineTextField(note.getDescription(), null, null);
-        mEditor.setEnabled(mIsEditable);
-        Dimension workspaceSize = Workspace.get().getSize();
-        workspaceSize.width = Math.max(workspaceSize.width - 200, 300);
-        workspaceSize.height = Math.max(workspaceSize.height - 200, 200);
-        Dimension size = TextDrawing.getPreferredSize(mEditor.getFont(), mEditor.getText());
-        size.width = Math.min(size.width + 64, workspaceSize.width);
-        size.height = Math.min(size.height + 64, workspaceSize.height);
-        JScrollPane scroller = new JScrollPane(mEditor);
-        add(scroller, new PrecisionLayoutData().setHorizontalSpan(2).setFillAlignment()
-                .setGrabSpace(true).setMinimumWidth(300).setMinimumHeight(200)
-                .setWidthHint(size.width).setHeightHint(size.height));
+    @Override
+    protected void addContentSelf(ScrollContent outer) {
+        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        outer.add(wrapper, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
-        add(new LinkedLabel(I18n.Text("Page Reference"), mReferenceField));
-        mReferenceField = new JTextField(Text.makeFiller(6, 'M'));
-        mReferenceField.setText(note.getReference());
+        mDescriptionField = new MultiLineTextField(mRow.getDescription(), null, null);
+        wrapper.add(new LinkedLabel(I18n.Text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        wrapper.add(mDescriptionField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
+
+        mReferenceField = new JTextField(mRow.getReference());
         mReferenceField.setToolTipText(Text.wrapPlainTextForToolTip(PageRefCell.getStdToolTip(I18n.Text("note"))));
-        mReferenceField.setEnabled(mIsEditable);
-        add(mReferenceField, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+        wrapper.add(new LinkedLabel(I18n.Text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     @Override
     public boolean applyChangesSelf() {
         boolean modified = mRow.setReference(mReferenceField.getText());
-        modified |= mRow.setDescription(mEditor.getText());
+        modified |= mRow.setDescription(mDescriptionField.getText());
         return modified;
-    }
-
-    @Override
-    public void finished() {
-        // Unused
     }
 }

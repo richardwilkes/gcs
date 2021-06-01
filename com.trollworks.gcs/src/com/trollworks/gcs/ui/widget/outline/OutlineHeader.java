@@ -167,11 +167,10 @@ public class OutlineHeader extends JPanel implements MouseListener, MouseMotionL
         super.paintComponent(GraphicsUtilities.prepare(gc));
         Rectangle clip         = gc.getClipBounds();
         Insets    insets       = getInsets();
-        int       height       = getHeight();
-        Rectangle bounds       = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), height - (insets.top + insets.bottom));
+        Rectangle bounds       = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         boolean   drawDividers = mOwner.shouldDrawColumnDividers();
         gc.setColor(getTopDividerColor());
-        gc.fillRect(clip.x, height - one, clip.width, one);
+        gc.fillRect(clip.x, bounds.y + bounds.height - one, clip.width, one);
         List<Column> columns    = mOwner.getModel().getColumns();
         int          count      = columns.size();
         int          maxDivider = count - 1;
@@ -188,7 +187,7 @@ public class OutlineHeader extends JPanel implements MouseListener, MouseMotionL
                 bounds.x += bounds.width;
                 if (drawDividers && i < maxDivider) {
                     gc.setColor(ThemeColor.DIVIDER);
-                    gc.fillRect(bounds.x, bounds.y, one, bounds.y + bounds.height);
+                    gc.fillRect(bounds.x, bounds.y, one, bounds.height);
                     bounds.x += one;
                 }
             }

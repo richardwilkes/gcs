@@ -17,10 +17,11 @@ import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.modifier.EquipmentModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.Fixed6;
@@ -29,13 +30,11 @@ import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.WeightValue;
-import com.trollworks.gcs.weapon.MeleeWeaponEditor;
-import com.trollworks.gcs.weapon.RangedWeaponEditor;
+import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
+import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -43,12 +42,9 @@ import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -69,11 +65,10 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private MultiLineTextField          mNotesField;
     private JTextField                  mCategoriesField;
     private JTextField                  mReferenceField;
-    private JTabbedPane                 mTabPanel;
     private PrereqsPanel                mPrereqs;
     private FeaturesPanel               mFeatures;
-    private MeleeWeaponEditor           mMeleeWeapons;
-    private RangedWeaponEditor          mRangedWeapons;
+    private MeleeWeaponListEditor       mMeleeWeapons;
+    private RangedWeaponListEditor      mRangedWeapons;
     private EquipmentModifierListEditor mModifiers;
     private Fixed6                      mContainedValue;
     private WeightValue                 mContainedWeight;
@@ -89,75 +84,51 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     public EquipmentEditor(Equipment equipment, boolean carried) {
         super(equipment);
         mCarried = carried;
+        addContent();
+    }
 
-        JPanel content = new JPanel(new ColumnLayout(2));
-        JPanel fields  = new JPanel(new ColumnLayout(2));
-        JLabel icon    = new JLabel(equipment.getIcon(true));
-
-        mDescriptionField = createCorrectableField(fields, I18n.Text("Name"), equipment.getDescription(), I18n.Text("The name/description of the equipment, without any notes"));
-        createSecondLineFields(fields);
-        createValueAndWeightFields(fields);
-        mNotesField = new MultiLineTextField(equipment.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), this);
-        LinkedLabel label = new LinkedLabel(I18n.Text("Notes"), mNotesField);
-        label.setAlignmentY(0);
-        label.setBorder(new EmptyBorder(2, 0, 0, 0));
-        fields.add(label);
-        fields.add(mNotesField);
-        mCategoriesField = createField(fields, fields, I18n.Text("Categories"), equipment.getCategoriesAsString(), I18n.Text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
-
-        boolean forCharacterOrTemplate = equipment.getCharacter() != null || equipment.getTemplate() != null;
-        JPanel  wrapper                = new JPanel(new ColumnLayout(forCharacterOrTemplate ? 5 : 3));
-        if (forCharacterOrTemplate) {
-            mUsesField = createIntegerNumberField(fields, wrapper, I18n.Text("Uses"), mRow.getUses(), I18n.Text("The number of uses remaining for this equipment"), 5);
-            mMaxUsesField = createIntegerNumberField(wrapper, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
-        } else {
-            mMaxUsesField = createIntegerNumberField(fields, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
-        }
-        mReferenceField = createField(wrapper, wrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("equipment")), 6);
-        fields.add(wrapper);
-
-        icon.setVerticalAlignment(SwingConstants.TOP);
-        icon.setAlignmentY(-1.0f);
-        content.add(icon);
-        content.add(fields);
-        add(content);
-
-        mTabPanel = new JTabbedPane();
-        mModifiers = EquipmentModifierListEditor.createEditor(mRow);
-        mModifiers.addActionListener(this);
+    @Override
+    protected void addContentSelf(ScrollContent outer) {
+        outer.add(createTopSection(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
+        addSection(outer, mPrereqs);
         mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
-        mMeleeWeapons = MeleeWeaponEditor.createEditor(mRow);
-        mRangedWeapons = RangedWeaponEditor.createEditor(mRow);
-        addTab(mMeleeWeapons.getName(), new JScrollPane(mMeleeWeapons));
-        addTab(mRangedWeapons.getName(), new JScrollPane(mRangedWeapons));
-        Component panel = embedEditor(mPrereqs);
-        addTab(panel.getName(), panel);
-        panel = embedEditor(mFeatures);
-        addTab(panel.getName(), panel);
-        addTab(mModifiers.getName(), mModifiers);
-        if (!mIsEditable) {
-            UIUtilities.disableControls(mMeleeWeapons);
-            UIUtilities.disableControls(mRangedWeapons);
-            UIUtilities.disableControls(mModifiers);
+        addSection(outer, mFeatures);
+        mModifiers = EquipmentModifierListEditor.createEditor(mRow);
+        addSection(outer, mModifiers);
+        List<WeaponStats> weapons = mRow.getWeapons();
+        mMeleeWeapons = new MeleeWeaponListEditor(mRow, weapons);
+        addSection(outer, mMeleeWeapons);
+        mRangedWeapons = new RangedWeaponListEditor(mRow, weapons);
+        addSection(outer, mRangedWeapons);
+    }
+
+    private JPanel createTopSection() {
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        mDescriptionField = createCorrectableField(panel, I18n.Text("Name"), mRow.getDescription(), I18n.Text("The name/description of the equipment, without any notes"));
+        createSecondLineFields(panel);
+        createValueAndWeightFields(panel);
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), this);
+        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mCategoriesField = createField(panel, panel, I18n.Text("Categories"), mRow.getCategoriesAsString(), I18n.Text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
+
+        boolean    forCharacterOrTemplate = mRow.getCharacter() != null || mRow.getTemplate() != null;
+        JPanel     wrapper                = new JPanel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
+        JComponent labelParent            = panel;
+        if (forCharacterOrTemplate) {
+            mUsesField = createIntegerNumberField(panel, wrapper, I18n.Text("Uses"), mRow.getUses(), I18n.Text("The number of uses remaining for this equipment"), 5);
+            labelParent = wrapper;
         }
-        UIUtilities.selectTab(mTabPanel, getLastTabName());
-        add(mTabPanel);
-    }
-
-    private void addTab(String title, Component panel) {
-        mTabPanel.addTab(title, panel);
-        mTabPanel.setTabComponentAt(mTabPanel.getTabCount() - 1, new JLabel(title));
-    }
-
-    private boolean showEquipmentState() {
-        return mCarried && mRow.getCharacter() != null;
+        mMaxUsesField = createIntegerNumberField(labelParent, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
+        mReferenceField = createField(wrapper, wrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("equipment")), 0);
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        return panel;
     }
 
     private void createSecondLineFields(Container parent) {
         boolean isContainer = mRow.canHaveChildren();
-        JPanel  wrapper     = new JPanel(new ColumnLayout((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
-
+        JPanel  wrapper     = new JPanel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
         if (!isContainer) {
             mQtyField = createIntegerNumberField(parent, wrapper, I18n.Text("Quantity"), mRow.getQuantity(), I18n.Text("The number of this equipment present"), 9);
         }
@@ -166,33 +137,32 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         if (showEquipmentState()) {
             mEquippedCheckBox = new JCheckBox(I18n.Text("Equipped"));
             mEquippedCheckBox.setSelected(mRow.isEquipped());
-            UIUtilities.setToPreferredSizeOnly(mEquippedCheckBox);
             mEquippedCheckBox.setEnabled(mIsEditable);
             mEquippedCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
             wrapper.add(mEquippedCheckBox);
         }
-        wrapper.add(new JPanel());
-        parent.add(wrapper);
+        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+    }
+
+    private boolean showEquipmentState() {
+        return mCarried && mRow.getCharacter() != null;
     }
 
     private void createValueAndWeightFields(Container parent) {
-        JPanel    wrapper = new JPanel(new ColumnLayout(3));
-        Component first;
-
+        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(3));
         mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed6(mRow.getQuantity())));
         mValueField = createValueField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The base value of one of these pieces of equipment before modifiers"), 13);
-        mExtValueField = createValueField(wrapper, wrapper, I18n.Text("Extended Value"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
-        first = wrapper.getComponent(1);
+        mExtValueField = createValueField(wrapper, wrapper, I18n.Text("Extended"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         mExtValueField.setEnabled(false);
         parent.add(wrapper);
 
-        wrapper = new JPanel(new ColumnLayout(4));
+        wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(4));
         mContainedWeight = new WeightValue(mRow.getExtendedWeight(false));
         WeightValue weight = new WeightValue(mRow.getAdjustedWeight(false));
         weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));
         mContainedWeight.subtract(weight);
         mWeightField = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
-        mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended Weight"), mRow.getExtendedWeight(false), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
+        mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended"), mRow.getExtendedWeight(false), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
         mExtWeightField.setEnabled(false);
         mIgnoreWeightForSkillsCheckBox = new JCheckBox(I18n.Text("Ignore for Skills"));
         mIgnoreWeightForSkillsCheckBox.setSelected(mRow.isWeightIgnoredForSkills());
@@ -200,19 +170,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mIgnoreWeightForSkillsCheckBox.setEnabled(mIsEditable);
         mIgnoreWeightForSkillsCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills")));
         wrapper.add(mIgnoreWeightForSkillsCheckBox);
-
-        UIUtilities.adjustToSameSize(first, wrapper.getComponent(1));
         parent.add(wrapper);
-    }
-
-    private JScrollPane embedEditor(Container editor) {
-        JScrollPane scrollPanel = new JScrollPane(editor);
-        scrollPanel.setMinimumSize(new Dimension(500, 120));
-        scrollPanel.setName(editor.toString());
-        if (!mIsEditable) {
-            UIUtilities.disableControls(editor);
-        }
-        return scrollPanel;
     }
 
     private JTextField createCorrectableField(Container parent, String title, String text, String tooltip) {
@@ -221,12 +179,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
         field.addFocusListener(this);
-
-        LinkedLabel label = new LinkedLabel(title);
-        label.setLink(field);
-
-        parent.add(label);
-        parent.add(field);
+        parent.add(new LinkedLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
@@ -239,8 +193,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         field.setEnabled(mIsEditable);
         field.addFocusListener(this);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
+        labelParent.add(new LinkedLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
+        if (maxChars == 0) {
+            ld.setGrabHorizontalSpace(true);
+        }
+        fieldParent.add(field, ld);
         return field;
     }
 
@@ -253,8 +211,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         NumberFilter.apply(field, false, false, true, maxDigits);
         field.addActionListener(this);
         field.addFocusListener(this);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
+        labelParent.add(new LinkedLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
@@ -267,8 +225,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         NumberFilter.apply(field, true, false, true, maxDigits);
         field.addActionListener(this);
         field.addFocusListener(this);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
+        labelParent.add(new LinkedLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
@@ -280,8 +238,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         field.setEnabled(mIsEditable);
         field.addActionListener(this);
         field.addFocusListener(this);
-        labelParent.add(new LinkedLabel(title, field));
-        fieldParent.add(field);
+        labelParent.add(new LinkedLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
@@ -318,13 +276,6 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
             mRow.setModifiers(mModifiers.getModifiers());
         }
         return modified;
-    }
-
-    @Override
-    public void finished() {
-        if (mTabPanel != null) {
-            updateLastTabName(mTabPanel.getTitleAt(mTabPanel.getSelectedIndex()));
-        }
     }
 
     @Override

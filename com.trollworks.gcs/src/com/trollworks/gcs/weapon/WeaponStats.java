@@ -42,24 +42,26 @@ import java.util.Set;
 
 /** The stats for a weapon. */
 public abstract class WeaponStats {
-    private static final String KEY_DEFAULTS = "defaults";
-    private static final String KEY_STRENGTH = "strength";
-    private static final String KEY_USAGE    = "usage";
+    private static final String KEY_DEFAULTS    = "defaults";
+    private static final String KEY_STRENGTH    = "strength";
+    private static final String KEY_USAGE       = "usage";
+    private static final String KEY_USAGE_NOTES = "usage_notes";
 
     protected ListRow            mOwner;
     private   WeaponDamage       mDamage;
     private   String             mStrength;
     private   String             mUsage;
+    private   String             mUsageNotes;
     private   List<SkillDefault> mDefaults;
 
     public static void loadFromJSONArray(ListRow row, JsonArray a, List<WeaponStats> list) throws IOException {
         int count = a.size();
         for (int i = 0; i < count; i++) {
-            JsonMap m1   = a.getMap(i);
-            String  type = m1.getString(DataFile.TYPE);
+            JsonMap m    = a.getMap(i);
+            String  type = m.getString(DataFile.TYPE);
             switch (type) {
-            case MeleeWeaponStats.KEY_ROOT -> list.add(new MeleeWeaponStats(row, m1));
-            case RangedWeaponStats.KEY_ROOT -> list.add(new RangedWeaponStats(row, m1));
+            case MeleeWeaponStats.KEY_ROOT -> list.add(new MeleeWeaponStats(row, m));
+            case RangedWeaponStats.KEY_ROOT -> list.add(new RangedWeaponStats(row, m));
             default -> Log.warn("unknown weapon type: " + type);
             }
         }
@@ -88,6 +90,7 @@ public abstract class WeaponStats {
         mDamage = new WeaponDamage(this);
         mStrength = "";
         mUsage = "";
+        mUsageNotes = "";
         mDefaults = new ArrayList<>();
         initialize();
     }
@@ -103,6 +106,7 @@ public abstract class WeaponStats {
         mDamage = other.mDamage.clone(this);
         mStrength = other.mStrength;
         mUsage = other.mUsage;
+        mUsageNotes = other.mUsageNotes;
         mDefaults = new ArrayList<>();
         for (SkillDefault skillDefault : other.mDefaults) {
             mDefaults.add(new SkillDefault(skillDefault));
@@ -139,6 +143,7 @@ public abstract class WeaponStats {
         mDamage = new WeaponDamage(m.getMap(WeaponDamage.KEY_ROOT), this);
         mStrength = m.getString(KEY_STRENGTH);
         mUsage = m.getString(KEY_USAGE);
+        mUsageNotes = m.getString(KEY_USAGE_NOTES);
         if (m.has(KEY_DEFAULTS)) {
             JsonArray a     = m.getArray(KEY_DEFAULTS);
             int       count = a.size();
@@ -160,6 +165,7 @@ public abstract class WeaponStats {
         mDamage.save(w);
         w.keyValueNot(KEY_STRENGTH, mStrength, "");
         w.keyValueNot(KEY_USAGE, mUsage, "");
+        w.keyValueNot(KEY_USAGE_NOTES, mUsageNotes, "");
         saveSelf(w);
         if (!mDefaults.isEmpty()) {
             w.key(KEY_DEFAULTS);
@@ -221,7 +227,17 @@ public abstract class WeaponStats {
 
     /** @return The notes for this weapon. */
     public String getNotes() {
-        return mOwner != null ? mOwner.getNotes() : "";
+        StringBuilder buffer = new StringBuilder();
+        if (mOwner != null) {
+            buffer.append(mOwner.getNotes());
+        }
+        if (!mUsageNotes.isBlank()) {
+            if (!buffer.isEmpty()) {
+                buffer.append('\n');
+            }
+            buffer.append(mUsageNotes);
+        }
+        return buffer.toString();
     }
 
     /** @return The damage. */
@@ -427,6 +443,20 @@ public abstract class WeaponStats {
         }
     }
 
+    /** @return The usage. */
+    public String getUsageNotes() {
+        return mUsageNotes;
+    }
+
+    /** @param usageNotes The value to set. */
+    public void setUsageNotes(String usageNotes) {
+        usageNotes = sanitize(usageNotes);
+        if (!mUsageNotes.equals(usageNotes)) {
+            mUsageNotes = usageNotes;
+            notifyOfChange();
+        }
+    }
+
     /** @return The strength. */
     public String getStrength() {
         return mStrength;
@@ -470,7 +500,7 @@ public abstract class WeaponStats {
         }
         if (obj instanceof WeaponStats) {
             WeaponStats ws = (WeaponStats) obj;
-            return mDamage.equivalent(ws.mDamage) && mStrength.equals(ws.mStrength) && mUsage.equals(ws.mUsage) && mDefaults.equals(ws.mDefaults);
+            return mDamage.equivalent(ws.mDamage) && mStrength.equals(ws.mStrength) && mUsage.equals(ws.mUsage) && mUsageNotes.equals(ws.mUsageNotes) && mDefaults.equals(ws.mDefaults);
         }
         return false;
     }

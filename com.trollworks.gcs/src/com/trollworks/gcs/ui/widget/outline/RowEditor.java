@@ -11,24 +11,32 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.layout.RowDistribution;
+import com.trollworks.gcs.ui.border.TitledBorder;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Commitable;
+import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.LayoutManager;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 /**
@@ -37,11 +45,10 @@ import javax.swing.SwingConstants;
  * @param <T> The row class being edited.
  */
 public abstract class RowEditor<T extends ListRow> extends ActionPanel {
-    private static HashMap<Class<?>, String> LAST_TAB_MAP = new HashMap<>();
     /** Whether the underlying data should be editable. */
-    protected      boolean                   mIsEditable;
+    protected boolean mIsEditable;
     /** The row being edited. */
-    protected      T                         mRow;
+    protected T       mRow;
 
     /**
      * Brings up a modal detailed editor for each row in the list.
@@ -92,7 +99,6 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
                 i = length;
                 break;
             }
-            editor.finished();
         }
 
         if (!undos.isEmpty()) {
@@ -108,29 +114,56 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      * @param row The row being edited.
      */
     protected RowEditor(T row) {
-        this(row, new ColumnLayout(1, 0, 5, RowDistribution.GIVE_EXCESS_TO_LAST));
-    }
-
-    /**
-     * Creates a new {@link RowEditor}.
-     *
-     * @param row    The row being edited.
-     * @param layout The layout to use.
-     */
-    protected RowEditor(T row, LayoutManager layout) {
-        super(layout);
+        super(new BorderLayout());
         mRow = row;
         mIsEditable = !mRow.getOwner().isLocked();
     }
 
-    /** @return The last tab showing for this specific row editor class. */
-    public String getLastTabName() {
-        return LAST_TAB_MAP.get(getClass());
+    /** Call this during construction to add the content to the editor. */
+    protected void addContent() {
+        ScrollContent outer = new ScrollContent(new PrecisionLayout().setMargins(0));
+        addContentSelf(outer);
+        if (!mIsEditable) {
+            UIUtilities.disableControls(outer);
+        }
+        outer.setScrollableTracksViewportWidth(true);
+        JScrollPane scroller   = new JScrollPane(outer);
+        int         scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
+        scroller.setPreferredSize(adjustSize(outer.getPreferredSize(), scrollSize));
+        Dimension size = adjustSize(outer.getMinimumSize(), scrollSize);
+        if (size.height > 128) {
+            size.height = 128;
+        }
+        scroller.setMinimumSize(size);
+        scroller.setBorder(null);
+        scroller.getViewport().setBackground(outer.getBackground());
+        add(scroller);
     }
 
-    /** @param name The last tab showing for this specific row editor class. */
-    public void updateLastTabName(String name) {
-        LAST_TAB_MAP.put(getClass(), name);
+    private Dimension adjustSize(Dimension size, int scrollSize) {
+        size = new Dimension(size);
+        size.width += scrollSize;
+        size.height += scrollSize;
+        Rectangle maxBounds = WindowUtils.getMaximumWindowBounds();
+        if (size.width > maxBounds.width - 64) {
+            size.width = maxBounds.width - 64;
+        }
+        if (size.height > maxBounds.height - 64) {
+            size.height = maxBounds.height - 64;
+        }
+        return size;
+    }
+
+    /** Called by {@link #addContent()}. */
+    protected abstract void addContentSelf(ScrollContent outer);
+
+    protected final void addSection(Container parent, JComponent section) {
+        section.setBorder(new TitledBorder(Fonts.getDefaultSystemFont(), section.toString()));
+        parent.add(section, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+    }
+
+    protected final void addLabel(Container parent, String text, JComponent linkedTo) {
+        parent.add(new LinkedLabel(text, linkedTo), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
     /**
@@ -153,7 +186,4 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      * @return Whether anything was modified.
      */
     protected abstract boolean applyChangesSelf();
-
-    /** Called when the editor is no longer needed. */
-    public abstract void finished();
 }
