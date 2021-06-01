@@ -33,7 +33,6 @@ import com.trollworks.gcs.utility.text.Numbers;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -90,13 +89,13 @@ public abstract class WeaponListEditor extends JPanel implements ActionListener,
         mDeleteButton.setEnabled(false);
         mDuplicateButton = new FontAwesomeButton("\uf24d", I18n.Text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
         mDuplicateButton.setEnabled(false);
-        JPanel left = new JPanel(new PrecisionLayout());
-        left.add(mAddButton);
-        left.add(mDeleteButton);
-        left.add(mDuplicateButton);
-        JPanel top = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
-        top.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        JPanel right = new JPanel(new PrecisionLayout().setMargins(5));
+        right.add(mAddButton);
+        right.add(mDeleteButton);
+        right.add(mDuplicateButton);
+        JPanel top = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2).setHorizontalSpacing(1));
         top.add(createOutline(weapons, weaponClass), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(true));
+        top.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         add(top, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         setName(toString());
     }
@@ -126,20 +125,12 @@ public abstract class WeaponListEditor extends JPanel implements ActionListener,
         WeaponColumn.addColumns(mOutline, weaponClass, true);
         mOutline.setAllowColumnResize(false);
         mOutline.setAllowRowDrag(false);
-
         for (WeaponStats weapon : weapons) {
             if (mWeaponClass.isInstance(weapon)) {
                 model.addRow(new WeaponDisplayRow(weapon.clone(mOwner)));
             }
         }
-
         mOutline.addActionListener(this);
-        Dimension size = mOutline.getMinimumSize();
-        if (size.height < 50) {
-            size.height = 50;
-            mOutline.setMinimumSize(size);
-        }
-
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(mOutline.getHeaderPanel(), BorderLayout.NORTH);
         panel.add(mOutline, BorderLayout.CENTER);

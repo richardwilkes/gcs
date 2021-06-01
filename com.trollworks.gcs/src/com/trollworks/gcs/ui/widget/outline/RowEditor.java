@@ -127,20 +127,10 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             UIUtilities.disableControls(outer);
         }
         outer.setScrollableTracksViewportWidth(true);
-        JScrollPane scroller = new JScrollPane(outer);
-        Dimension   size     = outer.getMinimumSize();
-        int         extra    = scroller.getVerticalScrollBar().getPreferredSize().width;
-        size.width += extra;
-        size.height += extra;
-        Rectangle maxBounds = WindowUtils.getMaximumWindowBounds();
-        if (size.width > maxBounds.width - 64) {
-            size.width = maxBounds.width - 64;
-        }
-        if (size.height > maxBounds.height - 64) {
-            size.height = maxBounds.height - 64;
-        }
-        scroller.setPreferredSize(size);
-        size = new Dimension(size);
+        JScrollPane scroller   = new JScrollPane(outer);
+        int         scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
+        scroller.setPreferredSize(adjustSize(outer.getPreferredSize(), scrollSize));
+        Dimension size = adjustSize(outer.getMinimumSize(), scrollSize);
         if (size.height > 128) {
             size.height = 128;
         }
@@ -148,6 +138,20 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         scroller.setBorder(null);
         scroller.getViewport().setBackground(outer.getBackground());
         add(scroller);
+    }
+
+    private Dimension adjustSize(Dimension size, int scrollSize) {
+        size = new Dimension(size);
+        size.width += scrollSize;
+        size.height += scrollSize;
+        Rectangle maxBounds = WindowUtils.getMaximumWindowBounds();
+        if (size.width > maxBounds.width - 64) {
+            size.width = maxBounds.width - 64;
+        }
+        if (size.height > maxBounds.height - 64) {
+            size.height = maxBounds.height - 64;
+        }
+        return size;
     }
 
     /** Called by {@link #addContent()}. */

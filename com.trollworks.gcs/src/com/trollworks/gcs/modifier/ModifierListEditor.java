@@ -14,10 +14,10 @@ package com.trollworks.gcs.modifier;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.border.TitledBorder;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -36,16 +36,17 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.border.CompoundBorder;
+import javax.swing.JPanel;
 
 public abstract class ModifierListEditor extends ActionPanel implements ActionListener {
     private DataFile        mOwner;
     private ModifierOutline mOutline;
     FontAwesomeButton mAddButton;
+    private FontAwesomeButton mDeleteButton;
     boolean           mModified;
 
     protected ModifierListEditor(DataFile owner, List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
-        super(new BorderLayout());
+        super(new PrecisionLayout().setMargins(0));
         mOwner = owner;
 
         mOutline = new ModifierOutline();
@@ -68,14 +69,22 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
 
         OutlineHeader header = mOutline.getHeaderPanel();
         header.setIgnoreResizeOK(true);
-        header.setBackground(ThemeColor.HEADER);
-        header.setForeground(ThemeColor.ON_HEADER);
-        add(header, BorderLayout.NORTH);
-        add(mOutline, BorderLayout.CENTER);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(header, BorderLayout.NORTH);
+        panel.add(mOutline, BorderLayout.CENTER);
 
         mAddButton = new FontAwesomeButton("\uf055", I18n.Text("Add a modifier"), this::addModifier);
-        mAddButton.setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 1, 0, 0, 0), new EmptyBorder(1)));
-        add(mAddButton, BorderLayout.SOUTH);
+        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.Text("Remove the selected modifiers"), () -> mOutline.deleteSelection());
+        mDeleteButton.setEnabled(false);
+
+        JPanel right = new JPanel(new PrecisionLayout().setMargins(5));
+        right.add(mAddButton);
+        right.add(mDeleteButton);
+
+        JPanel top = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2).setHorizontalSpacing(1));
+        top.add(panel, new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(true));
+        top.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        add(top, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         setBorder(new TitledBorder(Fonts.getDefaultSystemFont(), toString()));
     }
@@ -96,6 +105,8 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     private void handleOutline(String cmd) {
         if (Outline.CMD_OPEN_SELECTION.equals(cmd)) {
             openDetailEditor();
+        } else if (Outline.CMD_SELECTION_CHANGED.equals(cmd)) {
+            mDeleteButton.setEnabled(mOutline.canDeleteSelection());
         }
     }
 
