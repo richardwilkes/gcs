@@ -44,7 +44,7 @@ public class LiftPanel extends DropPanel {
     }
 
     private void createRow(CharacterSheet sheet, WeightValue weight, String title, String tooltip) {
-        PageField field = new PageField(FieldFactory.WEIGHT, weight, sheet, SwingConstants.RIGHT, tooltip, ThemeColor.ON_PAGE);
+        PageField field = new PageField(FieldFactory.WEIGHT, weight, sheet, SwingConstants.RIGHT, tooltip, ThemeColor.ON_CONTENT);
         add(field);
         add(new PageLabel(title, field));
     }

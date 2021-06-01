@@ -118,13 +118,13 @@ public class DescriptionPanel extends DropPanel {
 
     private void createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, Runnable randomizer) {
         parent.add(new FontAwesomeButton("\uf074", UIManager.getFont(Fonts.KEY_LABEL_PRIMARY).getSize() * 8 / 10, String.format(I18n.Text("Randomize %s"), title), randomizer));
-        PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_PAGE);
+        PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_CONTENT);
         parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));
         parent.add(field, createFieldLayout());
     }
 
     private void createField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter) {
-        PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_PAGE);
+        PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_CONTENT);
         parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
         parent.add(field, createFieldLayout());
     }
@@ -137,6 +137,6 @@ public class DescriptionPanel extends DropPanel {
         Wrapper panel = new Wrapper();
         panel.setOnlySize(1, 1);
         add(panel);
-        addVerticalBackground(panel, ThemeColor.ON_PAGE);
+        addVerticalBackground(panel, ThemeColor.ON_CONTENT);
     }
 }

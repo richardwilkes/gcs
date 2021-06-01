@@ -29,14 +29,16 @@ public class ThemeColor extends Color {
     public static final ThemeColor PAGE      = new ThemeColor("page", I18n.Text("Page"), Color.WHITE);
     public static final ThemeColor ON_PAGE   = new ThemeColor("on_page", I18n.Text("On Page"), Color.BLACK);
     public static final ThemeColor PAGE_VOID = new ThemeColor("page_void", I18n.Text("Page Void"), Color.LIGHT_GRAY);
-
-    public static final ThemeColor HEADER    = new ThemeColor("header", I18n.Text("Header"), new Color(43, 43, 43));
-    public static final ThemeColor ON_HEADER = new ThemeColor("on_header", I18n.Text("On Header"), Color.WHITE);
     public static final ThemeColor DIVIDER   = new ThemeColor("divider", I18n.Text("Divider"), Color.LIGHT_GRAY);
+
+    public static final ThemeColor HEADER     = new ThemeColor("header", I18n.Text("Header"), new Color(43, 43, 43));
+    public static final ThemeColor ON_HEADER  = new ThemeColor("on_header", I18n.Text("On Header"), Color.WHITE);
+    public static final ThemeColor CONTENT    = new ThemeColor("content", I18n.Text("Content"), new Color(220, 220, 210));
+    public static final ThemeColor ON_CONTENT = new ThemeColor("on_content", I18n.Text("On Content"), Color.BLACK);
 
     public static final ThemeColor EDITABLE_LINE = new ThemeColor("editable_line", I18n.Text("Editable Line"), Color.LIGHT_GRAY);
     public static final ThemeColor ON_EDITABLE   = new ThemeColor("on_editable", I18n.Text("On Editable"), new Color(0, 0, 192));
-    public static final ThemeColor BANDING       = new ThemeColor("banding", I18n.Text("Banding"), new Color(232, 255, 232));
+    public static final ThemeColor BANDING       = new ThemeColor("banding", I18n.Text("Banding"), new Color(200, 200, 185));
 
     private final int    mIndex;
     private final String mName;

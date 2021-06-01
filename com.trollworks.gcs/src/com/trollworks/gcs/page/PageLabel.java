@@ -28,7 +28,7 @@ public class PageLabel extends Label {
      * @param title The title of the field.
      */
     public PageLabel(String title) {
-        this(title, ThemeColor.ON_PAGE, null);
+        this(title, ThemeColor.ON_CONTENT, null);
     }
 
     /**
@@ -38,7 +38,7 @@ public class PageLabel extends Label {
      * @param field The field.
      */
     public PageLabel(String title, JComponent field) {
-        this(title, ThemeColor.ON_PAGE, field);
+        this(title, ThemeColor.ON_CONTENT, field);
     }
 
     /**

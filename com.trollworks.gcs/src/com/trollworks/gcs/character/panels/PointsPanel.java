@@ -51,13 +51,13 @@ public class PointsPanel extends DropPanel {
     }
 
     private void createLabelAndEditableField(int value, CharacterSetter setter, CharacterSheet sheet, String key, String title, String tooltip) {
-        PageField field = new PageField(FieldFactory.INT6, Integer.valueOf(value), setter, sheet, key, SwingConstants.RIGHT, true, Text.wrapPlainTextForToolTip(tooltip), ThemeColor.ON_PAGE);
+        PageField field = new PageField(FieldFactory.INT6, Integer.valueOf(value), setter, sheet, key, SwingConstants.RIGHT, true, Text.wrapPlainTextForToolTip(tooltip), ThemeColor.ON_CONTENT);
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         add(new PageLabel(title, field));
     }
 
     private void createLabelAndField(int value, CharacterSheet sheet, String title, String tooltip) {
-        PageField field = new PageField(FieldFactory.INT6, Integer.valueOf(value), sheet, SwingConstants.RIGHT, Text.wrapPlainTextForToolTip(tooltip), ThemeColor.ON_PAGE);
+        PageField field = new PageField(FieldFactory.INT6, Integer.valueOf(value), sheet, SwingConstants.RIGHT, Text.wrapPlainTextForToolTip(tooltip), ThemeColor.ON_CONTENT);
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         add(new PageLabel(title, field));
     }

@@ -52,7 +52,7 @@ public class HitLocationPanel extends DropPanel {
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         createHeader(I18n.Text("DR"), null);
 
-        addTable(sheet, sheet.getCharacter().getSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.PAGE, false);
+        addTable(sheet, sheet.getCharacter().getSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.CONTENT, false);
     }
 
     private boolean addTable(CharacterSheet sheet, HitLocationTable table, int depth, Color band1Color, Color band2Color, boolean band) {
@@ -107,7 +107,7 @@ public class HitLocationPanel extends DropPanel {
     }
 
     private void createDRField(CharacterSheet sheet, Object value, String tooltip) {
-        PageField field = new PageField(FieldFactory.POSINT5, value, sheet, SwingConstants.RIGHT, tooltip, ThemeColor.ON_PAGE);
+        PageField field = new PageField(FieldFactory.POSINT5, value, sheet, SwingConstants.RIGHT, tooltip, ThemeColor.ON_CONTENT);
         add(field, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
     }
 }

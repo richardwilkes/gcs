@@ -42,12 +42,12 @@ public class MiscPanel extends DropPanel {
 
     private void createTimestampField(CharacterSheet sheet, long timeStampseconds, String title) {
         add(new PageLabel(title, null), new PrecisionLayoutData().setEndHorizontalAlignment());
-        add(new PageField(FieldFactory.DATETIME, Long.valueOf(timeStampseconds), sheet, SwingConstants.LEFT, null, ThemeColor.ON_PAGE), createFieldLayoutData());
+        add(new PageField(FieldFactory.DATETIME, Long.valueOf(timeStampseconds), sheet, SwingConstants.LEFT, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
     }
 
     private void createStringField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter) {
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
-        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayoutData());
+        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
     }
 
     private PrecisionLayoutData createFieldLayoutData() {

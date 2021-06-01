@@ -95,7 +95,7 @@ public class DropPanel extends JPanel {
     public DropPanel(LayoutManager layout, String title, Font font, boolean onlyReportPreferredSize) {
         super(layout);
         setOpaque(true);
-        setBackground(ThemeColor.PAGE);
+        setBackground(ThemeColor.CONTENT);
         mTitledBorder = new TitledBorder(font, title);
         setBorder(new CompoundBorder(mTitledBorder, new EmptyBorder(0, 2, 1, 2)));
         setAlignmentY(TOP_ALIGNMENT);

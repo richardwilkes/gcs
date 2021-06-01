@@ -39,7 +39,7 @@ public class DoubleOutlinePanel extends JPanel implements LayoutManager2 {
      */
     public DoubleOutlinePanel(Scale scale, Outline leftOutline, String leftTitle, Outline rightOutline, String rightTitle, boolean useProxy) {
         setLayout(this);
-        setBackground(ThemeColor.PAGE);
+        setBackground(ThemeColor.CONTENT);
         mLeftPanel = new SingleOutlinePanel(scale, leftOutline, leftTitle, useProxy);
         mRightPanel = new SingleOutlinePanel(scale, rightOutline, rightTitle, useProxy);
         add(mLeftPanel);

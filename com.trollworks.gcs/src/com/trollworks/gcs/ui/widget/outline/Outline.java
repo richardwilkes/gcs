@@ -164,7 +164,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         mUserSortable = true;
         mAllowColumnResize = true;
         mAllowRowDrag = true;
-        mDrawRowDividers = true;
+        mDrawRowDividers = false;
         mDrawColumnDividers = true;
         mUseBanding = true;
         mSelectionChangedCommand = CMD_SELECTION_CHANGED;
@@ -175,8 +175,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         mModel.setIndentWidth(INDENT_WIDTH);
 
         setActionCommand(CMD_OPEN_SELECTION);
-        setBackground(ThemeColor.PAGE);
-        setForeground(ThemeColor.ON_PAGE);
+        setBackground(ThemeColor.CONTENT);
+        setForeground(ThemeColor.ON_CONTENT);
         mDividerColor = ThemeColor.DIVIDER;
         mBandingColor = ThemeColor.BANDING;
         mInsertionColor = Color.RED;

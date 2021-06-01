@@ -70,7 +70,7 @@ public class EncumbrancePanel extends DropPanel {
                 textColor = warn ? ThemeColor.ON_WARN : ThemeColor.ON_CURRENT;
             } else {
                 warn = false;
-                textColor = ThemeColor.ON_PAGE;
+                textColor = ThemeColor.ON_CONTENT;
             }
             int index = encumbrance.ordinal();
             markers[index] = new PageLabel(encumbrance == current ? "•" : "", textColor, header);

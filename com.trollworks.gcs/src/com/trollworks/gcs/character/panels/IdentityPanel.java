@@ -47,12 +47,12 @@ public class IdentityPanel extends DropPanel {
     private void createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
         add(new FontAwesomeButton("\uf074", UIManager.getFont(Fonts.KEY_LABEL_PRIMARY).getSize() * 8 / 10, String.format(I18n.Text("Randomize %s"), title), randomizer));
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
-        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayoutData());
+        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
     }
 
     private void createStringField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter) {
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
-        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_PAGE), createFieldLayoutData());
+        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
     }
 
     private PrecisionLayoutData createFieldLayoutData() {
