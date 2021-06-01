@@ -30,8 +30,8 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.weapon.MeleeWeaponEditor;
-import com.trollworks.gcs.weapon.RangedWeaponEditor;
+import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
+import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.Container;
@@ -68,8 +68,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private PrereqsPanel               mPrereqs;
     private FeaturesPanel              mFeatures;
     private String                     mLastDefaultType;
-    private MeleeWeaponEditor          mMeleeWeapons;
-    private RangedWeaponEditor         mRangedWeapons;
+    private MeleeWeaponListEditor      mMeleeWeapons;
+    private RangedWeaponListEditor     mRangedWeapons;
 
     /**
      * Creates a new {@link Technique} editor.
@@ -101,9 +101,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
         addSection(outer, mFeatures);
         List<WeaponStats> weapons = mRow.getWeapons();
-        mMeleeWeapons = new MeleeWeaponEditor(mRow, weapons);
+        mMeleeWeapons = new MeleeWeaponListEditor(mRow, weapons);
         addSection(outer, mMeleeWeapons);
-        mRangedWeapons = new RangedWeaponEditor(mRow, weapons);
+        mRangedWeapons = new RangedWeaponListEditor(mRow, weapons);
         addSection(outer, mRangedWeapons);
     }
 

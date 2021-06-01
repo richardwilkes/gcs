@@ -25,8 +25,8 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.weapon.MeleeWeaponEditor;
-import com.trollworks.gcs.weapon.RangedWeaponEditor;
+import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
+import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -67,8 +67,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected JCheckBox                  mHasTechLevel;
     protected JTextField                 mTechLevel;
     protected String                     mSavedTechLevel;
-    protected MeleeWeaponEditor          mMeleeWeapons;
-    protected RangedWeaponEditor         mRangedWeapons;
+    protected MeleeWeaponListEditor      mMeleeWeapons;
+    protected RangedWeaponListEditor     mRangedWeapons;
 
     /**
      * Creates a new {@link BaseSpellEditor}.

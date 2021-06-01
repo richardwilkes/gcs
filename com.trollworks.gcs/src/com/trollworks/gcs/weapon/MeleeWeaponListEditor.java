@@ -11,13 +11,9 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
@@ -26,7 +22,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /** An editor for melee weapon statistics. */
-public class MeleeWeaponEditor extends WeaponEditor {
+public class MeleeWeaponListEditor extends WeaponListEditor {
     private EditorField mReach;
     private EditorField mParry;
     private EditorField mBlock;
@@ -37,26 +33,17 @@ public class MeleeWeaponEditor extends WeaponEditor {
      * @param owner   The owning row.
      * @param weapons The weapons to modify.
      */
-    public MeleeWeaponEditor(ListRow owner, List<WeaponStats> weapons) {
+    public MeleeWeaponListEditor(ListRow owner, List<WeaponStats> weapons) {
         super(owner, weapons, MeleeWeaponStats.class);
     }
 
     @Override
     protected void createFields(Container parent) {
-        JPanel panel   = new JPanel(new ColumnLayout(5));
-        String tooltip = I18n.Text("Reach");
-        mReach = createTextField("C-99**", tooltip);
-        parent.add(new LinkedLabel(tooltip, mReach));
-        panel.add(mReach);
-        tooltip = I18n.Text("Parry Modifier");
-        mParry = createTextField("+99**", tooltip);
-        panel.add(new LinkedLabel(tooltip, mParry));
-        panel.add(mParry);
-        tooltip = I18n.Text("Block Modifier");
-        mBlock = createTextField("+99**", tooltip);
-        panel.add(new LinkedLabel(tooltip, mBlock));
-        panel.add(mBlock);
-        parent.add(panel);
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
+        mReach = addField(parent, panel, "C-99**", I18n.Text("Reach"));
+        mParry = addField(panel, panel, "+99**", I18n.Text("Parry Modifier"));
+        mBlock = addField(panel, panel, "+99**", I18n.Text("Block Modifier"));
+        parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     @Override
@@ -105,14 +92,6 @@ public class MeleeWeaponEditor extends WeaponEditor {
         mParry.setEnabled(enabled);
         mBlock.setEnabled(enabled);
         super.enableFields(enabled);
-    }
-
-    @Override
-    protected void blankFields() {
-        mReach.setValue("");
-        mParry.setValue("");
-        mBlock.setValue("");
-        super.blankFields();
     }
 
     @Override

@@ -94,21 +94,7 @@ public class NumericComparator implements Comparator<String> {
             if (d1 != d2) { // Digits before other characters
                 return d1; // True if LHS is a digit, false if the RHS is one.
             }
-            if (!d1) {
-                if (caseInsensitive) {
-                    if (c1 >= 'a' && c1 <= 'z') {
-                        c1 -= 'a' - 'A';
-                    }
-                    if (c2 >= 'a' && c2 <= 'z') {
-                        c2 -= 'a' - 'A';
-                    }
-                }
-                if (c1 != c2) {
-                    return c1 < c2;
-                }
-                i1++;
-                i2++;
-            } else { // Digits
+            if (d1) { // Digits
                 // Eat zeros.
                 while (i1 < l1 && s1.charAt(i1) == '0') {
                     i1++;
@@ -144,6 +130,20 @@ public class NumericComparator implements Comparator<String> {
                 if (nz1 != nz2) {
                     return nz1 < nz2;
                 }
+            } else {
+                if (caseInsensitive) {
+                    if (c1 >= 'a' && c1 <= 'z') {
+                        c1 -= 'a' - 'A';
+                    }
+                    if (c2 >= 'a' && c2 <= 'z') {
+                        c2 -= 'a' - 'A';
+                    }
+                }
+                if (c1 != c2) {
+                    return c1 < c2;
+                }
+                i1++;
+                i2++;
             }
             // They're identical so far, so continue comparing.
         }

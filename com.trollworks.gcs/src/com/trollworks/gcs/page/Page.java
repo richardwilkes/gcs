@@ -19,7 +19,6 @@ import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.PrintProxy;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;

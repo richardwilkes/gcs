@@ -30,8 +30,8 @@ import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.WeightValue;
-import com.trollworks.gcs.weapon.MeleeWeaponEditor;
-import com.trollworks.gcs.weapon.RangedWeaponEditor;
+import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
+import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.Container;
@@ -67,8 +67,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private JTextField                  mReferenceField;
     private PrereqsPanel                mPrereqs;
     private FeaturesPanel               mFeatures;
-    private MeleeWeaponEditor           mMeleeWeapons;
-    private RangedWeaponEditor          mRangedWeapons;
+    private MeleeWeaponListEditor       mMeleeWeapons;
+    private RangedWeaponListEditor      mRangedWeapons;
     private EquipmentModifierListEditor mModifiers;
     private Fixed6                      mContainedValue;
     private WeightValue                 mContainedWeight;
@@ -97,9 +97,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mModifiers = EquipmentModifierListEditor.createEditor(mRow);
         addSection(outer, mModifiers);
         List<WeaponStats> weapons = mRow.getWeapons();
-        mMeleeWeapons = new MeleeWeaponEditor(mRow, weapons);
+        mMeleeWeapons = new MeleeWeaponListEditor(mRow, weapons);
         addSection(outer, mMeleeWeapons);
-        mRangedWeapons = new RangedWeaponEditor(mRow, weapons);
+        mRangedWeapons = new RangedWeaponListEditor(mRow, weapons);
         addSection(outer, mRangedWeapons);
     }
 

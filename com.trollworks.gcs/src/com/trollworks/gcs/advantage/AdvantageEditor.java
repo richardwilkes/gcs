@@ -30,8 +30,8 @@ import com.trollworks.gcs.utility.FilteredList;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Text;
-import com.trollworks.gcs.weapon.MeleeWeaponEditor;
-import com.trollworks.gcs.weapon.RangedWeaponEditor;
+import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
+import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.Container;
@@ -70,8 +70,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private EditorField                           mReferenceField;
     private PrereqsPanel                          mPrereqs;
     private FeaturesPanel                         mFeatures;
-    private MeleeWeaponEditor                     mMeleeWeapons;
-    private RangedWeaponEditor                    mRangedWeapons;
+    private MeleeWeaponListEditor                 mMeleeWeapons;
+    private RangedWeaponListEditor                mRangedWeapons;
     private AdvantageModifierListEditor           mModifiers;
     private int                                   mLastLevel;
     private int                                   mLastPointsPerLevel;
@@ -112,9 +112,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         addSection(outer, mModifiers);
         if (!isContainer) {
             List<WeaponStats> weapons = mRow.getWeapons();
-            mMeleeWeapons = new MeleeWeaponEditor(mRow, weapons);
+            mMeleeWeapons = new MeleeWeaponListEditor(mRow, weapons);
             addSection(outer, mMeleeWeapons);
-            mRangedWeapons = new RangedWeaponEditor(mRow, weapons);
+            mRangedWeapons = new RangedWeaponListEditor(mRow, weapons);
             addSection(outer, mRangedWeapons);
             updatePoints();
         }
