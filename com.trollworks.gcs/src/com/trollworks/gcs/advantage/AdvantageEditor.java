@@ -475,7 +475,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         Document doc = event.getDocument();
         if (mNameField.getDocument() == doc) {
             LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
-        } else if (mUserDescField.getDocument() == doc) {
+        } else if (mUserDescField != null && mUserDescField.getDocument() == doc) {
             mUserDesc = mUserDescField.getText();
         }
     }
