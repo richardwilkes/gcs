@@ -178,14 +178,14 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             focus = null;
         }
 
+        mCharacter.recalculate();
+
         // Make sure our primary outlines exist
         createOutlines(mCharacter);
         createMeleeWeaponOutline();
         createRangedWeaponOutline();
         createReactionsOutline();
         createConditionalModifiersOutline();
-
-        mCharacter.recalculate();
 
         int    descColID = EquipmentColumn.DESCRIPTION.ordinal();
         Column column    = getEquipmentOutline().getModel().getColumnWithID(descColID);
