@@ -16,8 +16,8 @@ import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.file.SaveCommand;
 import com.trollworks.gcs.menu.file.Saveable;
-import com.trollworks.gcs.preferences.MenuKeyPreferences;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.MenuKeySettingsWindow;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.utility.Log;
@@ -63,7 +63,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         addWindowListener(this);
         addWindowFocusListener(this);
         WindowSizeEnforcer.monitor(this);
-        MenuKeyPreferences.loadFromPreferences();
+        MenuKeySettingsWindow.loadFromPreferences();
         setJMenuBar(new StdMenuBar());
         setIconImages(Images.APP_ICON_LIST);
         mUndoManager = new StdUndoManager();

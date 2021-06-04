@@ -55,8 +55,6 @@ public class PreferencesWindow extends BaseWindow implements ActionListener, Cha
         addTab(new SheetPreferences(this));
         addTab(new DisplayPreferences(this));
         addTab(new OutputPreferences(this));
-        addTab(new ThemePreferences(this));
-        addTab(new MenuKeyPreferences(this));
         addTab(new ReferenceLookupPreferences(this));
         mTabPanel.addChangeListener(this);
         Container content = getContentPane();

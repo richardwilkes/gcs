@@ -39,7 +39,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
     public BandedPanel(String title) {
         super(new ColumnLayout(1, 0, 0));
         setOpaque(true);
-        setBackground(Color.white);
+        setBackground(ThemeColor.CONTENT);
         mTitle = title;
     }
 
@@ -62,7 +62,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
     }
 
     protected Color getBandingColor(boolean odd) {
-        return odd ? ThemeColor.BANDING : Color.WHITE;
+        return odd ? ThemeColor.BANDING : ThemeColor.CONTENT;
     }
 
     private int getStep() {

@@ -12,22 +12,19 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.preferences.PreferencesWindow;
+import com.trollworks.gcs.settings.MenuKeySettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.desktop.PreferencesEvent;
-import java.awt.desktop.PreferencesHandler;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
-/** Provides the "Preferences..." command. */
-public class PreferencesCommand extends Command implements PreferencesHandler {
-    /** The singleton {@link PreferencesCommand}. */
-    public static final PreferencesCommand INSTANCE = new PreferencesCommand();
+/** Provides the "Menu Key Settings…" command. */
+public class MenuKeySettingsCommand extends Command {
+    /** The singleton {@link MenuKeySettingsCommand}. */
+    public static final MenuKeySettingsCommand INSTANCE = new MenuKeySettingsCommand();
 
-    private PreferencesCommand() {
-        super(I18n.Text("Global Preferences…"), "Preferences", KeyEvent.VK_COMMA);
+    private MenuKeySettingsCommand() {
+        super(I18n.Text("Menu Key Settings…"), "MenuKeySettings");
     }
 
     @Override
@@ -37,11 +34,6 @@ public class PreferencesCommand extends Command implements PreferencesHandler {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        PreferencesWindow.display();
-    }
-
-    @Override
-    public void handlePreferences(PreferencesEvent event) {
-        PreferencesWindow.display();
+        MenuKeySettingsWindow.display();
     }
 }
