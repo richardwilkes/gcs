@@ -62,13 +62,12 @@ import javax.swing.JScrollPane;
 
 /** A window for editing attribute settings. */
 public class AttributeSettingsWindow extends BaseWindow implements CloseHandler {
-    private static final String                             JSON_TYPE_NAME = "attribute_settings";
-    private static       Map<UUID, AttributeSettingsWindow> INSTANCES      = new HashMap<>();
-    private              GURPSCharacter                     mCharacter;
-    private              AttributeListPanel                 mListPanel;
-    private              FontAwesomeButton                  mMenuButton;
-    private              JScrollPane                        mScroller;
-    private              boolean                            mResetEnabled;
+    private static Map<UUID, AttributeSettingsWindow> INSTANCES = new HashMap<>();
+    private        GURPSCharacter                     mCharacter;
+    private        AttributeListPanel                 mListPanel;
+    private        FontAwesomeButton                  mMenuButton;
+    private        JScrollPane                        mScroller;
+    private        boolean                            mResetEnabled;
 
     /** Displays the attribute settings window. */
     public static void display(GURPSCharacter gchar) {

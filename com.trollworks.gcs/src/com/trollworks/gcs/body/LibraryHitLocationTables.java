@@ -26,18 +26,33 @@ import java.util.Collections;
 import java.util.List;
 
 public final class LibraryHitLocationTables {
-    private static HitLocationTable mHumanoid;
+    private static HitLocationTable       mHumanoid;
+    private        String                 mLibraryName;
+    private        List<HitLocationTable> mTables;
 
-    private LibraryHitLocationTables() {
+    private LibraryHitLocationTables(Library library) {
+        mLibraryName = library.getPath().getFileName().toString();
+        mTables = new ArrayList<>();
     }
 
-    public static synchronized List<HitLocationTable> get() {
-        List<HitLocationTable> tables = new ArrayList<>();
+    @Override
+    public String toString() {
+        return mLibraryName;
+    }
+
+    public List<HitLocationTable> getTables() {
+        return mTables;
+    }
+
+    public static synchronized List<LibraryHitLocationTables> get() {
+        List<LibraryHitLocationTables> all = new ArrayList<>();
         mHumanoid = null;
         Preferences.getInstance(); // Just to ensure the libraries list is initialized
         for (Library lib : Library.LIBRARIES) {
             Path dir = lib.getPath().resolve("Hit Locations");
             if (Files.isDirectory(dir)) {
+                LibraryHitLocationTables libTables = new LibraryHitLocationTables(lib);
+                List<HitLocationTable>   tables    = libTables.getTables();
                 // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
                 // directory results in leaving state around that prevents future move & delete
                 // operations. Only use this style of access for directory listings to avoid that.
@@ -46,7 +61,7 @@ public final class LibraryHitLocationTables {
                         try {
                             HitLocationTable table = new HitLocationTable(path);
                             tables.add(table);
-                            if ("humanoid".equals(table.getID())) {
+                            if (lib == Library.MASTER && "humanoid".equals(table.getID())) {
                                 mHumanoid = table;
                             }
                         } catch (IOException ioe) {
@@ -56,14 +71,17 @@ public final class LibraryHitLocationTables {
                 } catch (IOException exception) {
                     Log.error(exception);
                 }
+                if (lib == Library.MASTER && mHumanoid == null) {
+                    mHumanoid = createHumanoidTable();
+                    tables.add(mHumanoid);
+                }
+                if (!tables.isEmpty()) {
+                    Collections.sort(tables);
+                    all.add(libTables);
+                }
             }
         }
-        if (tables.isEmpty() || mHumanoid == null) {
-            mHumanoid = createHumanoidTable();
-            tables.add(mHumanoid);
-        }
-        Collections.sort(tables);
-        return tables;
+        return all;
     }
 
     public static synchronized HitLocationTable getHumanoid() {

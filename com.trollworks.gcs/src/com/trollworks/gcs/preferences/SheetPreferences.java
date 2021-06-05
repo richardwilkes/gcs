@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.body.HitLocationEditor;
-import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -50,7 +48,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JCheckBox               mUseThrustEqualsSwingMinus2;
     private JCheckBox               mUseSimpleMetricConversions;
     private JCheckBox               mAutoFillProfile;
-    private HitLocationEditor       mHitLocationsEditor;
 
     /**
      * Creates a new {@link SheetPreferences}.
@@ -85,12 +82,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules *"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", prefs.useReducedSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
         mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules (B9) *"), null, prefs.useSimpleMetricConversions());
-
-        mHitLocationsEditor = new HitLocationEditor(prefs.getHitLocations(), () -> {
-            prefs.getHitLocations().update();
-            adjustResetButton();
-        }, "*");
-        add(mHitLocationsEditor, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
 
         JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));
         label.setOpaque(false);
@@ -202,7 +193,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseThrustEqualsSwingMinus2.setSelected(Preferences.DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
         mUseReducedSwing.setSelected(Preferences.DEFAULT_USE_REDUCED_SWING);
         mUseSimpleMetricConversions.setSelected(Preferences.DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
-        mHitLocationsEditor.reset(LibraryHitLocationTables.getHumanoid());
     }
 
     @Override
@@ -217,7 +207,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
         atDefault = atDefault && prefs.autoFillProfile() == Preferences.DEFAULT_AUTO_FILL_PROFILE;
-        atDefault = atDefault && prefs.getHitLocations().equals(LibraryHitLocationTables.getHumanoid());
         return atDefault;
     }
 }

@@ -31,7 +31,7 @@ import com.trollworks.gcs.utility.text.Text;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import javax.swing.JFormattedTextField;
@@ -45,7 +45,7 @@ public class HitLocationTablePanel extends BandedPanel {
 
     public HitLocationTablePanel(HitLocationTable locations, Runnable adjustCallback) {
         super(false);
-        setLayout(new PrecisionLayout().setMargins(0));
+        setLayout(new PrecisionLayout().setMargins(0, 10, 0, 10));
         mLocations = locations;
         mAdjustCallback = adjustCallback;
         if (isSubTable()) {
@@ -66,11 +66,6 @@ public class HitLocationTablePanel extends BandedPanel {
     @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return 16;
-    }
-
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-        return new Dimension(32, 32); // This needs to be small to allow the scroll pane to work
     }
 
     @Override
@@ -149,6 +144,8 @@ public class HitLocationTablePanel extends BandedPanel {
             add(new HitLocationPanel(location, mAdjustCallback), new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         }
         adjustButtons();
+        revalidate();
+        EventQueue.invokeLater(this::repaint);
     }
 
     private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {

@@ -29,7 +29,7 @@ public class AttributeListPanel extends BandedPanel {
 
     public AttributeListPanel(Map<String, AttributeDef> attributes, Runnable adjustCallback) {
         super(false);
-        setLayout(new PrecisionLayout().setMargins(0));
+        setLayout(new PrecisionLayout().setMargins(0, 10, 0, 10));
         mAttributes = attributes;
         mAdjustCallback = adjustCallback;
         fillAttributes();

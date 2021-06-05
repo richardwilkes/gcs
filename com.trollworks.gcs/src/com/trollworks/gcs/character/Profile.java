@@ -161,10 +161,12 @@ public class Profile {
             if (bodyType.startsWith("winged_")) {
                 bodyType = bodyType.substring(7) + ".winged";
             }
-            for (HitLocationTable table : LibraryHitLocationTables.get()) {
-                if (bodyType.equals(table.getID())) {
-                    mCharacter.getSettings().setHitLocations(table.clone());
-                    break;
+            for (LibraryHitLocationTables tables : LibraryHitLocationTables.get()) {
+                for (HitLocationTable table : tables.getTables()) {
+                    if (bodyType.equals(table.getID())) {
+                        mCharacter.getSettings().setHitLocations(table.clone());
+                        break;
+                    }
                 }
             }
         }

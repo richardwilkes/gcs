@@ -13,20 +13,20 @@ package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.AttributeSettingsWindow;
+import com.trollworks.gcs.settings.HitLocationSettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class AttributeSettingsCommand extends Command {
-    public static final AttributeSettingsCommand PER_SHEET = new AttributeSettingsCommand(false);
-    public static final AttributeSettingsCommand DEFAULTS  = new AttributeSettingsCommand(true);
-    private             boolean                  mForDefaults;
+public class HitLocationSettingsCommand extends Command {
+    public static final HitLocationSettingsCommand PER_SHEET = new HitLocationSettingsCommand(false);
+    public static final HitLocationSettingsCommand DEFAULTS  = new HitLocationSettingsCommand(true);
+    private             boolean                    mForDefaults;
 
-    private AttributeSettingsCommand(boolean defaults) {
-        super(defaults ? I18n.Text("Default Attributes…") : I18n.Text("Attributes…"),
-                defaults ? "default_attribute_settings" : "attribute_settings");
+    private HitLocationSettingsCommand(boolean defaults) {
+        super(defaults ? I18n.Text("Default Hit Locations…") : I18n.Text("Hit Locations…"),
+                defaults ? "default_hit_location_settings" : "hit_location_settings");
         mForDefaults = defaults;
     }
 
@@ -43,11 +43,11 @@ public class AttributeSettingsCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         if (!UIUtilities.inModalState()) {
             if (mForDefaults) {
-                AttributeSettingsWindow.display(null);
+               HitLocationSettingsWindow.display(null);
             } else {
                 SheetDockable target = getTarget(SheetDockable.class);
                 if (target != null) {
-                    AttributeSettingsWindow.display(target.getDataFile());
+                    HitLocationSettingsWindow.display(target.getDataFile());
                 }
             }
         }

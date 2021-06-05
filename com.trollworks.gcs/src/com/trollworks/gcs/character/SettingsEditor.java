@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.body.HitLocationEditor;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.page.PageSettings;
@@ -73,7 +72,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JComboBox<DisplayOption> mNotesDisplayCombo;
     private JTextArea                mBlockLayoutField;
     private PageSettingsEditor       mPageSettingsEditor;
-    private HitLocationEditor        mHitLocationsEditor;
     private JButton                  mResetButton;
     private boolean                  mUpdatePending;
 
@@ -152,13 +150,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
         mPageSettingsEditor = new PageSettingsEditor(mSettings.getPageSettings(), this::adjustResetButton, this);
         panel.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
-
-        mHitLocationsEditor = new HitLocationEditor(mSettings.getHitLocations(), () -> {
-            mSettings.getHitLocations().update();
-            mCharacter.notifyOfChange();
-            adjustResetButton();
-        }, "");
-        panel.add(mHitLocationsEditor, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new JTextArea(Preferences.linesToString(mSettings.blockLayout()));
@@ -262,7 +253,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == prefs.getNotesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(prefs.getBlockLayout()));
         atDefaults = atDefaults && mSettings.getPageSettings().equals(prefs.getPageSettings());
-        atDefaults = atDefaults && mSettings.getHitLocations().equals(Preferences.getInstance().getHitLocations());
         return atDefaults;
     }
 
@@ -306,7 +296,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
         mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
         mPageSettingsEditor.reset();
-        mHitLocationsEditor.reset(prefs.getHitLocations());
     }
 
     @Override

@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.preferences.QuickExport;
 import com.trollworks.gcs.settings.AttributeSettingsWindow;
+import com.trollworks.gcs.settings.HitLocationSettingsWindow;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -75,11 +76,13 @@ public class SheetDockable extends CollectedOutlinesDockable {
     public boolean attemptClose() {
         boolean closed = super.attemptClose();
         if (closed) {
-            SettingsEditor editor = SettingsEditor.find(getDataFile());
+            GURPSCharacter gurpsCharacter = getDataFile();
+            SettingsEditor editor         = SettingsEditor.find(gurpsCharacter);
             if (editor != null) {
                 editor.attemptClose();
             }
-            AttributeSettingsWindow.closeFor(getDataFile());
+            AttributeSettingsWindow.closeFor(gurpsCharacter);
+            HitLocationSettingsWindow.closeFor(gurpsCharacter);
             mSheet.dispose();
         }
         return closed;
