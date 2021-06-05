@@ -40,6 +40,8 @@ public class Fonts {
     public static final  String             FONT_AWESOME_SOLID   = "Font Awesome 5 Free Solid";
     /** The name of the Roboto font. */
     public static final  String             ROBOTO               = "Roboto";
+    /** The name of the Roboto Black font. */
+    public static final  String             ROBOTO_BLACK         = "Roboto Black";
     /** The label font. */
     public static final  String             KEY_LABEL_PRIMARY    = "label.primary";
     /** The small label font. */
@@ -92,9 +94,9 @@ public class Fonts {
 
         register(KEY_LABEL_PRIMARY, I18n.Text("Primary Labels"), new Font(ROBOTO, Font.PLAIN, 9));
         register(KEY_LABEL_SECONDARY, I18n.Text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 8));
-        register(KEY_FIELD_PRIMARY, I18n.Text("Primary Fields"), new Font(ROBOTO, Font.BOLD, 9));
+        register(KEY_FIELD_PRIMARY, I18n.Text("Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 9));
         register(KEY_FIELD_SECONDARY, I18n.Text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 8));
-        register(KEY_FOOTER_PRIMARY, I18n.Text("Primary Footer"), new Font(ROBOTO, Font.BOLD, 8));
+        register(KEY_FOOTER_PRIMARY, I18n.Text("Primary Footer"), new Font(ROBOTO_BLACK, Font.PLAIN, 8));
         register(KEY_FOOTER_SECONDARY, I18n.Text("Secondary Footer"), new Font(ROBOTO, Font.PLAIN, 6));
         Preferences prefs = Preferences.getInstance();
         for (String key : KEYS) {
@@ -213,6 +215,8 @@ public class Fonts {
             mSize = m.getIntWithDefault(SIZE, 9);
             if (mSize < 1) {
                 mSize = 1;
+            } else if (mSize > 1024) {
+                mSize = 1024;
             }
         }
 
