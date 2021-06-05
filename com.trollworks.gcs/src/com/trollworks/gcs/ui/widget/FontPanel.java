@@ -41,7 +41,6 @@ public class FontPanel extends ActionPanel implements ActionListener {
 
         mFontNameMenu = new JComboBox<>(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
         mFontNameMenu.setOpaque(false);
-        mFontNameMenu.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Changes the font")));
         mFontNameMenu.setMaximumRowCount(25);
         mFontNameMenu.addActionListener(this);
         UIUtilities.setToPreferredSizeOnly(mFontNameMenu);
@@ -56,7 +55,6 @@ public class FontPanel extends ActionPanel implements ActionListener {
         sizes[9] = Integer.valueOf(18);
         mFontSizeMenu = new JComboBox<>(sizes);
         mFontSizeMenu.setOpaque(false);
-        mFontSizeMenu.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Changes the font size")));
         mFontSizeMenu.setMaximumRowCount(sizes.length);
         mFontSizeMenu.addActionListener(this);
         UIUtilities.setToPreferredSizeOnly(mFontSizeMenu);
@@ -64,7 +62,6 @@ public class FontPanel extends ActionPanel implements ActionListener {
 
         mFontStyleMenu = new JComboBox<>(Fonts.FontStyle.values());
         mFontStyleMenu.setOpaque(false);
-        mFontStyleMenu.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Changes the font style")));
         mFontStyleMenu.addActionListener(this);
         UIUtilities.setToPreferredSizeOnly(mFontStyleMenu);
         add(mFontStyleMenu);
