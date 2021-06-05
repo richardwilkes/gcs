@@ -29,7 +29,8 @@ import javax.swing.SwingConstants;
 
 /** A simple panel that draws banded colors behind its contents. */
 public class BandedPanel extends ActionPanel implements Scrollable {
-    private String mTitle;
+    private String  mTitle;
+    private boolean mForceTrackWidth;
 
     /**
      * Creates a new {@link BandedPanel}.
@@ -43,6 +44,19 @@ public class BandedPanel extends ActionPanel implements Scrollable {
         mTitle = title;
     }
 
+    /**
+     * Creates a new {@link BandedPanel}.
+     *
+     * @param forceTrackWidth {@code true} if the width should always track the viewport.
+     */
+    public BandedPanel(boolean forceTrackWidth) {
+        super(new ColumnLayout(1, 0, 0));
+        setOpaque(true);
+        setBackground(ThemeColor.CONTENT);
+        mTitle = "";
+        mForceTrackWidth = forceTrackWidth;
+    }
+
     @Override
     protected void paintComponent(Graphics gc) {
         super.paintComponent(GraphicsUtilities.prepare(gc));
@@ -53,6 +67,9 @@ public class BandedPanel extends ActionPanel implements Scrollable {
         int count = getComponentCount();
         for (int i = 0; i < count; i += step) {
             Rectangle compBounds = getComponent(i).getBounds();
+            for (int j = i + 1; j < i + step; j++) {
+                compBounds = compBounds.union(getComponent(j).getBounds());
+            }
             bounds.y = compBounds.y;
             bounds.height = compBounds.height;
             int logical = i / step;
@@ -111,7 +128,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
 
     @Override
     public boolean getScrollableTracksViewportWidth() {
-        return UIUtilities.shouldTrackViewportWidth(this);
+        return mForceTrackWidth || UIUtilities.shouldTrackViewportWidth(this);
     }
 
     @Override

@@ -25,6 +25,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.InputEvent;
 import java.awt.event.WindowEvent;
@@ -64,8 +65,8 @@ public class MenuKeySettingsWindow extends BaseWindow implements CloseHandler {
     private MenuKeySettingsWindow() {
         super(I18n.Text("Menu Key Settings"));
         mMap = new HashMap<>();
-        mPanel = new BandedPanel("");
-        mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(2, 5, 2, 5));
+        mPanel = new BandedPanel(true);
+        mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 26).setVerticalSpacing(0));
         List<Command> cmds = StdMenuBar.getCommands();
         int           all  = cmds.size();
         int           half = all / 2;
@@ -85,6 +86,9 @@ public class MenuKeySettingsWindow extends BaseWindow implements CloseHandler {
         content.add(createResetPanel(), BorderLayout.SOUTH);
         adjustResetButton();
         WindowUtils.packAndCenterWindowOn(this, null);
+        int width = getSize().width;
+        setMinimumSize(new Dimension(width, 200));
+        setMaximumSize(new Dimension(width, getPreferredSize().height));
     }
 
     private void addOne(Command cmd) {
@@ -112,7 +116,10 @@ public class MenuKeySettingsWindow extends BaseWindow implements CloseHandler {
             }
             adjustResetButton();
         });
-        mPanel.add(button);
+        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(4));
+        wrapper.setOpaque(false);
+        wrapper.add(button);
+        mPanel.add(wrapper);
         mPanel.add(new JLabel(cmd.getTitle()));
     }
 

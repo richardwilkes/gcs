@@ -44,8 +44,8 @@ public class HitLocationTablePanel extends BandedPanel {
     private EditorField      mFirstField;
 
     public HitLocationTablePanel(HitLocationTable locations, Runnable adjustCallback) {
-        super("hit-locations");
-        setLayout(new PrecisionLayout());
+        super(false);
+        setLayout(new PrecisionLayout().setMargins(0));
         mLocations = locations;
         mAdjustCallback = adjustCallback;
         if (isSubTable()) {
@@ -202,7 +202,7 @@ public class HitLocationTablePanel extends BandedPanel {
     @Override
     protected Color getBandingColor(boolean odd) {
         if (isSubTable()) {
-            return Colors.adjustSaturation(ThemeColor.BANDING, odd ? 0.05f : -0.05f);
+            return Colors.adjustSaturation(super.getBandingColor(odd), 0.05f);
         }
         return super.getBandingColor(odd);
     }

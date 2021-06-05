@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
@@ -35,6 +36,7 @@ import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
@@ -68,7 +70,7 @@ public class PageRefMappingsWindow extends BaseWindow implements CloseHandler {
     private PageRefMappingsWindow() {
         super(I18n.Text("Page Reference Mappings"));
         setLayout(new BorderLayout());
-        mPanel = new BandedPanel("");
+        mPanel = new BandedPanel(true);
         buildPanel();
         Container   content  = getContentPane();
         JScrollPane scroller = new JScrollPane(mPanel);
@@ -81,13 +83,16 @@ public class PageRefMappingsWindow extends BaseWindow implements CloseHandler {
         Preferences prefs      = Preferences.getInstance();
         Color       background = new Color(255, 255, 224);
         mPanel.removeAll();
-        mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(2, 5, 2, 5).setVerticalSpacing(0));
+        mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 10).setVerticalSpacing(0));
         for (PDFRef ref : prefs.allPdfRefs(false)) {
             JLabel idLabel = new JLabel(ref.getID(), SwingConstants.CENTER);
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
             idLabel.setBackground(background);
-            mPanel.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(50));
+            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(6, 0, 6, 0));
+            wrapper.setOpaque(false);
+            wrapper.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(50).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
+            mPanel.add(wrapper, new PrecisionLayoutData().setFillAlignment());
             EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)),
                     (evt) -> ref.setPageToIndexOffset(((Integer) evt.getNewValue()).intValue()),
                     SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()),

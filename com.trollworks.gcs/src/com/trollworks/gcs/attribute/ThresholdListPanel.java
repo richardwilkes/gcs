@@ -27,8 +27,8 @@ public class ThresholdListPanel extends BandedPanel {
     private Runnable     mAdjustCallback;
 
     public ThresholdListPanel(AttributeDef attrDef, Runnable adjustCallback) {
-        super("threshold-list");
-        setLayout(new PrecisionLayout());
+        super(false);
+        setLayout(new PrecisionLayout().setMargins(0));
         setBorder(new LineBorder(Color.LIGHT_GRAY));
         setBackground(Colors.adjustSaturation(ThemeColor.BANDING, -0.05f));
         mAttrDef = attrDef;
@@ -38,7 +38,7 @@ public class ThresholdListPanel extends BandedPanel {
 
     @Override
     protected Color getBandingColor(boolean odd) {
-        return Colors.adjustSaturation(ThemeColor.BANDING, odd ? 0.05f : -0.05f);
+        return Colors.adjustSaturation(super.getBandingColor(odd), 0.05f);
     }
 
     private void fillThresholds() {
