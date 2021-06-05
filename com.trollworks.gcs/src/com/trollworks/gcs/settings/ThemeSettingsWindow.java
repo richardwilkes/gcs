@@ -18,9 +18,11 @@ import com.trollworks.gcs.ui.Theme;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.ColorWell;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -28,12 +30,10 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -46,7 +46,8 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
     private static ThemeSettingsWindow INSTANCE;
     private        FontPanel[]         mFontPanels;
     private        List<ColorTracker>  mColorWells;
-    private        JButton             mResetButton;
+    private        FontAwesomeButton   mResetFontsButton;
+    private        FontAwesomeButton   mResetColorsButton;
     private        boolean             mIgnore;
 
     /** Displays the theme settings window. */
@@ -67,7 +68,7 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
         super(I18n.Text("Theme Settings"));
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
 
-        addHeader(panel, I18n.Text("Fonts"), 0);
+        mResetFontsButton = addHeader(panel, I18n.Text("Fonts"), 0, this::resetFonts);
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2));
         wrapper.setOpaque(false);
         String[] keys = Fonts.getKeys();
@@ -100,7 +101,7 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
                             BaseWindow.forceRepaintAndInvalidate();
                         }
                     }
-                    adjustResetButton();
+                    adjustResetButtons();
                 }
             });
             wrapper.add(mFontPanels[i]);
@@ -108,7 +109,7 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
         }
         panel.add(wrapper);
 
-        addHeader(panel, I18n.Text("Colors"), 16);
+        mResetColorsButton = addHeader(panel, I18n.Text("Colors"), 16, this::resetColors);
         int cols = 8;
         wrapper = new JPanel(new PrecisionLayout().setColumns(cols));
         wrapper.setOpaque(false);
@@ -140,16 +141,20 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
         JScrollPane scroller = new JScrollPane(panel);
         scroller.setBorder(null);
         content.add(scroller, BorderLayout.CENTER);
-        content.add(createResetPanel(), BorderLayout.SOUTH);
-        adjustResetButton();
+        adjustResetButtons();
         WindowUtils.packAndCenterWindowOn(this, null);
     }
 
-    private void addHeader(Container parent, String text, int topMargin) {
-        JLabel label = new JLabel(text);
+    private FontAwesomeButton addHeader(Container parent, String text, int topMargin, Runnable reset) {
+        JPanel header = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        JLabel label  = new JLabel(text);
         label.setFont(label.getFont().deriveFont(Font.BOLD));
-        parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setTopMargin(topMargin));
-        parent.add(new JSeparator(SwingConstants.HORIZONTAL), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        header.add(label);
+        FontAwesomeButton resetButton = new FontAwesomeButton("\uf011", I18n.Text("Reset to Factory Defaults"), reset);
+        header.add(resetButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        header.add(new JSeparator(SwingConstants.HORIZONTAL), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
+        parent.add(header, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setTopMargin(topMargin));
+        return resetButton;
     }
 
     private void addColorTracker(Container parent, ThemeColor color, int leftMargin) {
@@ -161,28 +166,30 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
         parent.add(tracker, new PrecisionLayoutData().setLeftMargin(4));
     }
 
-    private JPanel createResetPanel() {
-        mResetButton = new JButton(I18n.Text("Reset to Factory Defaults"));
-        mResetButton.addActionListener((evt) -> {
-            mIgnore = true;
-            for (ColorTracker tracker : mColorWells) {
-                tracker.reset();
-            }
-            Fonts.restoreDefaults();
-            for (FontPanel panel : mFontPanels) {
-                panel.setCurrentFont(UIManager.getFont(panel.getActionCommand()));
-            }
-            mIgnore = false;
-            BaseWindow.forceRepaintAndInvalidate();
-            Theme.repaint();
-            adjustResetButton();
-        });
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panel.add(mResetButton);
-        return panel;
+    private void resetFonts() {
+        mIgnore = true;
+        Fonts.restoreDefaults();
+        for (FontPanel panel : mFontPanels) {
+            panel.setCurrentFont(UIManager.getFont(panel.getActionCommand()));
+        }
+        mIgnore = false;
+        BaseWindow.forceRepaintAndInvalidate();
+        Theme.repaint();
+        adjustResetButtons();
     }
 
-    private void adjustResetButton() {
+    private void resetColors() {
+        mIgnore = true;
+        for (ColorTracker tracker : mColorWells) {
+            tracker.reset();
+        }
+        mIgnore = false;
+        BaseWindow.forceRepaintAndInvalidate();
+        Theme.repaint();
+        adjustResetButtons();
+    }
+
+    private void adjustResetButtons() {
         boolean enabled = false;
         for (ThemeColor color : ThemeColor.ALL) {
             if (color.getRGB() != Theme.DEFAULT.getColor(color.getIndex()).getRGB()) {
@@ -190,7 +197,8 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
                 break;
             }
         }
-        mResetButton.setEnabled(enabled || !Fonts.isSetToDefaults());
+        mResetColorsButton.setEnabled(enabled);
+        mResetFontsButton.setEnabled(!Fonts.isSetToDefaults());
     }
 
     @Override
@@ -232,7 +240,7 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
         public void colorChanged(Color color) {
             if (!mIgnore) {
                 Theme.current().setColor(mIndex, color);
-                adjustResetButton();
+                adjustResetButtons();
                 Theme.repaint();
             }
         }
