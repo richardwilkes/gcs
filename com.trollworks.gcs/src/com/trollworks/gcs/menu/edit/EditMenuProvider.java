@@ -50,6 +50,7 @@ public final class EditMenuProvider {
         cmds.add(ConvertToContainer.INSTANCE);
         cmds.add(SettingsCommand.INSTANCE);
         cmds.add(ThemeSettingsCommand.INSTANCE);
+        cmds.add(PageReferenceSettingsCommand.INSTANCE);
         if (!Platform.isMacintosh()) {
             cmds.add(PreferencesCommand.INSTANCE);
         }
@@ -94,6 +95,7 @@ public final class EditMenuProvider {
         if (!Platform.isMacintosh()) {
             menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
         }
+        menu.add(new DynamicMenuItem(PageReferenceSettingsCommand.INSTANCE));
         menu.add(new DynamicMenuItem(ThemeSettingsCommand.INSTANCE));
         menu.add(new DynamicMenuItem(MenuKeySettingsCommand.INSTANCE));
         DynamicMenuEnabler.add(stateMenu);

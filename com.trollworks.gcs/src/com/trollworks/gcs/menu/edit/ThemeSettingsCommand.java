@@ -18,7 +18,6 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "Theme Settings…" command. */
 public class ThemeSettingsCommand extends Command {
     /** The singleton {@link ThemeSettingsCommand}. */
     public static final ThemeSettingsCommand INSTANCE = new ThemeSettingsCommand();

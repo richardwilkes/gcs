@@ -792,14 +792,6 @@ public class Preferences extends ChangeableData {
         mPdfRefs.remove(ref.getID());
     }
 
-    public void clearPdfRefs() {
-        mPdfRefs = new HashMap<>();
-    }
-
-    public boolean arePdfRefsSetToDefault() {
-        return mPdfRefs.isEmpty();
-    }
-
     public Fonts.Info getFontInfo(String key) {
         return mFontInfo.get(key);
     }

@@ -12,18 +12,18 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.MenuKeySettingsWindow;
+import com.trollworks.gcs.settings.PageReferenceSettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class MenuKeySettingsCommand extends Command {
-    /** The singleton {@link MenuKeySettingsCommand}. */
-    public static final MenuKeySettingsCommand INSTANCE = new MenuKeySettingsCommand();
+public class PageReferenceSettingsCommand extends Command {
+    /** The singleton {@link PageReferenceSettingsCommand}. */
+    public static final PageReferenceSettingsCommand INSTANCE = new PageReferenceSettingsCommand();
 
-    private MenuKeySettingsCommand() {
-        super(I18n.Text("Menu Key Settings…"), "MenuKeySettings");
+    private PageReferenceSettingsCommand() {
+        super(I18n.Text("Page Reference Settings…"), "ReferenceLookupSettings");
     }
 
     @Override
@@ -33,6 +33,6 @@ public class MenuKeySettingsCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        MenuKeySettingsWindow.display();
+        PageReferenceSettingsWindow.display();
     }
 }

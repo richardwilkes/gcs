@@ -65,7 +65,7 @@ public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
 
     private ThemeSettingsWindow() {
         super(I18n.Text("Theme Settings"));
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(5));
+        JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
 
         addHeader(panel, I18n.Text("Fonts"), 0);
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2));
