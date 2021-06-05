@@ -87,9 +87,9 @@ public class PageRefMappingsWindow extends BaseWindow implements CloseHandler {
             FontAwesomeButton removeButton = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), null);
             removeButton.setClickFunction(() -> {
                 String   cancel  = I18n.Text("Cancel");
-                Object[] options = {I18n.Text("Delete"), cancel};
+                Object[] options = {I18n.Text("Remove"), cancel};
                 if (WindowUtils.showConfirmDialog(this, String.format(I18n.Text("""
-                                Are you sure you want to delete this page reference
+                                Are you sure you want to remove this page reference
                                 mapping from %s to "%s"?"""), ref.getID(), ref.getPath().getFileName().toString()),
                         "", JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.YES_OPTION) {
                     Preferences.getInstance().removePdfRef(ref);
