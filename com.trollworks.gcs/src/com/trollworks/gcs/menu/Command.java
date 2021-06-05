@@ -84,8 +84,10 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      */
     public Command(String title, String command, int keyCode, int modifiers) {
         super(title);
-        setAccelerator(keyCode, modifiers);
-        mOriginalAccelerator = getAccelerator();
+        if (keyCode != 0) {
+            setAccelerator(keyCode, modifiers);
+            mOriginalAccelerator = getAccelerator();
+        }
         setCommand(command);
     }
 

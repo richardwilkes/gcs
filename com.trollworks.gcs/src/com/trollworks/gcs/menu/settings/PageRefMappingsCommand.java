@@ -9,21 +9,20 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.menu.edit;
+package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.MenuKeySettingsWindow;
+import com.trollworks.gcs.settings.PageRefMappingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class MenuKeySettingsCommand extends Command {
-    /** The singleton {@link MenuKeySettingsCommand}. */
-    public static final MenuKeySettingsCommand INSTANCE = new MenuKeySettingsCommand();
+public class PageRefMappingsCommand extends Command {
+    public static final PageRefMappingsCommand INSTANCE = new PageRefMappingsCommand();
 
-    private MenuKeySettingsCommand() {
-        super(I18n.Text("Menu Key Settings…"), "MenuKeySettings");
+    private PageRefMappingsCommand() {
+        super(I18n.Text("Page Reference Mappings…"), "PageReferenceMappings");
     }
 
     @Override
@@ -33,6 +32,6 @@ public class MenuKeySettingsCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        MenuKeySettingsWindow.display();
+        PageRefMappingsWindow.display();
     }
 }

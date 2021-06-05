@@ -16,7 +16,7 @@ import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.pdfview.PDFServer;
 import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.settings.PageReferenceSettingsWindow;
+import com.trollworks.gcs.settings.PageRefMappingsWindow;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -115,7 +115,7 @@ public class OpenPageReferenceCommand extends Command {
                 if (path != null) {
                     ref = new PDFRef(id, path, 0);
                     prefs.putPdfRef(ref);
-                    PageReferenceSettingsWindow.rebuild();
+                    PageRefMappingsWindow.rebuild();
                 }
             }
             if (ref != null) {

@@ -13,9 +13,6 @@ package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.Json;
@@ -26,12 +23,8 @@ import com.trollworks.gcs.utility.text.NumericComparator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public class AttributeSet implements Comparable<AttributeSet> {
@@ -87,31 +80,5 @@ public class AttributeSet implements Comparable<AttributeSet> {
     @Override
     public String toString() {
         return mName;
-    }
-
-    public static List<AttributeSet> get() {
-        List<AttributeSet> list = new ArrayList<>();
-        Preferences.getInstance(); // Just to ensure the libraries list is initialized
-        for (Library lib : Library.LIBRARIES) {
-            Path dir = lib.getPath().resolve("Attributes");
-            if (Files.isDirectory(dir)) {
-                // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
-                // directory results in leaving state around that prevents future move & delete
-                // operations. Only use this style of access for directory listings to avoid that.
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                    for (Path path : stream) {
-                        try {
-                            list.add(new AttributeSet(path));
-                        } catch (IOException ioe) {
-                            Log.error("unable to load " + path, ioe);
-                        }
-                    }
-                } catch (IOException exception) {
-                    Log.error(exception);
-                }
-            }
-        }
-        Collections.sort(list);
-        return list;
     }
 }

@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.preferences.QuickExport;
+import com.trollworks.gcs.settings.AttributeSettingsWindow;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -78,6 +79,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
             if (editor != null) {
                 editor.attemptClose();
             }
+            AttributeSettingsWindow.closeFor(getDataFile());
             mSheet.dispose();
         }
         return closed;

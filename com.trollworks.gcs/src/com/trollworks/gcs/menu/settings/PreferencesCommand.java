@@ -9,21 +9,23 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.menu.edit;
+package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.ThemeSettingsWindow;
+import com.trollworks.gcs.preferences.PreferencesWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
+import java.awt.desktop.PreferencesEvent;
+import java.awt.desktop.PreferencesHandler;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
-public class ThemeSettingsCommand extends Command {
-    /** The singleton {@link ThemeSettingsCommand}. */
-    public static final ThemeSettingsCommand INSTANCE = new ThemeSettingsCommand();
+public class PreferencesCommand extends Command implements PreferencesHandler {
+    public static final PreferencesCommand INSTANCE = new PreferencesCommand();
 
-    private ThemeSettingsCommand() {
-        super(I18n.Text("Theme Settings…"), "ThemeSettings");
+    private PreferencesCommand() {
+        super(I18n.Text("Default Sheet…"), "DefaultSheetSettings", KeyEvent.VK_COMMA);
     }
 
     @Override
@@ -33,6 +35,11 @@ public class ThemeSettingsCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        ThemeSettingsWindow.display();
+        PreferencesWindow.display();
+    }
+
+    @Override
+    public void handlePreferences(PreferencesEvent event) {
+        PreferencesWindow.display();
     }
 }

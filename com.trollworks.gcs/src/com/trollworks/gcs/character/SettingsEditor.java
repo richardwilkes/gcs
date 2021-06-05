@@ -11,9 +11,6 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.attribute.Attribute;
-import com.trollworks.gcs.attribute.AttributeDef;
-import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.body.HitLocationEditor;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
@@ -40,9 +37,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -78,7 +73,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
     private JComboBox<DisplayOption> mNotesDisplayCombo;
     private JTextArea                mBlockLayoutField;
     private PageSettingsEditor       mPageSettingsEditor;
-    private AttributeEditor          mAttributeEditor;
     private HitLocationEditor        mHitLocationsEditor;
     private JButton                  mResetButton;
     private boolean                  mUpdatePending;
@@ -158,21 +152,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
 
         mPageSettingsEditor = new PageSettingsEditor(mSettings.getPageSettings(), this::adjustResetButton, this);
         panel.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
-
-        mAttributeEditor = new AttributeEditor(mSettings.getAttributes(), () -> {
-            Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
-            Map<String, Attribute> newAttributes = new HashMap<>();
-            for (String key : mCharacter.getSettings().getAttributes().keySet()) {
-                Attribute attribute = oldAttributes.get(key);
-                newAttributes.put(key, attribute != null ? attribute : new Attribute(key));
-            }
-            oldAttributes.clear();
-            oldAttributes.putAll(newAttributes);
-            mAttributeEditor.adjustButtons();
-            mCharacter.notifyOfChange();
-            adjustResetButton();
-        }, "");
-        panel.add(mAttributeEditor, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mHitLocationsEditor = new HitLocationEditor(mSettings.getHitLocations(), () -> {
             mSettings.getHitLocations().update();
@@ -283,7 +262,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == prefs.getNotesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(prefs.getBlockLayout()));
         atDefaults = atDefaults && mSettings.getPageSettings().equals(prefs.getPageSettings());
-        atDefaults = atDefaults && mSettings.getAttributes().equals(Preferences.getInstance().getAttributes());
         atDefaults = atDefaults && mSettings.getHitLocations().equals(Preferences.getInstance().getHitLocations());
         return atDefaults;
     }
@@ -328,7 +306,6 @@ public class SettingsEditor extends BaseWindow implements ActionListener, Docume
         mNotesDisplayCombo.setSelectedItem(prefs.getNotesDisplay());
         mBlockLayoutField.setText(Preferences.linesToString(prefs.getBlockLayout()));
         mPageSettingsEditor.reset();
-        mAttributeEditor.reset(AttributeDef.cloneMap(prefs.getAttributes()));
         mHitLocationsEditor.reset(prefs.getHitLocations());
     }
 

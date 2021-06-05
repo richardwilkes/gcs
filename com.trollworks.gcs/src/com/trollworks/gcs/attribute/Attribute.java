@@ -18,6 +18,7 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class Attribute {
     public static final  String ID_ATTR_PREFIX = "attr.";
@@ -179,5 +180,41 @@ public class Attribute {
 
             w.endMap();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Attribute attribute = (Attribute) o;
+        if (Double.compare(attribute.mAdjustment, mAdjustment) != 0) {
+            return false;
+        }
+        if (Double.compare(attribute.mBonus, mBonus) != 0) {
+            return false;
+        }
+        if (mCostReduction != attribute.mCostReduction) {
+            return false;
+        }
+        if (mDamage != attribute.mDamage) {
+            return false;
+        }
+        return Objects.equals(mAttrID, attribute.mAttrID);
+    }
+
+    @Override
+    public int hashCode() {
+        int  result = mAttrID != null ? mAttrID.hashCode() : 0;
+        long temp   = Double.doubleToLongBits(mAdjustment);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(mBonus);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + mCostReduction;
+        result = 31 * result + mDamage;
+        return result;
     }
 }

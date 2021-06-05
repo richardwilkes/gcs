@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.menu.edit;
+package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.character.SettingsEditor;
 import com.trollworks.gcs.character.SheetDockable;
@@ -20,16 +20,11 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-/** Provides the "Sheet Settings..." command. */
 public class SettingsCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String CMD_SETTINGS = "Settings";
-
-    /** The singleton {@link SettingsCommand}. */
     public static final SettingsCommand INSTANCE = new SettingsCommand();
 
     private SettingsCommand() {
-        super(I18n.Text("Sheet Settings…"), CMD_SETTINGS, KeyEvent.VK_COMMA, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.Text("Sheet…"), "SheetSettings", KeyEvent.VK_COMMA, SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override

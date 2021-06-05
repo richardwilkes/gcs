@@ -42,17 +42,17 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A window for editing page reference lookup settings. */
-public class PageReferenceSettingsWindow extends BaseWindow implements CloseHandler {
-    private static PageReferenceSettingsWindow INSTANCE;
-    private        BandedPanel                 mPanel;
+public class PageRefMappingsWindow extends BaseWindow implements CloseHandler {
+    private static PageRefMappingsWindow INSTANCE;
+    private        BandedPanel           mPanel;
 
     /** Displays the page reference lookup settings window. */
     public static void display() {
         if (!UIUtilities.inModalState()) {
-            PageReferenceSettingsWindow wnd;
-            synchronized (PageReferenceSettingsWindow.class) {
+            PageRefMappingsWindow wnd;
+            synchronized (PageRefMappingsWindow.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new PageReferenceSettingsWindow();
+                    INSTANCE = new PageRefMappingsWindow();
                 }
                 wnd = INSTANCE;
             }
@@ -67,7 +67,7 @@ public class PageReferenceSettingsWindow extends BaseWindow implements CloseHand
         }
     }
 
-    private PageReferenceSettingsWindow() {
+    private PageRefMappingsWindow() {
         super(I18n.Text("Page Reference Settings"));
         setLayout(new BorderLayout());
         mPanel = new BandedPanel("");
@@ -144,7 +144,7 @@ public class PageReferenceSettingsWindow extends BaseWindow implements CloseHand
 
     @Override
     public void dispose() {
-        synchronized (PageReferenceSettingsWindow.class) {
+        synchronized (PageRefMappingsWindow.class) {
             INSTANCE = null;
         }
         super.dispose();

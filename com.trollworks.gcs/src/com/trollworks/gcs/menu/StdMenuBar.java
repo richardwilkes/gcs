@@ -16,6 +16,7 @@ import com.trollworks.gcs.menu.file.FileMenuProvider;
 import com.trollworks.gcs.menu.help.HelpMenuProvider;
 import com.trollworks.gcs.menu.item.ItemMenuProvider;
 import com.trollworks.gcs.menu.library.LibraryMenu;
+import com.trollworks.gcs.menu.settings.SettingsMenuProvider;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class StdMenuBar extends JMenuBar {
         cmds.addAll(FileMenuProvider.getModifiableCommands());
         cmds.addAll(EditMenuProvider.getModifiableCommands());
         cmds.addAll(ItemMenuProvider.getModifiableCommands());
+        cmds.addAll(SettingsMenuProvider.getModifiableCommands());
         cmds.sort((Command c1, Command c2) -> NumericComparator.caselessCompareStrings(c1.getTitle(), c2.getTitle()));
         return cmds;
     }
@@ -40,6 +42,7 @@ public class StdMenuBar extends JMenuBar {
         add(EditMenuProvider.createMenu());
         add(ItemMenuProvider.createMenu());
         add(new LibraryMenu());
+        add(SettingsMenuProvider.createMenu());
         add(HelpMenuProvider.createMenu());
     }
 }

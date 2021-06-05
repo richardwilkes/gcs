@@ -13,7 +13,6 @@ package com.trollworks.gcs;
 
 import com.trollworks.gcs.cmdline.Export;
 import com.trollworks.gcs.cmdline.LoadSave;
-import com.trollworks.gcs.menu.edit.PreferencesCommand;
 import com.trollworks.gcs.menu.file.OpenCommand;
 import com.trollworks.gcs.menu.file.OpenDataFileCommand;
 import com.trollworks.gcs.menu.file.PrintCommand;
@@ -241,9 +240,6 @@ public final class GCS {
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Action.APP_ABOUT)) {
                 desktop.setAboutHandler(AboutCommand.INSTANCE);
-            }
-            if (desktop.isSupported(Action.APP_PREFERENCES)) {
-                desktop.setPreferencesHandler(PreferencesCommand.INSTANCE);
             }
             if (desktop.isSupported(Action.APP_OPEN_FILE)) {
                 desktop.setOpenFileHandler(OpenCommand.INSTANCE);

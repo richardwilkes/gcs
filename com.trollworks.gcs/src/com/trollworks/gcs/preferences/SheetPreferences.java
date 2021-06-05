@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.preferences;
 
-import com.trollworks.gcs.attribute.AttributeDef;
-import com.trollworks.gcs.attribute.AttributeEditor;
 import com.trollworks.gcs.body.HitLocationEditor;
 import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.Profile;
@@ -52,7 +50,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JCheckBox               mUseThrustEqualsSwingMinus2;
     private JCheckBox               mUseSimpleMetricConversions;
     private JCheckBox               mAutoFillProfile;
-    private AttributeEditor         mAttributeEditor;
     private HitLocationEditor       mHitLocationsEditor;
 
     /**
@@ -88,9 +85,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules *"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", prefs.useReducedSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
         mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules (B9) *"), null, prefs.useSimpleMetricConversions());
-
-        mAttributeEditor = new AttributeEditor(prefs.getAttributes(), this::adjustResetButton, "*");
-        add(mAttributeEditor, new PrecisionLayoutData().setHorizontalSpan(3).setFillAlignment().setGrabSpace(true));
 
         mHitLocationsEditor = new HitLocationEditor(prefs.getHitLocations(), () -> {
             prefs.getHitLocations().update();
@@ -208,7 +202,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mUseThrustEqualsSwingMinus2.setSelected(Preferences.DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
         mUseReducedSwing.setSelected(Preferences.DEFAULT_USE_REDUCED_SWING);
         mUseSimpleMetricConversions.setSelected(Preferences.DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
-        mAttributeEditor.reset(AttributeDef.createStandardAttributes());
         mHitLocationsEditor.reset(LibraryHitLocationTables.getHumanoid());
     }
 
@@ -224,7 +217,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
         atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
         atDefault = atDefault && prefs.autoFillProfile() == Preferences.DEFAULT_AUTO_FILL_PROFILE;
-        atDefault = atDefault && prefs.getAttributes().equals(AttributeDef.createStandardAttributes());
         atDefault = atDefault && prefs.getHitLocations().equals(LibraryHitLocationTables.getHumanoid());
         return atDefault;
     }

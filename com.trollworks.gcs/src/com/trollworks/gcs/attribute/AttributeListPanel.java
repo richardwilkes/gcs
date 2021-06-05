@@ -17,7 +17,6 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.List;
@@ -47,11 +46,6 @@ public class AttributeListPanel extends BandedPanel {
     @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return 16;
-    }
-
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-        return new Dimension(32, 32); // This needs to be small to allow the scroll pane to work
     }
 
     @Override
