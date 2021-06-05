@@ -13,8 +13,6 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.FlowLayout;
 import java.awt.Font;
