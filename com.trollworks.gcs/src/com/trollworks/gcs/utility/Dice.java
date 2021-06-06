@@ -297,7 +297,7 @@ public class Dice implements Cloneable {
     }
 
     public String toString() {
-        return toString(Preferences.getInstance().useModifyingDicePlusAdds());
+        return toString(Preferences.getInstance().getSheetSettings().useModifyingDicePlusAdds());
     }
 
     public String toString(boolean convertModifiersToExtraDice) {

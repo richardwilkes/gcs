@@ -56,7 +56,7 @@ public class Attribute {
     }
 
     public AttributeDef getAttrDef(GURPSCharacter character) {
-        return character.getSettings().getAttributes().get(mAttrID);
+        return character.getSheetSettings().getAttributes().get(mAttrID);
     }
 
     public PoolThreshold getCurrentThreshold(GURPSCharacter character) {

@@ -47,7 +47,7 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
                 feature.setValue(source.getValue());
                 notifyActionListeners();
             }
-        }, SwingConstants.LEFT, feature.getValue(), new WeightValue(new Fixed6(999999999), getRow().getDataFile().defaultWeightUnits()), I18n.Text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
+        }, SwingConstants.LEFT, feature.getValue(), new WeightValue(new Fixed6(999999999), getRow().getDataFile().getSheetSettings().defaultWeightUnits()), I18n.Text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
         UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         row.add(field);

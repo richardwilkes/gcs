@@ -560,7 +560,7 @@ public class TextTemplate {
             break;
         case KEY_GENERAL_DR:
             int torsoDR = 0;
-            HitLocation torsoLocation = gurpsCharacter.getSettings().getHitLocations().lookupLocationByID("torso");
+            HitLocation torsoLocation = gurpsCharacter.getSheetSettings().getHitLocations().lookupLocationByID("torso");
             if (torsoLocation != null) {
                 torsoDR = torsoLocation.getDR(gurpsCharacter, null);
             }
@@ -667,7 +667,7 @@ public class TextTemplate {
         case KEY_OPTIONS_CODE_DEPRECATED:
             break;
         case KEY_BODY_TYPE:
-            writeEncodedText(out, gurpsCharacter.getSettings().getHitLocations().getName());
+            writeEncodedText(out, gurpsCharacter.getSheetSettings().getHitLocations().getName());
             break;
         default:
             if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
@@ -917,7 +917,7 @@ public class TextTemplate {
         StringBuilder    keyBuffer        = new StringBuilder();
         boolean          lookForKeyMarker = true;
         int              currentID        = 0;
-        HitLocationTable table            = gurpsCharacter.getSettings().getHitLocations();
+        HitLocationTable table            = gurpsCharacter.getSheetSettings().getHitLocations();
         for (HitLocation location : table.getLocations()) {
             currentID++;
             for (int i = 0; i < length; i++) {
@@ -1967,7 +1967,7 @@ public class TextTemplate {
         StringBuilder      keyBuffer        = new StringBuilder();
         boolean            lookForKeyMarker = true;
         GURPSCharacter     gch              = mSheet.getCharacter();
-        List<AttributeDef> defs             = AttributeDef.getOrdered(gch.getSettings().getAttributes());
+        List<AttributeDef> defs             = AttributeDef.getOrdered(gch.getSheetSettings().getAttributes());
         for (AttributeDef def : defs) {
             if (def.getType() != AttributeType.POOL && def.isPrimary() == primary) {
                 Attribute attr = gch.getAttributes().get(def.getID());
@@ -2019,7 +2019,7 @@ public class TextTemplate {
         StringBuilder  keyBuffer        = new StringBuilder();
         boolean        lookForKeyMarker = true;
         GURPSCharacter gch              = mSheet.getCharacter();
-        for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
+        for (AttributeDef def : AttributeDef.getOrdered(gch.getSheetSettings().getAttributes())) {
             if (def.getType() == AttributeType.POOL) {
                 Attribute attr = gch.getAttributes().get(def.getID());
                 if (attr != null) {

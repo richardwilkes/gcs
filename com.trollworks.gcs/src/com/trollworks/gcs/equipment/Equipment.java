@@ -24,6 +24,7 @@ import com.trollworks.gcs.modifier.Fraction;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.modifier.ModifierCostValueType;
 import com.trollworks.gcs.modifier.ModifierWeightValueType;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -106,7 +107,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mValue = Fixed6.ZERO;
         mExtendedValue = Fixed6.ZERO;
         mWeightIgnoredForSkills = false;
-        mWeight = new WeightValue(Fixed6.ZERO, dataFile.defaultWeightUnits());
+        mWeight = new WeightValue(Fixed6.ZERO, dataFile.getSheetSettings().defaultWeightUnits());
         mExtendedWeight = new WeightValue(mWeight);
         mExtendedWeightForSkills = new WeightValue(mWeight);
         mWeapons = new ArrayList<>();
@@ -123,7 +124,7 @@ public class Equipment extends ListRow implements HasSourceReference {
     public Equipment(DataFile dataFile, Equipment equipment, boolean deep) {
         super(dataFile, equipment);
         boolean forTemplate = dataFile instanceof Template;
-        boolean forSheet = dataFile instanceof GURPSCharacter;
+        boolean forSheet    = dataFile instanceof GURPSCharacter;
         mEquipped = !forSheet || equipment.mEquipped;
         mQuantity = (forSheet || forTemplate) ? equipment.mQuantity : 1;
         mUses = (forSheet || forTemplate) ? equipment.mUses : equipment.mMaxUses;
@@ -332,31 +333,34 @@ public class Equipment extends ListRow implements HasSourceReference {
         WeightUnits units          = mWeight.getUnits();
         mExtendedWeight = new WeightValue(getAdjustedWeight(false).getValue().mul(new Fixed6(mQuantity)), units);
         mExtendedWeightForSkills = new WeightValue(getAdjustedWeight(true).getValue().mul(new Fixed6(mQuantity)), units);
-        WeightValue contained          = new WeightValue(Fixed6.ZERO, units);
-        WeightValue containedForSkills = new WeightValue(Fixed6.ZERO, units);
+        WeightValue   contained          = new WeightValue(Fixed6.ZERO, units);
+        WeightValue   containedForSkills = new WeightValue(Fixed6.ZERO, units);
+        SheetSettings sheetSettings      = mDataFile.getSheetSettings();
+        boolean       useSimpleMetric    = sheetSettings.useSimpleMetricConversions();
         for (int i = 0; i < count; i++) {
             Equipment one = (Equipment) getChild(i);
             one.updateExtendedWeight();
             WeightValue weight = one.mExtendedWeight;
-            if (mDataFile.useSimpleMetricConversions()) {
+            if (useSimpleMetric) {
                 weight = units.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
             }
             contained.add(weight);
             weight = one.mExtendedWeightForSkills;
-            if (mDataFile.useSimpleMetricConversions()) {
+            if (useSimpleMetric) {
                 weight = units.isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
             }
             containedForSkills.add(weight);
         }
-        Fixed6      percentage = Fixed6.ZERO;
-        WeightValue reduction  = new WeightValue(Fixed6.ZERO, units);
+        Fixed6      percentage         = Fixed6.ZERO;
+        WeightValue reduction          = new WeightValue(Fixed6.ZERO, units);
+        WeightUnits defaultWeightUnits = sheetSettings.defaultWeightUnits();
         for (Feature feature : getFeatures()) {
             if (feature instanceof ContainedWeightReduction) {
                 ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
                 if (cwr.isPercentage()) {
                     percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
                 } else {
-                    reduction.add(cwr.getAbsoluteReduction(mDataFile.defaultWeightUnits()));
+                    reduction.add(cwr.getAbsoluteReduction(defaultWeightUnits));
                 }
             }
         }
@@ -368,7 +372,7 @@ public class Equipment extends ListRow implements HasSourceReference {
                         if (cwr.isPercentage()) {
                             percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
                         } else {
-                            reduction.add(cwr.getAbsoluteReduction(mDataFile.defaultWeightUnits()));
+                            reduction.add(cwr.getAbsoluteReduction(defaultWeightUnits));
                         }
                     }
                 }
@@ -626,7 +630,7 @@ public class Equipment extends ListRow implements HasSourceReference {
      * @return The adjusted value.
      */
     public WeightValue getWeightAdjustedForModifiers(WeightValue weight, List<EquipmentModifier> modifiers) {
-        WeightUnits defUnits = getDataFile().defaultWeightUnits();
+        WeightUnits defUnits = getDataFile().getSheetSettings().defaultWeightUnits();
         weight = new WeightValue(weight);
 
         // Apply all EquipmentModifierWeightType.TO_ORIGINAL_COST

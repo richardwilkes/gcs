@@ -36,6 +36,7 @@ import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.RitualMagicSpell;
@@ -79,6 +80,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private static final String KEY_PROFILE          = "profile";
     private static final String KEY_THIRD_PARTY_DATA = "third_party";
     private static final String KEY_TOTAL_POINTS     = "total_points";
+    public static final  String KEY_SETTINGS         = "settings";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; added April 15, 2021
     private static final String KEY_DX        = "DX";
@@ -108,7 +110,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private int                                 mParryBonus;
     private int                                 mBlockBonus;
     private int                                 mTotalPoints;
-    private Settings                            mSettings;
+    private SheetSettings                       mSheetSettings;
     private Profile                             mProfile;
     private WeightValue                         mCachedWeightCarried;
     private WeightValue                         mCachedWeightCarriedForSkills;
@@ -144,16 +146,16 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
 
     private void characterInitialize(boolean full) {
         mVariableResolverExclusions = new HashSet<>();
-        mSettings = new Settings(this);
+        mSheetSettings = new SheetSettings(this);
         mFeatureMap = new HashMap<>();
         mTotalPoints = Preferences.getInstance().getInitialPoints();
         mAttributes = new HashMap<>();
-        for (String attrID : mSettings.getAttributes().keySet()) {
+        for (String attrID : mSheetSettings.getAttributes().keySet()) {
             mAttributes.put(attrID, new Attribute(attrID));
         }
         mProfile = new Profile(this, full);
-        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
-        mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, mSettings.defaultWeightUnits());
+        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, mSheetSettings.defaultWeightUnits());
+        mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, mSheetSettings.defaultWeightUnits());
         mModifiedOn = System.currentTimeMillis() / FieldFactory.TIMESTAMP_FACTOR;
         mCreatedOn = mModifiedOn;
     }
@@ -201,7 +203,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         characterInitialize(false);
-        mSettings.load(m.getMap(Settings.KEY_ROOT), state);
+        mSheetSettings.load(m.getMap(KEY_SETTINGS), state);
         mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
         mProfile.load(m.getMap(KEY_PROFILE));
         if (m.has(KEY_ATTRIBUTES)) {
@@ -213,7 +215,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                 mAttributes.put(attr.getID(), attr);
             }
         } else {
-            for (String attrID : mSettings.getAttributes().keySet()) {
+            for (String attrID : mSheetSettings.getAttributes().keySet()) {
                 Attribute attr = mAttributes.get(attrID);
                 if (attr != null) {
                     switch (attrID) {
@@ -268,15 +270,15 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
-        w.key(Settings.KEY_ROOT);
-        mSettings.toJSON(w);
+        w.key(KEY_SETTINGS);
+        mSheetSettings.toJSON(w);
         w.keyValue(KEY_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.keyValue(KEY_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.key(KEY_PROFILE);
         mProfile.save(w);
         w.key(KEY_ATTRIBUTES);
         w.startArray();
-        for (AttributeDef def : AttributeDef.getOrdered(mSettings.getAttributes())) {
+        for (AttributeDef def : AttributeDef.getOrdered(mSheetSettings.getAttributes())) {
             Attribute attr = mAttributes.get(def.getID());
             if (attr != null) {
                 attr.toJSON(this, w);
@@ -390,12 +392,12 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      * @return The basic thrusting damage.
      */
     public Dice getThrust(int strength) {
-        if (mSettings.useThrustEqualsSwingMinus2()) {
+        if (mSheetSettings.useThrustEqualsSwingMinus2()) {
             Dice dice = getSwing(strength);
             dice.add(-2);
             return dice;
         }
-        if (mSettings.useReducedSwing()) {
+        if (mSheetSettings.useReducedSwing()) {
             if (strength < 19) {
                 return new Dice(1, -(6 - (strength - 1) / 2));
             }
@@ -416,7 +418,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             return new Dice(dice, adds);
         }
 
-        if (mSettings.useKnowYourOwnStrength()) {
+        if (mSheetSettings.useKnowYourOwnStrength()) {
             if (strength < 12) {
                 return new Dice(1, strength - 12);
             }
@@ -449,7 +451,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      * @return The basic thrusting damage.
      */
     public Dice getSwing(int strength) {
-        if (mSettings.useReducedSwing()) {
+        if (mSheetSettings.useReducedSwing()) {
             if (strength < 10) {
                 return new Dice(1, -(5 - (strength - 1) / 2));
             }
@@ -468,7 +470,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             return new Dice(dice, adds);
         }
 
-        if (mSettings.useKnowYourOwnStrength()) {
+        if (mSheetSettings.useKnowYourOwnStrength()) {
             if (strength < 10) {
                 return new Dice(1, strength - 10);
             }
@@ -499,7 +501,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
 
     /** @return Basic lift. */
     public WeightValue getBasicLift() {
-        return getBasicLift(defaultWeightUnits());
+        return getBasicLift(mSheetSettings.defaultWeightUnits());
     }
 
     private WeightValue getBasicLift(WeightUnits desiredUnits) {
@@ -508,7 +510,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         Fixed6      divisor;
         Fixed6      multiplier;
         Fixed6      roundAt;
-        if (useSimpleMetricConversions() && defaultWeightUnits().isMetric()) {
+        if (mSheetSettings.useSimpleMetricConversions() && mSheetSettings.defaultWeightUnits().isMetric()) {
             units = WeightUnits.KG;
             divisor = ten;
             multiplier = Fixed6.ONE;
@@ -531,7 +533,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         if (strength < 1) {
             value = Fixed6.ZERO;
         } else {
-            if (mSettings.useKnowYourOwnStrength()) {
+            if (mSheetSettings.useKnowYourOwnStrength()) {
                 int diff = 0;
                 if (strength > 19) {
                     diff = strength / 10 - 1;
@@ -593,8 +595,8 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      * @return The maximum amount the character can carry for the specified encumbrance level.
      */
     public WeightValue getMaximumCarry(Encumbrance encumbrance) {
-        WeightUnits desiredUnits = defaultWeightUnits();
-        WeightUnits calcUnits    = useSimpleMetricConversions() && desiredUnits.isMetric() ? WeightUnits.KG : WeightUnits.LB;
+        WeightUnits desiredUnits = mSheetSettings.defaultWeightUnits();
+        WeightUnits calcUnits    = mSheetSettings.useSimpleMetricConversions() && desiredUnits.isMetric() ? WeightUnits.KG : WeightUnits.LB;
         WeightValue lift         = getBasicLift(calcUnits);
         lift.setValue(lift.getValue().mul(new Fixed6(encumbrance.getWeightMultiplier())));
         return new WeightValue(desiredUnits.convert(calcUnits, lift.getValue()), desiredUnits);
@@ -754,22 +756,23 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         WeightValue savedWeight          = new WeightValue(mCachedWeightCarried);
         WeightValue savedWeightForSkills = new WeightValue(mCachedWeightCarriedForSkills);
         Fixed6      savedWealth          = mCachedWealthCarried;
-        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, defaultWeightUnits());
-        mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, defaultWeightUnits());
+        WeightUnits defaultWeightUnits   = mSheetSettings.defaultWeightUnits();
+        mCachedWeightCarried = new WeightValue(Fixed6.ZERO, defaultWeightUnits);
+        mCachedWeightCarriedForSkills = new WeightValue(Fixed6.ZERO, defaultWeightUnits);
         mCachedWealthCarried = Fixed6.ZERO;
         for (Row one : getEquipmentModel().getTopLevelRows()) {
-            Equipment   equipment = (Equipment) one;
+            Equipment equipment = (Equipment) one;
             equipment.update();
-            WeightValue weight    = new WeightValue(equipment.getExtendedWeight(false));
-            if (useSimpleMetricConversions()) {
-                weight = defaultWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
+            WeightValue weight = new WeightValue(equipment.getExtendedWeight(false));
+            if (mSheetSettings.useSimpleMetricConversions()) {
+                weight = defaultWeightUnits.isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
             }
             mCachedWeightCarried.add(weight);
             mCachedWealthCarried = mCachedWealthCarried.add(equipment.getExtendedValue());
 
             weight = new WeightValue(equipment.getExtendedWeight(true));
-            if (useSimpleMetricConversions()) {
-                weight = defaultWeightUnits().isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
+            if (mSheetSettings.useSimpleMetricConversions()) {
+                weight = defaultWeightUnits.isMetric() ? convertToGurpsMetric(weight) : convertFromGurpsMetric(weight);
             }
             mCachedWeightCarriedForSkills.add(weight);
         }
@@ -936,8 +939,8 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         return mProfile;
     }
 
-    public Settings getSettings() {
-        return mSettings;
+    public SheetSettings getSheetSettings() {
+        return mSheetSettings;
     }
 
     /**
@@ -1471,41 +1474,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         }
     }
 
-    @Override
-    public WeightUnits defaultWeightUnits() {
-        return mSettings.defaultWeightUnits();
-    }
-
-    @Override
-    public boolean useSimpleMetricConversions() {
-        return mSettings.useSimpleMetricConversions();
-    }
-
-    @Override
-    public boolean useMultiplicativeModifiers() {
-        return mSettings.useMultiplicativeModifiers();
-    }
-
-    @Override
-    public boolean useModifyingDicePlusAdds() {
-        return mSettings.useModifyingDicePlusAdds();
-    }
-
-    @Override
-    public DisplayOption userDescriptionDisplay() {
-        return mSettings.userDescriptionDisplay();
-    }
-
-    @Override
-    public DisplayOption modifiersDisplay() {
-        return mSettings.modifiersDisplay();
-    }
-
-    @Override
-    public DisplayOption notesDisplay() {
-        return mSettings.notesDisplay();
-    }
-
     public boolean isThresholdOpMet(ThresholdOps op) {
         for (Attribute attr : mAttributes.values()) {
             PoolThreshold threshold = attr.getCurrentThreshold(this);
@@ -1525,11 +1493,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             }
         }
         return total;
-    }
-
-    @Override
-    public Map<String, AttributeDef> getAttributeDefs() {
-        return getSettings().getAttributes();
     }
 
     @Override

@@ -16,6 +16,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.equipment.FontAwesomeCell;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -52,23 +53,23 @@ public enum AdvantageColumn {
 
         @Override
         public String getToolTip(Advantage advantage) {
-            StringBuilder builder = new StringBuilder();
-            DataFile      df      = advantage.getDataFile();
-            if (df.userDescriptionDisplay().tooltip()) {
+            StringBuilder builder  = new StringBuilder();
+            SheetSettings settings = advantage.getDataFile().getSheetSettings();
+            if (settings.userDescriptionDisplay().tooltip()) {
                 String desc = advantage.getUserDesc();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
-            if (df.modifiersDisplay().tooltip()) {
+            if (settings.modifiersDisplay().tooltip()) {
                 String desc = advantage.getModifierNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
-            if (df.notesDisplay().tooltip()) {
+            if (settings.notesDisplay().tooltip()) {
                 String desc = advantage.getNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
@@ -100,22 +101,22 @@ public enum AdvantageColumn {
         public String getDataAsText(Advantage advantage) {
             StringBuilder builder = new StringBuilder();
             builder.append(advantage);
-            DataFile df = advantage.getDataFile();
-            if (df.userDescriptionDisplay().inline()) {
+            SheetSettings settings = advantage.getDataFile().getSheetSettings();
+            if (settings.userDescriptionDisplay().inline()) {
                 String desc = advantage.getUserDesc();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
-            if (df.modifiersDisplay().inline()) {
+            if (settings.modifiersDisplay().inline()) {
                 String desc = advantage.getModifierNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
-            if (df.notesDisplay().inline()) {
+            if (settings.notesDisplay().inline()) {
                 String desc = advantage.getNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");

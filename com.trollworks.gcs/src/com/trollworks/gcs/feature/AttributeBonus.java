@@ -36,7 +36,7 @@ public class AttributeBonus extends Bonus {
     /** Creates a new attribute bonus. */
     public AttributeBonus() {
         super(1);
-        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getAttributes());
+        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getSheetSettings().getAttributes());
         mAttribute = list.isEmpty() ? "st" : list.get(0).getID();
         mLimitation = AttributeBonusLimitation.NONE;
     }
@@ -115,7 +115,7 @@ public class AttributeBonus extends Bonus {
     /** @param attribute The attribute. */
     public void setAttribute(DataFile dataFile, String attribute) {
         mAttribute = ID.sanitize(attribute, null, true);
-        AttributeDef def = dataFile.getAttributeDefs().get(attribute);
+        AttributeDef def = dataFile.getAttributeDef(attribute);
         getAmount().setDecimal(def != null && def.getType() == AttributeType.DECIMAL);
     }
 

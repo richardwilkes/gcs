@@ -47,7 +47,7 @@ public class AttributesPanel extends DropPanel {
     public AttributesPanel(CharacterSheet sheet, boolean primary) {
         super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), primary ? I18n.Text("Primary Attributes") : I18n.Text("Secondary Attributes"));
         GURPSCharacter gch = sheet.getCharacter();
-        for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
+        for (AttributeDef def : AttributeDef.getOrdered(gch.getSheetSettings().getAttributes())) {
             if (def.getType() != AttributeType.POOL) {
                 if (def.isPrimary() == primary) {
                     createAttributeField(sheet, gch, def);

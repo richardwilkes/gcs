@@ -41,12 +41,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     private JTextField              mTechLevel;
     private JTextField              mInitialPoints;
     private PortraitPreferencePanel mPortrait;
-    private JCheckBox               mUseMultiplicativeModifiers;
-    private JCheckBox               mUseModifyingDicePlusAdds;
-    private JCheckBox               mUseKnowYourOwnStrength;
-    private JCheckBox               mUseReducedSwing;
-    private JCheckBox               mUseThrustEqualsSwingMinus2;
-    private JCheckBox               mUseSimpleMetricConversions;
     private JCheckBox               mAutoFillProfile;
 
     /**
@@ -76,16 +70,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mInitialPoints = addTextField(initialPointsTooltip, Integer.toString(prefs.getInitialPoints()));
 
         mAutoFillProfile = addCheckBox(I18n.Text("Automatically fill in new character identity and description information with randomized choices"), null, prefs.autoFillProfile());
-        mUseMultiplicativeModifiers = addCheckBox(I18n.Text("Use Multiplicative Modifiers (PW102; changes point value) *"), null, prefs.useMultiplicativeModifiers());
-        mUseModifyingDicePlusAdds = addCheckBox(I18n.Text("Use Modifying Dice + Adds (B269) *"), null, prefs.useModifyingDicePlusAdds());
-        mUseKnowYourOwnStrength = addCheckBox(I18n.Text("Use strength rules from Knowing Your Own Strength (PY83) *"), null, prefs.useKnowYourOwnStrength());
-        mUseReducedSwing = addCheckBox(I18n.Text("Use the reduced swing rules *"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", prefs.useReducedSwing());
-        mUseThrustEqualsSwingMinus2 = addCheckBox(I18n.Text("Use Thrust = Swing - 2 *"), null, prefs.useThrustEqualsSwingMinus2());
-        mUseSimpleMetricConversions = addCheckBox(I18n.Text("Use the simple metric conversion rules (B9) *"), null, prefs.useSimpleMetricConversions());
-
-        JLabel label = new JLabel(I18n.Text("* To change the setting on existing sheets, use the per-sheet settings available from the toolbar"));
-        label.setOpaque(false);
-        add(label, new PrecisionLayoutData().setHorizontalSpan(3).setAlignment(PrecisionLayoutAlignment.MIDDLE, PrecisionLayoutAlignment.END));
     }
 
     private void addLabel(String title, String tooltip) {
@@ -162,19 +146,7 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
     public void itemStateChanged(ItemEvent event) {
         Preferences prefs  = Preferences.getInstance();
         Object      source = event.getSource();
-        if (source == mUseMultiplicativeModifiers) {
-            prefs.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
-        } else if (source == mUseModifyingDicePlusAdds) {
-            prefs.setUseModifyingDicePlusAdds(mUseModifyingDicePlusAdds.isSelected());
-        } else if (source == mUseKnowYourOwnStrength) {
-            prefs.setUseKnowYourOwnStrength(mUseKnowYourOwnStrength.isSelected());
-        } else if (source == mUseReducedSwing) {
-            prefs.setUseReducedSwing(mUseReducedSwing.isSelected());
-        } else if (source == mUseThrustEqualsSwingMinus2) {
-            prefs.setUseThrustEqualsSwingMinus2(mUseThrustEqualsSwingMinus2.isSelected());
-        } else if (source == mUseSimpleMetricConversions) {
-            prefs.setUseSimpleMetricConversions(mUseSimpleMetricConversions.isSelected());
-        } else if (source == mAutoFillProfile) {
+        if (source == mAutoFillProfile) {
             prefs.setAutoFillProfile(mAutoFillProfile.isSelected());
         }
         adjustResetButton();
@@ -187,12 +159,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         mInitialPoints.setText(Integer.toString(Preferences.DEFAULT_INITIAL_POINTS));
         setPortrait(Preferences.DEFAULT_DEFAULT_PORTRAIT_PATH);
         mAutoFillProfile.setSelected(Preferences.DEFAULT_AUTO_FILL_PROFILE);
-        mUseModifyingDicePlusAdds.setSelected(Preferences.DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS);
-        mUseMultiplicativeModifiers.setSelected(Preferences.DEFAULT_USE_MULTIPLICATIVE_MODIFIERS);
-        mUseKnowYourOwnStrength.setSelected(Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH);
-        mUseThrustEqualsSwingMinus2.setSelected(Preferences.DEFAULT_USE_THRUST_EQUALS_SWING_MINUS_2);
-        mUseReducedSwing.setSelected(Preferences.DEFAULT_USE_REDUCED_SWING);
-        mUseSimpleMetricConversions.setSelected(Preferences.DEFAULT_USE_SIMPLE_METRIC_CONVERSIONS);
     }
 
     @Override
@@ -202,10 +168,6 @@ public class SheetPreferences extends PreferencePanel implements ActionListener,
         atDefault = atDefault && prefs.getDefaultPortraitPath().equals(Preferences.DEFAULT_DEFAULT_PORTRAIT_PATH);
         atDefault = atDefault && prefs.getDefaultTechLevel().equals(Preferences.DEFAULT_DEFAULT_TECH_LEVEL);
         atDefault = atDefault && prefs.getInitialPoints() == Preferences.DEFAULT_INITIAL_POINTS;
-        atDefault = atDefault && prefs.useModifyingDicePlusAdds() == Preferences.DEFAULT_USE_MODIFYING_DICE_PLUS_ADDS;
-        atDefault = atDefault && prefs.useMultiplicativeModifiers() == Preferences.DEFAULT_USE_MULTIPLICATIVE_MODIFIERS;
-        atDefault = atDefault && prefs.useKnowYourOwnStrength() == Preferences.DEFAULT_USE_KNOW_YOUR_OWN_STRENGTH;
-        atDefault = atDefault && prefs.useReducedSwing() == Preferences.DEFAULT_USE_REDUCED_SWING;
         atDefault = atDefault && prefs.autoFillProfile() == Preferences.DEFAULT_AUTO_FILL_PROFILE;
         return atDefault;
     }

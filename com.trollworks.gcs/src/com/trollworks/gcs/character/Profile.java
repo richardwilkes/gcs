@@ -17,6 +17,7 @@ import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
@@ -127,9 +128,9 @@ public class Profile {
             mHair = "";
             mSkinColor = "";
             mHandedness = "";
-            Settings settings = mCharacter.getSettings();
-            mHeight = new LengthValue(Fixed6.ZERO, settings.defaultLengthUnits());
-            mWeight = new WeightValue(Fixed6.ZERO, settings.defaultWeightUnits());
+            SheetSettings sheetSettings = mCharacter.getSheetSettings();
+            mHeight = new LengthValue(Fixed6.ZERO, sheetSettings.defaultLengthUnits());
+            mWeight = new WeightValue(Fixed6.ZERO, sheetSettings.defaultWeightUnits());
             mGender = "";
             mName = "";
             mTechLevel = "";
@@ -164,7 +165,7 @@ public class Profile {
             for (LibraryHitLocationTables tables : LibraryHitLocationTables.get()) {
                 for (HitLocationTable table : tables.getTables()) {
                     if (bodyType.equals(table.getID())) {
-                        mCharacter.getSettings().setHitLocations(table.clone());
+                        mCharacter.getSheetSettings().setHitLocations(table.clone());
                         break;
                     }
                 }
@@ -721,8 +722,8 @@ public class Profile {
         } else {
             base = new Fixed6(74);
         }
-        Settings settings  = mCharacter.getSettings();
-        boolean  useMetric = settings.defaultWeightUnits().isMetric();
+        SheetSettings sheetSettings = mCharacter.getSheetSettings();
+        boolean       useMetric     = sheetSettings.defaultWeightUnits().isMetric();
         if (useMetric) {
             base = LengthUnits.CM.convert(LengthUnits.FT_IN, base).round().add(new Fixed6(RANDOM.nextInt(16)));
         } else {
@@ -735,7 +736,7 @@ public class Profile {
             }
         }
         LengthUnits calcUnits    = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
-        LengthUnits desiredUnits = settings.defaultLengthUnits();
+        LengthUnits desiredUnits = sheetSettings.defaultLengthUnits();
         return new LengthValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 
@@ -764,8 +765,8 @@ public class Profile {
             base = new Fixed6(170);
             range = new Fixed6(101);
         }
-        Settings settings  = mCharacter.getSettings();
-        boolean  useMetric = settings.defaultWeightUnits().isMetric();
+        SheetSettings sheetSettings = mCharacter.getSheetSettings();
+        boolean       useMetric     = sheetSettings.defaultWeightUnits().isMetric();
         if (useMetric) {
             base = WeightUnits.KG.convert(WeightUnits.LB, base).round();
             range = WeightUnits.KG.convert(WeightUnits.LB, range.sub(Fixed6.ONE)).round().add(Fixed6.ONE);
@@ -779,7 +780,7 @@ public class Profile {
             base = Fixed6.ONE;
         }
         WeightUnits calcUnits    = useMetric ? WeightUnits.KG : WeightUnits.LB;
-        WeightUnits desiredUnits = settings.defaultWeightUnits();
+        WeightUnits desiredUnits = sheetSettings.defaultWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
     }
 

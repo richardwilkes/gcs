@@ -9,10 +9,14 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character;
+package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.body.HitLocationTable;
+import com.trollworks.gcs.body.LibraryHitLocationTables;
+import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.DisplayOption;
+import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.ChangeNotifier;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.page.PageSettings;
@@ -29,29 +33,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Settings implements ChangeNotifier {
-    public static final  String KEY_ROOT                            = "settings";
+public class SheetSettings implements ChangeNotifier {
     private static final String KEY_ATTRIBUTES                      = "attributes";
-    public static final  String KEY_BLOCK_LAYOUT                    = "block_layout";
-    public static final  String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
-    public static final  String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
+    private static final String KEY_BLOCK_LAYOUT                    = "block_layout";
+    private static final String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
+    private static final String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
     private static final String KEY_HIT_LOCATIONS                   = "hit_locations";
-    public static final  String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
-    public static final  String KEY_NOTES_DISPLAY                   = "notes_display";
+    private static final String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
+    private static final String KEY_NOTES_DISPLAY                   = "notes_display";
     private static final String KEY_PAGE                            = "page";
-    public static final  String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
-    public static final  String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
-    public static final  String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
-    public static final  String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
-    public static final  String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
-    public static final  String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
-    public static final  String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
-    public static final  String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
-    public static final  String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
-    public static final  String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
-    public static final  String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
-    public static final  String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
-    public static final  String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
+    private static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
+    private static final String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
+    private static final String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
+    private static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
+    private static final String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
+    private static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
+    private static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
+    private static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
+    private static final String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
+    private static final String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
+    private static final String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
+    private static final String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
+    private static final String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
 
     private GURPSCharacter            mCharacter;
     private LengthUnits               mDefaultLengthUnits;
@@ -76,38 +79,108 @@ public class Settings implements ChangeNotifier {
     private boolean                   mShowSpellAdj;
     private boolean                   mUseTitleInFooter;
 
-    public Settings(GURPSCharacter character) {
-        Preferences prefs = Preferences.getInstance();
-        mCharacter = character;
-        mDefaultLengthUnits = prefs.getDefaultLengthUnits();
-        mDefaultWeightUnits = prefs.getDefaultWeightUnits();
-        mBlockLayout = new ArrayList<>(prefs.getBlockLayout());
-        mUserDescriptionDisplay = prefs.getUserDescriptionDisplay();
-        mModifiersDisplay = prefs.getModifiersDisplay();
-        mNotesDisplay = prefs.getNotesDisplay();
-        mAttributes = AttributeDef.cloneMap(prefs.getAttributes());
-        mHitLocations = prefs.getHitLocations().clone();
-        mPageSettings = new PageSettings(this, prefs.getPageSettings());
-        mUseMultiplicativeModifiers = prefs.useMultiplicativeModifiers();
-        mUseModifyingDicePlusAdds = prefs.useModifyingDicePlusAdds();
-        mUseKnowYourOwnStrength = prefs.useKnowYourOwnStrength();
-        mUseReducedSwing = prefs.useReducedSwing();
-        mUseThrustEqualsSwingMinus2 = prefs.useThrustEqualsSwingMinus2();
-        mUseSimpleMetricConversions = prefs.useSimpleMetricConversions();
-        mShowCollegeInSpells = prefs.showCollegeInSheetSpells();
-        mShowDifficulty = prefs.showDifficulty();
-        mShowAdvantageModifierAdj = prefs.showAdvantageModifierAdj();
-        mShowEquipmentModifierAdj = prefs.showEquipmentModifierAdj();
-        mShowSpellAdj = prefs.showSpellAdj();
-        mUseTitleInFooter = prefs.useTitleInFooter();
+    /**
+     * @param character The {@link GURPSCharacter} to retrieve settings for, or {@code null}.
+     * @return The {@link SheetSettings} from the specified {@link GURPSCharacter} or from global
+     *         preferences if the character is {@code null}.
+     */
+    public static SheetSettings get(GURPSCharacter character) {
+        return character == null ? Preferences.getInstance().getSheetSettings() : character.getSheetSettings();
     }
 
-    void load(JsonMap m, LoadState state) {
-        mDefaultLengthUnits = Enums.extract(m.getString(KEY_DEFAULT_LENGTH_UNITS), LengthUnits.values(), Preferences.DEFAULT_DEFAULT_LENGTH_UNITS);
-        mDefaultWeightUnits = Enums.extract(m.getString(KEY_DEFAULT_WEIGHT_UNITS), WeightUnits.values(), Preferences.DEFAULT_DEFAULT_WEIGHT_UNITS);
-        mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_USER_DESCRIPTION_DISPLAY);
-        mModifiersDisplay = Enums.extract(m.getString(KEY_MODIFIERS_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_MODIFIERS_DISPLAY);
-        mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), Preferences.DEFAULT_NOTES_DISPLAY);
+    /** Creates new default character sheet settings. */
+    public SheetSettings() {
+        reset();
+    }
+
+    /**
+     * Creates new settings for a character sheet.
+     *
+     * @param character The {@link GURPSCharacter} these are for. Passing in {@code null} is the
+     *                  same as calling {@link #SheetSettings()} instead.
+     */
+    public SheetSettings(GURPSCharacter character) {
+        mCharacter = character;
+        reset();
+    }
+
+    /** Reset these settings to their defaults. */
+    public void reset() {
+        if (mCharacter == null) {
+            mDefaultLengthUnits = LengthUnits.FT_IN;
+            mDefaultWeightUnits = WeightUnits.LB;
+            mBlockLayout = new ArrayList<>(List.of(
+                    CharacterSheet.REACTIONS_KEY + " " + CharacterSheet.CONDITIONAL_MODIFIERS_KEY,
+                    CharacterSheet.MELEE_KEY,
+                    CharacterSheet.RANGED_KEY,
+                    CharacterSheet.ADVANTAGES_KEY + " " + CharacterSheet.SKILLS_KEY,
+                    CharacterSheet.SPELLS_KEY,
+                    CharacterSheet.EQUIPMENT_KEY,
+                    CharacterSheet.OTHER_EQUIPMENT_KEY,
+                    CharacterSheet.NOTES_KEY));
+            mUserDescriptionDisplay = DisplayOption.TOOLTIP;
+            mModifiersDisplay = DisplayOption.INLINE;
+            mNotesDisplay = DisplayOption.INLINE;
+            mAttributes = AttributeDef.createStandardAttributes();
+            mHitLocations = LibraryHitLocationTables.getHumanoid().clone();
+            mPageSettings = new PageSettings(this);
+            mUseMultiplicativeModifiers = false;
+            mUseModifyingDicePlusAdds = false;
+            mUseKnowYourOwnStrength = false;
+            mUseReducedSwing = false;
+            mUseThrustEqualsSwingMinus2 = false;
+            mUseSimpleMetricConversions = true;
+            mShowCollegeInSpells = false;
+            mShowDifficulty = false;
+            mShowAdvantageModifierAdj = false;
+            mShowEquipmentModifierAdj = false;
+            mShowSpellAdj = true;
+            mUseTitleInFooter = false;
+        } else {
+            SheetSettings defaults = Preferences.getInstance().getSheetSettings();
+            mDefaultLengthUnits = defaults.mDefaultLengthUnits;
+            mDefaultWeightUnits = defaults.mDefaultWeightUnits;
+            mBlockLayout = new ArrayList<>(defaults.mBlockLayout);
+            mUserDescriptionDisplay = defaults.mUserDescriptionDisplay;
+            mModifiersDisplay = defaults.mModifiersDisplay;
+            mNotesDisplay = defaults.mNotesDisplay;
+            mAttributes = AttributeDef.cloneMap(defaults.mAttributes);
+            mHitLocations = defaults.mHitLocations.clone();
+            mPageSettings = new PageSettings(this, defaults.mPageSettings);
+            mUseMultiplicativeModifiers = defaults.mUseMultiplicativeModifiers;
+            mUseModifyingDicePlusAdds = defaults.mUseModifyingDicePlusAdds;
+            mUseKnowYourOwnStrength = defaults.mUseKnowYourOwnStrength;
+            mUseReducedSwing = defaults.mUseReducedSwing;
+            mUseThrustEqualsSwingMinus2 = defaults.mUseThrustEqualsSwingMinus2;
+            mUseSimpleMetricConversions = defaults.mUseSimpleMetricConversions;
+            mShowCollegeInSpells = defaults.mShowCollegeInSpells;
+            mShowDifficulty = defaults.mShowDifficulty;
+            mShowAdvantageModifierAdj = defaults.mShowAdvantageModifierAdj;
+            mShowEquipmentModifierAdj = defaults.mShowEquipmentModifierAdj;
+            mShowSpellAdj = defaults.mShowSpellAdj;
+            mUseTitleInFooter = defaults.mUseTitleInFooter;
+        }
+    }
+
+    public void load(JsonMap m, LoadState state) {
+        reset();
+        mDefaultLengthUnits = Enums.extract(m.getString(KEY_DEFAULT_LENGTH_UNITS), LengthUnits.values(), mDefaultLengthUnits);
+        mDefaultWeightUnits = Enums.extract(m.getString(KEY_DEFAULT_WEIGHT_UNITS), WeightUnits.values(), mDefaultWeightUnits);
+        mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), mUserDescriptionDisplay);
+        mModifiersDisplay = Enums.extract(m.getString(KEY_MODIFIERS_DISPLAY), DisplayOption.values(), mModifiersDisplay);
+        mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), mNotesDisplay);
+        mUseMultiplicativeModifiers = m.getBooleanWithDefault(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
+        mUseModifyingDicePlusAdds = m.getBooleanWithDefault(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
+        mUseKnowYourOwnStrength = m.getBooleanWithDefault(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
+        mUseReducedSwing = m.getBooleanWithDefault(KEY_USE_REDUCED_SWING, mUseReducedSwing);
+        mUseThrustEqualsSwingMinus2 = m.getBooleanWithDefault(KEY_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
+        mUseSimpleMetricConversions = m.getBooleanWithDefault(KEY_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
+        mShowCollegeInSpells = m.getBooleanWithDefault(KEY_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
+        mShowDifficulty = m.getBooleanWithDefault(KEY_SHOW_DIFFICULTY, mShowDifficulty);
+        mShowAdvantageModifierAdj = m.getBooleanWithDefault(KEY_SHOW_ADVANTAGE_MODIFIER_ADJ, mShowAdvantageModifierAdj);
+        mShowEquipmentModifierAdj = m.getBooleanWithDefault(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
+        mShowSpellAdj = m.getBooleanWithDefault(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
+        mUseTitleInFooter = m.getBooleanWithDefault(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
         }
@@ -117,43 +190,23 @@ public class Settings implements ChangeNotifier {
         if (m.has(KEY_PAGE)) {
             mPageSettings.load(m.getMap(KEY_PAGE));
         }
-        mUseMultiplicativeModifiers = m.getBoolean(KEY_USE_MULTIPLICATIVE_MODIFIERS);
-        mUseModifyingDicePlusAdds = m.getBoolean(KEY_USE_MODIFYING_DICE_PLUS_ADDS);
-        mUseKnowYourOwnStrength = m.getBoolean(KEY_USE_KNOW_YOUR_OWN_STRENGTH);
-        mUseReducedSwing = m.getBoolean(KEY_USE_REDUCED_SWING);
-        mUseThrustEqualsSwingMinus2 = m.getBoolean(KEY_USE_THRUST_EQUALS_SWING_MINUS_2);
-        mUseSimpleMetricConversions = m.getBoolean(KEY_USE_SIMPLE_METRIC_CONVERSIONS);
-        mShowCollegeInSpells = m.getBoolean(KEY_SHOW_COLLEGE_IN_SPELLS);
-        mShowDifficulty = m.getBoolean(KEY_SHOW_DIFFICULTY);
-        mShowAdvantageModifierAdj = m.getBoolean(KEY_SHOW_ADVANTAGE_MODIFIER_ADJ);
-        mShowEquipmentModifierAdj = m.getBoolean(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ);
-        if (m.has(KEY_SHOW_SPELL_ADJ)) {
-            mShowSpellAdj = m.getBoolean(KEY_SHOW_SPELL_ADJ);
-        } else {
-            mShowSpellAdj = Preferences.DEFAULT_SHOW_SPELL_ADJ;
-        }
-        mUseTitleInFooter = m.getBoolean(KEY_USE_TITLE_IN_FOOTER);
-        mBlockLayout = new ArrayList<>();
-        JsonArray a     = m.getArray(KEY_BLOCK_LAYOUT);
-        int       count = a.size();
-        for (int i = 0; i < count; i++) {
-            mBlockLayout.add(a.getString(i));
+        if (m.has(KEY_BLOCK_LAYOUT)) {
+            JsonArray array = m.getArray(KEY_BLOCK_LAYOUT);
+            int       count = array.size();
+            mBlockLayout = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                mBlockLayout.add(array.getString(i));
+            }
         }
     }
 
-    void toJSON(JsonWriter w) throws IOException {
+    public void toJSON(JsonWriter w) throws IOException {
         w.startMap();
         w.keyValue(KEY_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
         w.keyValue(KEY_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
         w.keyValue(KEY_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
         w.keyValue(KEY_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
-        w.key(KEY_ATTRIBUTES);
-        AttributeDef.writeOrdered(w, mAttributes);
-        w.key(KEY_HIT_LOCATIONS);
-        mHitLocations.toJSON(w, mCharacter);
-        w.key(KEY_PAGE);
-        mPageSettings.toJSON(w);
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
@@ -166,6 +219,12 @@ public class Settings implements ChangeNotifier {
         w.keyValue(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         w.keyValue(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         w.keyValue(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+        w.key(KEY_ATTRIBUTES);
+        AttributeDef.writeOrdered(w, mAttributes);
+        w.key(KEY_HIT_LOCATIONS);
+        mHitLocations.toJSON(w, mCharacter);
+        w.key(KEY_PAGE);
+        mPageSettings.toJSON(w);
         w.key(KEY_BLOCK_LAYOUT);
         w.startArray();
         for (String one : mBlockLayout) {
@@ -176,7 +235,11 @@ public class Settings implements ChangeNotifier {
     }
 
     public void notifyOfChange() {
-        mCharacter.notifyOfChange();
+        if (mCharacter == null) {
+            Preferences.getInstance().notifyOfChange();
+        } else {
+            mCharacter.notifyOfChange();
+        }
     }
 
     public LengthUnits defaultLengthUnits() {

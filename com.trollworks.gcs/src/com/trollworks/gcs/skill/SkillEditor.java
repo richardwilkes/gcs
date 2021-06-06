@@ -219,7 +219,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private void createDifficultyPopups(Container parent) {
         List<AttributeChoice> list = new ArrayList<>();
-        for (AttributeDef def : AttributeDef.getOrdered(mRow.getDataFile().getAttributeDefs())) {
+        for (AttributeDef def : AttributeDef.getOrdered(mRow.getDataFile().getSheetSettings().getAttributes())) {
             list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
         }
         list.add(new AttributeChoice("10", "%s", "10"));

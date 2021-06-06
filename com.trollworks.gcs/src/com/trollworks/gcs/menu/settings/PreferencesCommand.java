@@ -19,13 +19,12 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.desktop.PreferencesEvent;
 import java.awt.desktop.PreferencesHandler;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 public class PreferencesCommand extends Command implements PreferencesHandler {
     public static final PreferencesCommand INSTANCE = new PreferencesCommand();
 
     private PreferencesCommand() {
-        super(I18n.Text("Default Sheet…"), "DefaultSheetSettings", KeyEvent.VK_COMMA);
+        super(I18n.Text("Old Preferences…"), "DefaultSheetSettings");
     }
 
     @Override

@@ -16,7 +16,6 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.equipment.FontAwesomeCell;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillPointsTextCell;
 import com.trollworks.gcs.template.Template;
@@ -147,13 +146,7 @@ public enum SpellColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
-            if (dataFile instanceof GURPSCharacter) {
-                return ((GURPSCharacter) dataFile).getSettings().showCollegeInSpells();
-            }
-            if (dataFile instanceof Template) {
-                return Preferences.getInstance().showCollegeInSheetSpells();
-            }
-            return true;
+            return dataFile.getSheetSettings().showCollegeInSpells();
         }
     },
     /** The casting cost. */
@@ -283,13 +276,10 @@ public enum SpellColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
-            if (dataFile instanceof GURPSCharacter) {
-                return ((GURPSCharacter) dataFile).getSettings().showDifficulty();
+            if (dataFile instanceof ListFile) {
+                return true;
             }
-            if (dataFile instanceof Template) {
-                return Preferences.getInstance().showDifficulty();
-            }
-            return dataFile instanceof ListFile;
+            return dataFile.getSheetSettings().showDifficulty();
         }
     },
     /** The spell level. */

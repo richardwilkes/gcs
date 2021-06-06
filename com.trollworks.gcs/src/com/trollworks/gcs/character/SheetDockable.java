@@ -15,6 +15,7 @@ import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.preferences.QuickExport;
 import com.trollworks.gcs.settings.AttributeSettingsWindow;
 import com.trollworks.gcs.settings.HitLocationSettingsWindow;
+import com.trollworks.gcs.settings.SheetSettingsWindow;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -61,7 +62,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
     protected Toolbar createToolbar() {
         Toolbar toolbar = super.createToolbar();
         mQuickExportButton = new FontAwesomeButton("\uf56e", "<html><body>" + I18n.Text("Quick Export<br>Export to the same location using the last used output template for this sheet") + "</body></html>", this::quickExport);
-        toolbar.add(new FontAwesomeButton("\uf013", I18n.Text("Settings"), () -> SettingsEditor.display(getDataFile())), 0);
+        toolbar.add(new FontAwesomeButton("\uf013", I18n.Text("Settings"), () -> SheetSettingsWindow.display(getDataFile())), 0);
         toolbar.add(mQuickExportButton, 1);
         updateQuickExport();
         return toolbar;
@@ -77,10 +78,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         boolean closed = super.attemptClose();
         if (closed) {
             GURPSCharacter gurpsCharacter = getDataFile();
-            SettingsEditor editor         = SettingsEditor.find(gurpsCharacter);
-            if (editor != null) {
-                editor.attemptClose();
-            }
+            SheetSettingsWindow.closeFor(gurpsCharacter);
             AttributeSettingsWindow.closeFor(gurpsCharacter);
             HitLocationSettingsWindow.closeFor(gurpsCharacter);
             mSheet.dispose();

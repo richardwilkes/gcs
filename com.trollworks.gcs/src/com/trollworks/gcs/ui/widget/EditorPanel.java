@@ -83,7 +83,7 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         if (includeBlank) {
             list.add(new AttributeChoice(" ", format, " "));
         }
-        for (AttributeDef def : AttributeDef.getOrdered(dataFile.getAttributeDefs())) {
+        for (AttributeDef def : AttributeDef.getOrdered(dataFile.getSheetSettings().getAttributes())) {
             list.add(new AttributeChoice(def.getID(), format, def.getName()));
         }
         list.add(new AttributeChoice("sm", format, "Size Modifier"));

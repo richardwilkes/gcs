@@ -47,7 +47,7 @@ public class AttributePrereq extends HasPrereq {
     public AttributePrereq(PrereqList parent) {
         super(parent);
         mValueCompare = new IntegerCriteria(NumericCompareType.AT_LEAST, 10);
-        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getAttributes());
+        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getSheetSettings().getAttributes());
         mWhich = list.isEmpty() ? "st" : list.get(0).getID();
     }
 
@@ -147,7 +147,7 @@ public class AttributePrereq extends HasPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            Map<String, AttributeDef> attributes = character.getSettings().getAttributes();
+            Map<String, AttributeDef> attributes = character.getSheetSettings().getAttributes();
             AttributeDef              def        = attributes.get(mWhich);
             String                    text       = def != null ? def.getName() : "<unknown>";
             if (mCombinedWith != null) {

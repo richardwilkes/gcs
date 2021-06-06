@@ -363,7 +363,7 @@ public class WeaponDamage {
                 if (mModifierPerDie != 0) {
                     base.add(mModifierPerDie * base.getDieCount());
                 }
-                boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
+                boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().getSheetSettings().useModifyingDicePlusAdds();
                 StringBuilder buffer                      = new StringBuilder();
                 if (base.getDieCount() != 0 || base.getModifier() != 0) {
                     buffer.append(base.toString(convertModifiersToExtraDice));
@@ -435,7 +435,7 @@ public class WeaponDamage {
 
     @Override
     public String toString() {
-        boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().useModifyingDicePlusAdds();
+        boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().getSheetSettings().useModifyingDicePlusAdds();
         StringBuilder buffer                      = new StringBuilder();
         if (mST != WeaponSTDamage.NONE) {
             buffer.append(mST);

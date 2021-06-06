@@ -313,7 +313,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     }
 
     public int computeCost(GURPSCharacter character, double value, int sm, int costReduction) {
-        if (sm > 0 && mCostAdjPercentPerSM > 0 && !("hp".equals(mID) && character.getSettings().useKnowYourOwnStrength())) {
+        if (sm > 0 && mCostAdjPercentPerSM > 0 && !("hp".equals(mID) && character.getSheetSettings().useKnowYourOwnStrength())) {
             costReduction += sm * mCostAdjPercentPerSM;
             if (costReduction < 0) {
                 costReduction = 0;

@@ -42,7 +42,7 @@ public class HitLocationPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), sheet.getCharacter().getSettings().getHitLocations().getName());
+        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), sheet.getCharacter().getSheetSettings().getHitLocations().getName());
 
         addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.HEADER);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
@@ -52,7 +52,7 @@ public class HitLocationPanel extends DropPanel {
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
         createHeader(I18n.Text("DR"), null);
 
-        addTable(sheet, sheet.getCharacter().getSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.CONTENT, false);
+        addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.CONTENT, false);
     }
 
     private boolean addTable(CharacterSheet sheet, HitLocationTable table, int depth, Color band1Color, Color band2Color, boolean band) {

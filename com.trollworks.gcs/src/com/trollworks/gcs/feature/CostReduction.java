@@ -33,7 +33,7 @@ public class CostReduction extends Feature {
 
     /** Creates a new cost reduction. */
     public CostReduction() {
-        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getAttributes());
+        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getSheetSettings().getAttributes());
         mAttribute = list.isEmpty() ? "st" : list.get(0).getID();
         mPercentage = 40;
     }

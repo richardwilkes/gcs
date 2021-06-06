@@ -101,7 +101,7 @@ public class ListPrereqEditor extends PrereqEditor {
         try {
             Prereq prereq;
             if (LAST_ITEM_TYPE == ContainedWeightPrereq.class) {
-                prereq = new ContainedWeightPrereq((PrereqList) mPrereq, mRow.getDataFile().defaultWeightUnits());
+                prereq = new ContainedWeightPrereq((PrereqList) mPrereq, mRow.getDataFile().getSheetSettings().defaultWeightUnits());
             } else {
                 PrereqList prereqList = (PrereqList) mPrereq;
                 prereq = (Prereq) LAST_ITEM_TYPE.getConstructor(PrereqList.class).newInstance(prereqList);

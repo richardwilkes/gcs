@@ -168,10 +168,11 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     public static String getDefaultAttribute(String preferred) {
-        if (Preferences.getInstance().getAttributes().get(preferred) != null) {
+        Map<String, AttributeDef> attributes = Preferences.getInstance().getSheetSettings().getAttributes();
+        if (attributes.get(preferred) != null) {
             return preferred;
         }
-        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getAttributes());
+        List<AttributeDef> list = AttributeDef.getOrdered(attributes);
         return list.isEmpty() ? preferred : list.get(0).getID();
     }
 
@@ -610,15 +611,16 @@ public class Skill extends ListRow implements HasSourceReference {
         } else {
             attrText = getDefaultAttribute("dx");
         }
-        AttributeDef attr = null;
-        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+        AttributeDef       attr    = null;
+        List<AttributeDef> ordered = AttributeDef.getOrdered(getDataFile().getSheetSettings().getAttributes());
+        for (AttributeDef attrDef : ordered) {
             if (attrDef.getID().equalsIgnoreCase(attrText)) {
                 attr = attrDef;
                 break;
             }
         }
         if (attr == null) {
-            for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+            for (AttributeDef attrDef : ordered) {
                 if (attrDef.getName().equalsIgnoreCase(attrText)) {
                     attr = attrDef;
                     break;

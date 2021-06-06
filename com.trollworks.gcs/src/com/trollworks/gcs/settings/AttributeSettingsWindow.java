@@ -16,6 +16,7 @@ import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeListPanel;
 import com.trollworks.gcs.attribute.AttributeSet;
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.preferences.Preferences;
@@ -61,13 +62,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
 /** A window for editing attribute settings. */
-public class AttributeSettingsWindow extends BaseWindow implements CloseHandler {
+public class AttributeSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
     private static Map<UUID, AttributeSettingsWindow> INSTANCES = new HashMap<>();
     private        GURPSCharacter                     mCharacter;
     private        AttributeListPanel                 mListPanel;
     private        FontAwesomeButton                  mMenuButton;
     private        JScrollPane                        mScroller;
     private        boolean                            mResetEnabled;
+    private        boolean                            mUpdatePending;
 
     /** Displays the attribute settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -97,8 +99,12 @@ public class AttributeSettingsWindow extends BaseWindow implements CloseHandler 
         }
     }
 
+    private static String createTitle(GURPSCharacter gchar) {
+        return gchar == null ? I18n.Text("Default Attributes") : String.format(I18n.Text("Attributes for %s"), gchar.getProfile().getName());
+    }
+
     private AttributeSettingsWindow(GURPSCharacter gchar) {
-        super(gchar == null ? I18n.Text("Default Attributes") : String.format(I18n.Text("Attributes for %s"), gchar.getProfile().getName()));
+        super(createTitle(gchar));
         mCharacter = gchar;
         Container content = getContentPane();
         JPanel    header  = new JPanel(new PrecisionLayout().setColumns(2).setMargins(5, 10, 5, 10).setHorizontalSpacing(10));
@@ -106,7 +112,7 @@ public class AttributeSettingsWindow extends BaseWindow implements CloseHandler 
         mMenuButton = new FontAwesomeButton("\uf0c9", I18n.Text("Menu"), this::actionMenu);
         header.add(mMenuButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
         content.add(header, BorderLayout.NORTH);
-        mListPanel = new AttributeListPanel(mCharacter == null ? Preferences.getInstance().getAttributes() : mCharacter.getSettings().getAttributes(), () -> {
+        mListPanel = new AttributeListPanel(getAttributes(), () -> {
             adjustResetButton();
             if (mCharacter != null) {
                 mCharacter.notifyOfChange();
@@ -116,10 +122,18 @@ public class AttributeSettingsWindow extends BaseWindow implements CloseHandler 
         mScroller.setBorder(null);
         content.add(mScroller, BorderLayout.CENTER);
         adjustResetButton();
+        if (gchar != null) {
+            gchar.addChangeListener(this);
+            Preferences.getInstance().addChangeListener(this);
+        }
         Dimension min1 = getMinimumSize();
         setMinimumSize(new Dimension(Math.max(min1.width, 600), min1.height));
         WindowUtils.packAndCenterWindowOn(this, null);
         EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
+    }
+
+    private Map<String, AttributeDef> getAttributes() {
+        return SheetSettings.get(mCharacter).getAttributes();
     }
 
     private void actionMenu() {
@@ -213,7 +227,7 @@ public class AttributeSettingsWindow extends BaseWindow implements CloseHandler 
         if (mCharacter == null) {
             attributes = AttributeDef.createStandardAttributes();
         } else {
-            attributes = AttributeDef.cloneMap(Preferences.getInstance().getAttributes());
+            attributes = AttributeDef.cloneMap(Preferences.getInstance().getSheetSettings().getAttributes());
         }
         reset(attributes);
         adjustResetButton();
@@ -228,13 +242,13 @@ public class AttributeSettingsWindow extends BaseWindow implements CloseHandler 
     }
 
     private void adjustResetButton() {
-        Map<String, AttributeDef> prefsAttributes = Preferences.getInstance().getAttributes();
+        Map<String, AttributeDef> prefsAttributes = Preferences.getInstance().getSheetSettings().getAttributes();
         if (mCharacter == null) {
             mResetEnabled = !prefsAttributes.equals(AttributeDef.createStandardAttributes());
         } else {
             Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
             Map<String, Attribute> newAttributes = new HashMap<>();
-            for (String key : mCharacter.getSettings().getAttributes().keySet()) {
+            for (String key : mCharacter.getSheetSettings().getAttributes().keySet()) {
                 Attribute attribute = oldAttributes.get(key);
                 newAttributes.put(key, attribute != null ? attribute : new Attribute(key));
             }
@@ -244,7 +258,7 @@ public class AttributeSettingsWindow extends BaseWindow implements CloseHandler 
                 mCharacter.notifyOfChange();
             }
             mListPanel.adjustButtons();
-            mResetEnabled = !mCharacter.getSettings().getAttributes().equals(prefsAttributes);
+            mResetEnabled = !mCharacter.getSheetSettings().getAttributes().equals(prefsAttributes);
         }
     }
 
@@ -264,6 +278,22 @@ public class AttributeSettingsWindow extends BaseWindow implements CloseHandler 
         synchronized (INSTANCES) {
             INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
         }
+        if (mCharacter != null) {
+            mCharacter.removeChangeListener(this);
+            Preferences.getInstance().removeChangeListener(this);
+        }
         super.dispose();
+    }
+
+    @Override
+    public void dataWasChanged() {
+        if (!mUpdatePending) {
+            mUpdatePending = true;
+            EventQueue.invokeLater(() -> {
+                setTitle(createTitle(mCharacter));
+                adjustResetButton();
+                mUpdatePending = false;
+            });
+        }
     }
 }

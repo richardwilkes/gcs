@@ -31,7 +31,7 @@ public final class SkillDefaultType {
 
     public static JComboBox<AttributeChoice> createCombo(Container parent, DataFile dataFile, String currentType, String actionCommand, ActionListener listener, boolean editable) {
         List<AttributeChoice> list = new ArrayList<>();
-        for (AttributeDef def : AttributeDef.getOrdered(dataFile.getAttributeDefs())) {
+        for (AttributeDef def : AttributeDef.getOrdered(dataFile.getSheetSettings().getAttributes())) {
             list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
         }
         list.add(new AttributeChoice("skill", "%s", "Skill"));

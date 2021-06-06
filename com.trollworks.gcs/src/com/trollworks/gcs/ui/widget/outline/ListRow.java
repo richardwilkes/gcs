@@ -27,6 +27,7 @@ import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.SpellPointBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.prereq.PrereqList;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
@@ -283,7 +284,7 @@ public abstract class ListRow extends Row {
         prepareForLoad(state);
         loadSelf(m, state);
         if (m.has(KEY_PREREQS)) {
-            mPrereqList = new PrereqList(null, mDataFile.defaultWeightUnits(), m.getMap(KEY_PREREQS));
+            mPrereqList = new PrereqList(null, mDataFile.getSheetSettings().defaultWeightUnits(), m.getMap(KEY_PREREQS));
         }
         if (!(this instanceof Technique) && m.has(KEY_DEFAULTS)) {
             JsonArray a     = m.getArray(KEY_DEFAULTS);
@@ -525,15 +526,15 @@ public abstract class ListRow extends Row {
 
     /** @return The "secondary" text, the text display below an Advantage. */
     protected String getSecondaryText() {
-        StringBuilder builder = new StringBuilder();
-        DataFile      df      = getDataFile();
-        if (df.modifiersDisplay().inline()) {
+        StringBuilder builder  = new StringBuilder();
+        SheetSettings settings = getDataFile().getSheetSettings();
+        if (settings.modifiersDisplay().inline()) {
             String txt = getModifierNotes();
             if (!txt.isBlank()) {
                 builder.append(txt);
             }
         }
-        if (df.notesDisplay().inline()) {
+        if (settings.notesDisplay().inline()) {
             String txt = getNotes();
             if (!txt.isBlank()) {
                 if (!builder.isEmpty()) {

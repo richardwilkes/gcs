@@ -49,7 +49,7 @@ public class SkillDefaultEditor extends EditorPanel {
 
     public static synchronized String getLastItemType(DataFile dataFile) {
         if (LAST_ITEM_TYPE == null) {
-            Map<String, AttributeDef> defs    = (dataFile != null) ? dataFile.getAttributeDefs() : Preferences.getInstance().getAttributes();
+            Map<String, AttributeDef> defs    = ((dataFile != null) ? dataFile.getSheetSettings() : Preferences.getInstance().getSheetSettings()).getAttributes();
             List<AttributeDef>        ordered = AttributeDef.getOrdered(defs);
             LAST_ITEM_TYPE = ordered.isEmpty() ? "st" : ordered.get(0).getID();
         }

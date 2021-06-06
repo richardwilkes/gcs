@@ -40,7 +40,7 @@ public class PointPoolsPanel extends DropPanel {
         super(new PrecisionLayout().setColumns(6).setMargins(0).setSpacing(2, 0).setFillAlignment(), I18n.Text("Point Pools"));
         GURPSCharacter         gch        = sheet.getCharacter();
         Map<String, Attribute> attributes = gch.getAttributes();
-        for (AttributeDef def : AttributeDef.getOrdered(gch.getSettings().getAttributes())) {
+        for (AttributeDef def : AttributeDef.getOrdered(gch.getSheetSettings().getAttributes())) {
             if (def.getType() == AttributeType.POOL) {
                 Attribute attr = attributes.get(def.getID());
                 if (attr != null) {

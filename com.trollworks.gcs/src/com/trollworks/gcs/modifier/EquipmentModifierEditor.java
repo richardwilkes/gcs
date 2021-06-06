@@ -106,7 +106,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             modified |= mRow.setCostAdjAmount(costType.format(mCostAmountField.getText(), false));
             EquipmentModifierWeightType weightType = getWeightType();
             modified |= mRow.setWeightAdjType(weightType);
-            modified |= mRow.setWeightAdjAmount(weightType.format(mWeightAmountField.getText(), mRow.getDataFile().defaultWeightUnits(), false));
+            modified |= mRow.setWeightAdjAmount(weightType.format(mWeightAmountField.getText(), mRow.getDataFile().getSheetSettings().defaultWeightUnits(), false));
         }
         return modified;
     }
@@ -181,7 +181,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private void createWeightAdjustmentField(Container labelParent, Container fieldParent) {
         mWeightAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mWeightAmountField);
-        mWeightAmountField.setText(mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(), mRow.getDataFile().defaultWeightUnits(), true));
+        mWeightAmountField.setText(mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(), mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true));
         mWeightAmountField.setToolTipText(I18n.Text("The weight modifier"));
         mWeightAmountField.addActionListener(this);
         mWeightAmountField.addFocusListener(this);
@@ -258,7 +258,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private void weightChanged() {
         String text    = mWeightAmountField.getText();
-        String revised = getWeightType().format(text, mRow.getDataFile().defaultWeightUnits(), true);
+        String revised = getWeightType().format(text, mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true);
         if (!text.equals(revised)) {
             mWeightAmountField.setText(revised);
         }

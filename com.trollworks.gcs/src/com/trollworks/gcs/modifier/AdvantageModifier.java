@@ -284,7 +284,7 @@ public class AdvantageModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter) mDataFile).getSettings().showAdvantageModifierAdj()) {
+        if (mDataFile instanceof GURPSCharacter && mDataFile.getSheetSettings().showAdvantageModifierAdj()) {
             builder.append(" [");
             builder.append(getCostDescription());
             builder.append(']');

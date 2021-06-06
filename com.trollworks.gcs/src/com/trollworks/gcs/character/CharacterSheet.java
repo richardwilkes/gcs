@@ -222,7 +222,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         // Add the various outline blocks, based on the layout preference.
         boolean     addedAtLeastOneOutline = false;
         Set<String> remaining              = prepBlockLayoutRemaining();
-        for (String line : mCharacter.getSettings().blockLayout()) {
+        for (String line : mCharacter.getSheetSettings().blockLayout()) {
             String[] parts = line.trim().toLowerCase().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
                 Outline o1 = getOutlineForKey(parts[0]);
@@ -298,7 +298,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     public String getHTMLGridTemplate() {
         Set<String>   remaining = prepBlockLayoutRemaining();
         StringBuilder buffer    = new StringBuilder();
-        for (String line : mCharacter.getSettings().blockLayout()) {
+        for (String line : mCharacter.getSheetSettings().blockLayout()) {
             String[] parts = line.trim().toLowerCase().split(" ");
             if (!parts[0].isEmpty() && remaining.contains(parts[0])) {
                 remaining.remove(parts[0]);
@@ -694,7 +694,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
         gc.setFont(font2);
         Profile profile = mCharacter.getProfile();
-        String  center  = mCharacter.getSettings().useTitleInFooter() ? profile.getTitle() : profile.getName();
+        String  center  = mCharacter.getSheetSettings().useTitleInFooter() ? profile.getTitle() : profile.getName();
         gc.drawString(center, bounds.x + (bounds.width - (int) fm2.getStringBounds(center, gc).getWidth()) / 2, y);
 
         String allRightsReserved = I18n.Text("All rights reserved");
@@ -727,7 +727,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     public PageSettings getPageSettings() {
-        return mCharacter.getSettings().getPageSettings();
+        return mCharacter.getSheetSettings().getPageSettings();
     }
 
     /** @return The character being displayed. */
@@ -789,7 +789,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         Set<Row> changed = expandAllContainers();
         try {
             int          dpi      = Preferences.getInstance().getPNGResolution();
-            PageSettings settings = mCharacter.getSettings().getPageSettings();
+            PageSettings settings = mCharacter.getSheetSettings().getPageSettings();
             PageFormat   format   = settings.createPageFormat();
             int          width    = (int) (format.getWidth() / 72.0 * dpi);
             int          height   = (int) (format.getHeight() / 72.0 * dpi);

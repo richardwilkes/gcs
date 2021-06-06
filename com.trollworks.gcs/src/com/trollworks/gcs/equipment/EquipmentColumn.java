@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
@@ -122,16 +123,16 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip(Equipment equipment) {
-            StringBuilder builder = new StringBuilder();
-            DataFile      df      = equipment.getDataFile();
-            if (df.modifiersDisplay().tooltip()) {
+            StringBuilder builder  = new StringBuilder();
+            SheetSettings settings = equipment.getDataFile().getSheetSettings();
+            if (settings.modifiersDisplay().tooltip()) {
                 String desc = equipment.getModifierNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
                     builder.append('\n');
                 }
             }
-            if (df.notesDisplay().tooltip()) {
+            if (settings.notesDisplay().tooltip()) {
                 String desc = equipment.getNotes();
                 builder.append(desc);
                 if (!desc.isEmpty()) {
@@ -178,15 +179,15 @@ public enum EquipmentColumn {
         public String getDataAsText(Equipment equipment) {
             StringBuilder builder = new StringBuilder();
             builder.append(equipment);
-            DataFile df = equipment.getDataFile();
-            if (df.modifiersDisplay().inline()) {
+            SheetSettings settings = equipment.getDataFile().getSheetSettings();
+            if (settings.modifiersDisplay().inline()) {
                 String desc = equipment.getModifierNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
                 }
                 builder.append(desc);
             }
-            if (df.notesDisplay().inline()) {
+            if (settings.notesDisplay().inline()) {
                 String desc = equipment.getNotes();
                 if (!desc.isEmpty()) {
                     builder.append(" - ");
@@ -583,10 +584,11 @@ public enum EquipmentColumn {
     }
 
     public static WeightValue getConvertedWeight(DataFile df, WeightValue weight) {
-        if (df.useSimpleMetricConversions()) {
-            weight = df.defaultWeightUnits().isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
+        SheetSettings settings = df.getSheetSettings();
+        if (settings.useSimpleMetricConversions()) {
+            weight = settings.defaultWeightUnits().isMetric() ? GURPSCharacter.convertToGurpsMetric(weight) : GURPSCharacter.convertFromGurpsMetric(weight);
         } else {
-            weight = new WeightValue(weight, df.defaultWeightUnits());
+            weight = new WeightValue(weight, settings.defaultWeightUnits());
         }
         return weight;
     }

@@ -16,7 +16,6 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.equipment.FontAwesomeCell;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
@@ -93,13 +92,10 @@ public enum SkillColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
-            if (dataFile instanceof GURPSCharacter) {
-                return ((GURPSCharacter) dataFile).getSettings().showDifficulty();
+            if (dataFile instanceof ListFile) {
+                return true;
             }
-            if (dataFile instanceof Template) {
-                return Preferences.getInstance().showDifficulty();
-            }
-            return dataFile instanceof ListFile;
+            return dataFile.getSheetSettings().showDifficulty();
         }
 
         @Override

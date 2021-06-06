@@ -15,6 +15,7 @@ import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.body.HitLocationTablePanel;
 import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.preferences.Preferences;
@@ -54,13 +55,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
 /** A window for editing hit location settings. */
-public class HitLocationSettingsWindow extends BaseWindow implements CloseHandler {
+public class HitLocationSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
     private static Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
     private        GURPSCharacter                       mCharacter;
     private        HitLocationTablePanel                mLocationsPanel;
     private        FontAwesomeButton                    mMenuButton;
     private        JScrollPane                          mScroller;
     private        boolean                              mResetEnabled;
+    private        boolean                              mUpdatePending;
 
     /** Displays the hit location settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -90,20 +92,22 @@ public class HitLocationSettingsWindow extends BaseWindow implements CloseHandle
         }
     }
 
+    private static String createTitle(GURPSCharacter gchar) {
+        return gchar == null ? I18n.Text("Default Hit Locations") : String.format(I18n.Text("Hit Locations for %s"), gchar.getProfile().getName());
+    }
+
     private HitLocationSettingsWindow(GURPSCharacter gchar) {
-        super(gchar == null ? I18n.Text("Default Hit Locations") : String.format(I18n.Text("Hit Locations for %s"), gchar.getProfile().getName()));
+        super(createTitle(gchar));
         mCharacter = gchar;
         Container content = getContentPane();
         JPanel    header  = new JPanel(new PrecisionLayout().setMargins(5, 10, 5, 10).setHorizontalSpacing(10));
         mMenuButton = new FontAwesomeButton("\uf0c9", I18n.Text("Menu"), this::actionMenu);
         header.add(mMenuButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
         content.add(header, BorderLayout.NORTH);
-        mLocationsPanel = new HitLocationTablePanel(mCharacter == null ? Preferences.getInstance().getHitLocations() : mCharacter.getSettings().getHitLocations(), () -> {
+        mLocationsPanel = new HitLocationTablePanel(getHitLocations(), () -> {
+            getHitLocations().update();
             if (mCharacter != null) {
-                mCharacter.getSettings().getHitLocations().update();
                 mCharacter.notifyOfChange();
-            } else {
-                Preferences.getInstance().getHitLocations().update();
             }
             adjustResetButton();
         });
@@ -115,6 +119,10 @@ public class HitLocationSettingsWindow extends BaseWindow implements CloseHandle
         setMinimumSize(new Dimension(Math.max(min1.width, 600), min1.height));
         WindowUtils.packAndCenterWindowOn(this, null);
         EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
+    }
+
+    private HitLocationTable getHitLocations() {
+        return SheetSettings.get(mCharacter).getHitLocations();
     }
 
     private void actionMenu() {
@@ -184,7 +192,7 @@ public class HitLocationSettingsWindow extends BaseWindow implements CloseHandle
         if (mCharacter == null) {
             locations = LibraryHitLocationTables.getHumanoid();
         } else {
-            locations = Preferences.getInstance().getHitLocations();
+            locations = Preferences.getInstance().getSheetSettings().getHitLocations();
         }
         reset(locations);
         adjustResetButton();
@@ -199,11 +207,11 @@ public class HitLocationSettingsWindow extends BaseWindow implements CloseHandle
     }
 
     private void adjustResetButton() {
-        HitLocationTable prefsLocations = Preferences.getInstance().getHitLocations();
+        HitLocationTable prefsLocations = Preferences.getInstance().getSheetSettings().getHitLocations();
         if (mCharacter == null) {
             mResetEnabled = !prefsLocations.equals(LibraryHitLocationTables.getHumanoid());
         } else {
-            mResetEnabled = !mCharacter.getSettings().getHitLocations().equals(prefsLocations);
+            mResetEnabled = !mCharacter.getSheetSettings().getHitLocations().equals(prefsLocations);
         }
     }
 
@@ -223,6 +231,22 @@ public class HitLocationSettingsWindow extends BaseWindow implements CloseHandle
         synchronized (INSTANCES) {
             INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
         }
+        if (mCharacter != null) {
+            mCharacter.removeChangeListener(this);
+            Preferences.getInstance().removeChangeListener(this);
+        }
         super.dispose();
+    }
+
+    @Override
+    public void dataWasChanged() {
+        if (!mUpdatePending) {
+            mUpdatePending = true;
+            EventQueue.invokeLater(() -> {
+                setTitle(createTitle(mCharacter));
+                adjustResetButton();
+                mUpdatePending = false;
+            });
+        }
     }
 }

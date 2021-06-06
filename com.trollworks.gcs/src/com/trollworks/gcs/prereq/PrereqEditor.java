@@ -185,7 +185,7 @@ public abstract class PrereqEditor extends EditorPanel {
                 try {
                     Prereq prereq;
                     if (type == ContainedWeightPrereq.class) {
-                        prereq = new ContainedWeightPrereq(list, mRow.getDataFile().defaultWeightUnits());
+                        prereq = new ContainedWeightPrereq(list, mRow.getDataFile().getSheetSettings().defaultWeightUnits());
                     } else {
                         prereq = (Prereq) type.getConstructor(PrereqList.class).newInstance(list);
                     }

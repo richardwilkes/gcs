@@ -637,7 +637,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         double modifiedBasePoints = basePoints;
         double leveledPoints      = pointsPerLevel * (levels + (halfLevel ? 0.5 : 0));
         if (baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0) {
-            if (getDataFile().useMultiplicativeModifiers()) {
+            if (getDataFile().getSheetSettings().useMultiplicativeModifiers()) {
                 if (baseEnh == levelEnh && baseLim == levelLim) {
                     modifiedBasePoints = modifyPoints(modifiedBasePoints + leveledPoints, baseEnh);
                     modifiedBasePoints = modifyPoints(modifiedBasePoints, Math.max(baseLim, -80));
@@ -961,7 +961,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     protected String getSecondaryText() {
         StringBuilder builder = new StringBuilder();
-        if (getDataFile().userDescriptionDisplay().inline()) {
+        if (getDataFile().getSheetSettings().userDescriptionDisplay().inline()) {
             String txt = getUserDesc();
             if (!txt.isBlank()) {
                 builder.append(txt);

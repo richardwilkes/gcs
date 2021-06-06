@@ -12,9 +12,9 @@
 package com.trollworks.gcs.datafile;
 
 import com.trollworks.gcs.attribute.AttributeDef;
-import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileType;
@@ -26,7 +26,6 @@ import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
-import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -38,7 +37,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import javax.swing.undo.UndoableEdit;
 
@@ -260,39 +258,11 @@ public abstract class DataFile extends ChangeableData implements Undoable {
         mSortingMarksDirty = markDirty;
     }
 
-    public WeightUnits defaultWeightUnits() {
-        return Preferences.getInstance().getDefaultWeightUnits();
-    }
-
-    public boolean useSimpleMetricConversions() {
-        return Preferences.getInstance().useSimpleMetricConversions();
-    }
-
-    public boolean useMultiplicativeModifiers() {
-        return Preferences.getInstance().useMultiplicativeModifiers();
-    }
-
-    public boolean useModifyingDicePlusAdds() {
-        return Preferences.getInstance().useModifyingDicePlusAdds();
-    }
-
-    public DisplayOption userDescriptionDisplay() {
-        return Preferences.getInstance().getUserDescriptionDisplay();
-    }
-
-    public DisplayOption modifiersDisplay() {
-        return Preferences.getInstance().getModifiersDisplay();
-    }
-
-    public DisplayOption notesDisplay() {
-        return Preferences.getInstance().getNotesDisplay();
-    }
-
-    public Map<String, AttributeDef> getAttributeDefs() {
-        return Preferences.getInstance().getAttributes();
+    public SheetSettings getSheetSettings() {
+        return Preferences.getInstance().getSheetSettings();
     }
 
     public AttributeDef getAttributeDef(String id) {
-        return getAttributeDefs().get(id);
+        return getSheetSettings().getAttributes().get(id);
     }
 }

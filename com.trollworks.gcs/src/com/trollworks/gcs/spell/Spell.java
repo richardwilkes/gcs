@@ -831,14 +831,14 @@ public class Spell extends ListRow implements HasSourceReference {
             attrText = Skill.getDefaultAttribute("iq");
         }
         AttributeDef attr = null;
-        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+        for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getSheetSettings().getAttributes())) {
             if (attrDef.getID().equalsIgnoreCase(attrText)) {
                 attr = attrDef;
                 break;
             }
         }
         if (attr == null) {
-            for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getAttributeDefs())) {
+            for (AttributeDef attrDef : AttributeDef.getOrdered(getDataFile().getSheetSettings().getAttributes())) {
                 if (attrDef.getName().equalsIgnoreCase(attrText)) {
                     attr = attrDef;
                     break;
@@ -1030,7 +1030,7 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     public String getRituals() {
-        if (!((mDataFile instanceof GURPSCharacter) && ((GURPSCharacter) mDataFile).getSettings().showSpellAdj())) {
+        if (!((mDataFile instanceof GURPSCharacter) && mDataFile.getSheetSettings().showSpellAdj())) {
             return "";
         }
         int level = mLevel.getLevel();

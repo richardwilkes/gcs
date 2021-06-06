@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.menu.settings;
 
-import com.trollworks.gcs.character.SettingsEditor;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.settings.SheetSettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
@@ -21,23 +21,36 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 public class SettingsCommand extends Command {
-    public static final SettingsCommand INSTANCE = new SettingsCommand();
+    public static final SettingsCommand PER_SHEET = new SettingsCommand(false);
+    public static final SettingsCommand DEFAULTS  = new SettingsCommand(true);
+    private             boolean         mForDefaults;
 
-    private SettingsCommand() {
-        super(I18n.Text("Sheet…"), "SheetSettings", KeyEvent.VK_COMMA, SHIFTED_COMMAND_MODIFIER);
+    private SettingsCommand(boolean defaults) {
+        super(defaults ? I18n.Text("Default Sheet Settings…") : I18n.Text("Sheet Settings…"),
+                defaults ? "default_sheet_settings" : "sheet_settings",
+                KeyEvent.VK_COMMA, defaults ? COMMAND_MODIFIER : SHIFTED_COMMAND_MODIFIER);
+        mForDefaults = defaults;
     }
 
     @Override
     public void adjust() {
-        setEnabled(!UIUtilities.inModalState() && getTarget(SheetDockable.class) != null);
+        boolean shouldEnable = !UIUtilities.inModalState();
+        if (shouldEnable && !mForDefaults) {
+            shouldEnable = getTarget(SheetDockable.class) != null;
+        }
+        setEnabled(shouldEnable);
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
         if (!UIUtilities.inModalState()) {
-            SheetDockable target = getTarget(SheetDockable.class);
-            if (target != null) {
-                SettingsEditor.display(target.getDataFile());
+            if (mForDefaults) {
+                SheetSettingsWindow.display(null);
+            } else {
+                SheetDockable target = getTarget(SheetDockable.class);
+                if (target != null) {
+                    SheetSettingsWindow.display(target.getDataFile());
+                }
             }
         }
     }

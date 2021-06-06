@@ -12,6 +12,7 @@
 package com.trollworks.gcs.utility.text;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.utility.Dice;
 
 import javax.swing.JFormattedTextField;
@@ -32,7 +33,7 @@ public class DiceFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
     public String valueToString(Object value) {
         if (value instanceof Dice) {
-            return ((Dice) value).toString(mCharacter != null && mCharacter.getSettings().useModifyingDicePlusAdds());
+            return ((Dice) value).toString(SheetSettings.get(mCharacter).useModifyingDicePlusAdds());
         }
         return "";
     }

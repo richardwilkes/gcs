@@ -89,7 +89,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     private String getDefaultWeightAmount() {
-        return "+" + new WeightValue(Fixed6.ZERO, getDataFile().defaultWeightUnits());
+        return "+" + new WeightValue(Fixed6.ZERO, getDataFile().getSheetSettings().defaultWeightUnits());
     }
 
     @Override
@@ -184,7 +184,7 @@ public class EquipmentModifier extends Modifier {
      * @return {@code true} if a change was made.
      */
     public boolean setWeightAdjAmount(String amount) {
-        amount = mWeightType.format(amount, getDataFile().defaultWeightUnits(), false);
+        amount = mWeightType.format(amount, getDataFile().getSheetSettings().defaultWeightUnits(), false);
         if (!mWeightAmount.equals(amount)) {
             mWeightAmount = amount;
             notifyOfChange();
@@ -228,7 +228,7 @@ public class EquipmentModifier extends Modifier {
             }
             if (m.has(KEY_WEIGHT_TYPE)) {
                 mWeightType = Enums.extract(m.getString(KEY_WEIGHT_TYPE), EquipmentModifierWeightType.values(), EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT);
-                mWeightAmount = mWeightType.format(m.getString(KEY_WEIGHT_ADJ), getDataFile().defaultWeightUnits(), false);
+                mWeightAmount = mWeightType.format(m.getString(KEY_WEIGHT_ADJ), getDataFile().getSheetSettings().defaultWeightUnits(), false);
             }
             mTechLevel = m.getString(KEY_TECH_LEVEL);
         }
@@ -272,7 +272,7 @@ public class EquipmentModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        if (mDataFile instanceof GURPSCharacter && ((GURPSCharacter) mDataFile).getSettings().showEquipmentModifierAdj()) {
+        if (mDataFile instanceof GURPSCharacter && mDataFile.getSheetSettings().showEquipmentModifierAdj()) {
             String costDesc   = getCostDescription();
             String weightDesc = getWeightDescription();
             if (!costDesc.isEmpty() || !weightDesc.isEmpty()) {
@@ -303,7 +303,7 @@ public class EquipmentModifier extends Modifier {
         if (canHaveChildren() || (mWeightType == EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT && getDefaultWeightAmount().equals(mWeightAmount))) {
             return "";
         }
-        return mWeightType.format(mWeightAmount, getDataFile().defaultWeightUnits(), true) + " " + mWeightType.toShortString();
+        return mWeightType.format(mWeightAmount, getDataFile().getSheetSettings().defaultWeightUnits(), true) + " " + mWeightType.toShortString();
     }
 
     /** @return The tech level. */
