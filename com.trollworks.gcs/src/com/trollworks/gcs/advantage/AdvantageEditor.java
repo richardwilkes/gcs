@@ -290,12 +290,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
     private LinkedLabel createTypeLabel(RetinaIcon icon, JCheckBox linkTo) {
         LinkedLabel label = new LinkedLabel(icon, linkTo);
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent event) {
-                linkTo.doClick();
-            }
-        });
+        label.addMouseListener(new LinkAdapter(linkTo));
         return label;
     }
 
@@ -502,6 +497,19 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             if (src == mLevelField || src == mLevelPointsField || src == mBasePointsField) {
                 updatePoints();
             }
+        }
+    }
+
+    static class LinkAdapter extends MouseAdapter {
+        private final JCheckBox mLinkTo;
+
+        LinkAdapter(JCheckBox linkTo) {
+            mLinkTo = linkTo;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent event) {
+            mLinkTo.doClick();
         }
     }
 }

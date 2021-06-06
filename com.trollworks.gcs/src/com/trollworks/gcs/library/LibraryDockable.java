@@ -165,14 +165,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mCategoryCombo.putClientProperty("JComponent.sizeVariant", "small");
         mCategoryCombo.putClientProperty("JComboBox.isPopDown", Boolean.TRUE);
         mCategoryCombo.setMaximumRowCount(20);
-        mCategoryCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                setFont(getFont().deriveFont(index == 0 ? Font.ITALIC : Font.PLAIN));
-                return comp;
-            }
-        });
+        mCategoryCombo.setRenderer(new CategoryCellRenderer());
         mCategoryCombo.addActionListener((event) -> {
             mCategoryCombo.setFont(mCategoryCombo.getFont().deriveFont(mCategoryCombo.getSelectedIndex() == 0 ? Font.ITALIC : Font.PLAIN));
             mCategoryCombo.revalidate();
@@ -261,5 +254,14 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     @Override
     public void jumpToSearchField() {
         mFilterField.requestFocus();
+    }
+
+    private static class CategoryCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            setFont(getFont().deriveFont(index == 0 ? Font.ITALIC : Font.PLAIN));
+            return comp;
+        }
     }
 }

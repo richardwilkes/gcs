@@ -222,7 +222,7 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
     /**
      * Attempt to close a {@link Dockable} within this DockContainer. This only has an affect if the
      * {@link Dockable} is contained by this DockContainer and implements the {@link CloseHandler}
-     * interface. Note that the {@link CloseHandler} must call this {@link DockContainer}'s {@link
+     * interface. Note that the {@link CloseHandler} must call this DockContainer's {@link
      * #close(Dockable)} method to actually close the tab.
      */
     public void attemptClose(Dockable dockable) {
