@@ -80,7 +80,7 @@ public abstract class WeaponListEditor extends JPanel implements ActionListener,
      * @param weapons     The weapons to modify.
      * @param weaponClass The {@link Class} of weapons.
      */
-    public WeaponListEditor(ListRow owner, List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
+    protected WeaponListEditor(ListRow owner, List<WeaponStats> weapons, Class<? extends WeaponStats> weaponClass) {
         super(new PrecisionLayout().setMargins(0));
         mOwner = owner;
         mWeaponClass = weaponClass;

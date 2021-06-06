@@ -27,7 +27,7 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.ui.widget.outline.Switchable;
 import com.trollworks.gcs.utility.FilteredIterator;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -910,7 +910,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     /** @param modifiers The value to set for modifiers. */
     public void setModifiers(List<? extends Modifier> modifiers) {
-        List<AdvantageModifier> in = new FilteredList<>(modifiers, AdvantageModifier.class);
+        List<AdvantageModifier> in = Filtered.list(modifiers, AdvantageModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifyOfChange();

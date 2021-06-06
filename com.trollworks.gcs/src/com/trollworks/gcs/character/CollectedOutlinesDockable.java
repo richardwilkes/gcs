@@ -52,7 +52,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
     private JComboBox<Scales> mScaleCombo;
     private Search            mSearch;
 
-    public CollectedOutlinesDockable(DataFile dataFile) {
+    protected CollectedOutlinesDockable(DataFile dataFile) {
         super(dataFile);
     }
 

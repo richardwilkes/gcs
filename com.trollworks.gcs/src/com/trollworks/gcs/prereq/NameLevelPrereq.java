@@ -43,7 +43,7 @@ public abstract class NameLevelPrereq extends HasPrereq {
      * @param tag    The tag for this prerequisite.
      * @param parent The owning prerequisite list, if any.
      */
-    public NameLevelPrereq(String tag, PrereqList parent) {
+    protected NameLevelPrereq(String tag, PrereqList parent) {
         super(parent);
         mTag = tag;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
@@ -56,7 +56,7 @@ public abstract class NameLevelPrereq extends HasPrereq {
      * @param parent The owning prerequisite list, if any.
      * @param m      The {@link JsonMap} to load from.
      */
-    public NameLevelPrereq(PrereqList parent, JsonMap m) throws IOException {
+    protected NameLevelPrereq(PrereqList parent, JsonMap m) throws IOException {
         this(m.getString(DataFile.TYPE), parent);
         initializeForLoad();
         loadSelf(m, new LoadState());

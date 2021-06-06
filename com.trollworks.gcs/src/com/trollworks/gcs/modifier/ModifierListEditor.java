@@ -26,7 +26,7 @@ import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FilteredIterator;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
@@ -165,7 +165,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
 
     /** @return Modifiers edited by this editor plus inherited Modifiers */
     public List<? extends Modifier> getAllModifiers() {
-        return new FilteredList<>(mOutline.getModel().getRows(), Modifier.class);
+        return Filtered.list(mOutline.getModel().getRows(), Modifier.class);
     }
 
     @Override

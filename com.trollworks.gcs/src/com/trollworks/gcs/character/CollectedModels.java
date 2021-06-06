@@ -46,7 +46,7 @@ public abstract class CollectedModels extends DataFile {
     private             OutlineModel mOtherEquipment;
     private             OutlineModel mNotes;
 
-    public CollectedModels() {
+    protected CollectedModels() {
         mAdvantages = new OutlineModel();
         mSkills = new OutlineModel();
         mSpells = new OutlineModel();

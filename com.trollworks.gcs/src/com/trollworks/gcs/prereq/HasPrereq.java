@@ -28,7 +28,7 @@ public abstract class HasPrereq extends Prereq {
      *
      * @param parent The owning prerequisite list, if any.
      */
-    public HasPrereq(PrereqList parent) {
+    protected HasPrereq(PrereqList parent) {
         super(parent);
         mHas = true;
     }

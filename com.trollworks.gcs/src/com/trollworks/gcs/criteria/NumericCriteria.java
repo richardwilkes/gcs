@@ -27,7 +27,7 @@ public abstract class NumericCriteria extends Criteria {
      *
      * @param type The {@link NumericCompareType} to use.
      */
-    public NumericCriteria(NumericCompareType type) {
+    protected NumericCriteria(NumericCompareType type) {
         setType(type);
     }
 

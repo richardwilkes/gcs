@@ -32,7 +32,7 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -73,7 +73,7 @@ public abstract class ListRow extends Row {
     private   TreeSet<String>    mCategories;
 
     public static void saveList(JsonWriter w, String key, List<?> list, SaveType saveType) throws IOException {
-        FilteredList<ListRow> rows = new FilteredList<>(list, ListRow.class, true);
+        List<ListRow> rows = Filtered.list(list, ListRow.class);
         if (!rows.isEmpty()) {
             w.key(key);
             w.startArray();
@@ -150,7 +150,7 @@ public abstract class ListRow extends Row {
      * @param dataFile    The data file to associate it with.
      * @param isContainer Whether or not this row allows children.
      */
-    public ListRow(DataFile dataFile, boolean isContainer) {
+    protected ListRow(DataFile dataFile, boolean isContainer) {
         setCanHaveChildren(isContainer);
         setOpen(isContainer);
         mDataFile = dataFile;
@@ -169,7 +169,7 @@ public abstract class ListRow extends Row {
      * @param dataFile   The data file to associate it with.
      * @param rowToClone The data row to clone.
      */
-    public ListRow(DataFile dataFile, ListRow rowToClone) {
+    protected ListRow(DataFile dataFile, ListRow rowToClone) {
         this(dataFile, rowToClone.canHaveChildren());
         setOpen(rowToClone.isOpen());
         mNotes = rowToClone.mNotes;

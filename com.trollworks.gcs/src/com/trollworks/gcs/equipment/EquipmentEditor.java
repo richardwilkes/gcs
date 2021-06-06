@@ -23,7 +23,7 @@ import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumberFilter;
@@ -292,13 +292,13 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     private void valueChanged() {
         int    qty   = getQty();
-        Fixed6 value = qty < 1 ? Fixed6.ZERO : new Fixed6(qty).mul(Equipment.getValueAdjustedForModifiers(new Fixed6(mValueField.getText(), Fixed6.ZERO, true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class))).add(mContainedValue);
+        Fixed6 value = qty < 1 ? Fixed6.ZERO : new Fixed6(qty).mul(Equipment.getValueAdjustedForModifiers(new Fixed6(mValueField.getText(), Fixed6.ZERO, true), Filtered.list(mModifiers.getAllModifiers(), EquipmentModifier.class))).add(mContainedValue);
         mExtValueField.setText(value.toLocalizedString());
     }
 
     private void weightChanged() {
         int         qty    = getQty();
-        WeightValue weight = mRow.getWeightAdjustedForModifiers(WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true), new FilteredList<>(mModifiers.getAllModifiers(), EquipmentModifier.class));
+        WeightValue weight = mRow.getWeightAdjustedForModifiers(WeightValue.extract(qty < 1 ? "0" : mWeightField.getText(), true), Filtered.list(mModifiers.getAllModifiers(), EquipmentModifier.class));
         if (qty > 0) {
             weight.setValue(weight.getValue().mul(new Fixed6(qty)));
             weight.add(mContainedWeight);

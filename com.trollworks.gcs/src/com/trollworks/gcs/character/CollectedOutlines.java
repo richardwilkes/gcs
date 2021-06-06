@@ -57,7 +57,7 @@ public abstract class CollectedOutlines extends JPanel implements Runnable, Acti
     private boolean          mDragWasAcceptable;
     private boolean          mRebuildPending;
 
-    public CollectedOutlines() {
+    protected CollectedOutlines() {
         mScale = Preferences.getInstance().getInitialUIScale().getScale();
         Preferences.getInstance().addChangeListener(this);
     }

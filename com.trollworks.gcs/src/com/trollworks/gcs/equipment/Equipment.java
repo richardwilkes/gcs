@@ -32,7 +32,7 @@ import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -859,7 +859,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     /** @param modifiers The value to set for modifiers. */
     public void setModifiers(List<? extends Modifier> modifiers) {
-        List<EquipmentModifier> in = new FilteredList<>(modifiers, EquipmentModifier.class);
+        List<EquipmentModifier> in = Filtered.list(modifiers, EquipmentModifier.class);
         if (!mModifiers.equals(in)) {
             mModifiers = in;
             notifyOfChange();

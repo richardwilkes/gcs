@@ -25,7 +25,7 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonArray;
@@ -68,7 +68,7 @@ public abstract class WeaponStats {
     }
 
     public static void saveList(JsonWriter w, String key, List<?> list) throws IOException {
-        FilteredList<WeaponStats> rows = new FilteredList<>(list, WeaponStats.class, true);
+        List<WeaponStats> rows = Filtered.list(list, WeaponStats.class);
         if (!rows.isEmpty()) {
             w.key(key);
             w.startArray();
@@ -119,7 +119,7 @@ public abstract class WeaponStats {
      * @param owner The owning piece of equipment or advantage.
      * @param m     The {@link JsonMap} to load from.
      */
-    public WeaponStats(ListRow owner, JsonMap m) throws IOException {
+    protected WeaponStats(ListRow owner, JsonMap m) throws IOException {
         this(owner);
         loadSelf(m);
     }

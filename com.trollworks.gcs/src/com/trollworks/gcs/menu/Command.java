@@ -17,7 +17,6 @@ import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.util.Objects;
 import javax.swing.AbstractAction;
@@ -42,7 +41,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param title   The title to use.
      * @param command The command to use.
      */
-    public Command(String title, String command) {
+    protected Command(String title, String command) {
         super(title);
         setCommand(command);
     }
@@ -54,7 +53,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param command The command to use.
      * @param icon    The icon to use.
      */
-    public Command(String title, String command, Icon icon) {
+    protected Command(String title, String command, Icon icon) {
         super(title, icon);
         setCommand(command);
     }
@@ -67,7 +66,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param keyCode The key code to use. The platform's standard menu shortcut key will be
      *                specified as a modifier.
      */
-    public Command(String title, String command, int keyCode) {
+    protected Command(String title, String command, int keyCode) {
         super(title);
         setAccelerator(keyCode);
         mOriginalAccelerator = getAccelerator();
@@ -82,7 +81,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param keyCode   The key code to use.
      * @param modifiers The modifiers to use.
      */
-    public Command(String title, String command, int keyCode, int modifiers) {
+    protected Command(String title, String command, int keyCode, int modifiers) {
         super(title);
         if (keyCode != 0) {
             setAccelerator(keyCode, modifiers);
@@ -100,7 +99,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param keyCode The key code to use. The platform's standard menu shortcut key will be
      *                specified as a modifier.
      */
-    public Command(String title, String command, Icon icon, int keyCode) {
+    protected Command(String title, String command, Icon icon, int keyCode) {
         super(title, icon);
         setAccelerator(keyCode);
         mOriginalAccelerator = getAccelerator();
@@ -116,7 +115,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param keyCode   The key code to use.
      * @param modifiers The modifiers to use.
      */
-    public Command(String title, String command, Icon icon, int keyCode, int modifiers) {
+    protected Command(String title, String command, Icon icon, int keyCode, int modifiers) {
         super(title, icon);
         setAccelerator(keyCode, modifiers);
         mOriginalAccelerator = getAccelerator();
@@ -130,7 +129,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param command   The command to use.
      * @param keystroke The {@link KeyStroke} to use.
      */
-    public Command(String title, String command, KeyStroke keystroke) {
+    protected Command(String title, String command, KeyStroke keystroke) {
         super(title);
         setAccelerator(keystroke);
         mOriginalAccelerator = getAccelerator();
@@ -145,7 +144,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
      * @param icon      The icon to use.
      * @param keystroke The {@link KeyStroke} to use.
      */
-    public Command(String title, String command, Icon icon, KeyStroke keystroke) {
+    protected Command(String title, String command, Icon icon, KeyStroke keystroke) {
         super(title, icon);
         setAccelerator(keystroke);
         mOriginalAccelerator = getAccelerator();
@@ -154,9 +153,6 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
 
     /** Called to adjust the action prior to a menu being displayed or an action being used. */
     public abstract void adjust();
-
-    @Override
-    public abstract void actionPerformed(ActionEvent event);
 
     /** @return The {@link Command}'s title. */
     public final String getTitle() {

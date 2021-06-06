@@ -26,7 +26,7 @@ public abstract class PreferencePanel extends JPanel {
      * @param title The title for this panel.
      * @param owner The owning {@link PreferencesWindow}.
      */
-    public PreferencePanel(String title, PreferencesWindow owner) {
+    protected PreferencePanel(String title, PreferencesWindow owner) {
         setBorder(new EmptyBorder(5));
         setOpaque(false);
         mTitle = title;

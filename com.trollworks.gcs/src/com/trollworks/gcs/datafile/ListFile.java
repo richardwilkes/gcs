@@ -29,7 +29,7 @@ public abstract class ListFile extends DataFile {
     private static final String       KEY_ROWS = "rows";
     private              OutlineModel mModel   = new OutlineModel();
 
-    public ListFile() {
+    protected ListFile() {
         setSortingMarksDirty(false);
     }
 

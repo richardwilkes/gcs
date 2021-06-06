@@ -27,7 +27,7 @@ public abstract class Row {
     protected ArrayList<Row> mChildren;
 
     /** Create a new outline row. */
-    public Row() {
+    protected Row() {
         mHeight = -1;
     }
 

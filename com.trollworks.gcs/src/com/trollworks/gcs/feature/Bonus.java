@@ -33,7 +33,7 @@ public abstract class Bonus extends Feature {
      *
      * @param amount The initial amount.
      */
-    public Bonus(double amount) {
+    protected Bonus(double amount) {
         mAmount = new LeveledAmount(amount);
     }
 
@@ -42,7 +42,7 @@ public abstract class Bonus extends Feature {
      *
      * @param amount The initial amount.
      */
-    public Bonus(int amount) {
+    protected Bonus(int amount) {
         mAmount = new LeveledAmount(amount);
     }
 
@@ -51,7 +51,7 @@ public abstract class Bonus extends Feature {
      *
      * @param other The bonus to clone.
      */
-    public Bonus(Bonus other) {
+    protected Bonus(Bonus other) {
         mAmount = new LeveledAmount(other.mAmount);
     }
 

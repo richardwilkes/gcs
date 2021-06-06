@@ -31,7 +31,7 @@ import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.EventQueue;
@@ -187,7 +187,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
      */
     public void openDetailEditor(boolean later) {
         requestFocus();
-        mRowsToEdit = new FilteredList<>(getModel().getSelectionAsList(), ListRow.class);
+        mRowsToEdit = Filtered.list(getModel().getSelectionAsList(), ListRow.class);
         if (later) {
             EventQueue.invokeLater(this);
         } else {
@@ -226,7 +226,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
     }
 
     public void updateAllRows() {
-        updateRows(new FilteredList<>(getModel().getTopLevelRows(), ListRow.class));
+        updateRows(Filtered.list(getModel().getTopLevelRows(), ListRow.class));
     }
 
     private void updateRows(Collection<ListRow> rows) {

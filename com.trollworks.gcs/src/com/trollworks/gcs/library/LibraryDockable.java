@@ -58,7 +58,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     private boolean           mUpdatePending;
 
     /** Creates a new {@link LibraryDockable}. */
-    public LibraryDockable(ListFile file) {
+    protected LibraryDockable(ListFile file) {
         super(file);
         mOutline = createOutline();
         mOutline.setDynamicRowHeight(true);

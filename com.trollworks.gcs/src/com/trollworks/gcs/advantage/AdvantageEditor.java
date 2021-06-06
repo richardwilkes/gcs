@@ -26,7 +26,7 @@ import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.Text;
@@ -453,7 +453,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         if (mModifiers == null || !enabled()) {
             return 0;
         }
-        List<AdvantageModifier> modifiers = new FilteredList<>(mModifiers.getAllModifiers(), AdvantageModifier.class);
+        List<AdvantageModifier> modifiers = Filtered.list(mModifiers.getAllModifiers(), AdvantageModifier.class);
         return mRow.getAdjustedPoints(getBasePoints(), isLeveled() ? getLevels() : 0, allowHalfLevels() && getHalfLevel(), getPointsPerLevel(), getCR(), modifiers, shouldRoundCostDown());
     }
 

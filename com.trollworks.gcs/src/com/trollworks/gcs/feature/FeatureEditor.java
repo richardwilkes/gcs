@@ -66,7 +66,7 @@ public abstract class FeatureEditor extends EditorPanel {
      * @param row     The row this feature will belong to.
      * @param feature The feature to edit.
      */
-    public FeatureEditor(ListRow row, Feature feature) {
+    protected FeatureEditor(ListRow row, Feature feature) {
         mRow = row;
         mFeature = feature;
         rebuild();

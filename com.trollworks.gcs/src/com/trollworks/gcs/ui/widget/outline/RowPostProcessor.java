@@ -18,7 +18,7 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.modifier.AdvantageModifierEnabler;
 import com.trollworks.gcs.modifier.EquipmentModifierEnabler;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.utility.FilteredList;
+import com.trollworks.gcs.utility.Filtered;
 
 import java.util.HashMap;
 import java.util.List;
@@ -68,8 +68,8 @@ public class RowPostProcessor implements Runnable {
             List<ListRow> rows     = entry.getValue();
             boolean       modified = false;
             if (mRunModifierEnabler) {
-                modified = AdvantageModifierEnabler.process(outline, new FilteredList<>(rows, Advantage.class));
-                modified |= EquipmentModifierEnabler.process(outline, new FilteredList<>(rows, Equipment.class));
+                modified = AdvantageModifierEnabler.process(outline, Filtered.list(rows, Advantage.class));
+                modified |= EquipmentModifierEnabler.process(outline, Filtered.list(rows, Equipment.class));
             }
             modified |= Namer.name(outline, rows);
             if (modified) {
