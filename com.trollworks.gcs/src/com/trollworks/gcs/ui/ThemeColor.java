@@ -37,7 +37,7 @@ public class ThemeColor extends Color {
     public static final ThemeColor ON_CONTENT = new ThemeColor("on_content", I18n.Text("On Content"), Color.BLACK);
 
     public static final ThemeColor EDITABLE_LINE = new ThemeColor("editable_line", I18n.Text("Editable Line"), Color.LIGHT_GRAY);
-    public static final ThemeColor ON_EDITABLE   = new ThemeColor("on_editable", I18n.Text("On Editable"), new Color(0, 0, 192));
+    public static final ThemeColor ON_EDITABLE   = new ThemeColor("on_editable", I18n.Text("On Editable"), new Color(0, 0, 160));
     public static final ThemeColor BANDING       = new ThemeColor("banding", I18n.Text("Banding"), new Color(200, 200, 185));
 
     private final int    mIndex;
