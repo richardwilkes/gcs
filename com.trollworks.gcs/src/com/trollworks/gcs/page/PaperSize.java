@@ -24,7 +24,7 @@ public class PaperSize {
 
     public static final synchronized PaperSize getDefaultPaperSize() {
         if (DEFAULT == null) {
-            DEFAULT = new PaperSize(MediaSize.NA.LETTER, I18n.Text("Letter"));
+            DEFAULT = new PaperSize(MediaSize.NA.LETTER, I18n.text("Letter"));
         }
         return DEFAULT;
     }
@@ -33,15 +33,15 @@ public class PaperSize {
         if (SIZES == null) {
             SIZES = new PaperSize[]{
                     getDefaultPaperSize(),
-                    new PaperSize(MediaSize.NA.LEGAL, I18n.Text("Legal")),
-                    new PaperSize(MediaSize.Other.TABLOID, I18n.Text("Tabloid")),
-                    new PaperSize(MediaSize.ISO.A0, I18n.Text("A0")),
-                    new PaperSize(MediaSize.ISO.A1, I18n.Text("A1")),
-                    new PaperSize(MediaSize.ISO.A2, I18n.Text("A2")),
-                    new PaperSize(MediaSize.ISO.A3, I18n.Text("A3")),
-                    new PaperSize(MediaSize.ISO.A4, I18n.Text("A4")),
-                    new PaperSize(MediaSize.ISO.A5, I18n.Text("A5")),
-                    new PaperSize(MediaSize.ISO.A6, I18n.Text("A6")),
+                    new PaperSize(MediaSize.NA.LEGAL, I18n.text("Legal")),
+                    new PaperSize(MediaSize.Other.TABLOID, I18n.text("Tabloid")),
+                    new PaperSize(MediaSize.ISO.A0, I18n.text("A0")),
+                    new PaperSize(MediaSize.ISO.A1, I18n.text("A1")),
+                    new PaperSize(MediaSize.ISO.A2, I18n.text("A2")),
+                    new PaperSize(MediaSize.ISO.A3, I18n.text("A3")),
+                    new PaperSize(MediaSize.ISO.A4, I18n.text("A4")),
+                    new PaperSize(MediaSize.ISO.A5, I18n.text("A5")),
+                    new PaperSize(MediaSize.ISO.A6, I18n.text("A6")),
             };
         }
         return SIZES;

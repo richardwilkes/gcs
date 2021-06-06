@@ -40,28 +40,28 @@ public class LibraryUpdateCommand extends Command {
         Release upgrade = mLibrary.getAvailableUpgrade();
         String  title   = mLibrary.getTitle();
         if (upgrade == null) {
-            setTitle(String.format(I18n.Text("Checking for updates to %s"), title));
+            setTitle(String.format(I18n.text("Checking for updates to %s"), title));
             setEnabled(false);
             return;
         }
         if (upgrade.unableToAccessRepo()) {
-            setTitle(String.format(I18n.Text("Unable to access the %s repo"), title));
+            setTitle(String.format(I18n.text("Unable to access the %s repo"), title));
             setEnabled(false);
             return;
         }
         if (!upgrade.hasUpdate()) {
-            setTitle(String.format(I18n.Text("No releases available for %s"), title));
+            setTitle(String.format(I18n.text("No releases available for %s"), title));
             setEnabled(false);
             return;
         }
         Version versionOnDisk    = mLibrary.getVersionOnDisk();
         Version availableVersion = upgrade.getVersion();
         if (availableVersion.equals(versionOnDisk)) {
-            setTitle(String.format(I18n.Text("%s is up to date (re-download v%s)"), title, versionOnDisk));
+            setTitle(String.format(I18n.text("%s is up to date (re-download v%s)"), title, versionOnDisk));
             setEnabled(true);
             return;
         }
-        setTitle(String.format(I18n.Text("Update %s to v%s"), title, availableVersion));
+        setTitle(String.format(I18n.text("Update %s to v%s"), title, availableVersion));
         setEnabled(true);
     }
 
@@ -74,7 +74,7 @@ public class LibraryUpdateCommand extends Command {
     }
 
     public static void askUserToUpdate(Library library, Release release) {
-        JTextPane markdown = new JTextPane(new MarkdownDocument(I18n.Text("NOTE: Existing content for this library will be removed and replaced. Content in other libraries will not be modified.\n\n" + release.getNotes())));
+        JTextPane markdown = new JTextPane(new MarkdownDocument(I18n.text("NOTE: Existing content for this library will be removed and replaced. Content in other libraries will not be modified.\n\n" + release.getNotes())));
         markdown.setBorder(new EmptyBorder(4));
         Dimension   size     = markdown.getPreferredSize();
         JScrollPane scroller = new JScrollPane(markdown);
@@ -86,8 +86,8 @@ public class LibraryUpdateCommand extends Command {
             markdown.setPreferredSize(size);
         }
         markdown.setEditable(false);
-        String update = I18n.Text("Update");
-        if (WindowUtils.showOptionDialog(null, scroller, String.format(I18n.Text("%s v%s is available!"), library.getTitle(), release.getVersion()), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.Text("Ignore")}, update) == JOptionPane.OK_OPTION) {
+        String update = I18n.text("Update");
+        if (WindowUtils.showOptionDialog(null, scroller, String.format(I18n.text("%s v%s is available!"), library.getTitle(), release.getVersion()), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.text("Ignore")}, update) == JOptionPane.OK_OPTION) {
             LibraryUpdater.download(library, release);
         }
     }

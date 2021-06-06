@@ -40,14 +40,14 @@ public class PointsPanel extends DropPanel {
     public PointsPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), getTitle(sheet.getCharacter()));
         GURPSCharacter gch = sheet.getCharacter();
-        createLabelAndEditableField(gch.getUnspentPoints(), (c, v) -> c.setUnspentPoints(((Integer) v).intValue()), sheet, "unspent points", I18n.Text("Unspent"), I18n.Text("Points earned but not yet spent"));
-        createLabelAndField(gch.getRacePoints(), sheet, I18n.Text("Race"), I18n.Text("Total points spent on a racial package"));
-        createLabelAndField(gch.getAttributePoints(), sheet, I18n.Text("Attributes"), I18n.Text("Total points spent on attributes"));
-        createLabelAndField(gch.getAdvantagePoints(), sheet, I18n.Text("Advantages"), I18n.Text("Total points spent on advantages"));
-        createLabelAndField(gch.getDisadvantagePoints(), sheet, I18n.Text("Disadvantages"), I18n.Text("Total points spent on disadvantages"));
-        createLabelAndField(gch.getQuirkPoints(), sheet, I18n.Text("Quirks"), I18n.Text("Total points spent on quirks"));
-        createLabelAndField(gch.getSkillPoints(), sheet, I18n.Text("Skills"), I18n.Text("Total points spent on skills"));
-        createLabelAndField(gch.getSpellPoints(), sheet, I18n.Text("Spells"), I18n.Text("Total points spent on spells"));
+        createLabelAndEditableField(gch.getUnspentPoints(), (c, v) -> c.setUnspentPoints(((Integer) v).intValue()), sheet, "unspent points", I18n.text("Unspent"), I18n.text("Points earned but not yet spent"));
+        createLabelAndField(gch.getRacePoints(), sheet, I18n.text("Race"), I18n.text("Total points spent on a racial package"));
+        createLabelAndField(gch.getAttributePoints(), sheet, I18n.text("Attributes"), I18n.text("Total points spent on attributes"));
+        createLabelAndField(gch.getAdvantagePoints(), sheet, I18n.text("Advantages"), I18n.text("Total points spent on advantages"));
+        createLabelAndField(gch.getDisadvantagePoints(), sheet, I18n.text("Disadvantages"), I18n.text("Total points spent on disadvantages"));
+        createLabelAndField(gch.getQuirkPoints(), sheet, I18n.text("Quirks"), I18n.text("Total points spent on quirks"));
+        createLabelAndField(gch.getSkillPoints(), sheet, I18n.text("Skills"), I18n.text("Total points spent on skills"));
+        createLabelAndField(gch.getSpellPoints(), sheet, I18n.text("Spells"), I18n.text("Total points spent on spells"));
     }
 
     private void createLabelAndEditableField(int value, CharacterSetter setter, CharacterSheet sheet, String key, String title, String tooltip) {
@@ -63,6 +63,6 @@ public class PointsPanel extends DropPanel {
     }
 
     private static String getTitle(GURPSCharacter gch) {
-        return MessageFormat.format(I18n.Text("{0} Points"), Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gch.getTotalPoints() : gch.getSpentPoints()));
+        return MessageFormat.format(I18n.text("{0} Points"), Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gch.getTotalPoints() : gch.getSpentPoints()));
     }
 }

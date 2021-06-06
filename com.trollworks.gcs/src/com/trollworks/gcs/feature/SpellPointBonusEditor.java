@@ -65,22 +65,22 @@ public class SpellPointBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         StringCriteria criteria = bonus.getCategoryCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.Text("and category ")));
+        row.add(addStringCompareCombo(criteria, I18n.text("and category ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, 2, 0);
     }
 
     private static String getMatchText(boolean allColleges, String matchType) {
         if (allColleges) {
-            return I18n.Text("to all colleges");
+            return I18n.text("to all colleges");
         }
         if (SpellPointBonus.KEY_COLLEGE_NAME.equals(matchType)) {
-            return I18n.Text("to the college whose name");
+            return I18n.text("to the college whose name");
         }
         if (SpellPointBonus.KEY_POWER_SOURCE_NAME.equals(matchType)) {
-            return I18n.Text("to the power source whose name");
+            return I18n.text("to the power source whose name");
         }
-        return I18n.Text("to the spell whose name");
+        return I18n.text("to the spell whose name");
     }
 
     @Override

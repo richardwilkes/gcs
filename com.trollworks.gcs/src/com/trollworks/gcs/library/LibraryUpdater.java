@@ -100,7 +100,7 @@ public final class LibraryUpdater implements Runnable {
                     if (path != null && path.toAbsolutePath().startsWith(prefix)) {
                         if (dfd.mayAttemptClose()) {
                             if (!dfd.attemptClose()) {
-                                JOptionPane.showMessageDialog(null, String.format(I18n.Text("GCS %s update was canceled."), title), I18n.Text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(null, String.format(I18n.text("GCS %s update was canceled."), title), I18n.text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
                                 return;
                             }
                         }
@@ -109,14 +109,14 @@ public final class LibraryUpdater implements Runnable {
             }
 
             // Put up a progress dialog
-            JDialog dialog = new JDialog(workspace, String.format(I18n.Text("Update %s"), title), true);
+            JDialog dialog = new JDialog(workspace, String.format(I18n.text("Update %s"), title), true);
             dialog.setResizable(false);
             dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             dialog.setUndecorated(true);
             JComponent content = (JComponent) dialog.getContentPane();
             content.setLayout(new BorderLayout());
             content.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(10)));
-            content.add(new JLabel(String.format(I18n.Text("Downloading and installing the %s…"), title)), BorderLayout.NORTH);
+            content.add(new JLabel(String.format(I18n.text("Downloading and installing the %s…"), title)), BorderLayout.NORTH);
             JProgressBar bar = new JProgressBar();
             bar.setIndeterminate(true);
             content.add(bar);
@@ -219,9 +219,9 @@ public final class LibraryUpdater implements Runnable {
         mDialog.dispose();
         String title = mLibrary.getTitle();
         if (mResult == null) {
-            JOptionPane.showMessageDialog(null, String.format(I18n.Text("%s update was successful."), title), I18n.Text("Success!"), JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, String.format(I18n.text("%s update was successful."), title), I18n.text("Success!"), JOptionPane.INFORMATION_MESSAGE);
         } else {
-            WindowUtils.showError(null, String.format(I18n.Text("An error occurred while trying to update the %s:\n\n"), title) + mResult);
+            WindowUtils.showError(null, String.format(I18n.text("An error occurred while trying to update the %s:\n\n"), title) + mResult);
         }
     }
 }

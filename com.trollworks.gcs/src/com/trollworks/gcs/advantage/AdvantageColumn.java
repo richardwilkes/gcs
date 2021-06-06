@@ -43,12 +43,12 @@ public enum AdvantageColumn {
     DESCRIPTION {
         @Override
         public String toString() {
-            return I18n.Text("Advantages & Disadvantages");
+            return I18n.text("Advantages & Disadvantages");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The name, level and notes describing an advantage");
+            return I18n.text("The name, level and notes describing an advantage");
         }
 
         @Override
@@ -130,12 +130,12 @@ public enum AdvantageColumn {
     POINTS {
         @Override
         public String toString() {
-            return I18n.Text("Pts");
+            return I18n.text("Pts");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The points spent in the advantage");
+            return I18n.text("The points spent in the advantage");
         }
 
         @Override
@@ -162,12 +162,12 @@ public enum AdvantageColumn {
     TYPE {
         @Override
         public String toString() {
-            return I18n.Text("Type");
+            return I18n.text("Type");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The type of advantage");
+            return I18n.text("The type of advantage");
         }
 
         @Override
@@ -217,12 +217,12 @@ public enum AdvantageColumn {
     CATEGORY {
         @Override
         public String toString() {
-            return I18n.Text("Category");
+            return I18n.text("Category");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The category or categories the advantage belongs to");
+            return I18n.text("The category or categories the advantage belongs to");
         }
 
         @Override
@@ -254,7 +254,7 @@ public enum AdvantageColumn {
 
         @Override
         public String getToolTip() {
-            return PageRefCell.getStdToolTip(I18n.Text("advantage"));
+            return PageRefCell.getStdToolTip(I18n.text("advantage"));
         }
 
         @Override

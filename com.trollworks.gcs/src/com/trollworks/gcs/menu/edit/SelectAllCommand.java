@@ -28,7 +28,7 @@ public final class SelectAllCommand extends Command {
     public static final SelectAllCommand INSTANCE = new SelectAllCommand();
 
     private SelectAllCommand() {
-        super(I18n.Text("Select All"), CMD_SELECT_ALL, KeyEvent.VK_A);
+        super(I18n.text("Select All"), CMD_SELECT_ALL, KeyEvent.VK_A);
     }
 
     @Override

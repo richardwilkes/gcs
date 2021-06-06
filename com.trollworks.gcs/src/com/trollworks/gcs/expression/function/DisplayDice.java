@@ -46,7 +46,7 @@ public class DisplayDice implements ExpressionFunction {
         } catch (EvaluationException exception) {
             throw exception;
         } catch (Exception exception) {
-            throw new EvaluationException(String.format(I18n.Text("Invalid dice specification: %s"), arguments));
+            throw new EvaluationException(String.format(I18n.text("Invalid dice specification: %s"), arguments));
         }
     }
 }

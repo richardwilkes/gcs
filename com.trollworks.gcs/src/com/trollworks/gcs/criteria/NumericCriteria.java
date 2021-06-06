@@ -75,7 +75,7 @@ public abstract class NumericCriteria extends Criteria {
 
     @Override
     public String toString() {
-        return toString(I18n.Text("is "));
+        return toString(I18n.text("is "));
     }
 
     /**

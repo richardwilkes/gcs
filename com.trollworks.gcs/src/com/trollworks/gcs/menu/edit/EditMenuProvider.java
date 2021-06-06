@@ -50,7 +50,7 @@ public final class EditMenuProvider {
     }
 
     public static JMenu createMenu() {
-        JMenu menu = new JMenu(I18n.Text("Edit"));
+        JMenu menu = new JMenu(I18n.text("Edit"));
         menu.add(new DynamicMenuItem(UndoCommand.INSTANCE));
         menu.add(new DynamicMenuItem(RedoCommand.INSTANCE));
         menu.addSeparator();
@@ -63,7 +63,7 @@ public final class EditMenuProvider {
         menu.addSeparator();
         menu.add(new DynamicMenuItem(ConvertToContainer.INSTANCE));
         menu.addSeparator();
-        JMenu stateMenu = new JMenu(I18n.Text("State…"));
+        JMenu stateMenu = new JMenu(I18n.text("State…"));
         stateMenu.add(new DynamicMenuItem(ToggleStateCommand.INSTANCE));
         stateMenu.addSeparator();
         stateMenu.add(new DynamicMenuItem(IncrementCommand.INSTANCE));

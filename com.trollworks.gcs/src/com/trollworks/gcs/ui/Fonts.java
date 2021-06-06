@@ -92,12 +92,12 @@ public final class Fonts {
             }
         }
 
-        register(KEY_LABEL_PRIMARY, I18n.Text("Primary Labels"), new Font(ROBOTO, Font.PLAIN, 9));
-        register(KEY_LABEL_SECONDARY, I18n.Text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 8));
-        register(KEY_FIELD_PRIMARY, I18n.Text("Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 9));
-        register(KEY_FIELD_SECONDARY, I18n.Text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 8));
-        register(KEY_FOOTER_PRIMARY, I18n.Text("Primary Footer"), new Font(ROBOTO_BLACK, Font.PLAIN, 8));
-        register(KEY_FOOTER_SECONDARY, I18n.Text("Secondary Footer"), new Font(ROBOTO, Font.PLAIN, 6));
+        register(KEY_LABEL_PRIMARY, I18n.text("Primary Labels"), new Font(ROBOTO, Font.PLAIN, 9));
+        register(KEY_LABEL_SECONDARY, I18n.text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 8));
+        register(KEY_FIELD_PRIMARY, I18n.text("Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 9));
+        register(KEY_FIELD_SECONDARY, I18n.text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 8));
+        register(KEY_FOOTER_PRIMARY, I18n.text("Primary Footer"), new Font(ROBOTO_BLACK, Font.PLAIN, 8));
+        register(KEY_FOOTER_SECONDARY, I18n.text("Secondary Footer"), new Font(ROBOTO, Font.PLAIN, 6));
         Preferences prefs = Preferences.getInstance();
         for (String key : KEYS) {
             Info info = prefs.getFontInfo(key);
@@ -167,25 +167,25 @@ public final class Fonts {
         PLAIN {
             @Override
             public String toString() {
-                return I18n.Text("Plain");
+                return I18n.text("Plain");
             }
         },
         BOLD {
             @Override
             public String toString() {
-                return I18n.Text("Bold");
+                return I18n.text("Bold");
             }
         },
         ITALIC {
             @Override
             public String toString() {
-                return I18n.Text("Italic");
+                return I18n.text("Italic");
             }
         },
         BOLD_ITALIC {
             @Override
             public String toString() {
-                return I18n.Text("Bold Italic");
+                return I18n.text("Bold Italic");
             }
         };
 

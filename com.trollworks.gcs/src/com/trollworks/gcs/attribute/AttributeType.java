@@ -17,19 +17,19 @@ public enum AttributeType {
     INTEGER {
         @Override
         public String toString() {
-            return I18n.Text("Integer");
+            return I18n.text("Integer");
         }
     },
     DECIMAL {
         @Override
         public String toString() {
-            return I18n.Text("Decimal");
+            return I18n.text("Decimal");
         }
     },
     POOL {
         @Override
         public String toString() {
-            return I18n.Text("Pool");
+            return I18n.text("Pool");
         }
     }
 }

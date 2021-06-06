@@ -25,7 +25,7 @@ public final class HitLocationSettingsCommand extends Command {
     private             boolean                    mForDefaults;
 
     private HitLocationSettingsCommand(boolean defaults) {
-        super(defaults ? I18n.Text("Default Hit Locations…") : I18n.Text("Hit Locations…"),
+        super(defaults ? I18n.text("Default Hit Locations…") : I18n.text("Hit Locations…"),
                 defaults ? "default_hit_location_settings" : "hit_location_settings");
         mForDefaults = defaults;
     }

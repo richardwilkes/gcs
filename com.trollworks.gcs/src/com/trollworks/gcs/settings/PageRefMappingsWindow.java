@@ -68,7 +68,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
     }
 
     private PageRefMappingsWindow() {
-        super(I18n.Text("Page Reference Mappings"));
+        super(I18n.text("Page Reference Mappings"));
         setLayout(new BorderLayout());
         mPanel = new BandedPanel(true);
         buildPanel();
@@ -97,17 +97,17 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
                     (evt) -> ref.setPageToIndexOffset(((Integer) evt.getNewValue()).intValue()),
                     SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()),
                     Integer.valueOf(-9999),
-                    I18n.Text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
+                    I18n.text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
             mPanel.add(field);
             Path   path      = ref.getPath().normalize().toAbsolutePath();
             JLabel fileLabel = new JLabel(path.getFileName().toString());
             fileLabel.setToolTipText(path.toString());
             mPanel.add(fileLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-            FontAwesomeButton removeButton = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), null);
+            FontAwesomeButton removeButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), null);
             removeButton.setClickFunction(() -> {
-                String   cancel  = I18n.Text("Cancel");
-                Object[] options = {I18n.Text("Remove"), cancel};
-                if (WindowUtils.showConfirmDialog(this, String.format(I18n.Text("""
+                String   cancel  = I18n.text("Cancel");
+                Object[] options = {I18n.text("Remove"), cancel};
+                if (WindowUtils.showConfirmDialog(this, String.format(I18n.text("""
                                 Are you sure you want to remove this page reference
                                 mapping from %s to "%s"?"""), ref.getID(), ref.getPath().getFileName().toString()),
                         "", JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.YES_OPTION) {
@@ -131,7 +131,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         }
         if (mPanel.getComponentCount() == 0) {
             mPanel.setLayout(new PrecisionLayout().setMargins(10));
-            mPanel.add(new JLabel(I18n.Text("No page reference mappings have been set."), SwingConstants.CENTER), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
+            mPanel.add(new JLabel(I18n.text("No page reference mappings have been set."), SwingConstants.CENTER), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
         }
         mPanel.revalidate();
         mPanel.repaint();

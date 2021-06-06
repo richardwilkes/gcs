@@ -27,7 +27,7 @@ public final class DecrementCommand extends Command {
     public static final DecrementCommand INSTANCE      = new DecrementCommand();
 
     private DecrementCommand() {
-        super(I18n.Text("Decrement"), CMD_DECREMENT, KeyEvent.VK_MINUS);
+        super(I18n.text("Decrement"), CMD_DECREMENT, KeyEvent.VK_MINUS);
     }
 
     @Override
@@ -41,7 +41,7 @@ public final class DecrementCommand extends Command {
             setTitle(inc.getDecrementTitle());
             setEnabled(inc.canDecrement());
         } else {
-            setTitle(I18n.Text("Decrement"));
+            setTitle(I18n.text("Decrement"));
             setEnabled(false);
         }
     }

@@ -30,7 +30,7 @@ public enum SelfControlRollAdjustments {
     NONE {
         @Override
         public String toString() {
-            return I18n.Text("None");
+            return I18n.text("None");
         }
 
         @Override
@@ -47,7 +47,7 @@ public enum SelfControlRollAdjustments {
     ACTION_PENALTY {
         @Override
         public String toString() {
-            return I18n.Text("Includes an Action Penalty for Failure");
+            return I18n.text("Includes an Action Penalty for Failure");
         }
 
         @Override
@@ -55,7 +55,7 @@ public enum SelfControlRollAdjustments {
             if (cr == SelfControlRoll.NONE_REQUIRED) {
                 return "";
             }
-            return MessageFormat.format(I18n.Text("{0} Action Penalty"), Numbers.formatWithForcedSign(getAdjustment(cr)));
+            return MessageFormat.format(I18n.text("{0} Action Penalty"), Numbers.formatWithForcedSign(getAdjustment(cr)));
         }
 
         @Override
@@ -67,7 +67,7 @@ public enum SelfControlRollAdjustments {
     REACTION_PENALTY {
         @Override
         public String toString() {
-            return I18n.Text("Includes a Reaction Penalty for Failure");
+            return I18n.text("Includes a Reaction Penalty for Failure");
         }
 
         @Override
@@ -75,7 +75,7 @@ public enum SelfControlRollAdjustments {
             if (cr == SelfControlRoll.NONE_REQUIRED) {
                 return "";
             }
-            return MessageFormat.format(I18n.Text("{0} Reaction Penalty"), Numbers.formatWithForcedSign(getAdjustment(cr)));
+            return MessageFormat.format(I18n.text("{0} Reaction Penalty"), Numbers.formatWithForcedSign(getAdjustment(cr)));
         }
 
         @Override
@@ -87,7 +87,7 @@ public enum SelfControlRollAdjustments {
     FRIGHT_CHECK_PENALTY {
         @Override
         public String toString() {
-            return I18n.Text("Includes Fright Check Penalty");
+            return I18n.text("Includes Fright Check Penalty");
         }
 
         @Override
@@ -95,7 +95,7 @@ public enum SelfControlRollAdjustments {
             if (cr == SelfControlRoll.NONE_REQUIRED) {
                 return "";
             }
-            return MessageFormat.format(I18n.Text("{0} Fright Check Penalty"), Numbers.formatWithForcedSign(getAdjustment(cr)));
+            return MessageFormat.format(I18n.text("{0} Fright Check Penalty"), Numbers.formatWithForcedSign(getAdjustment(cr)));
         }
 
         @Override
@@ -107,7 +107,7 @@ public enum SelfControlRollAdjustments {
     FRIGHT_CHECK_BONUS {
         @Override
         public String toString() {
-            return I18n.Text("Includes Fright Check Bonus");
+            return I18n.text("Includes Fright Check Bonus");
         }
 
         @Override
@@ -115,7 +115,7 @@ public enum SelfControlRollAdjustments {
             if (cr == SelfControlRoll.NONE_REQUIRED) {
                 return "";
             }
-            return MessageFormat.format(I18n.Text("{0} Fright Check Bonus"), Numbers.formatWithForcedSign(getAdjustment(cr)));
+            return MessageFormat.format(I18n.text("{0} Fright Check Bonus"), Numbers.formatWithForcedSign(getAdjustment(cr)));
         }
 
         @Override
@@ -127,7 +127,7 @@ public enum SelfControlRollAdjustments {
     MINOR_COST_OF_LIVING_INCREASE {
         @Override
         public String toString() {
-            return I18n.Text("Includes a Minor Cost of Living Increase");
+            return I18n.text("Includes a Minor Cost of Living Increase");
         }
 
         @Override
@@ -135,7 +135,7 @@ public enum SelfControlRollAdjustments {
             if (cr == SelfControlRoll.NONE_REQUIRED) {
                 return "";
             }
-            return MessageFormat.format(I18n.Text("{0}% Cost of Living Increase"), Numbers.formatWithForcedSign(getAdjustment(cr)));
+            return MessageFormat.format(I18n.text("{0}% Cost of Living Increase"), Numbers.formatWithForcedSign(getAdjustment(cr)));
         }
 
         @Override
@@ -147,7 +147,7 @@ public enum SelfControlRollAdjustments {
     MAJOR_COST_OF_LIVING_INCREASE {
         @Override
         public String toString() {
-            return I18n.Text("Includes a Major Cost of Living Increase and Merchant Skill Penalty");
+            return I18n.text("Includes a Major Cost of Living Increase and Merchant Skill Penalty");
         }
 
         @Override
@@ -155,7 +155,7 @@ public enum SelfControlRollAdjustments {
             if (cr == SelfControlRoll.NONE_REQUIRED) {
                 return "";
             }
-            return MessageFormat.format(I18n.Text("{0}% Cost of Living Increase"), Numbers.formatWithForcedSign(getAdjustment(cr)));
+            return MessageFormat.format(I18n.text("{0}% Cost of Living Increase"), Numbers.formatWithForcedSign(getAdjustment(cr)));
         }
 
         @Override

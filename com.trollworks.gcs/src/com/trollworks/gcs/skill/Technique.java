@@ -116,7 +116,7 @@ public class Technique extends Skill {
      */
     public Technique(DataFile dataFile) {
         super(dataFile, false);
-        mDefault = new SkillDefault("skill", I18n.Text("Skill"), null, 0);
+        mDefault = new SkillDefault("skill", I18n.text("Skill"), null, 0);
         updateLevel(false);
     }
 
@@ -164,7 +164,7 @@ public class Technique extends Skill {
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Technique");
+        return I18n.text("Technique");
     }
 
     @Override
@@ -174,13 +174,13 @@ public class Technique extends Skill {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Technique");
+        return I18n.text("Technique");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
-        mDefault = new SkillDefault("skill", I18n.Text("Skill"), null, 0);
+        mDefault = new SkillDefault("skill", I18n.text("Skill"), null, 0);
         mLimited = false;
         mLimitModifier = 0;
     }
@@ -218,9 +218,9 @@ public class Technique extends Skill {
             if (!satisfied && builder != null) {
                 String fullName = mDefault.getFullName(getDataFile());
                 if (skill == null) {
-                    builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1}\n"), prefix, fullName));
+                    builder.append(MessageFormat.format(I18n.text("{0}Requires a skill named {1}\n"), prefix, fullName));
                 } else {
-                    builder.append(MessageFormat.format(I18n.Text("{0}Requires at least 1 point in the skill named {1}\n"), prefix, fullName));
+                    builder.append(MessageFormat.format(I18n.text("{0}Requires at least 1 point in the skill named {1}\n"), prefix, fullName));
                 }
             }
             return satisfied;
@@ -362,7 +362,7 @@ public class Technique extends Skill {
         if (!buffer.isEmpty()) {
             buffer.append(' ');
         }
-        buffer.append(I18n.Text("Default: "));
+        buffer.append(I18n.text("Default: "));
         buffer.append(mDefault.getFullName(getDataFile()));
         buffer.append(mDefault.getModifierAsString());
         return buffer.toString();

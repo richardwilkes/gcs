@@ -39,12 +39,12 @@ public class SheetPreferences extends PreferencePanel implements DocumentListene
      * @param owner The owning {@link PreferencesWindow}.
      */
     public SheetPreferences(PreferencesWindow owner) {
-        super(I18n.Text("Sheet"), owner);
+        super(I18n.text("Sheet"), owner);
         setLayout(new PrecisionLayout().setColumns(2));
         Preferences prefs = Preferences.getInstance();
 
-        mPlayerName = addTextField(I18n.Text("Player"), prefs.getDefaultPlayerName(), I18n.Text("The player name to use when a new character sheet is created"));
-        mTechLevel = addTextField(I18n.Text("Tech Level"), prefs.getDefaultTechLevel(), I18n.Text("""
+        mPlayerName = addTextField(I18n.text("Player"), prefs.getDefaultPlayerName(), I18n.text("The player name to use when a new character sheet is created"));
+        mTechLevel = addTextField(I18n.text("Tech Level"), prefs.getDefaultTechLevel(), I18n.text("""
                 <html><body>
                 TL0: Stone Age (Prehistory and later)<br>
                 TL1: Bronze Age (3500 B.C.+)<br>
@@ -60,8 +60,8 @@ public class SheetPreferences extends PreferencePanel implements DocumentListene
                 TL11: Age of Exotic Matter<br>
                 TL12: Anything Goes
                 </body></html>"""));
-        mInitialPoints = addTextField(I18n.Text("Initial Points"), Integer.toString(prefs.getInitialPoints()), I18n.Text("The initial number of character points to start with"));
-        mAutoFillProfile = addCheckBox(I18n.Text("Automatically fill in new character identity and description information with randomized choices"), prefs.autoFillProfile());
+        mInitialPoints = addTextField(I18n.text("Initial Points"), Integer.toString(prefs.getInitialPoints()), I18n.text("The initial number of character points to start with"));
+        mAutoFillProfile = addCheckBox(I18n.text("Automatically fill in new character identity and description information with randomized choices"), prefs.autoFillProfile());
     }
 
     private JTextField addTextField(String title, String value, String tooltip) {

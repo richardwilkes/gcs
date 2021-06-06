@@ -61,15 +61,15 @@ public class ListPrereqEditor extends PrereqEditor {
     }
 
     private static String tlIs() {
-        return I18n.Text("When the Character's TL is");
+        return I18n.text("When the Character's TL is");
     }
 
     private static String tlIsAtLeast() {
-        return I18n.Text("When the Character's TL is at least");
+        return I18n.text("When the Character's TL is at least");
     }
 
     private static String tlIsAtMost() {
-        return I18n.Text("When the Character's TL is at most");
+        return I18n.text("When the Character's TL is at most");
     }
 
     @Override
@@ -79,16 +79,16 @@ public class ListPrereqEditor extends PrereqEditor {
         if (prereqList.isWhenTLEnabled()) {
             left.add(addNumericCompareField(prereqList.getWhenTLCriteria(), 0, 99, false));
         }
-        String requiresAll        = I18n.Text("Requires all of:");
-        String requiresAtLeastOne = I18n.Text("Requires at least one of:");
+        String requiresAll        = I18n.text("Requires all of:");
+        String requiresAtLeastOne = I18n.text("Requires at least one of:");
         left.add(addComboBox(ANY_ALL, new Object[]{requiresAll, requiresAtLeastOne}, prereqList.requiresAll() ? requiresAll : requiresAtLeastOne));
 
         grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-        FontAwesomeButton button = new FontAwesomeButton("\uf141", I18n.Text("Add a prerequisite list to this list"), this::addPrereqList);
+        FontAwesomeButton button = new FontAwesomeButton("\uf141", I18n.text("Add a prerequisite list to this list"), this::addPrereqList);
         add(button);
         right.add(button);
-        button = new FontAwesomeButton("\uf055", I18n.Text("Add a prerequisite to this list"), this::addPrereq);
+        button = new FontAwesomeButton("\uf055", I18n.text("Add a prerequisite to this list"), this::addPrereq);
         add(button);
         right.add(button);
     }

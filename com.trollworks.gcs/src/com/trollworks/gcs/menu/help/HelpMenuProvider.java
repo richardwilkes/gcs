@@ -25,20 +25,20 @@ public final class HelpMenuProvider {
     }
 
     public static JMenu createMenu() {
-        JMenu menu = new JMenu(I18n.Text("Help"));
+        JMenu menu = new JMenu(I18n.text("Help"));
         if (!Platform.isMacintosh()) {
             menu.add(new JMenuItem(AboutCommand.INSTANCE));
             menu.addSeparator();
         }
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Sponsor GCS Development"), "https://github.com/sponsors/richardwilkes")));
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Make A Donation For GCS Development"), "https://paypal.me/GURPSCharacterSheet")));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.text("Sponsor GCS Development"), "https://github.com/sponsors/richardwilkes")));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.text("Make A Donation For GCS Development"), "https://paypal.me/GURPSCharacterSheet")));
         menu.addSeparator();
         menu.add(new JMenuItem(UpdateAppCommand.INSTANCE));
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Release Notes"), "https://github.com/richardwilkes/gcs/releases")));
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("License"), "https://github.com/richardwilkes/gcs/blob/master/LICENSE")));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.text("Release Notes"), "https://github.com/richardwilkes/gcs/releases")));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.text("License"), "https://github.com/richardwilkes/gcs/blob/master/LICENSE")));
         menu.addSeparator();
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Web Site"), GCS.WEB_SITE)));
-        menu.add(new JMenuItem(new OpenURICommand(I18n.Text("Mailing Lists"), "https://groups.io/g/gcs")));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.text("Web Site"), GCS.WEB_SITE)));
+        menu.add(new JMenuItem(new OpenURICommand(I18n.text("Mailing Lists"), "https://groups.io/g/gcs")));
         DynamicMenuEnabler.add(menu);
         return menu;
     }

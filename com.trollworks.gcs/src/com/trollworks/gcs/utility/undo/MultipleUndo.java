@@ -35,11 +35,11 @@ public class MultipleUndo extends CompoundEdit {
 
     @Override
     public String getRedoPresentationName() {
-        return I18n.Text("Redo ") + mName;
+        return I18n.text("Redo ") + mName;
     }
 
     @Override
     public String getUndoPresentationName() {
-        return I18n.Text("Undo ") + mName;
+        return I18n.text("Undo ") + mName;
     }
 }

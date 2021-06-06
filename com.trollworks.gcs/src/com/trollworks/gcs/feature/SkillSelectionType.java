@@ -17,19 +17,19 @@ public enum SkillSelectionType {
     THIS_WEAPON {
         @Override
         public String toString() {
-            return I18n.Text("to this weapon");
+            return I18n.text("to this weapon");
         }
     },
     WEAPONS_WITH_NAME {
         @Override
         public String toString() {
-            return I18n.Text("to weapons whose name");
+            return I18n.text("to weapons whose name");
         }
     },
     SKILLS_WITH_NAME {
         @Override
         public String toString() {
-            return I18n.Text("to skills whose name");
+            return I18n.text("to skills whose name");
         }
     }
 }

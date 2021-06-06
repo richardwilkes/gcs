@@ -37,7 +37,7 @@ public final class QuitCommand extends Command implements QuitHandler {
     private boolean mAllowQuitIfNoSignificantWindowsOpen = true;
 
     private QuitCommand() {
-        super(Platform.isMacintosh() ? I18n.Text("Quit") : I18n.Text("Exit"), CMD_QUIT, KeyEvent.VK_Q);
+        super(Platform.isMacintosh() ? I18n.text("Quit") : I18n.text("Exit"), CMD_QUIT, KeyEvent.VK_Q);
     }
 
     @Override

@@ -47,7 +47,7 @@ public class RowUndo extends AbstractUndoableEdit {
     public RowUndo(ListRow row) {
         mRow = row;
         mDataFile = mRow.getDataFile();
-        mName = MessageFormat.format(I18n.Text("{0} Changes"), mRow.getLocalizedName());
+        mName = MessageFormat.format(I18n.text("{0} Changes"), mRow.getLocalizedName());
         mBefore = serialize(mRow);
     }
 

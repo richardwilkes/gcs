@@ -26,14 +26,14 @@ public enum AttributeBonusLimitation {
     STRIKING_ONLY {
         @Override
         public String toString() {
-            return I18n.Text("for striking only");
+            return I18n.text("for striking only");
         }
     },
     /** Lifting only */
     LIFTING_ONLY {
         @Override
         public String toString() {
-            return I18n.Text("for lifting only");
+            return I18n.text("for lifting only");
         }
     }
 }

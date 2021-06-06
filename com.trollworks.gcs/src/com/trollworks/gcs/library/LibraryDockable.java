@@ -69,14 +69,14 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         Preferences    prefs   = Preferences.getInstance();
         mToolbar = new Toolbar();
-        mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf13e", I18n.Text("Switches between allowing editing and not"), () -> {
+        mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf13e", I18n.text("Switches between allowing editing and not"), () -> {
             OutlineModel model = mOutline.getModel();
             model.setLocked(!model.isLocked());
             mLockButton.setText(model.isLocked() ? "\uf023" : "\uf13e");
         });
         mToolbar.add(mLockButton);
-        mToolbar.add(new FontAwesomeButton("\uf0e8", I18n.Text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
-        mToolbar.add(new FontAwesomeButton("\uf337", I18n.Text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
+        mToolbar.add(new FontAwesomeButton("\uf0e8", I18n.text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
+        mToolbar.add(new FontAwesomeButton("\uf337", I18n.text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(prefs.getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
@@ -152,7 +152,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     private void createFilterField() {
         mFilterField = new JTextField(10);
         mFilterField.getDocument().addDocumentListener(this);
-        mFilterField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Enter text here to narrow the list to only those rows containing matching items")));
+        mFilterField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Enter text here to narrow the list to only those rows containing matching items")));
         // This client property is specific to Mac OS X
         mFilterField.putClientProperty("JTextField.variant", "search");
         mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));
@@ -180,7 +180,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
 
     private void adjustCategoryCombo() {
         mCategoryCombo.removeAllItems();
-        mCategoryCombo.addItem(I18n.Text("Any Category"));
+        mCategoryCombo.addItem(I18n.text("Any Category"));
         for (String category : getDataFile().getCategories()) {
             mCategoryCombo.addItem(category);
         }

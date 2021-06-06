@@ -56,7 +56,7 @@ public final class WindowUtils {
      * @param msg  The message to display.
      */
     public static void showError(Component comp, String msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.Text("Error"), JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(comp, msg, I18n.text("Error"), JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -65,7 +65,7 @@ public final class WindowUtils {
      * @param msg  The message to display.
      */
     public static void showError(Component comp, Component msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.Text("Error"), JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(comp, msg, I18n.text("Error"), JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -74,7 +74,7 @@ public final class WindowUtils {
      * @param msg  The message to display.
      */
     public static void showWarning(Component comp, String msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.Text("Warning"), JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(comp, msg, I18n.text("Warning"), JOptionPane.WARNING_MESSAGE);
     }
 
     /**
@@ -83,7 +83,7 @@ public final class WindowUtils {
      * @param msg  The message to display.
      */
     public static void showWarning(Component comp, Component msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.Text("Warning"), JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(comp, msg, I18n.text("Warning"), JOptionPane.WARNING_MESSAGE);
     }
 
     /**

@@ -51,28 +51,28 @@ public class PageSettingsEditor extends JPanel {
         mSettings = settings;
         mAdjustCallback = adjustCallback;
         mResetCallback = resetCallback;
-        mPaperSize = addCombo(I18n.Text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (evt) -> {
+        mPaperSize = addCombo(I18n.text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (evt) -> {
             mSettings.setPaperSize(((PaperSize) mPaperSize.getSelectedItem()));
             mAdjustCallback.run();
         });
         LengthValue proto = new LengthValue(new Fixed6(99.99), LengthUnits.IN);
-        mTopMargin = addField(I18n.Text("Top Margin"), null, mSettings.getTopMargin(), proto, FieldFactory.LENGTH, (evt) -> {
+        mTopMargin = addField(I18n.text("Top Margin"), null, mSettings.getTopMargin(), proto, FieldFactory.LENGTH, (evt) -> {
             mSettings.setTopMargin((LengthValue) evt.getNewValue());
             mAdjustCallback.run();
         });
-        mBottomMargin = addField(I18n.Text("Bottom Margin"), null, mSettings.getBottomMargin(), proto, FieldFactory.LENGTH, (evt) -> {
+        mBottomMargin = addField(I18n.text("Bottom Margin"), null, mSettings.getBottomMargin(), proto, FieldFactory.LENGTH, (evt) -> {
             mSettings.setBottomMargin((LengthValue) evt.getNewValue());
             mAdjustCallback.run();
         });
-        mOrientation = addCombo(I18n.Text("Orientation"), PageOrientation.values(), mSettings.getPageOrientation(), (evt) -> {
+        mOrientation = addCombo(I18n.text("Orientation"), PageOrientation.values(), mSettings.getPageOrientation(), (evt) -> {
             mSettings.setPageOrientation((PageOrientation) mOrientation.getSelectedItem());
             mAdjustCallback.run();
         });
-        mLeftMargin = addField(I18n.Text("Left Margin"), null, mSettings.getLeftMargin(), proto, FieldFactory.LENGTH, (evt) -> {
+        mLeftMargin = addField(I18n.text("Left Margin"), null, mSettings.getLeftMargin(), proto, FieldFactory.LENGTH, (evt) -> {
             mSettings.setLeftMargin((LengthValue) evt.getNewValue());
             mAdjustCallback.run();
         });
-        mRightMargin = addField(I18n.Text("Right Margin"), null, mSettings.getRightMargin(), proto, FieldFactory.LENGTH, (evt) -> {
+        mRightMargin = addField(I18n.text("Right Margin"), null, mSettings.getRightMargin(), proto, FieldFactory.LENGTH, (evt) -> {
             mSettings.setRightMargin((LengthValue) evt.getNewValue());
             mAdjustCallback.run();
         });

@@ -329,16 +329,16 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     private static String getOutlineTitleForKey(String key) {
         return switch (key) {
-            case REACTIONS_KEY -> I18n.Text("Reactions");
-            case CONDITIONAL_MODIFIERS_KEY -> I18n.Text("Conditional Modifiers");
-            case MELEE_KEY -> I18n.Text("Melee Weapons");
-            case RANGED_KEY -> I18n.Text("Ranged Weapons");
-            case ADVANTAGES_KEY -> I18n.Text("Advantages, Disadvantages & Quirks");
-            case SKILLS_KEY -> I18n.Text("Skills");
-            case SPELLS_KEY -> I18n.Text("Spells");
-            case EQUIPMENT_KEY -> I18n.Text("Equipment");
-            case OTHER_EQUIPMENT_KEY -> I18n.Text("Other Equipment");
-            case NOTES_KEY -> I18n.Text("Notes");
+            case REACTIONS_KEY -> I18n.text("Reactions");
+            case CONDITIONAL_MODIFIERS_KEY -> I18n.text("Conditional Modifiers");
+            case MELEE_KEY -> I18n.text("Melee Weapons");
+            case RANGED_KEY -> I18n.text("Ranged Weapons");
+            case ADVANTAGES_KEY -> I18n.text("Advantages, Disadvantages & Quirks");
+            case SKILLS_KEY -> I18n.text("Skills");
+            case SPELLS_KEY -> I18n.text("Spells");
+            case EQUIPMENT_KEY -> I18n.text("Equipment");
+            case OTHER_EQUIPMENT_KEY -> I18n.text("Other Equipment");
+            case NOTES_KEY -> I18n.text("Notes");
             default -> "";
         };
     }
@@ -386,7 +386,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             boolean     useProxy = false;
             while (pageAssembler.addToContent(new SingleOutlinePanel(getScale(), outline, title, useProxy), info, null)) {
                 if (!useProxy) {
-                    title = MessageFormat.format(I18n.Text("{0} (continued)"), title);
+                    title = MessageFormat.format(I18n.text("{0} (continued)"), title);
                     useProxy = true;
                 }
             }
@@ -402,8 +402,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         boolean     useProxy  = false;
         while (pageAssembler.addToContent(new DoubleOutlinePanel(getScale(), leftOutline, leftTitle, rightOutline, rightTitle, useProxy), infoLeft, infoRight)) {
             if (!useProxy) {
-                leftTitle = MessageFormat.format(I18n.Text("{0} (continued)"), leftTitle);
-                rightTitle = MessageFormat.format(I18n.Text("{0} (continued)"), rightTitle);
+                leftTitle = MessageFormat.format(I18n.text("{0} (continued)"), leftTitle);
+                rightTitle = MessageFormat.format(I18n.text("{0} (continued)"), rightTitle);
                 useProxy = true;
             }
         }
@@ -440,7 +440,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     public List<ReactionRow> collectReactions() {
         Map<String, ReactionRow> reactionMap = new HashMap<>();
         for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
-            String source = String.format(I18n.Text("from advantage %s"), advantage.getName());
+            String source = String.format(I18n.text("from advantage %s"), advantage.getName());
             collectReactionsFromFeatureList(source, advantage.getFeatures(), reactionMap);
             for (AdvantageModifier modifier : advantage.getModifiers()) {
                 if (modifier.isEnabled()) {
@@ -464,7 +464,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         }
         for (Equipment equipment : mCharacter.getEquipmentIterator()) {
             if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
-                String source = String.format(I18n.Text("from equipment %s"), equipment.getDescription());
+                String source = String.format(I18n.text("from equipment %s"), equipment.getDescription());
                 collectReactionsFromFeatureList(source, equipment.getFeatures(), reactionMap);
                 for (EquipmentModifier modifier : equipment.getModifiers()) {
                     if (modifier.isEnabled()) {
@@ -510,7 +510,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     public List<ConditionalModifierRow> collectConditionalModifiers() {
         Map<String, ConditionalModifierRow> cmMap = new HashMap<>();
         for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
-            String source = String.format(I18n.Text("from advantage %s"), advantage.getName());
+            String source = String.format(I18n.text("from advantage %s"), advantage.getName());
             collectConditionalModifiersFromFeatureList(source, advantage.getFeatures(), cmMap);
             for (AdvantageModifier modifier : advantage.getModifiers()) {
                 if (modifier.isEnabled()) {
@@ -520,7 +520,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         }
         for (Equipment equipment : mCharacter.getEquipmentIterator()) {
             if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
-                String source = String.format(I18n.Text("from equipment %s"), equipment.getDescription());
+                String source = String.format(I18n.text("from equipment %s"), equipment.getDescription());
                 collectConditionalModifiersFromFeatureList(source, equipment.getFeatures(), cmMap);
                 for (EquipmentModifier modifier : equipment.getModifiers()) {
                     if (modifier.isEnabled()) {
@@ -668,7 +668,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         bounds.x = insets.left;
         bounds.y = insets.top;
         int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
-        String      pageString = MessageFormat.format(I18n.Text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
+        String      pageString = MessageFormat.format(I18n.text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
         Scale       scale      = getScale();
         Font        font1      = scale.scale(UIManager.getFont(Fonts.KEY_FOOTER_SECONDARY));
         Font        font2      = scale.scale(UIManager.getFont(Fonts.KEY_FOOTER_PRIMARY));
@@ -697,7 +697,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         String  center  = mCharacter.getSheetSettings().useTitleInFooter() ? profile.getTitle() : profile.getName();
         gc.drawString(center, bounds.x + (bounds.width - (int) fm2.getStringBounds(center, gc).getWidth()) / 2, y);
 
-        String allRightsReserved = I18n.Text("All rights reserved");
+        String allRightsReserved = I18n.text("All rights reserved");
         if ((pageNumber & 1) == 1) {
             left = allRightsReserved;
             right = pageString;

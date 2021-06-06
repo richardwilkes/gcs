@@ -55,7 +55,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -67,7 +67,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.text("Move Down"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -87,8 +87,8 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(8).setMargins(0));
         wrapper.setOpaque(false);
         mStateField = addField(wrapper,
-                I18n.Text("State"),
-                I18n.Text("A short description of the current threshold state"),
+                I18n.text("State"),
+                I18n.text("A short description of the current threshold state"),
                 mThreshold.getState(),
                 null,
                 FieldFactory.STRING,
@@ -97,8 +97,8 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("Multiplier"),
-                I18n.Text("A multiplier to be applied first to determine the threshold value"),
+                I18n.text("Multiplier"),
+                I18n.text("A multiplier to be applied first to determine the threshold value"),
                 Integer.valueOf(mThreshold.getMultiplier()),
                 Integer.valueOf(-999999),
                 FieldFactory.INT6,
@@ -107,8 +107,8 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                     mAdjustCallback.run();
                 });
         mDivisorField = addField(wrapper,
-                I18n.Text("Divisor"),
-                I18n.Text("A divisor to be applied second to determine the threshold value"),
+                I18n.text("Divisor"),
+                I18n.text("A divisor to be applied second to determine the threshold value"),
                 Integer.valueOf(mThreshold.getDivisor()),
                 Integer.valueOf(-999999),
                 FieldFactory.INT6,
@@ -122,8 +122,8 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
                     }
                 });
         addField(wrapper,
-                I18n.Text("Addition"),
-                I18n.Text("An addition to be applied third to determine the threshold value"),
+                I18n.text("Addition"),
+                I18n.text("An addition to be applied third to determine the threshold value"),
                 Integer.valueOf(mThreshold.getAddition()),
                 Integer.valueOf(-999999),
                 FieldFactory.INT6,
@@ -146,15 +146,15 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.setOpaque(false);
         mExplanationField = addTextArea(wrapper,
-                I18n.Text("Explanation"),
-                I18n.Text("An explanation of effects of the current threshold state"),
+                I18n.text("Explanation"),
+                I18n.text("An explanation of effects of the current threshold state"),
                 mThreshold.getExplanation());
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1) {

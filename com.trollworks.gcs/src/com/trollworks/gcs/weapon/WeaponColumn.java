@@ -30,17 +30,17 @@ public enum WeaponColumn {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
             if (weaponClass == MeleeWeaponStats.class) {
-                return I18n.Text("Melee Weapons");
+                return I18n.text("Melee Weapons");
             }
             if (weaponClass == RangedWeaponStats.class) {
-                return I18n.Text("Ranged Weapons");
+                return I18n.text("Ranged Weapons");
             }
-            return I18n.Text("Weapons");
+            return I18n.text("Weapons");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The name/description of the weapon");
+            return I18n.text("The name/description of the weapon");
         }
 
         @Override
@@ -70,12 +70,12 @@ public enum WeaponColumn {
     USAGE {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Usage");
+            return I18n.text("Usage");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The usage type of the weapon (swung, thrust, thrown, fired, etc.)");
+            return I18n.text("The usage type of the weapon (swung, thrust, thrown, fired, etc.)");
         }
 
         @Override
@@ -87,12 +87,12 @@ public enum WeaponColumn {
     LEVEL {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Lvl");
+            return I18n.text("Lvl");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The skill level with the weapon");
+            return I18n.text("The skill level with the weapon");
         }
 
         @Override
@@ -126,12 +126,12 @@ public enum WeaponColumn {
     ACCURACY {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Acc");
+            return I18n.text("Acc");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The accuracy bonus for the weapon");
+            return I18n.text("The accuracy bonus for the weapon");
         }
 
         @Override
@@ -148,12 +148,12 @@ public enum WeaponColumn {
     PARRY {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Parry");
+            return I18n.text("Parry");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The Parry value with the weapon");
+            return I18n.text("The Parry value with the weapon");
         }
 
         @Override
@@ -175,12 +175,12 @@ public enum WeaponColumn {
     BLOCK {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Block");
+            return I18n.text("Block");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The Block value with the weapon");
+            return I18n.text("The Block value with the weapon");
         }
 
         @Override
@@ -202,12 +202,12 @@ public enum WeaponColumn {
     DAMAGE {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Damage");
+            return I18n.text("Damage");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The damage the weapon inflicts");
+            return I18n.text("The damage the weapon inflicts");
         }
 
         @Override
@@ -224,12 +224,12 @@ public enum WeaponColumn {
     REACH {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Reach");
+            return I18n.text("Reach");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The reach of the weapon");
+            return I18n.text("The reach of the weapon");
         }
 
         @Override
@@ -246,12 +246,12 @@ public enum WeaponColumn {
     RANGE {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Range");
+            return I18n.text("Range");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The range of the weapon");
+            return I18n.text("The range of the weapon");
         }
 
         @Override
@@ -268,12 +268,12 @@ public enum WeaponColumn {
     RATE_OF_FIRE {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("RoF");
+            return I18n.text("RoF");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The rate of fire of the weapon");
+            return I18n.text("The rate of fire of the weapon");
         }
 
         @Override
@@ -290,12 +290,12 @@ public enum WeaponColumn {
     SHOTS {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Shots");
+            return I18n.text("Shots");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The number of shots the weapon can fire before reloading/recharging");
+            return I18n.text("The number of shots the weapon can fire before reloading/recharging");
         }
 
         @Override
@@ -312,12 +312,12 @@ public enum WeaponColumn {
     BULK {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Bulk");
+            return I18n.text("Bulk");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The modifier to skill due to the bulk of the weapon");
+            return I18n.text("The modifier to skill due to the bulk of the weapon");
         }
 
         @Override
@@ -334,12 +334,12 @@ public enum WeaponColumn {
     RECOIL {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("Rcl");
+            return I18n.text("Rcl");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The recoil modifier for the weapon");
+            return I18n.text("The recoil modifier for the weapon");
         }
 
         @Override
@@ -356,12 +356,12 @@ public enum WeaponColumn {
     MIN_ST {
         @Override
         public String toString(Class<? extends WeaponStats> weaponClass) {
-            return I18n.Text("ST");
+            return I18n.text("ST");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The minimum strength required to use the weapon properly");
+            return I18n.text("The minimum strength required to use the weapon properly");
         }
 
         @Override

@@ -35,13 +35,13 @@ public final class NewEquipmentCommand extends Command {
     /** The action command this command will issue. */
     public static final String              CMD_NEW_OTHER_EQUIPMENT_CONTAINER = "NewOtherEquipmentContainer";
     /** The "New Carried Equipment" command. */
-    public static final NewEquipmentCommand CARRIED_INSTANCE                  = new NewEquipmentCommand(true, false, I18n.Text("New Carried Equipment"), CMD_NEW_EQUIPMENT, COMMAND_MODIFIER);
+    public static final NewEquipmentCommand CARRIED_INSTANCE                  = new NewEquipmentCommand(true, false, I18n.text("New Carried Equipment"), CMD_NEW_EQUIPMENT, COMMAND_MODIFIER);
     /** The "New Carried Equipment Container" command. */
-    public static final NewEquipmentCommand CARRIED_CONTAINER_INSTANCE        = new NewEquipmentCommand(true, true, I18n.Text("New Carried Equipment Container"), CMD_NEW_EQUIPMENT_CONTAINER, SHIFTED_COMMAND_MODIFIER);
+    public static final NewEquipmentCommand CARRIED_CONTAINER_INSTANCE        = new NewEquipmentCommand(true, true, I18n.text("New Carried Equipment Container"), CMD_NEW_EQUIPMENT_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     /** The "New Other Equipment" command. */
-    public static final NewEquipmentCommand NOT_CARRIED_INSTANCE              = new NewEquipmentCommand(false, false, I18n.Text("New Other Equipment"), CMD_NEW_OTHER_EQUIPMENT, COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
+    public static final NewEquipmentCommand NOT_CARRIED_INSTANCE              = new NewEquipmentCommand(false, false, I18n.text("New Other Equipment"), CMD_NEW_OTHER_EQUIPMENT, COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
     /** The "New Other Equipment Container" command. */
-    public static final NewEquipmentCommand NOT_CARRIED_CONTAINER_INSTANCE    = new NewEquipmentCommand(false, true, I18n.Text("New Other Equipment Container"), CMD_NEW_OTHER_EQUIPMENT_CONTAINER, SHIFTED_COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
+    public static final NewEquipmentCommand NOT_CARRIED_CONTAINER_INSTANCE    = new NewEquipmentCommand(false, true, I18n.text("New Other Equipment Container"), CMD_NEW_OTHER_EQUIPMENT_CONTAINER, SHIFTED_COMMAND_MODIFIER | InputEvent.ALT_DOWN_MASK);
     private             boolean             mCarried;
     private             boolean             mContainer;
 

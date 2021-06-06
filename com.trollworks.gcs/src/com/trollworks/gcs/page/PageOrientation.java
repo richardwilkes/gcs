@@ -26,7 +26,7 @@ public enum PageOrientation {
 
         @Override
         public String toString() {
-            return I18n.TextWithContext(1, "Portrait");
+            return I18n.textWithContext(1, "Portrait");
         }
     },
     /** Maps to {@link OrientationRequested#LANDSCAPE}. */
@@ -37,7 +37,7 @@ public enum PageOrientation {
 
         @Override
         public String toString() {
-            return I18n.Text("Landscape");
+            return I18n.text("Landscape");
         }
     };
 

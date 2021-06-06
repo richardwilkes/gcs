@@ -45,7 +45,7 @@ public class AttributesPanel extends DropPanel {
      *                base is a number and not a reference to another attribute.
      */
     public AttributesPanel(CharacterSheet sheet, boolean primary) {
-        super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), primary ? I18n.Text("Primary Attributes") : I18n.Text("Secondary Attributes"));
+        super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(2, 0).setAlignment(PrecisionLayoutAlignment.FILL, PrecisionLayoutAlignment.FILL), primary ? I18n.text("Primary Attributes") : I18n.text("Secondary Attributes"));
         GURPSCharacter gch = sheet.getCharacter();
         for (AttributeDef def : AttributeDef.getOrdered(gch.getSheetSettings().getAttributes())) {
             if (def.getType() != AttributeType.POOL) {
@@ -56,8 +56,8 @@ public class AttributesPanel extends DropPanel {
         }
         if (primary) {
             addDivider();
-            createDiceField(sheet, gch.getThrust(), I18n.Text("Basic Thrust"));
-            createDiceField(sheet, gch.getSwing(), I18n.Text("Basic Swing"));
+            createDiceField(sheet, gch.getThrust(), I18n.text("Basic Thrust"));
+            createDiceField(sheet, gch.getSwing(), I18n.text("Basic Swing"));
         }
     }
 

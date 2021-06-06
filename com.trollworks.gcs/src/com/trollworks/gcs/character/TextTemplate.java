@@ -585,13 +585,13 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fp")));
             break;
         case KEY_TIRED_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Tired"));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Tired"));
             break;
         case KEY_FP_COLLAPSE_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Collapse"));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Collapse"));
             break;
         case KEY_UNCONSCIOUS_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.Text("Unconscious"));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Unconscious"));
             break;
         case KEY_HP_DEPRECATED:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("hp")));
@@ -600,25 +600,25 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hp")));
             break;
         case KEY_REELING_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Reeling"));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Reeling"));
             break;
         case KEY_HP_COLLAPSE_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Collapse"));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Collapse"));
             break;
         case KEY_DEATH_CHECK_1_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(1)));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(1)));
             break;
         case KEY_DEATH_CHECK_2_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(2)));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(2)));
             break;
         case KEY_DEATH_CHECK_3_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(3)));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(3)));
             break;
         case KEY_DEATH_CHECK_4_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.Text("Dying #%d"), Integer.valueOf(4)));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(4)));
             break;
         case KEY_DEAD_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.Text("Dead"));
+            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Dead"));
             break;
         case KEY_BASIC_LIFT:
             writeEncodedText(out, gurpsCharacter.getBasicLift().toString());

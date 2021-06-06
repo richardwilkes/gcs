@@ -28,7 +28,7 @@ public class EquipmentModifiersDockable extends LibraryDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return I18n.Text("Untitled Equipment Modifiers");
+        return I18n.text("Untitled Equipment Modifiers");
     }
 
     @Override

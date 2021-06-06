@@ -84,10 +84,10 @@ public abstract class WeaponListEditor extends JPanel implements ActionListener,
         super(new PrecisionLayout().setMargins(0));
         mOwner = owner;
         mWeaponClass = weaponClass;
-        mAddButton = new FontAwesomeButton("\uf055", I18n.Text("Add an attack"), this::addWeapon);
-        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.Text("Remove the selected attacks"), () -> mOutline.deleteSelection());
+        mAddButton = new FontAwesomeButton("\uf055", I18n.text("Add an attack"), this::addWeapon);
+        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove the selected attacks"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
-        mDuplicateButton = new FontAwesomeButton("\uf24d", I18n.Text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
+        mDuplicateButton = new FontAwesomeButton("\uf24d", I18n.text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
         mDuplicateButton.setEnabled(false);
         JPanel right = new JPanel(new PrecisionLayout().setMargins(5));
         right.add(mAddButton);
@@ -141,11 +141,11 @@ public abstract class WeaponListEditor extends JPanel implements ActionListener,
         JPanel editorPanel = new JPanel(new PrecisionLayout().setMargins(5).setColumns(2));
 
         JPanel firstPanel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(3));
-        mUsage = addField(editorPanel, firstPanel, null, I18n.Text("Usage"));
-        mStrength = addField(firstPanel, firstPanel, "99**", I18n.Text("Minimum Strength"));
+        mUsage = addField(editorPanel, firstPanel, null, I18n.text("Usage"));
+        mStrength = addField(firstPanel, firstPanel, "99**", I18n.text("Minimum Strength"));
         editorPanel.add(firstPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        String notes = I18n.Text("Notes");
+        String notes = I18n.text("Notes");
         mUsageNotes = new MultiLineTextField("", notes, this);
         addLabel(editorPanel, notes, mUsageNotes);
         editorPanel.add(mUsageNotes, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -154,25 +154,25 @@ public abstract class WeaponListEditor extends JPanel implements ActionListener,
         mDamageSTCombo = new JComboBox<>(WeaponSTDamage.values());
         mDamageSTCombo.setSelectedItem(WeaponSTDamage.NONE);
         mDamageSTCombo.addActionListener(this);
-        mDamageSTCombo.setToolTipText(I18n.Text("Strength Damage Type"));
-        editorPanel.add(new LinkedLabel(I18n.Text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        mDamageSTCombo.setToolTipText(I18n.text("Strength Damage Type"));
+        editorPanel.add(new LinkedLabel(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTCombo, new PrecisionLayoutData().setFillHorizontalAlignment());
-        mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.Text("Base Damage"));
+        mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
         addLabel(damagePanel, "(", null);
-        mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.Text("Armor Divisor"));
+        mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.text("Armor Divisor"));
         addLabel(damagePanel, ")", null);
-        mDamageType = addField(null, damagePanel, null, I18n.Text("Type"));
-        mDamageModPerDie = addField(null, damagePanel, "+99", I18n.Text("Bonus Per Die"));
-        addLabel(damagePanel, I18n.Text("per die"), mDamageModPerDie);
+        mDamageType = addField(null, damagePanel, null, I18n.text("Type"));
+        mDamageModPerDie = addField(null, damagePanel, "+99", I18n.text("Bonus Per Die"));
+        addLabel(damagePanel, I18n.text("per die"), mDamageModPerDie);
         editorPanel.add(damagePanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         JPanel fragPanel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
-        addLabel(editorPanel, I18n.Text("Fragmentation"), null);
-        mFragDamage = addField(null, fragPanel, "9999999d+99x999", I18n.Text("Fragmentation Damage"));
+        addLabel(editorPanel, I18n.text("Fragmentation"), null);
+        mFragDamage = addField(null, fragPanel, "9999999d+99x999", I18n.text("Fragmentation Damage"));
         addLabel(fragPanel, "(", null);
-        mFragArmorDivisor = addField(null, fragPanel, "9999", I18n.Text("Armor Divisor"));
+        mFragArmorDivisor = addField(null, fragPanel, "9999", I18n.text("Armor Divisor"));
         addLabel(fragPanel, ")", null);
-        mFragType = addField(null, fragPanel, null, I18n.Text("Type"));
+        mFragType = addField(null, fragPanel, null, I18n.text("Type"));
         editorPanel.add(fragPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         createFields(editorPanel);

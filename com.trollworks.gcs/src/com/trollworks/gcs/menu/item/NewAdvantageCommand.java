@@ -30,9 +30,9 @@ public final class NewAdvantageCommand extends Command {
     /** The action command this command will issue. */
     public static final String              CMD_NEW_ADVANTAGE_CONTAINER = "NewAdvantageContainer";
     /** The "New Advantage" command. */
-    public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, I18n.Text("New Advantage"), CMD_NEW_ADVANTAGE, COMMAND_MODIFIER);
+    public static final NewAdvantageCommand INSTANCE                    = new NewAdvantageCommand(false, I18n.text("New Advantage"), CMD_NEW_ADVANTAGE, COMMAND_MODIFIER);
     /** The "New Advantage Container" command. */
-    public static final NewAdvantageCommand CONTAINER_INSTANCE          = new NewAdvantageCommand(true, I18n.Text("New Advantage Container"), CMD_NEW_ADVANTAGE_CONTAINER, SHIFTED_COMMAND_MODIFIER);
+    public static final NewAdvantageCommand CONTAINER_INSTANCE          = new NewAdvantageCommand(true, I18n.text("New Advantage Container"), CMD_NEW_ADVANTAGE_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     private             boolean             mContainer;
 
     private NewAdvantageCommand(boolean container, String title, String cmd, int modifiers) {

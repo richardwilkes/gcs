@@ -22,33 +22,33 @@ public enum LengthUnits implements Units {
     PT(Fixed6.ONE.div(new Fixed6(72)), false) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Points");
+            return I18n.text("Points");
         }
     },
     /** Inches. */
     IN(Fixed6.ONE, false) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Inches");
+            return I18n.text("Inches");
         }
     },
     /** Feet. */
     FT(new Fixed6(12), false) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Feet");
+            return I18n.text("Feet");
         }
     },
     /** Feet and Inches */
     FT_IN(Fixed6.ONE, false) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Feet & Inches");
+            return I18n.text("Feet & Inches");
         }
 
         @Override
         public String toString() {
-            return I18n.Text("Feet (') & Inches (\")");
+            return I18n.text("Feet (') & Inches (\")");
         }
 
         @Override
@@ -74,14 +74,14 @@ public enum LengthUnits implements Units {
     YD(new Fixed6(36), false) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Yards");
+            return I18n.text("Yards");
         }
     },
     /** Miles. */
     MI(new Fixed6(5280).mul(new Fixed6(12)), false) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Miles");
+            return I18n.text("Miles");
         }
     },
     /** Millimeters. */
@@ -89,28 +89,28 @@ public enum LengthUnits implements Units {
 
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Millimeters");
+            return I18n.text("Millimeters");
         }
     },
     /** Centimeters. */
     CM(Fixed6.ONE.div(LengthValue.METRIC_CONVERSION_FACTOR), true) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Centimeters");
+            return I18n.text("Centimeters");
         }
     },
     /** Kilometers. */
     KM(new Fixed6(100000).div(LengthValue.METRIC_CONVERSION_FACTOR), true) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Kilometers");
+            return I18n.text("Kilometers");
         }
     },
     /** Meters. Must be after all the other 'meter' types. */
     M(new Fixed6(100).div(LengthValue.METRIC_CONVERSION_FACTOR), true) {
         @Override
         public String getLocalizedName() {
-            return I18n.Text("Meters");
+            return I18n.text("Meters");
         }
     };
 

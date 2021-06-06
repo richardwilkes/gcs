@@ -112,14 +112,14 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
     void adjustToMaximizedState() {
         mMaximizeRestoreButton.setClickFunction(this::restore);
         mMaximizeRestoreButton.setText("\uf2d2");
-        mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Restore")));
+        mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Restore")));
     }
 
     /** Called when the owning {@link DockContainer} is restored from the maximized state. */
     void adjustToRestoredState() {
         mMaximizeRestoreButton.setClickFunction(this::maximize);
         mMaximizeRestoreButton.setText("\uf2d0");
-        mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Maximize")));
+        mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Maximize")));
     }
 
     @Override

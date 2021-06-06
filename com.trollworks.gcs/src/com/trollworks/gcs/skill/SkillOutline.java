@@ -73,12 +73,12 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public String getDecrementTitle() {
-        return I18n.Text("Decrement Points");
+        return I18n.text("Decrement Points");
     }
 
     @Override
     public String getIncrementTitle() {
-        return I18n.Text("Increment Points");
+        return I18n.text("Increment Points");
     }
 
     @Override
@@ -141,12 +141,12 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public String getIncrementSkillLevelTitle() {
-        return I18n.Text("Increment Skill Level");
+        return I18n.text("Increment Skill Level");
     }
 
     @Override
     public String getDecrementSkillLevelTitle() {
-        return I18n.Text("Decrement Skill Level");
+        return I18n.text("Decrement Skill Level");
     }
 
     @Override

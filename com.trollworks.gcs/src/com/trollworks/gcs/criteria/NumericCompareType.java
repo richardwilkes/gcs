@@ -21,51 +21,51 @@ public enum NumericCompareType {
     IS {
         @Override
         public String toString() {
-            return I18n.Text("exactly");
+            return I18n.text("exactly");
         }
 
         @Override
         public String getDescription() {
-            return I18n.Text("is");
+            return I18n.text("is");
         }
 
         @Override
         String getDescriptionFormat() {
-            return I18n.Text("{0}exactly {1}");
+            return I18n.text("{0}exactly {1}");
         }
     },
     /** The comparison for "is at least". */
     AT_LEAST {
         @Override
         public String toString() {
-            return I18n.Text("at least");
+            return I18n.text("at least");
         }
 
         @Override
         public String getDescription() {
-            return I18n.Text("is at least");
+            return I18n.text("is at least");
         }
 
         @Override
         String getDescriptionFormat() {
-            return I18n.Text("{0}at least {1}");
+            return I18n.text("{0}at least {1}");
         }
     },
     /** The comparison for "is at most". */
     AT_MOST {
         @Override
         public String toString() {
-            return I18n.Text("at most");
+            return I18n.text("at most");
         }
 
         @Override
         public String getDescription() {
-            return I18n.Text("is at most");
+            return I18n.text("is at most");
         }
 
         @Override
         String getDescriptionFormat() {
-            return I18n.Text("{0}at most {1}");
+            return I18n.text("{0}at most {1}");
         }
     };
 

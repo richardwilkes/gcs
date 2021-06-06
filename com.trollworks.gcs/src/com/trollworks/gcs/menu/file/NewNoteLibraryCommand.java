@@ -23,7 +23,7 @@ public final class NewNoteLibraryCommand extends Command {
     public static final NewNoteLibraryCommand INSTANCE = new NewNoteLibraryCommand();
 
     private NewNoteLibraryCommand() {
-        super(I18n.Text("New Note Library"), "NewNoteLibrary");
+        super(I18n.text("New Note Library"), "NewNoteLibrary");
     }
 
     @Override

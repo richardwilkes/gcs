@@ -41,7 +41,7 @@ public class MoveEquipmentCommand extends Command {
     private             boolean mToCarried;
 
     public MoveEquipmentCommand(boolean toCarried) {
-        super(toCarried ? I18n.Text("Move to Carried Equipment") : I18n.Text("Move to Other Equipment"), toCarried ? CMD_TO_CARRIED_EQUIPMENT : CMD_TO_OTHER_EQUIPMENT);
+        super(toCarried ? I18n.text("Move to Carried Equipment") : I18n.text("Move to Other Equipment"), toCarried ? CMD_TO_CARRIED_EQUIPMENT : CMD_TO_OTHER_EQUIPMENT);
         mToCarried = toCarried;
     }
 

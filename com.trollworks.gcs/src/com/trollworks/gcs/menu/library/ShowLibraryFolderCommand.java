@@ -26,7 +26,7 @@ public class ShowLibraryFolderCommand extends Command {
     private Library mLibrary;
 
     public ShowLibraryFolderCommand(Library library) {
-        super(String.format(I18n.Text("Show %s on Disk"), library.getTitle()), "slib:" + library.getKey());
+        super(String.format(I18n.text("Show %s on Disk"), library.getTitle()), "slib:" + library.getKey());
         mLibrary = library;
     }
 

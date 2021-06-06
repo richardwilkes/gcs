@@ -29,7 +29,7 @@ public class NotesDockable extends LibraryDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return I18n.Text("Untitled Notes");
+        return I18n.text("Untitled Notes");
     }
 
     @Override

@@ -58,13 +58,13 @@ public class LibraryFields implements DocumentListener {
         mComps = new ArrayList<>();
 
         addPlaceholder();
-        mTitle = addLabelAndField(I18n.Text("Name:"), title, 1);
-        mGitHubAccountName = addLabelAndField(I18n.Text("GitHub Account:"), account, 1);
-        mRepoName = addLabelAndField(I18n.Text("Repo:"), repo, 1);
+        mTitle = addLabelAndField(I18n.text("Name:"), title, 1);
+        mGitHubAccountName = addLabelAndField(I18n.text("GitHub Account:"), account, 1);
+        mRepoName = addLabelAndField(I18n.text("Repo:"), repo, 1);
         addLocateButton();
 
         addRemoveButton();
-        mPath = addLabelAndField(I18n.Text("Path:"), path, 5);
+        mPath = addLabelAndField(I18n.text("Path:"), path, 5);
         addUseDefaultButton();
 
         JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
@@ -101,7 +101,7 @@ public class LibraryFields implements DocumentListener {
 
     private void addRemoveButton() {
         if (mLibraryType == LibraryType.EXTRA) {
-            JButton button = new JButton(I18n.Text("Remove"));
+            JButton button = new JButton(I18n.text("Remove"));
             button.addActionListener(e -> {
                 for (JComponent comp : mComps) {
                     mOwner.remove(comp);
@@ -125,14 +125,14 @@ public class LibraryFields implements DocumentListener {
     }
 
     private void addLocateButton() {
-        JButton button = new JButton(I18n.Text("Locate"));
+        JButton button = new JButton(I18n.text("Locate"));
         button.addActionListener(e -> {
             String       path    = mPath.getText();
             Path         current = path.isBlank() ? Preferences.getInstance().getLastDir() : Paths.get(path).getParent().toAbsolutePath();
             JFileChooser dialog  = new JFileChooser(current.toString());
             dialog.setDialogTitle(mTitle.getText());
             dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (dialog.showDialog(mOwner, I18n.Text("Select")) == JFileChooser.APPROVE_OPTION) {
+            if (dialog.showDialog(mOwner, I18n.text("Select")) == JFileChooser.APPROVE_OPTION) {
                 mPath.setText(dialog.getSelectedFile().getAbsolutePath());
                 mPath.requestFocus();
                 mPath.selectAll();
@@ -146,7 +146,7 @@ public class LibraryFields implements DocumentListener {
         if (mLibraryType == LibraryType.EXTRA) {
             addPlaceholder();
         } else {
-            JButton button = new JButton(I18n.Text("Use Default"));
+            JButton button = new JButton(I18n.text("Use Default"));
             button.addActionListener(e -> {
                 Path def;
                 switch (mLibraryType) {

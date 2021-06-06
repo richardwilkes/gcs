@@ -57,7 +57,7 @@ public class ShowTabsButton extends JComponent implements MouseListener, MouseMo
         setOpaque(false);
         setBackground(null);
         setFont(UIManager.getFont("Label.font"));
-        setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Show Hidden Tabs List")));
+        setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Show Hidden Tabs List")));
         setCursor(Cursor.getDefaultCursor());
         addMouseListener(this);
         addMouseMotionListener(this);

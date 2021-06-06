@@ -48,7 +48,7 @@ public class ExportToTextTemplateCommand extends Command {
                 name = "untitled";
             }
             String ext  = PathUtils.getExtension(mTemplatePath);
-            Path   path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Preferences.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.Text(" Files"), ext));
+            Path   path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Preferences.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.text(" Files"), ext));
             if (path != null) {
                 performExport(dockable, mTemplatePath, path);
             }
@@ -59,7 +59,7 @@ public class ExportToTextTemplateCommand extends Command {
         if (new TextTemplate(dockable.getSheet()).export(exportPath, templatePath)) {
             dockable.recordQuickExport(new QuickExport(templatePath, exportPath));
         } else {
-            WindowUtils.showError(dockable, String.format(I18n.Text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(templatePath, false)));
+            WindowUtils.showError(dockable, String.format(I18n.text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(templatePath, false)));
         }
     }
 }

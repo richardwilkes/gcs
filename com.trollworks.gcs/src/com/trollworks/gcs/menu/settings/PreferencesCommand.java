@@ -24,7 +24,7 @@ public final class PreferencesCommand extends Command implements PreferencesHand
     public static final PreferencesCommand INSTANCE = new PreferencesCommand();
 
     private PreferencesCommand() {
-        super(I18n.Text("Old Preferences…"), "DefaultSheetSettings");
+        super(I18n.text("Old Preferences…"), "DefaultSheetSettings");
     }
 
     @Override

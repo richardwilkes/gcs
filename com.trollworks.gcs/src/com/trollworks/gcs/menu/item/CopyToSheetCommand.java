@@ -32,7 +32,7 @@ public class CopyToSheetCommand extends Command {
     private             SheetDockable      mSheet;
 
     private CopyToSheetCommand() {
-        super(I18n.Text("Copy to Character Sheet"), CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.text("Copy to Character Sheet"), CMD_COPY_TO_SHEET, KeyEvent.VK_C, SHIFTED_COMMAND_MODIFIER);
     }
 
     /**

@@ -32,7 +32,7 @@ public class CopyToTemplateCommand extends Command {
     private             TemplateDockable      mTemplate;
 
     private CopyToTemplateCommand() {
-        super(I18n.Text("Copy to Template"), CMD_COPY_TO_TEMPLATE, KeyEvent.VK_T, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.text("Copy to Template"), CMD_COPY_TO_TEMPLATE, KeyEvent.VK_T, SHIFTED_COMMAND_MODIFIER);
     }
 
     /**

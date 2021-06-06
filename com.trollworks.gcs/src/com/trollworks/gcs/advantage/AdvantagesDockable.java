@@ -28,7 +28,7 @@ public class AdvantagesDockable extends LibraryDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return I18n.Text("Untitled Advantages");
+        return I18n.text("Untitled Advantages");
     }
 
     @Override

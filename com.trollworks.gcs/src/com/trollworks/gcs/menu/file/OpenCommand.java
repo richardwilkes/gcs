@@ -37,7 +37,7 @@ public final class OpenCommand extends Command implements OpenFilesHandler {
     public static final OpenCommand INSTANCE = new OpenCommand();
 
     private OpenCommand() {
-        super(I18n.Text("Open…"), CMD_OPEN, KeyEvent.VK_O);
+        super(I18n.text("Open…"), CMD_OPEN, KeyEvent.VK_O);
     }
 
     @Override
@@ -51,7 +51,7 @@ public final class OpenCommand extends Command implements OpenFilesHandler {
 
     /** Ask the user to open a file. */
     public static void open() {
-        Path path = StdFileDialog.showOpenDialog(getFocusOwner(), I18n.Text("Open…"), FileType.createFileFilters(I18n.Text("All Readable Files"), FileType.ALL_OPENABLE.toArray(new FileType[0])));
+        Path path = StdFileDialog.showOpenDialog(getFocusOwner(), I18n.text("Open…"), FileType.createFileFilters(I18n.text("All Readable Files"), FileType.ALL_OPENABLE.toArray(new FileType[0])));
         if (path != null) {
             open(path);
         }
@@ -67,7 +67,7 @@ public final class OpenCommand extends Command implements OpenFilesHandler {
                     proxy.toFrontAndFocus();
                     Preferences.getInstance().addRecentFile(path);
                 } else {
-                    throw new IOException(I18n.Text("unknown file extension"));
+                    throw new IOException(I18n.text("unknown file extension"));
                 }
             } catch (Exception exception) {
                 Log.error(exception);

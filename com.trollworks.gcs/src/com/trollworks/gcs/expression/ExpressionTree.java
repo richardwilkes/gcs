@@ -45,7 +45,7 @@ class ExpressionTree {
             }
         }
         if (operand == null) {
-            throw new EvaluationException(I18n.Text("Expression is invalid"));
+            throw new EvaluationException(I18n.text("Expression is invalid"));
         }
         return operand;
     }

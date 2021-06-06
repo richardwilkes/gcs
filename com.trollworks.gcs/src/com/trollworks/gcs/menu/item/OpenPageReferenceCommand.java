@@ -59,7 +59,7 @@ public class OpenPageReferenceCommand extends Command {
     }
 
     private static String getTitle(boolean one) {
-        return one ? I18n.Text("Open Page Reference") : I18n.Text("Open Each Page Reference");
+        return one ? I18n.text("Open Page Reference") : I18n.text("Open Each Page Reference");
     }
 
     private static String getCmd(boolean one) {
@@ -111,7 +111,7 @@ public class OpenPageReferenceCommand extends Command {
             Preferences prefs = Preferences.getInstance();
             PDFRef      ref   = prefs.lookupPdfRef(id, true);
             if (ref == null) {
-                Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.Text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
+                Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
                 if (path != null) {
                     ref = new PDFRef(id, path, 0);
                     prefs.putPdfRef(ref);

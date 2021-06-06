@@ -112,7 +112,7 @@ public class Profile {
             mHeight = getRandomHeight(st, getSizeModifier());
             mWeight = getRandomWeight(st, getSizeModifier(), Fixed6.ONE);
             mGender = getRandomGender();
-            mName = USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender));
+            mName = USCensusNames.INSTANCE.getFullName(I18n.text("Male").equals(mGender));
             Preferences prefs = Preferences.getInstance();
             mTechLevel = prefs.getDefaultTechLevel();
             mPlayerName = prefs.getDefaultPlayerName();
@@ -226,13 +226,13 @@ public class Profile {
     public void setPortrait(Img portrait) {
         if (portrait == null) {
             if (mPortrait != null) {
-                mCharacter.postUndoEdit(I18n.Text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, null);
+                mCharacter.postUndoEdit(I18n.text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, null);
                 mPortrait = null;
                 mCharacter.notifyOfChange();
             }
         } else if (mPortrait == null || mPortrait.getRetina() != portrait) {
             RetinaIcon newPortrait = createPortrait(portrait);
-            mCharacter.postUndoEdit(I18n.Text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, newPortrait);
+            mCharacter.postUndoEdit(I18n.text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, newPortrait);
             mPortrait = newPortrait;
             mCharacter.notifyOfChange();
         }
@@ -279,7 +279,7 @@ public class Profile {
      */
     public void setName(String name) {
         if (!mName.equals(name)) {
-            mCharacter.postUndoEdit(I18n.Text("Name Change"), (c, v) -> c.getProfile().setName((String) v), mName, name);
+            mCharacter.postUndoEdit(I18n.text("Name Change"), (c, v) -> c.getProfile().setName((String) v), mName, name);
             mName = name;
             mCharacter.notifyOfChange();
         }
@@ -297,7 +297,7 @@ public class Profile {
      */
     public void setGender(String gender) {
         if (!mGender.equals(gender)) {
-            mCharacter.postUndoEdit(I18n.Text("Gender Change"), (c, v) -> c.getProfile().setGender((String) v), mGender, gender);
+            mCharacter.postUndoEdit(I18n.text("Gender Change"), (c, v) -> c.getProfile().setGender((String) v), mGender, gender);
             mGender = gender;
             mCharacter.notifyOfChange();
         }
@@ -315,7 +315,7 @@ public class Profile {
      */
     public void setReligion(String religion) {
         if (!mReligion.equals(religion)) {
-            mCharacter.postUndoEdit(I18n.Text("Religion Change"), (c, v) -> c.getProfile().setReligion((String) v), mReligion, religion);
+            mCharacter.postUndoEdit(I18n.text("Religion Change"), (c, v) -> c.getProfile().setReligion((String) v), mReligion, religion);
             mReligion = religion;
             mCharacter.notifyOfChange();
         }
@@ -333,7 +333,7 @@ public class Profile {
      */
     public void setPlayerName(String player) {
         if (!mPlayerName.equals(player)) {
-            mCharacter.postUndoEdit(I18n.Text("Player Name Change"), (c, v) -> c.getProfile().setPlayerName((String) v), mPlayerName, player);
+            mCharacter.postUndoEdit(I18n.text("Player Name Change"), (c, v) -> c.getProfile().setPlayerName((String) v), mPlayerName, player);
             mPlayerName = player;
             mCharacter.notifyOfChange();
         }
@@ -351,7 +351,7 @@ public class Profile {
      */
     public void setTechLevel(String techLevel) {
         if (!mTechLevel.equals(techLevel)) {
-            mCharacter.postUndoEdit(I18n.Text("Tech Level Change"), (c, v) -> c.getProfile().setTechLevel((String) v), mTechLevel, techLevel);
+            mCharacter.postUndoEdit(I18n.text("Tech Level Change"), (c, v) -> c.getProfile().setTechLevel((String) v), mTechLevel, techLevel);
             mTechLevel = techLevel;
             mCharacter.notifyOfChange();
         }
@@ -369,7 +369,7 @@ public class Profile {
      */
     public void setTitle(String title) {
         if (!mTitle.equals(title)) {
-            mCharacter.postUndoEdit(I18n.Text("Title Change"), (c, v) -> c.getProfile().setTitle((String) v), mTitle, title);
+            mCharacter.postUndoEdit(I18n.text("Title Change"), (c, v) -> c.getProfile().setTitle((String) v), mTitle, title);
             mTitle = title;
             mCharacter.notifyOfChange();
         }
@@ -387,7 +387,7 @@ public class Profile {
      */
     public void setOrganization(String organization) {
         if (!mOrganization.equals(organization)) {
-            mCharacter.postUndoEdit(I18n.Text("Organization Change"), (c, v) -> c.getProfile().setOrganization((String) v), mOrganization, organization);
+            mCharacter.postUndoEdit(I18n.text("Organization Change"), (c, v) -> c.getProfile().setOrganization((String) v), mOrganization, organization);
             mOrganization = organization;
             mCharacter.notifyOfChange();
         }
@@ -405,7 +405,7 @@ public class Profile {
      */
     public void setAge(String age) {
         if (!mAge.equals(age)) {
-            mCharacter.postUndoEdit(I18n.Text("Age Change"), (c, v) -> c.getProfile().setAge((String) v), mAge, age);
+            mCharacter.postUndoEdit(I18n.text("Age Change"), (c, v) -> c.getProfile().setAge((String) v), mAge, age);
             mAge = age;
             mCharacter.notifyOfChange();
         }
@@ -459,7 +459,7 @@ public class Profile {
      */
     public void setBirthday(String birthday) {
         if (!mBirthday.equals(birthday)) {
-            mCharacter.postUndoEdit(I18n.Text("Birthday Change"), (c, v) -> c.getProfile().setBirthday((String) v), mBirthday, birthday);
+            mCharacter.postUndoEdit(I18n.text("Birthday Change"), (c, v) -> c.getProfile().setBirthday((String) v), mBirthday, birthday);
             mBirthday = birthday;
             mCharacter.notifyOfChange();
         }
@@ -477,7 +477,7 @@ public class Profile {
      */
     public void setEyeColor(String eyeColor) {
         if (!mEyeColor.equals(eyeColor)) {
-            mCharacter.postUndoEdit(I18n.Text("Eye Color Change"), (c, v) -> c.getProfile().setEyeColor((String) v), mEyeColor, eyeColor);
+            mCharacter.postUndoEdit(I18n.text("Eye Color Change"), (c, v) -> c.getProfile().setEyeColor((String) v), mEyeColor, eyeColor);
             mEyeColor = eyeColor;
             mCharacter.notifyOfChange();
         }
@@ -495,7 +495,7 @@ public class Profile {
      */
     public void setHair(String hair) {
         if (!mHair.equals(hair)) {
-            mCharacter.postUndoEdit(I18n.Text("Hair Change"), (c, v) -> c.getProfile().setHair((String) v), mHair, hair);
+            mCharacter.postUndoEdit(I18n.text("Hair Change"), (c, v) -> c.getProfile().setHair((String) v), mHair, hair);
             mHair = hair;
             mCharacter.notifyOfChange();
         }
@@ -513,7 +513,7 @@ public class Profile {
      */
     public void setSkinColor(String skinColor) {
         if (!mSkinColor.equals(skinColor)) {
-            mCharacter.postUndoEdit(I18n.Text("Skin Color Change"), (c, v) -> c.getProfile().setSkinColor((String) v), mSkinColor, skinColor);
+            mCharacter.postUndoEdit(I18n.text("Skin Color Change"), (c, v) -> c.getProfile().setSkinColor((String) v), mSkinColor, skinColor);
             mSkinColor = skinColor;
             mCharacter.notifyOfChange();
         }
@@ -531,7 +531,7 @@ public class Profile {
      */
     public void setHandedness(String handedness) {
         if (!mHandedness.equals(handedness)) {
-            mCharacter.postUndoEdit(I18n.Text("Handedness Change"), (c, v) -> c.getProfile().setHandedness((String) v), mHandedness, handedness);
+            mCharacter.postUndoEdit(I18n.text("Handedness Change"), (c, v) -> c.getProfile().setHandedness((String) v), mHandedness, handedness);
             mHandedness = handedness;
             mCharacter.notifyOfChange();
         }
@@ -550,7 +550,7 @@ public class Profile {
     public void setHeight(LengthValue height) {
         if (!mHeight.equals(height)) {
             height = new LengthValue(height);
-            mCharacter.postUndoEdit(I18n.Text("Height Change"), (c, v) -> c.getProfile().setHeight((LengthValue) v), new LengthValue(mHeight), height);
+            mCharacter.postUndoEdit(I18n.text("Height Change"), (c, v) -> c.getProfile().setHeight((LengthValue) v), new LengthValue(mHeight), height);
             mHeight = height;
             mCharacter.notifyOfChange();
         }
@@ -569,7 +569,7 @@ public class Profile {
     public void setWeight(WeightValue weight) {
         if (!mWeight.equals(weight)) {
             weight = new WeightValue(weight);
-            mCharacter.postUndoEdit(I18n.Text("Weight Change"), (c, v) -> c.getProfile().setWeight((WeightValue) v), new WeightValue(mWeight), weight);
+            mCharacter.postUndoEdit(I18n.text("Weight Change"), (c, v) -> c.getProfile().setWeight((WeightValue) v), new WeightValue(mWeight), weight);
             mWeight = weight;
             mCharacter.notifyOfChange();
         }
@@ -606,7 +606,7 @@ public class Profile {
         if (totalSizeModifier != size) {
             Integer value = Integer.valueOf(size);
 
-            mCharacter.postUndoEdit(I18n.Text("Size Modifier Change"), (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()), Integer.valueOf(totalSizeModifier), value);
+            mCharacter.postUndoEdit(I18n.text("Size Modifier Change"), (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()), Integer.valueOf(totalSizeModifier), value);
             mSizeModifier = size - mSizeModifierBonus;
             mCharacter.notifyOfChange();
         }
@@ -625,23 +625,23 @@ public class Profile {
         String result;
         do {
             if (RANDOM.nextInt(7) == 0) {
-                result = I18n.Text("Bald");
+                result = I18n.text("Bald");
             } else {
                 String color = switch (RANDOM.nextInt(9)) {
-                    case 0, 1, 2 -> I18n.Text("Black");
-                    case 3, 4 -> I18n.Text("Blond");
-                    case 5 -> I18n.Text("Redhead");
-                    default -> I18n.Text("Brown");
+                    case 0, 1, 2 -> I18n.text("Black");
+                    case 3, 4 -> I18n.text("Blond");
+                    case 5 -> I18n.text("Redhead");
+                    default -> I18n.text("Brown");
                 };
                 String style = switch (RANDOM.nextInt(3)) {
-                    case 0 -> I18n.Text("Curly");
-                    case 1 -> I18n.Text("Wavy");
-                    default -> I18n.Text("Straight");
+                    case 0 -> I18n.text("Curly");
+                    case 1 -> I18n.text("Wavy");
+                    default -> I18n.text("Straight");
                 };
                 String length = switch (RANDOM.nextInt(3)) {
-                    case 0 -> I18n.Text("Short");
-                    case 1 -> I18n.Text("Long");
-                    default -> I18n.Text("Medium");
+                    case 0 -> I18n.text("Short");
+                    case 1 -> I18n.text("Long");
+                    default -> I18n.text("Medium");
                 };
                 result = MessageFormat.format("{0}, {1}, {2}", color, style, length);
             }
@@ -654,11 +654,11 @@ public class Profile {
         String result;
         do {
             result = switch (RANDOM.nextInt(8)) {
-                case 0, 1 -> I18n.Text("Blue");
-                case 2 -> I18n.Text("Green");
-                case 3 -> I18n.Text("Grey");
-                case 4 -> I18n.Text("Violet");
-                default -> I18n.Text("Brown");
+                case 0, 1 -> I18n.text("Blue");
+                case 2 -> I18n.text("Green");
+                case 3 -> I18n.text("Grey");
+                case 4 -> I18n.text("Violet");
+                default -> I18n.text("Brown");
             };
         } while (result.equals(not));
         return result;
@@ -669,14 +669,14 @@ public class Profile {
         String result;
         do {
             result = switch (RANDOM.nextInt(8)) {
-                case 0 -> I18n.Text("Freckled");
-                case 1 -> I18n.Text("Light Tan");
-                case 2 -> I18n.Text("Dark Tan");
-                case 3 -> I18n.Text("Brown");
-                case 4 -> I18n.Text("Light Brown");
-                case 5 -> I18n.Text("Dark Brown");
-                case 6 -> I18n.Text("Pale");
-                default -> I18n.Text("Tan");
+                case 0 -> I18n.text("Freckled");
+                case 1 -> I18n.text("Light Tan");
+                case 2 -> I18n.text("Dark Tan");
+                case 3 -> I18n.text("Brown");
+                case 4 -> I18n.text("Light Brown");
+                case 5 -> I18n.text("Dark Brown");
+                case 6 -> I18n.text("Pale");
+                default -> I18n.text("Tan");
             };
         } while (result.equals(not));
         return result;
@@ -685,17 +685,17 @@ public class Profile {
     /** @return A random handedness. */
     public static String getRandomHandedness() {
         if (RANDOM.nextInt(4) == 0) {
-            return I18n.Text("Left");
+            return I18n.text("Left");
         }
-        return I18n.Text("Right");
+        return I18n.text("Right");
     }
 
     /** @return A random gender. */
     public static String getRandomGender() {
         if (RANDOM.nextInt(2) == 0) {
-            return I18n.Text("Female");
+            return I18n.text("Female");
         }
-        return I18n.Text("Male");
+        return I18n.text("Male");
     }
 
     /** @return A random month and day. */

@@ -174,7 +174,7 @@ public class RitualMagicSpell extends Spell {
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Ritual Magic Spell");
+        return I18n.text("Ritual Magic Spell");
     }
 
     @Override
@@ -184,7 +184,7 @@ public class RitualMagicSpell extends Spell {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Ritual Magic Spell");
+        return I18n.text("Ritual Magic Spell");
     }
 
     @Override
@@ -224,7 +224,7 @@ public class RitualMagicSpell extends Spell {
         List<String> colleges = getColleges();
         if (colleges.isEmpty()) {
             if (builder != null) {
-                builder.append(MessageFormat.format(I18n.Text("{0}Must be assigned to a college\n"), prefix));
+                builder.append(MessageFormat.format(I18n.text("{0}Must be assigned to a college\n"), prefix));
             }
             return false;
         }
@@ -236,10 +236,10 @@ public class RitualMagicSpell extends Spell {
         }
         if (character.getBestSkillNamed(mBaseSkillName, null, false, new HashSet<>()) == null) {
             if (builder != null) {
-                builder.append(MessageFormat.format(I18n.Text("{0}Requires a skill named {1} ({2})"), prefix, mBaseSkillName, colleges.get(0)));
+                builder.append(MessageFormat.format(I18n.text("{0}Requires a skill named {1} ({2})"), prefix, mBaseSkillName, colleges.get(0)));
                 int size = colleges.size();
                 for (int i = 1; i < size; i++) {
-                    builder.append(MessageFormat.format(I18n.Text("or {1} ({2})"), mBaseSkillName, colleges.get(i)));
+                    builder.append(MessageFormat.format(I18n.text("or {1} ({2})"), mBaseSkillName, colleges.get(i)));
                 }
                 builder.append("\n");
             }

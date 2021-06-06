@@ -29,7 +29,7 @@ public class AndOrLabel extends JLabel {
      * @param owner The owning {@link Prereq}.
      */
     public AndOrLabel(Prereq owner) {
-        super(I18n.Text("and"), SwingConstants.RIGHT);
+        super(I18n.text("and"), SwingConstants.RIGHT);
         mOwner = owner;
         UIUtilities.setToPreferredSizeOnly(this);
     }
@@ -38,7 +38,7 @@ public class AndOrLabel extends JLabel {
     protected void paintComponent(Graphics gc) {
         PrereqList parent = mOwner.getParent();
         if (parent != null && parent.getChildren().get(0) != mOwner) {
-            setText(parent.requiresAll() ? I18n.Text("and") : I18n.Text("or"));
+            setText(parent.requiresAll() ? I18n.text("and") : I18n.text("or"));
         } else {
             setText(""); //$NON-NLS-1$
         }

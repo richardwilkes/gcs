@@ -154,7 +154,7 @@ public class AttributePrereq extends HasPrereq {
                 def = attributes.get(mCombinedWith);
                 text += "+" + (def != null ? def.getName() : "<unknown>");
             }
-            builder.append(MessageFormat.format(I18n.Text("{0}{1} {2} which {3}"), prefix, hasText(), text, mValueCompare.toString()));
+            builder.append(MessageFormat.format(I18n.text("{0}{1} {2} which {3}"), prefix, getHasText(), text, mValueCompare.toString()));
         }
         return satisfied;
     }

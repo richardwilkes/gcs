@@ -31,7 +31,7 @@ public class Defaults extends BandedPanel implements ActionListener {
      * @param defaults The initial defaults to display.
      */
     public Defaults(DataFile dataFile, List<SkillDefault> defaults) {
-        super(I18n.Text("Defaults"));
+        super(I18n.text("Defaults"));
         mDataFile = dataFile;
         setDefaults(defaults);
     }

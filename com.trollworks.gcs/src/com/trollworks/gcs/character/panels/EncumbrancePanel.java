@@ -41,24 +41,24 @@ public class EncumbrancePanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public EncumbrancePanel(CharacterSheet sheet) {
-        super(new ColumnLayout(8, 2, 0), I18n.Text("Encumbrance, Move & Dodge"), true);
+        super(new ColumnLayout(8, 2, 0), I18n.text("Encumbrance, Move & Dodge"), true);
         Encumbrance[] encumbranceValues = Encumbrance.values();
         Dimension     prefSize          = new PageLabel("•", null).getPreferredSize();
         PageLabel[]   markers           = new PageLabel[encumbranceValues.length];
-        String        encLevelTooltip   = I18n.Text("The encumbrance level");
+        String        encLevelTooltip   = I18n.text("The encumbrance level");
         PageHeader    bulletHeader      = createHeader("", encLevelTooltip);
         UIUtilities.setOnlySize(bulletHeader, prefSize);
         addHorizontalBackground(bulletHeader, ThemeColor.HEADER);
-        PageHeader header = createHeader(I18n.Text("Level"), encLevelTooltip);
+        PageHeader header = createHeader(I18n.text("Level"), encLevelTooltip);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        String maxLoadTooltip = I18n.Text("The maximum load a character can carry and still remain within a specific encumbrance level");
-        createHeader(I18n.Text("Max Load"), maxLoadTooltip);
+        String maxLoadTooltip = I18n.text("The maximum load a character can carry and still remain within a specific encumbrance level");
+        createHeader(I18n.text("Max Load"), maxLoadTooltip);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        String moveTooltip = I18n.Text("The character's ground movement rate for a specific encumbrance level");
-        createHeader(I18n.Text("Move"), moveTooltip);
+        String moveTooltip = I18n.text("The character's ground movement rate for a specific encumbrance level");
+        createHeader(I18n.text("Move"), moveTooltip);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        String dodgeTooltip = I18n.Text("The character's dodge for a specific encumbrance level");
-        createHeader(I18n.Text("Dodge"), dodgeTooltip);
+        String dodgeTooltip = I18n.text("The character's dodge for a specific encumbrance level");
+        createHeader(I18n.text("Dodge"), dodgeTooltip);
         GURPSCharacter character = sheet.getCharacter();
         Encumbrance    current   = character.getEncumbranceLevel(false);
         boolean        band      = false;

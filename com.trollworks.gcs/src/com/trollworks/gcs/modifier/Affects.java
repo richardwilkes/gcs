@@ -19,7 +19,7 @@ public enum Affects {
     TOTAL {
         @Override
         public String toString() {
-            return I18n.Text("to cost");
+            return I18n.text("to cost");
         }
 
         @Override
@@ -31,24 +31,24 @@ public enum Affects {
     BASE_ONLY {
         @Override
         public String toString() {
-            return I18n.Text("to base cost only");
+            return I18n.text("to base cost only");
         }
 
         @Override
         public String getShortTitle() {
-            return I18n.Text("(base only)");
+            return I18n.text("(base only)");
         }
     },
     /** Affects only the leveled cost, not the base cost. */
     LEVELS_ONLY {
         @Override
         public String toString() {
-            return I18n.Text("to leveled cost only");
+            return I18n.text("to leveled cost only");
         }
 
         @Override
         public String getShortTitle() {
-            return I18n.Text("(levels only)");
+            return I18n.text("(levels only)");
         }
     };
 

@@ -66,12 +66,12 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             boolean                      hasMore = i != length - 1;
             ListRow                      row     = rows[i];
             RowEditor<? extends ListRow> editor  = row.createEditor();
-            String                       title   = MessageFormat.format(I18n.Text("Edit {0}"), row.getRowType());
+            String                       title   = MessageFormat.format(I18n.text("Edit {0}"), row.getRowType());
             JPanel                       wrapper = new JPanel(new BorderLayout());
 
             if (hasMore) {
                 int    remaining = length - i - 1;
-                String msg       = remaining == 1 ? I18n.Text("1 item remaining to be edited.") : MessageFormat.format(I18n.Text("{0} items remaining to be edited."), Integer.valueOf(remaining));
+                String msg       = remaining == 1 ? I18n.text("1 item remaining to be edited.") : MessageFormat.format(I18n.text("{0} items remaining to be edited."), Integer.valueOf(remaining));
                 JLabel panel     = new JLabel(msg, SwingConstants.CENTER);
                 panel.setBorder(new EmptyBorder(0, 0, 10, 0));
                 wrapper.add(panel, BorderLayout.NORTH);
@@ -79,9 +79,9 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             wrapper.add(editor, BorderLayout.CENTER);
 
             int      type       = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-            String   applyText  = I18n.Text("Apply");
-            String   cancelText = I18n.Text("Cancel");
-            String[] options    = hasMore ? new String[]{applyText, cancelText, I18n.Text("Cancel Remaining")} : new String[]{applyText, cancelText};
+            String   applyText  = I18n.text("Apply");
+            String   cancelText = I18n.text("Cancel");
+            String[] options    = hasMore ? new String[]{applyText, cancelText, I18n.text("Cancel Remaining")} : new String[]{applyText, cancelText};
             switch (WindowUtils.showOptionDialog(owner, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, applyText)) {
             case JOptionPane.YES_OPTION:
                 RowUndo undo = new RowUndo(row);

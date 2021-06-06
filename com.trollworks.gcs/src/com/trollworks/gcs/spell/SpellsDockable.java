@@ -29,7 +29,7 @@ public class SpellsDockable extends LibraryDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return I18n.Text("Untitled Spells");
+        return I18n.text("Untitled Spells");
     }
 
     @Override

@@ -43,16 +43,16 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
      * @param owner The owning {@link PreferencesWindow}.
      */
     public DisplayPreferences(PreferencesWindow owner) {
-        super(I18n.Text("Display"), owner);
+        super(I18n.text("Display"), owner);
         setLayout(new PrecisionLayout().setColumns(2));
         Preferences prefs = Preferences.getInstance();
 
-        mIncludeUnspentPointsInTotal = addCheckBox(I18n.Text("Character point total display includes unspent points"), prefs.includeUnspentPointsInTotal());
+        mIncludeUnspentPointsInTotal = addCheckBox(I18n.text("Character point total display includes unspent points"), prefs.includeUnspentPointsInTotal());
 
-        addLabel(I18n.Text("Initial Scale"));
+        addLabel(I18n.text("Initial Scale"));
         mUIScaleCombo = addCombo(Scales.values(), prefs.getInitialUIScale(), null);
 
-        addLabel(I18n.Text("Tooltip Timeout (seconds)"));
+        addLabel(I18n.text("Tooltip Timeout (seconds)"));
         mToolTipTimeout = addField(Integer.valueOf(prefs.getToolTipTimeout()), Integer.valueOf(Preferences.MAXIMUM_TOOLTIP_TIMEOUT), FieldFactory.POSINT6, (evt) -> {
             int value   = ((Integer) evt.getNewValue()).intValue();
             int revised = Math.min(Math.max(value, Preferences.MINIMUM_TOOLTIP_TIMEOUT), Preferences.MAXIMUM_TOOLTIP_TIMEOUT);

@@ -89,7 +89,7 @@ public class Note extends ListRow implements HasSourceReference {
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Note");
+        return I18n.text("Note");
     }
 
     @Override
@@ -99,7 +99,7 @@ public class Note extends ListRow implements HasSourceReference {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Note");
+        return I18n.text("Note");
     }
 
     @Override

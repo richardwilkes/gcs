@@ -28,7 +28,7 @@ public class Roll implements ExpressionFunction {
             Dice dice = new Dice(arguments);
             return Double.valueOf(dice.roll(false));
         } catch (Exception exception) {
-            throw new EvaluationException(String.format(I18n.Text("Invalid dice specification: %s"), arguments));
+            throw new EvaluationException(String.format(I18n.text("Invalid dice specification: %s"), arguments));
         }
     }
 }

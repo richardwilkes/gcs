@@ -79,7 +79,7 @@ public class ArgumentTokenizer implements Enumeration<String> {
         try {
             return getDouble(arg);
         } catch (Exception exception) {
-            throw new EvaluationException(I18n.Text("Invalid operand: ") + arg, exception);
+            throw new EvaluationException(I18n.text("Invalid operand: ") + arg, exception);
         }
     }
 
@@ -87,7 +87,7 @@ public class ArgumentTokenizer implements Enumeration<String> {
         try {
             return getDouble(new Evaluator(evaluator).evaluate(arguments));
         } catch (Exception exception) {
-            throw new EvaluationException(I18n.Text("Invalid argument: ") + arguments, exception);
+            throw new EvaluationException(I18n.text("Invalid argument: ") + arguments, exception);
         }
     }
 }

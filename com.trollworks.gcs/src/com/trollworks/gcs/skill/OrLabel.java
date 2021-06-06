@@ -30,14 +30,14 @@ public class OrLabel extends JLabel {
      * @param owner The owning component.
      */
     public OrLabel(Component owner) {
-        super(I18n.Text("or"), SwingConstants.RIGHT);
+        super(I18n.text("or"), SwingConstants.RIGHT);
         mOwner = owner;
         UIUtilities.setToPreferredSizeOnly(this);
     }
 
     @Override
     protected void paintComponent(Graphics gc) {
-        setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? I18n.Text("or") : "");
+        setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? I18n.text("or") : "");
         super.paintComponent(GraphicsUtilities.prepare(gc));
     }
 }

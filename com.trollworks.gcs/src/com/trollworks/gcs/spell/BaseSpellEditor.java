@@ -224,9 +224,9 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         if (character != null) {
             JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
-            mHasTechLevel = new JCheckBox(I18n.Text("Tech Level"), hasTL);
+            mHasTechLevel = new JCheckBox(I18n.text("Tech Level"), hasTL);
             UIUtilities.setToPreferredSizeOnly(mHasTechLevel);
-            String tlTooltip = I18n.Text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
+            String tlTooltip = I18n.text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
             mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
@@ -245,8 +245,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             }
         } else {
             mTechLevel = new JTextField(mSavedTechLevel);
-            mHasTechLevel = new JCheckBox(I18n.Text("Tech Level Required"), hasTL);
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this spell requires tech level specialization")));
+            mHasTechLevel = new JCheckBox(I18n.text("Tech Level Required"), hasTL);
+            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this spell requires tech level specialization")));
             mHasTechLevel.addActionListener(this);
             parent.add(mHasTechLevel);
         }
@@ -289,15 +289,15 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.Text("The class field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
         } else if (doc == mCastingCostField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.Text("The casting cost field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
         } else if (doc == mCastingTimeField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.Text("The casting time field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
         } else if (doc == mDurationField.getDocument()) {
-            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.Text("The duration field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
         }
     }
 

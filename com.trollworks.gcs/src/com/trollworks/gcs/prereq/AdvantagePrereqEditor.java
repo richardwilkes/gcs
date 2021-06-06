@@ -41,17 +41,17 @@ public class AdvantagePrereqEditor extends PrereqEditor {
         grid.add(row, 0, 1);
 
         row = new FlexRow();
-        row.add(addStringCompareCombo(prereq.getNameCriteria(), I18n.Text("whose name ")));
+        row.add(addStringCompareCombo(prereq.getNameCriteria(), I18n.text("whose name ")));
         row.add(addStringCompareField(prereq.getNameCriteria()));
         grid.add(row, 1, 1);
 
         row = new FlexRow();
-        row.add(addStringCompareCombo(prereq.getNotesCriteria(), I18n.Text("and whose notes ")));
+        row.add(addStringCompareCombo(prereq.getNotesCriteria(), I18n.text("and whose notes ")));
         row.add(addStringCompareField(prereq.getNotesCriteria()));
         grid.add(row, 2, 1);
 
         row = new FlexRow();
-        row.add(addNumericCompareCombo(prereq.getLevelCriteria(), I18n.Text("and whose level ")));
+        row.add(addNumericCompareCombo(prereq.getLevelCriteria(), I18n.text("and whose level ")));
         row.add(addNumericCompareField(prereq.getLevelCriteria(), 0, 999, false));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 3, 1);

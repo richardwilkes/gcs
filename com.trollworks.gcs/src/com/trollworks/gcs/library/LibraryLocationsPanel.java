@@ -44,7 +44,7 @@ public final class LibraryLocationsPanel extends JPanel {
                 CloseHandler handler = (CloseHandler) dockable;
                 if (handler.mayAttemptClose()) {
                     if (!handler.attemptClose()) {
-                        JOptionPane.showMessageDialog(null, I18n.Text("No documents may be open when setting library locations."), I18n.Text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, I18n.text("No documents may be open when setting library locations."), I18n.text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
                         return;
                     }
                 }
@@ -103,8 +103,8 @@ public final class LibraryLocationsPanel extends JPanel {
             mFields.add(new LibraryFields(this, library.getTitle(), library.getGitHubAccountName(), library.getRepoName(), library.getPathNoCreate().toString(), libType));
         }
         createAddButton();
-        mApplyButton = createDialogButton(I18n.Text("Apply"));
-        mCancelButton = createDialogButton(I18n.Text("Cancel"));
+        mApplyButton = createDialogButton(I18n.text("Apply"));
+        mCancelButton = createDialogButton(I18n.text("Cancel"));
         mFields.get(0).contentsChanged();
     }
 
@@ -113,7 +113,7 @@ public final class LibraryLocationsPanel extends JPanel {
     }
 
     private void createAddButton() {
-        JButton button = new JButton(I18n.Text("Add"));
+        JButton button = new JButton(I18n.text("Add"));
         button.addActionListener(e -> {
             remove(button);
             mFields.add(new LibraryFields(this, "", "", "", "", LibraryFields.LibraryType.EXTRA));

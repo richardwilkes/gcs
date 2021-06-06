@@ -108,7 +108,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public Advantage(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
         mType = TYPE_MASK_PHYSICAL;
-        mName = I18n.Text("Advantage");
+        mName = I18n.text("Advantage");
         mCR = SelfControlRoll.NONE_REQUIRED;
         mCRAdj = SelfControlRollAdjustments.NONE;
         mLevels = -1;
@@ -186,7 +186,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     @Override
     public String getRowType() {
-        return I18n.Text("Advantage");
+        return I18n.text("Advantage");
     }
 
     @Override
@@ -198,7 +198,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     protected void prepareForLoad(LoadState state) {
         super.prepareForLoad(state);
         mType = TYPE_MASK_PHYSICAL;
-        mName = I18n.Text("Advantage");
+        mName = I18n.text("Advantage");
         mCR = SelfControlRoll.NONE_REQUIRED;
         mCRAdj = SelfControlRollAdjustments.NONE;
         mLevels = -1;
@@ -368,7 +368,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Advantage");
+        return I18n.text("Advantage");
     }
 
     /** @return The name. */

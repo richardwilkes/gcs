@@ -93,7 +93,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return I18n.Text("Untitled Template");
+        return I18n.text("Untitled Template");
     }
 
     @Override

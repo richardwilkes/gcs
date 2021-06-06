@@ -511,8 +511,8 @@ public final class Preferences extends ChangeableData {
         return mGURPSCalculatorKey;
     }
 
-    public void setGURPSCalculatorKey(String GURPSCalculatorKey) {
-        mGURPSCalculatorKey = GURPSCalculatorKey;
+    public void setGURPSCalculatorKey(String key) {
+        mGURPSCalculatorKey = key;
     }
 
     public String getDefaultPlayerName() {
@@ -535,8 +535,8 @@ public final class Preferences extends ChangeableData {
         return mPNGResolution;
     }
 
-    public void setPNGResolution(int PNGResolution) {
-        mPNGResolution = PNGResolution;
+    public void setPNGResolution(int resolution) {
+        mPNGResolution = resolution;
     }
 
     public List<PDFRef> allPdfRefs(boolean requireExistence) {

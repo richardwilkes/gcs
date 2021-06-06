@@ -34,7 +34,7 @@ public enum NoteColumn {
     TEXT {
         @Override
         public String toString() {
-            return I18n.Text("Notes");
+            return I18n.text("Notes");
         }
 
         @Override
@@ -73,7 +73,7 @@ public enum NoteColumn {
 
         @Override
         public String getToolTip() {
-            return PageRefCell.getStdToolTip(I18n.Text("note"));
+            return PageRefCell.getStdToolTip(I18n.text("note"));
         }
 
         @Override

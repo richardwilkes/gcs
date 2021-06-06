@@ -31,7 +31,7 @@ public class SkillLevel {
     public SkillLevel(int level, int relativeLevel) {
         mLevel = level;
         mRelativeLevel = relativeLevel;
-        mToolTip = I18n.Text("No additional modifiers");
+        mToolTip = I18n.text("No additional modifiers");
     }
 
     /**
@@ -44,7 +44,7 @@ public class SkillLevel {
     public SkillLevel(int level, int relativeLevel, StringBuilder toolTip) {
         this(level, relativeLevel);
         if (toolTip != null && !toolTip.isEmpty()) {
-            mToolTip = I18n.Text("Includes modifiers from") + toolTip;
+            mToolTip = I18n.text("Includes modifiers from") + toolTip;
         }
     }
 

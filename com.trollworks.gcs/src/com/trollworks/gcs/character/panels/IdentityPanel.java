@@ -37,15 +37,15 @@ public class IdentityPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public IdentityPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0), I18n.Text("Identity"));
+        super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0), I18n.text("Identity"));
         Profile profile = sheet.getCharacter().getProfile();
-        createRandomizableField(sheet, profile.getName(), I18n.Text("Name"), "character name", (c, v) -> c.getProfile().setName((String) v), () -> profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.Text("Female")))));
-        createStringField(sheet, profile.getTitle(), I18n.Text("Title"), "character title", (c, v) -> c.getProfile().setTitle((String) v));
-        createStringField(sheet, profile.getOrganization(), I18n.Text("Organization"), "organization", (c, v) -> c.getProfile().setOrganization((String) v));
+        createRandomizableField(sheet, profile.getName(), I18n.text("Name"), "character name", (c, v) -> c.getProfile().setName((String) v), () -> profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.text("Female")))));
+        createStringField(sheet, profile.getTitle(), I18n.text("Title"), "character title", (c, v) -> c.getProfile().setTitle((String) v));
+        createStringField(sheet, profile.getOrganization(), I18n.text("Organization"), "organization", (c, v) -> c.getProfile().setOrganization((String) v));
     }
 
     private void createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
-        add(new FontAwesomeButton("\uf074", UIManager.getFont(Fonts.KEY_LABEL_PRIMARY).getSize() * 8 / 10, String.format(I18n.Text("Randomize %s"), title), randomizer));
+        add(new FontAwesomeButton("\uf074", UIManager.getFont(Fonts.KEY_LABEL_PRIMARY).getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
         add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
     }

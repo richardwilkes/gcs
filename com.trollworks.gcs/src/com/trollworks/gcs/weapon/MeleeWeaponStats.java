@@ -300,7 +300,7 @@ public class MeleeWeaponStats extends WeaponStats {
         if (mOwner.getDataFile() instanceof GURPSCharacter) {
             getResolvedParry(toolTip);
         }
-        return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
+        return toolTip.isEmpty() ? I18n.text("No additional modifiers") : I18n.text("Includes modifiers from") + toolTip;
     }
 
     public String getBlockToolTip() {
@@ -308,6 +308,6 @@ public class MeleeWeaponStats extends WeaponStats {
         if (mOwner.getDataFile() instanceof GURPSCharacter) {
             getResolvedBlock(toolTip);
         }
-        return toolTip.isEmpty() ? I18n.Text("No additional modifiers") : I18n.Text("Includes modifiers from") + toolTip;
+        return toolTip.isEmpty() ? I18n.text("No additional modifiers") : I18n.text("Includes modifiers from") + toolTip;
     }
 }

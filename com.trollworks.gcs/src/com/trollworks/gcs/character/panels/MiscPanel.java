@@ -33,11 +33,11 @@ public class MiscPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public MiscPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(4, 0), I18n.Text("Miscellaneous"));
+        super(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(4, 0), I18n.text("Miscellaneous"));
         GURPSCharacter gch = sheet.getCharacter();
-        createTimestampField(sheet, gch.getCreatedOn(), I18n.Text("Created"));
-        createTimestampField(sheet, gch.getModifiedOn(), I18n.Text("Modified"));
-        createStringField(sheet, gch.getProfile().getPlayerName(), I18n.Text("Player"), "player", (c, v) -> c.getProfile().setPlayerName((String) v));
+        createTimestampField(sheet, gch.getCreatedOn(), I18n.text("Created"));
+        createTimestampField(sheet, gch.getModifiedOn(), I18n.text("Modified"));
+        createStringField(sheet, gch.getProfile().getPlayerName(), I18n.text("Player"), "player", (c, v) -> c.getProfile().setPlayerName((String) v));
     }
 
     private void createTimestampField(CharacterSheet sheet, long timeStampseconds, String title) {

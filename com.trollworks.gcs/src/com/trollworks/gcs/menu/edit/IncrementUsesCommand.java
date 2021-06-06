@@ -27,7 +27,7 @@ public final class IncrementUsesCommand extends Command {
     public static final IncrementUsesCommand INSTANCE           = new IncrementUsesCommand();
 
     private IncrementUsesCommand() {
-        super(I18n.Text("Increment Uses"), CMD_INCREMENT_USES, KeyEvent.VK_UP);
+        super(I18n.text("Increment Uses"), CMD_INCREMENT_USES, KeyEvent.VK_UP);
     }
 
     @Override

@@ -25,7 +25,7 @@ public final class AttributeSettingsCommand extends Command {
     private             boolean                  mForDefaults;
 
     private AttributeSettingsCommand(boolean defaults) {
-        super(defaults ? I18n.Text("Default Attributes…") : I18n.Text("Attributes…"),
+        super(defaults ? I18n.text("Default Attributes…") : I18n.text("Attributes…"),
                 defaults ? "default_attribute_settings" : "attribute_settings");
         mForDefaults = defaults;
     }

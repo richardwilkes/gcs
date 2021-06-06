@@ -105,23 +105,23 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     private JPanel createTopSection() {
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
-        mDescriptionField = createCorrectableField(panel, I18n.Text("Name"), mRow.getDescription(), I18n.Text("The name/description of the equipment, without any notes"));
+        mDescriptionField = createCorrectableField(panel, I18n.text("Name"), mRow.getDescription(), I18n.text("The name/description of the equipment, without any notes"));
         createSecondLineFields(panel);
         createValueAndWeightFields(panel);
-        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this equipment"), this);
-        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this equipment"), this);
+        panel.add(new LinkedLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        mCategoriesField = createField(panel, panel, I18n.Text("Categories"), mRow.getCategoriesAsString(), I18n.Text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
+        mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
 
         boolean    forCharacterOrTemplate = mRow.getCharacter() != null || mRow.getTemplate() != null;
         JPanel     wrapper                = new JPanel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
         JComponent labelParent            = panel;
         if (forCharacterOrTemplate) {
-            mUsesField = createIntegerNumberField(panel, wrapper, I18n.Text("Uses"), mRow.getUses(), I18n.Text("The number of uses remaining for this equipment"), 5);
+            mUsesField = createIntegerNumberField(panel, wrapper, I18n.text("Uses"), mRow.getUses(), I18n.text("The number of uses remaining for this equipment"), 5);
             labelParent = wrapper;
         }
-        mMaxUsesField = createIntegerNumberField(labelParent, wrapper, I18n.Text("Max Uses"), mRow.getMaxUses(), I18n.Text("The maximum number of uses for this equipment"), 5);
-        mReferenceField = createField(wrapper, wrapper, I18n.Text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("equipment")), 0);
+        mMaxUsesField = createIntegerNumberField(labelParent, wrapper, I18n.text("Max Uses"), mRow.getMaxUses(), I18n.text("The maximum number of uses for this equipment"), 5);
+        mReferenceField = createField(wrapper, wrapper, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return panel;
     }
@@ -130,15 +130,15 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         boolean isContainer = mRow.canHaveChildren();
         JPanel  wrapper     = new JPanel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
         if (!isContainer) {
-            mQtyField = createIntegerNumberField(parent, wrapper, I18n.Text("Quantity"), mRow.getQuantity(), I18n.Text("The number of this equipment present"), 9);
+            mQtyField = createIntegerNumberField(parent, wrapper, I18n.text("Quantity"), mRow.getQuantity(), I18n.text("The number of this equipment present"), 9);
         }
-        mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, I18n.Text("Tech Level"), mRow.getTechLevel(), I18n.Text("The first Tech Level this equipment is available at"), 3);
-        mLegalityClassField = createField(wrapper, wrapper, I18n.Text("Legality Class"), mRow.getLegalityClass(), I18n.Text("The legality class of this equipment"), 3);
+        mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
+        mLegalityClassField = createField(wrapper, wrapper, I18n.text("Legality Class"), mRow.getLegalityClass(), I18n.text("The legality class of this equipment"), 3);
         if (showEquipmentState()) {
-            mEquippedCheckBox = new JCheckBox(I18n.Text("Equipped"));
+            mEquippedCheckBox = new JCheckBox(I18n.text("Equipped"));
             mEquippedCheckBox.setSelected(mRow.isEquipped());
             mEquippedCheckBox.setEnabled(mIsEditable);
-            mEquippedCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
+            mEquippedCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
             wrapper.add(mEquippedCheckBox);
         }
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -151,8 +151,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private void createValueAndWeightFields(Container parent) {
         JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(3));
         mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed6(mRow.getQuantity())));
-        mValueField = createValueField(parent, wrapper, I18n.Text("Value"), mRow.getValue(), I18n.Text("The base value of one of these pieces of equipment before modifiers"), 13);
-        mExtValueField = createValueField(wrapper, wrapper, I18n.Text("Extended"), mRow.getExtendedValue(), I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
+        mValueField = createValueField(parent, wrapper, I18n.text("Value"), mRow.getValue(), I18n.text("The base value of one of these pieces of equipment before modifiers"), 13);
+        mExtValueField = createValueField(wrapper, wrapper, I18n.text("Extended"), mRow.getExtendedValue(), I18n.text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         mExtValueField.setEnabled(false);
         parent.add(wrapper);
 
@@ -161,14 +161,14 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         WeightValue weight = new WeightValue(mRow.getAdjustedWeight(false));
         weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));
         mContainedWeight.subtract(weight);
-        mWeightField = createWeightField(parent, wrapper, I18n.Text("Weight"), mRow.getWeight(), I18n.Text("The weight of one of these pieces of equipment"), 13);
-        mExtWeightField = createWeightField(wrapper, wrapper, I18n.Text("Extended"), mRow.getExtendedWeight(false), I18n.Text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
+        mWeightField = createWeightField(parent, wrapper, I18n.text("Weight"), mRow.getWeight(), I18n.text("The weight of one of these pieces of equipment"), 13);
+        mExtWeightField = createWeightField(wrapper, wrapper, I18n.text("Extended"), mRow.getExtendedWeight(false), I18n.text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
         mExtWeightField.setEnabled(false);
-        mIgnoreWeightForSkillsCheckBox = new JCheckBox(I18n.Text("Ignore for Skills"));
+        mIgnoreWeightForSkillsCheckBox = new JCheckBox(I18n.text("Ignore for Skills"));
         mIgnoreWeightForSkillsCheckBox.setSelected(mRow.isWeightIgnoredForSkills());
         UIUtilities.setToPreferredSizeOnly(mIgnoreWeightForSkillsCheckBox);
         mIgnoreWeightForSkillsCheckBox.setEnabled(mIsEditable);
-        mIgnoreWeightForSkillsCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills")));
+        mIgnoreWeightForSkillsCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills")));
         wrapper.add(mIgnoreWeightForSkillsCheckBox);
         parent.add(wrapper);
     }
@@ -310,7 +310,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     private void docChanged(DocumentEvent event) {
         if (mDescriptionField.getDocument() == event.getDocument()) {
-            LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

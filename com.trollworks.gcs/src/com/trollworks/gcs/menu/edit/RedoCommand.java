@@ -27,7 +27,7 @@ public final class RedoCommand extends Command {
     public static final RedoCommand INSTANCE = new RedoCommand();
 
     private RedoCommand() {
-        super(I18n.Text("Can't Redo"), CMD_REDO, KeyEvent.VK_Y);
+        super(I18n.text("Can't Redo"), CMD_REDO, KeyEvent.VK_Y);
     }
 
     @Override
@@ -39,7 +39,7 @@ public final class RedoCommand extends Command {
             setTitle(mgr.getRedoPresentationName());
         } else {
             setEnabled(false);
-            setTitle(I18n.Text("Can't Redo"));
+            setTitle(I18n.text("Can't Redo"));
         }
     }
 

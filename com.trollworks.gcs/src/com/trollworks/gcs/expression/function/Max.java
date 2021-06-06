@@ -31,7 +31,7 @@ public class Max implements ExpressionFunction {
             double            arg2      = ArgumentTokenizer.getDouble(ev.evaluate(tokenizer.nextToken()));
             return Double.valueOf(Math.max(arg1, arg2));
         } catch (Exception exception) {
-            throw new EvaluationException(I18n.Text("Two numeric arguments are required"), exception);
+            throw new EvaluationException(I18n.text("Two numeric arguments are required"), exception);
         }
     }
 }

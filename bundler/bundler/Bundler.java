@@ -319,12 +319,12 @@ public final class Bundler {
                     lines.forEachOrdered(line -> {
                         while (!line.isEmpty()) {
                             boolean needContext = true;
-                            String  lookFor     = "I18n.Text(";
+                            String  lookFor     = "I18n.text(";
                             int     i           = line.indexOf(lookFor);
                             if (i >= 0) {
                                 needContext = false;
                             } else {
-                                lookFor = "I18n.TextWithContext(";
+                                lookFor = "I18n.textWithContext(";
                                 i = line.indexOf(lookFor);
                                 if (i < 0) {
                                     break;

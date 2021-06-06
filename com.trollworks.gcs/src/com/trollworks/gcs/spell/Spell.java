@@ -102,7 +102,7 @@ public class Spell extends ListRow implements HasSourceReference {
      */
     public Spell(DataFile dataFile, boolean isContainer) {
         super(dataFile, isContainer);
-        mName = I18n.Text("Spell");
+        mName = I18n.text("Spell");
         mAttribute = Skill.getDefaultAttribute("iq");
         mDifficulty = SkillDifficulty.H;
         mTechLevel = null;
@@ -240,7 +240,7 @@ public class Spell extends ListRow implements HasSourceReference {
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Spell");
+        return I18n.text("Spell");
     }
 
     @Override
@@ -250,14 +250,14 @@ public class Spell extends ListRow implements HasSourceReference {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Spell");
+        return I18n.text("Spell");
     }
 
     @Override
     protected void prepareForLoad(LoadState state) {
         boolean isContainer = canHaveChildren();
         super.prepareForLoad(state);
-        mName = I18n.Text("Spell");
+        mName = I18n.text("Spell");
         mAttribute = Skill.getDefaultAttribute("iq");
         mTechLevel = null;
         mColleges = new ArrayList<>();
@@ -721,7 +721,7 @@ public class Spell extends ListRow implements HasSourceReference {
     /** @return The tooltTip to describe how the points were calculated */
     public String getPointsToolTip() {
         if (canHaveChildren()) {
-            return I18n.Text("The sum of the points spent by children of this container");
+            return I18n.text("The sum of the points spent by children of this container");
         }
         GURPSCharacter character = getCharacter();
         if (character != null) {
@@ -731,7 +731,7 @@ public class Spell extends ListRow implements HasSourceReference {
             getSpellPointBonusesFor(character, ID_POINTS_POWER_SOURCE, getPowerSource(), categories, tooltip);
             getSpellPointBonusesFor(character, ID_POINTS, getName(), categories, tooltip);
             if (!tooltip.isEmpty()) {
-                return I18n.Text("Includes modifiers from") + tooltip;
+                return I18n.text("Includes modifiers from") + tooltip;
             }
         }
         return "";
@@ -989,22 +989,22 @@ public class Spell extends ListRow implements HasSourceReference {
 
     /** @return The default casting time. */
     public static final String getDefaultCastingTime() {
-        return I18n.Text("1 sec");
+        return I18n.text("1 sec");
     }
 
     /** @return The default duration. */
     public static final String getDefaultDuration() {
-        return I18n.Text("Instant");
+        return I18n.text("Instant");
     }
 
     /** @return The default power source. */
     public static final String getDefaultPowerSource() {
-        return I18n.Text("Arcane");
+        return I18n.text("Arcane");
     }
 
     /** @return The default spell class. */
     public static final String getDefaultSpellClass() {
-        return I18n.Text("Regular");
+        return I18n.text("Regular");
     }
 
     @Override
@@ -1035,30 +1035,30 @@ public class Spell extends ListRow implements HasSourceReference {
         }
         int level = mLevel.getLevel();
         if (level < 10) {
-            return I18n.Text("Ritual: need both hands and feet free and must speak; Time: 2x");
+            return I18n.text("Ritual: need both hands and feet free and must speak; Time: 2x");
         }
         if (level < 15) {
-            return I18n.Text("Ritual: speak quietly and make a gesture");
+            return I18n.text("Ritual: speak quietly and make a gesture");
         }
         String ritual;
         String time = "";
         String cost = "";
         if (level < 20) {
-            ritual = I18n.Text("speak a word or two OR make a small gesture"); // ; may move 1 yard per second while concentrating");
+            ritual = I18n.text("speak a word or two OR make a small gesture"); // ; may move 1 yard per second while concentrating");
             if (!mSpellClass.toLowerCase().contains("blocking")) {
-                cost = I18n.Text("; Cost: -1");
+                cost = I18n.text("; Cost: -1");
             }
         } else {
-            ritual = I18n.Text("none");
+            ritual = I18n.text("none");
             int adj = (level - 15) / 5;
             if (!mSpellClass.toLowerCase().contains("missile")) {
-                time = String.format(I18n.Text("; Time: x1/%d, rounded up, min 1 sec"), Integer.valueOf(1 << adj));
+                time = String.format(I18n.text("; Time: x1/%d, rounded up, min 1 sec"), Integer.valueOf(1 << adj));
             }
             if (!mSpellClass.toLowerCase().contains("blocking")) {
-                cost = String.format(I18n.Text("; Cost: -%d"), Integer.valueOf(adj + 1));
+                cost = String.format(I18n.text("; Cost: -%d"), Integer.valueOf(adj + 1));
             }
         }
-        return I18n.Text("Ritual: ") + ritual + time + cost;
+        return I18n.text("Ritual: ") + ritual + time + cost;
     }
 
     public int getAdjustedRelativeLevel() {

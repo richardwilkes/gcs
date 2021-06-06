@@ -19,7 +19,7 @@ public enum StringCompareType {
     ANY {
         @Override
         public String toString() {
-            return I18n.Text("is anything");
+            return I18n.text("is anything");
         }
 
         @Override
@@ -31,7 +31,7 @@ public enum StringCompareType {
     IS {
         @Override
         public String toString() {
-            return I18n.Text("is");
+            return I18n.text("is");
         }
 
         @Override
@@ -43,7 +43,7 @@ public enum StringCompareType {
     IS_NOT {
         @Override
         public String toString() {
-            return I18n.Text("is not");
+            return I18n.text("is not");
         }
 
         @Override
@@ -55,7 +55,7 @@ public enum StringCompareType {
     CONTAINS {
         @Override
         public String toString() {
-            return I18n.Text("contains");
+            return I18n.text("contains");
         }
 
         @Override
@@ -67,7 +67,7 @@ public enum StringCompareType {
     DOES_NOT_CONTAIN {
         @Override
         public String toString() {
-            return I18n.Text("does not contain");
+            return I18n.text("does not contain");
         }
 
         @Override
@@ -79,7 +79,7 @@ public enum StringCompareType {
     STARTS_WITH {
         @Override
         public String toString() {
-            return I18n.Text("starts with");
+            return I18n.text("starts with");
         }
 
         @Override
@@ -91,7 +91,7 @@ public enum StringCompareType {
     DOES_NOT_START_WITH {
         @Override
         public String toString() {
-            return I18n.Text("does not start with");
+            return I18n.text("does not start with");
         }
 
         @Override
@@ -103,7 +103,7 @@ public enum StringCompareType {
     ENDS_WITH {
         @Override
         public String toString() {
-            return I18n.Text("ends with");
+            return I18n.text("ends with");
         }
 
         @Override
@@ -115,7 +115,7 @@ public enum StringCompareType {
     DOES_NOT_END_WITH {
         @Override
         public String toString() {
-            return I18n.Text("does not end with");
+            return I18n.text("does not end with");
         }
 
         @Override

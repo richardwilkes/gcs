@@ -65,12 +65,12 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     protected void addContentSelf(ScrollContent outer) {
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
         if (mRow.canHaveChildren()) {
-            mNameField = createCorrectableField(panel, panel, I18n.Text("Name"), mRow.getName(), I18n.Text("Name of container"));
+            mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("Name of container"));
         } else {
             JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
-            mNameField = createCorrectableField(panel, wrapper, I18n.Text("Name"), mRow.getName(), I18n.Text("Name of Modifier"));
-            mEnabledField = new JCheckBox(I18n.Text("Enabled"), mRow.isEnabled());
-            mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
+            mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
+            mEnabledField = new JCheckBox(I18n.text("Enabled"), mRow.isEnabled());
+            mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
             mEnabledField.setEnabled(mIsEditable);
             wrapper.add(mEnabledField);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -78,11 +78,11 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
             createCostModifierFields(panel);
         }
 
-        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
+        panel.add(new LinkedLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mReferenceField = createField(panel, panel, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("advantage modifier")), 6);
+        mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("advantage modifier")), 6);
         outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (!mRow.canHaveChildren()) {
@@ -187,12 +187,12 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         if (mLastLevel < 1) {
             mLastLevel = 1;
         }
-        String costTitle   = I18n.Text("Cost");
-        String costTooltip = I18n.Text("The base cost modifier");
+        String costTitle   = I18n.text("Cost");
+        String costTooltip = I18n.text("The base cost modifier");
         mCostField = mRow.getCostType() == AdvantageModifierCostType.MULTIPLIER ? createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip, 5) : createNumberField(parent, wrapper, costTitle, true, mRow.getCost(), costTooltip, 5);
         createCostType(wrapper);
-        mLevelField = createNumberField(wrapper, wrapper, I18n.Text("Levels"), false, mLastLevel, I18n.Text("The number of levels this modifier has"), 3);
-        mCostModifierField = createNumberField(wrapper, wrapper, I18n.Text("Total"), true, 0, I18n.Text("The cost modifier's total value"), 9);
+        mLevelField = createNumberField(wrapper, wrapper, I18n.text("Levels"), false, mLastLevel, I18n.text("The number of levels this modifier has"), 3);
+        mCostModifierField = createNumberField(wrapper, wrapper, I18n.text("Total"), true, 0, I18n.text("The cost modifier's total value"), 9);
         mAffects = createComboBox(wrapper, Affects.values(), mRow.getAffects());
         mCostModifierField.setEnabled(false);
         if (!mRow.hasLevels()) {
@@ -215,7 +215,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     private void createCostType(Container parent) {
         AdvantageModifierCostType[] types  = AdvantageModifierCostType.values();
         Object[]                    values = new Object[types.length + 1];
-        values[0] = MessageFormat.format(I18n.Text("{0} Per Level"), AdvantageModifierCostType.PERCENTAGE.toString());
+        values[0] = MessageFormat.format(I18n.text("{0} Per Level"), AdvantageModifierCostType.PERCENTAGE.toString());
         System.arraycopy(types, 0, values, 1, types.length);
         mCostType = createComboBox(parent, values, mRow.hasLevels() ? values[0] : mRow.getCostType());
     }
@@ -284,7 +284,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

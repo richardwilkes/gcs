@@ -63,7 +63,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     }
 
     private MenuKeySettingsWindow() {
-        super(I18n.Text("Menu Key Settings"));
+        super(I18n.text("Menu Key Settings"));
         mMap = new HashMap<>();
         mPanel = new BandedPanel(true);
         mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 26).setVerticalSpacing(0));
@@ -100,7 +100,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             JButton          btn     = (JButton) evt.getSource();
             Command          command = mMap.get(btn);
             KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command.getAccelerator());
-            switch (WindowUtils.showOptionDialog(this, ksd, I18n.Text("Type a keystroke…"), false, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[]{I18n.Text("Accept"), I18n.Text("Clear"), I18n.Text("Reset")}, null)) {
+            switch (WindowUtils.showOptionDialog(this, ksd, I18n.text("Type a keystroke…"), false, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[]{I18n.text("Accept"), I18n.text("Clear"), I18n.text("Reset")}, null)) {
             case JOptionPane.CLOSED_OPTION:
             default:
                 break;
@@ -138,7 +138,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     }
 
     private JPanel createResetPanel() {
-        mResetButton = new JButton(I18n.Text("Reset to Factory Defaults"));
+        mResetButton = new JButton(I18n.text("Reset to Factory Defaults"));
         mResetButton.addActionListener((evt) -> {
             for (Map.Entry<JButton, Command> entry : mMap.entrySet()) {
                 JButton button = entry.getKey();

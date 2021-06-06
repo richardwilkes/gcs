@@ -24,7 +24,7 @@ public class PageRefCell extends ListTextCell {
     public static final Pattern SEPARATORS_PATTERN = Pattern.compile("[, ;]");
 
     public static final String getStdToolTip(String type) {
-        return String.format(I18n.Text("A reference to the book and page this %s appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), type);
+        return String.format(I18n.text("A reference to the book and page this %s appears on (e.g. B22 would refer to \"Basic Set\", page 22)"), type);
     }
 
     public static final String getStdCellToolTip(String text) {

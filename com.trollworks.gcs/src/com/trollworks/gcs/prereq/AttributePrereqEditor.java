@@ -51,7 +51,7 @@ public class AttributePrereqEditor extends PrereqEditor {
         row = new FlexRow();
         row.add(addChangeTypePopup());
         row.add(addChangeSecondTypePopup());
-        row.add(addNumericCompareCombo(prereq.getValueCompare(), I18n.Text("which ")));
+        row.add(addNumericCompareCombo(prereq.getValueCompare(), I18n.text("which ")));
         row.add(addNumericCompareField(prereq.getValueCompare(), 0, 99999, false));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 1);
@@ -66,7 +66,7 @@ public class AttributePrereqEditor extends PrereqEditor {
         if (combinedWith == null) {
             combinedWith = " ";
         }
-        return addAttributePopup(mRow.getDataFile(), CHANGE_SECOND_TYPE, I18n.Text("combined with %s"), combinedWith, true);
+        return addAttributePopup(mRow.getDataFile(), CHANGE_SECOND_TYPE, I18n.text("combined with %s"), combinedWith, true);
     }
 
     @Override

@@ -60,7 +60,7 @@ public final class UpdateChecker implements Runnable {
 
     /** @return The result of the new app check. */
     public static synchronized String getAppResult() {
-        return APP_RESULT != null ? APP_RESULT : I18n.Text("Checking for GCS updates…");
+        return APP_RESULT != null ? APP_RESULT : I18n.text("Checking for GCS updates…");
     }
 
     public static synchronized String getAppReleaseNotes() {
@@ -112,12 +112,12 @@ public final class UpdateChecker implements Runnable {
     private void checkForAppUpdates() {
         if (GCS.VERSION.isZero()) {
             // Development version. Bail.
-            setAppResult(I18n.Text("Development versions don't look for GCS updates"), null, false);
+            setAppResult(I18n.text("Development versions don't look for GCS updates"), null, false);
         } else {
             Version       minimum  = new Version(4, 17, 0);
             List<Release> releases = Release.load("richardwilkes", "gcs", GCS.VERSION, (version, notes) -> version.compareTo(minimum) >= 0);
             if (releases == null) {
-                setAppResult(I18n.Text("Unable to access the GCS repo"), null, false);
+                setAppResult(I18n.text("Unable to access the GCS repo"), null, false);
                 return;
             }
             int count = releases.size() - 1;
@@ -125,12 +125,12 @@ public final class UpdateChecker implements Runnable {
                 releases.remove(count);
             }
             if (releases.isEmpty()) {
-                setAppResult(I18n.Text("GCS has no update available"), null, false);
+                setAppResult(I18n.text("GCS has no update available"), null, false);
             } else {
                 Release     release   = new Release(releases);
                 Preferences prefs     = Preferences.getInstance();
                 Version     available = release.getVersion();
-                setAppResult(String.format(I18n.Text("GCS v%s is available!"), available), release.getNotes(), true);
+                setAppResult(String.format(I18n.text("GCS v%s is available!"), available), release.getNotes(), true);
                 if (available.compareTo(prefs.getLastSeenGCSVersion()) > 0) {
                     prefs.setLastSeenGCSVersion(available);
                     prefs.save();
@@ -155,7 +155,7 @@ public final class UpdateChecker implements Runnable {
 
     private void tryNotify() {
         if (GCS.isNotificationAllowed()) {
-            String update = I18n.Text("Update");
+            String update = I18n.text("Update");
             mMode = Mode.DONE;
             if (isNewAppVersionAvailable()) {
                 JTextPane markdown = new JTextPane(new MarkdownDocument(getAppReleaseNotes()));
@@ -170,7 +170,7 @@ public final class UpdateChecker implements Runnable {
                     markdown.setPreferredSize(size);
                 }
                 markdown.setEditable(false);
-                if (WindowUtils.showOptionDialog(null, scroller, getAppResult(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.Text("Ignore")}, update) == JOptionPane.OK_OPTION) {
+                if (WindowUtils.showOptionDialog(null, scroller, getAppResult(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.text("Ignore")}, update) == JOptionPane.OK_OPTION) {
                     goToUpdate();
                 }
                 return;

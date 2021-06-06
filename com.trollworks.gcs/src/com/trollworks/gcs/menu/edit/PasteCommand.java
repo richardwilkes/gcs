@@ -30,7 +30,7 @@ public final class PasteCommand extends Command {
     public static final PasteCommand INSTANCE = new PasteCommand();
 
     private PasteCommand() {
-        super(I18n.Text("Paste"), CMD_PASTE, KeyEvent.VK_V);
+        super(I18n.text("Paste"), CMD_PASTE, KeyEvent.VK_V);
     }
 
     @Override

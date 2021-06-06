@@ -18,31 +18,31 @@ public enum Encumbrance {
     NONE(1) {
         @Override
         public String toString() {
-            return I18n.Text("None");
+            return I18n.text("None");
         }
     },
     LIGHT(2) {
         @Override
         public String toString() {
-            return I18n.Text("Light");
+            return I18n.text("Light");
         }
     },
     MEDIUM(3) {
         @Override
         public String toString() {
-            return I18n.Text("Medium");
+            return I18n.text("Medium");
         }
     },
     HEAVY(6) {
         @Override
         public String toString() {
-            return I18n.Text("Heavy");
+            return I18n.text("Heavy");
         }
     },
     EXTRA_HEAVY(10) {
         @Override
         public String toString() {
-            return I18n.Text("X-Heavy");
+            return I18n.text("X-Heavy");
         }
     };
 

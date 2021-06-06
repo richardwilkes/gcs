@@ -26,8 +26,8 @@ import java.awt.event.KeyEvent;
 public final class NewAdvantageModifierCommand extends Command {
     public static final String                      CMD_NEW_ADVANTAGE_MODIFIER           = "NewAdvantageModifier";
     public static final String                      CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER = "NewAdvantageModifierContainer";
-    public static final NewAdvantageModifierCommand INSTANCE                             = new NewAdvantageModifierCommand(false, I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, COMMAND_MODIFIER);
-    public static final NewAdvantageModifierCommand CONTAINER_INSTANCE                   = new NewAdvantageModifierCommand(true, I18n.Text("New Advantage Modifier Container"), CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER, SHIFTED_COMMAND_MODIFIER);
+    public static final NewAdvantageModifierCommand INSTANCE                             = new NewAdvantageModifierCommand(false, I18n.text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, COMMAND_MODIFIER);
+    public static final NewAdvantageModifierCommand CONTAINER_INSTANCE                   = new NewAdvantageModifierCommand(true, I18n.text("New Advantage Modifier Container"), CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     private             boolean                     mContainer;
 
     private NewAdvantageModifierCommand(boolean container, String title, String cmd, int modifiers) {

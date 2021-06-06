@@ -250,7 +250,7 @@ public class PrereqList extends Prereq {
 
         boolean satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
         if (!satisfied && localBuilder != null) {
-            builder.append(MessageFormat.format(requiresAll ? I18n.Text("{0}Requires all of:\n") : I18n.Text("{0}Requires at least one of:\n"), prefix));
+            builder.append(MessageFormat.format(requiresAll ? I18n.text("{0}Requires all of:\n") : I18n.text("{0}Requires at least one of:\n"), prefix));
             builder.append(localBuilder);
         }
         return satisfied;

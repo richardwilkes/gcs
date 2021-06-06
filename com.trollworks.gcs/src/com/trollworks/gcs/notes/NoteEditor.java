@@ -56,12 +56,12 @@ public class NoteEditor extends RowEditor<Note> {
         outer.add(wrapper, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mDescriptionField = new MultiLineTextField(mRow.getDescription(), null, null);
-        wrapper.add(new LinkedLabel(I18n.Text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        wrapper.add(new LinkedLabel(I18n.text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         wrapper.add(mDescriptionField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mReferenceField = new JTextField(mRow.getReference());
-        mReferenceField.setToolTipText(Text.wrapPlainTextForToolTip(PageRefCell.getStdToolTip(I18n.Text("note"))));
-        wrapper.add(new LinkedLabel(I18n.Text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        mReferenceField.setToolTipText(Text.wrapPlainTextForToolTip(PageRefCell.getStdToolTip(I18n.text("note"))));
+        wrapper.add(new LinkedLabel(I18n.text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

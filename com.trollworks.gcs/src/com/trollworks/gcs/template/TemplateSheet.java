@@ -43,12 +43,12 @@ public class TemplateSheet extends CollectedOutlines {
 
         // Make sure our primary outlines exist
         createOutlines(template);
-        add(new TemplateOutlinePanel(getAdvantagesOutline(), I18n.Text("Advantages, Disadvantages & Quirks")));
-        add(new TemplateOutlinePanel(getSkillsOutline(), I18n.Text("Skills")));
-        add(new TemplateOutlinePanel(getSpellsOutline(), I18n.Text("Spells")));
-        add(new TemplateOutlinePanel(getEquipmentOutline(), I18n.Text("Equipment")));
-        add(new TemplateOutlinePanel(getOtherEquipmentOutline(), I18n.Text("Other Equipment")));
-        add(new TemplateOutlinePanel(getNotesOutline(), I18n.Text("Notes")));
+        add(new TemplateOutlinePanel(getAdvantagesOutline(), I18n.text("Advantages, Disadvantages & Quirks")));
+        add(new TemplateOutlinePanel(getSkillsOutline(), I18n.text("Skills")));
+        add(new TemplateOutlinePanel(getSpellsOutline(), I18n.text("Spells")));
+        add(new TemplateOutlinePanel(getEquipmentOutline(), I18n.text("Equipment")));
+        add(new TemplateOutlinePanel(getOtherEquipmentOutline(), I18n.text("Other Equipment")));
+        add(new TemplateOutlinePanel(getNotesOutline(), I18n.text("Notes")));
 
         revalidate();
         mTemplate.addChangeListener(this);

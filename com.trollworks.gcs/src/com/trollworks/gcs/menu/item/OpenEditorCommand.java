@@ -28,7 +28,7 @@ public class OpenEditorCommand extends Command {
     public static final OpenEditorCommand INSTANCE        = new OpenEditorCommand();
 
     private OpenEditorCommand() {
-        super(I18n.Text("Open Detail Editor"), CMD_OPEN_EDITOR, KeyEvent.VK_I);
+        super(I18n.text("Open Detail Editor"), CMD_OPEN_EDITOR, KeyEvent.VK_I);
     }
 
     /**
@@ -37,7 +37,7 @@ public class OpenEditorCommand extends Command {
      * @param outline The outline to work against.
      */
     public OpenEditorCommand(ListOutline outline) {
-        super(I18n.Text("Open Detail Editor"), CMD_OPEN_EDITOR);
+        super(I18n.text("Open Detail Editor"), CMD_OPEN_EDITOR);
     }
 
     @Override

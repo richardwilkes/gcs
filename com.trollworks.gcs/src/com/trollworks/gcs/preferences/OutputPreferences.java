@@ -47,16 +47,16 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
      * @param owner The owning {@link PreferencesWindow}.
      */
     public OutputPreferences(PreferencesWindow owner) {
-        super(I18n.Text("Output"), owner);
+        super(I18n.text("Output"), owner);
         setLayout(new PrecisionLayout().setColumns(3));
         Preferences prefs = Preferences.getInstance();
 
-        String gcalcTitle = I18n.Text("GURPS Calculator Key");
+        String gcalcTitle = I18n.text("GURPS Calculator Key");
         addLabel(gcalcTitle, null);
         mGurpsCalculatorKey = addTextField(prefs.getGURPSCalculatorKey(), gcalcTitle);
-        mGurpsCalculatorLink = addButton(I18n.Text("Find mine"), gcalcTitle);
+        mGurpsCalculatorLink = addButton(I18n.text("Find mine"), gcalcTitle);
 
-        addLabel(I18n.Text("Image Resolution"), pngDPIMsg());
+        addLabel(I18n.text("Image Resolution"), pngDPIMsg());
         mPNGResolutionCombo = addPNGResolutionPopup();
     }
 
@@ -91,7 +91,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
         combo.setToolTipText(Text.wrapPlainTextForToolTip(pngDPIMsg()));
         int length = DPI.length;
         for (int i = 0; i < length; i++) {
-            combo.addItem(MessageFormat.format(I18n.Text("{0} dpi"), Integer.valueOf(DPI[i])));
+            combo.addItem(MessageFormat.format(I18n.text("{0} dpi"), Integer.valueOf(DPI[i])));
             if (DPI[i] == resolution) {
                 selection = i;
             }
@@ -104,7 +104,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     }
 
     private static String pngDPIMsg() {
-        return I18n.Text("The resolution, in dots-per-inch, to use when saving sheets as PNG files");
+        return I18n.text("The resolution, in dots-per-inch, to use when saving sheets as PNG files");
     }
 
     @Override
@@ -116,7 +116,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
             try {
                 Desktop.getDesktop().browse(new URI(GURPS_CALCULATOR_URL));
             } catch (Exception exception) {
-                WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to open {0}"), GURPS_CALCULATOR_URL));
+                WindowUtils.showError(this, MessageFormat.format(I18n.text("Unable to open {0}"), GURPS_CALCULATOR_URL));
             }
         }
         adjustResetButton();

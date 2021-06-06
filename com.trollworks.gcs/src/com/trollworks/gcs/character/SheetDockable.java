@@ -61,8 +61,8 @@ public class SheetDockable extends CollectedOutlinesDockable {
     @Override
     protected Toolbar createToolbar() {
         Toolbar toolbar = super.createToolbar();
-        mQuickExportButton = new FontAwesomeButton("\uf56e", "<html><body>" + I18n.Text("Quick Export<br>Export to the same location using the last used output template for this sheet") + "</body></html>", this::quickExport);
-        toolbar.add(new FontAwesomeButton("\uf013", I18n.Text("Settings"), () -> SheetSettingsWindow.display(getDataFile())), 0);
+        mQuickExportButton = new FontAwesomeButton("\uf56e", "<html><body>" + I18n.text("Quick Export<br>Export to the same location using the last used output template for this sheet") + "</body></html>", this::quickExport);
+        toolbar.add(new FontAwesomeButton("\uf013", I18n.text("Settings"), () -> SheetSettingsWindow.display(getDataFile())), 0);
         toolbar.add(mQuickExportButton, 1);
         updateQuickExport();
         return toolbar;
@@ -126,7 +126,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
 
     @Override
     protected String getUntitledBaseName() {
-        return I18n.Text("Untitled Sheet");
+        return I18n.text("Untitled Sheet");
     }
 
     @Override

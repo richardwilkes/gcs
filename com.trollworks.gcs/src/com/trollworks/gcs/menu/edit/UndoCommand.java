@@ -27,7 +27,7 @@ public final class UndoCommand extends Command {
     public static final UndoCommand INSTANCE = new UndoCommand();
 
     private UndoCommand() {
-        super(I18n.Text("Can't Undo"), CMD_UNDO, KeyEvent.VK_Z);
+        super(I18n.text("Can't Undo"), CMD_UNDO, KeyEvent.VK_Z);
     }
 
     @Override
@@ -39,7 +39,7 @@ public final class UndoCommand extends Command {
             setTitle(mgr.getUndoPresentationName());
         } else {
             setEnabled(false);
-            setTitle(I18n.Text("Can't Undo"));
+            setTitle(I18n.text("Can't Undo"));
         }
     }
 

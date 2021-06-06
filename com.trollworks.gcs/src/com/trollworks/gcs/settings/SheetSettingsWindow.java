@@ -113,7 +113,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
     }
 
     private static String createTitle(GURPSCharacter character) {
-        return character == null ? I18n.Text("Sheet Settings") : String.format(I18n.Text("Sheet Settings: %s"), character.getProfile().getName());
+        return character == null ? I18n.text("Sheet Settings") : String.format(I18n.text("Sheet Settings: %s"), character.getProfile().getName());
     }
 
     private SheetSettingsWindow(GURPSCharacter character) {
@@ -135,31 +135,31 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
 
     private void addTopPanel() {
         JPanel left = new JPanel(new PrecisionLayout().setColumns(2));
-        mShowCollegeInSpells = addCheckBox(left, I18n.Text("Show the College column"), null, mSheetSettings.showCollegeInSpells());
-        mShowDifficulty = addCheckBox(left, I18n.Text("Show the Difficulty column"), null, mSheetSettings.showDifficulty());
-        mShowAdvantageModifierAdj = addCheckBox(left, I18n.Text("Show advantage modifier cost adjustments"), null, mSheetSettings.showAdvantageModifierAdj());
-        mShowEquipmentModifierAdj = addCheckBox(left, I18n.Text("Show equipment modifier cost & weight adjustments"), null, mSheetSettings.showEquipmentModifierAdj());
-        mShowSpellAdj = addCheckBox(left, I18n.Text("Show spell ritual, cost & time adjustments"), null, mSheetSettings.showSpellAdj());
-        mShowTitleInsteadOfNameInPageFooter = addCheckBox(left, I18n.Text("Show the title instead of the name in the footer"), null, mSheetSettings.useTitleInFooter());
-        addLabel(left, I18n.Text("Show User Description"));
-        String tooltip = I18n.Text("Where to display this information");
+        mShowCollegeInSpells = addCheckBox(left, I18n.text("Show the College column"), null, mSheetSettings.showCollegeInSpells());
+        mShowDifficulty = addCheckBox(left, I18n.text("Show the Difficulty column"), null, mSheetSettings.showDifficulty());
+        mShowAdvantageModifierAdj = addCheckBox(left, I18n.text("Show advantage modifier cost adjustments"), null, mSheetSettings.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj = addCheckBox(left, I18n.text("Show equipment modifier cost & weight adjustments"), null, mSheetSettings.showEquipmentModifierAdj());
+        mShowSpellAdj = addCheckBox(left, I18n.text("Show spell ritual, cost & time adjustments"), null, mSheetSettings.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter = addCheckBox(left, I18n.text("Show the title instead of the name in the footer"), null, mSheetSettings.useTitleInFooter());
+        addLabel(left, I18n.text("Show User Description"));
+        String tooltip = I18n.text("Where to display this information");
         mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.userDescriptionDisplay(), tooltip);
-        addLabel(left, I18n.Text("Show Modifiers"));
+        addLabel(left, I18n.text("Show Modifiers"));
         mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.modifiersDisplay(), tooltip);
-        addLabel(left, I18n.Text("Show Notes"));
+        addLabel(left, I18n.text("Show Notes"));
         mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.notesDisplay(), tooltip);
 
         JPanel right = new JPanel(new PrecisionLayout().setColumns(2));
-        mUseMultiplicativeModifiers = addCheckBox(right, I18n.Text("Use Multiplicative Modifiers (PW102; changes point value)"), null, mSheetSettings.useMultiplicativeModifiers());
-        mUseModifyingDicePlusAdds = addCheckBox(right, I18n.Text("Use Modifying Dice + Adds (B269)"), null, mSheetSettings.useModifyingDicePlusAdds());
-        mUseKnowYourOwnStrength = addCheckBox(right, I18n.Text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSheetSettings.useKnowYourOwnStrength());
-        mUseReducedSwing = addCheckBox(right, I18n.Text("Use the reduced swing rules"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", mSheetSettings.useReducedSwing());
-        mUseThrustEqualsSwingMinus2 = addCheckBox(right, I18n.Text("Use Thrust = Swing - 2"), null, mSheetSettings.useThrustEqualsSwingMinus2());
-        mUseSimpleMetricConversions = addCheckBox(right, I18n.Text("Use the simple metric conversion rules (B9)"), null, mSheetSettings.useSimpleMetricConversions());
-        addLabel(right, I18n.Text("Length Units"));
-        mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSheetSettings.defaultLengthUnits(), I18n.Text("The units to use for display of generated lengths"));
-        addLabel(right, I18n.Text("Weight Units"));
-        mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSheetSettings.defaultWeightUnits(), I18n.Text("The units to use for display of generated weights"));
+        mUseMultiplicativeModifiers = addCheckBox(right, I18n.text("Use Multiplicative Modifiers (PW102; changes point value)"), null, mSheetSettings.useMultiplicativeModifiers());
+        mUseModifyingDicePlusAdds = addCheckBox(right, I18n.text("Use Modifying Dice + Adds (B269)"), null, mSheetSettings.useModifyingDicePlusAdds());
+        mUseKnowYourOwnStrength = addCheckBox(right, I18n.text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSheetSettings.useKnowYourOwnStrength());
+        mUseReducedSwing = addCheckBox(right, I18n.text("Use the reduced swing rules"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", mSheetSettings.useReducedSwing());
+        mUseThrustEqualsSwingMinus2 = addCheckBox(right, I18n.text("Use Thrust = Swing - 2"), null, mSheetSettings.useThrustEqualsSwingMinus2());
+        mUseSimpleMetricConversions = addCheckBox(right, I18n.text("Use the simple metric conversion rules (B9)"), null, mSheetSettings.useSimpleMetricConversions());
+        addLabel(right, I18n.text("Length Units"));
+        mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSheetSettings.defaultLengthUnits(), I18n.text("The units to use for display of generated lengths"));
+        addLabel(right, I18n.text("Weight Units"));
+        mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSheetSettings.defaultWeightUnits(), I18n.text("The units to use for display of generated weights"));
 
         JPanel top = new JPanel(new PrecisionLayout().setColumns(2));
         top.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
@@ -171,9 +171,9 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
         panel.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
 
-        String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.Text("Specifies the layout of the various blocks of data on the character sheet"));
+        String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new MultiLineTextField(Preferences.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
-        panel.add(new Label(I18n.Text("Block Layout")), new PrecisionLayoutData());
+        panel.add(new Label(I18n.text("Block Layout")), new PrecisionLayoutData());
         panel.add(mBlockLayoutField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         JScrollPane scroller = new JScrollPane(panel);
@@ -184,7 +184,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
 
     private void addResetPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        mResetButton = new JButton(mCharacter == null ? I18n.Text("Reset to Factory Settings") : I18n.Text("Reset to Defaults"));
+        mResetButton = new JButton(mCharacter == null ? I18n.text("Reset to Factory Settings") : I18n.text("Reset to Defaults"));
         mResetButton.addActionListener(this);
         panel.add(mResetButton);
         getContentPane().add(panel, BorderLayout.SOUTH);

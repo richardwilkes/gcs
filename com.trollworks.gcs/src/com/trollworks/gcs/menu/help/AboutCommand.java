@@ -35,7 +35,7 @@ public final class AboutCommand extends Command implements AboutHandler {
     BaseWindow mWindow;
 
     private AboutCommand() {
-        super(I18n.Text("About GCS"), CMD_ABOUT);
+        super(I18n.text("About GCS"), CMD_ABOUT);
     }
 
     @Override

@@ -83,11 +83,11 @@ public abstract class FeatureEditor extends EditorPanel {
         FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
-            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", I18n.Text("Remove this feature"), this::removeFeature);
+            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", I18n.text("Remove this feature"), this::removeFeature);
             add(button);
             right.add(button);
         }
-        FontAwesomeButton button = new FontAwesomeButton("\uf055", I18n.Text("Add a feature"), this::addFeature);
+        FontAwesomeButton button = new FontAwesomeButton("\uf055", I18n.text("Add a feature"), this::addFeature);
         add(button);
         right.add(button);
         grid.add(right, 0, 1);
@@ -155,7 +155,7 @@ public abstract class FeatureEditor extends EditorPanel {
      * @return The {@link JComboBox} that allows a {@link LeveledAmount} to be changed.
      */
     protected JComboBox<Object> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
-        String per = usePerDie ? I18n.Text("per die") : I18n.Text("per level");
+        String per = usePerDie ? I18n.text("per die") : I18n.text("per level");
         mLeveledAmountCombo = addComboBox(LeveledAmount.KEY_PER_LEVEL, new Object[]{" ", per}, amt.isPerLevel() ? per : " ");
         mLeveledAmountCombo.putClientProperty(LeveledAmount.class, amt);
         return mLeveledAmountCombo;

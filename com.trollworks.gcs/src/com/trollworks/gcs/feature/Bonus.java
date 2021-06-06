@@ -99,7 +99,7 @@ public abstract class Bonus extends Feature {
     }
 
     public String getParentName() {
-        return mParent == null ? I18n.Text("Unknown") : mParent.toString();
+        return mParent == null ? I18n.text("Unknown") : mParent.toString();
     }
 
     public void addToToolTip(StringBuilder toolTip) {

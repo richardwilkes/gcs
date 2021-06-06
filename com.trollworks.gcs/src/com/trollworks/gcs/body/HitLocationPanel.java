@@ -53,7 +53,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
             HitLocationTablePanel parent = (HitLocationTablePanel) getParent();
             int                   index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -68,7 +68,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.text("Move Down"), () -> {
             HitLocationTablePanel parent = (HitLocationTablePanel) getParent();
             int                   index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -83,7 +83,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
             }
         });
         left.add(mMoveDownButton);
-        mAddSubTableButton = new FontAwesomeButton("\uf055", I18n.Text("Add Hit Location Sub-Table"), this::addSubHitLocations);
+        mAddSubTableButton = new FontAwesomeButton("\uf055", I18n.text("Add Hit Location Sub-Table"), this::addSubHitLocations);
         left.add(mAddSubTableButton);
 
         mCenter = new JPanel(new PrecisionLayout());
@@ -93,8 +93,8 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(8).setMargins(0));
         wrapper.setOpaque(false);
         mIDField = addField(wrapper,
-                I18n.Text("ID"),
-                I18n.Text("An ID for the hit location"),
+                I18n.text("ID"),
+                I18n.text("An ID for the hit location"),
                 mLocation.getID(),
                 null,
                 FieldFactory.STRING,
@@ -113,8 +113,8 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                     }
                 });
         addField(wrapper,
-                I18n.Text("Slots"),
-                I18n.Text("The number of consecutive numbers this hit location fills in the table"),
+                I18n.text("Slots"),
+                I18n.text("The number of consecutive numbers this hit location fills in the table"),
                 Integer.valueOf(mLocation.getSlots()),
                 Integer.valueOf(999),
                 FieldFactory.POSINT6,
@@ -123,8 +123,8 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("Hit Penalty"),
-                I18n.Text("The skill adjustment to hit this location"),
+                I18n.text("Hit Penalty"),
+                I18n.text("The skill adjustment to hit this location"),
                 Integer.valueOf(mLocation.getHitPenalty()),
                 Integer.valueOf(-999),
                 FieldFactory.INT6,
@@ -133,8 +133,8 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("DR Bonus"),
-                I18n.Text("The amount of DR this hit location grants due to natural toughness"),
+                I18n.text("DR Bonus"),
+                I18n.text("The amount of DR this hit location grants due to natural toughness"),
                 Integer.valueOf(mLocation.getDRBonus()),
                 Integer.valueOf(999),
                 FieldFactory.POSINT6,
@@ -147,8 +147,8 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         wrapper = new JPanel(new PrecisionLayout().setColumns(4).setMargins(0));
         wrapper.setOpaque(false);
         addField(wrapper,
-                I18n.Text("Choice Name"),
-                I18n.Text("The name of this hit location as it should appear in choice lists"),
+                I18n.text("Choice Name"),
+                I18n.text("The name of this hit location as it should appear in choice lists"),
                 mLocation.getChoiceName(),
                 null,
                 FieldFactory.STRING,
@@ -157,8 +157,8 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("Table Name"),
-                I18n.Text("The name of this hit location as it should appear in the hit location table"),
+                I18n.text("Table Name"),
+                I18n.text("The name of this hit location as it should appear in the hit location table"),
                 mLocation.getTableName(),
                 null,
                 FieldFactory.STRING,
@@ -171,8 +171,8 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.setOpaque(false);
         mDescriptionField = addTextArea(wrapper,
-                I18n.Text("Description"),
-                I18n.Text("An description of any special effects for hits to this location"),
+                I18n.text("Description"),
+                I18n.text("An description of any special effects for hits to this location"),
                 mLocation.getDescription());
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
@@ -184,7 +184,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             getParent().remove(this);
             mLocation.getOwningTable().removeLocation(mLocation);
             mAdjustCallback.run();
@@ -221,7 +221,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
     }
 
     public void addSubHitLocations() {
-        HitLocationTable table = new HitLocationTable("id", I18n.Text("name"), new Dice(3));
+        HitLocationTable table = new HitLocationTable("id", I18n.text("name"), new Dice(3));
         mLocation.setSubTable(table);
         HitLocationTablePanel subTable = new HitLocationTablePanel(table, mAdjustCallback);
         mCenter.add(subTable, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));

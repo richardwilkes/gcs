@@ -22,40 +22,40 @@ public enum ThresholdOps {
 
         @Override
         public String toString() {
-            return I18n.Text("Unknown");
+            return I18n.text("Unknown");
         }
     },
     HALVE_MOVE {
         @Override
         public String title() {
-            return I18n.Text("Halve Move");
+            return I18n.text("Halve Move");
         }
 
         @Override
         public String toString() {
-            return I18n.Text("Halve Move (round up)");
+            return I18n.text("Halve Move (round up)");
         }
     },
     HALVE_DODGE {
         @Override
         public String title() {
-            return I18n.Text("Halve Dodge");
+            return I18n.text("Halve Dodge");
         }
 
         @Override
         public String toString() {
-            return I18n.Text("Halve Dodge (round up)");
+            return I18n.text("Halve Dodge (round up)");
         }
     },
     HALVE_ST {
         @Override
         public String title() {
-            return I18n.Text("Halve ST");
+            return I18n.text("Halve ST");
         }
 
         @Override
         public String toString() {
-            return I18n.Text("Halve ST (round up; does not affect HP and damage)");
+            return I18n.text("Halve ST (round up; does not affect HP and damage)");
         }
     };
 

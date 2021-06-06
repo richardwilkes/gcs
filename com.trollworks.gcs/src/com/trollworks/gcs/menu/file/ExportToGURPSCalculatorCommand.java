@@ -60,7 +60,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
     private static final Pattern                        UUID_PATTERN = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
 
     private ExportToGURPSCalculatorCommand() {
-        super(I18n.Text("GURPS Calculator…"), "ExportToGURPSCalculator", KeyEvent.VK_L);
+        super(I18n.text("GURPS Calculator…"), "ExportToGURPSCalculator", KeyEvent.VK_L);
     }
 
     @Override
@@ -79,8 +79,8 @@ public final class ExportToGURPSCalculatorCommand extends Command {
             try {
                 String key = Preferences.getInstance().getGURPSCalculatorKey();
                 if ("true".equals(get(String.format("api/GetCharacterExists/%s/%s", character.getID(), key)))) {
-                    String cancel = I18n.Text("Cancel");
-                    switch (JOptionPane.showOptionDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(), I18n.Text("This character already exists in GURPS Calculator.\nWould you like to replace it?\n\nIf you choose 'Create New', you should save your\ncharacter afterwards."), I18n.Text("Character Exists"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{I18n.Text("Replace"), I18n.Text("Create New"), cancel}, cancel)) {
+                    String cancel = I18n.text("Cancel");
+                    switch (JOptionPane.showOptionDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(), I18n.text("This character already exists in GURPS Calculator.\nWould you like to replace it?\n\nIf you choose 'Create New', you should save your\ncharacter afterwards."), I18n.text("Character Exists"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{I18n.text("Replace"), I18n.text("Create New"), cancel}, cancel)) {
                     case JOptionPane.NO_OPTION:
                         character.generateNewID();
                         character.setModified(true);
@@ -151,10 +151,10 @@ public final class ExportToGURPSCalculatorCommand extends Command {
     }
 
     private static void showResult(boolean success) {
-        String message = success ? I18n.Text("Export to GURPS Calculator was successful.") : I18n.Text("There was an error exporting to GURPS Calculator. Please try again later.");
+        String message = success ? I18n.text("Export to GURPS Calculator was successful.") : I18n.text("There was an error exporting to GURPS Calculator. Please try again later.");
         String key     = Preferences.getInstance().getGURPSCalculatorKey();
         if (key == null || !UUID_PATTERN.matcher(key).matches()) {
-            message = String.format(I18n.Text("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information."), OutputPreferences.GURPS_CALCULATOR_URL);
+            message = String.format(I18n.text("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information."), OutputPreferences.GURPS_CALCULATOR_URL);
         }
         JLabel      styleLabel  = new JLabel();
         Font        font        = styleLabel.getFont();
@@ -168,11 +168,11 @@ public final class ExportToGURPSCalculatorCommand extends Command {
                 try {
                     Desktop.getDesktop().browse(url.toURI());
                 } catch (IOException | URISyntaxException exception) {
-                    WindowUtils.showError(null, MessageFormat.format(I18n.Text("Unable to open {0}"), url.toExternalForm()));
+                    WindowUtils.showError(null, MessageFormat.format(I18n.text("Unable to open {0}"), url.toExternalForm()));
                 }
             }
         });
-        JOptionPane.showMessageDialog(Command.getFocusOwner(), messagePane, success ? I18n.Text("Success") : I18n.Text("Error"), success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(Command.getFocusOwner(), messagePane, success ? I18n.text("Success") : I18n.text("Error"), success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
     }
 
     public static String get(String path) throws IOException {

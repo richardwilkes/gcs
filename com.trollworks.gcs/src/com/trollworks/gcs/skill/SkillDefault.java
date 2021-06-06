@@ -168,9 +168,9 @@ public class SkillDefault {
                 builder.append(')');
             }
             if ("parry".equalsIgnoreCase(mType)) {
-                builder.append(I18n.Text(" Parry"));
+                builder.append(I18n.text(" Parry"));
             } else if ("block".equalsIgnoreCase(mType)) {
-                builder.append(I18n.Text(" Block"));
+                builder.append(I18n.text(" Block"));
             }
             return builder.toString();
         }

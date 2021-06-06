@@ -20,7 +20,7 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicToolTipUI;
 
 public class WiderToolTipUI extends BasicToolTipUI {
-    private static WiderToolTipUI sharedInstance = new WiderToolTipUI();
+    private static WiderToolTipUI INSTANCE = new WiderToolTipUI();
 
     public static void installIfNeeded() {
         if (Platform.isWindows()) {
@@ -30,7 +30,7 @@ public class WiderToolTipUI extends BasicToolTipUI {
 
     @SuppressWarnings("MethodOverridesStaticMethodOfSuperclass")
     public static ComponentUI createUI(JComponent comp) {
-        return sharedInstance;
+        return INSTANCE;
     }
 
     @Override

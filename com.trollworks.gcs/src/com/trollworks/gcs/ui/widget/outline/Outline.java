@@ -1845,7 +1845,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      *                  {@code false} to make this column the primary and only sort column.
      */
     public void setSort(Column column, boolean ascending, boolean add) {
-        StateEdit edit  = new StateEdit(mModel, I18n.Text("Sort"));
+        StateEdit edit  = new StateEdit(mModel, I18n.text("Sort"));
         int       count = mModel.getColumnCount();
         int       i;
 
@@ -2424,7 +2424,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         }
         removeDragHighlight(this);
         if (mDragChildInsertIndex != -1) {
-            StateEdit edit         = new StateEdit(mModel, I18n.Text("Row Drag & Drop"));
+            StateEdit edit         = new StateEdit(mModel, I18n.text("Row Drag & Drop"));
             Row[]     dragRows     = mModel.getDragRows();
             boolean   isFromSelf   = dragRows != null && dragRows.length > 0 && mModel.getRows().contains(dragRows[0]);
             int       count        = mModel.getRowCount();

@@ -55,7 +55,7 @@ public class AttributePanel extends JPanel {
         JPanel left = new JPanel(new PrecisionLayout());
         left.setOpaque(false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.Text("Move Up"), () -> {
+        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -66,7 +66,7 @@ public class AttributePanel extends JPanel {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.Text("Move Down"), () -> {
+        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.text("Move Down"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -77,7 +77,7 @@ public class AttributePanel extends JPanel {
             }
         });
         left.add(mMoveDownButton);
-        mAddThresholdButton = new FontAwesomeButton("\uf055", I18n.Text("Add Pool Threshold"), this::addThreshold);
+        mAddThresholdButton = new FontAwesomeButton("\uf055", I18n.text("Add Pool Threshold"), this::addThreshold);
         left.add(mAddThresholdButton);
 
         mCenter = new JPanel(new PrecisionLayout());
@@ -87,8 +87,8 @@ public class AttributePanel extends JPanel {
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(6).setMargins(0));
         wrapper.setOpaque(false);
         mIDField = addField(wrapper,
-                I18n.Text("ID"),
-                I18n.Text("A unique ID for the attribute"),
+                I18n.text("ID"),
+                I18n.text("A unique ID for the attribute"),
                 attrDef.getID(),
                 Text.makeFiller(7, 'm'),
                 FieldFactory.STRING,
@@ -110,8 +110,8 @@ public class AttributePanel extends JPanel {
                     }
                 });
         addField(wrapper,
-                I18n.Text("Name"),
-                I18n.Text("The name of this attribute, often an abbreviation"),
+                I18n.text("Name"),
+                I18n.text("The name of this attribute, often an abbreviation"),
                 attrDef.getName(),
                 Text.makeFiller(8, 'm'),
                 FieldFactory.STRING,
@@ -120,8 +120,8 @@ public class AttributePanel extends JPanel {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("Full Name"),
-                I18n.Text("The full name of this attribute (may be omitted)"),
+                I18n.text("Full Name"),
+                I18n.text("The full name of this attribute (may be omitted)"),
                 attrDef.getFullName(),
                 null,
                 FieldFactory.STRING,
@@ -154,8 +154,8 @@ public class AttributePanel extends JPanel {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("Base"),
-                I18n.Text("The base value, which may be a number or a formula"),
+                I18n.text("Base"),
+                I18n.text("The base value, which may be a number or a formula"),
                 attrDef.getAttributeBase(),
                 null,
                 FieldFactory.STRING,
@@ -164,8 +164,8 @@ public class AttributePanel extends JPanel {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("Cost"),
-                I18n.Text("The cost per point difference from the base"),
+                I18n.text("Cost"),
+                I18n.text("The cost per point difference from the base"),
                 Integer.valueOf(attrDef.getCostPerPoint()),
                 Integer.valueOf(999999),
                 FieldFactory.POSINT6,
@@ -174,8 +174,8 @@ public class AttributePanel extends JPanel {
                     mAdjustCallback.run();
                 });
         addField(wrapper,
-                I18n.Text("SM Reduction"),
-                I18n.Text("The reduction in cost (as a percentage) for each SM greater than 0"),
+                I18n.text("SM Reduction"),
+                I18n.text("The reduction in cost (as a percentage) for each SM greater than 0"),
                 Integer.valueOf(attrDef.getCostAdjPercentPerSM()),
                 Integer.valueOf(80),
                 FieldFactory.PERCENT_REDUCTION,
@@ -193,7 +193,7 @@ public class AttributePanel extends JPanel {
         JPanel right = new JPanel(new PrecisionLayout());
         right.setOpaque(false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
+        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             getParent().remove(this);
             mAttributes.remove(mAttrDef.getID());
             mAdjustCallback.run();
@@ -234,7 +234,7 @@ public class AttributePanel extends JPanel {
 
     public void addThreshold() {
         List<PoolThreshold> thresholds = mAttrDef.getThresholds();
-        PoolThreshold       threshold  = new PoolThreshold(1, 1, 0, I18n.Text("state"), "", null);
+        PoolThreshold       threshold  = new PoolThreshold(1, 1, 0, I18n.text("state"), "", null);
         thresholds.add(threshold);
         ThresholdPanel panel = new ThresholdPanel(thresholds, threshold, mAdjustCallback);
         mThresholdListPanel.add(panel, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());

@@ -217,7 +217,7 @@ public class Skill extends ListRow implements HasSourceReference {
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Skill");
+        return I18n.text("Skill");
     }
 
     @Override
@@ -227,7 +227,7 @@ public class Skill extends ListRow implements HasSourceReference {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Skill");
+        return I18n.text("Skill");
     }
 
     @Override
@@ -419,7 +419,7 @@ public class Skill extends ListRow implements HasSourceReference {
     /** @return The tooltTip to describe how the points were calculated */
     public String getPointsToolTip() {
         if (canHaveChildren()) {
-            return I18n.Text("The sum of the points spent by children of this container");
+            return I18n.text("The sum of the points spent by children of this container");
         }
         GURPSCharacter character = getCharacter();
         if (character != null) {
@@ -428,7 +428,7 @@ public class Skill extends ListRow implements HasSourceReference {
             character.getSkillPointComparedIntegerBonusFor(ID_POINTS + "*", name, getSpecialization(), getCategories(), tooltip);
             character.getIntegerBonusFor(ID_POINTS + "/" + name.toLowerCase(), tooltip);
             if (!tooltip.isEmpty()) {
-                return I18n.Text("Includes modifiers from") + tooltip;
+                return I18n.text("Includes modifiers from") + tooltip;
             }
         }
         return "";
@@ -702,7 +702,7 @@ public class Skill extends ListRow implements HasSourceReference {
             if (!buffer.isEmpty()) {
                 buffer.append(' ');
             }
-            buffer.append(I18n.Text("Default: "));
+            buffer.append(I18n.text("Default: "));
             buffer.append(skill);
             buffer.append(mDefaultedFrom.getModifierAsString());
         }
@@ -772,7 +772,7 @@ public class Skill extends ListRow implements HasSourceReference {
                     bonus = character.getEncumbranceLevel(true).getEncumbrancePenalty() * encPenaltyMult;
                     level += bonus;
                     if (bonus != 0) {
-                        toolTip.append(String.format(I18n.Text("\nEncumbrance [%d]"), Integer.valueOf(bonus)));
+                        toolTip.append(String.format(I18n.text("\nEncumbrance [%d]"), Integer.valueOf(bonus)));
                     }
                 }
             }

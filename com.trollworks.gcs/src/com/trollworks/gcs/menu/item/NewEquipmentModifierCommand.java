@@ -25,8 +25,8 @@ import java.awt.event.KeyEvent;
 public final class NewEquipmentModifierCommand extends Command {
     public static final String                      CMD_NEW_EQUIPMENT_MODIFIER           = "NewEquipmentModifier";
     public static final String                      CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER = "NewEquipmentModifierContainer";
-    public static final NewEquipmentModifierCommand INSTANCE                             = new NewEquipmentModifierCommand(false, I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, COMMAND_MODIFIER);
-    public static final NewEquipmentModifierCommand CONTAINER_INSTANCE                   = new NewEquipmentModifierCommand(true, I18n.Text("New Equipment Modifier Container"), CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER, SHIFTED_COMMAND_MODIFIER);
+    public static final NewEquipmentModifierCommand INSTANCE                             = new NewEquipmentModifierCommand(false, I18n.text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, COMMAND_MODIFIER);
+    public static final NewEquipmentModifierCommand CONTAINER_INSTANCE                   = new NewEquipmentModifierCommand(true, I18n.text("New Equipment Modifier Container"), CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     private             boolean                     mContainer;
 
     private NewEquipmentModifierCommand(boolean container, String title, String cmd, int modifiers) {

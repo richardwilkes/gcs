@@ -124,18 +124,18 @@ public class SkillPrereq extends NameLevelPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(I18n.Text("{0}{1} a skill whose name {2}"), prefix, hasText(), nameCriteria.toString()));
+            builder.append(MessageFormat.format(I18n.text("{0}{1} a skill whose name {2}"), prefix, getHasText(), nameCriteria.toString()));
             boolean notAnySpecialization = !mSpecializationCriteria.isTypeAnything();
             if (notAnySpecialization) {
-                builder.append(MessageFormat.format(I18n.Text(", specialization {0},"), mSpecializationCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.text(", specialization {0},"), mSpecializationCriteria.toString()));
             }
             if (techLevel == null) {
-                builder.append(MessageFormat.format(I18n.Text(" and level {0}"), levelCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.text(" and level {0}"), levelCriteria.toString()));
             } else {
                 if (notAnySpecialization) {
                     builder.append(",");
                 }
-                builder.append(MessageFormat.format(I18n.Text(" level {0} and tech level matches\n"), levelCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.text(" level {0} and tech level matches\n"), levelCriteria.toString()));
             }
         }
         return satisfied;

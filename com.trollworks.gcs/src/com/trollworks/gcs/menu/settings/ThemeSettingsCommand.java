@@ -22,7 +22,7 @@ public final class ThemeSettingsCommand extends Command {
     public static final ThemeSettingsCommand INSTANCE = new ThemeSettingsCommand();
 
     private ThemeSettingsCommand() {
-        super(I18n.Text("Theme…"), "ThemeSettings");
+        super(I18n.text("Theme…"), "ThemeSettings");
     }
 
     @Override

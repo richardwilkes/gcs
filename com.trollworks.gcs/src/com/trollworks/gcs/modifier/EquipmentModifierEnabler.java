@@ -66,9 +66,9 @@ public final class EquipmentModifierEnabler extends JPanel {
             Equipment                eqp         = list.get(i);
             boolean                  hasMore     = i != count - 1;
             EquipmentModifierEnabler panel       = new EquipmentModifierEnabler(eqp, count - i - 1);
-            String                   applyTitle  = I18n.Text("Apply");
-            String                   cancelTitle = I18n.Text("Cancel");
-            switch (WindowUtils.showOptionDialog(comp, panel, I18n.Text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, eqp.getIcon(true), hasMore ? new String[]{applyTitle, cancelTitle, I18n.Text("Cancel Remaining")} : new String[]{applyTitle, cancelTitle}, applyTitle)) {
+            String                   applyTitle  = I18n.text("Apply");
+            String                   cancelTitle = I18n.text("Cancel");
+            switch (WindowUtils.showOptionDialog(comp, panel, I18n.text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, eqp.getIcon(true), hasMore ? new String[]{applyTitle, cancelTitle, I18n.text("Cancel Remaining")} : new String[]{applyTitle, cancelTitle}, applyTitle)) {
             case JOptionPane.YES_OPTION:
                 panel.applyChanges();
                 modified = true;
@@ -98,7 +98,7 @@ public final class EquipmentModifierEnabler extends JPanel {
         JLabel label = new JLabel(Text.truncateIfNecessary(equipment.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
         top.setBorder(new EmptyBorder(0, 0, 15, 0));
         if (remaining > 0) {
-            top.add(new JLabel(MessageFormat.format(I18n.Text("{0} equipment remaining to be processed."), Integer.valueOf(remaining)), SwingConstants.CENTER));
+            top.add(new JLabel(MessageFormat.format(I18n.text("{0} equipment remaining to be processed."), Integer.valueOf(remaining)), SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
         label.setOpaque(true);

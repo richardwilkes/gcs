@@ -39,7 +39,7 @@ public final class ToggleStateCommand extends Command {
     public static final ToggleStateCommand INSTANCE         = new ToggleStateCommand();
 
     private ToggleStateCommand() {
-        super(I18n.Text("Toggle State"), CMD_TOGGLE_STATE, KeyEvent.VK_QUOTE);
+        super(I18n.text("Toggle State"), CMD_TOGGLE_STATE, KeyEvent.VK_QUOTE);
     }
 
     @Override

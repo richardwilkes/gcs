@@ -31,12 +31,12 @@ public enum AdvantageModifierColumnID {
     ENABLED {
         @Override
         public String toString() {
-            return I18n.Text("Enabled");
+            return I18n.text("Enabled");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("Whether this modifier has been enabled or not");
+            return I18n.text("Whether this modifier has been enabled or not");
         }
 
         @Override
@@ -58,12 +58,12 @@ public enum AdvantageModifierColumnID {
     DESCRIPTION {
         @Override
         public String toString() {
-            return I18n.Text("Modifier");
+            return I18n.text("Modifier");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The name and notes describing this modifier");
+            return I18n.text("The name and notes describing this modifier");
         }
 
         @Override
@@ -88,12 +88,12 @@ public enum AdvantageModifierColumnID {
     COST_MODIFIER_TOTAL {
         @Override
         public String toString() {
-            return I18n.Text("Cost Modifier");
+            return I18n.text("Cost Modifier");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The cost modifier for this modifier");
+            return I18n.text("The cost modifier for this modifier");
         }
 
         @Override
@@ -114,12 +114,12 @@ public enum AdvantageModifierColumnID {
     REFERENCE {
         @Override
         public String toString() {
-            return I18n.Text("Ref");
+            return I18n.text("Ref");
         }
 
         @Override
         public String getToolTip() {
-            return PageRefCell.getStdToolTip(I18n.Text("advantage modifier"));
+            return PageRefCell.getStdToolTip(I18n.text("advantage modifier"));
         }
 
         @Override

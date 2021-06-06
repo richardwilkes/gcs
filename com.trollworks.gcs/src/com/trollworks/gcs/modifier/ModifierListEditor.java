@@ -73,8 +73,8 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         panel.add(header, BorderLayout.NORTH);
         panel.add(mOutline, BorderLayout.CENTER);
 
-        mAddButton = new FontAwesomeButton("\uf055", I18n.Text("Add a modifier"), this::addModifier);
-        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.Text("Remove the selected modifiers"), () -> mOutline.deleteSelection());
+        mAddButton = new FontAwesomeButton("\uf055", I18n.text("Add a modifier"), this::addModifier);
+        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove the selected modifiers"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
 
         JPanel right = new JPanel(new PrecisionLayout().setMargins(5));
@@ -170,7 +170,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
 
     @Override
     public String toString() {
-        return I18n.Text("Modifiers");
+        return I18n.text("Modifiers");
     }
 
     class ModifierOutline extends Outline {

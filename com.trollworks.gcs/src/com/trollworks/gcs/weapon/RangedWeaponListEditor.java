@@ -43,15 +43,15 @@ public class RangedWeaponListEditor extends WeaponListEditor {
     @Override
     protected void createFields(Container parent) {
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
-        mAccuracy = addField(parent, panel, "99+99*", I18n.Text("Accuracy"));
-        mRateOfFire = addField(panel, panel, "999*", I18n.Text("Rate of Fire"));
-        mRange = addField(panel, panel, null, I18n.Text("Range"));
+        mAccuracy = addField(parent, panel, "99+99*", I18n.text("Accuracy"));
+        mRateOfFire = addField(panel, panel, "999*", I18n.text("Rate of Fire"));
+        mRange = addField(panel, panel, null, I18n.text("Range"));
         parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
-        mRecoil = addField(parent, panel, "9999", I18n.Text("Recoil"));
-        mShots = addField(panel, panel, null, I18n.Text("Shots"));
-        mBulk = addField(panel, panel, "9999", I18n.Text("Bulk"));
+        mRecoil = addField(parent, panel, "9999", I18n.text("Recoil"));
+        mShots = addField(panel, panel, null, I18n.text("Shots"));
+        mBulk = addField(panel, panel, "9999", I18n.text("Bulk"));
         parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
@@ -132,6 +132,6 @@ public class RangedWeaponListEditor extends WeaponListEditor {
 
     @Override
     public String toString() {
-        return I18n.Text("Ranged Weapon");
+        return I18n.text("Ranged Weapon");
     }
 }

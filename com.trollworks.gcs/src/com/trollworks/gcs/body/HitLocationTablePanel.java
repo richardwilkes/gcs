@@ -82,13 +82,13 @@ public class HitLocationTablePanel extends BandedPanel {
     private void fill() {
         mFirstField = null;
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(isSubTable() ? 5 : 7).setMargins(0));
-        wrapper.add(new FontAwesomeButton("\uf055", I18n.Text("Add Hit Location"), this::addHitLocation));
+        wrapper.add(new FontAwesomeButton("\uf055", I18n.text("Add Hit Location"), this::addHitLocation));
         if (isSubTable()) {
-            wrapper.add(WidgetHelpers.createLabel(I18n.Text("Sub-Table"), null), new PrecisionLayoutData().setFillHorizontalAlignment());
+            wrapper.add(WidgetHelpers.createLabel(I18n.text("Sub-Table"), null), new PrecisionLayoutData().setFillHorizontalAlignment());
         } else {
             mFirstField = addField(wrapper,
-                    I18n.Text("ID"),
-                    I18n.Text("An ID for the hit location table"),
+                    I18n.text("ID"),
+                    I18n.text("An ID for the hit location table"),
                     mLocations.getID(),
                     Text.makeFiller(8, 'm'),
                     FieldFactory.STRING,
@@ -107,8 +107,8 @@ public class HitLocationTablePanel extends BandedPanel {
                         }
                     });
             addField(wrapper,
-                    I18n.Text("Name"),
-                    I18n.Text("The name of this hit location table"),
+                    I18n.text("Name"),
+                    I18n.text("The name of this hit location table"),
                     mLocations.getName(),
                     null,
                     FieldFactory.STRING,
@@ -118,8 +118,8 @@ public class HitLocationTablePanel extends BandedPanel {
                     });
         }
         EditorField field = addField(wrapper,
-                I18n.Text("Roll"),
-                I18n.Text("The dice to roll on the table"),
+                I18n.text("Roll"),
+                I18n.text("The dice to roll on the table"),
                 mLocations.getRoll(),
                 new Dice(100, 100, 100),
                 new DefaultFormatterFactory(new DiceFormatter(null)),
@@ -131,7 +131,7 @@ public class HitLocationTablePanel extends BandedPanel {
             mFirstField = field;
         }
         if (isSubTable()) {
-            FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.Text("Remove"), () -> {
+            FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
                 getParent().remove(this);
                 mLocations.getOwningLocation().setSubTable(null);
                 mAdjustCallback.run();
@@ -182,7 +182,7 @@ public class HitLocationTablePanel extends BandedPanel {
     }
 
     public void addHitLocation() {
-        HitLocation location = new HitLocation("id", I18n.Text("choice name"), I18n.Text("table name"), 0, 0, 0, I18n.Text("description"));
+        HitLocation location = new HitLocation("id", I18n.text("choice name"), I18n.text("table name"), 0, 0, 0, I18n.text("description"));
         mLocations.addLocation(location);
         mLocations.update();
         mAdjustCallback.run();

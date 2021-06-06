@@ -59,7 +59,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
         add(mFilterField);
 
         mHits = new JLabel();
-        mHits.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("The number of matches found")));
+        mHits.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The number of matches found")));
         adjustHits();
         add(mHits);
 
@@ -203,7 +203,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
             getDocument().addDocumentListener(Search.this);
             addKeyListener(Search.this);
             addFocusListener(Search.this);
-            setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Enter text here and press RETURN to select all matching items")));
+            setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Enter text here and press RETURN to select all matching items")));
             // This client property is specific to Mac OS X
             putClientProperty("JTextField.variant", "search");
             setMinimumSize(new Dimension(60, getPreferredSize().height));
@@ -217,7 +217,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
                 bounds.x += 4;
                 bounds.width -= 4;
                 gc.setColor(Color.GRAY);
-                TextDrawing.draw(gc, bounds, I18n.Text("Search"), SwingConstants.LEFT, SwingConstants.CENTER);
+                TextDrawing.draw(gc, bounds, I18n.text("Search"), SwingConstants.LEFT, SwingConstants.CENTER);
             }
         }
     }

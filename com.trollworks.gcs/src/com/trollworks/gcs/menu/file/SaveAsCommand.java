@@ -32,7 +32,7 @@ public final class SaveAsCommand extends Command {
     public static final SaveAsCommand INSTANCE = new SaveAsCommand();
 
     private SaveAsCommand() {
-        super(I18n.Text("Save As…"), CMD_SAVE_AS, KeyEvent.VK_S, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.text("Save As…"), CMD_SAVE_AS, KeyEvent.VK_S, SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override
@@ -57,7 +57,7 @@ public final class SaveAsCommand extends Command {
                 name = "untitled";
             }
             Path path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable),
-                    I18n.Text("Save As…"), Preferences.getInstance().getLastDir().resolve(name),
+                    I18n.text("Save As…"), Preferences.getInstance().getLastDir().resolve(name),
                     saveable.getFileType().getFilter());
             if (saveable.saveTo(path)) {
                 Preferences.getInstance().addRecentFile(path);

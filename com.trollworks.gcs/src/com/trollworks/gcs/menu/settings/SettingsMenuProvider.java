@@ -41,7 +41,7 @@ public final class SettingsMenuProvider {
     }
 
     public static JMenu createMenu() {
-        JMenu menu = new JMenu(I18n.Text("Settings"));
+        JMenu menu = new JMenu(I18n.text("Settings"));
         menu.add(new DynamicMenuItem(PreferencesCommand.INSTANCE));
         menu.addSeparator();
 

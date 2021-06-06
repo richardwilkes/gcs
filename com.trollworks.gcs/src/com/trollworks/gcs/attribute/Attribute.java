@@ -105,7 +105,7 @@ public class Attribute {
         if (old != value) {
             AttributeDef def = getAttrDef(character);
             if (def != null) {
-                character.postUndoEdit(String.format(I18n.Text("%s Change"), def.getName()), (c, v) -> setIntValue(c, ((Integer) v).intValue()), Integer.valueOf(old), Integer.valueOf(value));
+                character.postUndoEdit(String.format(I18n.text("%s Change"), def.getName()), (c, v) -> setIntValue(c, ((Integer) v).intValue()), Integer.valueOf(old), Integer.valueOf(value));
                 mAdjustment = value - (def.getBaseValue(character) + mBonus);
                 character.notifyOfChange();
             }
@@ -117,7 +117,7 @@ public class Attribute {
         if (old != value) {
             AttributeDef def = getAttrDef(character);
             if (def != null) {
-                character.postUndoEdit(String.format(I18n.Text("%s Change"), def.getName()), (c, v) -> setDoubleValue(c, ((Double) v).doubleValue()), Double.valueOf(old), Double.valueOf(value));
+                character.postUndoEdit(String.format(I18n.text("%s Change"), def.getName()), (c, v) -> setDoubleValue(c, ((Double) v).doubleValue()), Double.valueOf(old), Double.valueOf(value));
                 mAdjustment = value - (def.getBaseValue(character) + mBonus);
                 character.notifyOfChange();
             }
@@ -146,7 +146,7 @@ public class Attribute {
         if (mDamage != damage) {
             AttributeDef def = getAttrDef(character);
             if (def != null) {
-                character.postUndoEdit(String.format(I18n.Text("Current %s Change"), def.getName()), (c, v) -> setDamage(c, ((Integer) v).intValue()), Integer.valueOf(mDamage), Integer.valueOf(damage));
+                character.postUndoEdit(String.format(I18n.text("Current %s Change"), def.getName()), (c, v) -> setDamage(c, ((Integer) v).intValue()), Integer.valueOf(mDamage), Integer.valueOf(damage));
                 mDamage = damage;
                 character.notifyOfChange();
             }

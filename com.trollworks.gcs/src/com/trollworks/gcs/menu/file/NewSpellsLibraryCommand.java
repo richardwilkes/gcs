@@ -23,7 +23,7 @@ public final class NewSpellsLibraryCommand extends Command {
     public static final NewSpellsLibraryCommand INSTANCE = new NewSpellsLibraryCommand();
 
     private NewSpellsLibraryCommand() {
-        super(I18n.Text("New Spells Library"), "NewSpellsLibrary");
+        super(I18n.text("New Spells Library"), "NewSpellsLibrary");
     }
 
     @Override

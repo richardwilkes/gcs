@@ -82,12 +82,12 @@ public final class GCS {
         I18n.initialize();
 
         // Setup the copyright notices and such that rely on the version and year info
-        COPYRIGHT = String.format(I18n.Text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
-        COPYRIGHT_FOOTER = String.format("GCS " + I18n.Text("is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
+        COPYRIGHT = String.format(I18n.text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
+        COPYRIGHT_FOOTER = String.format("GCS " + I18n.text("is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");
         if (VERSION.isZero()) {
-            buffer.append(I18n.Text("(development)"));
+            buffer.append(I18n.text("(development)"));
         } else {
             buffer.append(VERSION);
         }
@@ -152,7 +152,7 @@ public final class GCS {
                         }
                     }
                     if (missingMarginsArg) {
-                        msgs.add(I18n.Text("missing argument for --margins"));
+                        msgs.add(I18n.text("missing argument for --margins"));
                     }
                 }
                 case "--paper" -> {
@@ -172,7 +172,7 @@ public final class GCS {
                         }
                     }
                     if (missingPaperArg) {
-                        msgs.add(I18n.Text("missing argument for --paper"));
+                        msgs.add(I18n.text("missing argument for --paper"));
                     }
                 }
                 case "--png" -> generatePNG = true;
@@ -194,12 +194,12 @@ public final class GCS {
                         }
                     }
                     if (missingTemplateArg) {
-                        msgs.add(I18n.Text("missing argument for --text"));
+                        msgs.add(I18n.text("missing argument for --text"));
                     }
                 }
                 case "--loadsave" -> loadSave = true;
                 case "-v", "--version" -> showVersion = true;
-                default -> msgs.add(I18n.Text("unknown option: ") + parts[0]);
+                default -> msgs.add(I18n.text("unknown option: ") + parts[0]);
                 }
             } else {
                 files.add(Paths.get(arg));
@@ -268,7 +268,7 @@ public final class GCS {
                 OpenDataFileCommand.open(file);
             }
             if (Platform.isMacintosh() && System.getProperty("java.home").toLowerCase().contains("/apptranslocation/")) {
-                WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.Text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + "xattr -d com.apple.quarantine \"/Applications/GCS.app\"");
+                WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + "xattr -d com.apple.quarantine \"/Applications/GCS.app\"");
             }
             setNotificationAllowed(true);
         });
@@ -277,25 +277,25 @@ public final class GCS {
     private static void showHelp() {
         System.out.println(APP_BANNER);
         System.out.println();
-        System.out.println(I18n.Text("Available options:"));
+        System.out.println(I18n.text("Available options:"));
         System.out.println();
         List<String> options = new ArrayList<>();
-        options.add(I18n.Text("-h, --help"));
-        options.add(I18n.Text("Displays a description of each option."));
-        options.add(I18n.Text("--loadsave"));
-        options.add(I18n.Text("Load and then save all files specified on the command line. If a directory is specified, it will be traversed recursively and all files found will be loaded and saved. This operation is intended to easily bring files up to the current version's data format. After all files have been processed, GCS will exit."));
-        options.add(I18n.Text("--margins <margins>"));
-        options.add(I18n.Text("When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'."));
-        options.add(I18n.Text("--paper <size>"));
-        options.add(I18n.Text("When generating PDF or PNG from the command line, allows you to specify a paper size to use, rather than the one embedded in the file. Valid choices are: LETTER, A4, or the width and height, expressed in inches and separated by an 'x', such as '5x7'."));
-        options.add(I18n.Text("--pdf"));
-        options.add(I18n.Text("Create PDF versions of sheets specified on the command line."));
-        options.add(I18n.Text("--png"));
-        options.add(I18n.Text("Create PNG versions of sheets specified on the command line."));
-        options.add(I18n.Text("--text <file>"));
-        options.add(I18n.Text("Create text versions of sheets specified on the command line using the specified template file."));
-        options.add(I18n.Text("-v, --version"));
-        options.add(I18n.Text("Displays the program version."));
+        options.add(I18n.text("-h, --help"));
+        options.add(I18n.text("Displays a description of each option."));
+        options.add(I18n.text("--loadsave"));
+        options.add(I18n.text("Load and then save all files specified on the command line. If a directory is specified, it will be traversed recursively and all files found will be loaded and saved. This operation is intended to easily bring files up to the current version's data format. After all files have been processed, GCS will exit."));
+        options.add(I18n.text("--margins <margins>"));
+        options.add(I18n.text("When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'."));
+        options.add(I18n.text("--paper <size>"));
+        options.add(I18n.text("When generating PDF or PNG from the command line, allows you to specify a paper size to use, rather than the one embedded in the file. Valid choices are: LETTER, A4, or the width and height, expressed in inches and separated by an 'x', such as '5x7'."));
+        options.add(I18n.text("--pdf"));
+        options.add(I18n.text("Create PDF versions of sheets specified on the command line."));
+        options.add(I18n.text("--png"));
+        options.add(I18n.text("Create PNG versions of sheets specified on the command line."));
+        options.add(I18n.text("--text <file>"));
+        options.add(I18n.text("Create text versions of sheets specified on the command line using the specified template file."));
+        options.add(I18n.text("-v, --version"));
+        options.add(I18n.text("Displays the program version."));
         int longest = 0;
         int length  = options.size();
         for (int i = 0; i < length; i += 2) {

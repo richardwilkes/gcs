@@ -28,7 +28,7 @@ public final class SwapDefaultsCommand extends Command {
     public static final SwapDefaultsCommand INSTANCE          = new SwapDefaultsCommand();
 
     private SwapDefaultsCommand() {
-        super(I18n.Text("Swap Defaults"), CMD_SWAP_DEFAULTS, KeyEvent.VK_X, Command.SHIFTED_COMMAND_MODIFIER);
+        super(I18n.text("Swap Defaults"), CMD_SWAP_DEFAULTS, KeyEvent.VK_X, Command.SHIFTED_COMMAND_MODIFIER);
     }
 
     @Override

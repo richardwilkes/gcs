@@ -28,7 +28,7 @@ public final class CutCommand extends Command {
     public static final CutCommand INSTANCE = new CutCommand();
 
     private CutCommand() {
-        super(I18n.Text("Cut"), CMD_CUT, KeyEvent.VK_X);
+        super(I18n.text("Cut"), CMD_CUT, KeyEvent.VK_X);
     }
 
     @Override

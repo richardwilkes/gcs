@@ -32,15 +32,15 @@ public class LiftPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public LiftPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(2, 2, 0), I18n.Text("Lifting & Moving Things"));
+        super(new ColumnLayout(2, 2, 0), I18n.text("Lifting & Moving Things"));
         GURPSCharacter gch = sheet.getCharacter();
-        createRow(sheet, gch.getBasicLift(), I18n.Text("Basic Lift"), I18n.Text("The weight the character can lift overhead with one hand in one second"));
-        createRow(sheet, gch.getOneHandedLift(), I18n.Text("One-Handed Lift"), I18n.Text("The weight the character can lift overhead with one hand in two seconds"));
-        createRow(sheet, gch.getTwoHandedLift(), I18n.Text("Two-Handed Lift"), I18n.Text("The weight the character can lift overhead with both hands in four seconds"));
-        createRow(sheet, gch.getShoveAndKnockOver(), I18n.Text("Shove & Knock Over"), I18n.Text("The weight of an object the character can shove and knock over"));
-        createRow(sheet, gch.getRunningShoveAndKnockOver(), I18n.Text("Running Shove & Knock Over"), I18n.Text("The weight of an object the character can shove  and knock over with a running start"));
-        createRow(sheet, gch.getCarryOnBack(), I18n.Text("Carry On Back"), I18n.Text("The weight the character can carry slung across the back"));
-        createRow(sheet, gch.getShiftSlightly(), I18n.Text("Shift Slightly"), I18n.Text("The weight of an object the character can shift slightly on a floor"));
+        createRow(sheet, gch.getBasicLift(), I18n.text("Basic Lift"), I18n.text("The weight the character can lift overhead with one hand in one second"));
+        createRow(sheet, gch.getOneHandedLift(), I18n.text("One-Handed Lift"), I18n.text("The weight the character can lift overhead with one hand in two seconds"));
+        createRow(sheet, gch.getTwoHandedLift(), I18n.text("Two-Handed Lift"), I18n.text("The weight the character can lift overhead with both hands in four seconds"));
+        createRow(sheet, gch.getShoveAndKnockOver(), I18n.text("Shove & Knock Over"), I18n.text("The weight of an object the character can shove and knock over"));
+        createRow(sheet, gch.getRunningShoveAndKnockOver(), I18n.text("Running Shove & Knock Over"), I18n.text("The weight of an object the character can shove  and knock over with a running start"));
+        createRow(sheet, gch.getCarryOnBack(), I18n.text("Carry On Back"), I18n.text("The weight the character can carry slung across the back"));
+        createRow(sheet, gch.getShiftSlightly(), I18n.text("Shift Slightly"), I18n.text("The weight of an object the character can shift slightly on a floor"));
     }
 
     private void createRow(CharacterSheet sheet, WeightValue weight, String title, String tooltip) {

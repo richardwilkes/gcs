@@ -33,11 +33,11 @@ public final class NewSkillCommand extends Command {
     /** The action command this command will issue. */
     public static final String          CMD_NEW_TECHNIQUE       = "NewTechnique";
     /** The "New Skill" command. */
-    public static final NewSkillCommand INSTANCE                = new NewSkillCommand(false, false, I18n.Text("New Skill"), CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
+    public static final NewSkillCommand INSTANCE                = new NewSkillCommand(false, false, I18n.text("New Skill"), CMD_NEW_SKILL, KeyEvent.VK_K, COMMAND_MODIFIER);
     /** The "New Skill Container" command. */
-    public static final NewSkillCommand CONTAINER_INSTANCE      = new NewSkillCommand(true, false, I18n.Text("New Skill Container"), CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
+    public static final NewSkillCommand CONTAINER_INSTANCE      = new NewSkillCommand(true, false, I18n.text("New Skill Container"), CMD_NEW_SKILL_CONTAINER, KeyEvent.VK_K, SHIFTED_COMMAND_MODIFIER);
     /** The "New Technique" command. */
-    public static final NewSkillCommand TECHNIQUE_INSTANCE      = new NewSkillCommand(false, true, I18n.Text("New Technique"), CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
+    public static final NewSkillCommand TECHNIQUE_INSTANCE      = new NewSkillCommand(false, true, I18n.text("New Technique"), CMD_NEW_TECHNIQUE, KeyEvent.VK_T, COMMAND_MODIFIER);
     private             boolean         mContainer;
     private             boolean         mTechnique;
 

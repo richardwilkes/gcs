@@ -74,12 +74,12 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public String getDecrementTitle() {
-        return I18n.Text("Decrement Points");
+        return I18n.text("Decrement Points");
     }
 
     @Override
     public String getIncrementTitle() {
-        return I18n.Text("Increment Points");
+        return I18n.text("Increment Points");
     }
 
     @Override
@@ -142,12 +142,12 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public String getIncrementSkillLevelTitle() {
-        return I18n.Text("Increment Spell Level");
+        return I18n.text("Increment Spell Level");
     }
 
     @Override
     public String getDecrementSkillLevelTitle() {
-        return I18n.Text("Decrement Spell Level");
+        return I18n.text("Decrement Spell Level");
     }
 
     @Override

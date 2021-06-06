@@ -50,7 +50,7 @@ public final class PreferencesWindow extends BaseWindow implements ActionListene
     }
 
     private PreferencesWindow() {
-        super(I18n.Text("Preferences"));
+        super(I18n.text("Preferences"));
         mTabPanel = new JTabbedPane();
         addTab(new SheetPreferences(this));
         addTab(new DisplayPreferences(this));
@@ -79,7 +79,7 @@ public final class PreferencesWindow extends BaseWindow implements ActionListene
 
     private JPanel createResetPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        mResetButton = new JButton(I18n.Text("Reset to Factory Defaults"));
+        mResetButton = new JButton(I18n.text("Reset to Factory Defaults"));
         mResetButton.addActionListener(this);
         panel.add(mResetButton);
         return panel;

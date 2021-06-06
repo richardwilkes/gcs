@@ -68,7 +68,7 @@ public class SpellPrereqEditor extends PrereqEditor {
     }
 
     private JComboBox<Object> addChangeTypePopup() {
-        String[] titles    = {I18n.Text("whose name"), I18n.Text("of any kind"), I18n.Text("whose college name"), I18n.Text("from different colleges"), I18n.Text("whose category name")};
+        String[] titles    = {I18n.text("whose name"), I18n.text("of any kind"), I18n.text("whose college name"), I18n.text("from different colleges"), I18n.text("whose category name")};
         int      selection = 0;
         String   current   = ((SpellPrereq) mPrereq).getType();
         int      length    = TYPES.length;

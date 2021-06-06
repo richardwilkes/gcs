@@ -125,11 +125,11 @@ public class AdvantagePrereq extends NameLevelPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(I18n.Text("{0}{1} an advantage whose name {2}"), prefix, hasText(), nameCriteria.toString()));
+            builder.append(MessageFormat.format(I18n.text("{0}{1} an advantage whose name {2}"), prefix, getHasText(), nameCriteria.toString()));
             if (!mNotesCriteria.isTypeAnything()) {
-                builder.append(MessageFormat.format(I18n.Text(", notes {0},"), mNotesCriteria.toString()));
+                builder.append(MessageFormat.format(I18n.text(", notes {0},"), mNotesCriteria.toString()));
             }
-            builder.append(MessageFormat.format(I18n.Text(" and level {0}"), levelCriteria.toString()));
+            builder.append(MessageFormat.format(I18n.text(" and level {0}"), levelCriteria.toString()));
         }
         return satisfied;
     }

@@ -30,7 +30,7 @@ public final class DeleteCommand extends Command {
     public static final DeleteCommand INSTANCE = new DeleteCommand();
 
     private DeleteCommand() {
-        super(I18n.Text("Delete"), CMD_DELETE);
+        super(I18n.text("Delete"), CMD_DELETE);
     }
 
     @Override

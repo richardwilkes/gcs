@@ -74,9 +74,9 @@ public final class Namer extends JPanel {
             ListRow  row     = rowList.get(i);
             boolean  hasMore = i != count - 1;
             int      type    = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-            String[] options = hasMore ? new String[]{I18n.Text("Apply"), I18n.Text("Cancel"), I18n.Text("Cancel Remaining")} : new String[]{I18n.Text("Apply"), I18n.Text("Cancel")};
+            String[] options = hasMore ? new String[]{I18n.text("Apply"), I18n.text("Cancel"), I18n.text("Cancel Remaining")} : new String[]{I18n.text("Apply"), I18n.text("Cancel")};
             Namer    panel   = new Namer(row, setList.get(i), count - i - 1);
-            switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(I18n.Text("Name {0}"), row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, I18n.Text("Apply"))) {
+            switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(I18n.text("Name {0}"), row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, I18n.text("Apply"))) {
             case JOptionPane.YES_OPTION:
                 panel.applyChanges();
                 modified = true;
@@ -99,7 +99,7 @@ public final class Namer extends JPanel {
 
         FlexColumn column = new FlexColumn();
         if (remaining > 0) {
-            label = new JLabel(remaining == 1 ? I18n.Text("1 item remaining to be named.") : MessageFormat.format(I18n.Text("{0} items remaining to be named."), Integer.valueOf(remaining)), SwingConstants.CENTER);
+            label = new JLabel(remaining == 1 ? I18n.text("1 item remaining to be named.") : MessageFormat.format(I18n.text("{0} items remaining to be named."), Integer.valueOf(remaining)), SwingConstants.CENTER);
             Dimension size = label.getMaximumSize();
             size.width = LayoutSize.MAXIMUM_SIZE;
             label.setMaximumSize(size);

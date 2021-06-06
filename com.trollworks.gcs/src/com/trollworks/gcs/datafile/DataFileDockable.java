@@ -105,7 +105,7 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
             getDockContainer().updateTitle(this);
             return true;
         }
-        WindowUtils.showError(this, I18n.Text("An error occurred while trying to save the file."));
+        WindowUtils.showError(this, I18n.text("An error occurred while trying to save the file."));
         return false;
     }
 

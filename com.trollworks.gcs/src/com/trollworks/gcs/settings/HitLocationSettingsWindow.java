@@ -93,7 +93,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     }
 
     private static String createTitle(GURPSCharacter gchar) {
-        return gchar == null ? I18n.Text("Default Hit Locations") : String.format(I18n.Text("Hit Locations for %s"), gchar.getProfile().getName());
+        return gchar == null ? I18n.text("Default Hit Locations") : String.format(I18n.text("Hit Locations for %s"), gchar.getProfile().getName());
     }
 
     private HitLocationSettingsWindow(GURPSCharacter gchar) {
@@ -101,7 +101,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         mCharacter = gchar;
         Container content = getContentPane();
         JPanel    header  = new JPanel(new PrecisionLayout().setMargins(5, 10, 5, 10).setHorizontalSpacing(10));
-        mMenuButton = new FontAwesomeButton("\uf0c9", I18n.Text("Menu"), this::actionMenu);
+        mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"), this::actionMenu);
         header.add(mMenuButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
         content.add(header, BorderLayout.NORTH);
         mLocationsPanel = new HitLocationTablePanel(getHitLocations(), () -> {
@@ -127,10 +127,10 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
 
     private void actionMenu() {
         JPopupMenu menu = new JPopupMenu();
-        menu.add(createMenuItem(I18n.Text("Import…"), this::importData, true));
-        menu.add(createMenuItem(I18n.Text("Export…"), this::exportData, true));
+        menu.add(createMenuItem(I18n.text("Import…"), this::importData, true));
+        menu.add(createMenuItem(I18n.text("Export…"), this::exportData, true));
         menu.addSeparator();
-        menu.add(createMenuItem(mCharacter == null ? I18n.Text("Factory Default Hit Locations") : I18n.Text("Default Hit Locations"), this::reset, mResetEnabled));
+        menu.add(createMenuItem(mCharacter == null ? I18n.text("Factory Default Hit Locations") : I18n.text("Default Hit Locations"), this::reset, mResetEnabled));
         for (LibraryHitLocationTables tables : LibraryHitLocationTables.get()) {
             menu.addSeparator();
             menu.add(createMenuItem(tables.toString(), null, false));
@@ -149,21 +149,21 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     }
 
     private void importData() {
-        Path path = StdFileDialog.showOpenDialog(this, I18n.Text("Import…"),
+        Path path = StdFileDialog.showOpenDialog(this, I18n.text("Import…"),
                 FileType.HIT_LOCATIONS.getFilter());
         if (path != null) {
             try {
                 reset(new HitLocationTable(path));
             } catch (IOException ioe) {
                 Log.error(ioe);
-                WindowUtils.showError(this, I18n.Text("Unable to import hit locations."));
+                WindowUtils.showError(this, I18n.text("Unable to import hit locations."));
             }
         }
     }
 
     private void exportData() {
-        Path path = StdFileDialog.showSaveDialog(this, I18n.Text("Export…"),
-                Preferences.getInstance().getLastDir().resolve(I18n.Text("hit_locations")),
+        Path path = StdFileDialog.showSaveDialog(this, I18n.text("Export…"),
+                Preferences.getInstance().getLastDir().resolve(I18n.text("hit_locations")),
                 FileType.HIT_LOCATIONS.getFilter());
         if (path != null) {
             SafeFileUpdater transaction = new SafeFileUpdater();
@@ -182,7 +182,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
             } catch (Exception exception) {
                 Log.error(exception);
                 transaction.abort();
-                WindowUtils.showError(this, I18n.Text("Unable to export hit locations."));
+                WindowUtils.showError(this, I18n.text("Unable to export hit locations."));
             }
         }
     }

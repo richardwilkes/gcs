@@ -33,16 +33,16 @@ public final class NewSpellCommand extends Command {
     /** The action command this command will issue. */
     public static final String          CMD_RITUAL_MAGIC_SPELL = "NewRitualMagicSpell";
     /** The "New Spell" command. */
-    public static final NewSpellCommand INSTANCE               = new NewSpellCommand(false, I18n.Text("New Spell"), CMD_SPELL, COMMAND_MODIFIER);
+    public static final NewSpellCommand INSTANCE               = new NewSpellCommand(false, I18n.text("New Spell"), CMD_SPELL, COMMAND_MODIFIER);
     /** The "New Spell Container" command. */
-    public static final NewSpellCommand CONTAINER_INSTANCE     = new NewSpellCommand(true, I18n.Text("New Spell Container"), CMD_SPELL_CONTAINER, SHIFTED_COMMAND_MODIFIER);
+    public static final NewSpellCommand CONTAINER_INSTANCE     = new NewSpellCommand(true, I18n.text("New Spell Container"), CMD_SPELL_CONTAINER, SHIFTED_COMMAND_MODIFIER);
     /** The "New Technique" command. */
     public static final NewSpellCommand RITUAL_MAGIC_INSTANCE  = new NewSpellCommand();
     private             boolean         mContainer;
     private             boolean         mRitualMagic;
 
     private NewSpellCommand() {
-        super(I18n.Text("New Ritual Magic Spell"), CMD_RITUAL_MAGIC_SPELL);
+        super(I18n.text("New Ritual Magic Spell"), CMD_RITUAL_MAGIC_SPELL);
         mRitualMagic = true;
     }
 

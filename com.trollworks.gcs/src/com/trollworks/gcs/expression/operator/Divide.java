@@ -21,13 +21,13 @@ public class Divide extends Operator {
 
     @Override
     public final Object evaluate(Object left, Object right) throws EvaluationException {
-        double A = ArgumentTokenizer.getDoubleOperand(left);
-        double B = ArgumentTokenizer.getDoubleOperand(right);
-        double R = 0;
-        if (B != 0) {
-            R = A / B;
+        double a = ArgumentTokenizer.getDoubleOperand(left);
+        double b = ArgumentTokenizer.getDoubleOperand(right);
+        double r = 0;
+        if (b != 0) {
+            r = a / b;
         }
-        return Double.valueOf(R);
+        return Double.valueOf(r);
     }
 
     @Override

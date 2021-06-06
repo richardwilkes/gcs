@@ -37,12 +37,12 @@ public enum SkillColumn {
     DESCRIPTION {
         @Override
         public String toString() {
-            return I18n.Text("Skills");
+            return I18n.text("Skills");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The name, specialty, tech level and notes describing a skill");
+            return I18n.text("The name, specialty, tech level and notes describing a skill");
         }
 
         @Override
@@ -77,12 +77,12 @@ public enum SkillColumn {
     DIFFICULTY {
         @Override
         public String toString() {
-            return I18n.Text("Diff");
+            return I18n.text("Diff");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The skill difficulty");
+            return I18n.text("The skill difficulty");
         }
 
         @Override
@@ -112,12 +112,12 @@ public enum SkillColumn {
     LEVEL {
         @Override
         public String toString() {
-            return I18n.Text("SL");
+            return I18n.text("SL");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The skill level");
+            return I18n.text("The skill level");
         }
 
         @Override
@@ -158,12 +158,12 @@ public enum SkillColumn {
     RELATIVE_LEVEL {
         @Override
         public String toString() {
-            return I18n.Text("RSL");
+            return I18n.text("RSL");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The relative skill level");
+            return I18n.text("The relative skill level");
         }
 
         @Override
@@ -208,12 +208,12 @@ public enum SkillColumn {
     POINTS {
         @Override
         public String toString() {
-            return I18n.Text("Pts");
+            return I18n.text("Pts");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The points spent in the skill");
+            return I18n.text("The points spent in the skill");
         }
 
         @Override
@@ -245,12 +245,12 @@ public enum SkillColumn {
     CATEGORY {
         @Override
         public String toString() {
-            return I18n.Text("Category");
+            return I18n.text("Category");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The category or categories the skill belongs to");
+            return I18n.text("The category or categories the skill belongs to");
         }
 
         @Override
@@ -282,7 +282,7 @@ public enum SkillColumn {
 
         @Override
         public String getToolTip() {
-            return PageRefCell.getStdToolTip(I18n.Text("skill"));
+            return PageRefCell.getStdToolTip(I18n.text("skill"));
         }
 
         @Override

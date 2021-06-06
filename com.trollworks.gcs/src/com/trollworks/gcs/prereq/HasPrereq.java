@@ -73,7 +73,7 @@ public abstract class HasPrereq extends Prereq {
     /**
      * @return {@code true} if the specified criteria should exist, {@code false} if it should not.
      */
-    public boolean has() {
+    public final boolean has() {
         return mHas;
     }
 
@@ -81,12 +81,12 @@ public abstract class HasPrereq extends Prereq {
      * @param has {@code true} if the specified criteria should exist, {@code false} if it should
      *            not.
      */
-    public void has(boolean has) {
+    public final void setHas(boolean has) {
         mHas = has;
     }
 
     /** @return The text associated with the current has() state. */
-    public String hasText() {
-        return mHas ? I18n.Text("Has") : I18n.Text("Does not have");
+    public final String getHasText() {
+        return mHas ? I18n.text("Has") : I18n.text("Does not have");
     }
 }

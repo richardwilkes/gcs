@@ -37,7 +37,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
     public static final AddNaturalAttacksAdvantageCommand INSTANCE = new AddNaturalAttacksAdvantageCommand();
 
     private AddNaturalAttacksAdvantageCommand() {
-        super(I18n.Text("Add Natural Attacks Advantage"), CMD);
+        super(I18n.text("Add Natural Attacks Advantage"), CMD);
     }
 
     @Override
@@ -87,7 +87,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
 
     public Advantage create(DataFile dataFile, ListOutline outline) {
         Advantage advantage = new Advantage(dataFile, false);
-        advantage.setName(I18n.Text("Natural Attacks"));
+        advantage.setName(I18n.text("Natural Attacks"));
         advantage.setReference("B271");
         advantage.setWeapons(List.of(createBite(advantage), createPunch(advantage), createKick(advantage)));
         outline.addRow(advantage, getTitle(), false);
@@ -101,7 +101,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
         bite.setDamage(damage);
-        bite.setUsage(I18n.Text("Bite"));
+        bite.setUsage(I18n.text("Bite"));
         bite.setReach("C");
         bite.setParry("No");
         bite.setBlock("No");
@@ -116,7 +116,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         damage.setBase(new Dice(0, -1));
         punch.setDamage(damage);
-        punch.setUsage(I18n.Text("Punch"));
+        punch.setUsage(I18n.text("Punch"));
         punch.setReach("C");
         punch.setParry("0");
         punch.setDefaults(List.of(new SkillDefault("dx", null, null, 0), new SkillDefault("skill", "Boxing", null, 0), new SkillDefault("skill", "Brawling", null, 0), new SkillDefault("skill", "Karate", null, 0)));
@@ -129,7 +129,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
         damage.setType("cr");
         damage.setWeaponSTDamage(WeaponSTDamage.THR);
         kick.setDamage(damage);
-        kick.setUsage(I18n.Text("Kick"));
+        kick.setUsage(I18n.text("Kick"));
         kick.setReach("C,1");
         kick.setParry("No");
         kick.setDefaults(List.of(new SkillDefault("dx", null, null, -2), new SkillDefault("skill", "Brawling", null, -2), new SkillDefault("skill", "Karate", null, -2)));

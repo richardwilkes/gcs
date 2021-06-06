@@ -97,7 +97,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         fillTree(LibraryUpdater.collectFiles(), root);
         mTreePanel = new TreePanel(root);
         mTreePanel.setShowHeader(false);
-        mTreePanel.addColumn(new TextTreeColumn(I18n.Text("Library Explorer"), this, this));
+        mTreePanel.addColumn(new TextTreeColumn(I18n.text("Library Explorer"), this, this));
         mTreePanel.setAllowColumnResize(false);
         mTreePanel.setAllowRowDropFromExternal(false);
         mTreePanel.setAllowedRowDragTypes(0); // Turns off row dragging
@@ -109,8 +109,8 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel.setDeletableProxy(this);
         Toolbar toolbar = new Toolbar();
         mSearch = new Search(this);
-        toolbar.add(new FontAwesomeButton("\uf0e8", I18n.Text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
-        toolbar.add(new FontAwesomeButton("\uf2f1", I18n.Text("Refresh"), this::refresh));
+        toolbar.add(new FontAwesomeButton("\uf0e8", I18n.text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
+        toolbar.add(new FontAwesomeButton("\uf2f1", I18n.text("Refresh"), this::refresh));
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
@@ -135,7 +135,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     @Override
     public String getTitle() {
-        return I18n.Text("Library Explorer");
+        return I18n.text("Library Explorer");
     }
 
     @Override
@@ -542,10 +542,10 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public void deleteSelection() {
         List<Path> paths = collectSelectedFilePaths();
         if (!paths.isEmpty()) {
-            String   message = paths.size() == 1 ? I18n.Text("Are you sure you want to delete this file?") : I18n.Text("Are you sure you want to delete these files?");
-            String   title   = paths.size() == 1 ? I18n.Text("Delete File") : String.format(I18n.Text("Delete {0} Files"), Integer.valueOf(paths.size()));
-            String   cancel  = I18n.Text("Cancel");
-            Object[] options = {I18n.Text("Delete"), cancel};
+            String   message = paths.size() == 1 ? I18n.text("Are you sure you want to delete this file?") : I18n.text("Are you sure you want to delete these files?");
+            String   title   = paths.size() == 1 ? I18n.text("Delete File") : String.format(I18n.text("Delete {0} Files"), Integer.valueOf(paths.size()));
+            String   cancel  = I18n.text("Cancel");
+            Object[] options = {I18n.text("Delete"), cancel};
             if (WindowUtils.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.YES_OPTION) {
                 int failed = 0;
                 for (Path p : paths) {
@@ -563,7 +563,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                 }
                 refresh();
                 if (failed != 0) {
-                    WindowUtils.showError(this, failed == 1 ? I18n.Text("A file could not be deleted.") : String.format(I18n.Text("{0} files could not be deleted."), Integer.valueOf(failed)));
+                    WindowUtils.showError(this, failed == 1 ? I18n.text("A file could not be deleted.") : String.format(I18n.text("{0} files could not be deleted."), Integer.valueOf(failed)));
                 }
             }
         }

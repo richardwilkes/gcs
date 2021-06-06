@@ -33,7 +33,7 @@ public final class SaveCommand extends Command {
     public static final SaveCommand INSTANCE = new SaveCommand();
 
     private SaveCommand() {
-        super(I18n.Text("Save"), CMD_SAVE, KeyEvent.VK_S);
+        super(I18n.text("Save"), CMD_SAVE, KeyEvent.VK_S);
     }
 
     @Override
@@ -81,7 +81,7 @@ public final class SaveCommand extends Command {
     private static boolean attemptSaveInternal(Saveable saveable) {
         if (saveable.isModified()) {
             saveable.toFrontAndFocus();
-            int answer = JOptionPane.showConfirmDialog(UIUtilities.getComponentForDialog(saveable), MessageFormat.format(I18n.Text("Save changes to \"{0}\"?"), saveable.getSaveTitle()), I18n.Text("Save"), JOptionPane.YES_NO_CANCEL_OPTION);
+            int answer = JOptionPane.showConfirmDialog(UIUtilities.getComponentForDialog(saveable), MessageFormat.format(I18n.text("Save changes to \"{0}\"?"), saveable.getSaveTitle()), I18n.text("Save"), JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.CANCEL_OPTION || answer == JOptionPane.CLOSED_OPTION) {
                 return false;
             }

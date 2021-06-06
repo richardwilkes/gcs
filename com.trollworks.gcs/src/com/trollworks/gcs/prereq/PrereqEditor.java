@@ -106,7 +106,7 @@ public abstract class PrereqEditor extends EditorPanel {
         grid.add(left, 0, 0);
         rebuildSelf(left, grid, right);
         if (mDepth > 0) {
-            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", mPrereq instanceof PrereqList ? I18n.Text("Remove this prerequisite list") : I18n.Text("Remove this prerequisite"), this::remove);
+            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", mPrereq instanceof PrereqList ? I18n.text("Remove this prerequisite list") : I18n.text("Remove this prerequisite"), this::remove);
             add(button);
             right.add(button);
         }
@@ -130,14 +130,14 @@ public abstract class PrereqEditor extends EditorPanel {
      * @return The {@link JComboBox} that allows the "has" attribute to be changed.
      */
     protected JComboBox<Object> addHasCombo(boolean has) {
-        String hasText         = I18n.Text("has");
-        String doesNotHaveText = I18n.Text("doesn't have");
+        String hasText         = I18n.text("has");
+        String doesNotHaveText = I18n.text("doesn't have");
         return addComboBox(CHANGE_HAS, new Object[]{hasText, doesNotHaveText}, has ? hasText : doesNotHaveText);
     }
 
     /** @return The {@link JComboBox} that allows the base prereq type to be changed. */
     protected JComboBox<Object> addChangeBaseTypeCombo() {
-        Object[] choices = {I18n.Text("attribute"), I18n.Text("advantage"), I18n.Text("skill"), I18n.Text("spell(s)"), I18n.Text("contained weight"), I18n.Text("contained quantity of")};
+        Object[] choices = {I18n.text("attribute"), I18n.text("advantage"), I18n.text("skill"), I18n.text("spell(s)"), I18n.text("contained weight"), I18n.text("contained quantity of")};
         Class<?> type    = mPrereq.getClass();
         Object   current = choices[0];
         int      length  = BASE_TYPES.length;
@@ -190,7 +190,7 @@ public abstract class PrereqEditor extends EditorPanel {
                         prereq = (Prereq) type.getConstructor(PrereqList.class).newInstance(list);
                     }
                     if (prereq instanceof HasPrereq && mPrereq instanceof HasPrereq) {
-                        ((HasPrereq) prereq).has(((HasPrereq) mPrereq).has());
+                        ((HasPrereq) prereq).setHas(((HasPrereq) mPrereq).has());
                     }
                     list.add(listIndex, prereq);
                     list.remove(mPrereq);
@@ -205,7 +205,7 @@ public abstract class PrereqEditor extends EditorPanel {
                 ListPrereqEditor.setLastItemType(type);
             }
         } else if (CHANGE_HAS.equals(command)) {
-            ((HasPrereq) mPrereq).has(((JComboBox<?>) event.getSource()).getSelectedIndex() == 0);
+            ((HasPrereq) mPrereq).setHas(((JComboBox<?>) event.getSource()).getSelectedIndex() == 0);
         } else {
             super.actionPerformed(event);
         }

@@ -24,7 +24,7 @@ public class PagePoints extends Label {
     public PagePoints(int points) {
         super("[" + points + "]");
         setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
-        setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Points spent")));
+        setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Points spent")));
         UIUtilities.setToPreferredSizeOnly(this);
     }
 }

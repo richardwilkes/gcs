@@ -19,7 +19,7 @@ public enum AdvantageContainerType {
     GROUP {
         @Override
         public String toString() {
-            return I18n.Text("Group");
+            return I18n.text("Group");
         }
     },
     /**
@@ -29,7 +29,7 @@ public enum AdvantageContainerType {
     META_TRAIT {
         @Override
         public String toString() {
-            return I18n.Text("Meta-Trait");
+            return I18n.text("Meta-Trait");
         }
     },
     /**
@@ -39,7 +39,7 @@ public enum AdvantageContainerType {
     RACE {
         @Override
         public String toString() {
-            return I18n.Text("Race");
+            return I18n.text("Race");
         }
     },
     /**
@@ -50,7 +50,7 @@ public enum AdvantageContainerType {
     ALTERNATIVE_ABILITIES {
         @Override
         public String toString() {
-            return I18n.Text("Alternative Abilities");
+            return I18n.text("Alternative Abilities");
         }
     }
 }

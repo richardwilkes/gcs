@@ -27,7 +27,7 @@ public final class IncrementCommand extends Command {
     public static final IncrementCommand INSTANCE      = new IncrementCommand();
 
     private IncrementCommand() {
-        super(I18n.Text("Increment"), CMD_INCREMENT, KeyEvent.VK_EQUALS);
+        super(I18n.text("Increment"), CMD_INCREMENT, KeyEvent.VK_EQUALS);
     }
 
     @Override
@@ -41,7 +41,7 @@ public final class IncrementCommand extends Command {
             setTitle(inc.getIncrementTitle());
             setEnabled(inc.canIncrement());
         } else {
-            setTitle(I18n.Text("Increment"));
+            setTitle(I18n.text("Increment"));
             setEnabled(false);
         }
     }

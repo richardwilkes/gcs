@@ -23,7 +23,7 @@ public final class NewAdvantageModifiersLibraryCommand extends Command {
     public static final NewAdvantageModifiersLibraryCommand INSTANCE = new NewAdvantageModifiersLibraryCommand();
 
     private NewAdvantageModifiersLibraryCommand() {
-        super(I18n.Text("New Advantage Modifiers Library"), "NewAdvantageModifiersLibrary");
+        super(I18n.text("New Advantage Modifiers Library"), "NewAdvantageModifiersLibrary");
     }
 
     @Override

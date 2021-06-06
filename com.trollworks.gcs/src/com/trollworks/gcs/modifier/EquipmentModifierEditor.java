@@ -63,13 +63,13 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     protected void addContentSelf(ScrollContent outer) {
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
         if (mRow.canHaveChildren()) {
-            mNameField = createCorrectableField(panel, panel, I18n.Text("Name"), mRow.getName(), I18n.Text("Name of container"));
+            mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("Name of container"));
         } else {
             JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(4));
-            mNameField = createCorrectableField(panel, wrapper, I18n.Text("Name"), mRow.getName(), I18n.Text("Name of Modifier"));
-            mTechLevelField = createField(wrapper, wrapper, I18n.Text("Tech Level"), mRow.getTechLevel(), I18n.Text("The first Tech Level this equipment is available at"), 3);
-            mEnabledField = new JCheckBox(I18n.Text("Enabled"), mRow.isEnabled());
-            mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.Text("Whether this modifier has been enabled or not")));
+            mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
+            mTechLevelField = createField(wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
+            mEnabledField = new JCheckBox(I18n.text("Enabled"), mRow.isEnabled());
+            mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
             wrapper.add(mEnabledField);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
@@ -77,11 +77,11 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             createWeightAdjustmentFields(panel);
         }
 
-        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.Text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new LinkedLabel(I18n.Text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
+        panel.add(new LinkedLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mReferenceField = createField(panel, panel, I18n.Text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.Text("equipment modifier")), 6);
+        mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment modifier")), 6);
         outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (!mRow.canHaveChildren()) {
@@ -147,7 +147,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mCostAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mCostAmountField);
         mCostAmountField.setText(mRow.getCostAdjType().format(mRow.getCostAdjAmount(), true));
-        mCostAmountField.setToolTipText(I18n.Text("The cost modifier"));
+        mCostAmountField.setToolTipText(I18n.text("The cost modifier"));
         mCostAmountField.addFocusListener(this);
         mCostAmountField.addActionListener(this);
         addLabel(labelParent, "", mCostAmountField);
@@ -182,7 +182,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mWeightAmountField = new JTextField("-999,999,999.00");
         UIUtilities.setToPreferredSizeOnly(mWeightAmountField);
         mWeightAmountField.setText(mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(), mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true));
-        mWeightAmountField.setToolTipText(I18n.Text("The weight modifier"));
+        mWeightAmountField.setToolTipText(I18n.text("The weight modifier"));
         mWeightAmountField.addActionListener(this);
         mWeightAmountField.addFocusListener(this);
         labelParent.add(new LinkedLabel("", mWeightAmountField));
@@ -220,7 +220,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.Text("The name field may not be empty") : null);
+            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

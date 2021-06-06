@@ -65,10 +65,10 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
     }
 
     private ThemeSettingsWindow() {
-        super(I18n.Text("Theme Settings"));
+        super(I18n.text("Theme Settings"));
         JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
 
-        mResetFontsButton = addHeader(panel, I18n.Text("Fonts"), 0, this::resetFonts);
+        mResetFontsButton = addHeader(panel, I18n.text("Fonts"), 0, this::resetFonts);
         JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2));
         wrapper.setOpaque(false);
         String[] keys = Fonts.getKeys();
@@ -109,7 +109,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         }
         panel.add(wrapper);
 
-        mResetColorsButton = addHeader(panel, I18n.Text("Colors"), 16, this::resetColors);
+        mResetColorsButton = addHeader(panel, I18n.text("Colors"), 16, this::resetColors);
         int cols = 8;
         wrapper = new JPanel(new PrecisionLayout().setColumns(cols));
         wrapper.setOpaque(false);
@@ -150,7 +150,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         JLabel label  = new JLabel(text);
         label.setFont(label.getFont().deriveFont(Font.BOLD));
         header.add(label);
-        FontAwesomeButton resetButton = new FontAwesomeButton("\uf011", I18n.Text("Reset to Factory Defaults"), reset);
+        FontAwesomeButton resetButton = new FontAwesomeButton("\uf011", I18n.text("Reset to Factory Defaults"), reset);
         header.add(resetButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
         header.add(new JSeparator(SwingConstants.HORIZONTAL), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
         parent.add(header, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setTopMargin(topMargin));

@@ -34,7 +34,7 @@ import javax.swing.SwingConstants;
 
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
-    private static float colorAdjustment = -0.1f;
+    private static float COLOR_ADJUSTMENT = -0.1f;
 
     /**
      * Creates a new hit location panel.
@@ -44,13 +44,13 @@ public class HitLocationPanel extends DropPanel {
     public HitLocationPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), sheet.getCharacter().getSheetSettings().getHitLocations().getName());
 
-        addHorizontalBackground(createHeader(I18n.Text("Roll"), null), ThemeColor.HEADER);
+        addHorizontalBackground(createHeader(I18n.text("Roll"), null), ThemeColor.HEADER);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        createHeader(I18n.Text("Where"), null);
+        createHeader(I18n.text("Where"), null);
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        createHeader(I18n.Text("Penalty"), I18n.Text("The hit penalty for targeting a specific hit location"));
+        createHeader(I18n.text("Penalty"), I18n.text("The hit penalty for targeting a specific hit location"));
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        createHeader(I18n.Text("DR"), null);
+        createHeader(I18n.text("DR"), null);
 
         addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.CONTENT, false);
     }
@@ -59,18 +59,18 @@ public class HitLocationPanel extends DropPanel {
         for (HitLocation location : table.getLocations()) {
             String    name   = location.getTableName();
             String    prefix = Text.makeFiller(depth * 3, ' ');
-            PageLabel first  = createLabel(prefix + location.getRollRange(), MessageFormat.format(I18n.Text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), name), SwingConstants.LEFT);
+            PageLabel first  = createLabel(prefix + location.getRollRange(), MessageFormat.format(I18n.text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), name), SwingConstants.LEFT);
             addHorizontalBackground(first, band ? band1Color : band2Color);
             band = !band;
             createDivider();
             createLabel(prefix + name, Text.wrapPlainTextForToolTip(location.getDescription()), SwingConstants.LEFT);
             createDivider();
-            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.Text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), name), SwingConstants.RIGHT);
+            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), name), SwingConstants.RIGHT);
             createDivider();
             StringBuilder tooltip = new StringBuilder();
             int           dr      = location.getDR(sheet.getCharacter(), tooltip);
             //noinspection DynamicRegexReplaceableByCompiledPattern
-            createDRField(sheet, Integer.valueOf(dr), String.format(I18n.Text("<html><body>The DR covering the <b>%s</b> hit location%s</body></html>"), name, tooltip.toString().replaceAll("\n", "<br>")));
+            createDRField(sheet, Integer.valueOf(dr), String.format(I18n.text("<html><body>The DR covering the <b>%s</b> hit location%s</body></html>"), name, tooltip.toString().replaceAll("\n", "<br>")));
             if (location.getSubTable() != null) {
                 band = addTable(sheet, location.getSubTable(), depth + 1, band1Color, band2Color, band);
             }

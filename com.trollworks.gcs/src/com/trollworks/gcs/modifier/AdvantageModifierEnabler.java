@@ -70,9 +70,9 @@ public final class AdvantageModifierEnabler extends JPanel {
             Advantage                advantage   = list.get(i);
             boolean                  hasMore     = i != count - 1;
             AdvantageModifierEnabler panel       = new AdvantageModifierEnabler(advantage, count - i - 1);
-            String                   applyTitle  = I18n.Text("Apply");
-            String                   cancelTitle = I18n.Text("Cancel");
-            switch (WindowUtils.showOptionDialog(comp, panel, I18n.Text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[]{applyTitle, cancelTitle, I18n.Text("Cancel Remaining")} : new String[]{applyTitle, cancelTitle}, applyTitle)) {
+            String                   applyTitle  = I18n.text("Apply");
+            String                   cancelTitle = I18n.text("Cancel");
+            switch (WindowUtils.showOptionDialog(comp, panel, I18n.text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, advantage.getIcon(true), hasMore ? new String[]{applyTitle, cancelTitle, I18n.text("Cancel Remaining")} : new String[]{applyTitle, cancelTitle}, applyTitle)) {
             case JOptionPane.YES_OPTION:
                 panel.applyChanges();
                 modified = true;
@@ -104,7 +104,7 @@ public final class AdvantageModifierEnabler extends JPanel {
         top.setBorder(new EmptyBorder(0, 0, 15, 0));
         if (remaining > 0) {
             String msg;
-            msg = remaining == 1 ? I18n.Text("1 advantage remaining to be processed.") : MessageFormat.format(I18n.Text("{0} advantages remaining to be processed."), Integer.valueOf(remaining));
+            msg = remaining == 1 ? I18n.text("1 advantage remaining to be processed.") : MessageFormat.format(I18n.text("{0} advantages remaining to be processed."), Integer.valueOf(remaining));
             top.add(new JLabel(msg, SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));

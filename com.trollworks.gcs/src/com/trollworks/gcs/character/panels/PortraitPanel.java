@@ -61,9 +61,9 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
      */
     public PortraitPanel(CharacterSheet sheet) {
         super(null, true);
-        setBorder(new TitledBorder(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), I18n.Text("Portrait")));
+        setBorder(new TitledBorder(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), I18n.text("Portrait")));
         mSheet = sheet;
-        setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.Text("""
+        setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.text("""
                 <html><body>
                 <b>Double-click</b> to set a character portrait.<br>
                 <br>
@@ -88,12 +88,12 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
 
     /** Allows the user to choose a portrait for their character. */
     public void choosePortrait() {
-        Path path = StdFileDialog.showOpenDialog(null, I18n.Text("Select A Portrait"), FileType.IMAGE_FILTERS);
+        Path path = StdFileDialog.showOpenDialog(null, I18n.text("Select A Portrait"), FileType.IMAGE_FILTERS);
         if (path != null) {
             try {
                 mSheet.getCharacter().getProfile().setPortrait(Img.create(path));
             } catch (Exception exception) {
-                WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), path.normalize().toAbsolutePath()));
+                WindowUtils.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), path.normalize().toAbsolutePath()));
             }
         }
     }
@@ -157,7 +157,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
                 try {
                     mSheet.getCharacter().getProfile().setPortrait(Img.create(img));
                 } catch (Exception exception) {
-                    WindowUtils.showError(this, I18n.Text("Unable to load image."));
+                    WindowUtils.showError(this, I18n.text("Unable to load image."));
                 }
                 dtde.dropComplete(true);
                 dtde.getDropTargetContext().getComponent().requestFocus();
@@ -174,7 +174,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
                         mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
                         break;
                     } catch (Exception exception) {
-                        WindowUtils.showError(this, MessageFormat.format(I18n.Text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
+                        WindowUtils.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
                     }
                 }
                 dtde.dropComplete(true);

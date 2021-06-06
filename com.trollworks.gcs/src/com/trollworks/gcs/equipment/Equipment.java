@@ -100,7 +100,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         super(dataFile, isContainer);
         mEquipped = true;
         mQuantity = 1;
-        mDescription = I18n.Text("Equipment");
+        mDescription = I18n.text("Equipment");
         mTechLevel = "";
         mLegalityClass = DEFAULT_LC;
         mReference = "";
@@ -191,7 +191,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public String getLocalizedName() {
-        return I18n.Text("Equipment");
+        return I18n.text("Equipment");
     }
 
     @Override
@@ -201,7 +201,7 @@ public class Equipment extends ListRow implements HasSourceReference {
 
     @Override
     public String getRowType() {
-        return I18n.Text("Equipment");
+        return I18n.text("Equipment");
     }
 
     @Override
@@ -211,7 +211,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         mQuantity = 1;
         mUses = 0;
         mMaxUses = 0;
-        mDescription = I18n.Text("Equipment");
+        mDescription = I18n.text("Equipment");
         mTechLevel = "";
         mLegalityClass = DEFAULT_LC;
         mReference = "";
@@ -502,11 +502,11 @@ public class Equipment extends ListRow implements HasSourceReference {
     public String getDisplayLegalityClass() {
         String lc = getLegalityClass().trim();
         return switch (lc) {
-            case "0" -> I18n.Text("LC0: Banned");
-            case "1" -> I18n.Text("LC1: Military");
-            case "2" -> I18n.Text("LC2: Restricted");
-            case "3" -> I18n.Text("LC3: Licensed");
-            case "4" -> I18n.Text("LC4: Open");
+            case "0" -> I18n.text("LC0: Banned");
+            case "1" -> I18n.text("LC1: Military");
+            case "2" -> I18n.text("LC2: Restricted");
+            case "3" -> I18n.text("LC3: Licensed");
+            case "4" -> I18n.text("LC4: Open");
             default -> lc;
         };
     }

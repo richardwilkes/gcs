@@ -27,7 +27,7 @@ public final class TechLevelDecrementCommand extends Command {
     public static final TechLevelDecrementCommand INSTANCE         = new TechLevelDecrementCommand();
 
     private TechLevelDecrementCommand() {
-        super(I18n.Text("Decrement Tech Level"), CMD_DECREMENT_TL, KeyEvent.VK_OPEN_BRACKET);
+        super(I18n.text("Decrement Tech Level"), CMD_DECREMENT_TL, KeyEvent.VK_OPEN_BRACKET);
     }
 
     @Override

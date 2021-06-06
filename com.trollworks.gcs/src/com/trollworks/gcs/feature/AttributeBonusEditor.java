@@ -52,7 +52,7 @@ public class AttributeBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         String attribute = bonus.getAttribute();
-        row.add(addAttributePopup(getRow().getDataFile(), CHANGE_ATTRIBUTE, I18n.Text("to %s"), attribute, false));
+        row.add(addAttributePopup(getRow().getDataFile(), CHANGE_ATTRIBUTE, I18n.text("to %s"), attribute, false));
         if ("st".equals(attribute)) {
             row.add(addComboBox(CHANGE_LIMITATION, AttributeBonusLimitation.values(), bonus.getLimitation()));
         }

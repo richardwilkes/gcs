@@ -39,12 +39,12 @@ public enum SpellColumn {
     DESCRIPTION {
         @Override
         public String toString() {
-            return I18n.Text("Spells");
+            return I18n.text("Spells");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The name, tech level and notes describing the spell");
+            return I18n.text("The name, tech level and notes describing the spell");
         }
 
         @Override
@@ -73,12 +73,12 @@ public enum SpellColumn {
     RESIST {
         @Override
         public String toString() {
-            return I18n.Text("Resist");
+            return I18n.text("Resist");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The resistance");
+            return I18n.text("The resistance");
         }
 
         @Override
@@ -98,12 +98,12 @@ public enum SpellColumn {
     CLASS {
         @Override
         public String toString() {
-            return I18n.Text("Class");
+            return I18n.text("Class");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The class of the spell");
+            return I18n.text("The class of the spell");
         }
 
         @Override
@@ -123,12 +123,12 @@ public enum SpellColumn {
     COLLEGE {
         @Override
         public String toString() {
-            return I18n.Text("College");
+            return I18n.text("College");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The college of the spell");
+            return I18n.text("The college of the spell");
         }
 
         @Override
@@ -153,12 +153,12 @@ public enum SpellColumn {
     MANA_COST {
         @Override
         public String toString() {
-            return I18n.Text("Cost");
+            return I18n.text("Cost");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The mana cost to cast the spell");
+            return I18n.text("The mana cost to cast the spell");
         }
 
         @Override
@@ -178,12 +178,12 @@ public enum SpellColumn {
     MAINTAIN {
         @Override
         public String toString() {
-            return I18n.Text("Maintain");
+            return I18n.text("Maintain");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The mana cost to maintain the spell");
+            return I18n.text("The mana cost to maintain the spell");
         }
 
         @Override
@@ -203,12 +203,12 @@ public enum SpellColumn {
     TIME {
         @Override
         public String toString() {
-            return I18n.Text("Time");
+            return I18n.text("Time");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The time required to cast the spell");
+            return I18n.text("The time required to cast the spell");
         }
 
         @Override
@@ -228,12 +228,12 @@ public enum SpellColumn {
     DURATION {
         @Override
         public String toString() {
-            return I18n.Text("Duration");
+            return I18n.text("Duration");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The spell duration");
+            return I18n.text("The spell duration");
         }
 
         @Override
@@ -253,12 +253,12 @@ public enum SpellColumn {
     DIFFICULTY {
         @Override
         public String toString() {
-            return I18n.Text("Difficulty");
+            return I18n.text("Difficulty");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The difficulty of the spell");
+            return I18n.text("The difficulty of the spell");
         }
 
         @Override
@@ -286,12 +286,12 @@ public enum SpellColumn {
     LEVEL {
         @Override
         public String toString() {
-            return I18n.Text("SL");
+            return I18n.text("SL");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The spell level");
+            return I18n.text("The spell level");
         }
 
         @Override
@@ -332,12 +332,12 @@ public enum SpellColumn {
     RELATIVE_LEVEL {
         @Override
         public String toString() {
-            return I18n.Text("RSL");
+            return I18n.text("RSL");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The relative spell level");
+            return I18n.text("The relative spell level");
         }
 
         @Override
@@ -381,12 +381,12 @@ public enum SpellColumn {
     POINTS {
         @Override
         public String toString() {
-            return I18n.Text("Pts");
+            return I18n.text("Pts");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The points spent in the spell");
+            return I18n.text("The points spent in the spell");
         }
 
         @Override
@@ -418,12 +418,12 @@ public enum SpellColumn {
     CATEGORY {
         @Override
         public String toString() {
-            return I18n.Text("Category");
+            return I18n.text("Category");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The category or categories the spell belongs to");
+            return I18n.text("The category or categories the spell belongs to");
         }
 
         @Override
@@ -450,7 +450,7 @@ public enum SpellColumn {
 
         @Override
         public String getToolTip() {
-            return PageRefCell.getStdToolTip(I18n.Text("spell"));
+            return PageRefCell.getStdToolTip(I18n.text("spell"));
         }
 
         @Override

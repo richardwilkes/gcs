@@ -38,7 +38,7 @@ public final class LoadSave implements Runnable {
 
     public static void process(List<Path> paths) {
         if (paths.isEmpty()) {
-            System.err.println(I18n.Text("must specify one or more files or directories to process"));
+            System.err.println(I18n.text("must specify one or more files or directories to process"));
             System.exit(1);
         }
         System.setProperty("java.awt.headless", Boolean.TRUE.toString());
@@ -66,7 +66,7 @@ public final class LoadSave implements Runnable {
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            System.out.println(I18n.Text("  ** ERROR ENCOUNTERED **"));
+            System.out.println(I18n.text("  ** ERROR ENCOUNTERED **"));
         }
     }
 

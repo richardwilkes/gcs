@@ -34,7 +34,7 @@ public class ApplyTemplateCommand extends Command {
     private             SheetDockable        mSheet;
 
     private ApplyTemplateCommand() {
-        super(I18n.Text("Apply Template To Character Sheet"), CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
+        super(I18n.text("Apply Template To Character Sheet"), CMD_APPLY_TEMPLATE, KeyEvent.VK_A, SHIFTED_COMMAND_MODIFIER);
     }
 
     /**
@@ -65,7 +65,7 @@ public class ApplyTemplateCommand extends Command {
             SheetDockable sheetDockable = mSheet != null ? mSheet : SheetDockable.getLastActivated();
             if (sheetDockable != null) {
                 Template     template = templateDockable.getDataFile();
-                MultipleUndo edit     = new MultipleUndo(I18n.Text("Apply Template"));
+                MultipleUndo edit     = new MultipleUndo(I18n.text("Apply Template"));
                 List<Row>    rows     = new ArrayList<>();
                 template.addEdit(edit);
                 rows.addAll(template.getAdvantagesModel().getTopLevelRows());

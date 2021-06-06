@@ -23,7 +23,7 @@ public final class NewEquipmentLibraryCommand extends Command {
     public static final NewEquipmentLibraryCommand INSTANCE = new NewEquipmentLibraryCommand();
 
     private NewEquipmentLibraryCommand() {
-        super(I18n.Text("New Equipment Library"), "NewEquipmentLibrary");
+        super(I18n.text("New Equipment Library"), "NewEquipmentLibrary");
     }
 
     @Override

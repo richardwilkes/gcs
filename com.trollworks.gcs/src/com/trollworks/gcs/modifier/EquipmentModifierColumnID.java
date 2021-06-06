@@ -31,12 +31,12 @@ public enum EquipmentModifierColumnID {
     ENABLED {
         @Override
         public String toString() {
-            return I18n.Text("Enabled");
+            return I18n.text("Enabled");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("Whether this modifier has been enabled or not");
+            return I18n.text("Whether this modifier has been enabled or not");
         }
 
         @Override
@@ -58,12 +58,12 @@ public enum EquipmentModifierColumnID {
     DESCRIPTION {
         @Override
         public String toString() {
-            return I18n.Text("Modifier");
+            return I18n.text("Modifier");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The name and notes describing this modifier");
+            return I18n.text("The name and notes describing this modifier");
         }
 
         @Override
@@ -88,12 +88,12 @@ public enum EquipmentModifierColumnID {
     TECH_LEVEL {
         @Override
         public String toString() {
-            return I18n.Text("TL");
+            return I18n.text("TL");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The tech level of this equipment modifier");
+            return I18n.text("The tech level of this equipment modifier");
         }
 
         @Override
@@ -113,12 +113,12 @@ public enum EquipmentModifierColumnID {
     COST_ADJUSTMENT {
         @Override
         public String toString() {
-            return I18n.Text("Cost Adjustment");
+            return I18n.text("Cost Adjustment");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The cost adjustment for this modifier");
+            return I18n.text("The cost adjustment for this modifier");
         }
 
         @Override
@@ -138,12 +138,12 @@ public enum EquipmentModifierColumnID {
     WEIGHT_ADJUSTMENT {
         @Override
         public String toString() {
-            return I18n.Text("Weight Adjustment");
+            return I18n.text("Weight Adjustment");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The weight adjustment for this modifier");
+            return I18n.text("The weight adjustment for this modifier");
         }
 
         @Override
@@ -163,12 +163,12 @@ public enum EquipmentModifierColumnID {
     REFERENCE {
         @Override
         public String toString() {
-            return I18n.Text("Ref");
+            return I18n.text("Ref");
         }
 
         @Override
         public String getToolTip() {
-            return PageRefCell.getStdToolTip(I18n.Text("equipment modifier"));
+            return PageRefCell.getStdToolTip(I18n.text("equipment modifier"));
         }
 
         @Override

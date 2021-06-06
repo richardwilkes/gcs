@@ -21,7 +21,7 @@ public final class ChangeLibraryLocationsCommand extends Command {
     public static final ChangeLibraryLocationsCommand INSTANCE = new ChangeLibraryLocationsCommand();
 
     private ChangeLibraryLocationsCommand() {
-        super(I18n.Text("Change Library Locations"), "change_library_locations");
+        super(I18n.text("Change Library Locations"), "change_library_locations");
     }
 
     @Override

@@ -23,12 +23,12 @@ public enum EquipmentModifierCostType {
     TO_ORIGINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
-            return I18n.Text("to original cost");
+            return I18n.text("to original cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
+            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
         }
     },
     /**
@@ -38,12 +38,12 @@ public enum EquipmentModifierCostType {
     TO_BASE_COST(ModifierCostValueType.CF, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
-            return I18n.Text("to base cost");
+            return I18n.text("to base cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + I18n.Text(" (e.g. 'x2', '+2 CF', '-0.2 CF')");
+            return toShortString() + I18n.text(" (e.g. 'x2', '+2 CF', '-0.2 CF')");
         }
     },
     /**
@@ -53,12 +53,12 @@ public enum EquipmentModifierCostType {
     TO_FINAL_BASE_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
-            return I18n.Text("to final base cost");
+            return I18n.text("to final base cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
+            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
         }
     },
     /**
@@ -68,12 +68,12 @@ public enum EquipmentModifierCostType {
     TO_FINAL_COST(ModifierCostValueType.ADDITION, ModifierCostValueType.PERCENTAGE, ModifierCostValueType.MULTIPLIER) {
         @Override
         public String toShortString() {
-            return I18n.Text("to final cost");
+            return I18n.text("to final cost");
         }
 
         @Override
         public String toString() {
-            return toShortString() + I18n.Text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
+            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
         }
     };
 

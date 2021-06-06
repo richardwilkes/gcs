@@ -148,12 +148,12 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
 
     @Override
     public String getIncrementTitle() {
-        return I18n.Text("Increment Level");
+        return I18n.text("Increment Level");
     }
 
     @Override
     public String getDecrementTitle() {
-        return I18n.Text("Decrement Level");
+        return I18n.text("Decrement Level");
     }
 
     @Override

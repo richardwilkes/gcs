@@ -838,7 +838,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     public void setUnspentPoints(int unspent) {
         int current = getUnspentPoints();
         if (current != unspent) {
-            postUndoEdit(I18n.Text("Unspent Points Change"), (c, v) -> c.setUnspentPoints(((Integer) v).intValue()), Integer.valueOf(current), Integer.valueOf(unspent));
+            postUndoEdit(I18n.text("Unspent Points Change"), (c, v) -> c.setUnspentPoints(((Integer) v).intValue()), Integer.valueOf(current), Integer.valueOf(unspent));
             mTotalPoints = unspent + getSpentPoints();
             notifyOfChange();
         }
@@ -1131,7 +1131,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                 needRepaint = true;
             }
             if (!satisfied) {
-                builder.insert(0, "<html><body>" + I18n.Text("Reason:") + "<ul>");
+                builder.insert(0, "<html><body>" + I18n.text("Reason:") + "<ul>");
                 builder.append("</ul></body></html>");
                 row.setReasonForUnsatisfied(UL_PATTERN.matcher(builder.toString()).replaceAll("<ul style='margin-top: 0; margin-bottom: 0;'>"));
             }

@@ -22,7 +22,7 @@ public final class MenuKeySettingsCommand extends Command {
     public static final MenuKeySettingsCommand INSTANCE = new MenuKeySettingsCommand();
 
     private MenuKeySettingsCommand() {
-        super(I18n.Text("Menu Keys…"), "MenuKeySettings");
+        super(I18n.text("Menu Keys…"), "MenuKeySettings");
     }
 
     @Override

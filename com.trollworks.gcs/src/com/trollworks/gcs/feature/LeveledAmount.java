@@ -144,12 +144,12 @@ public class LeveledAmount {
 
     /** @return The amount, as a {@link String}. */
     public String getAmountAsString() {
-        return getFormattedAmount(I18n.Text("level"));
+        return getFormattedAmount(I18n.text("level"));
     }
 
     /** @return The amount, as a {@link String} of dice damage. */
     public String getAmountAsWeaponBonus() {
-        return getFormattedAmount(I18n.Text("die"));
+        return getFormattedAmount(I18n.text("die"));
     }
 
     private String getFormattedAmount(String what) {
@@ -163,7 +163,7 @@ public class LeveledAmount {
                 full = Numbers.formatWithForcedSign(getIntegerAdjustedAmount());
                 perLevel = Numbers.formatWithForcedSign(getIntegerAmount());
             }
-            return String.format(I18n.Text("%s (%s per %s)"), full, perLevel, what);
+            return String.format(I18n.text("%s (%s per %s)"), full, perLevel, what);
         }
         if (mDecimal) {
             return Numbers.formatWithForcedSign(getAmount());

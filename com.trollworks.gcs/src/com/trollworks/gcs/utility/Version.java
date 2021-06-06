@@ -14,23 +14,23 @@ package com.trollworks.gcs.utility;
 import java.util.Objects;
 
 public class Version implements Comparable<Version> {
-    public int major;
-    public int minor;
-    public int bugfix;
+    public int mMajor;
+    public int mMinor;
+    public int mBugfix;
 
     public Version() {
     }
 
     public Version(int majorVersion, int minorVersion, int bugfixVersion) {
-        major = majorVersion;
-        minor = minorVersion;
-        bugfix = bugfixVersion;
+        mMajor = majorVersion;
+        mMinor = minorVersion;
+        mBugfix = bugfixVersion;
     }
 
     public Version(Version other) {
-        major = other.major;
-        minor = other.minor;
-        bugfix = other.bugfix;
+        mMajor = other.mMajor;
+        mMinor = other.mMinor;
+        mBugfix = other.mBugfix;
     }
 
     public Version(String buffer) {
@@ -42,33 +42,33 @@ public class Version implements Comparable<Version> {
             String[] parts = buffer.split("\\.", 3);
             switch (parts.length) {
             case 3:
-                bugfix = Integer.parseInt(parts[2]);
+                mBugfix = Integer.parseInt(parts[2]);
                 //noinspection fallthrough
             case 2:
-                minor = Integer.parseInt(parts[1]);
+                mMinor = Integer.parseInt(parts[1]);
                 //noinspection fallthrough
             default:
-                major = Integer.parseInt(parts[0]);
+                mMajor = Integer.parseInt(parts[0]);
             }
         } catch (NumberFormatException nfe) {
-            major = 0;
-            minor = 0;
-            bugfix = 0;
+            mMajor = 0;
+            mMinor = 0;
+            mBugfix = 0;
         }
     }
 
     public boolean isZero() {
-        return major == 0 && minor == 0 && bugfix == 0;
+        return mMajor == 0 && mMinor == 0 && mBugfix == 0;
     }
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(major);
+        buffer.append(mMajor);
         buffer.append('.');
-        buffer.append(minor);
-        if (bugfix != 0) {
+        buffer.append(mMinor);
+        if (mBugfix != 0) {
             buffer.append('.');
-            buffer.append(bugfix);
+            buffer.append(mBugfix);
         }
         return buffer.toString();
     }
@@ -82,21 +82,21 @@ public class Version implements Comparable<Version> {
             return false;
         }
         Version version = (Version) other;
-        return major == version.major && minor == version.minor && bugfix == version.bugfix;
+        return mMajor == version.mMajor && mMinor == version.mMinor && mBugfix == version.mBugfix;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(Integer.valueOf(major), Integer.valueOf(minor), Integer.valueOf(bugfix));
+        return Objects.hash(Integer.valueOf(mMajor), Integer.valueOf(mMinor), Integer.valueOf(mBugfix));
     }
 
     @Override
     public int compareTo(Version other) {
-        int result = Integer.compare(major, other.major);
+        int result = Integer.compare(mMajor, other.mMajor);
         if (result == 0) {
-            result = Integer.compare(minor, other.minor);
+            result = Integer.compare(mMinor, other.mMinor);
             if (result == 0) {
-                result = Integer.compare(bugfix, other.bugfix);
+                result = Integer.compare(mBugfix, other.mBugfix);
             }
         }
         return result;

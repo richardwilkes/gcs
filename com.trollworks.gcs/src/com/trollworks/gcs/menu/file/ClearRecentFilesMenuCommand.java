@@ -28,7 +28,7 @@ public final class ClearRecentFilesMenuCommand extends Command {
     public static final ClearRecentFilesMenuCommand INSTANCE = new ClearRecentFilesMenuCommand();
 
     private ClearRecentFilesMenuCommand() {
-        super(I18n.Text("Clear"), CMD_CLEAR_RECENT_FILES_MENU);
+        super(I18n.text("Clear"), CMD_CLEAR_RECENT_FILES_MENU);
     }
 
     @Override

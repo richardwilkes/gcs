@@ -23,7 +23,7 @@ public final class NewCharacterTemplateCommand extends Command {
     public static final NewCharacterTemplateCommand INSTANCE = new NewCharacterTemplateCommand();
 
     private NewCharacterTemplateCommand() {
-        super(I18n.Text("New Character Template"), "NewCharacterTemplate");
+        super(I18n.text("New Character Template"), "NewCharacterTemplate");
     }
 
     @Override

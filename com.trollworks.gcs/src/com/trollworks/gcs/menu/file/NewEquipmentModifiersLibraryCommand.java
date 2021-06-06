@@ -23,7 +23,7 @@ public final class NewEquipmentModifiersLibraryCommand extends Command {
     public static final NewEquipmentModifiersLibraryCommand INSTANCE = new NewEquipmentModifiersLibraryCommand();
 
     private NewEquipmentModifiersLibraryCommand() {
-        super(I18n.Text("New Equipment Modifiers Library"), "NewEquipmentModifiersLibrary");
+        super(I18n.text("New Equipment Modifiers Library"), "NewEquipmentModifiersLibrary");
     }
 
     @Override

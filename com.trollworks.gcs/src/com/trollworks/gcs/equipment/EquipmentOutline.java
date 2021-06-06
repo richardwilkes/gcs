@@ -51,12 +51,12 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
 
     @Override
     public String getDecrementTitle() {
-        return I18n.Text("Decrement Quantity");
+        return I18n.text("Decrement Quantity");
     }
 
     @Override
     public String getIncrementTitle() {
-        return I18n.Text("Increment Quantity");
+        return I18n.text("Increment Quantity");
     }
 
     @Override
@@ -285,7 +285,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
                 OutlineModel otherModel = rows[0].getOwner();
                 OutlineModel selfModel  = getModel();
                 if (selfModel != otherModel && (selfModel == carriedModel || selfModel == uncarriedModel) && (otherModel == carriedModel || otherModel == uncarriedModel)) {
-                    StateEdit   edit            = new StateEdit(otherModel, I18n.Text("Remove Rows"));
+                    StateEdit   edit            = new StateEdit(otherModel, I18n.text("Remove Rows"));
                     ListOutline otherOwningList = (ListOutline) otherModel.getProperty(ListOutline.OWNING_LIST);
                     DataFile    otherDataFile   = otherOwningList.getDataFile();
                     otherModel.removeRows(rows);

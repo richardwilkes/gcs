@@ -31,7 +31,7 @@ public final class I18n {
     }
 
     /**
-     * NOTE: The name of this class and function MUST be exactly "I18n.Text" (case-sensitive), as
+     * NOTE: The name of this class and function MUST be exactly "I18n.text" (case-sensitive), as
      * the bundler scans the source trees looking for these calls to generate the localization
      * template file. Also, call sites should only provide a simple string as a parameter to this
      * function -- no variables, functions calls, continuation marks to allow breaking it up onto
@@ -40,12 +40,12 @@ public final class I18n {
      * @param str the text to localize.
      * @return the localized version if one exists, or the original text if not.
      */
-    public static String Text(String str) {
-        return TextWithContext(0, str);
+    public static String text(String str) {
+        return textWithContext(0, str);
     }
 
     /**
-     * NOTE: The name of this class and function MUST be exactly "I18n.TextWithContext"
+     * NOTE: The name of this class and function MUST be exactly "I18n.textWithContext"
      * (case-sensitive), as the bundler scans the source trees looking for these calls to generate
      * the localization template file. Also, call sites should only provide simple strings as
      * parameters to this function -- no variables, functions calls, continuation marks to allow
@@ -58,7 +58,7 @@ public final class I18n {
      * @param str     the text to localize.
      * @return the localized version if one exists, or the original text if not.
      */
-    public static String TextWithContext(int context, String str) {
+    public static String textWithContext(int context, String str) {
         if (context < 0 || context > 9) {
             context = 0;
         }

@@ -27,7 +27,7 @@ public final class DuplicateCommand extends Command {
     public static final DuplicateCommand INSTANCE      = new DuplicateCommand();
 
     private DuplicateCommand() {
-        super(I18n.Text("Duplicate"), CMD_DUPLICATE, KeyEvent.VK_U);
+        super(I18n.text("Duplicate"), CMD_DUPLICATE, KeyEvent.VK_U);
     }
 
     @Override

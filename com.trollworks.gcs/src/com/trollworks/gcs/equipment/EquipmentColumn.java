@@ -44,7 +44,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character.");
+            return I18n.text("Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character.");
         }
 
         @Override
@@ -81,7 +81,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The quantity of this piece of equipment");
+            return I18n.text("The quantity of this piece of equipment");
         }
 
         @Override
@@ -113,12 +113,12 @@ public enum EquipmentColumn {
     DESCRIPTION {
         @Override
         public String toString() {
-            return I18n.Text("Equipment");
+            return I18n.text("Equipment");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The name and notes describing a piece of equipment");
+            return I18n.text("The name and notes describing a piece of equipment");
         }
 
         @Override
@@ -150,14 +150,14 @@ public enum EquipmentColumn {
             if (dataFile instanceof GURPSCharacter) {
                 GURPSCharacter character = (GURPSCharacter) dataFile;
                 if (carried) {
-                    return MessageFormat.format(I18n.Text("Carried Equipment ({0}; ${1})"), character.getWeightCarried(false).toString(), character.getWealthCarried().toLocalizedString());
+                    return MessageFormat.format(I18n.text("Carried Equipment ({0}; ${1})"), character.getWeightCarried(false).toString(), character.getWealthCarried().toLocalizedString());
                 }
-                return MessageFormat.format(I18n.Text("Other Equipment (${0})"), character.getWealthNotCarried().toLocalizedString());
+                return MessageFormat.format(I18n.text("Other Equipment (${0})"), character.getWealthNotCarried().toLocalizedString());
             }
             if (dataFile instanceof Template) {
-                return carried ? I18n.Text("Carried Equipment") : I18n.Text("Other Equipment");
+                return carried ? I18n.text("Carried Equipment") : I18n.text("Other Equipment");
             }
-            return I18n.Text("Equipment");
+            return I18n.text("Equipment");
         }
 
         @Override
@@ -201,12 +201,12 @@ public enum EquipmentColumn {
     USES {
         @Override
         public String toString() {
-            return I18n.Text("Uses");
+            return I18n.text("Uses");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The number of uses remaining");
+            return I18n.text("The number of uses remaining");
         }
 
         @Override
@@ -228,12 +228,12 @@ public enum EquipmentColumn {
     TECH_LEVEL {
         @Override
         public String toString() {
-            return I18n.Text("TL");
+            return I18n.text("TL");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The tech level of this piece of equipment");
+            return I18n.text("The tech level of this piece of equipment");
         }
 
         @Override
@@ -260,12 +260,12 @@ public enum EquipmentColumn {
     LEGALITY_CLASS {
         @Override
         public String toString() {
-            return I18n.Text("LC");
+            return I18n.text("LC");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The legality class of this piece of equipment");
+            return I18n.text("The legality class of this piece of equipment");
         }
 
         @Override
@@ -297,7 +297,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The value of one of these pieces of equipment");
+            return I18n.text("The value of one of these pieces of equipment");
         }
 
         @Override
@@ -329,7 +329,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The weight of one of these pieces of equipment");
+            return I18n.text("The weight of one of these pieces of equipment");
         }
 
         @Override
@@ -361,7 +361,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment");
+            return I18n.text("The value of all of these pieces of equipment, plus the value of any contained equipment");
         }
 
         @Override
@@ -398,7 +398,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment");
+            return I18n.text("The weight of all of these pieces of equipment, plus the weight of any contained equipment");
         }
 
         @Override
@@ -430,12 +430,12 @@ public enum EquipmentColumn {
     CATEGORY {
         @Override
         public String toString() {
-            return I18n.Text("Category");
+            return I18n.text("Category");
         }
 
         @Override
         public String getToolTip() {
-            return I18n.Text("The category or categories the equipment belongs to");
+            return I18n.text("The category or categories the equipment belongs to");
         }
 
         @Override
@@ -467,7 +467,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip() {
-            return PageRefCell.getStdToolTip(I18n.Text("equipment"));
+            return PageRefCell.getStdToolTip(I18n.text("equipment"));
         }
 
         @Override
