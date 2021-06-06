@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.image;
 
+import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.utility.Log;
 
@@ -20,7 +21,14 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class Images {
-    public static final List<Img>  APP_ICON_LIST     = Arrays.asList(get("app_1024"), get("app_512"), get("app_256"), get("app_128"), get("app_64"), get("app_32"), get("app_16"));
+    public static final List<Img>  APP_ICON_LIST     = Arrays.asList(
+            get("app_1024"),
+            get("app_512"),
+            get("app_256"),
+            get("app_128"),
+            get("app_64"),
+            get("app_32"),
+            get("app_16"));
     public static final RetinaIcon ABOUT             = getRetina("about");
     public static final RetinaIcon ADM_FILE          = getRetina("adm_file");
     public static final RetinaIcon ADM_MARKER        = getRetina("adm_marker");
@@ -49,7 +57,7 @@ public final class Images {
     public static final RetinaIcon SPL_FILE          = getRetina("spl_file");
     public static final RetinaIcon SPL_MARKER        = getRetina("spl_marker");
     public static final RetinaIcon SUPERNATURAL_TYPE = getRetina("supernatural_type");
-    public static final Img        DEFAULT_PORTRAIT  = get("default_portrait");
+    public static final RetinaIcon DEFAULT_PORTRAIT  = Profile.createPortrait(get("default_portrait"));
 
     private Images() {
     }

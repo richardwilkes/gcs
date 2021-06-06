@@ -60,7 +60,6 @@ public class Preferences extends ChangeableData {
 
     private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
     private static final String DEFAULT_PLAYER_NAME             = "default_player_name";
-    private static final String DEFAULT_PORTRAIT_PATH           = "default_portrait_path";
     private static final String DEFAULT_TECH_LEVEL              = "default_tech_level";
     private static final String DIVIDER_POSITION                = "divider_position";
     private static final String FONTS                           = "fonts";
@@ -92,7 +91,6 @@ public class Preferences extends ChangeableData {
     public static final int     DEFAULT_TOOLTIP_TIMEOUT                   = 60;
     public static final Scales  DEFAULT_INITIAL_UI_SCALE                  = Scales.QUARTER_AGAIN_SIZE;
     public static final String  DEFAULT_DEFAULT_PLAYER_NAME               = System.getProperty("user.name", "");
-    public static final String  DEFAULT_DEFAULT_PORTRAIT_PATH             = "!\000";
     public static final String  DEFAULT_DEFAULT_TECH_LEVEL                = "3";
 
     public static final int MAX_RECENT_FILES        = 20;
@@ -117,7 +115,6 @@ public class Preferences extends ChangeableData {
     private        String                           mGURPSCalculatorKey;
     private        String                           mDefaultPlayerName;
     private        String                           mDefaultTechLevel;
-    private        String                           mDefaultPortraitPath;
     private        SheetSettings                    mSheetSettings;
     private        int                              mLastRecentFilesUpdateCounter;
     private        int                              mPNGResolution;
@@ -170,7 +167,6 @@ public class Preferences extends ChangeableData {
         mGURPSCalculatorKey = "";
         mDefaultPlayerName = DEFAULT_DEFAULT_PLAYER_NAME;
         mDefaultTechLevel = DEFAULT_DEFAULT_TECH_LEVEL;
-        mDefaultPortraitPath = DEFAULT_DEFAULT_PORTRAIT_PATH;
         mPNGResolution = DEFAULT_PNG_RESOLUTION;
         mPdfRefs = new HashMap<>();
         mFontInfo = new HashMap<>();
@@ -248,7 +244,6 @@ public class Preferences extends ChangeableData {
                         mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                         mDefaultPlayerName = m.getStringWithDefault(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                         mDefaultTechLevel = m.getStringWithDefault(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
-                        mDefaultPortraitPath = m.getStringWithDefault(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                         mPNGResolution = m.getIntWithDefault(PNG_RESOLUTION, mPNGResolution);
                         mIncludeUnspentPointsInTotal = m.getBooleanWithDefault(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
                         if (m.has(DEPRECATED_AUTO_NAME_NEW_CHARACTERS)) {
@@ -375,7 +370,6 @@ public class Preferences extends ChangeableData {
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                     w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                     w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
-                    w.keyValue(DEFAULT_PORTRAIT_PATH, mDefaultPortraitPath);
                     w.keyValue(PNG_RESOLUTION, mPNGResolution);
                     w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
@@ -535,14 +529,6 @@ public class Preferences extends ChangeableData {
 
     public void setDefaultTechLevel(String defaultTechLevel) {
         mDefaultTechLevel = defaultTechLevel;
-    }
-
-    public String getDefaultPortraitPath() {
-        return mDefaultPortraitPath;
-    }
-
-    public void setDefaultPortraitPath(String defaultPortraitPath) {
-        mDefaultPortraitPath = defaultPortraitPath;
     }
 
     public int getPNGResolution() {

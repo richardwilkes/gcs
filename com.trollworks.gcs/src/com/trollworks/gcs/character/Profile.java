@@ -19,7 +19,6 @@ import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
@@ -40,7 +39,6 @@ import java.awt.Graphics2D;
 import java.awt.Transparency;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
@@ -78,7 +76,6 @@ public class Profile {
     private static final Random            RANDOM               = new Random();
 
     private GURPSCharacter mCharacter;
-    private boolean        mCustomPortrait;
     private RetinaIcon     mPortrait;
     private String         mName;
     private String         mTitle;
@@ -100,13 +97,10 @@ public class Profile {
 
     Profile(GURPSCharacter character, boolean full) {
         mCharacter = character;
-        mCustomPortrait = false;
         mPortrait = null;
         mTitle = "";
         mOrganization = "";
         mReligion = "";
-        Preferences prefs = Preferences.getInstance();
-        mPortrait = createPortrait(getPortraitFromPortraitPath(prefs.getDefaultPortraitPath()));
         if (full) {
             mAge = Numbers.format(getRandomAge());
             mBirthday = getRandomMonthAndDay();
@@ -119,6 +113,7 @@ public class Profile {
             mWeight = getRandomWeight(st, getSizeModifier(), Fixed6.ONE);
             mGender = getRandomGender();
             mName = USCensusNames.INSTANCE.getFullName(I18n.Text("Male").equals(mGender));
+            Preferences prefs = Preferences.getInstance();
             mTechLevel = prefs.getDefaultTechLevel();
             mPlayerName = prefs.getDefaultPlayerName();
         } else {
@@ -175,9 +170,8 @@ public class Profile {
         if (m.has(KEY_PORTRAIT)) {
             try {
                 mPortrait = createPortrait(Img.create(new ByteArrayInputStream(Base64.getDecoder().decode(m.getString(KEY_PORTRAIT)))));
-                mCustomPortrait = true;
             } catch (Exception imageException) {
-                Log.warn(imageException);
+                Log.error(imageException);
             }
         }
     }
@@ -204,7 +198,7 @@ public class Profile {
         w.keyValueNot(KEY_GENDER, mGender, "");
         w.keyValueNot(KEY_TL, mTechLevel, "");
         w.keyValueNot(KEY_RELIGION, mReligion, "");
-        if (mCustomPortrait && mPortrait != null) {
+        if (mPortrait != null) {
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 ImageIO.write(mPortrait.getRetina(), FileType.PNG.getExtension(), baos);
                 w.keyValue(KEY_PORTRAIT, Base64.getEncoder().encodeToString(baos.toByteArray()));
@@ -230,9 +224,14 @@ public class Profile {
      * @param portrait The new portrait.
      */
     public void setPortrait(Img portrait) {
-        if (portrait == null ? mPortrait != null : mPortrait.getRetina() != portrait) {
-            mCustomPortrait = true;
-            RetinaIcon newPortrait = portrait != null ? createPortrait(portrait) : null;
+        if (portrait == null) {
+            if (mPortrait != null) {
+                mCharacter.postUndoEdit(I18n.Text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, null);
+                mPortrait = null;
+                mCharacter.notifyOfChange();
+            }
+        } else if (mPortrait == null || mPortrait.getRetina() != portrait) {
+            RetinaIcon newPortrait = createPortrait(portrait);
             mCharacter.postUndoEdit(I18n.Text("Portrait Change"), (c, v) -> c.getProfile().setPortrait(v != null ? ((RetinaIcon) v).getRetina() : null), mPortrait, newPortrait);
             mPortrait = newPortrait;
             mCharacter.notifyOfChange();
@@ -782,20 +781,5 @@ public class Profile {
         WeightUnits calcUnits    = useMetric ? WeightUnits.KG : WeightUnits.LB;
         WeightUnits desiredUnits = sheetSettings.defaultWeightUnits();
         return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
-    }
-
-    /**
-     * @param path The path to load.
-     * @return The portrait.
-     */
-    public static Img getPortraitFromPortraitPath(String path) {
-        if (Preferences.DEFAULT_DEFAULT_PORTRAIT_PATH.equals(path)) {
-            return Images.DEFAULT_PORTRAIT;
-        }
-        try {
-            return Img.create(new File(path));
-        } catch (IOException exception) {
-            return null;
-        }
     }
 }

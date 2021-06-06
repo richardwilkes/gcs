@@ -14,19 +14,22 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.preferences.SheetPreferences;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.border.TitledBorder;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -86,7 +89,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
 
     /** Allows the user to choose a portrait for their character. */
     public void choosePortrait() {
-        Path path = SheetPreferences.choosePortrait();
+        Path path = StdFileDialog.showOpenDialog(null, I18n.Text("Select A Portrait"), FileType.IMAGE_FILTERS);
         if (path != null) {
             try {
                 mSheet.getCharacter().getProfile().setPortrait(Img.create(path));
@@ -98,13 +101,15 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
 
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D gc = GraphicsUtilities.prepare(g);
-        super.paintComponent(gc);
+        Insets     insets = getInsets();
+        Graphics2D gc     = GraphicsUtilities.prepare(g);
+        gc.setColor(Color.WHITE);
+        gc.fillRect(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         RetinaIcon portrait = mSheet.getCharacter().getProfile().getPortrait();
-        if (portrait != null) {
-            Insets insets = getInsets();
-            portrait.paintIcon(this, gc, insets.left, insets.top);
+        if (portrait == null) {
+            portrait = Images.DEFAULT_PORTRAIT;
         }
+        portrait.paintIcon(this, gc, insets.left, insets.top);
     }
 
     @Override
