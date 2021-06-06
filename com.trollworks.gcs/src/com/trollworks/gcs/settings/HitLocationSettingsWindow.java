@@ -56,7 +56,7 @@ import javax.swing.JScrollPane;
 
 /** A window for editing hit location settings. */
 public final class HitLocationSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
-    private static Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
+    private static final Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
     private        GURPSCharacter                       mCharacter;
     private        HitLocationTablePanel                mLocationsPanel;
     private        FontAwesomeButton                    mMenuButton;
@@ -141,7 +141,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         menu.show(mMenuButton, 0, 0);
     }
 
-    private JMenuItem createMenuItem(String title, Runnable onSelection, boolean enabled) {
+    private static JMenuItem createMenuItem(String title, Runnable onSelection, boolean enabled) {
         JMenuItem item = new JMenuItem(title);
         item.addActionListener((evt) -> onSelection.run());
         item.setEnabled(enabled);

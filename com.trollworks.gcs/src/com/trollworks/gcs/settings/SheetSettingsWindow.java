@@ -59,30 +59,30 @@ import javax.swing.event.DocumentListener;
 // TODO: Fix layout around scrolling
 
 public final class SheetSettingsWindow extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
-    private static Map<UUID, SheetSettingsWindow> INSTANCES = new HashMap<>();
-    private        GURPSCharacter                 mCharacter;
-    private        SheetSettings                  mSheetSettings;
-    private        JCheckBox                      mUseMultiplicativeModifiers;
-    private        JCheckBox                      mUseModifyingDicePlusAdds;
-    private        JCheckBox                      mUseKnowYourOwnStrength;
-    private        JCheckBox                      mUseReducedSwing;
-    private        JCheckBox                      mUseThrustEqualsSwingMinus2;
-    private        JCheckBox                      mUseSimpleMetricConversions;
-    private        JCheckBox                      mShowCollegeInSpells;
-    private        JCheckBox                      mShowDifficulty;
-    private        JCheckBox                      mShowAdvantageModifierAdj;
-    private        JCheckBox                      mShowEquipmentModifierAdj;
-    private        JCheckBox                      mShowSpellAdj;
-    private        JCheckBox                      mShowTitleInsteadOfNameInPageFooter;
-    private        JComboBox<LengthUnits>         mLengthUnitsCombo;
-    private        JComboBox<WeightUnits>         mWeightUnitsCombo;
-    private        JComboBox<DisplayOption>       mUserDescriptionDisplayCombo;
-    private        JComboBox<DisplayOption>       mModifiersDisplayCombo;
-    private        JComboBox<DisplayOption>       mNotesDisplayCombo;
-    private        JTextArea                      mBlockLayoutField;
-    private        PageSettingsEditor             mPageSettingsEditor;
-    private        JButton                        mResetButton;
-    private        boolean                        mUpdatePending;
+    private static final Map<UUID, SheetSettingsWindow> INSTANCES = new HashMap<>();
+    private              GURPSCharacter                 mCharacter;
+    private              SheetSettings                  mSheetSettings;
+    private              JCheckBox                      mUseMultiplicativeModifiers;
+    private              JCheckBox                      mUseModifyingDicePlusAdds;
+    private              JCheckBox                      mUseKnowYourOwnStrength;
+    private              JCheckBox                      mUseReducedSwing;
+    private              JCheckBox                      mUseThrustEqualsSwingMinus2;
+    private              JCheckBox                      mUseSimpleMetricConversions;
+    private              JCheckBox                      mShowCollegeInSpells;
+    private              JCheckBox                      mShowDifficulty;
+    private              JCheckBox                      mShowAdvantageModifierAdj;
+    private              JCheckBox                      mShowEquipmentModifierAdj;
+    private              JCheckBox                      mShowSpellAdj;
+    private              JCheckBox                      mShowTitleInsteadOfNameInPageFooter;
+    private              JComboBox<LengthUnits>         mLengthUnitsCombo;
+    private              JComboBox<WeightUnits>         mWeightUnitsCombo;
+    private              JComboBox<DisplayOption>       mUserDescriptionDisplayCombo;
+    private              JComboBox<DisplayOption>       mModifiersDisplayCombo;
+    private              JComboBox<DisplayOption>       mNotesDisplayCombo;
+    private              JTextArea                      mBlockLayoutField;
+    private              PageSettingsEditor             mPageSettingsEditor;
+    private              JButton                        mResetButton;
+    private              boolean                        mUpdatePending;
 
     /** Displays the sheet settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -190,7 +190,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         getContentPane().add(panel, BorderLayout.SOUTH);
     }
 
-    private void addLabel(JPanel panel, String title) {
+    private static void addLabel(JPanel panel, String title) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         panel.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());

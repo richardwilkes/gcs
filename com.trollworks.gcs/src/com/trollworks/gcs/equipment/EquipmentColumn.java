@@ -526,7 +526,6 @@ public enum EquipmentColumn {
      * @param equipment The {@link Equipment} to get the data from.
      * @return The tooltip for a specific row within the column.
      */
-    @SuppressWarnings("static-method")
     public String getToolTip(Equipment equipment) {
         return null;
     }
@@ -545,13 +544,11 @@ public enum EquipmentColumn {
      *                 equipment.
      * @return Whether this column should be displayed for the specified data file.
      */
-    @SuppressWarnings("static-method")
     public boolean shouldDisplay(DataFile dataFile, boolean carried) {
         return true;
     }
 
     /** @return Whether this column should contain the hierarchy controls. */
-    @SuppressWarnings("static-method")
     public boolean isHierarchyColumn() {
         return false;
     }

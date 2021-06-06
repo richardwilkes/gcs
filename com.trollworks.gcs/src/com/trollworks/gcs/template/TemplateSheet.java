@@ -84,7 +84,7 @@ public class TemplateSheet extends CollectedOutlines {
         adjustSize();
     }
 
-    private void syncOutline(Outline outline) {
+    private static void syncOutline(Outline outline) {
         if (outline != null) {
             outline.sizeColumnsToFit();
         }

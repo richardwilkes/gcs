@@ -250,7 +250,6 @@ public abstract class WeaponStats {
      * @param index  The index to start looking.
      * @return The index of the next non-space character.
      */
-    @SuppressWarnings("static-method")
     protected int skipSpaces(String buffer, int index) {
         int max = buffer.length();
         while (index < max && buffer.charAt(index) == ' ') {
@@ -514,7 +513,6 @@ public abstract class WeaponStats {
      * @param data The data to sanitize.
      * @return The original data, or "", if the data was {@code null}.
      */
-    @SuppressWarnings("static-method")
     protected String sanitize(String data) {
         if (data == null) {
             return "";

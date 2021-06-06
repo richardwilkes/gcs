@@ -1043,7 +1043,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         return needRepaint;
     }
 
-    private boolean buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) {
+    private static boolean buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) {
         boolean needRepaint = false;
         while (iterator.hasNext()) {
             ListRow row = iterator.next();
@@ -1094,7 +1094,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         return needRepaint;
     }
 
-    private boolean processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
+    private static boolean processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
         String             key         = feature.getKey().toLowerCase();
         ArrayList<Feature> list        = map.get(key);
         boolean            needRepaint = false;

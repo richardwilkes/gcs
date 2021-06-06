@@ -68,7 +68,6 @@ public abstract class Row {
      * @param column The column.
      * @return The icon for the specified column, or {@code null}.
      */
-    @SuppressWarnings("static-method")
     public RetinaIcon getIcon(Column column) {
         return null;
     }
@@ -323,7 +322,6 @@ public abstract class Row {
     }
 
     /** @return The string to display as tooltip. Defaults to {@code null}. */
-    @SuppressWarnings("static-method")
     public String getToolTip(Column column) {
         return null;
     }

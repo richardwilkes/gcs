@@ -211,7 +211,6 @@ public enum EquipmentModifierColumnID {
      * @param modifier The {@link EquipmentModifier} to get the data from.
      * @return The tooltip for a specific row within the column.
      */
-    @SuppressWarnings("static-method")
     public String getToolTip(EquipmentModifier modifier) {
         return null;
     }

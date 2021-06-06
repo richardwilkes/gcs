@@ -678,7 +678,6 @@ public abstract class ListRow extends Row {
      * @param lowerCaseOnly The passed in text is all lowercase.
      * @return {@code true} if this row contains the text.
      */
-    @SuppressWarnings("static-method")
     public boolean contains(String text, boolean lowerCaseOnly) {
         return false;
     }
@@ -719,7 +718,6 @@ public abstract class ListRow extends Row {
     }
 
     /** @return The notes due to modifiers. */
-    @SuppressWarnings("static-method")
     public String getModifierNotes() {
         return "";
     }

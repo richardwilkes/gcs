@@ -77,7 +77,6 @@ public class TextCell implements Cell {
      * @param active   Whether or not the active version of the color is needed.
      * @return The foreground color.
      */
-    @SuppressWarnings("static-method")
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (selected) {
             return UIManager.getColor("List.selectionForeground");
@@ -106,7 +105,6 @@ public class TextCell implements Cell {
         return Math.max(minHeight, height);
     }
 
-    @SuppressWarnings("static-method")
     public RetinaIcon getIcon(Row row, Column column) {
         return row == null ? null : row.getIcon(column);
     }
@@ -162,7 +160,7 @@ public class TextCell implements Cell {
                     if (vAlignment == SwingConstants.CENTER) {
                         vDelta /= 2;
                     }
-                    y += vDelta;
+                    y += (int) vDelta;
                 }
                 gc.setColor(getColor(outline, row, column, selected, active));
                 gc.drawString(text, x, y);
@@ -196,7 +194,6 @@ public class TextCell implements Cell {
     }
 
     /** @return The truncation policy. */
-    @SuppressWarnings("static-method")
     public int getTruncationPolicy() {
         return SwingConstants.CENTER;
     }
@@ -206,8 +203,7 @@ public class TextCell implements Cell {
      * @param column The column.
      * @return The data of this cell as a string.
      */
-    @SuppressWarnings("static-method")
-    protected final String getData(Row row, Column column) {
+    protected static String getData(Row row, Column column) {
         if (row != null) {
             String text = row.getDataAsText(column);
             return text == null ? "" : text;
@@ -220,7 +216,6 @@ public class TextCell implements Cell {
      * @param column The column.
      * @return The font.
      */
-    @SuppressWarnings("static-method")
     public Font getFont(Row row, Column column) {
         return UIManager.getFont("TextField.font");
     }
@@ -236,7 +231,6 @@ public class TextCell implements Cell {
     }
 
     /** @return The vertical alignment. */
-    @SuppressWarnings("static-method")
     public int getVAlignment() {
         return SwingConstants.TOP;
     }

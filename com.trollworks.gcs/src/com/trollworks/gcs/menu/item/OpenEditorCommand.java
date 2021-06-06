@@ -58,7 +58,7 @@ public class OpenEditorCommand extends Command {
         }
     }
 
-    private ListOutline getOutline() {
+    private static ListOutline getOutline() {
         Component comp = getFocusOwner();
         if (comp instanceof OutlineProxy) {
             comp = ((OutlineProxy) comp).getRealOutline();

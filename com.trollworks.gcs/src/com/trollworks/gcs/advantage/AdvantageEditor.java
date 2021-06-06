@@ -281,14 +281,14 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         parent.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    private JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
+    private static JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
         JCheckBox button = new JCheckBox();
         button.setSelected(selected);
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         return button;
     }
 
-    private LinkedLabel createTypeLabel(RetinaIcon icon, JCheckBox linkTo) {
+    private static LinkedLabel createTypeLabel(RetinaIcon icon, JCheckBox linkTo) {
         LinkedLabel label = new LinkedLabel(icon, linkTo);
         label.addMouseListener(new LinkAdapter(linkTo));
         return label;

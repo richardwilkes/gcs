@@ -58,7 +58,6 @@ public class IconsCell implements Cell {
      * @param active   Whether the outline is active.
      * @return The icon, if any.
      */
-    @SuppressWarnings("static-method")
     protected List<RetinaIcon> getIcons(Row row, Column column, boolean selected, boolean active) {
         List<RetinaIcon> list = new ArrayList<>();
         Object           data = row.getData(column);

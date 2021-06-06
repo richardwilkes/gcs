@@ -116,7 +116,10 @@ public class TreeSorter implements Comparator<TreeRow> {
 
     @Override
     public int compare(TreeRow r1, TreeRow r2) {
-        for (SortData sortData : mSortData) {
+        int size = mSortData.size();
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < size; i++) {
+            SortData sortData = mSortData.get(i);
             int result = sortData.mColumn.compare(r1, r2);
             if (result != 0) {
                 return sortData.mAscending ? result : -result;

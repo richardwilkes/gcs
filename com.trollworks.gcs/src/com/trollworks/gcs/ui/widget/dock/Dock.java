@@ -342,7 +342,7 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
         return over(getLayout(), x, y);
     }
 
-    private DockLayoutNode over(DockLayoutNode node, int x, int y) {
+    private static DockLayoutNode over(DockLayoutNode node, int x, int y) {
         if (containedBy(node, x, y)) {
             if (node instanceof DockLayout) {
                 DockLayout layout = (DockLayout) node;

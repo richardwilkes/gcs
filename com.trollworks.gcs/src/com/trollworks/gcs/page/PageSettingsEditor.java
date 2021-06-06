@@ -79,7 +79,7 @@ public class PageSettingsEditor extends JPanel {
     }
 
 
-    private Fixed6 convert(Fixed6 value, LengthUnits oldUnits, LengthUnits newUnits) {
+    private static Fixed6 convert(Fixed6 value, LengthUnits oldUnits, LengthUnits newUnits) {
         return newUnits.convert(oldUnits, value).mul(HUNDRED).round().div(HUNDRED);
     }
 

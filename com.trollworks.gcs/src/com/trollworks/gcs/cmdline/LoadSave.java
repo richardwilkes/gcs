@@ -70,7 +70,7 @@ public final class LoadSave implements Runnable {
         }
     }
 
-    private void traverse(Path path) throws IOException {
+    private static void traverse(Path path) throws IOException {
         if (!shouldSkip(path)) {
             if (Files.isDirectory(path)) {
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
@@ -116,7 +116,7 @@ public final class LoadSave implements Runnable {
         System.out.println(path);
     }
 
-    private boolean shouldSkip(Path path) {
+    private static boolean shouldSkip(Path path) {
         return path.getFileName().toString().startsWith(".");
     }
 }

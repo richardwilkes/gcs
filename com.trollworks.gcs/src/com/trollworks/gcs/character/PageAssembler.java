@@ -142,7 +142,6 @@ public class PageAssembler {
         return true;
     }
 
-    @SuppressWarnings("static-method")
     public void finish() {
         if (mContent != null) {
             ((PrecisionLayout) mContent.getLayout()).getLayoutData(mContent.getComponent(mContent.getComponentCount() - 1)).setFillVerticalAlignment().setGrabVerticalSpace(true);

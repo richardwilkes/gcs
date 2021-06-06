@@ -358,7 +358,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
         return true;
     }
 
-    private void collectEquipmentModifiers(Row row, List<EquipmentModifier> result) {
+    private static void collectEquipmentModifiers(Row row, List<EquipmentModifier> result) {
         if (row instanceof EquipmentModifier) {
             EquipmentModifier eqpmod = (EquipmentModifier) row;
             if (eqpmod.canHaveChildren()) {

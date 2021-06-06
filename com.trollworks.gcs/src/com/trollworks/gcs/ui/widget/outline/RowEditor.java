@@ -140,7 +140,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         add(scroller);
     }
 
-    private Dimension adjustSize(Dimension size, int scrollSize) {
+    private static Dimension adjustSize(Dimension size, int scrollSize) {
         size = new Dimension(size);
         size.width += scrollSize;
         size.height += scrollSize;
@@ -157,12 +157,12 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     /** Called by {@link #addContent()}. */
     protected abstract void addContentSelf(ScrollContent outer);
 
-    protected final void addSection(Container parent, JComponent section) {
+    protected static void addSection(Container parent, JComponent section) {
         section.setBorder(new TitledBorder(Fonts.getDefaultSystemFont(), section.toString()));
         parent.add(section, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    protected final void addLabel(Container parent, String text, JComponent linkedTo) {
+    protected static void addLabel(Container parent, String text, JComponent linkedTo) {
         parent.add(new LinkedLabel(text, linkedTo), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 

@@ -295,7 +295,6 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
     }
 
     /** @return The minimum viewable size of the content area. */
-    @SuppressWarnings("static-method")
     public Dimension getMinimumViewableContentSize() {
         return new Dimension(20, 20);
     }

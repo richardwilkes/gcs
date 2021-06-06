@@ -263,7 +263,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         }
     }
 
-    private void addRowsToBeProcessed(List<ListRow> list, ListRow row) {
+    private static void addRowsToBeProcessed(List<ListRow> list, ListRow row) {
         int count = row.getChildCount();
         list.add(row);
         for (int i = 0; i < count; i++) {
@@ -271,7 +271,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         }
     }
 
-    private void addCompleteRow(Outline outline, Row row, Map<Outline, List<Row>> selMap) {
+    private static void addCompleteRow(Outline outline, Row row, Map<Outline, List<Row>> selMap) {
         List<Row> selection = selMap.get(outline);
         addCompleteRow(outline.getModel(), row);
         outline.contentSizeMayHaveChanged();
@@ -282,7 +282,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         selection.add(row);
     }
 
-    private void addCompleteRow(OutlineModel outlineModel, Row row) {
+    private static void addCompleteRow(OutlineModel outlineModel, Row row) {
         outlineModel.addRow(row);
         if (row.isOpen() && row.hasChildren()) {
             for (Row child : row.getChildren()) {

@@ -41,10 +41,13 @@ public class LaunchProxy {
     private long              mID;
     private boolean           mReady;
 
-    public LaunchProxy(List<Path> paths) {
+    public LaunchProxy() {
         mSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 13321);
         mUserFilter = System.getProperty("user.name", "*");
         mID = new SecureRandom().nextLong();
+    }
+
+    public void start(List<Path> paths) {
         ArrayList<String> files = new ArrayList<>();
         for (Path p : paths) {
             files.add(p.toAbsolutePath().toString());

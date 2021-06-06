@@ -201,7 +201,7 @@ public class AttributePanel extends JPanel {
         right.add(remove);
     }
 
-    private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
         container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment());
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
@@ -212,7 +212,7 @@ public class AttributePanel extends JPanel {
         return field;
     }
 
-    private void addAttributeTypeCombo(Container container, AttributeType value, ItemListener listener) {
+    private static void addAttributeTypeCombo(Container container, AttributeType value, ItemListener listener) {
         JComboBox<AttributeType> combo = new JComboBox<>(AttributeType.values());
         combo.setSelectedItem(value);
         combo.addItemListener(listener);

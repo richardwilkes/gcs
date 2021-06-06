@@ -57,13 +57,13 @@ import java.util.Map;
 
 /** A simple expression evaluator. */
 public class Evaluator {
-    private static List<Operator>                  DEFAULT_OPERATORS = new ArrayList<>();
-    private static Map<String, ExpressionFunction> DEFAULT_FUNCTIONS = new HashMap<>();
-    private        VariableResolver                mVariableResolver;
-    private        List<Operator>                  mOperators        = new ArrayList<>();
-    private        Map<String, ExpressionFunction> mFunctions        = new HashMap<>();
-    private        Stack<ExpressionOperator>       mOperatorStack;
-    private        Stack<Object>                   mOperandStack;
+    private static    List<Operator>                  DEFAULT_OPERATORS = new ArrayList<>();
+    private static    Map<String, ExpressionFunction> DEFAULT_FUNCTIONS = new HashMap<>();
+    private           VariableResolver                mVariableResolver;
+    private           List<Operator>                  mOperators        = new ArrayList<>();
+    private           Map<String, ExpressionFunction> mFunctions        = new HashMap<>();
+    private transient Stack<ExpressionOperator>       mOperatorStack;
+    private transient Stack<Object>                   mOperandStack;
 
     static {
         addDefaultOperator(new OpenParen());

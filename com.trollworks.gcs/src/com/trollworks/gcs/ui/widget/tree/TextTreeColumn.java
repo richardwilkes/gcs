@@ -220,7 +220,6 @@ public class TextTreeColumn extends TreeColumn {
      * @param row The {@link TreeRow} to extract information from.
      * @return The {@link Font} to use.
      */
-    @SuppressWarnings("static-method")
     public Font getFont(TreeRow row) {
         return Fonts.getDefaultSystemFont();
     }
@@ -233,7 +232,6 @@ public class TextTreeColumn extends TreeColumn {
      * @param active   Whether or not the active state should be displayed.
      * @return The foreground color.
      */
-    @SuppressWarnings("static-method")
     public Color getColor(TreePanel panel, TreeRow row, int position, boolean selected, boolean active) {
         return panel.getDefaultRowForeground(position, selected, active);
     }

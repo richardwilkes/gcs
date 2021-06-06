@@ -1104,7 +1104,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      * @param active   Whether or not the active version of the color is needed.
      * @return The foreground color.
      */
-    @SuppressWarnings("static-method")
     public Color getDefaultRowForeground(int position, boolean selected, boolean active) {
         if (selected) {
             return UIManager.getColor("List.selectionForeground");

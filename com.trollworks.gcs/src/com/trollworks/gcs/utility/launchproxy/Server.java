@@ -19,10 +19,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-class Server extends Thread {
-    private ServerSocket      mServerSocket;
-    private ArrayList<Client> mClients;
-    private Object            mSendLock;
+class Server implements Runnable {
+    private final ServerSocket      mServerSocket;
+    private final ArrayList<Client> mClients;
+    private final Object            mSendLock;
 
     /**
      * Creates a new conduit message server.
@@ -31,11 +31,15 @@ class Server extends Thread {
      * @throws IOException if the server socket cannot be created.
      */
     Server(InetSocketAddress socketAddress) throws IOException {
-        super("LaunchProxyServer");
-        setDaemon(true);
         mServerSocket = new ServerSocket(socketAddress.getPort(), 0, socketAddress.getAddress());
         mClients = new ArrayList<>();
         mSendLock = new Object();
+    }
+
+    public void start() {
+        Thread thread = new Thread(this, "LaunchProxyServer");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /** Handles accepting new incoming connections and starting client processors for each. */
@@ -46,7 +50,6 @@ class Server extends Thread {
                 Socket socket = mServerSocket.accept();
                 try {
                     Client client = new Client(this, socket);
-                    client.setDaemon(true);
                     client.start();
                     synchronized (mClients) {
                         mClients.add(client);
@@ -98,14 +101,11 @@ class Server extends Thread {
     }
 
     /** Shuts down this communication server. */
-    void shutdown() {
-        ServerSocket ss = mServerSocket;
-        synchronized (this) {
-            try {
-                ss.close();
-            } catch (Exception exception) {
-                Log.error(exception);
-            }
+    synchronized void shutdown() {
+        try {
+            mServerSocket.close();
+        } catch (Exception exception) {
+            Log.error(exception);
         }
     }
 }

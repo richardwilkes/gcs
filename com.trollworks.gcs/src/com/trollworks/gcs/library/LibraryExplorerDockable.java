@@ -153,7 +153,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         return ((LibraryExplorerRow) row).getIcon();
     }
 
-    private void fillTree(List<?> lists, TreeContainerRow parent) {
+    private static void fillTree(List<?> lists, TreeContainerRow parent) {
         int count = lists.size();
         for (int i = 1; i < count; i++) {
             Object entry = lists.get(i);
@@ -191,7 +191,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         return open;
     }
 
-    private Set<TreeContainerRow> collectRowsToOpen(TreeContainerRow parent, Set<String> selectors, Set<TreeContainerRow> set) {
+    private static Set<TreeContainerRow> collectRowsToOpen(TreeContainerRow parent, Set<String> selectors, Set<TreeContainerRow> set) {
         if (set == null) {
             set = new HashSet<>();
         }
@@ -212,7 +212,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         return set;
     }
 
-    private List<TreeRow> collectRows(TreeContainerRow parent, Set<String> selectors, List<TreeRow> list) {
+    private static List<TreeRow> collectRows(TreeContainerRow parent, Set<String> selectors, List<TreeRow> list) {
         if (list == null) {
             list = new ArrayList<>();
         }

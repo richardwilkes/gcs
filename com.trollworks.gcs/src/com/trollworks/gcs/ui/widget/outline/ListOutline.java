@@ -229,13 +229,13 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
         updateRows(Filtered.list(getModel().getTopLevelRows(), ListRow.class));
     }
 
-    private void updateRows(Collection<ListRow> rows) {
+    private static void updateRows(Collection<ListRow> rows) {
         for (ListRow row : rows) {
             updateRow(row);
         }
     }
 
-    private void updateRow(ListRow row) {
+    private static void updateRow(ListRow row) {
         if (row != null) {
             int count = row.getChildCount();
             for (int i = 0; i < count; i++) {

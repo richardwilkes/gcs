@@ -63,13 +63,13 @@ import javax.swing.JScrollPane;
 
 /** A window for editing attribute settings. */
 public final class AttributeSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
-    private static Map<UUID, AttributeSettingsWindow> INSTANCES = new HashMap<>();
-    private        GURPSCharacter                     mCharacter;
-    private        AttributeListPanel                 mListPanel;
-    private        FontAwesomeButton                  mMenuButton;
-    private        JScrollPane                        mScroller;
-    private        boolean                            mResetEnabled;
-    private        boolean                            mUpdatePending;
+    private static final Map<UUID, AttributeSettingsWindow> INSTANCES = new HashMap<>();
+    private              GURPSCharacter                     mCharacter;
+    private              AttributeListPanel                 mListPanel;
+    private              FontAwesomeButton                  mMenuButton;
+    private              JScrollPane                        mScroller;
+    private              boolean                            mResetEnabled;
+    private              boolean                            mUpdatePending;
 
     /** Displays the attribute settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -179,7 +179,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         menu.show(mMenuButton, 0, 0);
     }
 
-    private JMenuItem createMenuItem(String title, Runnable onSelection, boolean enabled) {
+    private static JMenuItem createMenuItem(String title, Runnable onSelection, boolean enabled) {
         JMenuItem item = new JMenuItem(title);
         item.addActionListener((evt) -> onSelection.run());
         item.setEnabled(enabled);

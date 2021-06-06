@@ -18,7 +18,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-class Client extends Thread {
+class Client implements Runnable {
     private Server           mServer;
     private Socket           mClientSocket;
     private DataInputStream  mClientInput;
@@ -32,12 +32,16 @@ class Client extends Thread {
      * @throws IOException if the socket's i/o streams cannot be retrieved.
      */
     Client(Server server, Socket socket) throws IOException {
-        super("LaunchProxyClient");
-        setDaemon(true);
         mServer = server;
         mClientSocket = socket;
         mClientInput = new DataInputStream(socket.getInputStream());
         mClientOutput = new DataOutputStream(socket.getOutputStream());
+    }
+
+    public void start() {
+        Thread thread = new Thread(this, "LaunchProxyClient");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @Override

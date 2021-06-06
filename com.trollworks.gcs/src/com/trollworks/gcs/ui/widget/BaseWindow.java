@@ -138,7 +138,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         }
     }
 
-    private void collectSaveables(Component component, List<Saveable> saveables) {
+    private static void collectSaveables(Component component, List<Saveable> saveables) {
         if (component instanceof Container) {
             Container container = (Container) component;
             int       count     = container.getComponentCount();
@@ -233,7 +233,6 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
      * @return The key for the window preferences. If {@code null} is returned from this method,
      *         then no standard window preferences will be saved. Returns {@code null} by default.
      */
-    @SuppressWarnings("static-method")
     public String getWindowPrefsKey() {
         return null;
     }

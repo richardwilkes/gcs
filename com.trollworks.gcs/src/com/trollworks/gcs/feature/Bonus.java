@@ -24,9 +24,9 @@ import java.util.Set;
 
 /** Describes a bonus. */
 public abstract class Bonus extends Feature {
-    private LeveledAmount mAmount;
+    private           LeveledAmount mAmount;
     // The "parent" item that is providing this particular bonus (for information only).
-    private ListRow       mParent;
+    private transient ListRow       mParent;
 
     /**
      * Creates a new bonus.

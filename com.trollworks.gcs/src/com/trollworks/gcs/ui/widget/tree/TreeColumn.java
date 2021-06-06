@@ -242,19 +242,16 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
      * @param where The mouse press location.
      * @return {@code true} if the mouse press has been handled.
      */
-    @SuppressWarnings("static-method")
     public boolean mousePress(TreeRow row, Point where) {
         return false;
     }
 
     /** @return The {@link Font} to use for the header. */
-    @SuppressWarnings("static-method")
     public Font getHeaderFont() {
         return Fonts.getDefaultSystemFont();
     }
 
     /** @return The {@link Color} to use for the sorter controls. */
-    @SuppressWarnings("static-method")
     public Color getSorterColor() {
         return Color.blue.darker();
     }

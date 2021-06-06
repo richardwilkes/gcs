@@ -274,7 +274,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         repaint();
     }
 
-    private void syncOutline(Outline outline) {
+    private static void syncOutline(Outline outline) {
         if (outline != null) {
             outline.sizeColumnsToFit();
         }
@@ -359,7 +359,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         };
     }
 
-    private boolean restoreFocusToKey(String key, Component panel) {
+    private static boolean restoreFocusToKey(String key, Component panel) {
         if (key != null) {
             if (panel instanceof PageField) {
                 if (key.equals(((PageField) panel).getTag())) {
@@ -476,7 +476,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         return new ArrayList<>(reactionMap.values());
     }
 
-    private void collectReactionsFromFeatureList(String source, List<Feature> features, Map<String, ReactionRow> reactionMap) {
+    private static void collectReactionsFromFeatureList(String source, List<Feature> features, Map<String, ReactionRow> reactionMap) {
         for (Feature feature : features) {
             if (feature instanceof ReactionBonus) {
                 ReactionBonus bonus     = (ReactionBonus) feature;
@@ -511,20 +511,20 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         Map<String, ConditionalModifierRow> cmMap = new HashMap<>();
         for (Advantage advantage : mCharacter.getAdvantagesIterator(false)) {
             String source = String.format(I18n.text("from advantage %s"), advantage.getName());
-            collectConditionalModifiersFromFeatureList(source, advantage.getFeatures(), cmMap);
+            collectConditionalModsFromFeatureList(source, advantage.getFeatures(), cmMap);
             for (AdvantageModifier modifier : advantage.getModifiers()) {
                 if (modifier.isEnabled()) {
-                    collectConditionalModifiersFromFeatureList(source, modifier.getFeatures(), cmMap);
+                    collectConditionalModsFromFeatureList(source, modifier.getFeatures(), cmMap);
                 }
             }
         }
         for (Equipment equipment : mCharacter.getEquipmentIterator()) {
             if (equipment.getQuantity() > 0 && equipment.isEquipped()) {
                 String source = String.format(I18n.text("from equipment %s"), equipment.getDescription());
-                collectConditionalModifiersFromFeatureList(source, equipment.getFeatures(), cmMap);
+                collectConditionalModsFromFeatureList(source, equipment.getFeatures(), cmMap);
                 for (EquipmentModifier modifier : equipment.getModifiers()) {
                     if (modifier.isEnabled()) {
-                        collectConditionalModifiersFromFeatureList(source, modifier.getFeatures(), cmMap);
+                        collectConditionalModsFromFeatureList(source, modifier.getFeatures(), cmMap);
                     }
                 }
             }
@@ -532,7 +532,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         return new ArrayList<>(cmMap.values());
     }
 
-    private void collectConditionalModifiersFromFeatureList(String source, List<Feature> features, Map<String, ConditionalModifierRow> cmMap) {
+    private static void collectConditionalModsFromFeatureList(String source, List<Feature> features, Map<String, ConditionalModifierRow> cmMap) {
         for (Feature feature : features) {
             if (feature instanceof ConditionalModifier) {
                 ConditionalModifier    cm        = (ConditionalModifier) feature;

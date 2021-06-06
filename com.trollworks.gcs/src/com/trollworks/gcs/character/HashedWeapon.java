@@ -35,15 +35,15 @@ class HashedWeapon {
 
     @Override
     public int hashCode() {
-        StringBuilder                buffer      = new StringBuilder();
+        int                          result      = 1;
         Class<? extends WeaponStats> weaponClass = mWeapon.getClass();
+        //noinspection ObjectInstantiationInEqualsHashCode
         for (WeaponColumn one : WeaponColumn.values()) {
             if (one.isValidFor(weaponClass, false)) {
-                buffer.append(one.getDataAsText(mWeapon));
-                buffer.append("|");
+                result = 31 * result + one.getDataAsText(mWeapon).hashCode();
             }
         }
-        return buffer.toString().hashCode();
+        return result;
     }
 
     @Override

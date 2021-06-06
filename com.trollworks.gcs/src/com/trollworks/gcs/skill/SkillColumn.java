@@ -335,7 +335,6 @@ public enum SkillColumn {
      * @param skill The {@link Skill} to get the data from.
      * @return The tooltip for a specific row within the column.
      */
-    @SuppressWarnings("static-method")
     public String getToolTip(Skill skill) {
         return null;
     }

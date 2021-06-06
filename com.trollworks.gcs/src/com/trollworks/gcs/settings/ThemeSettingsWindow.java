@@ -145,7 +145,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         WindowUtils.packAndCenterWindowOn(this, null);
     }
 
-    private FontAwesomeButton addHeader(Container parent, String text, int topMargin, Runnable reset) {
+    private static FontAwesomeButton addHeader(Container parent, String text, int topMargin, Runnable reset) {
         JPanel header = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         JLabel label  = new JLabel(text);
         label.setFont(label.getFont().deriveFont(Font.BOLD));

@@ -27,7 +27,7 @@ public class Theme {
     public static final Theme   DEFAULT;
     private static      Theme   CURRENT;
     private             Color[] mColors;
-    private             boolean mReadOnly;
+    private transient   boolean mReadOnly;
 
     static {
         DEFAULT = new Theme();
@@ -78,7 +78,7 @@ public class Theme {
      * @param other The other Theme to base this one off of.
      */
     public Theme(Theme other) {
-        this();
+        mColors = new Color[ThemeColor.ALL.size()];
         System.arraycopy(other.mColors, 0, mColors, 0, mColors.length);
     }
 

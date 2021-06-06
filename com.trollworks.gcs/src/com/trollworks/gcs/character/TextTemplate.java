@@ -1193,7 +1193,7 @@ public class TextTemplate {
             }
         } else if (key.startsWith(KEY_PREFIX_DEPTH)) {
             int amt = Numbers.extractInteger(key.substring(6), 1, false);
-            out.write("" + amt * row.getDepth());
+            out.write(Integer.toString(amt * row.getDepth()));
         } else if (key.equals(KEY_SATISFIED)) {
             out.write(row.isSatisfied() ? "Y" : "N");
         } else {

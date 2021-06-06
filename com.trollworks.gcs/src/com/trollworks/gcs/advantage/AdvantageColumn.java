@@ -307,7 +307,6 @@ public enum AdvantageColumn {
      * @param advantage The {@link Advantage} to get the data from.
      * @return The tooltip for a specific row within the column.
      */
-    @SuppressWarnings("static-method")
     public String getToolTip(Advantage advantage) {
         return null;
     }

@@ -498,7 +498,6 @@ public enum SpellColumn {
      * @param spell The {@link Spell} to get the data from.
      * @return The tooltip for a specific row within the column.
      */
-    @SuppressWarnings("static-method")
     public String getToolTip(Spell spell) {
         return null;
     }

@@ -214,7 +214,8 @@ public class RangedWeaponStats extends WeaponStats {
                     if (where > 0) {
                         buffer.append(range, 0, where);
                     }
-                    strength *= value;
+                    //noinspection AssignmentReplaceableWithOperatorAssignment
+                    strength = (int) (strength * value);
                     buffer.append(Numbers.format(strength));
                     if (last < max) {
                         buffer.append(range.substring(last));

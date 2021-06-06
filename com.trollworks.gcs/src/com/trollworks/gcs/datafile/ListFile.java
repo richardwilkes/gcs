@@ -83,7 +83,7 @@ public abstract class ListFile extends DataFile {
         return set;
     }
 
-    private void processRowForCategories(Row row, Set<String> set) {
+    private static void processRowForCategories(Row row, Set<String> set) {
         if (row instanceof ListRow) {
             set.addAll(((ListRow) row).getCategories());
         }

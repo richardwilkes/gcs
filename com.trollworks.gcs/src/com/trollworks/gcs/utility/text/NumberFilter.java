@@ -107,7 +107,7 @@ public final class NumberFilter implements KeyListener {
                         if (start != 0) {
                             filter(event);
                         }
-                    } else if (buffer.indexOf("" + DECIMAL_CHAR) != -1 || mAllowSign && start == 0 && !buffer.isEmpty() && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
+                    } else if (buffer.indexOf(String.valueOf(DECIMAL_CHAR)) != -1 || mAllowSign && start == 0 && !buffer.isEmpty() && (buffer.charAt(0) == '-' || buffer.charAt(0) == '+')) {
                         filter(event);
                     }
                 } else {

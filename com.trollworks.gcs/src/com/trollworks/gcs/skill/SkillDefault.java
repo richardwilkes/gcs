@@ -32,13 +32,13 @@ public class SkillDefault {
     public static final String KEY_ADJ_LEVEL      = "adjusted_level";
     public static final String KEY_POINTS         = "points";
 
-    private String mType;
-    private String mName;
-    private String mSpecialization;
-    private int    mModifier;
-    private int    mLevel;
-    private int    mAdjLevel;
-    private int    mPoints;
+    private           String mType;
+    private           String mName;
+    private           String mSpecialization;
+    private           int    mModifier;
+    private transient int    mLevel;
+    private transient int    mAdjLevel;
+    private transient int    mPoints;
 
     /**
      * Creates a new skill default.

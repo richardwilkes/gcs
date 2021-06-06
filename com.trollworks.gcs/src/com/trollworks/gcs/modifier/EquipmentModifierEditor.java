@@ -120,7 +120,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return field;
     }
 
-    private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+    private static JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
         if (maxChars > 0) {
             UIUtilities.setToPreferredSizeOnly(field);

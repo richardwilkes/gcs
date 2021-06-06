@@ -166,14 +166,14 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         right.add(remove);
     }
 
-    private void addLabel(Container container, String title, String tooltip) {
+    private static void addLabel(Container container, String title, String tooltip) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         container.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
-    private EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
         addLabel(container, title, tooltip);
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();

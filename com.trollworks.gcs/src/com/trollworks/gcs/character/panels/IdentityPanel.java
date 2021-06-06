@@ -55,7 +55,7 @@ public class IdentityPanel extends DropPanel {
         add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
     }
 
-    private PrecisionLayoutData createFieldLayoutData() {
+    private static PrecisionLayoutData createFieldLayoutData() {
         return new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setLeftMargin(4);
     }
 }

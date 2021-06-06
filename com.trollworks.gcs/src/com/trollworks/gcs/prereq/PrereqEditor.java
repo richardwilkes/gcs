@@ -211,7 +211,7 @@ public abstract class PrereqEditor extends EditorPanel {
         }
     }
 
-    private int countSelfAndDescendents(Prereq prereq) {
+    private static int countSelfAndDescendents(Prereq prereq) {
         int count = 1;
         if (prereq instanceof PrereqList) {
             for (Prereq one : ((PrereqList) prereq).getChildren()) {

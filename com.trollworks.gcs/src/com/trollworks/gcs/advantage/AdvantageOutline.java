@@ -133,7 +133,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
         return true;
     }
 
-    private void collectAdvantageModifiers(Row row, List<AdvantageModifier> result) {
+    private static void collectAdvantageModifiers(Row row, List<AdvantageModifier> result) {
         if (row instanceof AdvantageModifier) {
             AdvantageModifier advmod = (AdvantageModifier) row;
             if (advmod.canHaveChildren()) {

@@ -163,7 +163,6 @@ public abstract class DataFile extends ChangeableData implements Undoable {
     protected abstract void saveSelf(JsonWriter w, SaveType saveType) throws IOException;
 
     /** @return Whether the file is empty. By default, returns {@code false}. */
-    @SuppressWarnings("static-method")
     public boolean isEmpty() {
         return false;
     }

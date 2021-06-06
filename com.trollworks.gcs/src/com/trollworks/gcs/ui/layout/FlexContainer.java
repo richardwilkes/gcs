@@ -134,7 +134,6 @@ public abstract class FlexContainer extends FlexCell {
      * @param limits The limits for the values.
      * @return Any leftover amount.
      */
-    @SuppressWarnings("static-method")
     protected int distribute(int amt, int[] values, int[] limits) {
         if (amt < 0) {
             return distributeShrink(-amt, values, limits);

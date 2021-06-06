@@ -94,7 +94,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
         return advantage;
     }
 
-    private WeaponStats createBite(Advantage owner) {
+    private static WeaponStats createBite(Advantage owner) {
         MeleeWeaponStats bite   = new MeleeWeaponStats(owner);
         WeaponDamage     damage = new WeaponDamage(bite);
         damage.setType("cr");
@@ -109,7 +109,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
         return bite;
     }
 
-    private WeaponStats createPunch(Advantage owner) {
+    private static WeaponStats createPunch(Advantage owner) {
         MeleeWeaponStats punch  = new MeleeWeaponStats(owner);
         WeaponDamage     damage = new WeaponDamage(punch);
         damage.setType("cr");
@@ -123,7 +123,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
         return punch;
     }
 
-    private WeaponStats createKick(Advantage owner) {
+    private static WeaponStats createKick(Advantage owner) {
         MeleeWeaponStats kick   = new MeleeWeaponStats(owner);
         WeaponDamage     damage = new WeaponDamage(kick);
         damage.setType("cr");

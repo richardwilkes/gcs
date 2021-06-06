@@ -77,7 +77,6 @@ public class MultiCell implements Cell {
      * @param row The row to use.
      * @return The primary text to display.
      */
-    @SuppressWarnings("static-method")
     protected String getPrimaryText(ListRow row) {
         return row.toString();
     }
@@ -100,7 +99,6 @@ public class MultiCell implements Cell {
      * @param row The row to use.
      * @return The secondary text to display.
      */
-    @SuppressWarnings("static-method")
     protected String getSecondaryText(ListRow row) {
         return row.getSecondaryText();
     }
@@ -134,7 +132,6 @@ public class MultiCell implements Cell {
      * @param active   Whether or not the active version of the color is needed.
      * @return The foreground color.
      */
-    @SuppressWarnings("static-method")
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (((ListRow) row).isSatisfied()) {
             if (selected) {

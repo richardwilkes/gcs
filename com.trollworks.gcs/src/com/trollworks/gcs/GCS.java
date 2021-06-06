@@ -233,7 +233,8 @@ public final class GCS {
             System.exit(1);
         }
 
-        LaunchProxy launchProxy = new LaunchProxy(files);
+        LaunchProxy launchProxy = new LaunchProxy();
+        launchProxy.start(files);
         UIUtilities.initialize();
 
         if (Desktop.isDesktopSupported()) {

@@ -129,7 +129,7 @@ public final class LibraryLocationsPanel extends JPanel {
         add(button);
     }
 
-    private JButton createDialogButton(String title) {
+    private static JButton createDialogButton(String title) {
         JButton button = new JButton(title);
         button.addActionListener(e -> {
             JOptionPane pane = UIUtilities.getAncestorOfType(button, JOptionPane.class);

@@ -826,7 +826,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         return -1;
     }
 
-    private String getDisclosure(Row row) {
+    private static String getDisclosure(Row row) {
         return row.isOpen() ? "\uf0d7" : "\uf0da";
     }
 
@@ -2078,7 +2078,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dtde  The drag event.
      * @param proxy The proxy.
      */
-    @SuppressWarnings("static-method")
     protected void dragEnterRow(DropTargetDragEvent dtde, OutlineProxy proxy) {
         addDragHighlight(proxy);
     }
@@ -2253,7 +2252,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         return DnDConstants.ACTION_MOVE;
     }
 
-    @SuppressWarnings("static-method")
     protected boolean isDragToRowAcceptable(Row parentRow) {
         return true;
     }
@@ -2286,7 +2284,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dtde The drag event.
      * @return The value to return via {@link DropTargetDragEvent#acceptDrag(int)}.
      */
-    @SuppressWarnings("static-method")
     protected int dropActionChangedColumn(DropTargetDragEvent dtde) {
         return DnDConstants.ACTION_MOVE;
     }
@@ -2297,7 +2294,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dtde The drag event.
      * @return The value to return via {@link DropTargetDragEvent#acceptDrag(int)}.
      */
-    @SuppressWarnings("static-method")
     protected int dropActionChangedRow(DropTargetDragEvent dtde) {
         return DnDConstants.ACTION_MOVE;
     }
@@ -2361,7 +2357,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dte   The drop target event.
      * @param proxy The proxy.
      */
-    @SuppressWarnings("static-method")
     protected void dragExitRow(DropTargetEvent dte, OutlineProxy proxy) {
         removeDragHighlight(proxy);
     }
@@ -2518,7 +2513,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      * @param dtde  The drop target drop event.
      * @param proxy The proxy.
      */
-    @SuppressWarnings("static-method")
     protected void dropRow(DropTargetDropEvent dtde, OutlineProxy proxy) {
         removeDragHighlight(proxy);
     }

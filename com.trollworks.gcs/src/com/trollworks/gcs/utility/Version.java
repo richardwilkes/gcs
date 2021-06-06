@@ -11,8 +11,6 @@
 
 package com.trollworks.gcs.utility;
 
-import java.util.Objects;
-
 public class Version implements Comparable<Version> {
     public int mMajor;
     public int mMinor;
@@ -87,7 +85,12 @@ public class Version implements Comparable<Version> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(Integer.valueOf(mMajor), Integer.valueOf(mMinor), Integer.valueOf(mBugfix));
+        int result = 31 + mMajor;
+        result *= 31;
+        result += mMinor;
+        result *= 31;
+        result += mBugfix;
+        return result;
     }
 
     @Override

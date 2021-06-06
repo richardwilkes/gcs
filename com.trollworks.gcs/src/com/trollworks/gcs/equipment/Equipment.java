@@ -663,7 +663,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         return weight;
     }
 
-    private WeightValue processMultiplyAddWeightStep(EquipmentModifierWeightType weightType, WeightValue weight, WeightUnits defUnits, List<EquipmentModifier> modifiers) {
+    private static WeightValue processMultiplyAddWeightStep(EquipmentModifierWeightType weightType, WeightValue weight, WeightUnits defUnits, List<EquipmentModifier> modifiers) {
         weight = new WeightValue(weight);
         WeightValue sum = new WeightValue(Fixed6.ZERO, weight.getUnits());
         for (EquipmentModifier modifier : modifiers) {

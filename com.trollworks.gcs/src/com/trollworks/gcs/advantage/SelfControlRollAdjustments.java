@@ -203,7 +203,6 @@ public enum SelfControlRollAdjustments {
      * @param cr The {@link SelfControlRoll} being adjusted.
      * @return The set of bonuses that this adjustment provides.
      */
-    @SuppressWarnings("static-method")
     public List<Bonus> getBonuses(SelfControlRoll cr) {
         return Collections.emptyList();
     }
