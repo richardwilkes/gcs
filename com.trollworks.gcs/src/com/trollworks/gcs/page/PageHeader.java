@@ -22,7 +22,7 @@ import javax.swing.UIManager;
 /** A header within the page. */
 public class PageHeader extends Label {
     /**
-     * Creates a new {@link PageHeader}.
+     * Creates a new PageHeader.
      *
      * @param title   The title to use.
      * @param tooltip The tooltip to use.

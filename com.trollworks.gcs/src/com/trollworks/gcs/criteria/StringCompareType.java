@@ -135,7 +135,7 @@ public enum StringCompareType {
     /**
      * Performs a comparison.
      *
-     * @param qualifier The qualifier to use in conjunction with this {@link StringCompareType}.
+     * @param qualifier The qualifier to use in conjunction with this StringCompareType.
      * @param data      The data to check.
      * @return Whether the data matches the criteria or not.
      */

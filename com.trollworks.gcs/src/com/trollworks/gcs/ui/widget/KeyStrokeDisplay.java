@@ -40,7 +40,7 @@ public class KeyStrokeDisplay extends JLabel implements KeyListener {
     private              KeyStroke mKeyStroke;
 
     /**
-     * Creates a new {@link KeyStrokeDisplay}.
+     * Creates a new KeyStrokeDisplay.
      *
      * @param ks The {@link KeyStroke} to start with.
      */

@@ -31,9 +31,9 @@ public class Dice implements Cloneable {
     }
 
     /**
-     * Creates a new {@link Dice} based on the given text.
+     * Creates a new Dice based on the given text.
      *
-     * @param text The text to create a {@link Dice} object from.
+     * @param text The text to create a Dice object from.
      */
     public Dice(String text) {
         StringBuilder buffer = new StringBuilder(text.trim().toLowerCase());

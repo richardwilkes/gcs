@@ -51,7 +51,7 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
     private JLabel   mTitle;
 
     /**
-     * Creates a new {@link DockTab} for the specified {@link Dockable}.
+     * Creates a new DockTab for the specified {@link Dockable}.
      *
      * @param dockable The {@link Dockable} to work with.
      */
@@ -76,8 +76,7 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
     }
 
     /**
-     * @return {@code true} if this {@link DockTab} is the current one for the {@link
-     *         DockContainer}.
+     * @return {@code true} if this DockTab is the current one for the {@link DockContainer}.
      */
     public boolean isCurrent() {
         DockContainer dc = getDockContainer();

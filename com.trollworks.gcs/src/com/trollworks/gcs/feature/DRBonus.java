@@ -19,8 +19,8 @@ import java.io.IOException;
 
 /** A DR bonus. */
 public class DRBonus extends Bonus {
-    public static final  String KEY_ROOT                                = "dr_bonus";
-    private static final String KEY_LOCATION                            = "location";
+    public static final  String KEY_ROOT     = "dr_bonus";
+    private static final String KEY_LOCATION = "location";
 
     private String mLocation;
 

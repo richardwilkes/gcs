@@ -45,7 +45,7 @@ public abstract class FeatureEditor extends EditorPanel {
     private JComboBox<Object> mLeveledAmountCombo;
 
     /**
-     * Creates a new {@link FeatureEditor}.
+     * Creates a new FeatureEditor.
      *
      * @param row     The row this feature will belong to.
      * @param feature The feature to edit.
@@ -61,7 +61,7 @@ public abstract class FeatureEditor extends EditorPanel {
     }
 
     /**
-     * Creates a new {@link FeatureEditor}.
+     * Creates a new FeatureEditor.
      *
      * @param row     The row this feature will belong to.
      * @param feature The feature to edit.

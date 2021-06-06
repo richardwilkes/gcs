@@ -64,7 +64,7 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
     private              DockContainer  mMaximizedContainer;
     private              MouseMonitor   mMouseMonitor;
 
-    /** Creates a new, empty {@link Dock}. */
+    /** Creates a new, empty Dock. */
     public Dock() {
         super(new DockLayout(), true);
         setBorder(null);
@@ -85,10 +85,10 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
     }
 
     /**
-     * Docks a {@link Dockable} within this {@link Dock}. If the {@link Dockable} already exists in
-     * this {@link Dock}, it will be moved to the new location.
+     * Docks a {@link Dockable} within this Dock. If the {@link Dockable} already exists in this
+     * Dock, it will be moved to the new location.
      *
-     * @param dockable The {@link Dockable} to install into this {@link Dock}.
+     * @param dockable The {@link Dockable} to install into this Dock.
      * @param location The location within the top level to install the {@link Dockable}.
      */
     public void dock(Dockable dockable, DockLocation location) {
@@ -96,10 +96,10 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
     }
 
     /**
-     * Docks a {@link Dockable} within this {@link Dock}. If the {@link Dockable} already exists in
-     * this {@link Dock}, it will be moved to the new location.
+     * Docks a {@link Dockable} within this Dock. If the {@link Dockable} already exists in this
+     * Dock, it will be moved to the new location.
      *
-     * @param dockable                 The {@link Dockable} to install into this {@link Dock}.
+     * @param dockable                 The {@link Dockable} to install into this Dock.
      * @param target                   The target {@link Dockable}.
      * @param locationRelativeToTarget The location relative to the target to install the {@link
      *                                 Dockable}. You may pass in {@code null} to have it stack with
@@ -113,10 +113,10 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
     }
 
     /**
-     * Docks a {@link Dockable} within this {@link Dock}. If the {@link Dockable} already exists in
-     * this {@link Dock}, it will be moved to the new location.
+     * Docks a {@link Dockable} within this Dock. If the {@link Dockable} already exists in this
+     * Dock, it will be moved to the new location.
      *
-     * @param dockable                 The {@link Dockable} to install into this {@link Dock}.
+     * @param dockable                 The {@link Dockable} to install into this Dock.
      * @param target                   The target {@link DockLayoutNode}.
      * @param locationRelativeToTarget The location relative to the target to install the {@link
      *                                 Dockable}. If the target is a {@link DockContainer}, you may
@@ -483,7 +483,7 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
     }
 
     /**
-     * Causes the {@link DockContainer} to fill the entire {@link Dock} area.
+     * Causes the {@link DockContainer} to fill the entire Dock area.
      *
      * @param dc The {@link DockContainer} to maximize.
      */
@@ -510,7 +510,7 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
         }
     }
 
-    /** @return All the {@link Dockable}s contained in this {@link Dock}. */
+    /** @return All the {@link Dockable}s contained in this Dock. */
     public List<Dockable> getDockables() {
         List<Dockable> dockables = new ArrayList<>();
         getLayout().forEachDockContainer((dc) -> dockables.addAll(dc.getDockables()));

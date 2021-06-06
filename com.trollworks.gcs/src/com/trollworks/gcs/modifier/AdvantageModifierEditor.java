@@ -52,7 +52,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     private int                mLastLevel;
 
     /**
-     * Creates a new {@link AdvantageModifierEditor}.
+     * Creates a new AdvantageModifierEditor.
      *
      * @param modifier The {@link AdvantageModifier} to edit.
      */

@@ -57,7 +57,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     private ListOutline       mOutline;
     private boolean           mUpdatePending;
 
-    /** Creates a new {@link LibraryDockable}. */
+    /** Creates a new LibraryDockable. */
     protected LibraryDockable(ListFile file) {
         super(file);
         mOutline = createOutline();

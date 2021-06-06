@@ -38,12 +38,12 @@ public abstract class FlexContainer extends FlexCell {
         mChildren.add(new FlexComponent(comp));
     }
 
-    /** @return The number of children of this {@link FlexContainer}. */
+    /** @return The number of children of this FlexContainer. */
     protected int getChildCount() {
         return mChildren.size();
     }
 
-    /** @return The children of this {@link FlexContainer}. */
+    /** @return The children of this FlexContainer. */
     protected List<FlexCell> getChildren() {
         return mChildren;
     }

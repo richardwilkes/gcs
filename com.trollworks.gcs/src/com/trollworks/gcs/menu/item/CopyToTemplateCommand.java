@@ -36,7 +36,7 @@ public class CopyToTemplateCommand extends Command {
     }
 
     /**
-     * Creates a new {@link CopyToTemplateCommand}.
+     * Creates a new CopyToTemplateCommand.
      *
      * @param outline  The outline to work against.
      * @param template The template to target.

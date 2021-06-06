@@ -2774,7 +2774,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     /**
      * @param index The row index to look for.
-     * @return The {@link Outline} most suitable for displaying the index.
+     * @return The Outline most suitable for displaying the index.
      */
     public Outline getBestOutlineForRowIndex(int index) {
         Outline outline = getRealOutline();

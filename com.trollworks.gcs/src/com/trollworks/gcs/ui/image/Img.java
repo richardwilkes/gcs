@@ -84,7 +84,7 @@ public final class Img extends BufferedImage implements Icon {
      * @param width        The width to create.
      * @param height       The height to create.
      * @param transparency A constant from {@link Transparency}.
-     * @return A new {@link Img} of the given size.
+     * @return A new Img of the given size.
      */
     public static Img create(int width, int height, int transparency) {
         Graphics2D            g2d = GraphicsUtilities.getGraphics();
@@ -99,7 +99,7 @@ public final class Img extends BufferedImage implements Icon {
      * @param width        The width to create.
      * @param height       The height to create.
      * @param transparency A constant from {@link Transparency}.
-     * @return A new {@link Img} of the given size.
+     * @return A new Img of the given size.
      */
     public static Img create(GraphicsConfiguration gc, int width, int height, int transparency) {
         return new Img(gc.getColorModel(transparency), width, height);

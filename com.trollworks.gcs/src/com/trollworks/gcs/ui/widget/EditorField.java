@@ -31,7 +31,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     private String mHint;
 
     /**
-     * Creates a new {@link EditorField}.
+     * Creates a new EditorField.
      *
      * @param formatter The formatter to use.
      * @param listener  The listener to use.
@@ -44,7 +44,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     }
 
     /**
-     * Creates a new {@link EditorField}.
+     * Creates a new EditorField.
      *
      * @param formatter  The formatter to use.
      * @param listener   The listener to use.

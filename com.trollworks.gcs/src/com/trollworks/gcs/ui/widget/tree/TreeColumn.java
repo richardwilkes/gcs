@@ -37,22 +37,22 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
     private              int        mWidth;
 
     /**
-     * Creates a new {@link TreeColumn}.
+     * Creates a new TreeColumn.
      *
-     * @param name The name of the {@link TreeColumn}.
+     * @param name The name of the TreeColumn.
      */
     protected TreeColumn(String name) {
         mName = name;
     }
 
-    /** @return The name of this {@link TreeColumn}. */
+    /** @return The name of this TreeColumn. */
     public String getName() {
         return mName;
     }
 
     /**
      * @param row The {@link TreeRow} to be displayed.
-     * @return The preferred width of this {@link TreeColumn}.
+     * @return The preferred width of this TreeColumn.
      */
     public abstract int calculatePreferredWidth(TreeRow row);
 
@@ -60,13 +60,13 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
      * @param row   The {@link TreeRow} to be displayed.
      * @param width The adjusted width of the column. This may be less than {@link #getWidth()} due
      *              to display of disclosure controls.
-     * @return The preferred height of this {@link TreeColumn}.
+     * @return The preferred height of this TreeColumn.
      */
     public abstract int calculatePreferredHeight(TreeRow row, int width);
 
     /**
      * @param panel The owning {@link TreePanel}.
-     * @return The preferred height of this {@link TreeColumn}'s header.
+     * @return The preferred height of this TreeColumn's header.
      */
     public Dimension calculatePreferredHeaderSize(TreePanel panel) {
         Font font  = getHeaderFont();
@@ -81,12 +81,12 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
         return size;
     }
 
-    /** @return The full width of this {@link TreeColumn}. */
+    /** @return The full width of this TreeColumn. */
     public int getWidth() {
         return mWidth;
     }
 
-    /** @param width The new full width of this {@link TreeColumn}. */
+    /** @param width The new full width of this TreeColumn. */
     public void setWidth(int width) {
         mWidth = width;
     }
@@ -104,11 +104,11 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
     }
 
     /**
-     * Draws the header for this {@link TreeColumn}.
+     * Draws the header for this TreeColumn.
      *
      * @param gc     The {@link Graphics2D} context to use.
      * @param panel  The owning {@link TreePanel}.
-     * @param bounds The bounds the {@link TreeColumn} header.
+     * @param bounds The bounds the TreeColumn header.
      * @param active Whether or not the active state should be displayed.
      */
     public void drawHeader(Graphics2D gc, TreePanel panel, Rectangle bounds, boolean active) {
@@ -220,15 +220,14 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
     }
 
     /**
-     * Draws the portion of the specified {@link TreeRow} this {@link TreeColumn} is responsible
-     * for.
+     * Draws the portion of the specified {@link TreeRow} this TreeColumn is responsible for.
      *
      * @param gc       The {@link Graphics2D} context to use.
      * @param panel    The owning {@link TreePanel}.
      * @param row      The {@link TreeRow} to draw.
      * @param position The {@link TreeRow}'s position in the linear view.
      * @param top      The y-coordinate for the top of the {@link TreeRow}.
-     * @param left     The x-coordinate for the left of the {@link TreeColumn}.
+     * @param left     The x-coordinate for the left of the TreeColumn.
      * @param width    The adjusted width of the column. This may be less than {@link #getWidth()}
      *                 due to display of disclosure controls.
      * @param selected Whether or not the {@link TreeRow} is currently selected.

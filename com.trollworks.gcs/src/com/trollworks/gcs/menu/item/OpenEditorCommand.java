@@ -32,7 +32,7 @@ public class OpenEditorCommand extends Command {
     }
 
     /**
-     * Creates a new {@link OpenEditorCommand}.
+     * Creates a new OpenEditorCommand.
      *
      * @param outline The outline to work against.
      */

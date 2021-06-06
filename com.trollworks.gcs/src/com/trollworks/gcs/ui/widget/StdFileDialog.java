@@ -36,7 +36,7 @@ public final class StdFileDialog {
     }
 
     /**
-     * Creates a new {@link StdFileDialog}.
+     * Creates a new StdFileDialog.
      *
      * @param comp    The parent {@link Component} of the dialog. May be {@code null}.
      * @param title   The title to use. May be {@code null}.
@@ -54,7 +54,7 @@ public final class StdFileDialog {
     }
 
     /**
-     * Creates a new {@link StdFileDialog}.
+     * Creates a new StdFileDialog.
      *
      * @param comp          The parent {@link Component} of the dialog. May be {@code null}.
      * @param title         The title to use. May be {@code null}.

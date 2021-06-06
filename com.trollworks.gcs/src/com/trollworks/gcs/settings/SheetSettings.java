@@ -81,7 +81,7 @@ public class SheetSettings implements ChangeNotifier {
 
     /**
      * @param character The {@link GURPSCharacter} to retrieve settings for, or {@code null}.
-     * @return The {@link SheetSettings} from the specified {@link GURPSCharacter} or from global
+     * @return The SheetSettings from the specified {@link GURPSCharacter} or from global
      *         preferences if the character is {@code null}.
      */
     public static SheetSettings get(GURPSCharacter character) {

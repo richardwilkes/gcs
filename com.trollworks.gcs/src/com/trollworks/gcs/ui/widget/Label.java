@@ -230,7 +230,7 @@ public class Label extends JComponent implements PropertyChangeListener {
     }
 
     /**
-     * Sets/clears the error message that a {@link Label} will respond to.
+     * Sets/clears the error message that a Label will respond to.
      *
      * @param comp The {@link JComponent} to set the message on.
      * @param msg  The error message or {@code null}.

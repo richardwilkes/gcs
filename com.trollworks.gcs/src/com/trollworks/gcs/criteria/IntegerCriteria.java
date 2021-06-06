@@ -35,7 +35,7 @@ public class IntegerCriteria extends NumericCriteria {
     /**
      * Creates a new integer comparison.
      *
-     * @param other A {@link IntegerCriteria} to clone.
+     * @param other A IntegerCriteria to clone.
      */
     public IntegerCriteria(IntegerCriteria other) {
         super(other.getType());

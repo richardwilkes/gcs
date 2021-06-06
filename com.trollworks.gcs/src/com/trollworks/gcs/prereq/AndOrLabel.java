@@ -24,7 +24,7 @@ public class AndOrLabel extends JLabel {
     private Prereq mOwner;
 
     /**
-     * Creates a new {@link AndOrLabel}.
+     * Creates a new AndOrLabel.
      *
      * @param owner The owning {@link Prereq}.
      */

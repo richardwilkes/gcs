@@ -33,7 +33,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
     private boolean mForceTrackWidth;
 
     /**
-     * Creates a new {@link BandedPanel}.
+     * Creates a new BandedPanel.
      *
      * @param title The title for this panel.
      */
@@ -45,7 +45,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
     }
 
     /**
-     * Creates a new {@link BandedPanel}.
+     * Creates a new BandedPanel.
      *
      * @param forceTrackWidth {@code true} if the width should always track the viewport.
      */

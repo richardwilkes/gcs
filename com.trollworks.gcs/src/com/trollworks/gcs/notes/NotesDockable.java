@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.I18n;
 
 /** A list of notes from a library. */
 public class NotesDockable extends LibraryDockable {
-    /** Creates a new {@link NotesDockable}. */
+    /** Creates a new NotesDockable. */
     public NotesDockable(NoteList list) {
         super(list);
     }

@@ -60,7 +60,7 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
         return null;
     }
 
-    /** @return The root {@link DockLayout}, which may be this object. */
+    /** @return The root DockLayout, which may be this object. */
     public DockLayout getRootLayout() {
         DockLayout root = this;
         while (root.mParent != null) {
@@ -69,7 +69,7 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
         return root;
     }
 
-    /** @return The {@link Dock} this {@link DockLayout} is associated with. */
+    /** @return The {@link Dock} this DockLayout is associated with. */
     public Dock getDock() {
         return getRootLayout().getDockInternal();
     }
@@ -90,9 +90,9 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
 
     /**
      * @param dc The {@link DockContainer} to search for.
-     * @return The {@link DockLayout} that contains the {@link DockContainer}, or {@code null} if it
-     *         is not present. Note that this method will always start at the root and work its way
-     *         down, even if called on a sub-node.
+     * @return The DockLayout that contains the {@link DockContainer}, or {@code null} if it is not
+     *         present. Note that this method will always start at the root and work its way down,
+     *         even if called on a sub-node.
      */
     public DockLayout findLayout(DockContainer dc) {
         return getRootLayout().findLayoutInternal(dc);
@@ -116,7 +116,7 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
 
     /**
      * @param node The {@link DockLayoutNode} to look for.
-     * @return {@code true} if the node is this {@link DockLayout} or one of its descendants.
+     * @return {@code true} if the node is this DockLayout or one of its descendants.
      */
     public boolean contains(DockLayoutNode node) {
         if (node == this) {
@@ -136,8 +136,8 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
     }
 
     /**
-     * Docks a {@link DockContainer} within this {@link DockLayout}. If the {@link DockContainer}
-     * already exists in this {@link DockLayout}, it will be moved to the new location.
+     * Docks a {@link DockContainer} within this DockLayout. If the {@link DockContainer} already
+     * exists in this DockLayout, it will be moved to the new location.
      *
      * @param dc                       The {@link DockContainer} to install into this {@link
      *                                 DockLayout}.
@@ -280,25 +280,25 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
         }
     }
 
-    /** @return The parent {@link DockLayout}. */
+    /** @return The parent DockLayout. */
     public DockLayout getParent() {
         return mParent;
     }
 
     /**
-     * @return The immediate children of this {@link DockLayout}. Note that the array may contain
-     *         {@code null} values.
+     * @return The immediate children of this DockLayout. Note that the array may contain {@code
+     *         null} values.
      */
     public DockLayoutNode[] getChildren() {
         return mChildren;
     }
 
-    /** @return {@code true} if this {@link DockLayout} lays its children out horizontally. */
+    /** @return {@code true} if this DockLayout lays its children out horizontally. */
     public boolean isHorizontal() {
         return mHorizontal;
     }
 
-    /** @return {@code true} if this {@link DockLayout} lays its children out vertically. */
+    /** @return {@code true} if this DockLayout lays its children out vertically. */
     public boolean isVertical() {
         return !mHorizontal;
     }
@@ -351,12 +351,12 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
         return mHeight;
     }
 
-    /** @return {@code true} if this {@link DockLayout} has no children. */
+    /** @return {@code true} if this DockLayout has no children. */
     public boolean isEmpty() {
         return mChildren[0] == null && mChildren[1] == null;
     }
 
-    /** @return {@code true} if both child nodes of this {@link DockLayout} are occupied. */
+    /** @return {@code true} if both child nodes of this DockLayout are occupied. */
     public boolean isFull() {
         return mChildren[0] != null && mChildren[1] != null;
     }

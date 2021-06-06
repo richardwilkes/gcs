@@ -29,7 +29,7 @@ public class PDFRef implements Comparable<PDFRef> {
     private              int    mPageToIndexOffset;
 
     /**
-     * Creates a new {@link PDFRef}.
+     * Creates a new PDFRef.
      *
      * @param id     The id to use. Pass in {@code null} or an empty string to create a {@link
      *               PDFRef} that won't update preferences.

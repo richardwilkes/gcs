@@ -38,7 +38,7 @@ public class RangedWeaponStats extends WeaponStats {
     private String mRecoil;
 
     /**
-     * Creates a new {@link RangedWeaponStats}.
+     * Creates a new RangedWeaponStats.
      *
      * @param owner The owning piece of equipment or advantage.
      */
@@ -47,10 +47,10 @@ public class RangedWeaponStats extends WeaponStats {
     }
 
     /**
-     * Creates a clone of the specified {@link RangedWeaponStats}.
+     * Creates a clone of the specified RangedWeaponStats.
      *
      * @param owner The owning piece of equipment or advantage.
-     * @param other The {@link RangedWeaponStats} to clone.
+     * @param other The RangedWeaponStats to clone.
      */
     public RangedWeaponStats(ListRow owner, RangedWeaponStats other) {
         super(owner, other);
@@ -63,7 +63,7 @@ public class RangedWeaponStats extends WeaponStats {
     }
 
     /**
-     * Creates a {@link RangedWeaponStats}.
+     * Creates a RangedWeaponStats.
      *
      * @param owner The owning piece of equipment or advantage.
      * @param m     The {@link JsonMap} to load from.

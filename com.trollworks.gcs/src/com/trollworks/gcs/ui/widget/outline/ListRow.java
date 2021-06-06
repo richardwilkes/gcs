@@ -190,7 +190,7 @@ public abstract class ListRow extends Row {
 
     /**
      * @param obj The other object to compare against.
-     * @return Whether or not this {@link ListRow} is equivalent.
+     * @return Whether or not this ListRow is equivalent.
      */
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {

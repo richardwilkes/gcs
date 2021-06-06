@@ -24,7 +24,7 @@ public class TreeColumnDragState extends TreeDragState {
     private ArrayList<TreeColumn> mOriginal;
 
     /**
-     * Creates a new {@link TreeColumnDragState}.
+     * Creates a new TreeColumnDragState.
      *
      * @param panel  The {@link TreePanel} to work with.
      * @param column The {@link TreeColumn} from the drag.

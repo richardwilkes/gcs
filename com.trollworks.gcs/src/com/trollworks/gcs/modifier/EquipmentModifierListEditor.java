@@ -22,7 +22,7 @@ import java.util.List;
 public final class EquipmentModifierListEditor extends ModifierListEditor {
     /**
      * @param equipment The {@link Equipment} to edit.
-     * @return An instance of {@link EquipmentModifierListEditor}.
+     * @return An instance of EquipmentModifierListEditor.
      */
     public static EquipmentModifierListEditor createEditor(Equipment equipment) {
         return new EquipmentModifierListEditor(equipment.getDataFile(), equipment.getModifiers());

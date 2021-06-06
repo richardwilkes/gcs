@@ -38,7 +38,7 @@ public class ApplyTemplateCommand extends Command {
     }
 
     /**
-     * Creates a new {@link ApplyTemplateCommand}.
+     * Creates a new ApplyTemplateCommand.
      *
      * @param sheet The sheet to target.
      */

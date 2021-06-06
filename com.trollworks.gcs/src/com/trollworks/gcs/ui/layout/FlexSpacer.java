@@ -24,7 +24,7 @@ public class FlexSpacer extends FlexCell {
     private boolean mGrowHeight;
 
     /**
-     * Creates a new {@link FlexSpacer}.
+     * Creates a new FlexSpacer.
      *
      * @param width      The width of the spacer.
      * @param height     The height of the spacer.

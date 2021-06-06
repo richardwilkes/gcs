@@ -35,7 +35,7 @@ public class WeightCriteria extends NumericCriteria {
     /**
      * Creates a new WeightCriteria.
      *
-     * @param other A {@link WeightCriteria} to clone.
+     * @param other A WeightCriteria to clone.
      */
     public WeightCriteria(WeightCriteria other) {
         super(other.getType());

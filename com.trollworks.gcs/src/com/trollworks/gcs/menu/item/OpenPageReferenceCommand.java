@@ -48,7 +48,7 @@ public class OpenPageReferenceCommand extends Command {
     }
 
     /**
-     * Creates a new {@link OpenPageReferenceCommand}.
+     * Creates a new OpenPageReferenceCommand.
      *
      * @param outline The outline to work against.
      * @param one     Whether to open just the first page reference, or all of them.

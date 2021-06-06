@@ -114,7 +114,7 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
     @Override
     protected void paintComponent(Graphics gc) {
         Rectangle bounds = getBounds();
-        Insets insets = getInsets();
+        Insets    insets = getInsets();
         bounds.x = insets.left;
         bounds.y = insets.top;
         bounds.width -= insets.left + insets.right;

@@ -71,7 +71,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected RangedWeaponListEditor     mRangedWeapons;
 
     /**
-     * Creates a new {@link BaseSpellEditor}.
+     * Creates a new BaseSpellEditor.
      *
      * @param row The row being edited.
      */

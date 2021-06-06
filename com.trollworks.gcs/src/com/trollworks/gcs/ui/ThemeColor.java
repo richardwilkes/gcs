@@ -54,12 +54,12 @@ public final class ThemeColor extends Color {
         ALL.add(this);
     }
 
-    /** @return The index to use for this {@link ThemeColor}. */
+    /** @return The index to use for this ThemeColor. */
     public int getIndex() {
         return mIndex;
     }
 
-    /** @return The key to use for this {@link ThemeColor}. */
+    /** @return The key to use for this ThemeColor. */
     public String getKey() {
         return mKey;
     }

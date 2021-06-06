@@ -47,10 +47,10 @@ public class EquipmentModifier extends Modifier {
     private String                      mTechLevel;
 
     /**
-     * Creates a new {@link EquipmentModifier}.
+     * Creates a new EquipmentModifier.
      *
      * @param file  The {@link DataFile} to use.
-     * @param other Another {@link EquipmentModifier} to clone.
+     * @param other Another EquipmentModifier to clone.
      * @param deep  Whether or not to clone the children, grandchildren, etc.
      */
     public EquipmentModifier(DataFile file, EquipmentModifier other, boolean deep) {
@@ -74,7 +74,7 @@ public class EquipmentModifier extends Modifier {
     }
 
     /**
-     * Creates a new {@link EquipmentModifier}.
+     * Creates a new EquipmentModifier.
      *
      * @param file        The {@link DataFile} to use.
      * @param isContainer Whether or not this row allows children.
@@ -262,7 +262,7 @@ public class EquipmentModifier extends Modifier {
         }
     }
 
-    /** @return A full description of this {@link EquipmentModifier}. */
+    /** @return A full description of this EquipmentModifier. */
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();

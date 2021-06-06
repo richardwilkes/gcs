@@ -21,7 +21,7 @@ import javax.swing.SwingConstants;
 
 /** Provides a grayed-out point value for skill containers. */
 public class SkillPointsTextCell extends ListTextCell {
-    /** Creates a new {@link SkillPointsTextCell}. */
+    /** Creates a new SkillPointsTextCell. */
     public SkillPointsTextCell() {
         super(SwingConstants.RIGHT, false);
     }

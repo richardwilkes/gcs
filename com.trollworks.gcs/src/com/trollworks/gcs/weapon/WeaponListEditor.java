@@ -74,7 +74,7 @@ public abstract class WeaponListEditor extends JPanel implements ActionListener,
     private boolean                      mRespond;
 
     /**
-     * Creates a new {@link WeaponListEditor}.
+     * Creates a new WeaponListEditor.
      *
      * @param owner       The owning row.
      * @param weapons     The weapons to modify.

@@ -42,7 +42,7 @@ public class OutputPreferences extends PreferencePanel implements ActionListener
     private              JTextField        mGurpsCalculatorKey;
 
     /**
-     * Creates a new {@link OutputPreferences}.
+     * Creates a new OutputPreferences.
      *
      * @param owner The owning {@link PreferencesWindow}.
      */

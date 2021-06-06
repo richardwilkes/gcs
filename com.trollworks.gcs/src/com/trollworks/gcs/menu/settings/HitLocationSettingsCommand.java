@@ -43,7 +43,7 @@ public final class HitLocationSettingsCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         if (!UIUtilities.inModalState()) {
             if (mForDefaults) {
-               HitLocationSettingsWindow.display(null);
+                HitLocationSettingsWindow.display(null);
             } else {
                 SheetDockable target = getTarget(SheetDockable.class);
                 if (target != null) {

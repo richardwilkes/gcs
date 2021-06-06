@@ -43,10 +43,10 @@ public class AdvantageModifier extends Modifier {
     private   Affects                   mAffects;
 
     /**
-     * Creates a new {@link AdvantageModifier}.
+     * Creates a new AdvantageModifier.
      *
      * @param file  The {@link DataFile} to use.
-     * @param other Another {@link AdvantageModifier} to clone.
+     * @param other Another AdvantageModifier to clone.
      * @param deep  Whether or not to clone the children, grandchildren, etc.
      */
     public AdvantageModifier(DataFile file, AdvantageModifier other, boolean deep) {
@@ -70,7 +70,7 @@ public class AdvantageModifier extends Modifier {
     }
 
     /**
-     * Creates a new {@link AdvantageModifier}.
+     * Creates a new AdvantageModifier.
      *
      * @param file        The {@link DataFile} to use.
      * @param isContainer Whether or not this row allows children.
@@ -186,7 +186,7 @@ public class AdvantageModifier extends Modifier {
         return false;
     }
 
-    /** @return {@code true} if this {@link AdvantageModifier} has levels. */
+    /** @return {@code true} if this AdvantageModifier has levels. */
     public boolean hasLevels() {
         return mCostType == AdvantageModifierCostType.PERCENTAGE && mLevels > 0;
     }
@@ -274,7 +274,7 @@ public class AdvantageModifier extends Modifier {
         return builder.toString();
     }
 
-    /** @return A full description of this {@link AdvantageModifier}. */
+    /** @return A full description of this AdvantageModifier. */
     public String getFullDescription() {
         StringBuilder builder = new StringBuilder();
         String        modNote = getNotes();

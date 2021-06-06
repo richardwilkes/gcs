@@ -37,7 +37,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
     private        CharacterSheet    mSheet;
     private        FontAwesomeButton mQuickExportButton;
 
-    /** Creates a new {@link SheetDockable}. */
+    /** Creates a new SheetDockable. */
     public SheetDockable(GURPSCharacter character) {
         super(character);
         mSheet = new CharacterSheet(character);
@@ -91,7 +91,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         return mSheet;
     }
 
-    /** @return The last activated {@link SheetDockable}. */
+    /** @return The last activated SheetDockable. */
     public static SheetDockable getLastActivated() {
         if (LAST_ACTIVATED != null) {
             Dock dock = UIUtilities.getAncestorOfType(LAST_ACTIVATED, Dock.class);

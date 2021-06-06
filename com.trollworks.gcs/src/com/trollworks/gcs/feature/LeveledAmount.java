@@ -54,7 +54,7 @@ public class LeveledAmount {
     /**
      * Creates a new leveled amount.
      *
-     * @param other A {@link LeveledAmount} to clone.
+     * @param other A LeveledAmount to clone.
      */
     public LeveledAmount(LeveledAmount other) {
         mPerLevel = other.mPerLevel;

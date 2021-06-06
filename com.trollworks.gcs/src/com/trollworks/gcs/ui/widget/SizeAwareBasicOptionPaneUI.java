@@ -25,7 +25,7 @@ public class SizeAwareBasicOptionPaneUI extends BasicOptionPaneUI {
     private OptionPaneUI mOriginal;
 
     /**
-     * Creates a new {@link SizeAwareBasicOptionPaneUI}.
+     * Creates a new SizeAwareBasicOptionPaneUI.
      *
      * @param original The original {@link OptionPaneUI}.
      */

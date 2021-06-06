@@ -23,13 +23,13 @@ public class Wrapper extends JPanel {
     private int mWidth  = -1;
     private int mHeight = -1;
 
-    /** Creates a new {@link Wrapper}. */
+    /** Creates a new Wrapper. */
     public Wrapper() {
         setOpaque(false);
     }
 
     /**
-     * Creates a new {@link Wrapper}.
+     * Creates a new Wrapper.
      *
      * @param layout The layout to use.
      */

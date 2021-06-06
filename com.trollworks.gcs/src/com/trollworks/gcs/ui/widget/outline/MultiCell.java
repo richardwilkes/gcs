@@ -34,13 +34,13 @@ public class MultiCell implements Cell {
     private              int     mMaxPreferredWidth;
     private              boolean mForEditor;
 
-    /** Creates a new {@link MultiCell} with a maximum preferred width of 250. */
+    /** Creates a new MultiCell with a maximum preferred width of 250. */
     public MultiCell() {
         this(false);
     }
 
     /**
-     * Creates a new {@link MultiCell} with a maximum preferred width of 250.
+     * Creates a new MultiCell with a maximum preferred width of 250.
      *
      * @param forEditor Whether this is for an editor dialog or for a character sheet.
      */
@@ -49,7 +49,7 @@ public class MultiCell implements Cell {
     }
 
     /**
-     * Creates a new {@link MultiCell}.
+     * Creates a new MultiCell.
      *
      * @param maxPreferredWidth The maximum preferred width to use. Pass in -1 for no limit.
      * @param forEditor         Whether this is for an editor dialog or for a character sheet.

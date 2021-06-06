@@ -30,7 +30,7 @@ public class TemplateSheet extends CollectedOutlines {
     private Template mTemplate;
 
     /**
-     * Creates a new {@link TemplateSheet}.
+     * Creates a new TemplateSheet.
      *
      * @param template The template to display the data for.
      */

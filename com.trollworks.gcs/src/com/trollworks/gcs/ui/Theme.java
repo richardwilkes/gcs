@@ -38,15 +38,15 @@ public class Theme {
         CURRENT = new Theme(DEFAULT);
     }
 
-    /** @return The current {@link Theme}. */
+    /** @return The current Theme. */
     public static Theme current() {
         return CURRENT;
     }
 
     /**
-     * Set the current {@link Theme}.
+     * Set the current Theme.
      *
-     * @param theme The {@link Theme} to set as the current {@link Theme}.
+     * @param theme The Theme to set as the current Theme.
      */
     public static void set(Theme theme) {
         if (CURRENT != theme) {
@@ -73,9 +73,9 @@ public class Theme {
     }
 
     /**
-     * Creates a new {@link Theme} from an existing {@link Theme}.
+     * Creates a new Theme from an existing Theme.
      *
-     * @param other The other {@link Theme} to base this one off of.
+     * @param other The other Theme to base this one off of.
      */
     public Theme(Theme other) {
         this();
@@ -83,7 +83,7 @@ public class Theme {
     }
 
     /**
-     * Creates a new {@link Theme} from a JsonMap.
+     * Creates a new Theme from a JsonMap.
      *
      * @param m The map to load the colors from.
      */
@@ -97,7 +97,7 @@ public class Theme {
         }
     }
 
-    /** @return {@code true} if this a stock {@link Theme} and is therefore unmodifiable. */
+    /** @return {@code true} if this a stock Theme and is therefore unmodifiable. */
     public boolean isReadOnly() {
         return mReadOnly;
     }
@@ -124,7 +124,7 @@ public class Theme {
     }
 
     /**
-     * Save the {@link Theme} to a JsonWriter.
+     * Save the Theme to a JsonWriter.
      *
      * @param w The JsonWriter to write to.
      */

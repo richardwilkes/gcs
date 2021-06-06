@@ -121,7 +121,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              boolean                   mIgnoreNextDragGesture;
 
     /**
-     * Creates a new {@link TreePanel}.
+     * Creates a new TreePanel.
      *
      * @param root The {@link TreeRoot} to use.
      */
@@ -1154,8 +1154,8 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     }
 
     /**
-     * Sets all {@link TreeContainerRow}s contained by this {@link TreePanel} to the opposite open
-     * state of the first one.
+     * Sets all {@link TreeContainerRow}s contained by this TreePanel to the opposite open state of
+     * the first one.
      */
     public void toggleDisclosure() {
         List<TreeContainerRow> rows = mRoot.getRecursiveChildContainers(null);

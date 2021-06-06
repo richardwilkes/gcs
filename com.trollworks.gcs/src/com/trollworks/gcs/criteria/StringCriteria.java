@@ -36,7 +36,7 @@ public class StringCriteria extends Criteria {
     /**
      * Creates a new string comparison.
      *
-     * @param other A {@link StringCriteria} to clone.
+     * @param other A StringCriteria to clone.
      */
     public StringCriteria(StringCriteria other) {
         mType = other.mType;

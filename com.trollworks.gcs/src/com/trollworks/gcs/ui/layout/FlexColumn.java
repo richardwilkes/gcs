@@ -20,7 +20,7 @@ import java.util.List;
 
 /** A column within a {@link FlexLayout}. */
 public class FlexColumn extends FlexContainer {
-    /** Creates a new {@link FlexColumn}. */
+    /** Creates a new FlexColumn. */
     public FlexColumn() {
         setFill(true);
     }

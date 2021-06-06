@@ -26,7 +26,7 @@ public class FilteredIterator<T> implements Iterator<T>, Iterable<T> {
     private boolean     mNextValid;
 
     /**
-     * Creates a new {@link FilteredIterator}. Will not include {@code null} values.
+     * Creates a new FilteredIterator. Will not include {@code null} values.
      *
      * @param iterable     The {@link Iterable} to filter by type.
      * @param contentClass The class of objects to extract from the collection.

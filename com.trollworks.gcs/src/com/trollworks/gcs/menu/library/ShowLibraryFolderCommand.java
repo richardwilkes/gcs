@@ -22,11 +22,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Arrays;
 
-/** Shows the user the Library folder. */
 public class ShowLibraryFolderCommand extends Command {
     private Library mLibrary;
 
-    /** Creates a new {@link ShowLibraryFolderCommand}. */
     public ShowLibraryFolderCommand(Library library) {
         super(String.format(I18n.Text("Show %s on Disk"), library.getTitle()), "slib:" + library.getKey());
         mLibrary = library;

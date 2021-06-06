@@ -50,7 +50,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private JTextField         mWeightAmountField;
 
     /**
-     * Creates a new {@link EquipmentModifierEditor}.
+     * Creates a new EquipmentModifierEditor.
      *
      * @param modifier The {@link EquipmentModifier} to edit.
      */

@@ -20,7 +20,7 @@ public class DoubleFormatter extends JFormattedTextField.AbstractFormatter {
     private boolean mForceSign;
 
     /**
-     * Creates a new {@link DoubleFormatter}.
+     * Creates a new DoubleFormatter.
      *
      * @param minValue  The minimum value allowed.
      * @param maxValue  The maximum value allowed.

@@ -29,7 +29,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
     private static TemplateDockable LAST_ACTIVATED;
     private        TemplateSheet    mTemplate;
 
-    /** Creates a new {@link TemplateDockable}. */
+    /** Creates a new TemplateDockable. */
     public TemplateDockable(Template template) {
         super(template);
         Template dataFile = getDataFile();
@@ -64,7 +64,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
         return mTemplate;
     }
 
-    /** @return The last activated {@link TemplateDockable}. */
+    /** @return The last activated TemplateDockable. */
     public static TemplateDockable getLastActivated() {
         if (LAST_ACTIVATED != null) {
             Dock dock = UIUtilities.getAncestorOfType(LAST_ACTIVATED, Dock.class);

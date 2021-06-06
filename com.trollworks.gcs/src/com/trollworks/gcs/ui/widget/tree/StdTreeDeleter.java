@@ -23,7 +23,7 @@ public class StdTreeDeleter implements Deletable {
     private TreePanel mPanel;
 
     /**
-     * Creates a new {@link StdTreeDeleter}.
+     * Creates a new StdTreeDeleter.
      *
      * @param panel The {@link TreePanel} to work with.
      */

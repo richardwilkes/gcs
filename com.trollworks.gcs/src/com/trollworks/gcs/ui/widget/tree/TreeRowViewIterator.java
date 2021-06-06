@@ -24,7 +24,7 @@ public class TreeRowViewIterator implements Iterator<TreeRow>, Iterable<TreeRow>
     private int                 mIndex;
 
     /**
-     * Creates a new {@link TreeRowViewIterator}.
+     * Creates a new TreeRowViewIterator.
      *
      * @param panel The owning {@link TreePanel}.
      * @param rows  The {@link TreeRow}s to iterator over.
@@ -35,7 +35,7 @@ public class TreeRowViewIterator implements Iterator<TreeRow>, Iterable<TreeRow>
     }
 
     /**
-     * Creates a new {@link TreeRowViewIterator}.
+     * Creates a new TreeRowViewIterator.
      *
      * @param panel The owning {@link TreePanel}.
      * @param rows  The {@link TreeRow}s to iterator over.

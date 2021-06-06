@@ -34,7 +34,7 @@ public class DoubleCriteria extends NumericCriteria {
     /**
      * Creates a new double comparison.
      *
-     * @param other A {@link DoubleCriteria} to clone.
+     * @param other A DoubleCriteria to clone.
      */
     public DoubleCriteria(DoubleCriteria other) {
         super(other.getType());

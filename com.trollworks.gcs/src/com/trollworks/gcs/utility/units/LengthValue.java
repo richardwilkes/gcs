@@ -19,7 +19,7 @@ public class LengthValue extends UnitsValue<LengthUnits> {
     protected static final Fixed6 METRIC_CONVERSION_FACTOR = new Fixed6(2.54);
 
     /**
-     * @param buffer    The buffer to extract a {@link LengthValue} from.
+     * @param buffer    The buffer to extract a LengthValue from.
      * @param localized {@code true} if the string might have localized notation within it.
      * @return The result.
      */
@@ -53,7 +53,7 @@ public class LengthValue extends UnitsValue<LengthUnits> {
     }
 
     /**
-     * Creates a new {@link LengthValue}.
+     * Creates a new LengthValue.
      *
      * @param value The value to use.
      * @param units The {@link Units} to use.
@@ -63,19 +63,19 @@ public class LengthValue extends UnitsValue<LengthUnits> {
     }
 
     /**
-     * Creates a new {@link LengthValue} from an existing one.
+     * Creates a new LengthValue from an existing one.
      *
-     * @param other The {@link LengthValue} to clone.
+     * @param other The LengthValue to clone.
      */
     public LengthValue(LengthValue other) {
         super(other);
     }
 
     /**
-     * Creates a new {@link LengthValue} from an existing one and converts it to the given {@link
+     * Creates a new LengthValue from an existing one and converts it to the given {@link
      * LengthUnits}.
      *
-     * @param other The {@link LengthValue} to convert.
+     * @param other The LengthValue to convert.
      * @param units The {@link LengthUnits} to use.
      */
     public LengthValue(LengthValue other, LengthUnits units) {

@@ -39,7 +39,7 @@ public class TextTreeColumn extends TreeColumn {
     }
 
     /**
-     * Creates a new left-aligned {@link TextTreeColumn} with no wrapping.
+     * Creates a new left-aligned TextTreeColumn with no wrapping.
      *
      * @param name          The name of the {@link TreeColumn}.
      * @param fieldAccessor The {@link FieldAccessor} to use.
@@ -49,7 +49,7 @@ public class TextTreeColumn extends TreeColumn {
     }
 
     /**
-     * Creates a new {@link TextTreeColumn} with no wrapping.
+     * Creates a new TextTreeColumn with no wrapping.
      *
      * @param name          The name of the {@link TreeColumn}.
      * @param fieldAccessor The {@link FieldAccessor} to use.
@@ -60,7 +60,7 @@ public class TextTreeColumn extends TreeColumn {
     }
 
     /**
-     * Creates a new {@link TextTreeColumn}.
+     * Creates a new TextTreeColumn.
      *
      * @param name          The name of the {@link TreeColumn}.
      * @param fieldAccessor The {@link FieldAccessor} to use.
@@ -72,7 +72,7 @@ public class TextTreeColumn extends TreeColumn {
     }
 
     /**
-     * Creates a new left-aligned {@link TextTreeColumn} with no wrapping.
+     * Creates a new left-aligned TextTreeColumn with no wrapping.
      *
      * @param name          The name of the {@link TreeColumn}.
      * @param fieldAccessor The {@link FieldAccessor} to use.
@@ -83,7 +83,7 @@ public class TextTreeColumn extends TreeColumn {
     }
 
     /**
-     * Creates a new {@link TextTreeColumn} with no wrapping.
+     * Creates a new TextTreeColumn with no wrapping.
      *
      * @param name          The name of the {@link TreeColumn}.
      * @param fieldAccessor The {@link FieldAccessor} to use.
@@ -95,7 +95,7 @@ public class TextTreeColumn extends TreeColumn {
     }
 
     /**
-     * Creates a new {@link TextTreeColumn}.
+     * Creates a new TextTreeColumn.
      *
      * @param name          The name of the {@link TreeColumn}.
      * @param fieldAccessor The {@link FieldAccessor} to use.

@@ -50,7 +50,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
     boolean mWasAlive;
 
     /**
-     * Creates a new {@link BaseWindow}.
+     * Creates a new BaseWindow.
      *
      * @param title The window title. May be {@code null}.
      */
@@ -297,7 +297,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         return windows;
     }
 
-    /** @return A list of all {@link BaseWindow}s created by this application. */
+    /** @return A list of all BaseWindows created by this application. */
     public static List<BaseWindow> getAllAppWindows() {
         return getWindows(BaseWindow.class);
     }

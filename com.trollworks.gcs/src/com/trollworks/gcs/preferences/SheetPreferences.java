@@ -34,7 +34,7 @@ public class SheetPreferences extends PreferencePanel implements DocumentListene
     private JCheckBox  mAutoFillProfile;
 
     /**
-     * Creates a new {@link SheetPreferences}.
+     * Creates a new SheetPreferences.
      *
      * @param owner The owning {@link PreferencesWindow}.
      */

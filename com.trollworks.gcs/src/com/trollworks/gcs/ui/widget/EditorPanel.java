@@ -43,13 +43,13 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     private static final int    GAP        = 5;
     private static final String COMPARISON = "Comparison";
 
-    /** Creates a new {@link EditorPanel}. */
+    /** Creates a new EditorPanel. */
     protected EditorPanel() {
         this(0);
     }
 
     /**
-     * Creates a new {@link EditorPanel}.
+     * Creates a new EditorPanel.
      *
      * @param indent The amount of indent to apply to the left side, if any.
      */

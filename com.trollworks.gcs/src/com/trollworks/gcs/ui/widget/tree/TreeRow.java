@@ -13,7 +13,7 @@ package com.trollworks.gcs.ui.widget.tree;
 
 /** A row that can be used with a {@link TreeRoot}. */
 public class TreeRow implements Cloneable {
-    /** The {@link TreeRow}'s parent. */
+    /** The TreeRow's parent. */
     protected TreeContainerRow mParent;
     private   int              mIndex;
 
@@ -29,12 +29,12 @@ public class TreeRow implements Cloneable {
         }
     }
 
-    /** @return The {@link TreeRow}'s parent. */
+    /** @return The TreeRow's parent. */
     public TreeContainerRow getParent() {
         return mParent;
     }
 
-    /** @return The index of this {@link TreeRow} within its parent, or -1 if it has no parent. */
+    /** @return The index of this TreeRow within its parent, or -1 if it has no parent. */
     public int getIndex() {
         return mParent == null ? -1 : mIndex;
     }
@@ -45,8 +45,7 @@ public class TreeRow implements Cloneable {
 
     /**
      * @param row The {@link TreeContainerRow} to check for.
-     * @return Whether this {@link TreeRow} is a descendant of the specified {@link
-     *         TreeContainerRow}.
+     * @return Whether this TreeRow is a descendant of the specified {@link TreeContainerRow}.
      */
     public boolean isDescendantOf(TreeContainerRow row) {
         TreeContainerRow parent = mParent;
@@ -59,7 +58,7 @@ public class TreeRow implements Cloneable {
         return false;
     }
 
-    /** @return The number of {@link TreeContainerRow}s above this {@link TreeRow}. */
+    /** @return The number of {@link TreeContainerRow}s above this TreeRow. */
     public int getDepth() {
         TreeContainerRow parent = mParent;
         int              depth  = 0;
@@ -70,7 +69,7 @@ public class TreeRow implements Cloneable {
         return depth;
     }
 
-    /** @return The {@link TreeRoot} the {@link TreeRow} is currently residing within, if any. */
+    /** @return The {@link TreeRoot} the TreeRow is currently residing within, if any. */
     public TreeRoot getTreeRoot() {
         TreeRow row = this;
         while (row != null) {

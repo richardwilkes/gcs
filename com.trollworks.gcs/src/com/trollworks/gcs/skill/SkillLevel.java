@@ -23,7 +23,7 @@ public class SkillLevel {
     public String mToolTip;
 
     /**
-     * Creates a new {@link SkillLevel}.
+     * Creates a new SkillLevel.
      *
      * @param level         The skill level.
      * @param relativeLevel The relative skill level.
@@ -35,7 +35,7 @@ public class SkillLevel {
     }
 
     /**
-     * Creates a new {@link SkillLevel}.
+     * Creates a new SkillLevel.
      *
      * @param level         The skill level.
      * @param relativeLevel The relative skill level.

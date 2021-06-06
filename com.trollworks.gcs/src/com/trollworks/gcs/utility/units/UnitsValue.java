@@ -23,7 +23,7 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
     private T      mUnits;
 
     /**
-     * Creates a new {@link UnitsValue}.
+     * Creates a new UnitsValue.
      *
      * @param value The value to use.
      * @param units The {@link Units} to use.
@@ -34,9 +34,9 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
     }
 
     /**
-     * Creates a new {@link UnitsValue} from an existing one.
+     * Creates a new UnitsValue from an existing one.
      *
-     * @param other The {@link UnitsValue} to clone.
+     * @param other The UnitsValue to clone.
      */
     public UnitsValue(UnitsValue<T> other) {
         mValue = other.mValue;
@@ -44,10 +44,9 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
     }
 
     /**
-     * Creates a new {@link UnitsValue} from an existing one and converts it to the given {@link
-     * Units}.
+     * Creates a new UnitsValue from an existing one and converts it to the given {@link Units}.
      *
-     * @param other The {@link UnitsValue} to convert.
+     * @param other The UnitsValue to convert.
      * @param units The {@link Units} to use.
      */
     public UnitsValue(UnitsValue<T> other, T units) {
@@ -55,7 +54,7 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
         mUnits = units;
     }
 
-    /** @param other A {@link UnitsValue} to copy state from. */
+    /** @param other A UnitsValue to copy state from. */
     public void set(UnitsValue<T> other) {
         mValue = other.mValue;
         mUnits = other.mUnits;

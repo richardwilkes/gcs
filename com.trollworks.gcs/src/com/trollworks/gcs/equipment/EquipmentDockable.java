@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.I18n;
 
 /** A list of equipment from a library. */
 public class EquipmentDockable extends LibraryDockable {
-    /** Creates a new {@link EquipmentDockable}. */
+    /** Creates a new EquipmentDockable. */
     public EquipmentDockable(EquipmentList list) {
         super(list);
     }

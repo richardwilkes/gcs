@@ -897,6 +897,9 @@
     <inspection_tool class="UnnecessaryExplicitNumericCast" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UnnecessaryFinalOnLocalVariableOrParameter" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UnnecessaryInheritDoc" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="UnnecessaryJavaDocLink" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoreInlineLinkToSuper" value="false" />
+    </inspection_tool>
     <inspection_tool class="UnnecessaryLabelJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="UnnecessaryLabelOnBreakStatementJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="UnnecessaryLabelOnContinueStatementJS" enabled="false" level="WARNING" enabled_by_default="false" />
@@ -930,6 +933,7 @@
       </option>
       <option name="ignoreClassesWithOnlyMain" value="false" />
     </inspection_tool>
+    <inspection_tool class="VarargParameter" enabled="false" level="INFORMATION" enabled_by_default="false" />
     <inspection_tool class="VgoUnusedDependency" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="VolatileArrayField" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="WaitCalledOnCondition" enabled="true" level="WARNING" enabled_by_default="true" />

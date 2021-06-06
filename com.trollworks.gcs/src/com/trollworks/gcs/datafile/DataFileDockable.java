@@ -36,7 +36,7 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     private String   mUntitledName;
 
     /**
-     * Creates a new {@link DataFileDockable}.
+     * Creates a new DataFileDockable.
      *
      * @param file The {@link DataFile} to use.
      */

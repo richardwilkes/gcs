@@ -21,12 +21,12 @@ import javax.swing.JMenuItem;
  * accelerator.
  */
 public class DynamicMenuItem extends JMenuItem {
-    /** Creates a new {@link DynamicMenuItem}. */
+    /** Creates a new DynamicMenuItem. */
     public DynamicMenuItem() {
     }
 
     /**
-     * Creates a new {@link DynamicMenuItem}.
+     * Creates a new DynamicMenuItem.
      *
      * @param icon The icon to use.
      */
@@ -35,7 +35,7 @@ public class DynamicMenuItem extends JMenuItem {
     }
 
     /**
-     * Creates a new {@link DynamicMenuItem}.
+     * Creates a new DynamicMenuItem.
      *
      * @param text The text to use.
      */
@@ -44,7 +44,7 @@ public class DynamicMenuItem extends JMenuItem {
     }
 
     /**
-     * Creates a new {@link DynamicMenuItem}.
+     * Creates a new DynamicMenuItem.
      *
      * @param action The action to use.
      */
@@ -53,7 +53,7 @@ public class DynamicMenuItem extends JMenuItem {
     }
 
     /**
-     * Creates a new {@link DynamicMenuItem}.
+     * Creates a new DynamicMenuItem.
      *
      * @param text The text to use.
      * @param icon The icon to use.
@@ -63,7 +63,7 @@ public class DynamicMenuItem extends JMenuItem {
     }
 
     /**
-     * Creates a new {@link DynamicMenuItem}.
+     * Creates a new DynamicMenuItem.
      *
      * @param text     The text to use.
      * @param mnemonic The mnemonic to use.

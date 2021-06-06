@@ -23,7 +23,7 @@ public class TreeRowIterator implements Iterator<TreeRow>, Iterable<TreeRow> {
     private int             mIndex;
 
     /**
-     * Creates a new {@link TreeRowIterator}.
+     * Creates a new TreeRowIterator.
      *
      * @param rows The {@link TreeRow}s to iterator over.
      */
@@ -32,7 +32,7 @@ public class TreeRowIterator implements Iterator<TreeRow>, Iterable<TreeRow> {
     }
 
     /**
-     * Creates a new {@link TreeRowIterator}.
+     * Creates a new TreeRowIterator.
      *
      * @param rows The {@link TreeRow}s to iterator over.
      */

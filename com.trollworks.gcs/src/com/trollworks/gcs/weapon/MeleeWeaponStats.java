@@ -37,7 +37,7 @@ public class MeleeWeaponStats extends WeaponStats {
     private String mBlock;
 
     /**
-     * Creates a new {@link MeleeWeaponStats}.
+     * Creates a new MeleeWeaponStats.
      *
      * @param owner The owning piece of equipment or advantage.
      */
@@ -46,10 +46,10 @@ public class MeleeWeaponStats extends WeaponStats {
     }
 
     /**
-     * Creates a clone of the specified {@link MeleeWeaponStats}.
+     * Creates a clone of the specified MeleeWeaponStats.
      *
      * @param owner The owning piece of equipment or advantage.
-     * @param other The {@link MeleeWeaponStats} to clone.
+     * @param other The MeleeWeaponStats to clone.
      */
     public MeleeWeaponStats(ListRow owner, MeleeWeaponStats other) {
         super(owner, other);
@@ -59,7 +59,7 @@ public class MeleeWeaponStats extends WeaponStats {
     }
 
     /**
-     * Creates a {@link MeleeWeaponStats}.
+     * Creates a MeleeWeaponStats.
      *
      * @param owner The owning piece of equipment or advantage.
      * @param m     The {@link JsonMap} to load from.

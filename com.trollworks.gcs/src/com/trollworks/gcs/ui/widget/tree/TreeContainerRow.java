@@ -40,7 +40,7 @@ public class TreeContainerRow extends TreeRow {
         return other;
     }
 
-    /** @return The number of direct children this {@link TreeContainerRow} contains. */
+    /** @return The number of direct children this TreeContainerRow contains. */
     public int getChildCount() {
         return mChildren.size();
     }
@@ -58,8 +58,7 @@ public class TreeContainerRow extends TreeRow {
     }
 
     /**
-     * @return An unmodifiable {@link List} containing the children of this {@link TreeContainerRow}
-     *         .
+     * @return An unmodifiable {@link List} containing the children of this TreeContainerRow .
      */
     public List<TreeRow> getChildren() {
         return Collections.unmodifiableList(mChildren);
@@ -74,8 +73,8 @@ public class TreeContainerRow extends TreeRow {
     }
 
     /**
-     * Adds the specified {@link TreeRow} as a direct child to this {@link TreeContainerRow}. If the
-     * {@link TreeRow} already has a parent, it will first be removed from that parent.
+     * Adds the specified {@link TreeRow} as a direct child to this TreeContainerRow. If the {@link
+     * TreeRow} already has a parent, it will first be removed from that parent.
      *
      * @param row The {@link TreeRow} to add as a child.
      */
@@ -84,8 +83,8 @@ public class TreeContainerRow extends TreeRow {
     }
 
     /**
-     * Adds the specified {@link TreeRow}s as direct children to this {@link TreeContainerRow}. If
-     * the {@link TreeRow} already has a parent, it will first be removed from that parent.
+     * Adds the specified {@link TreeRow}s as direct children to this TreeContainerRow. If the
+     * {@link TreeRow} already has a parent, it will first be removed from that parent.
      *
      * @param rows The {@link TreeRow}s to add as children.
      */
@@ -94,7 +93,7 @@ public class TreeContainerRow extends TreeRow {
     }
 
     /**
-     * Adds the specified {@link TreeRow} as a direct child to this {@link TreeContainerRow} at the
+     * Adds the specified {@link TreeRow} as a direct child to this TreeContainerRow at the
      * specified index. If the {@link TreeRow} already has a parent, it will first be removed from
      * that parent. If the {@link TreeRow} is already a child, but not in the specified position, it
      * will be moved into that position.
@@ -109,10 +108,10 @@ public class TreeContainerRow extends TreeRow {
     }
 
     /**
-     * Adds the specified {@link TreeRow}s as direct children to this {@link TreeContainerRow} at
-     * the specified index. If the {@link TreeRow} already has a parent, it will first be removed
-     * from that parent. If the {@link TreeRow} is already a child, but not in the specified
-     * position, it will be moved into that position.
+     * Adds the specified {@link TreeRow}s as direct children to this TreeContainerRow at the
+     * specified index. If the {@link TreeRow} already has a parent, it will first be removed from
+     * that parent. If the {@link TreeRow} is already a child, but not in the specified position, it
+     * will be moved into that position.
      *
      * @param index The index to insert at.
      * @param rows  The {@link TreeRow}s to add as children.
@@ -149,8 +148,8 @@ public class TreeContainerRow extends TreeRow {
     }
 
     /**
-     * Removes a child {@link TreeRow} from this {@link TreeContainerRow}. If the specified {@link
-     * TreeRow} is not an immediate child of this {@link TreeContainerRow}, nothing will be done.
+     * Removes a child {@link TreeRow} from this TreeContainerRow. If the specified {@link TreeRow}
+     * is not an immediate child of this TreeContainerRow, nothing will be done.
      *
      * @param row The child {@link TreeRow} to remove.
      */
@@ -161,9 +160,8 @@ public class TreeContainerRow extends TreeRow {
     }
 
     /**
-     * Removes the specified child {@link TreeRow}s from this {@link TreeContainerRow}. If a {@link
-     * TreeRow} is not an immediate child of this {@link TreeContainerRow}, nothing will be done to
-     * it.
+     * Removes the specified child {@link TreeRow}s from this TreeContainerRow. If a {@link TreeRow}
+     * is not an immediate child of this TreeContainerRow, nothing will be done to it.
      *
      * @param rows The child {@link TreeRow}s to remove.
      */

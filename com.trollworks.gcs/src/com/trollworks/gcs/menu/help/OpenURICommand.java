@@ -26,7 +26,7 @@ public class OpenURICommand extends Command {
     private URI mURI;
 
     /**
-     * Creates a new {@link OpenURICommand}.
+     * Creates a new OpenURICommand.
      *
      * @param title The title to use.
      * @param uri   The URI to open.
@@ -37,7 +37,7 @@ public class OpenURICommand extends Command {
     }
 
     /**
-     * Creates a new {@link OpenURICommand}.
+     * Creates a new OpenURICommand.
      *
      * @param title The title to use.
      * @param uri   The URI to open.

@@ -38,7 +38,7 @@ public class DisplayPreferences extends PreferencePanel implements ActionListene
     private EditorField       mToolTipTimeout;
 
     /**
-     * Creates a new {@link DisplayPreferences}.
+     * Creates a new DisplayPreferences.
      *
      * @param owner The owning {@link PreferencesWindow}.
      */

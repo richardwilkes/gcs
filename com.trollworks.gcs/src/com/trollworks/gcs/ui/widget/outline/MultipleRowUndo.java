@@ -21,7 +21,7 @@ public class MultipleRowUndo extends AbstractUndoableEdit {
     private RowUndo[] mUndos;
 
     /**
-     * Creates a new {@link MultipleRowUndo}.
+     * Creates a new MultipleRowUndo.
      *
      * @param undos The {@link RowUndo}s to manage.
      */

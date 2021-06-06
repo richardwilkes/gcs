@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.I18n;
 
 /** A list of skills from a library. */
 public class SkillsDockable extends LibraryDockable {
-    /** Creates a new {@link SkillsDockable}. */
+    /** Creates a new SkillsDockable. */
     public SkillsDockable(SkillList list) {
         super(list);
     }

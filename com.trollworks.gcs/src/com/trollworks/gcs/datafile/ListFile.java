@@ -74,7 +74,7 @@ public abstract class ListFile extends DataFile {
         return mModel.getRowCount() == 0;
     }
 
-    /** @return The set of categories that exist in this {@link ListFile}. */
+    /** @return The set of categories that exist in this ListFile. */
     public Set<String> getCategories() {
         Set<String> set = new TreeSet<>();
         for (Row row : getTopLevelRows()) {

@@ -22,13 +22,13 @@ public class ActionPanel extends JPanel {
     private ArrayList<ActionListener> mActionListeners;
     private String                    mActionCommand;
 
-    /** Creates a new {@link ActionPanel} with no layout. */
+    /** Creates a new ActionPanel with no layout. */
     public ActionPanel() {
         this(null);
     }
 
     /**
-     * Creates a new {@link ActionPanel} with the specified layout.
+     * Creates a new ActionPanel with the specified layout.
      *
      * @param layout The layout manager to use. May be {@code null}.
      */

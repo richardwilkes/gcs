@@ -25,7 +25,7 @@ public class OrLabel extends JLabel {
     private Component mOwner;
 
     /**
-     * Creates a new {@link OrLabel}.
+     * Creates a new OrLabel.
      *
      * @param owner The owning component.
      */

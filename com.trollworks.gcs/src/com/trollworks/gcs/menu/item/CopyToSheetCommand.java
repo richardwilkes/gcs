@@ -36,7 +36,7 @@ public class CopyToSheetCommand extends Command {
     }
 
     /**
-     * Creates a new {@link CopyToSheetCommand}.
+     * Creates a new CopyToSheetCommand.
      *
      * @param outline The outline to work against.
      * @param sheet   The sheet to target.

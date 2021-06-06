@@ -21,7 +21,7 @@ public class IntegerFormatter extends JFormattedTextField.AbstractFormatter {
     private boolean mBlankOnZero;
 
     /**
-     * Creates a new {@link IntegerFormatter}.
+     * Creates a new IntegerFormatter.
      *
      * @param forceSign Whether or not a plus sign should be forced for positive numbers.
      */
@@ -30,7 +30,7 @@ public class IntegerFormatter extends JFormattedTextField.AbstractFormatter {
     }
 
     /**
-     * Creates a new {@link IntegerFormatter}.
+     * Creates a new IntegerFormatter.
      *
      * @param minValue  The minimum value allowed.
      * @param maxValue  The maximum value allowed.
@@ -41,7 +41,7 @@ public class IntegerFormatter extends JFormattedTextField.AbstractFormatter {
     }
 
     /**
-     * Creates a new {@link IntegerFormatter}.
+     * Creates a new IntegerFormatter.
      *
      * @param minValue    The minimum value allowed.
      * @param maxValue    The maximum value allowed.

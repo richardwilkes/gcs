@@ -29,7 +29,7 @@ public class TreeRowDragState extends TreeDragState {
     private int              mChildInsertIndex;
 
     /**
-     * Creates a new {@link TreeRowDragState}.
+     * Creates a new TreeRowDragState.
      *
      * @param panel        The {@link TreePanel} to work with.
      * @param rowSelection The {@link TreeRowSelection} from the drag.

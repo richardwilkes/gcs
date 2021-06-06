@@ -32,8 +32,8 @@ public enum EquipmentModifierWeightType {
         }
     },
     /**
-     * Modifies the base cost. Can be a ±value, a ±% value, or a multiplier. Examples: '+5 lb',
-     * '-5 lb', 'x10%', 'x3', 'x2/3'
+     * Modifies the base cost. Can be a ±value, a ±% value, or a multiplier. Examples: '+5 lb', '-5
+     * lb', 'x10%', 'x3', 'x2/3'
      */
     TO_BASE_WEIGHT(ModifierWeightValueType.ADDITION, ModifierWeightValueType.PERCENTAGE_MULTIPLIER, ModifierWeightValueType.MULTIPLIER) {
         @Override
@@ -47,8 +47,8 @@ public enum EquipmentModifierWeightType {
         }
     },
     /**
-     * Modifies the final base cost. Can be a ±value, a ±% value, or a multiplier. Examples:
-     * '+5 lb', '-5 lb', 'x10%', 'x3', 'x2/3'
+     * Modifies the final base cost. Can be a ±value, a ±% value, or a multiplier. Examples: '+5
+     * lb', '-5 lb', 'x10%', 'x3', 'x2/3'
      */
     TO_FINAL_BASE_WEIGHT(ModifierWeightValueType.ADDITION, ModifierWeightValueType.PERCENTAGE_MULTIPLIER, ModifierWeightValueType.MULTIPLIER) {
         @Override
@@ -62,8 +62,8 @@ public enum EquipmentModifierWeightType {
         }
     },
     /**
-     * Modifies the final cost. Can be a ±value, a ±% value, or a multiplier. Examples: '+5 lb',
-     * '-5 lb', 'x10%', 'x3', 'x2/3'
+     * Modifies the final cost. Can be a ±value, a ±% value, or a multiplier. Examples: '+5 lb', '-5
+     * lb', 'x10%', 'x3', 'x2/3'
      */
     TO_FINAL_WEIGHT(ModifierWeightValueType.ADDITION, ModifierWeightValueType.PERCENTAGE_MULTIPLIER, ModifierWeightValueType.MULTIPLIER) {
         @Override

@@ -23,7 +23,7 @@ public class FlexComponent extends FlexCell {
     private boolean   mOnlyPreferredSize;
 
     /**
-     * Creates a new {@link FlexComponent}.
+     * Creates a new FlexComponent.
      *
      * @param component The {@link Component} to wrap.
      */
@@ -32,7 +32,7 @@ public class FlexComponent extends FlexCell {
     }
 
     /**
-     * Creates a new {@link FlexComponent}.
+     * Creates a new FlexComponent.
      *
      * @param component         The {@link Component} to wrap.
      * @param onlyPreferredSize Whether only the preferred size is permitted.
@@ -43,7 +43,7 @@ public class FlexComponent extends FlexCell {
     }
 
     /**
-     * Creates a new {@link FlexComponent}.
+     * Creates a new FlexComponent.
      *
      * @param component           The {@link Component} to wrap.
      * @param horizontalAlignment The horizontal {@link Alignment} to use. Pass in {@code null} to

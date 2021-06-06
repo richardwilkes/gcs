@@ -24,13 +24,13 @@ import java.awt.Rectangle;
 public class FlexLayout implements LayoutManager2 {
     private FlexCell mRootCell;
 
-    /** Creates a new {@link FlexLayout}. */
+    /** Creates a new FlexLayout. */
     public FlexLayout() {
         // Does nothing.
     }
 
     /**
-     * Creates a new {@link FlexLayout}.
+     * Creates a new FlexLayout.
      *
      * @param rootCell The root cell to layout.
      */

@@ -109,7 +109,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     }
 
     /**
-     * Creates a new {@link RowEditor}.
+     * Creates a new RowEditor.
      *
      * @param row The row being edited.
      */

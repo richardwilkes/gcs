@@ -60,7 +60,7 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
     private             boolean               mDrawingDragImage;
     private             boolean               mInAutoscroll;
 
-    /** Creates a new {@link DirectScrollPanel}. */
+    /** Creates a new DirectScrollPanel. */
     protected DirectScrollPanel() {
         setBackground(Color.WHITE);
         setLayout(this);

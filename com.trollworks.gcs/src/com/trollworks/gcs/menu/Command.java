@@ -36,7 +36,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     private             KeyStroke mOriginalAccelerator;
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title   The title to use.
      * @param command The command to use.
@@ -47,7 +47,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title   The title to use.
      * @param command The command to use.
@@ -59,7 +59,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title   The title to use.
      * @param command The command to use.
@@ -74,7 +74,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title     The title to use.
      * @param command   The command to use.
@@ -91,7 +91,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title   The title to use.
      * @param command The command to use.
@@ -107,7 +107,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title     The title to use.
      * @param command   The command to use.
@@ -123,7 +123,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title     The title to use.
      * @param command   The command to use.
@@ -137,7 +137,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Creates a new {@link Command}.
+     * Creates a new Command.
      *
      * @param title     The title to use.
      * @param command   The command to use.
@@ -154,35 +154,35 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     /** Called to adjust the action prior to a menu being displayed or an action being used. */
     public abstract void adjust();
 
-    /** @return The {@link Command}'s title. */
+    /** @return The Command's title. */
     public final String getTitle() {
         Object value = getValue(NAME);
         return value != null ? value.toString() : null;
     }
 
-    /** @param title The {@link Command}'s title. */
+    /** @param title The Command's title. */
     public final void setTitle(String title) {
         putValue(NAME, title);
     }
 
-    /** @return The {@link Command}'s command string. */
+    /** @return The Command's command string. */
     public final String getCommand() {
         Object value = getValue(ACTION_COMMAND_KEY);
         return value != null ? value.toString() : null;
     }
 
-    /** @param cmd The {@link Command}'s command string. */
+    /** @param cmd The Command's command string. */
     public final void setCommand(String cmd) {
         putValue(ACTION_COMMAND_KEY, cmd);
     }
 
-    /** @return The current keyboard accelerator for this {@link Command}, or {@code null}. */
+    /** @return The current keyboard accelerator for this Command, or {@code null}. */
     public final KeyStroke getAccelerator() {
         Object value = getValue(ACCELERATOR_KEY);
         return value instanceof KeyStroke ? (KeyStroke) value : null;
     }
 
-    /** @return The original keyboard accelerator for this {@link Command}, or {@code null}. */
+    /** @return The original keyboard accelerator for this Command, or {@code null}. */
     public final KeyStroke getOriginalAccelerator() {
         return mOriginalAccelerator;
     }
@@ -193,8 +193,8 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Sets the keyboard accelerator for this {@link Command}. The platform's standard menu shortcut
-     * key will be specified as a modifier.
+     * Sets the keyboard accelerator for this Command. The platform's standard menu shortcut key
+     * will be specified as a modifier.
      *
      * @param keyCode The key code to use.
      */
@@ -203,7 +203,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Sets the keyboard accelerator for this {@link Command}.
+     * Sets the keyboard accelerator for this Command.
      *
      * @param keyCode   The key code to use.
      * @param modifiers The modifiers to use.
@@ -213,7 +213,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     /**
-     * Sets the keyboard accelerator for this {@link Command}.
+     * Sets the keyboard accelerator for this Command.
      *
      * @param keystroke The {@link KeyStroke} to use.
      */

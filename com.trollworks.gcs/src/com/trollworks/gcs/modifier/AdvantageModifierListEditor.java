@@ -21,7 +21,7 @@ import java.util.List;
 public final class AdvantageModifierListEditor extends ModifierListEditor {
     /**
      * @param advantage The {@link Advantage} to edit.
-     * @return An instance of {@link AdvantageModifierListEditor}.
+     * @return An instance of AdvantageModifierListEditor.
      */
     public static AdvantageModifierListEditor createEditor(Advantage advantage) {
         return new AdvantageModifierListEditor(advantage.getDataFile(), advantage.getParent() != null ? ((Advantage) advantage.getParent()).getAllModifiers() : null, advantage.getModifiers());

@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.text.Numbers;
 public final class Timing {
     private long mBase;
 
-    /** Creates a new {@link Timing}. */
+    /** Creates a new Timing. */
     public Timing() {
         reset();
     }

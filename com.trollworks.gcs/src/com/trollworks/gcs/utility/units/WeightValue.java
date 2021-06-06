@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.text.Enums;
 /** Holds a value and {@link WeightUnits} pair. */
 public class WeightValue extends UnitsValue<WeightUnits> {
     /**
-     * @param buffer    The buffer to extract a {@link WeightValue} from.
+     * @param buffer    The buffer to extract a WeightValue from.
      * @param localized {@code true} if the string might have localized notation within it.
      * @return The result.
      */
@@ -38,7 +38,7 @@ public class WeightValue extends UnitsValue<WeightUnits> {
     }
 
     /**
-     * Creates a new {@link WeightValue}.
+     * Creates a new WeightValue.
      *
      * @param value The value to use.
      * @param units The {@link WeightUnits} to use.
@@ -48,19 +48,19 @@ public class WeightValue extends UnitsValue<WeightUnits> {
     }
 
     /**
-     * Creates a new {@link WeightValue} from an existing one.
+     * Creates a new WeightValue from an existing one.
      *
-     * @param other The {@link WeightValue} to clone.
+     * @param other The WeightValue to clone.
      */
     public WeightValue(WeightValue other) {
         super(other);
     }
 
     /**
-     * Creates a new {@link WeightValue} from an existing one and converts it to the given {@link
+     * Creates a new WeightValue from an existing one and converts it to the given {@link
      * WeightUnits}.
      *
-     * @param other The {@link WeightValue} to convert.
+     * @param other The WeightValue to convert.
      * @param units The {@link WeightUnits} to use.
      */
     public WeightValue(WeightValue other, WeightUnits units) {

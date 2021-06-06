@@ -22,7 +22,7 @@ public class Fixed6Formatter extends JFormattedTextField.AbstractFormatter {
     private boolean mForceSign;
 
     /**
-     * Creates a new {@link Fixed6Formatter}.
+     * Creates a new Fixed6Formatter.
      *
      * @param minValue  The minimum value allowed.
      * @param maxValue  The maximum value allowed.

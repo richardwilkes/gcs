@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.I18n;
 
 /** A list of spells from a library. */
 public class SpellsDockable extends LibraryDockable {
-    /** Creates a new {@link SpellsDockable}. */
+    /** Creates a new SpellsDockable. */
     public SpellsDockable(SpellList list) {
         super(list);
     }

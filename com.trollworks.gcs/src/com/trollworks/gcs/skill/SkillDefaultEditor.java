@@ -61,7 +61,7 @@ public class SkillDefaultEditor extends EditorPanel {
         LAST_ITEM_TYPE = type;
     }
 
-    /** Creates a new placeholder {@link SkillDefaultEditor}. */
+    /** Creates a new placeholder SkillDefaultEditor. */
     public SkillDefaultEditor(DataFile dataFile) {
         this(dataFile, null);
     }

@@ -33,7 +33,7 @@ public enum DirectScrollPanelArea {
     NONE;
 
     /**
-     * Adjusts the coordinates of the {@link Point} for the {@link DirectScrollPanelArea}.
+     * Adjusts the coordinates of the {@link Point} for the DirectScrollPanelArea.
      *
      * @param owner The owning {@link DirectScrollPanel}.
      * @param where The {@link Point} to convert.

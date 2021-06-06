@@ -192,7 +192,7 @@ public class LinkedLabel extends JLabel implements PropertyChangeListener {
     }
 
     /**
-     * Sets/clears the error message that a {@link LinkedLabel} will respond to.
+     * Sets/clears the error message that a LinkedLabel will respond to.
      *
      * @param comp The {@link JComponent} to set the message on.
      * @param msg  The error message or {@code null}.

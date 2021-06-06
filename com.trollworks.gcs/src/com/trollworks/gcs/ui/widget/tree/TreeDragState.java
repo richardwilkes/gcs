@@ -22,7 +22,7 @@ public abstract class TreeDragState {
     private boolean   mContentsFocus;
 
     /**
-     * Creates a new {@link TreeDragState}.
+     * Creates a new TreeDragState.
      *
      * @param panel The {@link TreePanel} to work with.
      */

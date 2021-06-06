@@ -73,7 +73,7 @@ public final class SkillDefaultType {
      *                      however, still won't need points even if this is {@code true}.
      * @param excludes      Exclude these {@link Skill}s from consideration.
      * @param ruleOf20      {@code true} if the rule of 20 should apply.
-     * @return The base skill level for this {@link SkillDefaultType}.
+     * @return The base skill level for this SkillDefaultType.
      */
     public static int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
         int    best;
@@ -100,7 +100,7 @@ public final class SkillDefaultType {
      *                      however, still won't need points even if this is {@code true}.
      * @param excludes      Exclude these {@link Skill}s from consideration.
      * @param ruleOf20      {@code true} if the rule of 20 should apply.
-     * @return The base skill level for this {@link SkillDefaultType}.
+     * @return The base skill level for this SkillDefaultType.
      */
     public static int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
         int best;

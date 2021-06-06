@@ -25,8 +25,8 @@ import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
-import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Filtered;
+import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
@@ -43,7 +43,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
     private ModifierOutline mOutline;
     FontAwesomeButton mAddButton;
     private FontAwesomeButton mDeleteButton;
-    boolean           mModified;
+    boolean mModified;
 
     protected ModifierListEditor(DataFile owner, List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
         super(new PrecisionLayout().setMargins(0));

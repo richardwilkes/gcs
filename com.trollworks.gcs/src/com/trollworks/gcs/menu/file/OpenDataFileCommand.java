@@ -62,7 +62,7 @@ public class OpenDataFileCommand extends Command implements Runnable {
     }
 
     /**
-     * Creates a new {@link OpenDataFileCommand}.
+     * Creates a new OpenDataFileCommand.
      *
      * @param title The title to use.
      * @param path  The file to open.
@@ -73,7 +73,7 @@ public class OpenDataFileCommand extends Command implements Runnable {
     }
 
     /**
-     * Creates a new {@link OpenDataFileCommand} that can only be invoked successfully if {@link
+     * Creates a new OpenDataFileCommand that can only be invoked successfully if {@link
      * OpenCommand} is enabled.
      *
      * @param path The file to open.

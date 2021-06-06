@@ -40,7 +40,7 @@ public class RowUndo extends AbstractUndoableEdit {
     private byte[]   mAfter;
 
     /**
-     * Creates a new {@link RowUndo}.
+     * Creates a new RowUndo.
      *
      * @param row The row being undone.
      */

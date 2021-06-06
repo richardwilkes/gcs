@@ -32,7 +32,7 @@ import java.util.List;
 public final class Workspace extends BaseWindow implements SignificantFrame, JumpToSearchTarget {
     private Dock mDock;
 
-    /** @return The {@link Workspace}. */
+    /** @return The Workspace. */
     public static Workspace get() {
         Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
         if (window instanceof Workspace) {

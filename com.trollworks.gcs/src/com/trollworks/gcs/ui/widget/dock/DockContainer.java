@@ -37,7 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 /**
- * All {@link Dockable}s are wrapped in a {@link DockContainer} when placed within a {@link Dock}.
+ * All {@link Dockable}s are wrapped in a DockContainer when placed within a {@link Dock}.
  */
 public class DockContainer extends JPanel implements DockLayoutNode, LayoutManager {
     private Dock           mDock;
@@ -47,9 +47,9 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
     private boolean        mActive;
 
     /**
-     * Creates a new {@link DockContainer} for the specified {@link Dockable}.
+     * Creates a new DockContainer for the specified {@link Dockable}.
      *
-     * @param dock     The {@link Dock} that owns this {@link DockContainer}.
+     * @param dock     The {@link Dock} that owns this DockContainer.
      * @param dockable The {@link Dockable} to wrap.
      */
     public DockContainer(Dock dock, Dockable dockable) {
@@ -66,12 +66,12 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
         setupDockablesSwitchKeys();
     }
 
-    /** @return The {@link Dock} this {@link DockContainer} resides in. */
+    /** @return The {@link Dock} this DockContainer resides in. */
     public Dock getDock() {
         return mDock;
     }
 
-    /** @return The current list of {@link Dockable}s in this {@link DockContainer}. */
+    /** @return The current list of {@link Dockable}s in this DockContainer. */
     public List<Dockable> getDockables() {
         return mDockables;
     }
@@ -84,13 +84,13 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
         }
     }
 
-    /** @param dockable The {@link Dockable} to stack into this {@link DockContainer}. */
+    /** @param dockable The {@link Dockable} to stack into this DockContainer. */
     public void stack(Dockable dockable) {
         stack(dockable, -1);
     }
 
     /**
-     * @param dockable The {@link Dockable} to stack into this {@link DockContainer}.
+     * @param dockable The {@link Dockable} to stack into this DockContainer.
      * @param index    The position within this container to place it. Values out of range will
      *                 result in the {@link Dockable} being placed at the end.
      */
@@ -127,7 +127,7 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
         }
     }
 
-    /** @return The {@link DockHeader} for this {@link DockContainer}. */
+    /** @return The {@link DockHeader} for this DockContainer. */
     public DockHeader getHeader() {
         return mHeader;
     }
@@ -220,10 +220,10 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
     }
 
     /**
-     * Attempt to close a {@link Dockable} within this {@link DockContainer}. This only has an
-     * affect if the {@link Dockable} is contained by this {@link DockContainer} and implements the
-     * {@link CloseHandler} interface. Note that the {@link CloseHandler} must call this {@link
-     * DockContainer}'s {@link #close(Dockable)} method to actually close the tab.
+     * Attempt to close a {@link Dockable} within this DockContainer. This only has an affect if the
+     * {@link Dockable} is contained by this DockContainer and implements the {@link CloseHandler}
+     * interface. Note that the {@link CloseHandler} must call this {@link DockContainer}'s {@link
+     * #close(Dockable)} method to actually close the tab.
      */
     public void attemptClose(Dockable dockable) {
         if (dockable instanceof CloseHandler) {
@@ -238,8 +238,7 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
 
     /**
      * Closes the specified {@link Dockable}. If the last {@link Dockable} within this {@link
-     * DockContainer} is closed, then this {@link DockContainer} is also removed from the {@link
-     * Dock}.
+     * DockContainer} is closed, then this DockContainer is also removed from the {@link Dock}.
      */
     public void close(Dockable dockable) {
         int index = mDockables.indexOf(dockable);
@@ -263,8 +262,7 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
     }
 
     /**
-     * @return {@code true} if this {@link DockContainer} or one of its children has the keyboard
-     *         focus.
+     * @return {@code true} if this DockContainer or one of its children has the keyboard focus.
      */
     public boolean isActive() {
         return mActive;

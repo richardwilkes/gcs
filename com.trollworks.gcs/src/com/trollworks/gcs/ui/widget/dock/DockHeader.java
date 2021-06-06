@@ -46,7 +46,7 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
     private              int               mDragInsertIndex;
 
     /**
-     * Creates a new {@link DockHeader} for the specified {@link DockContainer}.
+     * Creates a new DockHeader for the specified {@link DockContainer}.
      *
      * @param dc The {@link DockContainer} to work with.
      */

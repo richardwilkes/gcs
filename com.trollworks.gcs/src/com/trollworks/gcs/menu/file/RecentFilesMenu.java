@@ -30,7 +30,7 @@ import javax.swing.event.MenuListener;
 public class RecentFilesMenu extends JMenu implements MenuListener {
     private int mLastSeenRecentFilesUpdateCounter;
 
-    /** Creates a new {@link RecentFilesMenu}. */
+    /** Creates a new RecentFilesMenu. */
     public RecentFilesMenu() {
         super(I18n.Text("Recent Files"));
         addMenuListener(this);

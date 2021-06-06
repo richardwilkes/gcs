@@ -112,13 +112,13 @@ public class Evaluator {
         DEFAULT_FUNCTIONS.put(function.getName(), function);
     }
 
-    /** Creates a new {@link Evaluator} that does not do variable resolution. */
+    /** Creates a new Evaluator that does not do variable resolution. */
     public Evaluator() {
         this((VariableResolver) null);
     }
 
     /**
-     * Creates a new {@link Evaluator}.
+     * Creates a new Evaluator.
      *
      * @param variableResolver The {@link VariableResolver} to use.
      */
@@ -129,9 +129,9 @@ public class Evaluator {
     }
 
     /**
-     * Creates a new {@link Evaluator}.
+     * Creates a new Evaluator.
      *
-     * @param other An {@link Evaluator} to copy the {@link VariableResolver} from.
+     * @param other An Evaluator to copy the {@link VariableResolver} from.
      */
     public Evaluator(Evaluator other) {
         mVariableResolver = other.mVariableResolver;

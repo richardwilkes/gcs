@@ -36,7 +36,7 @@ public class StdMenuBar extends JMenuBar {
         return cmds;
     }
 
-    /** Creates a new {@link StdMenuBar}. */
+    /** Creates a new StdMenuBar. */
     public StdMenuBar() {
         add(FileMenuProvider.createMenu());
         add(EditMenuProvider.createMenu());
