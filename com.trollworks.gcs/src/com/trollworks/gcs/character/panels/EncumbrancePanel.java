@@ -19,18 +19,20 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dimension;
+import java.awt.Font;
 import java.text.MessageFormat;
-import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 /** The character encumbrance panel. */
@@ -41,28 +43,34 @@ public class EncumbrancePanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public EncumbrancePanel(CharacterSheet sheet) {
-        super(new ColumnLayout(8, 2, 0), I18n.text("Encumbrance, Move & Dodge"), true);
-        Encumbrance[] encumbranceValues = Encumbrance.values();
-        Dimension     prefSize          = new PageLabel("•", null).getPreferredSize();
-        PageLabel[]   markers           = new PageLabel[encumbranceValues.length];
-        String        encLevelTooltip   = I18n.text("The encumbrance level");
-        PageHeader    bulletHeader      = createHeader("", encLevelTooltip);
-        UIUtilities.setOnlySize(bulletHeader, prefSize);
-        addHorizontalBackground(bulletHeader, ThemeColor.HEADER);
-        PageHeader header = createHeader(I18n.text("Level"), encLevelTooltip);
+        super(new PrecisionLayout().setColumns(8).setHorizontalSpacing(2).setVerticalSpacing(0).setMargins(0), I18n.text("Encumbrance, Move & Dodge"), true);
+
+        PageHeader header = new PageHeader(I18n.text("Level"), I18n.text("The encumbrance level"));
+        add(header, new PrecisionLayoutData().setHorizontalSpan(2).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setGrabHorizontalSpace(true));
+        addHorizontalBackground(header, ThemeColor.HEADER);
+
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
+
         String maxLoadTooltip = I18n.text("The maximum load a character can carry and still remain within a specific encumbrance level");
-        createHeader(I18n.text("Max Load"), maxLoadTooltip);
+        header = new PageHeader(I18n.text("Max Load"), maxLoadTooltip);
+        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
+
         String moveTooltip = I18n.text("The character's ground movement rate for a specific encumbrance level");
-        createHeader(I18n.text("Move"), moveTooltip);
+        header = new PageHeader(I18n.text("Move"), moveTooltip);
+        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+
         addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
+
         String dodgeTooltip = I18n.text("The character's dodge for a specific encumbrance level");
-        createHeader(I18n.text("Dodge"), dodgeTooltip);
+        header = new PageHeader(I18n.text("Dodge"), dodgeTooltip);
+        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+
         GURPSCharacter character = sheet.getCharacter();
         Encumbrance    current   = character.getEncumbranceLevel(false);
         boolean        band      = false;
-        for (Encumbrance encumbrance : encumbranceValues) {
+        for (Encumbrance encumbrance : Encumbrance.values()) {
             boolean warn;
             Color   textColor;
             if (current == encumbrance) {
@@ -72,31 +80,32 @@ public class EncumbrancePanel extends DropPanel {
                 warn = false;
                 textColor = ThemeColor.ON_CONTENT;
             }
-            int index = encumbrance.ordinal();
-            markers[index] = new PageLabel(encumbrance == current ? "•" : "", textColor, header);
-            UIUtilities.setOnlySize(markers[index], prefSize);
-            add(markers[index]);
+
+            if (encumbrance == current) {
+                Label marker = new Label("\uf24e");
+                marker.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, 9));
+                marker.setForeground(textColor);
+                marker.setRefersTo(header);
+                add(marker, new PrecisionLayoutData().setFillHorizontalAlignment());
+            } else {
+                add(new PageLabel(" ", textColor, header), new PrecisionLayoutData().setFillHorizontalAlignment());
+            }
+
+            PageLabel level = new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header);
+            add(level, new PrecisionLayoutData().setGrabHorizontalSpace(true));
             if (current == encumbrance) {
-                addHorizontalBackground(markers[index], warn ? ThemeColor.WARN : ThemeColor.CURRENT);
+                addHorizontalBackground(level, warn ? ThemeColor.WARN : ThemeColor.CURRENT);
             } else if (band) {
-                addHorizontalBackground(markers[index], ThemeColor.BANDING);
+                addHorizontalBackground(level, ThemeColor.BANDING);
             }
             band = !band;
-            JComponent field = new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header);
-            add(field);
             createDivider();
-            add(new PageField(FieldFactory.WEIGHT, character.getMaximumCarry(encumbrance), sheet, SwingConstants.RIGHT, maxLoadTooltip, textColor));
+            add(new PageField(FieldFactory.WEIGHT, character.getMaximumCarry(encumbrance), sheet, SwingConstants.RIGHT, maxLoadTooltip, textColor), new PrecisionLayoutData().setFillHorizontalAlignment());
             createDivider();
-            add(new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getMove(encumbrance)), sheet, SwingConstants.RIGHT, moveTooltip, textColor));
+            add(new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getMove(encumbrance)), sheet, SwingConstants.RIGHT, moveTooltip, textColor), new PrecisionLayoutData().setFillHorizontalAlignment());
             createDivider();
-            add(new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getDodge(encumbrance)), sheet, SwingConstants.RIGHT, dodgeTooltip, textColor));
+            add(new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getDodge(encumbrance)), sheet, SwingConstants.RIGHT, dodgeTooltip, textColor), new PrecisionLayoutData().setFillHorizontalAlignment());
         }
-    }
-
-    private PageHeader createHeader(String title, String tooltip) {
-        PageHeader header = new PageHeader(title, tooltip);
-        add(header);
-        return header;
     }
 
     private Container createDivider() {
