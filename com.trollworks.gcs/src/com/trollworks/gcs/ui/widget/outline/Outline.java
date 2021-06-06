@@ -1768,8 +1768,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 gc.setBackground(Colors.TRANSPARENT);
                 gc.clearRect(0, 0, bounds.width, bounds.height);
                 gc.setBackground(saved);
-                Rectangle clip = new Rectangle(0, 0, bounds.width, bounds.height);
-                gc.setClip(clip);
+                gc.setClip(new Rectangle(0, 0, bounds.width, bounds.height));
                 gc.translate(-bounds.x, -bounds.y);
                 paint(gc);
             } catch (Exception exception) {

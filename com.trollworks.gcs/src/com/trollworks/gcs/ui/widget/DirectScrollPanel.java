@@ -705,8 +705,7 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
                 g2d.setBackground(saved);
                 Insets insets = getInsets();
                 g2d.translate(-insets.left, -insets.top);
-                Rectangle clip = new Rectangle(0, 0, width, height);
-                g2d.setClip(clip);
+                g2d.setClip(new Rectangle(0, 0, width, height));
                 paint(g2d);
             } catch (Exception exception) {
                 Log.error(exception);
