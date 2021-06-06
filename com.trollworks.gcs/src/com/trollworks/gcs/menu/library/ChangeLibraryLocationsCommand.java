@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class ChangeLibraryLocationsCommand extends Command {
+public final class ChangeLibraryLocationsCommand extends Command {
     public static final ChangeLibraryLocationsCommand INSTANCE = new ChangeLibraryLocationsCommand();
 
     private ChangeLibraryLocationsCommand() {

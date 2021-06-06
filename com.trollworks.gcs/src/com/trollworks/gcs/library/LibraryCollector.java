@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LibraryCollector implements Comparator<Object> {
+public final class LibraryCollector implements Comparator<Object> {
     private List<Object>       mCurrent;
     private List<List<Object>> mStack;
     private Set<Path>          mDirs;

@@ -58,7 +58,7 @@ import javax.swing.event.DocumentListener;
 
 // TODO: Fix layout around scrolling
 
-public class SheetSettingsWindow extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
+public final class SheetSettingsWindow extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
     private static Map<UUID, SheetSettingsWindow> INSTANCES = new HashMap<>();
     private        GURPSCharacter                 mCharacter;
     private        SheetSettings                  mSheetSettings;

@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Advantage" command. */
-public class NewAdvantageCommand extends Command {
+public final class NewAdvantageCommand extends Command {
     /** The action command this command will issue. */
     public static final String              CMD_NEW_ADVANTAGE           = "NewAdvantage";
     /** The action command this command will issue. */

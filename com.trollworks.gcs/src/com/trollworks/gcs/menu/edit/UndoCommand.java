@@ -19,7 +19,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.undo.UndoManager;
 
 /** Provides the "Undo" command. */
-public class UndoCommand extends Command {
+public final class UndoCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_UNDO = "Undo";
 

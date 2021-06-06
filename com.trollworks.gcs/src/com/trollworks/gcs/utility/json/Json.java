@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Json utilities. */
-public class Json {
+public final class Json {
     private Reader  mReader;
     private int     mIndex;
     private int     mCharacter = 1;
@@ -37,7 +37,7 @@ public class Json {
      * @param reader A {@link Reader} to load JSON data from.
      * @return The result of loading the data.
      */
-    public static final Object parse(Reader reader) throws IOException {
+    public static Object parse(Reader reader) throws IOException {
         return new Json(reader).nextValue();
     }
 
@@ -45,7 +45,7 @@ public class Json {
      * @param url A {@link URL} to load JSON data from.
      * @return The result of loading the data.
      */
-    public static final Object parse(URL url) throws IOException {
+    public static Object parse(URL url) throws IOException {
         try (InputStream in = UrlUtils.setupConnection(url).getInputStream()) {
             return parse(in);
         }
@@ -56,7 +56,7 @@ public class Json {
      *               will be used as the encoding when reading from the stream.
      * @return The result of loading the data.
      */
-    public static final Object parse(InputStream stream) throws IOException {
+    public static Object parse(InputStream stream) throws IOException {
         return parse(new InputStreamReader(stream, StandardCharsets.UTF_8));
     }
 
@@ -65,7 +65,7 @@ public class Json {
      * @return The value associated with the object or {@code false} if the object is {@code null}
      *         or the value cannot be converted to a boolean.
      */
-    public static final boolean asBoolean(Object obj) {
+    public static boolean asBoolean(Object obj) {
         return Boolean.TRUE.equals(obj) || obj instanceof String && Boolean.TRUE.toString().equalsIgnoreCase((String) obj);
     }
 
@@ -74,7 +74,7 @@ public class Json {
      * @return The value associated with the object or {@code 0} if the object is {@code null} or
      *         the value cannot be converted to an int.
      */
-    public static final int asInt(Object obj) {
+    public static int asInt(Object obj) {
         if (obj instanceof Number) {
             return ((Number) obj).intValue();
         }
@@ -93,7 +93,7 @@ public class Json {
      * @return The value associated with the object or {@code 0} if the object is {@code null} or
      *         the value cannot be converted to a long.
      */
-    public static final long asLong(Object obj) {
+    public static long asLong(Object obj) {
         if (obj instanceof Number) {
             return ((Number) obj).longValue();
         }
@@ -112,7 +112,7 @@ public class Json {
      * @return The value associated with the object or {@code 0} if the object is {@code null} or
      *         the value cannot be converted to a double.
      */
-    public static final double asDouble(Object obj) {
+    public static double asDouble(Object obj) {
         if (obj instanceof Number) {
             return ((Number) obj).doubleValue();
         }
@@ -130,7 +130,7 @@ public class Json {
      * @param obj An object to process.
      * @return The value associated with the object.
      */
-    public static final String asString(Object obj) {
+    public static String asString(Object obj) {
         return JsonNull.INSTANCE.equals(obj) ? "" : obj.toString();
     }
 
@@ -138,7 +138,7 @@ public class Json {
      * @param obj An object to process.
      * @return The {@link JsonArray}.
      */
-    public static final JsonArray asArray(Object obj) {
+    public static JsonArray asArray(Object obj) {
         return (obj instanceof JsonArray) ? (JsonArray) obj : new JsonArray();
     }
 
@@ -146,7 +146,7 @@ public class Json {
      * @param obj An object to process.
      * @return The {@link JsonMap}.
      */
-    public static final JsonMap asMap(Object obj) {
+    public static JsonMap asMap(Object obj) {
         return (obj instanceof JsonMap) ? (JsonMap) obj : new JsonMap();
     }
 
@@ -154,7 +154,7 @@ public class Json {
      * @param value The value to encode as a JSON string.
      * @return The encoded {@link String}.
      */
-    public static final String toString(Object value) {
+    public static String toString(Object value) {
         if (JsonNull.INSTANCE.equals(value)) {
             return JsonNull.INSTANCE.toString();
         }
@@ -183,7 +183,7 @@ public class Json {
      * @param object The object to wrap for storage inside a {@link JsonCollection}.
      * @return The wrapped version of the object, which may be the original object passed in.
      */
-    public static final Object wrap(Object object) {
+    public static Object wrap(Object object) {
         if (JsonNull.INSTANCE.equals(object)) {
             return JsonNull.INSTANCE;
         }
@@ -253,7 +253,7 @@ public class Json {
      * @param string The string to quote.
      * @return The quoted {@link String}, suitable for storage inside a JSON object.
      */
-    public static final String quote(String string) {
+    public static String quote(String string) {
         int len;
         if (string == null || (len = string.length()) == 0) {
             return "\"\"";

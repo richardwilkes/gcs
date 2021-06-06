@@ -20,7 +20,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 
 /** Provides the "Close" command. */
-public class CloseCommand extends Command {
+public final class CloseCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_CLOSE = "Close";
 

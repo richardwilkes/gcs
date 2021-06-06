@@ -14,7 +14,7 @@ package com.trollworks.gcs.ui.widget.tree;
 import java.util.Comparator;
 
 /** Compares {@link TreeRow} indexes. */
-public class TreeRowIndexComparator implements Comparator<TreeRow> {
+public final class TreeRowIndexComparator implements Comparator<TreeRow> {
     /** The one and only instance. */
     public static final TreeRowIndexComparator INSTANCE = new TreeRowIndexComparator();
 

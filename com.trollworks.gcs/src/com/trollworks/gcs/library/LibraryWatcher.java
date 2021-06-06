@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 
-public class LibraryWatcher implements Runnable {
+public final class LibraryWatcher implements Runnable {
     public static final LibraryWatcher      INSTANCE = new LibraryWatcher();
     private             WatchService        mWatcher;
     private             Map<Path, WatchKey> mPathKeyMap;

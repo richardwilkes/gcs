@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Equipment Library" command. */
-public class NewEquipmentLibraryCommand extends Command {
+public final class NewEquipmentLibraryCommand extends Command {
     /** The action command this command will issue. */
     public static final String                     CMD_NEW_LIBRARY = "NewEquipmentLibrary";
     /** The singleton {@link NewEquipmentLibraryCommand}. */

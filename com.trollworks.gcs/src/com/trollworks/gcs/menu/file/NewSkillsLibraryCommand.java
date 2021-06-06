@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Skills Library" command. */
-public class NewSkillsLibraryCommand extends Command {
+public final class NewSkillsLibraryCommand extends Command {
     /** The action command this command will issue. */
     public static final String                  CMD_NEW_LIBRARY = "NewSkillsLibrary";
     /** The singleton {@link NewSkillsLibraryCommand}. */

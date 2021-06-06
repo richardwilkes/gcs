@@ -27,7 +27,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JPanel;
 
 /** Provides the "About" command. */
-public class AboutCommand extends Command implements AboutHandler {
+public final class AboutCommand extends Command implements AboutHandler {
     /** The action command this command will issue. */
     public static final String       CMD_ABOUT = "About";
     /** The singleton {@link AboutCommand}. */

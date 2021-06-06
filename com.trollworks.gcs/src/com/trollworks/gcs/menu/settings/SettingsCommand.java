@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-public class SettingsCommand extends Command {
+public final class SettingsCommand extends Command {
     public static final SettingsCommand PER_SHEET = new SettingsCommand(false);
     public static final SettingsCommand DEFAULTS  = new SettingsCommand(true);
     private             boolean         mForDefaults;

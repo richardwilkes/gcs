@@ -18,7 +18,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class ThemeSettingsCommand extends Command {
+public final class ThemeSettingsCommand extends Command {
     public static final ThemeSettingsCommand INSTANCE = new ThemeSettingsCommand();
 
     private ThemeSettingsCommand() {

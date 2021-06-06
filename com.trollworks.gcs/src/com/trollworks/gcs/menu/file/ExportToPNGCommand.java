@@ -26,7 +26,7 @@ import java.awt.event.ActionEvent;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-public class ExportToPNGCommand extends Command {
+public final class ExportToPNGCommand extends Command {
     public static final ExportToPNGCommand INSTANCE = new ExportToPNGCommand();
 
     private ExportToPNGCommand() {

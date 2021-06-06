@@ -25,7 +25,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Equipment" command. */
-public class NewEquipmentCommand extends Command {
+public final class NewEquipmentCommand extends Command {
     /** The action command this command will issue. */
     public static final String              CMD_NEW_EQUIPMENT                 = "NewEquipment";
     /** The action command this command will issue. */

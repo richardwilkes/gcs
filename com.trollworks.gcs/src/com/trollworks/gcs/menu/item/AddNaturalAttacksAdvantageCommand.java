@@ -30,7 +30,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /** Provides the "Add Natural Attacks Advantage" command. */
-public class AddNaturalAttacksAdvantageCommand extends Command {
+public final class AddNaturalAttacksAdvantageCommand extends Command {
     /** The action command this command will issue. */
     public static final String                            CMD      = "AddNaturalAttacksAdvantage";
     /** The "Add Natural Attacks Advantage" command. */

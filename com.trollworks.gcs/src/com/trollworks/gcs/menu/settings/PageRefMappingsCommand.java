@@ -18,7 +18,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class PageRefMappingsCommand extends Command {
+public final class PageRefMappingsCommand extends Command {
     public static final PageRefMappingsCommand INSTANCE = new PageRefMappingsCommand();
 
     private PageRefMappingsCommand() {

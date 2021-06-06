@@ -53,7 +53,7 @@ import java.util.Map;
 import javax.swing.ToolTipManager;
 
 /** Provides the implementation of preferences. Note: not all preferences emit notifications. */
-public class Preferences extends ChangeableData {
+public final class Preferences extends ChangeableData {
     private static final int MINIMUM_VERSION = 1;
 
     private static final String DEPRECATED_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Editor for {@link EquipmentModifierList}s. */
-public class EquipmentModifierListEditor extends ModifierListEditor {
+public final class EquipmentModifierListEditor extends ModifierListEditor {
     /**
      * @param equipment The {@link Equipment} to edit.
      * @return An instance of {@link EquipmentModifierListEditor}.

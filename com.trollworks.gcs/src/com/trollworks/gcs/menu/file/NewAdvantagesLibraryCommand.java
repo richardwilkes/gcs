@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Advantages Library" command. */
-public class NewAdvantagesLibraryCommand extends Command {
+public final class NewAdvantagesLibraryCommand extends Command {
     /** The action command this command will issue. */
     public static final String                      CMD_NEW_LIBRARY = "NewAdvantagesLibrary";
     /** The singleton {@link NewAdvantagesLibraryCommand}. */

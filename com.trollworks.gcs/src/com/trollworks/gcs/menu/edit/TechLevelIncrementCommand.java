@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Increment" command. */
-public class TechLevelIncrementCommand extends Command {
+public final class TechLevelIncrementCommand extends Command {
     /** The action command this command will issue. */
     public static final String                    CMD_INCREMENT_TL = "IncrementTL";
     /** The singleton {@link TechLevelIncrementCommand}. */

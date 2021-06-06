@@ -40,7 +40,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
 /** Asks the user to enable/disable advantage modifiers. */
-public class AdvantageModifierEnabler extends JPanel {
+public final class AdvantageModifierEnabler extends JPanel {
     private Advantage           mAdvantage;
     private JCheckBox[]         mEnabled;
     private AdvantageModifier[] mModifiers;

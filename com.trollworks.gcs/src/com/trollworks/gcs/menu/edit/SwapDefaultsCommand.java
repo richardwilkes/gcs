@@ -21,7 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Swaps the default values of two skills that default to each other */
-public class SwapDefaultsCommand extends Command {
+public final class SwapDefaultsCommand extends Command {
     /** The action command this command will issue. */
     public static final String              CMD_SWAP_DEFAULTS = "SwapDefaults";
     /** The singleton {@link SwapDefaultsCommand}. */

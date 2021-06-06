@@ -40,7 +40,7 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
 /** A window for editing menu key settings. */
-public class MenuKeySettingsWindow extends BaseWindow implements CloseHandler {
+public final class MenuKeySettingsWindow extends BaseWindow implements CloseHandler {
     private static final String                NONE = "NONE";
     private static       boolean               LOADED;
     private static       MenuKeySettingsWindow INSTANCE;

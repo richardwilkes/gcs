@@ -54,7 +54,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 
-public class ExportToGURPSCalculatorCommand extends Command {
+public final class ExportToGURPSCalculatorCommand extends Command {
     /** The singleton {@link ExportToGURPSCalculatorCommand}. */
     public static final  ExportToGURPSCalculatorCommand INSTANCE     = new ExportToGURPSCalculatorCommand();
     private static final Pattern                        UUID_PATTERN = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");

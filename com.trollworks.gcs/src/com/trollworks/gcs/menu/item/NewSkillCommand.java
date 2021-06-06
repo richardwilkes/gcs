@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Skill" command. */
-public class NewSkillCommand extends Command {
+public final class NewSkillCommand extends Command {
     /** The action command this command will issue. */
     public static final String          CMD_NEW_SKILL           = "NewSkill";
     /** The action command this command will issue. */

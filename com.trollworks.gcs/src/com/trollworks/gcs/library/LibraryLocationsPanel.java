@@ -31,7 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-public class LibraryLocationsPanel extends JPanel {
+public final class LibraryLocationsPanel extends JPanel {
     private List<LibraryFields> mFields;
     private JButton             mApplyButton;
     private JButton             mCancelButton;

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** ThemeColor provides a dynamic color that tracks the current {@link Theme}. */
-public class ThemeColor extends Color {
+public final class ThemeColor extends Color {
     public static final List<ThemeColor> ALL = new ArrayList<>();
 
     public static final ThemeColor CURRENT    = new ThemeColor("current", I18n.Text("Current"), new Color(252, 242, 196));
@@ -55,37 +55,37 @@ public class ThemeColor extends Color {
     }
 
     /** @return The index to use for this {@link ThemeColor}. */
-    public final int getIndex() {
+    public int getIndex() {
         return mIndex;
     }
 
     /** @return The key to use for this {@link ThemeColor}. */
-    public final String getKey() {
+    public String getKey() {
         return mKey;
     }
 
     /** @return The default color value. */
-    public final Color getDefault() {
+    public Color getDefault() {
         return mDefault;
     }
 
     @Override
-    public final int getRGB() {
+    public int getRGB() {
         return Theme.current().getColor(mIndex).getRGB();
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         return mIndex;
     }
 
     @Override
-    public final boolean equals(Object obj) {
+    public boolean equals(Object obj) {
         return obj instanceof ThemeColor && ((ThemeColor) obj).mIndex == mIndex;
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         return mName;
     }
 }

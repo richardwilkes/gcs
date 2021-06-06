@@ -32,7 +32,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 /** Provides the "Toggle State" command. */
-public class ToggleStateCommand extends Command {
+public final class ToggleStateCommand extends Command {
     /** The action command this command will issue. */
     public static final String             CMD_TOGGLE_STATE = "ToggleState";
     /** The singleton {@link ToggleStateCommand}. */

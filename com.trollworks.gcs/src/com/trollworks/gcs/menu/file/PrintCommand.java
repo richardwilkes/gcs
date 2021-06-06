@@ -34,7 +34,7 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.standard.DialogTypeSelection;
 
 /** Provides the "Print..." command. */
-public class PrintCommand extends Command implements PrintFilesHandler {
+public final class PrintCommand extends Command implements PrintFilesHandler {
     /** The action command this command will issue. */
     public static final String CMD_PRINT = "Print";
 

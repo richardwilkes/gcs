@@ -17,7 +17,7 @@ import com.trollworks.gcs.utility.UpdateChecker;
 import java.awt.event.ActionEvent;
 
 /** Provides the "Update App" command. */
-public class UpdateAppCommand extends Command {
+public final class UpdateAppCommand extends Command {
     /** The action command this command will issue. */
     public static final String           CMD_CHECK_FOR_UPDATE = "CheckForAppUpdate";
     /** The singleton {@link UpdateAppCommand}. */

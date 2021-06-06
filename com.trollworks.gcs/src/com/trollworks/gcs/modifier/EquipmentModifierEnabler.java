@@ -37,7 +37,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
 /** Asks the user to enable/disable equipment modifiers. */
-public class EquipmentModifierEnabler extends JPanel {
+public final class EquipmentModifierEnabler extends JPanel {
     private Equipment           mEquipment;
     private JCheckBox[]         mEnabled;
     private EquipmentModifier[] mModifiers;

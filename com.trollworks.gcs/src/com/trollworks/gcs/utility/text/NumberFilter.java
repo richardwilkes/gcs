@@ -20,7 +20,7 @@ import java.text.NumberFormat;
 import javax.swing.JTextField;
 
 /** A standard numeric key entry filter. */
-public class NumberFilter implements KeyListener {
+public final class NumberFilter implements KeyListener {
     private static final char       GROUP_CHAR;
     private static final char       DECIMAL_CHAR;
     private              JTextField mField;

@@ -30,7 +30,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /** A window for editing application preferences. */
-public class PreferencesWindow extends BaseWindow implements ActionListener, ChangeListener, CloseHandler {
+public final class PreferencesWindow extends BaseWindow implements ActionListener, ChangeListener, CloseHandler {
     private static PreferencesWindow INSTANCE;
     private        JTabbedPane       mTabPanel;
     private        JButton           mResetButton;

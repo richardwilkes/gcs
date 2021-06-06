@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Decrement" command. */
-public class TechLevelDecrementCommand extends Command {
+public final class TechLevelDecrementCommand extends Command {
     /** The action command this command will issue. */
     public static final String                    CMD_DECREMENT_TL = "DecrementTL";
     /** The singleton {@link TechLevelDecrementCommand}. */

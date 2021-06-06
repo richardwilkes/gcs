@@ -17,7 +17,7 @@ import java.util.Comparator;
  * A string comparator that will honor numeric values embedded in strings and treat them as numbers
  * for comparison purposes.
  */
-public class NumericComparator implements Comparator<String> {
+public final class NumericComparator implements Comparator<String> {
     /** The standard caseless, numeric-aware string comparator. */
     public static final NumericComparator CASELESS_COMPARATOR = new NumericComparator(true);
     /** The standard case-sensitive, numeric-aware string comparator. */
@@ -36,7 +36,7 @@ public class NumericComparator implements Comparator<String> {
      * @return A negative integer, zero, or a positive integer if the first argument is less than,
      *         equal to, or greater than the second.
      */
-    public static final int caselessCompareStrings(String s0, String s1) {
+    public static int caselessCompareStrings(String s0, String s1) {
         return CASELESS_COMPARATOR.compare(s0, s1);
     }
 
@@ -48,7 +48,7 @@ public class NumericComparator implements Comparator<String> {
      * @return A negative integer, zero, or a positive integer if the first argument is less than,
      *         equal to, or greater than the second.
      */
-    public static final int compareStrings(String s0, String s1) {
+    public static int compareStrings(String s0, String s1) {
         return COMPARATOR.compare(s0, s1);
     }
 

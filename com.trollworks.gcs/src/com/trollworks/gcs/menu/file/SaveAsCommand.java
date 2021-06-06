@@ -24,7 +24,7 @@ import java.awt.event.KeyEvent;
 import java.nio.file.Path;
 
 /** Provides the "Save As..." command. */
-public class SaveAsCommand extends Command {
+public final class SaveAsCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_SAVE_AS = "SaveAs";
 

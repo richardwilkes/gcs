@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Spell" command. */
-public class NewSpellCommand extends Command {
+public final class NewSpellCommand extends Command {
     /** The action command this command will issue. */
     public static final String          CMD_SPELL              = "NewSpell";
     /** The action command this command will issue. */

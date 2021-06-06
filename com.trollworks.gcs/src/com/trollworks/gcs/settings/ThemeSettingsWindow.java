@@ -42,7 +42,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 /** A window for editing theme settings. */
-public class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
+public final class ThemeSettingsWindow extends BaseWindow implements CloseHandler {
     private static ThemeSettingsWindow INSTANCE;
     private        FontPanel[]         mFontPanels;
     private        List<ColorTracker>  mColorWells;

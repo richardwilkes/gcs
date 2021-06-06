@@ -31,7 +31,7 @@ import java.util.Map;
 import javax.swing.UIManager;
 
 /** Provides standardized font access and utilities. */
-public class Fonts {
+public final class Fonts {
     /** The name of the Font Awesome Brands font. */
     public static final  String             FONT_AWESOME_BRANDS  = "Font Awesome 5 Brands Regular";
     /** The name of the Font Awesome Regular font. */

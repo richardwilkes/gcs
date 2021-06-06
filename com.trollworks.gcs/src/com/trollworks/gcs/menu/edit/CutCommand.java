@@ -20,7 +20,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.text.JTextComponent;
 
 /** Provides the "Cut" command. */
-public class CutCommand extends Command {
+public final class CutCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_CUT = "Cut";
 

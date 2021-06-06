@@ -865,11 +865,11 @@ public final class Bundler {
         void processFile(Path path) throws IOException;
     }
 
-    static class FileScanner implements FileVisitor<Path> {
+    static final class FileScanner implements FileVisitor<Path> {
         private Path    mPath;
         private Handler mHandler;
 
-        public static final void walk(Path path, Handler handler) {
+        public static void walk(Path path, Handler handler) {
             try {
                 Files.walkFileTree(path, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new FileScanner(path, handler));
             } catch (Exception exception) {

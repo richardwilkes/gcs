@@ -31,7 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 /** Provides a background check for updates. */
-public class UpdateChecker implements Runnable {
+public final class UpdateChecker implements Runnable {
     private static String  APP_RESULT;
     private static String  APP_RELEASE_NOTES;
     private static boolean NEW_APP_VERSION_AVAILABLE;

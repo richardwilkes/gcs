@@ -42,7 +42,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 /** Asks the user to name items that have been marked to be customized. */
-public class Namer extends JPanel {
+public final class Namer extends JPanel {
     private ListRow          mRow;
     private List<JTextField> mFields;
 

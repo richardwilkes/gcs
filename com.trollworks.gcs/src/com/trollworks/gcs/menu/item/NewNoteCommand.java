@@ -25,7 +25,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Note" command. */
-public class NewNoteCommand extends Command {
+public final class NewNoteCommand extends Command {
     /** The action command this command will issue. */
     public static final String         CMD_NEW_NOTE           = "NewNote";
     /** The action command this command will issue. */

@@ -43,7 +43,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A window for editing page reference lookup settings. */
-public class PageRefMappingsWindow extends BaseWindow implements CloseHandler {
+public final class PageRefMappingsWindow extends BaseWindow implements CloseHandler {
     private static PageRefMappingsWindow INSTANCE;
     private        BandedPanel           mPanel;
 

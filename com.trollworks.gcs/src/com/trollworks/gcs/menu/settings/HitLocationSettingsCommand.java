@@ -19,7 +19,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class HitLocationSettingsCommand extends Command {
+public final class HitLocationSettingsCommand extends Command {
     public static final HitLocationSettingsCommand PER_SHEET = new HitLocationSettingsCommand(false);
     public static final HitLocationSettingsCommand DEFAULTS  = new HitLocationSettingsCommand(true);
     private             boolean                    mForDefaults;

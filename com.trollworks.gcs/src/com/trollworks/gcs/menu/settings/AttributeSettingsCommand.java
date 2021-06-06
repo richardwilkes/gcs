@@ -19,7 +19,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class AttributeSettingsCommand extends Command {
+public final class AttributeSettingsCommand extends Command {
     public static final AttributeSettingsCommand PER_SHEET = new AttributeSettingsCommand(false);
     public static final AttributeSettingsCommand DEFAULTS  = new AttributeSettingsCommand(true);
     private             boolean                  mForDefaults;

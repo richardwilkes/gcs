@@ -22,7 +22,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
 /** Provides the "Delete" command. */
-public class DeleteCommand extends Command {
+public final class DeleteCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_DELETE = "Delete";
 

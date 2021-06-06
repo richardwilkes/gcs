@@ -27,7 +27,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Quit"/"Exit" command. */
-public class QuitCommand extends Command implements QuitHandler {
+public final class QuitCommand extends Command implements QuitHandler {
     /** The action command this command will issue. */
     public static final String CMD_QUIT = "Quit";
 

@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Advantage Modifiers Library" command. */
-public class NewAdvantageModifiersLibraryCommand extends Command {
+public final class NewAdvantageModifiersLibraryCommand extends Command {
     /** The action command this command will issue. */
     public static final String                              CMD_NEW_LIBRARY = "NewAdvantageModifiersLibrary";
     /** The singleton {@link NewAdvantageModifiersLibraryCommand}. */

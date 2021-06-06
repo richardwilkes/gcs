@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides "Decrease Skill Level" command */
-public class SkillLevelDecrementCommand extends Command {
+public final class SkillLevelDecrementCommand extends Command {
     public static final String                     CMD_DECREASE_LEVEL = "DecreaseLevel";
     public static final SkillLevelDecrementCommand INSTANCE           = new SkillLevelDecrementCommand();
 

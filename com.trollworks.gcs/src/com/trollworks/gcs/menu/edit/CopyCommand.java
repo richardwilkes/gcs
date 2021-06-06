@@ -20,7 +20,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.text.JTextComponent;
 
 /** Provides the "Copy" command. */
-public class CopyCommand extends Command {
+public final class CopyCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_COPY = "Copy";
 

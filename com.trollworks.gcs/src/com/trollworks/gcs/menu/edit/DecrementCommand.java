@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Decrement" command. */
-public class DecrementCommand extends Command {
+public final class DecrementCommand extends Command {
     /** The action command this command will issue. */
     public static final String           CMD_DECREMENT = "Decrement";
     /** The singleton {@link DecrementCommand}. */

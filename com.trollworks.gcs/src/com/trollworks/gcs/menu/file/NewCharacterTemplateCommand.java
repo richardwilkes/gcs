@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Character Template" command. */
-public class NewCharacterTemplateCommand extends Command {
+public final class NewCharacterTemplateCommand extends Command {
     /** The action command this command will issue. */
     public static final String                      CMD_NEW_CHARACTER_TEMPLATE = "NewCharacterTemplate";
     /** The singletone {@link NewCharacterTemplateCommand}. */

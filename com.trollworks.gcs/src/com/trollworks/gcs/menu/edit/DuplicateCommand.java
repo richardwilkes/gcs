@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Duplicate" command. */
-public class DuplicateCommand extends Command {
+public final class DuplicateCommand extends Command {
     /** The action command this command will issue. */
     public static final String           CMD_DUPLICATE = "Duplicate";
     /** The singleton {@link DuplicateCommand}. */

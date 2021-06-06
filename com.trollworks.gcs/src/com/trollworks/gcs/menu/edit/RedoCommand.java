@@ -19,7 +19,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.undo.UndoManager;
 
 /** Provides the "Redo" command. */
-public class RedoCommand extends Command {
+public final class RedoCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_REDO = "Redo";
 

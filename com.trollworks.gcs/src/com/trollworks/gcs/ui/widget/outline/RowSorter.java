@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 /** Sorts rows by the sort sequence specified in the associated columns. */
-public class RowSorter implements Comparator<Row> {
+public final class RowSorter implements Comparator<Row> {
     private Column[] mSortingOrder;
 
     private RowSorter(List<Column> columns) {

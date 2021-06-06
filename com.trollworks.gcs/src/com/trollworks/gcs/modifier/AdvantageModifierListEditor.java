@@ -18,7 +18,7 @@ import com.trollworks.gcs.ui.widget.outline.Outline;
 import java.util.List;
 
 /** Editor for {@link AdvantageModifierList}s. */
-public class AdvantageModifierListEditor extends ModifierListEditor {
+public final class AdvantageModifierListEditor extends ModifierListEditor {
     /**
      * @param advantage The {@link Advantage} to edit.
      * @return An instance of {@link AdvantageModifierListEditor}.

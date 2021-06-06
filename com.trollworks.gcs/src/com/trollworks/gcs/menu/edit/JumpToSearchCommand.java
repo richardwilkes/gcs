@@ -18,7 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Jump To Search" command. */
-public class JumpToSearchCommand extends Command {
+public final class JumpToSearchCommand extends Command {
     /** The singleton {@link JumpToSearchCommand}. */
     public static final JumpToSearchCommand INSTANCE = new JumpToSearchCommand();
 

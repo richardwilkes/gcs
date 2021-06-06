@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character.names;
 
 /** Generates random names from the 1990 U.S. census data. */
-public class USCensusNames extends Names {
+public final class USCensusNames extends Names {
     /** The one and only global instance of this class. */
     public static final  USCensusNames INSTANCE = new USCensusNames();
     private static final String[]      FEMALE   = loadNames("USCensus1990FemaleFirstNames.txt", "Mary");

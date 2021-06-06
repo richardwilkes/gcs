@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Note Library" command. */
-public class NewNoteLibraryCommand extends Command {
+public final class NewNoteLibraryCommand extends Command {
     /** The action command this command will issue. */
     public static final String                CMD_NEW_LIBRARY = "NewNoteLibrary";
     /** The singleton {@link NewNoteLibraryCommand}. */

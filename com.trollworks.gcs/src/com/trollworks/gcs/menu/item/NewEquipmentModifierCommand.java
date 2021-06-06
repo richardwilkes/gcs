@@ -22,7 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Equipment Modifier" command. */
-public class NewEquipmentModifierCommand extends Command {
+public final class NewEquipmentModifierCommand extends Command {
     public static final String                      CMD_NEW_EQUIPMENT_MODIFIER           = "NewEquipmentModifier";
     public static final String                      CMD_NEW_EQUIPMENT_MODIFIER_CONTAINER = "NewEquipmentModifierContainer";
     public static final NewEquipmentModifierCommand INSTANCE                             = new NewEquipmentModifierCommand(false, I18n.Text("New Equipment Modifier"), CMD_NEW_EQUIPMENT_MODIFIER, COMMAND_MODIFIER);

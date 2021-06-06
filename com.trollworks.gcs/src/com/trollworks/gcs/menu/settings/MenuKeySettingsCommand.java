@@ -18,7 +18,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public class MenuKeySettingsCommand extends Command {
+public final class MenuKeySettingsCommand extends Command {
     public static final MenuKeySettingsCommand INSTANCE = new MenuKeySettingsCommand();
 
     private MenuKeySettingsCommand() {

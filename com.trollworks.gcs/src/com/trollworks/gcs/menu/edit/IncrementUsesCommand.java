@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Increment Uses" command. */
-public class IncrementUsesCommand extends Command {
+public final class IncrementUsesCommand extends Command {
     /** The action command this command will issue. */
     public static final String               CMD_INCREMENT_USES = "IncrementUses";
     /** The singleton {@link IncrementUsesCommand}. */

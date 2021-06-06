@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "Increment" command. */
-public class IncrementCommand extends Command {
+public final class IncrementCommand extends Command {
     /** The action command this command will issue. */
     public static final String           CMD_INCREMENT = "Increment";
     /** The singleton {@link IncrementCommand}. */

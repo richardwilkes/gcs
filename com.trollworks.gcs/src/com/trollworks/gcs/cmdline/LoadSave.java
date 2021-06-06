@@ -33,7 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class LoadSave implements Runnable {
+public final class LoadSave implements Runnable {
     private List<Path> mPaths;
 
     public static void process(List<Path> paths) {

@@ -23,7 +23,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Advantage Modifier" command. */
-public class NewAdvantageModifierCommand extends Command {
+public final class NewAdvantageModifierCommand extends Command {
     public static final String                      CMD_NEW_ADVANTAGE_MODIFIER           = "NewAdvantageModifier";
     public static final String                      CMD_NEW_ADVANTAGE_MODIFIER_CONTAINER = "NewAdvantageModifierContainer";
     public static final NewAdvantageModifierCommand INSTANCE                             = new NewAdvantageModifierCommand(false, I18n.Text("New Advantage Modifier"), CMD_NEW_ADVANTAGE_MODIFIER, COMMAND_MODIFIER);

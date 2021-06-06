@@ -20,7 +20,7 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 
 /** Provides the "New Spells Library" command. */
-public class NewSpellsLibraryCommand extends Command {
+public final class NewSpellsLibraryCommand extends Command {
     /** The action command this command will issue. */
     public static final String                  CMD_NEW_LIBRARY = "NewSpellsLibrary";
     /** The singleton {@link NewSpellsLibraryCommand}. */

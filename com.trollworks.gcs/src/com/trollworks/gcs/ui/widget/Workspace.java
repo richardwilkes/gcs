@@ -29,7 +29,7 @@ import java.awt.Window;
 import java.util.List;
 
 /** The workspace, where all files can be viewed and edited. */
-public class Workspace extends BaseWindow implements SignificantFrame, JumpToSearchTarget {
+public final class Workspace extends BaseWindow implements SignificantFrame, JumpToSearchTarget {
     private Dock mDock;
 
     /** @return The {@link Workspace}. */

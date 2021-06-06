@@ -22,7 +22,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.text.JTextComponent;
 
 /** Provides the "Paste" command. */
-public class PasteCommand extends Command {
+public final class PasteCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_PASTE = "Paste";
 

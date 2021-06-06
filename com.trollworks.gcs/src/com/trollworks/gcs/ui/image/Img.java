@@ -37,7 +37,7 @@ import javax.swing.Icon;
 /**
  * Provides a {@link BufferedImage} that implements Swing's {@link Icon} interface for convenience.
  */
-public class Img extends BufferedImage implements Icon {
+public final class Img extends BufferedImage implements Icon {
     private Map<Object, Img> mDerived = new HashMap<>();
 
     /**

@@ -20,7 +20,7 @@ import java.awt.desktop.PreferencesEvent;
 import java.awt.desktop.PreferencesHandler;
 import java.awt.event.ActionEvent;
 
-public class PreferencesCommand extends Command implements PreferencesHandler {
+public final class PreferencesCommand extends Command implements PreferencesHandler {
     public static final PreferencesCommand INSTANCE = new PreferencesCommand();
 
     private PreferencesCommand() {

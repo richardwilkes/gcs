@@ -22,7 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 /** Provides the "New Character Sheet" command. */
-public class NewCharacterSheetCommand extends Command {
+public final class NewCharacterSheetCommand extends Command {
     /** The action command this command will issue. */
     public static final String                   CMD_NEW_CHARACTER_SHEET = "NewCharacterSheet";
     /** The singleton {@link NewCharacterSheetCommand}. */

@@ -24,7 +24,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /** Dynamically enables menu items just prior to them being used. */
-public class DynamicMenuEnabler implements KeyEventDispatcher, MenuListener {
+public final class DynamicMenuEnabler implements KeyEventDispatcher, MenuListener {
     private static final HashMap<KeyStroke, Command> MAP      = new HashMap<>();
     private static final DynamicMenuEnabler          INSTANCE = new DynamicMenuEnabler();
 

@@ -62,7 +62,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
 /** A window for editing attribute settings. */
-public class AttributeSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
+public final class AttributeSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
     private static Map<UUID, AttributeSettingsWindow> INSTANCES = new HashMap<>();
     private        GURPSCharacter                     mCharacter;
     private        AttributeListPanel                 mListPanel;

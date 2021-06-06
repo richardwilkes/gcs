@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /** Provides the "Open..." command. */
-public class OpenCommand extends Command implements OpenFilesHandler {
+public final class OpenCommand extends Command implements OpenFilesHandler {
     /** The action command this command will issue. */
     public static final String CMD_OPEN = "Open";
 

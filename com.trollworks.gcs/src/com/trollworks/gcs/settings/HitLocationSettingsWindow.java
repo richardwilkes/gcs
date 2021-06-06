@@ -55,7 +55,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 
 /** A window for editing hit location settings. */
-public class HitLocationSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
+public final class HitLocationSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
     private static Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
     private        GURPSCharacter                       mCharacter;
     private        HitLocationTablePanel                mLocationsPanel;

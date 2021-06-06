@@ -20,7 +20,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.text.JTextComponent;
 
 /** Provides the "Select All" command. */
-public class SelectAllCommand extends Command {
+public final class SelectAllCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_SELECT_ALL = "SelectAll";
 

@@ -28,7 +28,7 @@ import javax.swing.SwingUtilities;
  * Captures all mouse events in a {@link JRootPane} and redirects them to a particular component or
  * one of its children.
  */
-public class MouseCapture implements MouseListener, MouseMotionListener, HierarchyListener {
+public final class MouseCapture implements MouseListener, MouseMotionListener, HierarchyListener {
     private static final Map<Component, MouseCapture> MAP = new HashMap<>();
     private              Component                    mGlassPane;
     private              Component                    mCaptureComponent;

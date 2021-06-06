@@ -25,7 +25,7 @@ import java.util.Collection;
 import javax.swing.JOptionPane;
 
 /** Provides the "Save" command. */
-public class SaveCommand extends Command {
+public final class SaveCommand extends Command {
     /** The action command this command will issue. */
     public static final String CMD_SAVE = "Save";
 

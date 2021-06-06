@@ -43,7 +43,7 @@ import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 import javax.swing.border.CompoundBorder;
 
-public class LibraryUpdater implements Runnable {
+public final class LibraryUpdater implements Runnable {
     private static final ExecutorService QUEUE = Executors.newSingleThreadExecutor();
     private              String          mResult;
     private              JDialog         mDialog;
@@ -78,7 +78,7 @@ public class LibraryUpdater implements Runnable {
         }
     }
 
-    public static final void download(Library library, Release release) {
+    public static void download(Library library, Release release) {
         LibraryUpdater lib = new LibraryUpdater(library, release);
         if (GraphicsEnvironment.isHeadless()) {
             FutureTask<Object> task = new FutureTask<>(lib, null);
