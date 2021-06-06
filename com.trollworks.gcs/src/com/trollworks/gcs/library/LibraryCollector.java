@@ -57,7 +57,7 @@ public final class LibraryCollector implements Comparator<Object> {
     }
 
     private void traverse(Path dir) throws IOException {
-        if (!shouldSkip(dir)) {
+        if (shouldProcess(dir)) {
             mDirs.add(dir.normalize().toAbsolutePath());
             mStack.add(mCurrent);
             mCurrent = new ArrayList<>();
@@ -69,7 +69,7 @@ public final class LibraryCollector implements Comparator<Object> {
                 for (Path path : stream) {
                     if (Files.isDirectory(path)) {
                         traverse(path);
-                    } else if (!shouldSkip(path)) {
+                    } else if (shouldProcess(path)) {
                         String ext = PathUtils.getExtension(path.getFileName());
                         for (FileType one : FileType.ALL_OPENABLE) {
                             if (one.matchExtension(ext)) {
@@ -104,7 +104,7 @@ public final class LibraryCollector implements Comparator<Object> {
         return "";
     }
 
-    private static boolean shouldSkip(Path path) {
-        return path.getFileName().toString().startsWith(".");
+    private static boolean shouldProcess(Path path) {
+        return !path.getFileName().toString().startsWith(".");
     }
 }

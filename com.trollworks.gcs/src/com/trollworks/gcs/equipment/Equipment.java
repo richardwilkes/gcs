@@ -310,7 +310,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         updateExtendedWeight();
     }
 
-    private boolean updateExtendedValue() {
+    private void updateExtendedValue() {
         Fixed6 savedValue = mExtendedValue;
         int    count      = getChildCount();
         mExtendedValue = new Fixed6(mQuantity).mul(getAdjustedValue());
@@ -321,12 +321,10 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (!mExtendedValue.equals(savedValue)) {
             notifyOfChange();
-            return true;
         }
-        return false;
     }
 
-    private boolean updateExtendedWeight() {
+    private void updateExtendedWeight() {
         WeightValue saved          = mExtendedWeight;
         WeightValue savedForSkills = mExtendedWeightForSkills;
         int         count          = getChildCount();
@@ -398,9 +396,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         }
         if (!saved.equals(mExtendedWeight) || !savedForSkills.equals(mExtendedWeightForSkills)) {
             notifyOfChange();
-            return true;
         }
-        return false;
     }
 
     /** @return The quantity. */

@@ -25,11 +25,9 @@ public class Stack<T> extends ArrayList<T> {
      * Pushes an item onto the top of the stack.
      *
      * @param item The item to be pushed onto the stack.
-     * @return The {@code item} argument.
      */
-    public T push(T item) {
+    public void push(T item) {
         add(item);
-        return item;
     }
 
     /**

@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Skills Library" command. */
 public final class NewSkillsLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                  CMD_NEW_LIBRARY = "NewSkillsLibrary";
-    /** The singleton {@link NewSkillsLibraryCommand}. */
-    public static final NewSkillsLibraryCommand INSTANCE        = new NewSkillsLibraryCommand();
+    public static final NewSkillsLibraryCommand INSTANCE = new NewSkillsLibraryCommand();
 
     private NewSkillsLibraryCommand() {
-        super(I18n.Text("New Skills Library"), CMD_NEW_LIBRARY);
+        super(I18n.Text("New Skills Library"), "NewSkillsLibrary");
     }
 
     @Override
@@ -36,19 +32,12 @@ public final class NewSkillsLibraryCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newSkillsLibrary();
-    }
-
-    /** @return The newly created a new {@link SkillsDockable}. */
-    public static SkillsDockable newSkillsLibrary() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             SkillList list = new SkillList();
             list.getModel().setLocked(false);
             SkillsDockable dockable = new SkillsDockable(list);
             library.dockLibrary(dockable);
-            return dockable;
         }
-        return null;
     }
 }

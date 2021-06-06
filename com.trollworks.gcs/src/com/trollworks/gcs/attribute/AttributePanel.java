@@ -212,12 +212,11 @@ public class AttributePanel extends JPanel {
         return field;
     }
 
-    private JComboBox<AttributeType> addAttributeTypeCombo(Container container, AttributeType value, ItemListener listener) {
+    private void addAttributeTypeCombo(Container container, AttributeType value, ItemListener listener) {
         JComboBox<AttributeType> combo = new JComboBox<>(AttributeType.values());
         combo.setSelectedItem(value);
         combo.addItemListener(listener);
         container.add(combo);
-        return combo;
     }
 
     public void focusIDField() {

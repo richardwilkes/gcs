@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Note Library" command. */
 public final class NewNoteLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                CMD_NEW_LIBRARY = "NewNoteLibrary";
-    /** The singleton {@link NewNoteLibraryCommand}. */
-    public static final NewNoteLibraryCommand INSTANCE        = new NewNoteLibraryCommand();
+    public static final NewNoteLibraryCommand INSTANCE = new NewNoteLibraryCommand();
 
     private NewNoteLibraryCommand() {
-        super(I18n.Text("New Note Library"), CMD_NEW_LIBRARY);
+        super(I18n.Text("New Note Library"), "NewNoteLibrary");
     }
 
     @Override
@@ -36,19 +32,12 @@ public final class NewNoteLibraryCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newNoteLibrary();
-    }
-
-    /** @return The newly created a new {@link NotesDockable}. */
-    public static NotesDockable newNoteLibrary() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             NoteList list = new NoteList();
             list.getModel().setLocked(false);
             NotesDockable dockable = new NotesDockable(list);
             library.dockLibrary(dockable);
-            return dockable;
         }
-        return null;
     }
 }

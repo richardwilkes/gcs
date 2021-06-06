@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Equipment Modifiers Library" command. */
 public final class NewEquipmentModifiersLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                              CMD_NEW_LIBRARY = "NewEquipmentModifiersLibrary";
-    /** The singleton {@link NewEquipmentModifiersLibraryCommand}. */
-    public static final NewEquipmentModifiersLibraryCommand INSTANCE        = new NewEquipmentModifiersLibraryCommand();
+    public static final NewEquipmentModifiersLibraryCommand INSTANCE = new NewEquipmentModifiersLibraryCommand();
 
     private NewEquipmentModifiersLibraryCommand() {
-        super(I18n.Text("New Equipment Modifiers Library"), CMD_NEW_LIBRARY);
+        super(I18n.Text("New Equipment Modifiers Library"), "NewEquipmentModifiersLibrary");
     }
 
     @Override
@@ -36,19 +32,12 @@ public final class NewEquipmentModifiersLibraryCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newEquipmentModifiersLibrary();
-    }
-
-    /** @return The newly created a new {@link EquipmentModifiersDockable}. */
-    public static EquipmentModifiersDockable newEquipmentModifiersLibrary() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             EquipmentModifierList list = new EquipmentModifierList();
             list.getModel().setLocked(false);
             EquipmentModifiersDockable dockable = new EquipmentModifiersDockable(list);
             library.dockLibrary(dockable);
-            return dockable;
         }
-        return null;
     }
 }

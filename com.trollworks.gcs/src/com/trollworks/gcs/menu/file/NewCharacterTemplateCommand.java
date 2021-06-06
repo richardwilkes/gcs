@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Character Template" command. */
 public final class NewCharacterTemplateCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                      CMD_NEW_CHARACTER_TEMPLATE = "NewCharacterTemplate";
-    /** The singletone {@link NewCharacterTemplateCommand}. */
-    public static final NewCharacterTemplateCommand INSTANCE                   = new NewCharacterTemplateCommand();
+    public static final NewCharacterTemplateCommand INSTANCE = new NewCharacterTemplateCommand();
 
     private NewCharacterTemplateCommand() {
-        super(I18n.Text("New Character Template"), CMD_NEW_CHARACTER_TEMPLATE);
+        super(I18n.Text("New Character Template"), "NewCharacterTemplate");
     }
 
     @Override
@@ -36,17 +32,10 @@ public final class NewCharacterTemplateCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newTemplate();
-    }
-
-    /** @return The newly created a new {@link TemplateDockable}. */
-    public static TemplateDockable newTemplate() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             TemplateDockable template = new TemplateDockable(new Template());
             library.dockTemplate(template);
-            return template;
         }
-        return null;
     }
 }

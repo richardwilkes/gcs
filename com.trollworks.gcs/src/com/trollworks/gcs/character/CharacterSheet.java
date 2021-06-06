@@ -138,7 +138,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         setOpaque(false);
         mCharacter = character;
         mLastPage = -1;
-        if (!GraphicsUtilities.inHeadlessPrintMode()) {
+        if (GraphicsUtilities.hasUserDisplay()) {
             setDropTarget(new DropTarget(this, this));
         }
         mCharacter.addChangeListener(this);

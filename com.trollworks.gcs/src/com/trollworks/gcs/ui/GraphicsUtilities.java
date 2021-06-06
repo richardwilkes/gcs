@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -23,20 +24,20 @@ import java.awt.print.PrinterGraphics;
 
 /** Provides general graphics settings and manipulation. */
 public final class GraphicsUtilities {
-    private static boolean       HEADLESS_PRINT_MODE;
+    private static boolean       ALLOW_USER_DISPLAY = true;
     private static BufferedImage FALLBACK_GRAPHICS_BACKING_STORE;
 
     private GraphicsUtilities() {
     }
 
-    /** @return Whether the headless print mode is enabled. */
-    public static boolean inHeadlessPrintMode() {
-        return HEADLESS_PRINT_MODE;
+    /** @return {@code true} if we're not in a headless environment and no overrides are in place. */
+    public static boolean hasUserDisplay() {
+        return ALLOW_USER_DISPLAY && !GraphicsEnvironment.isHeadless();
     }
 
-    /** @param inHeadlessPrintMode Whether the headless print mode is enabled. */
-    public static void setHeadlessPrintMode(boolean inHeadlessPrintMode) {
-        HEADLESS_PRINT_MODE = inHeadlessPrintMode;
+    /** @param allow Pass in {@code false} to mimic headless behavior. */
+    public static void setAllowUserDisplay(boolean allow) {
+        ALLOW_USER_DISPLAY = allow;
     }
 
     /**

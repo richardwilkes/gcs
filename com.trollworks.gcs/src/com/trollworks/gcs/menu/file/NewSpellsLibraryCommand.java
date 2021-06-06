@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Spells Library" command. */
 public final class NewSpellsLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                  CMD_NEW_LIBRARY = "NewSpellsLibrary";
-    /** The singleton {@link NewSpellsLibraryCommand}. */
-    public static final NewSpellsLibraryCommand INSTANCE        = new NewSpellsLibraryCommand();
+    public static final NewSpellsLibraryCommand INSTANCE = new NewSpellsLibraryCommand();
 
     private NewSpellsLibraryCommand() {
-        super(I18n.Text("New Spells Library"), CMD_NEW_LIBRARY);
+        super(I18n.Text("New Spells Library"), "NewSpellsLibrary");
     }
 
     @Override
@@ -36,19 +32,12 @@ public final class NewSpellsLibraryCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newSpellsLibrary();
-    }
-
-    /** @return The newly created a new {@link SpellsDockable}. */
-    public static SpellsDockable newSpellsLibrary() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             SpellList list = new SpellList();
             list.getModel().setLocked(false);
             SpellsDockable dockable = new SpellsDockable(list);
             library.dockLibrary(dockable);
-            return dockable;
         }
-        return null;
     }
 }

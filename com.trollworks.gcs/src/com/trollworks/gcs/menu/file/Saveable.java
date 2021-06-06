@@ -41,7 +41,7 @@ public interface Saveable extends FileProxy {
      * Called to actually save the contents to a path.
      *
      * @param path The path to save to.
-     * @return The path(s) actually written to.
+     * @return {@code} true on success.
      */
-    Path[] saveTo(Path path);
+    boolean saveTo(Path path);
 }

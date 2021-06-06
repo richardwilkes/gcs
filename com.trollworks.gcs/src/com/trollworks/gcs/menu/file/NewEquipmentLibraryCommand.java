@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Equipment Library" command. */
 public final class NewEquipmentLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                     CMD_NEW_LIBRARY = "NewEquipmentLibrary";
-    /** The singleton {@link NewEquipmentLibraryCommand}. */
-    public static final NewEquipmentLibraryCommand INSTANCE        = new NewEquipmentLibraryCommand();
+    public static final NewEquipmentLibraryCommand INSTANCE = new NewEquipmentLibraryCommand();
 
     private NewEquipmentLibraryCommand() {
-        super(I18n.Text("New Equipment Library"), CMD_NEW_LIBRARY);
+        super(I18n.Text("New Equipment Library"), "NewEquipmentLibrary");
     }
 
     @Override
@@ -36,19 +32,12 @@ public final class NewEquipmentLibraryCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newEquipmentLibrary();
-    }
-
-    /** @return The newly created a new {@link EquipmentDockable}. */
-    public static EquipmentDockable newEquipmentLibrary() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             EquipmentList list = new EquipmentList();
             list.getModel().setLocked(false);
             EquipmentDockable dockable = new EquipmentDockable(list);
             library.dockLibrary(dockable);
-            return dockable;
         }
-        return null;
     }
 }

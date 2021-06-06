@@ -134,7 +134,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         addMouseListener(this);
         addMouseMotionListener(this);
         addKeyListener(this);
-        if (!GraphicsUtilities.inHeadlessPrintMode()) {
+        if (GraphicsUtilities.hasUserDisplay()) {
             DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
             setDropTarget(new DropTarget(this, this));
         }

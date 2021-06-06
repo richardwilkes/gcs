@@ -86,14 +86,10 @@ public class Task implements Runnable {
         return mWasCancelled;
     }
 
-    /**
-     * @return {@code true} if the task was successfully cancelled and will not be executed.
-     */
-    public synchronized boolean cancel() {
+    public synchronized void cancel() {
         if (mWasExecuted) {
-            return false;
+            return;
         }
         mWasCancelled = true;
-        return true;
     }
 }

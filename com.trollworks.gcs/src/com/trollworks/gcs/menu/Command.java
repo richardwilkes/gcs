@@ -191,9 +191,9 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
         return mOriginalAccelerator;
     }
 
-    /** @return Whether the original accelerator is still set. */
-    public final boolean hasOriginalAccelerator() {
-        return Objects.equals(getAccelerator(), mOriginalAccelerator);
+    /** @return Whether the original accelerator has been overridden. */
+    public final boolean isOriginalAcceleratorOverridden() {
+        return !Objects.equals(getAccelerator(), mOriginalAccelerator);
     }
 
     /**

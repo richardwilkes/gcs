@@ -49,27 +49,23 @@ public final class SaveAsCommand extends Command {
      * Allows the user to save the file under another name.
      *
      * @param saveable The {@link Saveable} to work on.
-     * @return The path(s) actually written to. May be empty.
      */
-    public static Path[] saveAs(Saveable saveable) {
-        if (saveable == null) {
-            return new Path[0];
-        }
-        String name = PathUtils.cleanNameForFile(saveable.getSaveTitle());
-        if (name.isBlank()) {
-            name = "untitled";
-        }
-        Path   result = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable), I18n.Text("Save As…"), Preferences.getInstance().getLastDir().resolve(name), saveable.getFileType().getFilter());
-        Path[] paths  = result != null ? saveable.saveTo(result) : new Path[0];
-        if (paths != null) {
-            for (Path path : paths) {
+    public static void saveAs(Saveable saveable) {
+        if (saveable != null) {
+            String name = PathUtils.cleanNameForFile(saveable.getSaveTitle());
+            if (name.isBlank()) {
+                name = "untitled";
+            }
+            Path path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable),
+                    I18n.Text("Save As…"), Preferences.getInstance().getLastDir().resolve(name),
+                    saveable.getFileType().getFilter());
+            if (saveable.saveTo(path)) {
                 Preferences.getInstance().addRecentFile(path);
-            }
-            LibraryExplorerDockable explorer = LibraryExplorerDockable.get();
-            if (explorer != null) {
-                explorer.refresh();
+                LibraryExplorerDockable explorer = LibraryExplorerDockable.get();
+                if (explorer != null) {
+                    explorer.refresh();
+                }
             }
         }
-        return paths;
     }
 }

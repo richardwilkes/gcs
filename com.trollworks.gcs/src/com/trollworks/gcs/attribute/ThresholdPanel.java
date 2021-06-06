@@ -191,7 +191,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         return area;
     }
 
-    private JCheckBox addCheckBox(Container container, ThresholdOps op) {
+    private void addCheckBox(Container container, ThresholdOps op) {
         JCheckBox checkbox = new JCheckBox(op.title());
         checkbox.setToolTipText(Text.wrapPlainTextForToolTip(op.toString()));
         checkbox.setSelected(mThreshold.getOps().contains(op));
@@ -204,7 +204,6 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
             mAdjustCallback.run();
         });
         container.add(checkbox);
-        return checkbox;
     }
 
     public void adjustButtons(boolean isFirst, boolean isLast) {

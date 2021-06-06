@@ -97,20 +97,17 @@ public final class SaveCommand extends Command {
      * Allows the user to save the file.
      *
      * @param saveable The {@link Saveable} to work on.
-     * @return The path(s) actually written to. May be empty.
      */
-    public static Path[] save(Saveable saveable) {
-        if (saveable == null) {
-            return new Path[0];
-        }
-        Path path = saveable.getBackingFile();
-        if (path != null) {
-            Path[] paths = saveable.saveTo(path);
-            for (Path one : paths) {
-                Preferences.getInstance().addRecentFile(one);
+    public static void save(Saveable saveable) {
+        if (saveable != null) {
+            Path path = saveable.getBackingFile();
+            if (path != null) {
+                if (saveable.saveTo(path)) {
+                    Preferences.getInstance().addRecentFile(path);
+                }
+                return;
             }
-            return paths;
+            SaveAsCommand.saveAs(saveable);
         }
-        return SaveAsCommand.saveAs(saveable);
     }
 }

@@ -69,7 +69,7 @@ public final class Export implements Runnable {
     public void run() {
         if (mGenerateText || mGeneratePNG) {
             Timing timing = new Timing();
-            GraphicsUtilities.setHeadlessPrintMode(true);
+            GraphicsUtilities.setAllowUserDisplay(false);
             for (Path path : mFiles) {
                 if (!FileType.SHEET.matchExtension(PathUtils.getExtension(path)) || !Files.isReadable(path)) {
                     System.out.printf(I18n.Text("Unable to load %s\n"), path);
@@ -123,7 +123,7 @@ public final class Export implements Runnable {
                     System.out.println(I18n.Text("  ** ERROR ENCOUNTERED **"));
                 }
             }
-            GraphicsUtilities.setHeadlessPrintMode(false);
+            GraphicsUtilities.setAllowUserDisplay(true);
         }
     }
 

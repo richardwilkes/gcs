@@ -99,14 +99,14 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     }
 
     @Override
-    public Path[] saveTo(Path path) {
+    public boolean saveTo(Path path) {
         if (mDataFile.save(path)) {
             mDataFile.setPath(path);
             getDockContainer().updateTitle(this);
-            return new Path[]{path};
+            return true;
         }
         WindowUtils.showError(this, I18n.Text("An error occurred while trying to save the file."));
-        return new Path[0];
+        return false;
     }
 
     @Override

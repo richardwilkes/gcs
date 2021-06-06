@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Advantage Modifiers Library" command. */
 public final class NewAdvantageModifiersLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                              CMD_NEW_LIBRARY = "NewAdvantageModifiersLibrary";
-    /** The singleton {@link NewAdvantageModifiersLibraryCommand}. */
-    public static final NewAdvantageModifiersLibraryCommand INSTANCE        = new NewAdvantageModifiersLibraryCommand();
+    public static final NewAdvantageModifiersLibraryCommand INSTANCE = new NewAdvantageModifiersLibraryCommand();
 
     private NewAdvantageModifiersLibraryCommand() {
-        super(I18n.Text("New Advantage Modifiers Library"), CMD_NEW_LIBRARY);
+        super(I18n.Text("New Advantage Modifiers Library"), "NewAdvantageModifiersLibrary");
     }
 
     @Override
@@ -36,19 +32,12 @@ public final class NewAdvantageModifiersLibraryCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newAdvantageModifiersLibrary();
-    }
-
-    /** @return The newly created a new {@link AdvantageModifiersDockable}. */
-    public static AdvantageModifiersDockable newAdvantageModifiersLibrary() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             AdvantageModifierList list = new AdvantageModifierList();
             list.getModel().setLocked(false);
             AdvantageModifiersDockable dockable = new AdvantageModifiersDockable(list);
             library.dockLibrary(dockable);
-            return dockable;
         }
-        return null;
     }
 }

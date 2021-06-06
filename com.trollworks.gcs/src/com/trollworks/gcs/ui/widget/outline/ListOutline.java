@@ -116,10 +116,9 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
      * @param name    The name for the undo event.
      * @param sibling If the current selection is a container, whether to insert into it, or as a
      *                sibling.
-     * @return The index of the row that was added.
      */
-    public int addRow(ListRow row, String name, boolean sibling) {
-        return addRow(new ListRow[]{row}, name, sibling);
+    public void addRow(ListRow row, String name, boolean sibling) {
+        addRow(new ListRow[]{row}, name, sibling);
     }
 
     /**
@@ -129,9 +128,8 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
      * @param name    The name for the undo event.
      * @param sibling If the current selection is a container, whether to insert into it, or as a
      *                sibling.
-     * @return The index of the first row that was added.
      */
-    public int addRow(ListRow[] rows, String name, boolean sibling) {
+    public void addRow(ListRow[] rows, String name, boolean sibling) {
         OutlineModel model = getModel();
         StateEdit    edit  = new StateEdit(model, name);
         List<Row>    sel   = model.getSelectionAsList(true);
@@ -166,7 +164,6 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
         edit.end();
         postUndo(edit);
         revalidate();
-        return insertAt;
     }
 
     @Override

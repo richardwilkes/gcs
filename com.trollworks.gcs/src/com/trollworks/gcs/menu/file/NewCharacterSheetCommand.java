@@ -21,15 +21,11 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-/** Provides the "New Character Sheet" command. */
 public final class NewCharacterSheetCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                   CMD_NEW_CHARACTER_SHEET = "NewCharacterSheet";
-    /** The singleton {@link NewCharacterSheetCommand}. */
-    public static final NewCharacterSheetCommand INSTANCE                = new NewCharacterSheetCommand();
+    public static final NewCharacterSheetCommand INSTANCE = new NewCharacterSheetCommand();
 
     private NewCharacterSheetCommand() {
-        super(I18n.Text("New Character Sheet"), CMD_NEW_CHARACTER_SHEET, KeyEvent.VK_N);
+        super(I18n.Text("New Character Sheet"), "NewCharacterSheet", KeyEvent.VK_N);
     }
 
     @Override
@@ -38,18 +34,11 @@ public final class NewCharacterSheetCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newSheet();
-    }
-
-    /** @return The newly created a new {@link SheetDockable}. */
-    public static SheetDockable newSheet() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             SheetDockable sheet = new SheetDockable(new GURPSCharacter());
             library.dockSheet(sheet);
             AddNaturalAttacksAdvantageCommand.INSTANCE.create(sheet.getDataFile(), sheet.getSheet().getAdvantagesOutline());
-            return sheet;
         }
-        return null;
     }
 }

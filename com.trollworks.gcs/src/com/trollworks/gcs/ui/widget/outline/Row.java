@@ -220,9 +220,8 @@ public abstract class Row {
      *
      * @param index The index to insert at.
      * @param row   The row to add as a child.
-     * @return {@code true} if the row was added, {@code false} if it was not.
      */
-    public boolean insertChild(int index, Row row) {
+    public void insertChild(int index, Row row) {
         if (canHaveChildren()) {
             row.removeFromParent();
             if (index < 0) {
@@ -234,9 +233,7 @@ public abstract class Row {
             }
             mChildren.add(index, row);
             row.mParent = this;
-            return true;
         }
-        return false;
     }
 
     /**
@@ -259,15 +256,12 @@ public abstract class Row {
      * Removes a child row from this row.
      *
      * @param row The child row to remove.
-     * @return {@code true} if the row was removed, {@code false} if it wasn't a child of this row.
      */
-    public boolean removeChild(Row row) {
+    public void removeChild(Row row) {
         if (row.isChildOf(this)) {
             mChildren.remove(row);
             row.mParent = null;
-            return true;
         }
-        return false;
     }
 
     /**

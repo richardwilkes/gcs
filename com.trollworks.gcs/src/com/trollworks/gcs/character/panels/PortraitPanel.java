@@ -33,7 +33,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
@@ -74,7 +73,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
                 Dimensions of <b>{0}x{1}</b> are ideal.
                 </body></html>
                 """), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
-        if (!GraphicsUtilities.inHeadlessPrintMode() && !GraphicsEnvironment.isHeadless()) {
+        if (GraphicsUtilities.hasUserDisplay()) {
             setDropTarget(new DropTarget(this, DnDConstants.ACTION_COPY, this));
         }
         addMouseListener(new MouseAdapter() {

@@ -131,7 +131,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         Preferences prefs    = Preferences.getInstance();
         String      key      = cmd.getCommand();
         String      override = null;
-        if (!cmd.hasOriginalAccelerator()) {
+        if (cmd.isOriginalAcceleratorOverridden()) {
             override = ks != null ? ks.toString() : NONE;
         }
         prefs.setKeyBindingOverride(key, override);
@@ -155,7 +155,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     private void adjustResetButton() {
         boolean enabled = false;
         for (Command cmd : mMap.values()) {
-            if (!cmd.hasOriginalAccelerator()) {
+            if (cmd.isOriginalAcceleratorOverridden()) {
                 enabled = true;
                 break;
             }

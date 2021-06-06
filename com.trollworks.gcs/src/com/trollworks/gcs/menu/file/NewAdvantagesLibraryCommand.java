@@ -19,15 +19,11 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-/** Provides the "New Advantages Library" command. */
 public final class NewAdvantagesLibraryCommand extends Command {
-    /** The action command this command will issue. */
-    public static final String                      CMD_NEW_LIBRARY = "NewAdvantagesLibrary";
-    /** The singleton {@link NewAdvantagesLibraryCommand}. */
-    public static final NewAdvantagesLibraryCommand INSTANCE        = new NewAdvantagesLibraryCommand();
+    public static final NewAdvantagesLibraryCommand INSTANCE = new NewAdvantagesLibraryCommand();
 
     private NewAdvantagesLibraryCommand() {
-        super(I18n.Text("New Advantages Library"), CMD_NEW_LIBRARY);
+        super(I18n.Text("New Advantages Library"), "NewAdvantagesLibrary");
     }
 
     @Override
@@ -36,19 +32,12 @@ public final class NewAdvantagesLibraryCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        newAdvantagesLibrary();
-    }
-
-    /** @return The newly created a new {@link AdvantagesDockable}. */
-    public static AdvantagesDockable newAdvantagesLibrary() {
         LibraryExplorerDockable library = LibraryExplorerDockable.get();
         if (library != null) {
             AdvantageList list = new AdvantageList();
             list.getModel().setLocked(false);
             AdvantagesDockable dockable = new AdvantagesDockable(list);
             library.dockLibrary(dockable);
-            return dockable;
         }
-        return null;
     }
 }

@@ -36,6 +36,7 @@ public final class Tasks {
      *                 there isn't one with the same key already scheduled.
      * @return The {@link Task}.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public static Task scheduleOnBackgroundThread(Runnable runnable, long delay, TimeUnit units, Object key) {
         Task task = new Task(runnable, key);
         task.schedule(delay, units);
@@ -68,6 +69,7 @@ public final class Tasks {
      *                 there isn't one with the same key already scheduled.
      * @return The {@link Task}.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public static Task scheduleOnUIThread(Runnable runnable, long delay, TimeUnit units, Object key) {
         Task task = new UITask(runnable, key);
         task.schedule(delay, units);
