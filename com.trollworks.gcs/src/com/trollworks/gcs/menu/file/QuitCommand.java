@@ -12,7 +12,7 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.I18n;
@@ -78,7 +78,7 @@ public final class QuitCommand extends Command implements QuitHandler {
 
     private static void saveState() {
         try {
-            Preferences.getInstance().save();
+            Settings.getInstance().save();
         } catch (Exception exception) {
             Log.error(exception);
         }

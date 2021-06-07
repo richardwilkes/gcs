@@ -19,7 +19,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -124,7 +123,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         adjustResetButton();
         if (gchar != null) {
             gchar.addChangeListener(this);
-            Preferences.getInstance().addChangeListener(this);
+            Settings.getInstance().addChangeListener(this);
         }
         Dimension min1 = getMinimumSize();
         setMinimumSize(new Dimension(Math.max(min1.width, 600), min1.height));
@@ -142,7 +141,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         menu.add(createMenuItem(I18n.text("Export…"), this::exportData, true));
         menu.addSeparator();
         menu.add(createMenuItem(mCharacter == null ? I18n.text("Factory Default Attributes") : I18n.text("Default Attributes"), this::reset, mResetEnabled));
-        Preferences.getInstance(); // Just to ensure the libraries list is initialized
+        Settings.getInstance(); // Just to ensure the libraries list is initialized
         for (Library lib : Library.LIBRARIES) {
             Path dir = lib.getPath().resolve("Attributes");
             if (Files.isDirectory(dir)) {
@@ -202,7 +201,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
 
     private void exportData() {
         Path path = StdFileDialog.showSaveDialog(this, I18n.text("Export…"),
-                Preferences.getInstance().getLastDir().resolve(I18n.text("attribute_settings")),
+                Settings.getInstance().getLastDir().resolve(I18n.text("attribute_settings")),
                 FileType.ATTRIBUTE_SETTINGS.getFilter());
         if (path != null) {
             SafeFileUpdater transaction = new SafeFileUpdater();
@@ -227,7 +226,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         if (mCharacter == null) {
             attributes = AttributeDef.createStandardAttributes();
         } else {
-            attributes = AttributeDef.cloneMap(Preferences.getInstance().getSheetSettings().getAttributes());
+            attributes = AttributeDef.cloneMap(Settings.getInstance().getSheetSettings().getAttributes());
         }
         reset(attributes);
         adjustResetButton();
@@ -242,7 +241,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     }
 
     private void adjustResetButton() {
-        Map<String, AttributeDef> prefsAttributes = Preferences.getInstance().getSheetSettings().getAttributes();
+        Map<String, AttributeDef> prefsAttributes = Settings.getInstance().getSheetSettings().getAttributes();
         if (mCharacter == null) {
             mResetEnabled = !prefsAttributes.equals(AttributeDef.createStandardAttributes());
         } else {
@@ -280,7 +279,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         }
         if (mCharacter != null) {
             mCharacter.removeChangeListener(this);
-            Preferences.getInstance().removeChangeListener(this);
+            Settings.getInstance().removeChangeListener(this);
         }
         super.dispose();
     }

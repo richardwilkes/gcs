@@ -12,7 +12,6 @@
 package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.Theme;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -91,7 +90,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
                                 String cmd  = fp.getActionCommand();
                                 if (!font.equals(UIManager.getFont(cmd))) {
                                     UIManager.put(cmd, font);
-                                    Preferences.getInstance().setFontInfo(cmd, new Fonts.Info(font));
+                                    Settings.getInstance().setFontInfo(cmd, new Fonts.Info(font));
                                     adjusted = true;
                                 }
                                 break;

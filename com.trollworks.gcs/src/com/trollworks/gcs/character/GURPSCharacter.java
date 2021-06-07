@@ -35,7 +35,7 @@ import com.trollworks.gcs.feature.WeaponBonus;
 import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
@@ -128,7 +128,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
-        characterInitialize(Preferences.getInstance().autoFillProfile());
+        characterInitialize(Settings.getInstance().autoFillProfile());
         calculateAll();
     }
 
@@ -148,7 +148,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         mVariableResolverExclusions = new HashSet<>();
         mSheetSettings = new SheetSettings(this);
         mFeatureMap = new HashMap<>();
-        mTotalPoints = Preferences.getInstance().getInitialPoints();
+        mTotalPoints = Settings.getInstance().getInitialPoints();
         mAttributes = new HashMap<>();
         for (String attrID : mSheetSettings.getAttributes().keySet()) {
             mAttributes.put(attrID, new Attribute(attrID));

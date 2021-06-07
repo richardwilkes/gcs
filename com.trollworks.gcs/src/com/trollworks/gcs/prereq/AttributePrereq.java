@@ -16,7 +16,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -47,7 +47,7 @@ public class AttributePrereq extends HasPrereq {
     public AttributePrereq(PrereqList parent) {
         super(parent);
         mValueCompare = new IntegerCriteria(NumericCompareType.AT_LEAST, 10);
-        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getSheetSettings().getAttributes());
+        List<AttributeDef> list = AttributeDef.getOrdered(Settings.getInstance().getSheetSettings().getAttributes());
         mWhich = list.isEmpty() ? "st" : list.get(0).getID();
     }
 

@@ -17,7 +17,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -168,7 +168,7 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     public static String getDefaultAttribute(String preferred) {
-        Map<String, AttributeDef> attributes = Preferences.getInstance().getSheetSettings().getAttributes();
+        Map<String, AttributeDef> attributes = Settings.getInstance().getSheetSettings().getAttributes();
         if (attributes.get(preferred) != null) {
             return preferred;
         }

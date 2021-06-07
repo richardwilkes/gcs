@@ -14,7 +14,7 @@ package com.trollworks.gcs.utility;
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.library.LibraryUpdateCommand;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -127,9 +127,9 @@ public final class UpdateChecker implements Runnable {
             if (releases.isEmpty()) {
                 setAppResult(I18n.text("GCS has no update available"), null, false);
             } else {
-                Release     release   = new Release(releases);
-                Preferences prefs     = Preferences.getInstance();
-                Version     available = release.getVersion();
+                Release  release   = new Release(releases);
+                Settings prefs     = Settings.getInstance();
+                Version  available = release.getVersion();
                 setAppResult(String.format(I18n.text("GCS v%s is available!"), available), release.getNotes(), true);
                 if (available.compareTo(prefs.getLastSeenGCSVersion()) > 0) {
                     prefs.setLastSeenGCSVersion(available);

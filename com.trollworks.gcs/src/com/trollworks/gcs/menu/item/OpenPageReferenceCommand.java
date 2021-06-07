@@ -15,7 +15,7 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.pdfview.PDFServer;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.PageRefMappingsWindow;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
@@ -108,8 +108,8 @@ public class OpenPageReferenceCommand extends Command {
             } catch (NumberFormatException nfex) {
                 return; // Has no page number, so bail
             }
-            Preferences prefs = Preferences.getInstance();
-            PDFRef      ref   = prefs.lookupPdfRef(id, true);
+            Settings prefs = Settings.getInstance();
+            PDFRef   ref   = prefs.lookupPdfRef(id, true);
             if (ref == null) {
                 Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
                 if (path != null) {

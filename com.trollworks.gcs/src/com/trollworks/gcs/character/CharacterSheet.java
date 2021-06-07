@@ -38,7 +38,7 @@ import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageOwner;
 import com.trollworks.gcs.page.PageSettings;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
@@ -788,7 +788,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     public boolean saveAsPNG(Path path, List<Path> createdPaths) {
         Set<Row> changed = expandAllContainers();
         try {
-            int          dpi      = Preferences.getInstance().getPNGResolution();
+            int          dpi      = Settings.getInstance().getImageResolution();
             PageSettings settings = mCharacter.getSheetSettings().getPageSettings();
             PageFormat   format   = settings.createPageFormat();
             int          width    = (int) (format.getWidth() / 72.0 * dpi);

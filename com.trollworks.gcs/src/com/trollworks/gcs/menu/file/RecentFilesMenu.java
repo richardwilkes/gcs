@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 
@@ -34,7 +34,7 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
     public RecentFilesMenu() {
         super(I18n.text("Recent Files"));
         addMenuListener(this);
-        mLastSeenRecentFilesUpdateCounter = Preferences.getInstance().getLastRecentFilesUpdateCounter() - 1;
+        mLastSeenRecentFilesUpdateCounter = Settings.getInstance().getLastRecentFilesUpdateCounter() - 1;
     }
 
     @Override
@@ -49,8 +49,8 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
 
     @Override
     public void menuSelected(MenuEvent event) {
-        Preferences prefs                        = Preferences.getInstance();
-        int         lastRecentFilesUpdateCounter = prefs.getLastRecentFilesUpdateCounter();
+        Settings prefs                        = Settings.getInstance();
+        int      lastRecentFilesUpdateCounter = prefs.getLastRecentFilesUpdateCounter();
         if (mLastSeenRecentFilesUpdateCounter != lastRecentFilesUpdateCounter) {
             mLastSeenRecentFilesUpdateCounter = lastRecentFilesUpdateCounter;
             removeAll();
@@ -66,7 +66,7 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
                     } else {
                         set.add(leaf);
                     }
-                    if (list.size() == Preferences.MAX_RECENT_FILES) {
+                    if (list.size() == Settings.MAX_RECENT_FILES) {
                         break;
                     }
                 }

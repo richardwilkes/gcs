@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.preferences;
+package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -18,7 +18,6 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
-import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.Theme;
 import com.trollworks.gcs.ui.scale.Scales;
@@ -52,11 +51,11 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.ToolTipManager;
 
-/** Provides the implementation of preferences. Note: not all preferences emit notifications. */
-public final class Preferences extends ChangeableData {
+public final class Settings extends ChangeableData {
     private static final int MINIMUM_VERSION = 1;
 
     private static final String DEPRECATED_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021
+    private static final String DEPRECATED_PNG_RESOLUTION           = "png_resolution"; // June 6, 2021
 
     private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
     private static final String DEFAULT_PLAYER_NAME             = "default_player_name";
@@ -64,6 +63,7 @@ public final class Preferences extends ChangeableData {
     private static final String DIVIDER_POSITION                = "divider_position";
     private static final String FONTS                           = "fonts";
     private static final String GURPS_CALCULATOR_KEY            = "gurps_calculator_key";
+    private static final String IMAGE_RESOLUTION                = "image_resolution";
     private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL = "include_unspent_points_in_total";
     private static final String INITIAL_POINTS                  = "initial_points";
     private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
@@ -74,7 +74,6 @@ public final class Preferences extends ChangeableData {
     private static final String LIBRARY_EXPLORER                = "library_explorer";
     private static final String OPEN_ROW_KEYS                   = "open_row_keys";
     private static final String PDF_REFS                        = "pdf_refs";
-    private static final String PNG_RESOLUTION                  = "png_resolution";
     private static final String QUICK_EXPORTS                   = "quick_exports";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHEET_SETTINGS                  = "sheet_settings";
@@ -85,20 +84,18 @@ public final class Preferences extends ChangeableData {
 
     public static final boolean DEFAULT_AUTO_FILL_PROFILE                 = true;
     public static final boolean DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL   = true;
+    public static final int     DEFAULT_IMAGE_RESOLUTION                  = 200;
     public static final int     DEFAULT_INITIAL_POINTS                    = 250;
     public static final int     DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
-    public static final int     DEFAULT_PNG_RESOLUTION                    = 200;
     public static final int     DEFAULT_TOOLTIP_TIMEOUT                   = 60;
     public static final Scales  DEFAULT_INITIAL_UI_SCALE                  = Scales.QUARTER_AGAIN_SIZE;
     public static final String  DEFAULT_DEFAULT_PLAYER_NAME               = System.getProperty("user.name", "");
     public static final String  DEFAULT_DEFAULT_TECH_LEVEL                = "3";
 
-    public static final int MAX_RECENT_FILES        = 20;
-    public static final int MINIMUM_TOOLTIP_TIMEOUT = 1;
-    public static final int MAXIMUM_TOOLTIP_TIMEOUT = 999;
-    public static final int MAX_QUICK_EXPORTS       = 100;
+    public static final int MAX_QUICK_EXPORTS = 100;
+    public static final int MAX_RECENT_FILES  = 20;
 
-    private static Preferences                      INSTANCE;
+    private static Settings                         INSTANCE;
     private        Version                          mLastSeenGCSVersion;
     private        int                              mInitialPoints;
     private        int                              mToolTipTimeout;
@@ -117,13 +114,13 @@ public final class Preferences extends ChangeableData {
     private        String                           mDefaultTechLevel;
     private        SheetSettings                    mSheetSettings;
     private        int                              mLastRecentFilesUpdateCounter;
-    private        int                              mPNGResolution;
+    private        int                              mImageResolution;
     private        boolean                          mIncludeUnspentPointsInTotal;
     private        boolean                          mAutoFillProfile;
 
-    public static synchronized Preferences getInstance() {
+    public static synchronized Settings getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new Preferences();
+            INSTANCE = new Settings();
             // Have to do the pruning of invalid quick exports here, since the isValid() call
             // uses preferences to determine some validity.
             List<String> toRemove = new ArrayList<>();
@@ -153,7 +150,7 @@ public final class Preferences extends ChangeableData {
         return path.resolve("gcs.json").normalize().toAbsolutePath();
     }
 
-    private Preferences() {
+    private Settings() {
         mLastSeenGCSVersion = new Version(GCS.VERSION);
         Library.LIBRARIES.clear();
         mInitialPoints = DEFAULT_INITIAL_POINTS;
@@ -167,7 +164,7 @@ public final class Preferences extends ChangeableData {
         mGURPSCalculatorKey = "";
         mDefaultPlayerName = DEFAULT_DEFAULT_PLAYER_NAME;
         mDefaultTechLevel = DEFAULT_DEFAULT_TECH_LEVEL;
-        mPNGResolution = DEFAULT_PNG_RESOLUTION;
+        mImageResolution = DEFAULT_IMAGE_RESOLUTION;
         mPdfRefs = new HashMap<>();
         mFontInfo = new HashMap<>();
         mKeyBindingOverrides = new HashMap<>();
@@ -244,7 +241,11 @@ public final class Preferences extends ChangeableData {
                         mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                         mDefaultPlayerName = m.getStringWithDefault(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                         mDefaultTechLevel = m.getStringWithDefault(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
-                        mPNGResolution = m.getIntWithDefault(PNG_RESOLUTION, mPNGResolution);
+                        if (m.has(DEPRECATED_PNG_RESOLUTION)) {
+                            mImageResolution = m.getIntWithDefault(DEPRECATED_PNG_RESOLUTION, mImageResolution);
+                        } else {
+                            mImageResolution = m.getIntWithDefault(IMAGE_RESOLUTION, mImageResolution);
+                        }
                         mIncludeUnspentPointsInTotal = m.getBooleanWithDefault(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
                         if (m.has(DEPRECATED_AUTO_NAME_NEW_CHARACTERS)) {
                             mAutoFillProfile = m.getBooleanWithDefault(DEPRECATED_AUTO_NAME_NEW_CHARACTERS, mAutoFillProfile);
@@ -370,7 +371,7 @@ public final class Preferences extends ChangeableData {
                     w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
                     w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
                     w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
-                    w.keyValue(PNG_RESOLUTION, mPNGResolution);
+                    w.keyValue(IMAGE_RESOLUTION, mImageResolution);
                     w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
                     w.key(THEME);
@@ -450,7 +451,6 @@ public final class Preferences extends ChangeableData {
         mInitialUIScale = initialUIScale;
     }
 
-    // TODO: Move this to a more appropriate place
     public static String linesToString(List<String> lines) {
         StringBuilder buffer = new StringBuilder();
         for (String line : lines) {
@@ -531,12 +531,12 @@ public final class Preferences extends ChangeableData {
         mDefaultTechLevel = defaultTechLevel;
     }
 
-    public int getPNGResolution() {
-        return mPNGResolution;
+    public int getImageResolution() {
+        return mImageResolution;
     }
 
-    public void setPNGResolution(int resolution) {
-        mPNGResolution = resolution;
+    public void setImageResolution(int resolution) {
+        mImageResolution = resolution;
     }
 
     public List<PDFRef> allPdfRefs(boolean requireExistence) {
@@ -613,10 +613,6 @@ public final class Preferences extends ChangeableData {
         }
     }
 
-    /**
-     * @return Whether a new character should have various profile information auto-filled
-     *         initially.
-     */
     public boolean autoFillProfile() {
         return mAutoFillProfile;
     }

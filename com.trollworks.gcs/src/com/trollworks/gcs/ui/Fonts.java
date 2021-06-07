@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui;
 
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -98,7 +98,7 @@ public final class Fonts {
         register(KEY_FIELD_SECONDARY, I18n.text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 8));
         register(KEY_FOOTER_PRIMARY, I18n.text("Primary Footer"), new Font(ROBOTO_BLACK, Font.PLAIN, 8));
         register(KEY_FOOTER_SECONDARY, I18n.text("Secondary Footer"), new Font(ROBOTO, Font.PLAIN, 6));
-        Preferences prefs = Preferences.getInstance();
+        Settings prefs = Settings.getInstance();
         for (String key : KEYS) {
             Info info = prefs.getFontInfo(key);
             if (info != null) {
@@ -115,7 +115,7 @@ public final class Fonts {
 
     /** Restores the default fonts. */
     public static void restoreDefaults() {
-        Preferences prefs = Preferences.getInstance();
+        Settings prefs = Settings.getInstance();
         for (String key : KEYS) {
             Font font = DEFAULTS.get(key).mDefaultFont;
             UIManager.put(key, font);

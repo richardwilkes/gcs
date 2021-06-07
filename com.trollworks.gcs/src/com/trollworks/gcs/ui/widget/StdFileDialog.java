@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -48,7 +48,7 @@ public final class StdFileDialog {
         FileDialog dialog = createFileDialog(comp, title, FileDialog.LOAD, null, filters);
         Path       path   = show(dialog);
         if (path != null) {
-            Preferences.getInstance().addRecentFile(path);
+            Settings.getInstance().addRecentFile(path);
         }
         return path;
     }
@@ -87,7 +87,7 @@ public final class StdFileDialog {
                     return null;
                 }
             }
-            Preferences.getInstance().addRecentFile(path);
+            Settings.getInstance().addRecentFile(path);
         }
         return path;
     }
@@ -116,7 +116,7 @@ public final class StdFileDialog {
             dialog = new FileDialog((Dialog) window, title, mode);
         }
         if (startingDir == null) {
-            startingDir = Preferences.getInstance().getLastDir();
+            startingDir = Settings.getInstance().getLastDir();
         }
         dialog.setDirectory(startingDir.toString());
         if (filters != null) {
@@ -139,7 +139,7 @@ public final class StdFileDialog {
         if (dir == null) {
             return null;
         }
-        Preferences.getInstance().setLastDir(Paths.get(dir).normalize().toAbsolutePath());
+        Settings.getInstance().setLastDir(Paths.get(dir).normalize().toAbsolutePath());
         String file = dialog.getFile();
         if (file == null) {
             return null;

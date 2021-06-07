@@ -14,7 +14,7 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.menu.file.SignificantFrame;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.DockLocation;
@@ -54,7 +54,7 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
         content.add(mDock, BorderLayout.CENTER);
         LibraryExplorerDockable libraryExplorer = new LibraryExplorerDockable();
         mDock.dock(libraryExplorer, DockLocation.WEST);
-        mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(Preferences.getInstance().getLibraryExplorerDividerPosition());
+        mDock.getLayout().findLayout(libraryExplorer.getDockContainer()).setDividerPosition(Settings.getInstance().getLibraryExplorerDividerPosition());
         restoreBounds();
         setVisible(true);
         WindowUtils.forceAppToFront();

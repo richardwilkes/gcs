@@ -16,7 +16,7 @@ import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -66,8 +66,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         outlineModel.applySortConfig(outlineModel.getSortConfig());
         outlineModel.setRowFilter(this);
         LibraryContent content = new LibraryContent(mOutline);
-        LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
-        Preferences    prefs   = Preferences.getInstance();
+        LibraryHeader header = new LibraryHeader(mOutline.getHeaderPanel());
+        Settings      prefs  = Settings.getInstance();
         mToolbar = new Toolbar();
         mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf13e", I18n.text("Switches between allowing editing and not"), () -> {
             OutlineModel model = mOutline.getModel();
@@ -105,7 +105,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     public boolean attemptClose() {
         boolean closed = super.attemptClose();
         if (closed) {
-            Preferences.getInstance().removeChangeListener(this);
+            Settings.getInstance().removeChangeListener(this);
             getDataFile().removeChangeListener(this);
         }
         return closed;

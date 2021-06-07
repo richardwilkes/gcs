@@ -13,7 +13,6 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.pdfview.PDFRef;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -80,8 +79,8 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
     }
 
     private void buildPanel() {
-        Preferences prefs      = Preferences.getInstance();
-        Color       background = new Color(255, 255, 224);
+        Settings prefs      = Settings.getInstance();
+        Color    background = new Color(255, 255, 224);
         mPanel.removeAll();
         mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 10).setVerticalSpacing(0));
         for (PDFRef ref : prefs.allPdfRefs(false)) {
@@ -111,7 +110,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
                                 Are you sure you want to remove this page reference
                                 mapping from %s to "%s"?"""), ref.getID(), ref.getPath().getFileName().toString()),
                         "", JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.YES_OPTION) {
-                    Preferences.getInstance().removePdfRef(ref);
+                    Settings.getInstance().removePdfRef(ref);
                     Component[] children = mPanel.getComponents();
                     int         length   = children.length;
                     for (int i = 0; i < length; i++) {

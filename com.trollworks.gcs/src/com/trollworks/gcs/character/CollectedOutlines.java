@@ -15,7 +15,7 @@ import com.trollworks.gcs.advantage.AdvantageOutline;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.notes.NoteOutline;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -58,13 +58,13 @@ public abstract class CollectedOutlines extends JPanel implements Runnable, Acti
     private boolean          mRebuildPending;
 
     protected CollectedOutlines() {
-        mScale = Preferences.getInstance().getInitialUIScale().getScale();
-        Preferences.getInstance().addChangeListener(this);
+        mScale = Settings.getInstance().getInitialUIScale().getScale();
+        Settings.getInstance().addChangeListener(this);
     }
 
     /** Call when no longer in use. */
     public void dispose() {
-        Preferences.getInstance().removeChangeListener(this);
+        Settings.getInstance().removeChangeListener(this);
     }
 
     @Override

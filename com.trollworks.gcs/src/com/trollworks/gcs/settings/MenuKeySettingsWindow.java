@@ -14,7 +14,6 @@ package com.trollworks.gcs.settings;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
@@ -128,8 +127,8 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         cmd.setAccelerator(ks);
         button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
         button.invalidate();
-        Preferences prefs    = Preferences.getInstance();
-        String      key      = cmd.getCommand();
+        Settings prefs = Settings.getInstance();
+        String   key   = cmd.getCommand();
         String      override = null;
         if (cmd.isOriginalAcceleratorOverridden()) {
             override = ks != null ? ks.toString() : NONE;
@@ -185,7 +184,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     /** Loads the current menu key settings from the preferences file. */
     public static synchronized void loadFromPreferences() {
         if (!LOADED) {
-            Preferences prefs = Preferences.getInstance();
+            Settings prefs = Settings.getInstance();
             for (Command cmd : StdMenuBar.getCommands()) {
                 String value = prefs.getKeyBindingOverride(cmd.getCommand());
                 if (value != null) {

@@ -18,7 +18,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -163,7 +162,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
 
     private void exportData() {
         Path path = StdFileDialog.showSaveDialog(this, I18n.text("Export…"),
-                Preferences.getInstance().getLastDir().resolve(I18n.text("hit_locations")),
+                Settings.getInstance().getLastDir().resolve(I18n.text("hit_locations")),
                 FileType.HIT_LOCATIONS.getFilter());
         if (path != null) {
             SafeFileUpdater transaction = new SafeFileUpdater();
@@ -192,7 +191,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         if (mCharacter == null) {
             locations = LibraryHitLocationTables.getHumanoid();
         } else {
-            locations = Preferences.getInstance().getSheetSettings().getHitLocations();
+            locations = Settings.getInstance().getSheetSettings().getHitLocations();
         }
         reset(locations);
         adjustResetButton();
@@ -207,7 +206,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     }
 
     private void adjustResetButton() {
-        HitLocationTable prefsLocations = Preferences.getInstance().getSheetSettings().getHitLocations();
+        HitLocationTable prefsLocations = Settings.getInstance().getSheetSettings().getHitLocations();
         if (mCharacter == null) {
             mResetEnabled = !prefsLocations.equals(LibraryHitLocationTables.getHumanoid());
         } else {
@@ -233,7 +232,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         }
         if (mCharacter != null) {
             mCharacter.removeChangeListener(this);
-            Preferences.getInstance().removeChangeListener(this);
+            Settings.getInstance().removeChangeListener(this);
         }
         super.dispose();
     }

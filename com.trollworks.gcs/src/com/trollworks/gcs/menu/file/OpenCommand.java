@@ -13,7 +13,7 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FileType;
@@ -65,7 +65,7 @@ public final class OpenCommand extends Command implements OpenFilesHandler {
                 FileProxy               proxy   = library == null ? null : library.open(path);
                 if (proxy != null) {
                     proxy.toFrontAndFocus();
-                    Preferences.getInstance().addRecentFile(path);
+                    Settings.getInstance().addRecentFile(path);
                 } else {
                     throw new IOException(I18n.text("unknown file extension"));
                 }

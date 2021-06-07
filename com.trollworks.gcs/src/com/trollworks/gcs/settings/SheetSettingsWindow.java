@@ -17,7 +17,6 @@ import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.page.PageSettingsEditor;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -129,7 +128,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         setMaximumSize(new Dimension(width, 10000));
         if (mCharacter != null) {
             mCharacter.addChangeListener(this);
-            Preferences.getInstance().addChangeListener(this);
+            Settings.getInstance().addChangeListener(this);
         }
     }
 
@@ -172,7 +171,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         panel.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
 
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.text("Specifies the layout of the various blocks of data on the character sheet"));
-        mBlockLayoutField = new MultiLineTextField(Preferences.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
+        mBlockLayoutField = new MultiLineTextField(Settings.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
         panel.add(new Label(I18n.text("Block Layout")), new PrecisionLayoutData());
         panel.add(mBlockLayoutField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
@@ -270,7 +269,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         atDefaults = atDefaults && mUserDescriptionDisplayCombo.getSelectedItem() == defaults.userDescriptionDisplay();
         atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == defaults.modifiersDisplay();
         atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == defaults.notesDisplay();
-        atDefaults = atDefaults && mBlockLayoutField.getText().equals(Preferences.linesToString(defaults.blockLayout()));
+        atDefaults = atDefaults && mBlockLayoutField.getText().equals(Settings.linesToString(defaults.blockLayout()));
         atDefaults = atDefaults && mSheetSettings.getPageSettings().equals(defaults.getPageSettings());
         return atDefaults;
     }
@@ -313,13 +312,8 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mUserDescriptionDisplayCombo.setSelectedItem(defaults.userDescriptionDisplay());
         mModifiersDisplayCombo.setSelectedItem(defaults.modifiersDisplay());
         mNotesDisplayCombo.setSelectedItem(defaults.notesDisplay());
-        mBlockLayoutField.setText(Preferences.linesToString(defaults.blockLayout()));
+        mBlockLayoutField.setText(Settings.linesToString(defaults.blockLayout()));
         mPageSettingsEditor.reset();
-    }
-
-    @Override
-    public String getWindowPrefsKey() {
-        return "settings_editor";
     }
 
     @Override
@@ -340,7 +334,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         }
         if (mCharacter != null) {
             mCharacter.removeChangeListener(this);
-            Preferences.getInstance().removeChangeListener(this);
+            Settings.getInstance().removeChangeListener(this);
         }
         super.dispose();
     }

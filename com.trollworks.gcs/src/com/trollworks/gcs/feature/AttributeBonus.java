@@ -15,7 +15,7 @@ import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeType;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -36,7 +36,7 @@ public class AttributeBonus extends Bonus {
     /** Creates a new attribute bonus. */
     public AttributeBonus() {
         super(1);
-        List<AttributeDef> list = AttributeDef.getOrdered(Preferences.getInstance().getSheetSettings().getAttributes());
+        List<AttributeDef> list = AttributeDef.getOrdered(Settings.getInstance().getSheetSettings().getAttributes());
         mAttribute = list.isEmpty() ? "st" : list.get(0).getID();
         mLimitation = AttributeBonusLimitation.NONE;
     }

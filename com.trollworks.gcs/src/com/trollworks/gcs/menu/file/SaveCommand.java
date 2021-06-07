@@ -12,7 +12,7 @@
 package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.I18n;
@@ -103,7 +103,7 @@ public final class SaveCommand extends Command {
             Path path = saveable.getBackingFile();
             if (path != null) {
                 if (saveable.saveTo(path)) {
-                    Preferences.getInstance().addRecentFile(path);
+                    Settings.getInstance().addRecentFile(path);
                 }
                 return;
             }

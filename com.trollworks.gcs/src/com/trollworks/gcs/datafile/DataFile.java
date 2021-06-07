@@ -13,7 +13,7 @@ package com.trollworks.gcs.datafile;
 
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.menu.edit.Undoable;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
@@ -258,7 +258,7 @@ public abstract class DataFile extends ChangeableData implements Undoable {
     }
 
     public SheetSettings getSheetSettings() {
-        return Preferences.getInstance().getSheetSettings();
+        return Settings.getInstance().getSheetSettings();
     }
 
     public AttributeDef getAttributeDef(String id) {

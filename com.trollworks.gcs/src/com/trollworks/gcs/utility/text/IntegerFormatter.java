@@ -69,4 +69,8 @@ public class IntegerFormatter extends JFormattedTextField.AbstractFormatter {
         }
         return mForceSign ? Numbers.formatWithForcedSign(val) : Numbers.format(val);
     }
+
+    public int getMaxValue() {
+        return mMaxValue;
+    }
 }

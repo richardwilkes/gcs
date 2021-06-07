@@ -18,7 +18,7 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.RitualMagicSpell;
@@ -59,7 +59,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
     protected Toolbar createToolbar() {
         Toolbar toolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(Preferences.getInstance().getInitialUIScale());
+        mScaleCombo.setSelectedItem(Settings.getInstance().getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
             Scales scale = (Scales) mScaleCombo.getSelectedItem();
             if (scale == null) {

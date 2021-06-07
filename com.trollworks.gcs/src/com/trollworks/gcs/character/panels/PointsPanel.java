@@ -18,7 +18,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -63,6 +63,6 @@ public class PointsPanel extends DropPanel {
     }
 
     private static String getTitle(GURPSCharacter gch) {
-        return MessageFormat.format(I18n.text("{0} Points"), Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gch.getTotalPoints() : gch.getSpentPoints()));
+        return MessageFormat.format(I18n.text("{0} Points"), Numbers.format(Settings.getInstance().includeUnspentPointsInTotal() ? gch.getTotalPoints() : gch.getSpentPoints()));
     }
 }

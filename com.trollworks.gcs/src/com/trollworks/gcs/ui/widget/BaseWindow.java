@@ -16,7 +16,7 @@ import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.file.SaveCommand;
 import com.trollworks.gcs.menu.file.Saveable;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.MenuKeySettingsWindow;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
@@ -248,7 +248,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
             if (wasMaximized || getExtendedState() == ICONIFIED) {
                 setExtendedState(NORMAL);
             }
-            Preferences.getInstance().putBaseWindowPosition(key, new Position(this));
+            Settings.getInstance().putBaseWindowPosition(key, new Position(this));
         }
     }
 
@@ -257,7 +257,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         boolean needPack = true;
         String  key      = getWindowPrefsKey();
         if (key != null) {
-            Position info = Preferences.getInstance().getBaseWindowPosition(key);
+            Position info = Settings.getInstance().getBaseWindowPosition(key);
             if (info != null) {
                 info.apply(this);
                 needPack = false;

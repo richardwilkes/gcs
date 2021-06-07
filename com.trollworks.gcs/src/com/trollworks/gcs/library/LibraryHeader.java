@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -28,7 +28,7 @@ public class LibraryHeader extends JPanel implements ScaleRoot {
         header.setBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 0, 1));
         setLayout(new BorderLayout());
         add(header);
-        mScale = Preferences.getInstance().getInitialUIScale().getScale();
+        mScale = Settings.getInstance().getInitialUIScale().getScale();
     }
 
     @Override

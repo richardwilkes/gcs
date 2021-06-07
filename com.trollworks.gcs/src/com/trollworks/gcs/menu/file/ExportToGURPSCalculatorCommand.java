@@ -16,9 +16,8 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.preferences.OutputPreferences;
-import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.preferences.QuickExport;
+import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -55,9 +54,10 @@ import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 
 public final class ExportToGURPSCalculatorCommand extends Command {
-    /** The singleton {@link ExportToGURPSCalculatorCommand}. */
-    public static final  ExportToGURPSCalculatorCommand INSTANCE     = new ExportToGURPSCalculatorCommand();
-    private static final Pattern                        UUID_PATTERN = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
+    public static final  String                         BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
+    public static final  String                         GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
+    public static final  ExportToGURPSCalculatorCommand INSTANCE                  = new ExportToGURPSCalculatorCommand();
+    private static final Pattern                        UUID_PATTERN              = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
 
     private ExportToGURPSCalculatorCommand() {
         super(I18n.text("GURPS Calculator…"), "ExportToGURPSCalculator", KeyEvent.VK_L);
@@ -77,7 +77,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
             CharacterSheet sheet     = dockable.getSheet();
             GURPSCharacter character = sheet.getCharacter();
             try {
-                String key = Preferences.getInstance().getGURPSCalculatorKey();
+                String key = Settings.getInstance().getGURPSCalculatorKey();
                 if ("true".equals(get(String.format("api/GetCharacterExists/%s/%s", character.getID(), key)))) {
                     String cancel = I18n.text("Cancel");
                     switch (JOptionPane.showOptionDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(), I18n.text("This character already exists in GURPS Calculator.\nWould you like to replace it?\n\nIf you choose 'Create New', you should save your\ncharacter afterwards."), I18n.text("Character Exists"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{I18n.text("Replace"), I18n.text("Create New"), cancel}, cancel)) {
@@ -152,9 +152,9 @@ public final class ExportToGURPSCalculatorCommand extends Command {
 
     private static void showResult(boolean success) {
         String message = success ? I18n.text("Export to GURPS Calculator was successful.") : I18n.text("There was an error exporting to GURPS Calculator. Please try again later.");
-        String key     = Preferences.getInstance().getGURPSCalculatorKey();
+        String key     = Settings.getInstance().getGURPSCalculatorKey();
         if (key == null || !UUID_PATTERN.matcher(key).matches()) {
-            message = String.format(I18n.text("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information."), OutputPreferences.GURPS_CALCULATOR_URL);
+            message = String.format(I18n.text("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information."), GURPS_CALCULATOR_URL);
         }
         JLabel      styleLabel  = new JLabel();
         Font        font        = styleLabel.getFont();
@@ -201,7 +201,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
     }
 
     private static URLConnection prepare(String path) throws IOException {
-        URLConnection connection = new URL(OutputPreferences.BASE_GURPS_CALCULATOR_URL + "/" + path + "/").openConnection();
+        URLConnection connection = new URL(BASE_GURPS_CALCULATOR_URL + "/" + path + "/").openConnection();
         connection.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.toString());
         return connection;
     }

@@ -14,7 +14,7 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.Alignment;
 import com.trollworks.gcs.ui.layout.FlexGrid;
@@ -49,7 +49,7 @@ public class SkillDefaultEditor extends EditorPanel {
 
     public static synchronized String getLastItemType(DataFile dataFile) {
         if (LAST_ITEM_TYPE == null) {
-            Map<String, AttributeDef> defs    = ((dataFile != null) ? dataFile.getSheetSettings() : Preferences.getInstance().getSheetSettings()).getAttributes();
+            Map<String, AttributeDef> defs    = ((dataFile != null) ? dataFile.getSheetSettings() : Settings.getInstance().getSheetSettings()).getAttributes();
             List<AttributeDef>        ordered = AttributeDef.getOrdered(defs);
             LAST_ITEM_TYPE = ordered.isEmpty() ? "st" : ordered.get(0).getID();
         }

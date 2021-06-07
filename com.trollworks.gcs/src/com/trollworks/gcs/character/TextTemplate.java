@@ -26,7 +26,7 @@ import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.notes.Note;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
 import com.trollworks.gcs.spell.Spell;
@@ -423,7 +423,7 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn() * FieldFactory.TIMESTAMP_FACTOR));
             break;
         case KEY_TOTAL_POINTS:
-            writeEncodedText(out, Numbers.format(Preferences.getInstance().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
+            writeEncodedText(out, Numbers.format(Settings.getInstance().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
             break;
         case KEY_ATTRIBUTE_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));

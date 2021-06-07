@@ -20,7 +20,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.ChangeNotifier;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.page.PageSettings;
-import com.trollworks.gcs.preferences.Preferences;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -85,7 +84,7 @@ public class SheetSettings implements ChangeNotifier {
      *         preferences if the character is {@code null}.
      */
     public static SheetSettings get(GURPSCharacter character) {
-        return character == null ? Preferences.getInstance().getSheetSettings() : character.getSheetSettings();
+        return character == null ? Settings.getInstance().getSheetSettings() : character.getSheetSettings();
     }
 
     /** Creates new default character sheet settings. */
@@ -137,7 +136,7 @@ public class SheetSettings implements ChangeNotifier {
             mShowSpellAdj = true;
             mUseTitleInFooter = false;
         } else {
-            SheetSettings defaults = Preferences.getInstance().getSheetSettings();
+            SheetSettings defaults = Settings.getInstance().getSheetSettings();
             mDefaultLengthUnits = defaults.mDefaultLengthUnits;
             mDefaultWeightUnits = defaults.mDefaultWeightUnits;
             mBlockLayout = new ArrayList<>(defaults.mBlockLayout);
@@ -236,7 +235,7 @@ public class SheetSettings implements ChangeNotifier {
 
     public void notifyOfChange() {
         if (mCharacter == null) {
-            Preferences.getInstance().notifyOfChange();
+            Settings.getInstance().notifyOfChange();
         } else {
             mCharacter.notifyOfChange();
         }

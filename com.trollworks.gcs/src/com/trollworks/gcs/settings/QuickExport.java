@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.preferences;
+package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.file.ExportToGURPSCalculatorCommand;
@@ -86,7 +86,7 @@ public class QuickExport implements Comparable<QuickExport> {
 
     public boolean isValid() {
         if (isGCalcExport()) {
-            return !Preferences.getInstance().getGURPSCalculatorKey().isBlank();
+            return !Settings.getInstance().getGURPSCalculatorKey().isBlank();
         }
         if (!isPNGExport() && (mTemplatePath.isBlank() || !Paths.get(mTemplatePath).getParent().toFile().isDirectory())) {
             return false;

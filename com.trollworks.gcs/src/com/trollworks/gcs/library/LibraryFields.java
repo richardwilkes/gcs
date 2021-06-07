@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
@@ -128,7 +128,7 @@ public class LibraryFields implements DocumentListener {
         JButton button = new JButton(I18n.text("Locate"));
         button.addActionListener(e -> {
             String       path    = mPath.getText();
-            Path         current = path.isBlank() ? Preferences.getInstance().getLastDir() : Paths.get(path).getParent().toAbsolutePath();
+            Path         current = path.isBlank() ? Settings.getInstance().getLastDir() : Paths.get(path).getParent().toAbsolutePath();
             JFileChooser dialog  = new JFileChooser(current.toString());
             dialog.setDialogTitle(mTitle.getText());
             dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

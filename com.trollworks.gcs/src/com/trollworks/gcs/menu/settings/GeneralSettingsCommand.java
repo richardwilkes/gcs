@@ -12,19 +12,17 @@
 package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.preferences.PreferencesWindow;
+import com.trollworks.gcs.settings.GeneralSettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.desktop.PreferencesEvent;
-import java.awt.desktop.PreferencesHandler;
 import java.awt.event.ActionEvent;
 
-public final class PreferencesCommand extends Command implements PreferencesHandler {
-    public static final PreferencesCommand INSTANCE = new PreferencesCommand();
+public final class GeneralSettingsCommand extends Command {
+    public static final GeneralSettingsCommand INSTANCE = new GeneralSettingsCommand();
 
-    private PreferencesCommand() {
-        super(I18n.text("Old Preferences…"), "DefaultSheetSettings");
+    private GeneralSettingsCommand() {
+        super(I18n.text("General Settings…"), "general_settings");
     }
 
     @Override
@@ -34,11 +32,8 @@ public final class PreferencesCommand extends Command implements PreferencesHand
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        PreferencesWindow.display();
-    }
-
-    @Override
-    public void handlePreferences(PreferencesEvent event) {
-        PreferencesWindow.display();
+        if (!UIUtilities.inModalState()) {
+            GeneralSettingsWindow.display();
+        }
     }
 }

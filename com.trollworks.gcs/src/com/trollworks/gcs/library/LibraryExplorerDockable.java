@@ -26,7 +26,7 @@ import com.trollworks.gcs.modifier.EquipmentModifiersDockable;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
 import com.trollworks.gcs.pdfview.PDFServer;
-import com.trollworks.gcs.preferences.Preferences;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
 import com.trollworks.gcs.spell.SpellList;
@@ -114,7 +114,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
-        List<String> openRowKeys = Preferences.getInstance().getLibraryExplorerOpenRowKeys();
+        List<String> openRowKeys = Settings.getInstance().getLibraryExplorerOpenRowKeys();
         if (!openRowKeys.isEmpty()) {
             mTreePanel.setOpen(true, collectRowsToOpen(root, new HashSet<>(openRowKeys), null));
         }
@@ -123,7 +123,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public void savePreferences() {
         List<String> list = new ArrayList<>(collectOpenRowKeys());
         list.sort(NumericComparator.CASELESS_COMPARATOR);
-        Preferences prefs = Preferences.getInstance();
+        Settings prefs = Settings.getInstance();
         prefs.setLibraryExplorerOpenRowKeys(list);
         prefs.setLibraryExplorerDividerPosition(getDockContainer().getDock().getLayout().findLayout(getDockContainer()).getRawDividerPosition());
     }
@@ -308,7 +308,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         if (proxy != null) {
             Path backing = proxy.getBackingFile();
             if (backing != null) {
-                Preferences.getInstance().addRecentFile(backing);
+                Settings.getInstance().addRecentFile(backing);
             }
         }
         return proxy;

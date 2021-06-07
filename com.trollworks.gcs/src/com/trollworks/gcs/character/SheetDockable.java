@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.preferences.Preferences;
-import com.trollworks.gcs.preferences.QuickExport;
+import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.AttributeSettingsWindow;
 import com.trollworks.gcs.settings.HitLocationSettingsWindow;
 import com.trollworks.gcs.settings.SheetSettingsWindow;
@@ -145,7 +145,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         boolean enabled = false;
         Path    path    = mSheet.getCharacter().getPath();
         if (path != null) {
-            QuickExport qe = Preferences.getInstance().getQuickExport(path.toAbsolutePath().toString());
+            QuickExport qe = Settings.getInstance().getQuickExport(path.toAbsolutePath().toString());
             if (qe != null) {
                 enabled = qe.isValid();
             }
@@ -157,7 +157,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         updateQuickExport();
         if (mQuickExportButton.isEnabled()) {
             Path        path = mSheet.getCharacter().getPath();
-            QuickExport qe   = Preferences.getInstance().getQuickExport(path.toAbsolutePath().toString());
+            QuickExport qe   = Settings.getInstance().getQuickExport(path.toAbsolutePath().toString());
             if (qe != null) {
                 qe.export(this);
             }
@@ -165,7 +165,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
     }
 
     public void recordQuickExport(QuickExport qe) {
-        Preferences.getInstance().putQuickExport(mSheet.getCharacter(), qe);
+        Settings.getInstance().putQuickExport(mSheet.getCharacter(), qe);
         updateQuickExport();
     }
 }
