@@ -53,6 +53,7 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
      * @param target The search target.
      */
     public Search(SearchTarget target) {
+        setOpaque(false);
         mTarget = target;
 
         mFilterField = new SearchField();

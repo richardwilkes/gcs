@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.ui.widget.dock.DockColors;
 import com.trollworks.gcs.utility.Log;
 
 import java.awt.Component;
@@ -37,8 +37,8 @@ public class Toolbar extends JPanel implements LayoutManager2 {
         super(true);
         super.setLayout(this);
         setOpaque(true);
-        setBackground(DockColors.BACKGROUND);
-        setBorder(new CompoundBorder(new LineBorder(DockColors.SHADOW, 0, 0, 1, 0), new EmptyBorder(0, GAP, 0, GAP)));
+        setBackground(ThemeColor.BACKGROUND);
+        setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, GAP, 0, GAP)));
     }
 
     @Override

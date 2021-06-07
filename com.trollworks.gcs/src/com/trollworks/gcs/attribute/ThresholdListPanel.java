@@ -29,7 +29,7 @@ public class ThresholdListPanel extends BandedPanel {
     public ThresholdListPanel(AttributeDef attrDef, Runnable adjustCallback) {
         super(false);
         setLayout(new PrecisionLayout().setMargins(0));
-        setBorder(new LineBorder(Color.LIGHT_GRAY));
+        setBorder(new LineBorder(ThemeColor.DIVIDER));
         setBackground(Colors.adjustSaturation(ThemeColor.BANDING, -0.05f));
         mAttrDef = attrDef;
         mAdjustCallback = adjustCallback;

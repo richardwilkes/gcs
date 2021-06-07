@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -53,8 +54,8 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
     public DockHeader(DockContainer dc) {
         super.setLayout(this);
         setOpaque(true);
-        setBackground(DockColors.BACKGROUND);
-        setBorder(new CompoundBorder(new LineBorder(DockColors.SHADOW, 0, 0, 1, 0), new EmptyBorder(0, 4, 0, 4)));
+        setBackground(ThemeColor.BACKGROUND);
+        setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, 4, 0, 4)));
         for (Dockable dockable : dc.getDockables()) {
             add(new DockTab(dockable));
         }
@@ -302,12 +303,8 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
                     x = insets.left;
                 }
             }
-            g.setColor(DockColors.DROP_AREA_OUTER_BORDER);
-            g.drawLine(x, insets.top, x, getHeight() - (insets.top + insets.bottom));
-            g.drawLine(x + 3, insets.top, x + 3, getHeight() - (insets.top + insets.bottom));
-            g.setColor(DockColors.DROP_AREA_INNER_BORDER);
-            g.drawLine(x + 1, insets.top, x + 1, getHeight() - (insets.top + insets.bottom));
-            g.drawLine(x + 2, insets.top, x + 2, getHeight() - (insets.top + insets.bottom));
+            g.setColor(ThemeColor.DROP_AREA);
+            g.fillRect(x, insets.top, 3, getHeight() - (insets.top + insets.bottom));
         }
     }
 

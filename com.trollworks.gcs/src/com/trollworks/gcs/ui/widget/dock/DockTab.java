@@ -13,7 +13,7 @@ package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.Saveable;
-import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -24,11 +24,8 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumericComparator;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.dnd.DnDConstants;
@@ -115,7 +112,6 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
 
     @Override
     protected void paintComponent(Graphics g) {
-        Insets        insets = getInsets();
         Path2D.Double path   = new Path2D.Double();
         int           bottom = getHeight();
         path.moveTo(0, bottom);
@@ -125,17 +121,15 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
         path.lineTo(width - 7, 1);
         path.curveTo(width - 7, 1, width - 1, 1, width - 1, 7);
         path.lineTo(width - 1, bottom);
-        DockContainer dc   = getDockContainer();
-        Color         base = DockColors.BACKGROUND;
-        if (dc != null) {
-            if (dc.getCurrentDockable() == mDockable) {
-                base = dc.isActive() ? DockColors.ACTIVE_TAB_BACKGROUND : DockColors.CURRENT_TAB_BACKGROUND;
-            }
+        Graphics2D    gc = (Graphics2D) g;
+        DockContainer dc = getDockContainer();
+        if (dc != null && dc.getCurrentDockable() == mDockable) {
+            gc.setColor(dc.isActive() ? ThemeColor.ACTIVE_TAB : ThemeColor.CURRENT_TAB);
+        } else {
+            gc.setColor(ThemeColor.CONTENT);
         }
-        Graphics2D gc = (Graphics2D) g;
-        gc.setPaint(new GradientPaint(new Point(insets.left, insets.top), base, new Point(insets.left, getHeight() - (insets.top + insets.bottom)), Colors.adjustBrightness(base, -0.1f)));
         gc.fill(path);
-        gc.setColor(DockColors.SHADOW);
+        gc.setColor(ThemeColor.DIVIDER);
         gc.draw(path);
     }
 

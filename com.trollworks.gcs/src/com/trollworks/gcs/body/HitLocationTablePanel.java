@@ -13,6 +13,7 @@ package com.trollworks.gcs.body;
 
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.DynamicColor;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -49,10 +50,21 @@ public class HitLocationTablePanel extends BandedPanel {
         mLocations = locations;
         mAdjustCallback = adjustCallback;
         if (isSubTable()) {
-            setBorder(new LineBorder(Color.LIGHT_GRAY));
-            setBackground(Colors.adjustSaturation(ThemeColor.BANDING, -0.05f));
+            setBorder(new LineBorder(ThemeColor.DIVIDER));
+            setBackground(new DynamicColor(() -> Colors.adjustSaturation(ThemeColor.BANDING, -0.05f * countSubTableDepth()).getRGB()));
         }
         fill();
+    }
+
+    public int countSubTableDepth() {
+        int depth = 0;
+        HitLocation loc = mLocations.getOwningLocation();
+        while (loc != null) {
+            depth++;
+            HitLocationTable table = loc.getOwningTable();
+            loc = table != null ? table.getOwningLocation() : null;
+        }
+        return depth;
     }
 
     public HitLocationTable getHitLocations() {
@@ -198,9 +210,7 @@ public class HitLocationTablePanel extends BandedPanel {
 
     @Override
     protected Color getBandingColor(boolean odd) {
-        if (isSubTable()) {
-            return Colors.adjustSaturation(super.getBandingColor(odd), 0.05f);
-        }
-        return super.getBandingColor(odd);
+        Color color = super.getBandingColor(odd);
+        return isSubTable() ? Colors.adjustSaturation(color, 0.05f * countSubTableDepth()) : color;
     }
 }

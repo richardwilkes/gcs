@@ -13,6 +13,7 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.CollectedOutlinesDockable;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
@@ -20,7 +21,6 @@ import com.trollworks.gcs.utility.PrintProxy;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JScrollPane;
 
@@ -37,7 +37,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
         createToolbar();
         JScrollPane scroller = new JScrollPane(mTemplate);
         scroller.setBorder(null);
-        scroller.getViewport().setBackground(Color.LIGHT_GRAY);
+        scroller.getViewport().setBackground(ThemeColor.DIVIDER);
         add(scroller, BorderLayout.CENTER);
         dataFile.setModified(false);
         StdUndoManager undoManager = getUndoManager();

@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.Text;
@@ -38,15 +39,13 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 public class FontAwesomeButton extends JComponent implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
-    public static final Color    ROLLOVER_COLOR = new Color(54, 137, 131);
-    public static final Color    PRESSED_COLOR  = new Color(70, 171, 196);
-    private             String   mText;
-    private             Runnable mClickFunction;
-    private             int      mSize;
-    private             int      mMargin;
-    private             boolean  mInMouseDown;
-    private             boolean  mPressed;
-    private             boolean  mRollover;
+    private String   mText;
+    private Runnable mClickFunction;
+    private int      mSize;
+    private int      mMargin;
+    private boolean  mInMouseDown;
+    private boolean  mPressed;
+    private boolean  mRollover;
 
     public FontAwesomeButton(String text, String tooltip, Runnable clickFunction) {
         this(text, 14, tooltip, clickFunction);
@@ -122,14 +121,14 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
         Color color;
         if (isEnabled()) {
             if (mInMouseDown && mPressed) {
-                color = PRESSED_COLOR;
+                color = ThemeColor.PRESSED_ICON_BUTTON;
             } else if (mRollover) {
-                color = ROLLOVER_COLOR;
+                color = ThemeColor.ROLLOVER_ICON_BUTTON;
             } else {
-                color = Color.BLACK;
+                color = ThemeColor.ICON_BUTTON;
             }
         } else {
-            color = Color.LIGHT_GRAY;
+            color = ThemeColor.DISABLED_ICON_BUTTON;
         }
         gc.setColor(color);
         Scale scale = Scale.get(this);

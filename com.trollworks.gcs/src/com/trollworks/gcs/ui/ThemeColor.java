@@ -21,24 +21,40 @@ import java.util.List;
 public final class ThemeColor extends Color {
     public static final List<ThemeColor> ALL = new ArrayList<>();
 
-    public static final ThemeColor CURRENT    = new ThemeColor("current", I18n.text("Current"), new Color(252, 242, 196));
-    public static final ThemeColor ON_CURRENT = new ThemeColor("on_current", I18n.text("On Current"), Color.BLACK);
-    public static final ThemeColor WARN       = new ThemeColor("warn", I18n.text("Warn"), new Color(255, 205, 210));
-    public static final ThemeColor ON_WARN    = new ThemeColor("on_warn", I18n.text("On Warn"), Color.BLACK);
+    // The colors here intentionally avoid the pre-defined Color constants so that my IDE will
+    // provide an interactive color swatch for letting me edit them inline.
 
-    public static final ThemeColor PAGE      = new ThemeColor("page", I18n.text("Page"), Color.WHITE);
-    public static final ThemeColor ON_PAGE   = new ThemeColor("on_page", I18n.text("On Page"), Color.BLACK);
-    public static final ThemeColor PAGE_VOID = new ThemeColor("page_void", I18n.text("Page Void"), Color.LIGHT_GRAY);
-    public static final ThemeColor DIVIDER   = new ThemeColor("divider", I18n.text("Divider"), Color.LIGHT_GRAY);
+    // Also note that the UI displays the colors in 4 evenly divided columns, in the order listed
+    // in these definitions.
 
-    public static final ThemeColor HEADER     = new ThemeColor("header", I18n.text("Header"), new Color(43, 43, 43));
-    public static final ThemeColor ON_HEADER  = new ThemeColor("on_header", I18n.text("On Header"), Color.WHITE);
-    public static final ThemeColor CONTENT    = new ThemeColor("content", I18n.text("Content"), new Color(220, 220, 210));
-    public static final ThemeColor ON_CONTENT = new ThemeColor("on_content", I18n.text("On Content"), Color.BLACK);
-
-    public static final ThemeColor EDITABLE_LINE = new ThemeColor("editable_line", I18n.text("Editable Line"), Color.LIGHT_GRAY);
+    public static final ThemeColor BACKGROUND    = new ThemeColor("background", I18n.text("Background"), new Color(238, 238, 238));
+    public static final ThemeColor ON_BACKGROUND = new ThemeColor("on_background", I18n.text("On Background"), new Color(0, 0, 0));
+    public static final ThemeColor CONTENT       = new ThemeColor("content", I18n.text("Content"), new Color(220, 220, 210));
+    public static final ThemeColor ON_CONTENT    = new ThemeColor("on_content", I18n.text("On Content"), new Color(0, 0, 0));
     public static final ThemeColor ON_EDITABLE   = new ThemeColor("on_editable", I18n.text("On Editable"), new Color(0, 0, 160));
     public static final ThemeColor BANDING       = new ThemeColor("banding", I18n.text("Banding"), new Color(200, 200, 185));
+    public static final ThemeColor DIVIDER       = new ThemeColor("divider", I18n.text("Divider"), new Color(192, 192, 192));
+
+    public static final ThemeColor HEADER     = new ThemeColor("header", I18n.text("Header"), new Color(43, 43, 43));
+    public static final ThemeColor ON_HEADER  = new ThemeColor("on_header", I18n.text("On Header"), new Color(255, 255, 255));
+    public static final ThemeColor MARKER     = new ThemeColor("marker", I18n.text("Marker"), new Color(252, 242, 196));
+    public static final ThemeColor ON_CURRENT = new ThemeColor("on_marker", I18n.text("On Marker"), new Color(0, 0, 0));
+    public static final ThemeColor WARNING    = new ThemeColor("warn", I18n.text("Warn"), new Color(255, 205, 210));
+    public static final ThemeColor ON_WARNING = new ThemeColor("on_warn", I18n.text("On Warn"), new Color(0, 0, 0));
+
+    public static final ThemeColor ACTIVE_TAB     = new ThemeColor("active_tab", I18n.text("Active Tab"), new Color(224, 212, 175));
+    public static final ThemeColor ON_ACTIVE_TAB  = new ThemeColor("on_active_tab", I18n.text("On Active Tab"), new Color(0, 0, 0));
+    public static final ThemeColor CURRENT_TAB    = new ThemeColor("current_tab", I18n.text("Current Tab"), new Color(211, 207, 197));
+    public static final ThemeColor ON_CURRENT_TAB = new ThemeColor("on_current_tab", I18n.text("On Current Tab"), new Color(0, 0, 0));
+    public static final ThemeColor PAGE           = new ThemeColor("page", I18n.text("Page"), new Color(255, 255, 255));
+    public static final ThemeColor ON_PAGE        = new ThemeColor("on_page", I18n.text("On Page"), new Color(0, 0, 0));
+
+    public static final ThemeColor ICON_BUTTON          = new ThemeColor("icon_button", I18n.text("Icon Button"), new Color(0, 0, 0));
+    public static final ThemeColor DISABLED_ICON_BUTTON = new ThemeColor("disabled_icon_button", I18n.text("Disabled Icon Button"), new Color(192, 192, 192));
+    public static final ThemeColor ROLLOVER_ICON_BUTTON = new ThemeColor("rollover_icon_button", I18n.text("Rollover Icon Button"), new Color(54, 137, 131));
+    public static final ThemeColor PRESSED_ICON_BUTTON  = new ThemeColor("pressed_icon_button", I18n.text("Pressed Icon Button"), new Color(70, 171, 196));
+    public static final ThemeColor DROP_AREA            = new ThemeColor("drop_area", I18n.text("Drop Area"), new Color(0, 0, 255));
+    public static final ThemeColor PAGE_VOID            = new ThemeColor("page_void", I18n.text("Page Void"), new Color(192, 192, 192));
 
     private final int    mIndex;
     private final String mName;

@@ -75,7 +75,7 @@ public class EncumbrancePanel extends DropPanel {
             Color   textColor;
             if (current == encumbrance) {
                 warn = character.isCarryingGreaterThanMaxLoad(false);
-                textColor = warn ? ThemeColor.ON_WARN : ThemeColor.ON_CURRENT;
+                textColor = warn ? ThemeColor.ON_WARNING : ThemeColor.ON_CURRENT;
             } else {
                 warn = false;
                 textColor = ThemeColor.ON_CONTENT;
@@ -94,7 +94,7 @@ public class EncumbrancePanel extends DropPanel {
             PageLabel level = new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header);
             add(level, new PrecisionLayoutData().setGrabHorizontalSpace(true));
             if (current == encumbrance) {
-                addHorizontalBackground(level, warn ? ThemeColor.WARN : ThemeColor.CURRENT);
+                addHorizontalBackground(level, warn ? ThemeColor.WARNING : ThemeColor.MARKER);
             } else if (band) {
                 addHorizontalBackground(level, ThemeColor.BANDING);
             }

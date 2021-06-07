@@ -86,8 +86,6 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              DirectScrollPanelArea     mViewArea;
     private              Deletable                 mDeletableProxy;
     private              Openable                  mOpenableProxy;
-    private              Color                     mDividerColor           = Color.GRAY;
-    private              Color                     mHierarchyLineColor     = new Color(224, 224, 224);
     private              HashSet<TreeContainerRow> mOpenRows               = new HashSet<>();
     private              HashSet<TreeRow>          mSelectedRows           = new HashSet<>();
     private              Map<TreeRow, Integer>     mRowHeightMap           = new HashMap<>();
@@ -115,6 +113,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              boolean                   mUserSortable           = true;
     private              boolean                   mShowColumnDivider      = true;
     private              boolean                   mShowRowDivider         = true;
+    private              boolean                   mShowHierarchyLines     = true;
     private              boolean                   mShowHeader             = true;
     private              boolean                   mDropReceived;
     private              boolean                   mResizePending;
@@ -654,7 +653,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         }
         if (dividerWidth > 0) {
             Color savedColor = gc.getColor();
-            gc.setColor(mDividerColor);
+            gc.setColor(ThemeColor.DIVIDER);
             int bottom = colBounds.y + colBounds.height;
             gc.drawLine(left, bottom, right, bottom);
             gc.setColor(savedColor);
@@ -761,7 +760,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 int       top        = clipBounds.y;
                 int       bottom     = top + clipBounds.height;
                 int       x          = 0;
-                gc.setColor(mDividerColor);
+                gc.setColor(ThemeColor.DIVIDER);
                 for (int i = 0; i < count; i++) {
                     x += mColumns.get(i).getWidth();
                     if (x >= left && x < right) {
@@ -823,7 +822,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         gc.setColor(getDefaultRowBackground(position, selected, active));
         gc.fillRect(left, top, clipBounds.width, height);
         if (mShowRowDivider) {
-            gc.setColor(mDividerColor);
+            gc.setColor(ThemeColor.DIVIDER);
             int bottom = top + height - 1;
             gc.drawLine(0, bottom, right, bottom);
         }
@@ -843,11 +842,11 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                     int indent = INDENT * depth;
                     colWidth -= indent;
                     tmpX += indent;
-                    if ((mShowDisclosureControls || depth > 0) && mHierarchyLineColor != null) {
+                    if ((mShowDisclosureControls || depth > 0) && mShowHierarchyLines) {
                         TreeRow firstRow = mRoot.getChild(0);
                         if (row != firstRow || mRoot.getChildCount() > 1 || firstRow instanceof TreeContainerRow) {
                             int xx = x + indent - INDENT / 2;
-                            gc.setColor(mHierarchyLineColor);
+                            gc.setColor(ThemeColor.DIVIDER);
                             gc.drawLine(xx, top + rowHeight / 2, x + indent, top + rowHeight / 2);
                             int yt = row == firstRow ? top + rowHeight / 2 : top;
                             int yb = top + (row.getIndex() == row.getParent().getChildCount() - 1 ? rowHeight / 2 : height);
@@ -1070,32 +1069,9 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         return mShowRowDivider ? 1 : 0;
     }
 
-    /** @return The {@link Color} to use for divider lines. */
-    public Color getDividerColor() {
-        return mDividerColor;
-    }
-
-    /** @param color The {@link Color} to use for divider lines. */
-    public void setDividerColor(Color color) {
-        mDividerColor = color;
-    }
-
     /** @return The width of the column divider. */
     public int getColumnDividerWidth() {
         return mShowColumnDivider ? 1 : 0;
-    }
-
-    /** @return The {@link Color} to use for the hierarchy lines. */
-    public Color getHierarchyLineColor() {
-        return mHierarchyLineColor;
-    }
-
-    /**
-     * @param color The {@link Color} to use for the hierarchy lines. If {@code null}, then no
-     *              hierarchy lines will be drawn.
-     */
-    public void setHierarchyLineColor(Color color) {
-        mHierarchyLineColor = color;
     }
 
     /**
@@ -1129,7 +1105,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
             }
             return color;
         }
-        return (mUseBanding && (position % 2 != 0)) ? ThemeColor.BANDING : Color.WHITE;
+        return (mUseBanding && (position % 2 != 0)) ? ThemeColor.BANDING : ThemeColor.CONTENT;
     }
 
     /** @return {@code true} if background banding is enabled. */
@@ -2216,6 +2192,14 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     public void setSelectionChangedHandler(SelectionChangedHandler handler) {
         mSelectionChangedHandler = handler;
+    }
+
+    public boolean showHierarchyLines() {
+        return mShowHierarchyLines;
+    }
+
+    public void setShowHierarchyLines(boolean show) {
+        mShowHierarchyLines = show;
     }
 }
 

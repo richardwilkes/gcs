@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.Log;
@@ -62,7 +63,7 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
 
     /** Creates a new DirectScrollPanel. */
     protected DirectScrollPanel() {
-        setBackground(Color.WHITE);
+        setBackground(ThemeColor.CONTENT);
         setLayout(this);
         mHSB.setVisible(false);
         mVSB.setVisible(false);

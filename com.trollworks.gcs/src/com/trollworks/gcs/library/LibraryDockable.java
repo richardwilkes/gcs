@@ -17,6 +17,7 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -95,6 +96,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mScroller = new JScrollPane(content);
         mScroller.setBorder(null);
         mScroller.setColumnHeaderView(header);
+        mScroller.getViewport().setBackground(ThemeColor.CONTENT);
         add(mScroller, BorderLayout.CENTER);
         prefs.addChangeListener(this);
         getDataFile().addChangeListener(this);

@@ -11,7 +11,9 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.MouseCapture;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Cursors;
 import com.trollworks.gcs.utility.Log;
@@ -184,12 +186,11 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
         super.paintChildren(gc);
         if (mDragOverNode != null) {
             Rectangle bounds = getDragOverBounds();
-            gc.setColor(DockColors.DROP_AREA);
+            gc.setColor(Colors.getWithAlpha(ThemeColor.DROP_AREA, 64));
             gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-            gc.setColor(DockColors.DROP_AREA_INNER_BORDER);
-            gc.drawRect(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 3);
-            gc.setColor(DockColors.DROP_AREA_OUTER_BORDER);
+            gc.setColor(ThemeColor.DROP_AREA);
             gc.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
+            gc.drawRect(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 3);
         }
     }
 
@@ -215,28 +216,20 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
     }
 
     private static void drawHorizontalGripper(Graphics gc, DockLayoutNode secondary) {
-        int x      = secondary.getX() - DIVIDER_SIZE + (DIVIDER_SIZE - GRIP_WIDTH) / 2;
-        int y      = secondary.getY() + (secondary.getHeight() - GRIP_LENGTH) / 2;
-        int top    = GRIP_HEIGHT / 2;
-        int bottom = GRIP_HEIGHT - top;
+        int x = secondary.getX() - DIVIDER_SIZE + (DIVIDER_SIZE - GRIP_WIDTH) / 2;
+        int y = secondary.getY() + (secondary.getHeight() - GRIP_LENGTH) / 2;
+        gc.setColor(ThemeColor.DIVIDER);
         for (int yy = y; yy < y + GRIP_LENGTH; yy += GRIP_HEIGHT + GRIP_GAP) {
-            gc.setColor(DockColors.HIGHLIGHT);
-            gc.fillRect(x, yy, GRIP_WIDTH, top);
-            gc.setColor(DockColors.SHADOW);
-            gc.fillRect(x, yy + top, GRIP_WIDTH, bottom);
+            gc.fillRect(x, yy, GRIP_WIDTH - 1, GRIP_HEIGHT);
         }
     }
 
     private static void drawVerticalGripper(Graphics gc, DockLayoutNode secondary) {
-        int x      = secondary.getX() + (secondary.getWidth() - GRIP_LENGTH) / 2;
-        int y      = secondary.getY() - DIVIDER_SIZE + (DIVIDER_SIZE - GRIP_WIDTH) / 2;
-        int top    = GRIP_HEIGHT / 2;
-        int bottom = GRIP_HEIGHT - top;
+        int x = secondary.getX() + (secondary.getWidth() - GRIP_LENGTH) / 2;
+        int y = secondary.getY() - DIVIDER_SIZE + (DIVIDER_SIZE - GRIP_WIDTH) / 2;
+        gc.setColor(ThemeColor.DIVIDER);
         for (int xx = x; xx < x + GRIP_LENGTH; xx += GRIP_HEIGHT + GRIP_GAP) {
-            gc.setColor(DockColors.HIGHLIGHT);
-            gc.fillRect(xx, y, top, GRIP_WIDTH);
-            gc.setColor(DockColors.SHADOW);
-            gc.fillRect(xx + top, y, bottom, GRIP_WIDTH);
+            gc.fillRect(xx, y, GRIP_HEIGHT, GRIP_WIDTH - 1);
         }
     }
 
@@ -248,7 +241,7 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
             if (layoutWidth > 0) {
                 int layoutHeight = node.getHeight();
                 if (layoutHeight > 0) {
-                    gc.setColor(DockColors.SHADOW);
+                    gc.setColor(ThemeColor.DIVIDER);
                     gc.drawRect(node.getX() - 1, node.getY() - 1, node.getWidth() + 1, node.getHeight() + 1);
                 }
             }

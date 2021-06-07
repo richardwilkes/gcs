@@ -118,7 +118,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
             Rectangle bounds = getBounds();
             bounds.x = 0;
             bounds.y = 0;
-            gc.setColor(ThemeColor.EDITABLE_LINE);
+            gc.setColor(ThemeColor.DIVIDER);
             int height = mSheet.getScale().scale(1);
             gc.fillRect(bounds.x, bounds.y + bounds.height - height, bounds.width, height);
             gc.setColor(getForeground());

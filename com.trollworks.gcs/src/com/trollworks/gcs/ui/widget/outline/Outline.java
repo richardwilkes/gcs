@@ -25,7 +25,6 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.ActionPanel;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
 import com.trollworks.gcs.utility.Geometry;
@@ -178,7 +177,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         setForeground(ThemeColor.ON_CONTENT);
         mDividerColor = ThemeColor.DIVIDER;
         mBandingColor = ThemeColor.BANDING;
-        mInsertionColor = Color.RED;
+        mInsertionColor = ThemeColor.DROP_AREA;
         setOpaque(true);
         setFocusable(true);
         addFocusListener(this);
@@ -434,7 +433,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                                         colBounds.x += shift;
                                         colBounds.width -= shift;
                                         if (row.canHaveChildren()) {
-                                            gc.setColor(row == mRollRow ? FontAwesomeButton.ROLLOVER_COLOR : Color.BLACK);
+                                            gc.setColor(row == mRollRow ? ThemeColor.ROLLOVER_ICON_BUTTON : ThemeColor.ICON_BUTTON);
                                             int disclosureSize = scale.scale(mModel.getIndentWidth());
                                             gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
                                             TextDrawing.draw(gc, new Rectangle(colBounds.x - disclosureSize, colBounds.y - scale.scale(2), disclosureSize, disclosureSize), getDisclosure(row), SwingConstants.CENTER, SwingConstants.CENTER);
@@ -666,7 +665,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             }
             return color;
         }
-        return (useBanding() && (rowIndex % 2 != 0)) ? mBandingColor : getBackground();
+        return (useBanding() && (rowIndex % 2 != 0)) ? mBandingColor : ThemeColor.CONTENT;
     }
 
     @Override
@@ -901,7 +900,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 gc.setBackground(Colors.TRANSPARENT);
                 gc.clearRect(0, 0, bounds.width, bounds.height);
                 gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-                gc.setColor(getBackground());
+                gc.setColor(ThemeColor.CONTENT);
                 gc.fill(bounds);
                 gc.setColor(mDividerColor);
                 if (mDrawRowDividers) {
