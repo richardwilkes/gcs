@@ -20,12 +20,13 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 public class PageSettingsEditor extends JPanel {
@@ -46,8 +47,12 @@ public class PageSettingsEditor extends JPanel {
     }
 
     public PageSettingsEditor(PageSettings settings, Runnable adjustCallback, ResetPageSettings resetCallback) {
-        super(new PrecisionLayout().setColumns(6).setMargins(4, 0, 4, 0));
+        super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0));
         setOpaque(false);
+        JLabel header = new JLabel(I18n.text("Page Settings"));
+        header.setFont(header.getFont().deriveFont(Font.BOLD));
+        add(header, new PrecisionLayoutData().setHorizontalSpan(4));
+        add(new JSeparator(SwingConstants.HORIZONTAL), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
         mSettings = settings;
         mAdjustCallback = adjustCallback;
         mResetCallback = resetCallback;
@@ -55,24 +60,24 @@ public class PageSettingsEditor extends JPanel {
             mSettings.setPaperSize(((PaperSize) mPaperSize.getSelectedItem()));
             mAdjustCallback.run();
         });
-        LengthValue proto = new LengthValue(new Fixed6(99.99), LengthUnits.IN);
-        mTopMargin = addField(I18n.text("Top Margin"), null, mSettings.getTopMargin(), proto, FieldFactory.LENGTH, (evt) -> {
-            mSettings.setTopMargin((LengthValue) evt.getNewValue());
-            mAdjustCallback.run();
-        });
-        mBottomMargin = addField(I18n.text("Bottom Margin"), null, mSettings.getBottomMargin(), proto, FieldFactory.LENGTH, (evt) -> {
-            mSettings.setBottomMargin((LengthValue) evt.getNewValue());
-            mAdjustCallback.run();
-        });
         mOrientation = addCombo(I18n.text("Orientation"), PageOrientation.values(), mSettings.getPageOrientation(), (evt) -> {
             mSettings.setPageOrientation((PageOrientation) mOrientation.getSelectedItem());
             mAdjustCallback.run();
         });
-        mLeftMargin = addField(I18n.text("Left Margin"), null, mSettings.getLeftMargin(), proto, FieldFactory.LENGTH, (evt) -> {
+        LengthValue proto = new LengthValue(new Fixed6(99.99), LengthUnits.IN);
+        mTopMargin = addField(I18n.text("Top Margin"), mSettings.getTopMargin(), proto, (evt) -> {
+            mSettings.setTopMargin((LengthValue) evt.getNewValue());
+            mAdjustCallback.run();
+        });
+        mBottomMargin = addField(I18n.text("Bottom Margin"), mSettings.getBottomMargin(), proto, (evt) -> {
+            mSettings.setBottomMargin((LengthValue) evt.getNewValue());
+            mAdjustCallback.run();
+        });
+        mLeftMargin = addField(I18n.text("Left Margin"), mSettings.getLeftMargin(), proto, (evt) -> {
             mSettings.setLeftMargin((LengthValue) evt.getNewValue());
             mAdjustCallback.run();
         });
-        mRightMargin = addField(I18n.text("Right Margin"), null, mSettings.getRightMargin(), proto, FieldFactory.LENGTH, (evt) -> {
+        mRightMargin = addField(I18n.text("Right Margin"), mSettings.getRightMargin(), proto, (evt) -> {
             mSettings.setRightMargin((LengthValue) evt.getNewValue());
             mAdjustCallback.run();
         });
@@ -89,11 +94,10 @@ public class PageSettingsEditor extends JPanel {
         add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
-    private EditorField addField(String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private EditorField addField(String title, Object value, Object protoValue, PropertyChangeListener listener) {
         addLabel(title);
-        EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
-        PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
-        add(field, layoutData);
+        EditorField field = new EditorField(FieldFactory.LENGTH, listener, SwingConstants.LEFT, value, protoValue, null);
+        add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
