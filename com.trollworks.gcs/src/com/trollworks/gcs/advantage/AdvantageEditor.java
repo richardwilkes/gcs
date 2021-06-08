@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Filtered;
@@ -121,7 +122,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private JPanel createTopSection() {
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         addPrimaryCommonFields(panel);
         if (mRow.canHaveChildren()) {
             addSecondaryCommonFields(panel);
@@ -138,7 +139,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mNameField = createField(mRow.getName(), null, I18n.text("The name of the advantage, without any notes"));
         mNameField.getDocument().addDocumentListener(this);
         addLabel(parent, I18n.text("Name"), mNameField);
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mNameField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mEnabledCheckBox = new JCheckBox(I18n.text("Enabled"));
         mEnabledCheckBox.setSelected(mRow.isSelfEnabled());
@@ -160,7 +161,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), I18n.text("The total point cost of this advantage"));
         mPointsField.setEnabled(false);
         addLabel(parent, I18n.text("Point Cost"), mPointsField);
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(10).setMargins(0));
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(10).setMargins(0));
         wrapper.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
 
         mBasePointsField = createField(-9999, 9999, mRow.getPoints(), I18n.text("The base point cost of this advantage"));
@@ -224,7 +225,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
         mCRCombo.addActionListener(this);
         parent.add(new LinkedLabel(I18n.text("Self-Control Roll"), mCRCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mCRCombo);
         mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
         mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Adjustments that are applied due to Self-Control Roll limitations")));
@@ -240,7 +241,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
 
         mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.text("Mental"));
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(12).setMargins(0));
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(12).setMargins(0));
         wrapper.add(mMentalType);
         wrapper.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
 
@@ -269,7 +270,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
         mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The type of container this is")));
         parent.add(new LinkedLabel(I18n.text("Container Type"), mContainerTypeCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(3).setMargins(0));
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(3).setMargins(0));
         wrapper.add(mContainerTypeCombo);
         addRefField(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));

@@ -41,6 +41,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
         super(new ColumnLayout(1, 0, 0));
         setOpaque(true);
         setBackground(ThemeColor.CONTENT);
+        setForeground(ThemeColor.ON_CONTENT);
         mTitle = title;
     }
 
@@ -50,10 +51,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
      * @param forceTrackWidth {@code true} if the width should always track the viewport.
      */
     public BandedPanel(boolean forceTrackWidth) {
-        super(new ColumnLayout(1, 0, 0));
-        setOpaque(true);
-        setBackground(ThemeColor.CONTENT);
-        mTitle = "";
+        this("");
         mForceTrackWidth = forceTrackWidth;
     }
 
@@ -67,7 +65,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
         int count = getComponentCount();
         for (int i = 0; i < count; i += step) {
             Rectangle compBounds = getComponent(i).getBounds();
-            for (int j = i + 1; j < i + step; j++) {
+            for (int j = i + 1; j < i + step && j < count; j++) {
                 compBounds = compBounds.union(getComponent(j).getBounds());
             }
             bounds.y = compBounds.y;

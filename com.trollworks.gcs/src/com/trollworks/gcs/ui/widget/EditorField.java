@@ -12,9 +12,11 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -24,7 +26,7 @@ import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
+import javax.swing.border.CompoundBorder;
 
 /** Provides a standard editor field. */
 public class EditorField extends JFormattedTextField implements ActionListener, Commitable {
@@ -57,6 +59,14 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         super(formatter, protoValue != null ? protoValue : value);
         setHorizontalAlignment(alignment);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setFocusLostBehavior(COMMIT_OR_REVERT);
+        setForeground(ThemeColor.ON_EDITABLE);
+        setBackground(ThemeColor.EDITABLE);
+        setCaretColor(ThemeColor.ON_EDITABLE);
+        setSelectionColor(ThemeColor.SELECTION);
+        setSelectedTextColor(ThemeColor.ON_SELECTION);
+        setDisabledTextColor(ThemeColor.DISABLED_ON_EDITABLE);
+        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         if (protoValue != null) {
             setPreferredSize(getPreferredSize());
             setValue(value);
@@ -65,15 +75,6 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
             addPropertyChangeListener("value", listener);
         }
         addActionListener(this);
-        setFocusLostBehavior(COMMIT_OR_REVERT);
-
-        // Reset the selection colors back to what is standard for text fields.
-        // This is necessary, since (at least on the Mac) JFormattedTextField
-        // has the wrong values by default.
-        setCaretColor(UIManager.getColor("TextField.caretForeground"));
-        setSelectionColor(UIManager.getColor("TextField.selectionBackground"));
-        setSelectedTextColor(UIManager.getColor("TextField.selectionForeground"));
-        setDisabledTextColor(UIManager.getColor("TextField.inactiveForeground"));
     }
 
     @Override
@@ -81,6 +82,9 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         super.processFocusEvent(event);
         if (event.getID() == FocusEvent.FOCUS_GAINED) {
             selectAll();
+            setBorder(new CompoundBorder(new LineBorder(ThemeColor.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        } else {
+            setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         }
     }
 
@@ -97,7 +101,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
             Rectangle bounds = getBounds();
             bounds.x = 0;
             bounds.y = 0;
-            gc.setColor(Color.GRAY);
+            gc.setColor(ThemeColor.HINT);
             TextDrawing.draw(gc, bounds, mHint, SwingConstants.CENTER, SwingConstants.CENTER);
         }
     }

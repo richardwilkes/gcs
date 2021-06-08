@@ -15,12 +15,12 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -32,7 +32,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
@@ -88,7 +87,7 @@ public final class EquipmentModifierEnabler extends JPanel {
         super(new BorderLayout());
         mEquipment = equipment;
         add(createTop(equipment, remaining), BorderLayout.NORTH);
-        JScrollPane scrollPanel = new JScrollPane(createCenter());
+        ScrollPanel scrollPanel = new ScrollPanel(createCenter());
         scrollPanel.setMinimumSize(new Dimension(500, 120));
         add(scrollPanel, BorderLayout.CENTER);
     }
@@ -108,8 +107,7 @@ public final class EquipmentModifierEnabler extends JPanel {
     }
 
     private Container createCenter() {
-        JPanel wrapper = new JPanel(new ColumnLayout());
-        wrapper.setBackground(Color.WHITE);
+        JPanel panel = new JPanel(new ColumnLayout());
         mModifiers = mEquipment.getModifiers().toArray(new EquipmentModifier[0]);
         Arrays.sort(mModifiers);
 
@@ -117,9 +115,9 @@ public final class EquipmentModifierEnabler extends JPanel {
         mEnabled = new JCheckBox[length];
         for (int i = 0; i < length; i++) {
             mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription(), mModifiers[i].isEnabled());
-            wrapper.add(mEnabled[i]);
+            panel.add(mEnabled[i]);
         }
-        return wrapper;
+        return panel;
     }
 
     private void applyChanges() {

@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.Text;
@@ -28,30 +29,10 @@ import javax.swing.SwingConstants;
 
 /** A simple label replacement that is scalable. */
 public class Label extends JComponent implements PropertyChangeListener {
-    /** The property key that is monitored for error messages. */
-    public static final String     ERROR_MESSAGE_KEY    = "Error Message";
-    private             String     mText                = "";
-    private             int        mHorizontalAlignment = SwingConstants.LEFT;
-    private             int        mVerticalAlignment   = SwingConstants.CENTER;
-    private             JComponent mRefersTo;
-    private             Color      mColor               = Color.BLACK;
-    private             boolean    mUsePreferredSizeOnly;
-
-    /** Create a new, empty label. */
-    public Label() {
-        setForeground(mColor);
-    }
-
-    /**
-     * Create a new label.
-     *
-     * @param usePreferredSizeOnly {@code true} if only the preferred size is to be reported for
-     *                             min/max.
-     */
-    public Label(boolean usePreferredSizeOnly) {
-        this();
-        mUsePreferredSizeOnly = usePreferredSizeOnly;
-    }
+    private static final String     ERROR_KEY = "error";
+    private              String     mText     = "";
+    private              int        mHAlign   = SwingConstants.LEFT;
+    private              JComponent mRefersTo;
 
     /**
      * Create a new label.
@@ -59,44 +40,19 @@ public class Label extends JComponent implements PropertyChangeListener {
      * @param text The text to use.
      */
     public Label(String text) {
-        this();
+        setForeground(ThemeColor.ON_BACKGROUND);
         setText(text);
     }
 
     /**
      * Create a new label.
      *
-     * @param text                The text to use.
-     * @param horizontalAlignment The horizontal alignment to use.
+     * @param text   The text to use.
+     * @param hAlign The horizontal alignment to use.
      */
-    public Label(String text, int horizontalAlignment) {
+    public Label(String text, int hAlign) {
         this(text);
-        setHorizontalAlignment(horizontalAlignment);
-    }
-
-    /**
-     * Create a new label.
-     *
-     * @param text                 The text to use.
-     * @param usePreferredSizeOnly {@code true} if only the preferred size is to be reported for
-     *                             min/max.
-     */
-    public Label(String text, boolean usePreferredSizeOnly) {
-        this(text);
-        mUsePreferredSizeOnly = usePreferredSizeOnly;
-    }
-
-    /**
-     * Create a new label.
-     *
-     * @param text                 The text to use.
-     * @param horizontalAlignment  The horizontal alignment to use.
-     * @param usePreferredSizeOnly {@code true} if only the preferred size is to be reported for
-     *                             min/max.
-     */
-    public Label(String text, int horizontalAlignment, boolean usePreferredSizeOnly) {
-        this(text, usePreferredSizeOnly);
-        setHorizontalAlignment(horizontalAlignment);
+        mHAlign = hAlign;
     }
 
     /** @return The text. */
@@ -117,26 +73,13 @@ public class Label extends JComponent implements PropertyChangeListener {
 
     /** @return The horizontal alignment. */
     public int getHorizontalAlignment() {
-        return mHorizontalAlignment;
+        return mHAlign;
     }
 
     /** @param alignment The horizontal alignment to use. */
     public void setHorizontalAlignment(int alignment) {
-        if (mHorizontalAlignment != alignment) {
-            mHorizontalAlignment = alignment;
-            repaint();
-        }
-    }
-
-    /** @return The vertical alignment. */
-    public int getVerticalAlignment() {
-        return mVerticalAlignment;
-    }
-
-    /** @param alignment The vertical alignment to use. */
-    public void setVerticalAlignment(int alignment) {
-        if (mVerticalAlignment != alignment) {
-            mVerticalAlignment = alignment;
+        if (mHAlign != alignment) {
+            mHAlign = alignment;
             repaint();
         }
     }
@@ -144,16 +87,11 @@ public class Label extends JComponent implements PropertyChangeListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setFont(Scale.get(this).scale(getFont()));
-        TextDrawing.draw(g, UIUtilities.getLocalInsetBounds(this), mText, mHorizontalAlignment, mVerticalAlignment);
-    }
-
-    @Override
-    public Dimension getMinimumSize() {
-        if (mUsePreferredSizeOnly) {
-            return getPreferredSize();
+        if (mRefersTo != null && mRefersTo.getClientProperty(ERROR_KEY) != null) {
+            g.setColor(Color.RED); // TODO: Use themed error color
         }
-        return super.getMinimumSize();
+        g.setFont(Scale.get(this).scale(getFont()));
+        TextDrawing.draw(g, UIUtilities.getLocalInsetBounds(this), mText, mHAlign, SwingConstants.CENTER);
     }
 
     @Override
@@ -168,14 +106,6 @@ public class Label extends JComponent implements PropertyChangeListener {
         return size;
     }
 
-    @Override
-    public Dimension getMaximumSize() {
-        if (mUsePreferredSizeOnly) {
-            return getPreferredSize();
-        }
-        return super.getMaximumSize();
-    }
-
     /** @return The {@link JComponent} that is being paired with. */
     public JComponent getRefersTo() {
         return mRefersTo;
@@ -186,12 +116,12 @@ public class Label extends JComponent implements PropertyChangeListener {
         if (mRefersTo != refersTo) {
             if (mRefersTo != null) {
                 mRefersTo.removePropertyChangeListener(TOOL_TIP_TEXT_KEY, this);
-                mRefersTo.removePropertyChangeListener(ERROR_MESSAGE_KEY, this);
+                mRefersTo.removePropertyChangeListener(ERROR_KEY, this);
             }
             mRefersTo = refersTo;
             if (mRefersTo != null) {
                 mRefersTo.addPropertyChangeListener(TOOL_TIP_TEXT_KEY, this);
-                mRefersTo.addPropertyChangeListener(ERROR_MESSAGE_KEY, this);
+                mRefersTo.addPropertyChangeListener(ERROR_KEY, this);
             }
             adjustToLink();
         }
@@ -203,30 +133,15 @@ public class Label extends JComponent implements PropertyChangeListener {
     }
 
     private void adjustToLink() {
-        String tooltip;
-        Color  color;
+        String tooltip = null;
         if (mRefersTo != null) {
-            tooltip = (String) mRefersTo.getClientProperty(ERROR_MESSAGE_KEY);
+            tooltip = (String) mRefersTo.getClientProperty(ERROR_KEY);
             if (tooltip == null) {
                 tooltip = mRefersTo.getToolTipText();
-                color = mColor;
-            } else {
-                color = Color.RED;
             }
-        } else {
-            tooltip = null;
-            color = mColor;
         }
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        super.setForeground(color);
-    }
-
-    @Override
-    public void setForeground(Color color) {
-        mColor = color;
-        if (mRefersTo == null || mRefersTo.getClientProperty(ERROR_MESSAGE_KEY) == null) {
-            super.setForeground(color);
-        }
+        repaint();
     }
 
     /**
@@ -236,8 +151,8 @@ public class Label extends JComponent implements PropertyChangeListener {
      * @param msg  The error message or {@code null}.
      */
     public static void setErrorMessage(JComponent comp, String msg) {
-        if (!Objects.equals(comp.getClientProperty(ERROR_MESSAGE_KEY), msg)) {
-            comp.putClientProperty(ERROR_MESSAGE_KEY, msg);
+        if (!Objects.equals(comp.getClientProperty(ERROR_KEY), msg)) {
+            comp.putClientProperty(ERROR_KEY, msg);
         }
     }
 }

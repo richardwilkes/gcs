@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.TitledBorder;
@@ -19,8 +20,11 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Commitable;
+import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -33,10 +37,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 /**
@@ -45,10 +45,11 @@ import javax.swing.SwingConstants;
  * @param <T> The row class being edited.
  */
 public abstract class RowEditor<T extends ListRow> extends ActionPanel {
+    private static final int     MARGIN = 10;
     /** Whether the underlying data should be editable. */
-    protected boolean mIsEditable;
+    protected            boolean mIsEditable;
     /** The row being edited. */
-    protected T       mRow;
+    protected            T       mRow;
 
     /**
      * Brings up a modal detailed editor for each row in the list.
@@ -58,32 +59,28 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
      * @return Whether anything was modified.
      */
     public static boolean edit(Component owner, List<? extends ListRow> list) {
-        ArrayList<RowUndo> undos = new ArrayList<>();
-        ListRow[]          rows  = list.toArray(new ListRow[0]);
-
-        int length = rows.length;
+        ArrayList<RowUndo> undos  = new ArrayList<>();
+        ListRow[]          rows   = list.toArray(new ListRow[0]);
+        int                length = rows.length;
         for (int i = 0; i < length; i++) {
-            boolean                      hasMore = i != length - 1;
-            ListRow                      row     = rows[i];
-            RowEditor<? extends ListRow> editor  = row.createEditor();
-            String                       title   = MessageFormat.format(I18n.text("Edit {0}"), row.getRowType());
-            JPanel                       wrapper = new JPanel(new BorderLayout());
-
-            if (hasMore) {
+            ListRow   row     = rows[i];
+            StdDialog dialog  = new StdDialog(owner, MessageFormat.format(I18n.text("Edit {0}"), row.getRowType()));
+            Container content = dialog.getContentPane();
+            if (i != length - 1) {
                 int    remaining = length - i - 1;
                 String msg       = remaining == 1 ? I18n.text("1 item remaining to be edited.") : MessageFormat.format(I18n.text("{0} items remaining to be edited."), Integer.valueOf(remaining));
-                JLabel panel     = new JLabel(msg, SwingConstants.CENTER);
-                panel.setBorder(new EmptyBorder(0, 0, 10, 0));
-                wrapper.add(panel, BorderLayout.NORTH);
+                Label  label     = new Label(msg, SwingConstants.CENTER);
+                label.setBorder(new EmptyBorder(StdDialog.MARGIN, 0, 0, 0));
+                content.add(label, BorderLayout.NORTH);
+                dialog.addCancelRemainingButton();
             }
-            wrapper.add(editor, BorderLayout.CENTER);
-
-            int      type       = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-            String   applyText  = I18n.text("Apply");
-            String   cancelText = I18n.text("Cancel");
-            String[] options    = hasMore ? new String[]{applyText, cancelText, I18n.text("Cancel Remaining")} : new String[]{applyText, cancelText};
-            switch (WindowUtils.showOptionDialog(owner, wrapper, title, true, type, JOptionPane.PLAIN_MESSAGE, null, options, applyText)) {
-            case JOptionPane.YES_OPTION:
+            RowEditor<? extends ListRow> editor = row.createEditor();
+            content.add(editor, BorderLayout.CENTER);
+            dialog.addCancelButton();
+            dialog.addApplyButton();
+            dialog.presentToUser();
+            switch (dialog.getResult()) {
+            case StdDialog.OK:
                 RowUndo undo = new RowUndo(row);
                 if (editor.applyChanges()) {
                     if (undo.finish()) {
@@ -91,16 +88,13 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
                     }
                 }
                 break;
-            case JOptionPane.NO_OPTION:
-                break;
-            case JOptionPane.CANCEL_OPTION:
-            case JOptionPane.CLOSED_OPTION:
-            default:
+            case StdDialog.CLOSED:
                 i = length;
+                break;
+            default:
                 break;
             }
         }
-
         if (!undos.isEmpty()) {
             new MultipleRowUndo(undos);
             return true;
@@ -121,13 +115,14 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 
     /** Call this during construction to add the content to the editor. */
     protected void addContent() {
-        ScrollContent outer = new ScrollContent(new PrecisionLayout().setMargins(0));
+        ScrollContent outer = new ScrollContent(new PrecisionLayout().setMargins(MARGIN, MARGIN, 0, MARGIN));
+        outer.setScrollableTracksViewportWidth(true);
+        outer.setBackground(ThemeColor.BACKGROUND);
         addContentSelf(outer);
         if (!mIsEditable) {
             UIUtilities.disableControls(outer);
         }
-        outer.setScrollableTracksViewportWidth(true);
-        JScrollPane scroller   = new JScrollPane(outer);
+        ScrollPanel scroller   = new ScrollPanel(outer);
         int         scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
         scroller.setPreferredSize(adjustSize(outer.getPreferredSize(), scrollSize));
         Dimension size = adjustSize(outer.getMinimumSize(), scrollSize);
@@ -135,15 +130,12 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             size.height = 128;
         }
         scroller.setMinimumSize(size);
-        scroller.setBorder(null);
-        scroller.getViewport().setBackground(outer.getBackground());
         add(scroller);
     }
 
     private static Dimension adjustSize(Dimension size, int scrollSize) {
         size = new Dimension(size);
         size.width += scrollSize;
-        size.height += scrollSize;
         Rectangle maxBounds = WindowUtils.getMaximumWindowBounds();
         if (size.width > maxBounds.width - 64) {
             size.width = maxBounds.width - 64;

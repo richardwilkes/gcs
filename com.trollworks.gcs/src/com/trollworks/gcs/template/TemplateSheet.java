@@ -13,6 +13,7 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.spell.SpellOutline;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
@@ -20,7 +21,6 @@ import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
@@ -38,7 +38,7 @@ public class TemplateSheet extends CollectedOutlines {
         mTemplate = template;
         setLayout(new ColumnLayout(1, 0, 5));
         setOpaque(true);
-        setBackground(Color.WHITE);
+        setBackground(ThemeColor.PAGE);
         setBorder(new EmptyBorder(5));
 
         // Make sure our primary outlines exist

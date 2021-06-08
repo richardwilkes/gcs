@@ -13,7 +13,9 @@ package com.trollworks.gcs.ui.widget.search;
 
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.layout.FlexRow;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
@@ -32,7 +34,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -40,7 +41,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A standard search control. */
-public class Search extends JPanel implements DocumentListener, KeyListener, FocusListener {
+public class Search extends Panel implements DocumentListener, KeyListener, FocusListener {
     private SearchTarget   mTarget;
     private JLabel         mHits;
     private SearchField    mFilterField;
@@ -53,21 +54,15 @@ public class Search extends JPanel implements DocumentListener, KeyListener, Foc
      * @param target The search target.
      */
     public Search(SearchTarget target) {
+        super(new PrecisionLayout().setColumns(2).setMargins(0));
         setOpaque(false);
         mTarget = target;
-
         mFilterField = new SearchField();
-        add(mFilterField);
-
+        add(mFilterField, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         mHits = new JLabel();
         mHits.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The number of matches found")));
         adjustHits();
         add(mHits);
-
-        FlexRow row = new FlexRow();
-        row.add(mFilterField);
-        row.add(mHits);
-        row.apply(this);
     }
 
     @Override

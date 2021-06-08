@@ -28,7 +28,8 @@ public class PageHeader extends Label {
      * @param tooltip The tooltip to use.
      */
     public PageHeader(String title, String tooltip) {
-        super(title, SwingConstants.CENTER);
+        super(title);
+        setHorizontalAlignment(SwingConstants.CENTER);
         setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
         setForeground(ThemeColor.ON_HEADER);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));

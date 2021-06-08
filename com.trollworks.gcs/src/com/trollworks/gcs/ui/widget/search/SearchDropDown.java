@@ -11,9 +11,11 @@
 
 package com.trollworks.gcs.ui.widget.search;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.LineBorder;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.Point;
@@ -24,13 +26,11 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
 /** The drop-down panel used by {@link Search}. */
-class SearchDropDown extends JPanel implements MouseListener {
+class SearchDropDown extends ScrollPanel implements MouseListener {
     private JList<Object>            mList;
     private JTextField               mFilterField;
     private SearchTarget             mTarget;
@@ -44,16 +44,18 @@ class SearchDropDown extends JPanel implements MouseListener {
      * @param target      The search target.
      */
     SearchDropDown(ListCellRenderer<Object> renderer, JTextField filterField, SearchTarget target) {
-        super(new BorderLayout());
-        setOpaque(true);
+        super(null);
         mFilterField = filterField;
         mTarget = target;
         mModel = new DefaultListModel<>();
         mList = new JList<>(mModel);
+        mList.setBackground(ThemeColor.SEARCH_LIST);
+        mList.setForeground(ThemeColor.ON_SEARCH_LIST);
         mList.setFocusable(false);
         mList.addMouseListener(this);
         mList.setCellRenderer(renderer);
-        add(new JScrollPane(mList), BorderLayout.CENTER);
+        setViewportView(mList);
+        setBorder(new LineBorder(ThemeColor.DIVIDER));
     }
 
     /** @return The currently selected values. */

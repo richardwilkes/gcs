@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -46,7 +47,6 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -84,11 +84,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        JPanel  panel       = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel   panel       = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         boolean isContainer = mRow.canHaveChildren();
         mNameField = createCorrectableField(panel, I18n.text("Name"), mRow.getName(), I18n.text("The base name of the skill, without any notes or specialty information"));
         if (!isContainer) {
-            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
             mSpecializationField = createField(panel, wrapper, I18n.text("Specialization"), mRow.getSpecialization(), I18n.text("The specialization, if any, taken for this skill"), 0);
             createTechLevelFields(wrapper);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -175,7 +175,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
 
         if (character != null) {
-            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
 
             String tlTooltip = I18n.text("Whether this skill requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel = new JCheckBox(I18n.text("Tech Level"), hasTL);
@@ -245,7 +245,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                 columns += 2;
             }
         }
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this skill is based on"));
         wrapper.add(new JLabel("/"));
         mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The relative difficulty of learning this skill"));

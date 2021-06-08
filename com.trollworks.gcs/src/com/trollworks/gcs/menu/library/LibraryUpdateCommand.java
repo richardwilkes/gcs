@@ -16,6 +16,7 @@ import com.trollworks.gcs.library.LibraryUpdater;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Release;
@@ -24,7 +25,6 @@ import com.trollworks.gcs.utility.Version;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 public class LibraryUpdateCommand extends Command {
@@ -76,9 +76,8 @@ public class LibraryUpdateCommand extends Command {
     public static void askUserToUpdate(Library library, Release release) {
         JTextPane markdown = new JTextPane(new MarkdownDocument(I18n.text("NOTE: Existing content for this library will be removed and replaced. Content in other libraries will not be modified.\n\n" + release.getNotes())));
         markdown.setBorder(new EmptyBorder(4));
-        Dimension   size     = markdown.getPreferredSize();
-        JScrollPane scroller = new JScrollPane(markdown);
-        int         maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
+        Dimension size     = markdown.getPreferredSize();
+        int       maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
         if (size.width > maxWidth) {
             markdown.setSize(new Dimension(maxWidth, Short.MAX_VALUE));
             size = markdown.getPreferredSize();
@@ -87,7 +86,7 @@ public class LibraryUpdateCommand extends Command {
         }
         markdown.setEditable(false);
         String update = I18n.text("Update");
-        if (WindowUtils.showOptionDialog(null, scroller, String.format(I18n.text("%s v%s is available!"), library.getTitle(), release.getVersion()), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.text("Ignore")}, update) == JOptionPane.OK_OPTION) {
+        if (WindowUtils.showOptionDialog(null, new ScrollPanel(markdown), String.format(I18n.text("%s v%s is available!"), library.getTitle(), release.getVersion()), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.text("Ignore")}, update) == JOptionPane.OK_OPTION) {
             LibraryUpdater.download(library, release);
         }
     }

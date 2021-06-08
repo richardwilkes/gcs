@@ -17,12 +17,12 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -35,7 +35,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
@@ -92,7 +91,7 @@ public final class AdvantageModifierEnabler extends JPanel {
         super(new BorderLayout());
         mAdvantage = advantage;
         add(createTop(advantage, remaining), BorderLayout.NORTH);
-        JScrollPane scrollPanel = new JScrollPane(createCenter());
+        ScrollPanel scrollPanel = new ScrollPanel(createCenter());
         scrollPanel.setMinimumSize(new Dimension(500, 120));
         add(scrollPanel, BorderLayout.CENTER);
     }
@@ -115,9 +114,8 @@ public final class AdvantageModifierEnabler extends JPanel {
     }
 
     private Container createCenter() {
-        JPanel wrapper = new JPanel(new ColumnLayout());
-        wrapper.setBackground(Color.WHITE);
-        SelfControlRoll cr = mAdvantage.getCR();
+        JPanel          panel = new JPanel(new ColumnLayout());
+        SelfControlRoll cr    = mAdvantage.getCR();
         if (cr != SelfControlRoll.NONE_REQUIRED) {
             ArrayList<String> possible = new ArrayList<>();
             for (SelfControlRoll one : SelfControlRoll.values()) {
@@ -128,7 +126,7 @@ public final class AdvantageModifierEnabler extends JPanel {
             mCRCombo = new JComboBox<>(possible.toArray(new String[0]));
             mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
             UIUtilities.setToPreferredSizeOnly(mCRCombo);
-            wrapper.add(mCRCombo);
+            panel.add(mCRCombo);
         }
 
         mModifiers = mAdvantage.getModifiers().toArray(new AdvantageModifier[0]);
@@ -138,9 +136,9 @@ public final class AdvantageModifierEnabler extends JPanel {
         mEnabled = new JCheckBox[length];
         for (int i = 0; i < length; i++) {
             mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription() + ", " + mModifiers[i].getCostDescription(), mModifiers[i].isEnabled());
-            wrapper.add(mEnabled[i]);
+            panel.add(mEnabled[i]);
         }
-        return wrapper;
+        return panel;
     }
 
     private void applyChanges() {

@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
@@ -36,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /** The detailed editor for {@link Spell}s. */
@@ -66,10 +66,10 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         }
     }
 
-    private JPanel createTop() {
+    private Panel createTop() {
         boolean notContainer = !mRow.canHaveChildren();
-        JPanel  panel        = new JPanel(new PrecisionLayout().setMargins(0).setColumns(4));
-        JPanel  wrapper      = new JPanel(new PrecisionLayout().setMargins(0).setColumns(notContainer ? 2 : 1));
+        Panel   panel        = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
+        Panel   wrapper      = new Panel(new PrecisionLayout().setMargins(0).setColumns(notContainer ? 2 : 1));
         mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("The name of the spell, without any notes"));
         if (notContainer) {
             createTechLevelFields(wrapper);
@@ -89,10 +89,10 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
         panel.add(new LinkedLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        wrapper = new JPanel(new PrecisionLayout().setMargins(0));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(panel, wrapper, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        wrapper = new JPanel(new PrecisionLayout().setMargins(0));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mReferenceField = createField(panel, wrapper, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("spell")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         return panel;
@@ -126,7 +126,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         if (forCharacter) {
             columns += 2;
         }
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(panel, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this spell is based on"));
         panel.add(new JLabel("/"));
         mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The difficulty of the spell"));

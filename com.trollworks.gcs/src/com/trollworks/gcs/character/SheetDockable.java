@@ -11,14 +11,15 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.AttributeSettingsWindow;
 import com.trollworks.gcs.settings.HitLocationSettingsWindow;
+import com.trollworks.gcs.settings.QuickExport;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettingsWindow;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
@@ -28,7 +29,6 @@ import com.trollworks.gcs.utility.undo.StdUndoManager;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.nio.file.Path;
-import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
 /** A list of advantages and disadvantages from a library. */
@@ -43,8 +43,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         mSheet = new CharacterSheet(character);
         long modifiedOn = character.getModifiedOn();
         createToolbar();
-        JScrollPane scroller = new JScrollPane(mSheet);
-        scroller.setBorder(null);
+        ScrollPanel scroller = new ScrollPanel(mSheet);
         JViewport viewport = scroller.getViewport();
         viewport.setBackground(ThemeColor.PAGE_VOID);
         viewport.addChangeListener(mSheet);

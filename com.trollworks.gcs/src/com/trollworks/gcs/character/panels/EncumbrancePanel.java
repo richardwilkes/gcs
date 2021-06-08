@@ -24,7 +24,6 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -82,10 +81,9 @@ public class EncumbrancePanel extends DropPanel {
             }
 
             if (encumbrance == current) {
-                Label marker = new Label("\uf24e");
+                PageLabel marker = new PageLabel("\uf24e");
                 marker.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, 9));
                 marker.setForeground(textColor);
-                marker.setRefersTo(header);
                 add(marker, new PrecisionLayoutData().setFillHorizontalAlignment());
             } else {
                 add(new PageLabel(" ", textColor, header), new PrecisionLayoutData().setFillHorizontalAlignment());

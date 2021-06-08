@@ -12,10 +12,10 @@
 package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 
 import java.awt.AWTKeyStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -56,7 +56,7 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
         mDock = dock;
         setLayout(this);
         setOpaque(true);
-        setBackground(Color.WHITE);
+        setBackground(ThemeColor.BACKGROUND);
         mHeader = new DockHeader(this);
         add(mHeader);
         add(dockable);

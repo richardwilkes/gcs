@@ -21,6 +21,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Filtered;
@@ -43,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -103,8 +103,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         addSection(outer, mRangedWeapons);
     }
 
-    private JPanel createTopSection() {
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+    private Panel createTopSection() {
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         mDescriptionField = createCorrectableField(panel, I18n.text("Name"), mRow.getDescription(), I18n.text("The name/description of the equipment, without any notes"));
         createSecondLineFields(panel);
         createValueAndWeightFields(panel);
@@ -114,7 +114,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
 
         boolean    forCharacterOrTemplate = mRow.getCharacter() != null || mRow.getTemplate() != null;
-        JPanel     wrapper                = new JPanel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
+        Panel      wrapper                = new Panel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
         JComponent labelParent            = panel;
         if (forCharacterOrTemplate) {
             mUsesField = createIntegerNumberField(panel, wrapper, I18n.text("Uses"), mRow.getUses(), I18n.text("The number of uses remaining for this equipment"), 5);
@@ -128,7 +128,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
 
     private void createSecondLineFields(Container parent) {
         boolean isContainer = mRow.canHaveChildren();
-        JPanel  wrapper     = new JPanel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
+        Panel   wrapper     = new Panel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
         if (!isContainer) {
             mQtyField = createIntegerNumberField(parent, wrapper, I18n.text("Quantity"), mRow.getQuantity(), I18n.text("The number of this equipment present"), 9);
         }
@@ -149,14 +149,14 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     }
 
     private void createValueAndWeightFields(Container parent) {
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(3));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(3));
         mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed6(mRow.getQuantity())));
         mValueField = createValueField(parent, wrapper, I18n.text("Value"), mRow.getValue(), I18n.text("The base value of one of these pieces of equipment before modifiers"), 13);
         mExtValueField = createValueField(wrapper, wrapper, I18n.text("Extended"), mRow.getExtendedValue(), I18n.text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
         mExtValueField.setEnabled(false);
         parent.add(wrapper);
 
-        wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(4));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
         mContainedWeight = new WeightValue(mRow.getExtendedWeight(false));
         WeightValue weight = new WeightValue(mRow.getAdjustedWeight(false));
         weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));

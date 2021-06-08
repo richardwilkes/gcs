@@ -25,6 +25,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.ActionPanel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
 import com.trollworks.gcs.utility.Geometry;
@@ -69,7 +70,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
@@ -1433,7 +1433,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 mSelectOnMouseUp = -1;
                 if (mDividerDrag != null && allowColumnResize()) {
                     dragColumnDivider(x);
-                    if (UIUtilities.getAncestorOfType(this, JScrollPane.class) != null) {
+                    if (UIUtilities.getAncestorOfType(this, ScrollPanel.class) != null) {
                         Point pt = event.getPoint();
                         if (!(event.getSource() instanceof Outline)) {
                             // Column resizing is occurring in the header, most likely
@@ -2610,10 +2610,10 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public Insets getAutoscrollInsets() {
-        int         margin     = Scale.get(this).scale(AUTO_SCROLL_MARGIN);
-        JScrollPane scrollPane = UIUtilities.getAncestorOfType(this, JScrollPane.class);
-        if (scrollPane != null) {
-            Rectangle bounds = scrollPane.getViewport().getViewRect();
+        int         margin      = Scale.get(this).scale(AUTO_SCROLL_MARGIN);
+        ScrollPanel scrollPanel = UIUtilities.getAncestorOfType(this, ScrollPanel.class);
+        if (scrollPanel != null) {
+            Rectangle bounds = scrollPanel.getViewport().getViewRect();
             return new Insets(bounds.y + margin, bounds.x + margin, getHeight() - (bounds.y + bounds.height) + margin, getWidth() - (bounds.x + bounds.width) + margin);
         }
         return new Insets(margin, margin, margin, margin);

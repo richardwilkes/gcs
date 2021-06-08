@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -23,7 +24,6 @@ import static java.awt.event.KeyEvent.VK_META;
 import static java.awt.event.KeyEvent.VK_SHIFT;
 import static java.awt.event.KeyEvent.getKeyText;
 
-import java.awt.Color;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -47,8 +47,8 @@ public class KeyStrokeDisplay extends JLabel implements KeyListener {
     public KeyStrokeDisplay(KeyStroke ks) {
         super(getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), SwingConstants.CENTER);
         setOpaque(true);
-        setBackground(Color.WHITE);
-        setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(2, 5, 2, 5)));
+        setBackground(ThemeColor.EDITABLE);
+        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         addKeyListener(this);
         mKeyStroke = ks;
         UIUtilities.setToPreferredSizeOnly(this);

@@ -27,7 +27,6 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 
 import java.util.Map;
@@ -61,9 +60,8 @@ public class PointPoolsPanel extends DropPanel {
         String    fullName = def.getFullName();
         label.setToolTipText(fullName.isBlank() ? null : fullName);
         add(label);
-        Label mState = new Label("");
-        setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
-        setForeground(ThemeColor.ON_CONTENT);
+        PageLabel mState = new PageLabel("");
+        mState.setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
         PoolThreshold threshold = attr.getCurrentThreshold(gch);
         if (threshold != null) {
             mState.setText(String.format("[%s]", threshold.getState()));

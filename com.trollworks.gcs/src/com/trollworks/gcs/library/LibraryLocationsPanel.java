@@ -15,6 +15,7 @@ import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
@@ -29,7 +30,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 public final class LibraryLocationsPanel extends JPanel {
     private List<LibraryFields> mFields;
@@ -56,7 +56,7 @@ public final class LibraryLocationsPanel extends JPanel {
 
         // Ask the user to make changes
         LibraryLocationsPanel panel    = new LibraryLocationsPanel();
-        JScrollPane           scroller = new JScrollPane(panel);
+        ScrollPanel           scroller = new ScrollPanel(panel);
         int                   result   = WindowUtils.showOptionDialog(Workspace.get(), scroller, ChangeLibraryLocationsCommand.INSTANCE.getTitle(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new JButton[]{panel.mApplyButton, panel.mCancelButton}, panel.mCancelButton);
         if (result == JOptionPane.OK_OPTION) {
             Library.LIBRARIES.clear();

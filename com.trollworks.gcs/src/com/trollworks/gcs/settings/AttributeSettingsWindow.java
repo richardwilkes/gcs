@@ -25,6 +25,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
@@ -58,7 +59,6 @@ import java.util.UUID;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 
 /** A window for editing attribute settings. */
 public final class AttributeSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
@@ -66,7 +66,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     private              GURPSCharacter                     mCharacter;
     private              AttributeListPanel                 mListPanel;
     private              FontAwesomeButton                  mMenuButton;
-    private              JScrollPane                        mScroller;
+    private              ScrollPanel                        mScroller;
     private              boolean                            mResetEnabled;
     private              boolean                            mUpdatePending;
 
@@ -117,8 +117,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 mCharacter.notifyOfChange();
             }
         });
-        mScroller = new JScrollPane(mListPanel);
-        mScroller.setBorder(null);
+        mScroller = new ScrollPanel(mListPanel);
         content.add(mScroller, BorderLayout.CENTER);
         adjustResetButton();
         if (gchar != null) {

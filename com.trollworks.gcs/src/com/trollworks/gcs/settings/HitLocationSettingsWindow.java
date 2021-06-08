@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
@@ -51,17 +52,16 @@ import java.util.UUID;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 
 /** A window for editing hit location settings. */
 public final class HitLocationSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
     private static final Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
-    private        GURPSCharacter                       mCharacter;
-    private        HitLocationTablePanel                mLocationsPanel;
-    private        FontAwesomeButton                    mMenuButton;
-    private        JScrollPane                          mScroller;
-    private        boolean                              mResetEnabled;
-    private        boolean                              mUpdatePending;
+    private              GURPSCharacter                       mCharacter;
+    private              HitLocationTablePanel                mLocationsPanel;
+    private              FontAwesomeButton                    mMenuButton;
+    private              ScrollPanel                          mScroller;
+    private              boolean                              mResetEnabled;
+    private              boolean                              mUpdatePending;
 
     /** Displays the hit location settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -110,8 +110,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
             }
             adjustResetButton();
         });
-        mScroller = new JScrollPane(mLocationsPanel);
-        mScroller.setBorder(null);
+        mScroller = new ScrollPanel(mLocationsPanel);
         content.add(mScroller, BorderLayout.CENTER);
         adjustResetButton();
         Dimension min1 = getMinimumSize();

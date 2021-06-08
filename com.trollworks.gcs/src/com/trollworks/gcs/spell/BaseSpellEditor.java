@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -40,7 +41,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -222,7 +222,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
 
         GURPSCharacter character = mRow.getCharacter();
         if (character != null) {
-            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
 
             mHasTechLevel = new JCheckBox(I18n.text("Tech Level"), hasTL);
             UIUtilities.setToPreferredSizeOnly(mHasTechLevel);

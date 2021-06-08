@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
@@ -120,6 +121,9 @@ public final class WindowUtils {
         pane.setUI(new SizeAwareBasicOptionPaneUI(pane.getUI()));
         pane.setInitialValue(initialValue);
         pane.setComponentOrientation((parentComponent == null ? JOptionPane.getRootFrame() : parentComponent).getComponentOrientation());
+        pane.setBackground(ThemeColor.BACKGROUND);
+        pane.setForeground(ThemeColor.ON_BACKGROUND);
+        pane.getComponent(1).setBackground(ThemeColor.BACKGROUND);
 
         Window  owningWindow = getWindowForComponent(parentComponent);
         JDialog dialog       = pane.createDialog(owningWindow, title);

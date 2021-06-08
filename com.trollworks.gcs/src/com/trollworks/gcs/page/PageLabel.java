@@ -13,7 +13,6 @@ package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Label;
 
 import java.awt.Color;
@@ -34,25 +33,24 @@ public class PageLabel extends Label {
     /**
      * Creates a new label for the specified field.
      *
-     * @param title The title of the field.
-     * @param field The field.
+     * @param title    The title of the field.
+     * @param refersTo The component it refers to.
      */
-    public PageLabel(String title, JComponent field) {
-        this(title, ThemeColor.ON_CONTENT, field);
+    public PageLabel(String title, JComponent refersTo) {
+        this(title, ThemeColor.ON_CONTENT, refersTo);
     }
 
     /**
      * Creates a new label for the specified field.
      *
-     * @param title The title of the field.
-     * @param color The color to use.
-     * @param field The field.
+     * @param title    The title of the field.
+     * @param color    The color to use.
+     * @param refersTo The component it refers to.
      */
-    public PageLabel(String title, Color color, JComponent field) {
+    public PageLabel(String title, Color color, JComponent refersTo) {
         super(title);
         setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
         setForeground(color);
-        setRefersTo(field);
-        UIUtilities.setToPreferredSizeOnly(this);
+        setRefersTo(refersTo);
     }
 }

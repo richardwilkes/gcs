@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -42,7 +43,6 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -57,7 +57,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private JComboBox<Object>          mDifficultyCombo;
     private JTextField                 mPointsField;
     private JTextField                 mLevelField;
-    private JPanel                     mDefaultPanel;
+    private Panel                      mDefaultPanel;
     private LinkedLabel                mDefaultPanelLabel;
     private JComboBox<AttributeChoice> mDefaultTypeCombo;
     private JTextField                 mDefaultNameField;
@@ -83,7 +83,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
 
         mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("The base name of the technique, without any notes or specialty information"));
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this technique"), this);
@@ -108,7 +108,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private void createDefaults(Container parent) {
-        mDefaultPanel = new JPanel(new PrecisionLayout().setMargins(0));
+        mDefaultPanel = new Panel(new PrecisionLayout().setMargins(0));
         mDefaultPanelLabel = new LinkedLabel(I18n.text("Defaults To"));
         mDefaultTypeCombo = SkillDefaultType.createCombo(mDefaultPanel, mRow.getDataFile(), mRow.getDefault().getType(), "", this, mIsEditable);
         parent.add(mDefaultPanelLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
@@ -167,7 +167,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private void createLimits(Container parent) {
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
 
         mLimitCheckbox = new JCheckBox(I18n.text("Cannot exceed default skill level by more than"), mRow.isLimited());
         mLimitCheckbox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether to limit the maximum level that can be achieved or not")));
@@ -236,7 +236,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     private void createDifficultyPopups(Container parent) {
         GURPSCharacter character = mRow.getCharacter();
-        JPanel         wrapper   = new JPanel(new PrecisionLayout().setMargins(0).setColumns(1 + (character != null ? 4 : 2)));
+        Panel          wrapper   = new Panel(new PrecisionLayout().setMargins(0).setColumns(1 + (character != null ? 4 : 2)));
         mDifficultyCombo = createComboBox(wrapper, new Object[]{SkillDifficulty.A, SkillDifficulty.H}, mRow.getDifficulty());
         mDifficultyCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The relative difficulty of learning this technique")));
         if (character != null || mRow.getTemplate() != null) {

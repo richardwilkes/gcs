@@ -17,7 +17,6 @@ import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +28,6 @@ class WeaponOutline extends Outline implements Duplicatable {
         mOwner = owner;
         setAllowColumnResize(false);
         setAllowRowDrag(false);
-        setBackground(Color.WHITE);
-        setForeground(Color.BLACK);
     }
 
     @Override

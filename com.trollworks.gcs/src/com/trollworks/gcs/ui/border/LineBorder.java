@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.border;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
@@ -26,7 +27,7 @@ public class LineBorder implements Border {
 
     /** Creates a black, 1 pixel border on all sides. */
     public LineBorder() {
-        this(Color.BLACK, 1);
+        this(ThemeColor.ON_BACKGROUND, 1);
     }
 
     /**

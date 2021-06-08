@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -35,7 +36,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
 /** A window for editing menu key settings. */
@@ -79,9 +79,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
         }
         Container   content  = getContentPane();
-        JScrollPane scroller = new JScrollPane(mPanel);
-        scroller.setBorder(null);
-        content.add(scroller, BorderLayout.CENTER);
+        content.add(new ScrollPanel(mPanel), BorderLayout.CENTER);
         content.add(createResetPanel(), BorderLayout.SOUTH);
         adjustResetButton();
         WindowUtils.packAndCenterWindowOn(this, null);
@@ -127,9 +125,9 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         cmd.setAccelerator(ks);
         button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
         button.invalidate();
-        Settings prefs = Settings.getInstance();
-        String   key   = cmd.getCommand();
-        String      override = null;
+        Settings prefs    = Settings.getInstance();
+        String   key      = cmd.getCommand();
+        String   override = null;
         if (cmd.isOriginalAcceleratorOverridden()) {
             override = ks != null ? ks.toString() : NONE;
         }

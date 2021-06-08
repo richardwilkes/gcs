@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.ThemeColor;
+
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
@@ -26,6 +28,8 @@ public class ScrollContent extends JPanel implements Scrollable {
 
     public ScrollContent(LayoutManager layoutManager) {
         super(layoutManager);
+        setBackground(ThemeColor.CONTENT);
+        setForeground(ThemeColor.ON_CONTENT);
         mHScrollUnit = 16;
         mVScrollUnit = 16;
     }

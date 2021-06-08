@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
@@ -30,13 +31,11 @@ import com.trollworks.gcs.utility.text.IntegerFormatter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.text.DefaultFormatterFactory;
@@ -71,10 +70,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         setLayout(new BorderLayout());
         mPanel = new BandedPanel(true);
         buildPanel();
-        Container   content  = getContentPane();
-        JScrollPane scroller = new JScrollPane(mPanel);
-        scroller.setBorder(null);
-        content.add(scroller, BorderLayout.CENTER);
+        getContentPane().add(new ScrollPanel(mPanel), BorderLayout.CENTER);
         WindowUtils.packAndCenterWindowOn(this, null);
     }
 

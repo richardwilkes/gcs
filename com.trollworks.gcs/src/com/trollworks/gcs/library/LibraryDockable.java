@@ -17,10 +17,10 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
@@ -42,7 +42,6 @@ import java.awt.dnd.DropTarget;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,7 +53,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     private JTextField        mFilterField;
     private JComboBox<String> mCategoryCombo;
     private FontAwesomeButton mLockButton;
-    private JScrollPane       mScroller;
     private ListOutline       mOutline;
     private boolean           mUpdatePending;
 
@@ -67,8 +65,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         outlineModel.applySortConfig(outlineModel.getSortConfig());
         outlineModel.setRowFilter(this);
         LibraryContent content = new LibraryContent(mOutline);
-        LibraryHeader header = new LibraryHeader(mOutline.getHeaderPanel());
-        Settings      prefs  = Settings.getInstance();
+        LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
+        Settings       prefs   = Settings.getInstance();
         mToolbar = new Toolbar();
         mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf13e", I18n.text("Switches between allowing editing and not"), () -> {
             OutlineModel model = mOutline.getModel();
@@ -93,11 +91,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         createFilterField();
         createCategoryCombo();
         add(mToolbar, BorderLayout.NORTH);
-        mScroller = new JScrollPane(content);
-        mScroller.setBorder(null);
-        mScroller.setColumnHeaderView(header);
-        mScroller.getViewport().setBackground(ThemeColor.CONTENT);
-        add(mScroller, BorderLayout.CENTER);
+        add(new ScrollPanel(header, content), BorderLayout.CENTER);
         prefs.addChangeListener(this);
         getDataFile().addChangeListener(this);
         setDropTarget(new DropTarget(mOutline, mOutline));
@@ -132,11 +126,6 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     /** @return The {@link Toolbar}. */
     public Toolbar getToolbar() {
         return mToolbar;
-    }
-
-    /** @return The {@link JScrollPane}. */
-    public JScrollPane getScroller() {
-        return mScroller;
     }
 
     /** @return The {@link ListOutline}. */

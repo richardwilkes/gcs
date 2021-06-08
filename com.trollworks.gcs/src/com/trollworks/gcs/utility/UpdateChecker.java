@@ -17,6 +17,7 @@ import com.trollworks.gcs.menu.library.LibraryUpdateCommand;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.task.Tasks;
 
@@ -27,7 +28,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 /** Provides a background check for updates. */
@@ -160,9 +160,8 @@ public final class UpdateChecker implements Runnable {
             if (isNewAppVersionAvailable()) {
                 JTextPane markdown = new JTextPane(new MarkdownDocument(getAppReleaseNotes()));
                 markdown.setBorder(new EmptyBorder(4));
-                Dimension   size     = markdown.getPreferredSize();
-                JScrollPane scroller = new JScrollPane(markdown);
-                int         maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
+                Dimension size     = markdown.getPreferredSize();
+                int       maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
                 if (size.width > maxWidth) {
                     markdown.setSize(new Dimension(maxWidth, Short.MAX_VALUE));
                     size = markdown.getPreferredSize();
@@ -170,7 +169,7 @@ public final class UpdateChecker implements Runnable {
                     markdown.setPreferredSize(size);
                 }
                 markdown.setEditable(false);
-                if (WindowUtils.showOptionDialog(null, scroller, getAppResult(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.text("Ignore")}, update) == JOptionPane.OK_OPTION) {
+                if (WindowUtils.showOptionDialog(null, new ScrollPanel(markdown), getAppResult(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.text("Ignore")}, update) == JOptionPane.OK_OPTION) {
                     goToUpdate();
                 }
                 return;

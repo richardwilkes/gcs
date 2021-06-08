@@ -34,16 +34,6 @@ public class LinkedLabel extends JLabel implements PropertyChangeListener {
      * Creates a label with the specified icon.
      *
      * @param icon The icon to be displayed.
-     */
-    public LinkedLabel(RetinaIcon icon) {
-        super(icon);
-        mColor = getForeground();
-    }
-
-    /**
-     * Creates a label with the specified icon.
-     *
-     * @param icon The icon to be displayed.
      * @param link The {@link JComponent} to pair with.
      */
     public LinkedLabel(RetinaIcon icon, JComponent link) {

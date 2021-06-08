@@ -30,7 +30,6 @@ import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -178,8 +177,6 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
             super(false);
             setAllowColumnResize(false);
             setAllowRowDrag(false);
-            setBackground(Color.WHITE);
-            setForeground(Color.BLACK);
         }
 
         @Override

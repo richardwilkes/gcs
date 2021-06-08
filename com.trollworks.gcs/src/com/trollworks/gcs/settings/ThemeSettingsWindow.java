@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.ColorWell;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.FontPanel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -35,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -136,10 +136,8 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         }
         panel.add(wrapper);
 
-        Container   content  = getContentPane();
-        JScrollPane scroller = new JScrollPane(panel);
-        scroller.setBorder(null);
-        content.add(scroller, BorderLayout.CENTER);
+        Container content = getContentPane();
+        content.add(new ScrollPanel(panel), BorderLayout.CENTER);
         adjustResetButtons();
         WindowUtils.packAndCenterWindowOn(this, null);
     }

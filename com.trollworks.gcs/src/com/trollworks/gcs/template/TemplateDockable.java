@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
@@ -22,7 +23,6 @@ import com.trollworks.gcs.utility.undo.StdUndoManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import javax.swing.JScrollPane;
 
 /** A list of advantages and disadvantages from a library. */
 public class TemplateDockable extends CollectedOutlinesDockable {
@@ -35,9 +35,8 @@ public class TemplateDockable extends CollectedOutlinesDockable {
         Template dataFile = getDataFile();
         mTemplate = new TemplateSheet(dataFile);
         createToolbar();
-        JScrollPane scroller = new JScrollPane(mTemplate);
-        scroller.setBorder(null);
-        scroller.getViewport().setBackground(ThemeColor.DIVIDER);
+        ScrollPanel scroller = new ScrollPanel(mTemplate);
+        scroller.getViewport().setBackground(ThemeColor.PAGE_VOID);
         add(scroller, BorderLayout.CENTER);
         dataFile.setModified(false);
         StdUndoManager undoManager = getUndoManager();

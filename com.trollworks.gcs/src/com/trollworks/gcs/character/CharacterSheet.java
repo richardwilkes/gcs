@@ -71,7 +71,6 @@ import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponDisplayRow;
 import com.trollworks.gcs.weapon.WeaponStats;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -808,7 +807,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                     break;
                 }
                 gc.setClip(0, 0, width, height);
-                gc.setBackground(Color.WHITE);
+                gc.setBackground(ThemeColor.PAGE);
                 gc.clearRect(0, 0, width, height);
                 gc.scale(dpi / 72.0, dpi / 72.0);
                 print(gc, format, pageNum++);
