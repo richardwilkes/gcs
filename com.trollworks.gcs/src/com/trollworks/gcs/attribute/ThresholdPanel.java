@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.WidgetHelpers;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -30,12 +31,11 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class ThresholdPanel extends JPanel implements DocumentListener {
+public class ThresholdPanel extends ContentPanel implements DocumentListener {
     private List<PoolThreshold> mThresholds;
     private PoolThreshold       mThreshold;
     private Runnable            mAdjustCallback;
@@ -52,8 +52,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         mThreshold = threshold;
         mAdjustCallback = adjustCallback;
 
-        JPanel left = new JPanel(new PrecisionLayout());
-        left.setOpaque(false);
+        ContentPanel left = new ContentPanel(new PrecisionLayout(), false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
@@ -80,11 +79,10 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         });
         left.add(mMoveDownButton);
 
-        JPanel center = new JPanel(new PrecisionLayout());
-        center.setOpaque(false);
+        ContentPanel center = new ContentPanel(new PrecisionLayout(), false);
         add(center, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(8).setMargins(0));
+        ContentPanel wrapper = new ContentPanel(new PrecisionLayout().setColumns(8).setMargins(0),false);
         wrapper.setOpaque(false);
         mStateField = addField(wrapper,
                 I18n.text("State"),
@@ -134,8 +132,7 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         ThresholdOps[] opValues = ThresholdOps.values();
-        wrapper = new JPanel(new PrecisionLayout().setColumns(opValues.length - 1).setMargins(0));
-        wrapper.setOpaque(false);
+        wrapper = new ContentPanel(new PrecisionLayout().setColumns(opValues.length - 1).setMargins(0),false);
         for (ThresholdOps op : opValues) {
             if (op != ThresholdOps.UNKNOWN) {
                 addCheckBox(wrapper, op);
@@ -143,16 +140,14 @@ public class ThresholdPanel extends JPanel implements DocumentListener {
         }
         center.add(wrapper, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setGrabHorizontalSpace(true).setMargins(0));
 
-        wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
-        wrapper.setOpaque(false);
+        wrapper = new ContentPanel(new PrecisionLayout().setColumns(2).setMargins(0), false);
         mExplanationField = addTextArea(wrapper,
                 I18n.text("Explanation"),
                 I18n.text("An explanation of effects of the current threshold state"),
                 mThreshold.getExplanation());
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
-        JPanel right = new JPanel(new PrecisionLayout());
-        right.setOpaque(false);
+        ContentPanel right = new ContentPanel(new PrecisionLayout(),false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();

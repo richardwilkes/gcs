@@ -14,32 +14,26 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.ui.ThemeColor;
 
 import java.awt.LayoutManager;
-import javax.swing.JPanel;
 
-public class Panel extends JPanel {
-    public Panel() {
-        setOpaque(true);
-        setStdColors();
+public class ContentPanel extends Panel {
+    public ContentPanel() {
     }
 
-    public Panel(boolean opaque) {
-        setOpaque(opaque);
+    public ContentPanel(boolean opaque) {
+        super(opaque);
     }
 
-    public Panel(LayoutManager layout) {
+    public ContentPanel(LayoutManager layout) {
         super(layout);
-        setStdColors();
-        setOpaque(true);
     }
 
-    public Panel(LayoutManager layout, boolean opaque) {
-        super(layout);
-        setStdColors();
-        setOpaque(opaque);
+    public ContentPanel(LayoutManager layout, boolean opaque) {
+        super(layout, opaque);
     }
 
+    @Override
     protected void setStdColors() {
-        setBackground(ThemeColor.BACKGROUND);
-        setForeground(ThemeColor.ON_BACKGROUND);
+        setBackground(ThemeColor.CONTENT);
+        setForeground(ThemeColor.ON_CONTENT);
     }
 }

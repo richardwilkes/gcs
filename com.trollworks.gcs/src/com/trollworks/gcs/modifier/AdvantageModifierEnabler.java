@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -34,12 +35,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
 /** Asks the user to enable/disable advantage modifiers. */
-public final class AdvantageModifierEnabler extends JPanel {
+public final class AdvantageModifierEnabler extends Panel {
     private Advantage           mAdvantage;
     private JCheckBox[]         mEnabled;
     private AdvantageModifier[] mModifiers;
@@ -97,7 +97,7 @@ public final class AdvantageModifierEnabler extends JPanel {
     }
 
     private static Container createTop(Advantage advantage, int remaining) {
-        JPanel top   = new JPanel(new ColumnLayout());
+        Panel  top   = new Panel(new ColumnLayout());
         JLabel label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
 
         top.setBorder(new EmptyBorder(0, 0, 15, 0));
@@ -108,13 +108,13 @@ public final class AdvantageModifierEnabler extends JPanel {
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
         label.setOpaque(true);
-        top.add(new JPanel());
+        top.add(new Panel());
         top.add(label);
         return top;
     }
 
     private Container createCenter() {
-        JPanel          panel = new JPanel(new ColumnLayout());
+        Panel           panel = new Panel(new ColumnLayout());
         SelfControlRoll cr    = mAdvantage.getCR();
         if (cr != SelfControlRoll.NONE_REQUIRED) {
             ArrayList<String> possible = new ArrayList<>();

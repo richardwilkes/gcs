@@ -21,9 +21,9 @@ import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 /** A window for editing hit location settings. */
@@ -58,9 +57,9 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     private static final Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
     private              GURPSCharacter                       mCharacter;
     private              HitLocationTablePanel                mLocationsPanel;
+    private              FontAwesomeButton                    mResetButton;
     private              FontAwesomeButton                    mMenuButton;
     private              ScrollPanel                          mScroller;
-    private              boolean                              mResetEnabled;
     private              boolean                              mUpdatePending;
 
     /** Displays the hit location settings window. */
@@ -99,19 +98,27 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         super(createTitle(gchar));
         mCharacter = gchar;
         Container content = getContentPane();
-        JPanel    header  = new JPanel(new PrecisionLayout().setMargins(5, 10, 5, 10).setHorizontalSpacing(10));
+        Panel     header  = new Panel(new PrecisionLayout().setColumns(2).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        mResetButton = new FontAwesomeButton("\uf011", mCharacter == null ? I18n.text("Reset to Factory Defaults") : I18n.text("Reset to Global Defaults"), this::reset);
+        header.add(mResetButton);
         mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"), this::actionMenu);
-        header.add(mMenuButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        header.add(mMenuButton);
         content.add(header, BorderLayout.NORTH);
         mLocationsPanel = new HitLocationTablePanel(getHitLocations(), () -> {
             getHitLocations().update();
-            if (mCharacter != null) {
+            if (mCharacter == null) {
+                Settings.getInstance().notifyOfChange();
+            } else {
                 mCharacter.notifyOfChange();
             }
             adjustResetButton();
         });
         mScroller = new ScrollPanel(mLocationsPanel);
         content.add(mScroller, BorderLayout.CENTER);
+        if (mCharacter != null) {
+            mCharacter.addChangeListener(this);
+            Settings.getInstance().addChangeListener(this);
+        }
         adjustResetButton();
         Dimension min1 = getMinimumSize();
         setMinimumSize(new Dimension(Math.max(min1.width, 600), min1.height));
@@ -127,8 +134,6 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         JPopupMenu menu = new JPopupMenu();
         menu.add(createMenuItem(I18n.text("Import…"), this::importData, true));
         menu.add(createMenuItem(I18n.text("Export…"), this::exportData, true));
-        menu.addSeparator();
-        menu.add(createMenuItem(mCharacter == null ? I18n.text("Factory Default Hit Locations") : I18n.text("Default Hit Locations"), this::reset, mResetEnabled));
         for (LibraryHitLocationTables tables : LibraryHitLocationTables.get()) {
             menu.addSeparator();
             menu.add(createMenuItem(tables.toString(), null, false));
@@ -207,9 +212,9 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     private void adjustResetButton() {
         HitLocationTable prefsLocations = Settings.getInstance().getSheetSettings().getHitLocations();
         if (mCharacter == null) {
-            mResetEnabled = !prefsLocations.equals(LibraryHitLocationTables.getHumanoid());
+            mResetButton.setEnabled(!prefsLocations.equals(LibraryHitLocationTables.getHumanoid()));
         } else {
-            mResetEnabled = !mCharacter.getSheetSettings().getHitLocations().equals(prefsLocations);
+            mResetButton.setEnabled(!mCharacter.getSheetSettings().getHitLocations().equals(prefsLocations));
         }
     }
 

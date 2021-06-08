@@ -25,6 +25,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -57,7 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 /** A window for editing attribute settings. */
@@ -65,9 +65,9 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     private static final Map<UUID, AttributeSettingsWindow> INSTANCES = new HashMap<>();
     private              GURPSCharacter                     mCharacter;
     private              AttributeListPanel                 mListPanel;
+    private              FontAwesomeButton                  mResetButton;
     private              FontAwesomeButton                  mMenuButton;
     private              ScrollPanel                        mScroller;
-    private              boolean                            mResetEnabled;
     private              boolean                            mUpdatePending;
 
     /** Displays the attribute settings window. */
@@ -106,22 +106,26 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         super(createTitle(gchar));
         mCharacter = gchar;
         Container content = getContentPane();
-        JPanel    header  = new JPanel(new PrecisionLayout().setColumns(2).setMargins(5, 10, 5, 10).setHorizontalSpacing(10));
-        header.add(new FontAwesomeButton("\uf055", I18n.text("Add Attribute"), () -> mListPanel.addAttribute()));
+        Panel     header  = new Panel(new PrecisionLayout().setColumns(3).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        header.add(new FontAwesomeButton("\uf055", I18n.text("Add Attribute"), () -> mListPanel.addAttribute()), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        mResetButton = new FontAwesomeButton("\uf011", mCharacter == null ? I18n.text("Reset to Factory Defaults") : I18n.text("Reset to Global Defaults"), this::reset);
+        header.add(mResetButton);
         mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"), this::actionMenu);
-        header.add(mMenuButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        header.add(mMenuButton);
         content.add(header, BorderLayout.NORTH);
         mListPanel = new AttributeListPanel(getAttributes(), () -> {
             adjustResetButton();
-            if (mCharacter != null) {
+            if (mCharacter == null) {
+                Settings.getInstance().notifyOfChange();
+            } else {
                 mCharacter.notifyOfChange();
             }
         });
         mScroller = new ScrollPanel(mListPanel);
         content.add(mScroller, BorderLayout.CENTER);
         adjustResetButton();
-        if (gchar != null) {
-            gchar.addChangeListener(this);
+        if (mCharacter != null) {
+            mCharacter.addChangeListener(this);
             Settings.getInstance().addChangeListener(this);
         }
         Dimension min1 = getMinimumSize();
@@ -138,8 +142,6 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         JPopupMenu menu = new JPopupMenu();
         menu.add(createMenuItem(I18n.text("Import…"), this::importData, true));
         menu.add(createMenuItem(I18n.text("Export…"), this::exportData, true));
-        menu.addSeparator();
-        menu.add(createMenuItem(mCharacter == null ? I18n.text("Factory Default Attributes") : I18n.text("Default Attributes"), this::reset, mResetEnabled));
         Settings.getInstance(); // Just to ensure the libraries list is initialized
         for (Library lib : Library.LIBRARIES) {
             Path dir = lib.getPath().resolve("Attributes");
@@ -242,7 +244,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     private void adjustResetButton() {
         Map<String, AttributeDef> prefsAttributes = Settings.getInstance().getSheetSettings().getAttributes();
         if (mCharacter == null) {
-            mResetEnabled = !prefsAttributes.equals(AttributeDef.createStandardAttributes());
+            mResetButton.setEnabled(!prefsAttributes.equals(AttributeDef.createStandardAttributes()));
         } else {
             Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
             Map<String, Attribute> newAttributes = new HashMap<>();
@@ -256,7 +258,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 mCharacter.notifyOfChange();
             }
             mListPanel.adjustButtons();
-            mResetEnabled = !mCharacter.getSheetSettings().getAttributes().equals(prefsAttributes);
+            mResetButton.setEnabled(!mCharacter.getSheetSettings().getAttributes().equals(prefsAttributes));
         }
     }
 

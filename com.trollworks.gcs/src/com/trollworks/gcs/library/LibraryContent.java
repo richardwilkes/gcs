@@ -16,22 +16,22 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import javax.swing.JPanel;
 import javax.swing.Scrollable;
 
-public class LibraryContent extends JPanel implements ScaleRoot, Scrollable {
+public class LibraryContent extends Panel implements ScaleRoot, Scrollable {
     private ListOutline mOutline;
     private Scale       mScale;
 
     public LibraryContent(ListOutline outline) {
+        super(new BorderLayout());
         mOutline = outline;
         mOutline.setBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 0, 1));
-        setLayout(new BorderLayout());
         add(mOutline);
         mScale = Settings.getInstance().getInitialUIScale().getScale();
     }

@@ -39,9 +39,6 @@ public class BandedPanel extends ActionPanel implements Scrollable {
      */
     public BandedPanel(String title) {
         super(new ColumnLayout(1, 0, 0));
-        setOpaque(true);
-        setBackground(ThemeColor.CONTENT);
-        setForeground(ThemeColor.ON_CONTENT);
         mTitle = title;
     }
 

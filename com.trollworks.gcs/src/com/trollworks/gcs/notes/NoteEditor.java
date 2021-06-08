@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -23,7 +24,6 @@ import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /** The detailed editor for {@link Note}s. */
@@ -52,7 +52,7 @@ public class NoteEditor extends RowEditor<Note> {
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         outer.add(wrapper, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mDescriptionField = new MultiLineTextField(mRow.getDescription(), null, null);

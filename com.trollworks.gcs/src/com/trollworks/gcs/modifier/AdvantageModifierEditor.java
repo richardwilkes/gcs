@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -32,7 +33,6 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -63,11 +63,11 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         if (mRow.canHaveChildren()) {
             mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("Name of container"));
         } else {
-            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
             mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
             mEnabledField = new JCheckBox(I18n.text("Enabled"), mRow.isEnabled());
             mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
@@ -182,7 +182,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     }
 
     private void createCostModifierFields(Container parent) {
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(7));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(7));
         mLastLevel = mRow.getLevels();
         if (mLastLevel < 1) {
             mLastLevel = 1;

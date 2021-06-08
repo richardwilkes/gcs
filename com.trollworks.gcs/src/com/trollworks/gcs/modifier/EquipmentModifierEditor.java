@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -31,7 +32,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,11 +61,11 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         if (mRow.canHaveChildren()) {
             mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("Name of container"));
         } else {
-            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(4));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
             mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
             mTechLevelField = createField(wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
             mEnabledField = new JCheckBox(I18n.text("Enabled"), mRow.isEnabled());
@@ -137,7 +137,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void createCostAdjustmentFields(Container parent) {
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         createCostAdjustmentField(parent, wrapper);
         createCostTypeCombo(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -172,7 +172,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void createWeightAdjustmentFields(Container parent) {
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         createWeightAdjustmentField(parent, wrapper);
         createWeightTypeCombo(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));

@@ -121,9 +121,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     private              Dock              mAlternateDragDestination;
     private              String            mLastTooltipText;
     private              int               mLastTooltipX;
-    private              Color             mDividerColor;
-    private              Color             mBandingColor;
-    private              Color             mInsertionColor;
 
     /** Creates a new outline. */
     public Outline() {
@@ -175,9 +172,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         setActionCommand(CMD_OPEN_SELECTION);
         setBackground(ThemeColor.CONTENT);
         setForeground(ThemeColor.ON_CONTENT);
-        mDividerColor = ThemeColor.DIVIDER;
-        mBandingColor = ThemeColor.BANDING;
-        mInsertionColor = ThemeColor.DROP_AREA;
         setOpaque(true);
         setFocusable(true);
         addFocusListener(this);
@@ -326,7 +320,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         Scale     scale  = Scale.get(this);
         int       one    = scale.scale(1);
         Rectangle bounds = getDragRowInsertionMarkerBounds(parent, insertAtIndex);
-        gc.setColor(mInsertionColor);
+        gc.setColor(ThemeColor.DROP_AREA);
         int three = scale.scale(3);
         gc.fillRect(bounds.x, bounds.y + three, bounds.width, one);
         int height = bounds.height;
@@ -469,7 +463,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         Row dragTargetRow = getDragTargetRow();
         if (dragTargetRow != null) {
             Graphics2D g2d = (Graphics2D) gc;
-            g2d.setColor(mInsertionColor);
+            g2d.setColor(ThemeColor.DROP_AREA);
             g2d.draw(Geometry.inset(1, getRowBounds(dragTargetRow)));
         }
     }
@@ -503,7 +497,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                         gc.setColor(getBackground(rowIndex, rowSelected, active));
                         gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
                         if (mDrawRowDividers) {
-                            gc.setColor(mDividerColor);
+                            gc.setColor(ThemeColor.DIVIDER);
                             gc.fillRect(bounds.x, bounds.y + bounds.height, bounds.width, one);
                         }
                     }
@@ -514,7 +508,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
         if (mDrawColumnDividers) {
             int x = insets.left;
-            gc.setColor(mDividerColor);
+            gc.setColor(ThemeColor.DIVIDER);
             List<Column> columns = mModel.getColumns();
             int          count   = columns.size() - 1;
             while (count > 0 && !columns.get(count).isVisible()) {
@@ -665,7 +659,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             }
             return color;
         }
-        return (useBanding() && (rowIndex % 2 != 0)) ? mBandingColor : ThemeColor.CONTENT;
+        return (useBanding() && (rowIndex % 2 != 0)) ? ThemeColor.BANDING : ThemeColor.CONTENT;
     }
 
     @Override
@@ -902,7 +896,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
                 gc.setColor(ThemeColor.CONTENT);
                 gc.fill(bounds);
-                gc.setColor(mDividerColor);
+                gc.setColor(ThemeColor.DIVIDER);
                 if (mDrawRowDividers) {
                     gc.fillRect(bounds.x, bounds.y, bounds.width, one);
                     gc.fillRect(bounds.x, bounds.y + bounds.height - one, bounds.width, one);
@@ -941,7 +935,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             g2d.fill(bounds);
             column.drawHeaderCell(this, g2d, bounds);
             bounds.y += mHeaderPanel.getHeight();
-            g2d.setColor(mDividerColor);
+            g2d.setColor(ThemeColor.DIVIDER);
             g2d.fillRect(bounds.x, bounds.y, bounds.width, one);
             bounds.y += one;
         }
@@ -960,7 +954,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                     column.drawRowCell(this, g2d, bounds, row, false, true);
                     g2d.setClip(oldClip);
                     if (mDrawRowDividers) {
-                        g2d.setColor(mDividerColor);
+                        g2d.setColor(ThemeColor.DIVIDER);
                         g2d.fillRect(bounds.x, bounds.y + bounds.height, bounds.width, one);
                     }
                 }
@@ -2815,29 +2809,4 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             repaint(getRowBounds(row));
         }
     }
-
-    public Color getDividerColor() {
-        return mDividerColor;
-    }
-
-    public void setDividerColor(Color dividerColor) {
-        mDividerColor = dividerColor;
-    }
-
-    public Color getBandingColor() {
-        return mBandingColor;
-    }
-
-    public void setBandingColor(Color bandingColor) {
-        mBandingColor = bandingColor;
-    }
-
-    public Color getInsertionColor() {
-        return mInsertionColor;
-    }
-
-    public void setInsertionColor(Color insertionColor) {
-        mInsertionColor = insertionColor;
-    }
-
 }

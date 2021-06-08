@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Color;
@@ -27,11 +28,10 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JPanel;
 import javax.swing.ToolTipManager;
 
 /** A header panel for use with {@link Outline}. */
-public class OutlineHeader extends JPanel implements MouseListener, MouseMotionListener {
+public class OutlineHeader extends Panel implements MouseListener, MouseMotionListener {
     private Outline mOwner;
     private Column  mSortColumn;
     private boolean mResizeOK;

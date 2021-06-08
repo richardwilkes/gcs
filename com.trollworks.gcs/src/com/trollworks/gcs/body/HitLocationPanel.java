@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.WidgetHelpers;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
@@ -29,12 +30,11 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JFormattedTextField;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class HitLocationPanel extends JPanel implements DocumentListener {
+public class HitLocationPanel extends ContentPanel implements DocumentListener {
     private HitLocation        mLocation;
     private Runnable           mAdjustCallback;
     private EditorField        mIDField;
@@ -42,16 +42,14 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
     private FontAwesomeButton  mMoveUpButton;
     private FontAwesomeButton  mMoveDownButton;
     private FontAwesomeButton  mAddSubTableButton;
-    private JPanel             mCenter;
+    private ContentPanel       mCenter;
 
     public HitLocationPanel(HitLocation location, Runnable adjustCallback) {
-        super(new PrecisionLayout().setColumns(3).setMargins(0));
-        setOpaque(false);
+        super(new PrecisionLayout().setColumns(3).setMargins(0), false);
         mLocation = location;
         mAdjustCallback = adjustCallback;
 
-        JPanel left = new JPanel(new PrecisionLayout());
-        left.setOpaque(false);
+        ContentPanel left = new ContentPanel(new PrecisionLayout(), false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
             HitLocationTablePanel parent = (HitLocationTablePanel) getParent();
@@ -86,12 +84,10 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
         mAddSubTableButton = new FontAwesomeButton("\uf055", I18n.text("Add Hit Location Sub-Table"), this::addSubHitLocations);
         left.add(mAddSubTableButton);
 
-        mCenter = new JPanel(new PrecisionLayout());
-        mCenter.setOpaque(false);
+        mCenter = new ContentPanel(new PrecisionLayout(), false);
         add(mCenter, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(8).setMargins(0));
-        wrapper.setOpaque(false);
+        ContentPanel wrapper = new ContentPanel(new PrecisionLayout().setColumns(8).setMargins(0), false);
         mIDField = addField(wrapper,
                 I18n.text("ID"),
                 I18n.text("An ID for the hit location"),
@@ -144,8 +140,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
-        wrapper = new JPanel(new PrecisionLayout().setColumns(4).setMargins(0));
-        wrapper.setOpaque(false);
+        wrapper = new ContentPanel(new PrecisionLayout().setColumns(4).setMargins(0), false);
         addField(wrapper,
                 I18n.text("Choice Name"),
                 I18n.text("The name of this hit location as it should appear in choice lists"),
@@ -168,8 +163,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
-        wrapper = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
-        wrapper.setOpaque(false);
+        wrapper = new ContentPanel(new PrecisionLayout().setColumns(2).setMargins(0), false);
         mDescriptionField = addTextArea(wrapper,
                 I18n.text("Description"),
                 I18n.text("An description of any special effects for hits to this location"),
@@ -181,8 +175,7 @@ public class HitLocationPanel extends JPanel implements DocumentListener {
             mCenter.add(subTable, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         }
 
-        JPanel right = new JPanel(new PrecisionLayout());
-        right.setOpaque(false);
+        ContentPanel right = new ContentPanel(new PrecisionLayout(), false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             getParent().remove(this);

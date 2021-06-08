@@ -14,12 +14,12 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Container;
 import java.util.List;
-import javax.swing.JPanel;
 
 /** An editor for ranged weapon statistics. */
 public class RangedWeaponListEditor extends WeaponListEditor {
@@ -42,13 +42,13 @@ public class RangedWeaponListEditor extends WeaponListEditor {
 
     @Override
     protected void createFields(Container parent) {
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(5));
         mAccuracy = addField(parent, panel, "99+99*", I18n.text("Accuracy"));
         mRateOfFire = addField(panel, panel, "999*", I18n.text("Rate of Fire"));
         mRange = addField(panel, panel, null, I18n.text("Range"));
         parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        panel = new JPanel(new PrecisionLayout().setMargins(0).setColumns(5));
+        panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(5));
         mRecoil = addField(parent, panel, "9999", I18n.text("Recoil"));
         mShots = addField(panel, panel, null, I18n.text("Shots"));
         mBulk = addField(panel, panel, "9999", I18n.text("Bulk"));

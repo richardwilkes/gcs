@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.WidgetHelpers;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
@@ -31,29 +32,26 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-public class AttributePanel extends JPanel {
+public class AttributePanel extends ContentPanel {
     private   Map<String, AttributeDef> mAttributes;
     protected AttributeDef              mAttrDef;
     private   Runnable                  mAdjustCallback;
     private   EditorField               mIDField;
     private   FontAwesomeButton         mMoveUpButton;
     private   FontAwesomeButton         mMoveDownButton;
-    private   JPanel                    mCenter;
+    private   ContentPanel              mCenter;
     private   FontAwesomeButton         mAddThresholdButton;
     private   ThresholdListPanel        mThresholdListPanel;
 
     public AttributePanel(Map<String, AttributeDef> attributes, AttributeDef attrDef, Runnable adjustCallback) {
-        super(new PrecisionLayout().setColumns(3).setMargins(0));
-        setOpaque(false);
+        super(new PrecisionLayout().setColumns(3).setMargins(0),false);
         mAttributes = attributes;
         mAttrDef = attrDef;
         mAdjustCallback = adjustCallback;
 
-        JPanel left = new JPanel(new PrecisionLayout());
-        left.setOpaque(false);
+        ContentPanel left = new ContentPanel(new PrecisionLayout(), false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
@@ -80,12 +78,10 @@ public class AttributePanel extends JPanel {
         mAddThresholdButton = new FontAwesomeButton("\uf055", I18n.text("Add Pool Threshold"), this::addThreshold);
         left.add(mAddThresholdButton);
 
-        mCenter = new JPanel(new PrecisionLayout());
-        mCenter.setOpaque(false);
+        mCenter = new ContentPanel(new PrecisionLayout(),false);
         add(mCenter, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(6).setMargins(0));
-        wrapper.setOpaque(false);
+        ContentPanel wrapper = new ContentPanel(new PrecisionLayout().setColumns(6).setMargins(0),false);
         mIDField = addField(wrapper,
                 I18n.text("ID"),
                 I18n.text("A unique ID for the attribute"),
@@ -131,8 +127,7 @@ public class AttributePanel extends JPanel {
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
-        wrapper = new JPanel(new PrecisionLayout().setColumns(7).setMargins(0));
-        wrapper.setOpaque(false);
+        wrapper = new ContentPanel(new PrecisionLayout().setColumns(7).setMargins(0),false);
         addAttributeTypeCombo(wrapper,
                 attrDef.getType(),
                 (evt) -> {
@@ -190,8 +185,7 @@ public class AttributePanel extends JPanel {
             mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         }
 
-        JPanel right = new JPanel(new PrecisionLayout());
-        right.setOpaque(false);
+        ContentPanel right = new ContentPanel(new PrecisionLayout(),false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             getParent().remove(this);

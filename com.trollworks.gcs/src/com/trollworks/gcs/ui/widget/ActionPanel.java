@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 /** A {@link JPanel} with {@link ActionListener} support. */
-public class ActionPanel extends Panel {
+public class ActionPanel extends ContentPanel {
     private ArrayList<ActionListener> mActionListeners;
     private String                    mActionCommand;
 
