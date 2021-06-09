@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -35,7 +36,6 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 /** A window for editing menu key settings. */
@@ -113,8 +113,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
             adjustResetButton();
         });
-        JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(4));
-        wrapper.setOpaque(false);
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(4),false);
         wrapper.add(button);
         mPanel.add(wrapper);
         mPanel.add(new JLabel(cmd.getTitle()));
@@ -134,7 +133,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         prefs.setKeyBindingOverride(key, override);
     }
 
-    private JPanel createResetPanel() {
+    private Panel createResetPanel() {
         mResetButton = new JButton(I18n.text("Reset to Factory Defaults"));
         mResetButton.addActionListener((evt) -> {
             for (Map.Entry<JButton, Command> entry : mMap.entrySet()) {
@@ -144,7 +143,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
             adjustResetButton();
         });
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
         panel.add(mResetButton);
         return panel;
     }

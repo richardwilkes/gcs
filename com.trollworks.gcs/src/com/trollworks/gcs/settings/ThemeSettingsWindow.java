@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.ColorWell;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.FontPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -35,7 +36,6 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -65,11 +65,10 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
 
     private ThemeSettingsWindow() {
         super(I18n.text("Theme Settings"));
-        JPanel panel = new JPanel(new PrecisionLayout().setMargins(10));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(10));
 
         mResetFontsButton = addHeader(panel, I18n.text("Fonts"), 0, this::resetFonts);
-        JPanel wrapper = new JPanel(new PrecisionLayout().setColumns(2));
-        wrapper.setOpaque(false);
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(2), false);
         String[] keys = Fonts.getKeys();
         mFontPanels = new FontPanel[keys.length];
         int i = 0;
@@ -110,8 +109,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
 
         mResetColorsButton = addHeader(panel, I18n.text("Colors"), 16, this::resetColors);
         int cols = 8;
-        wrapper = new JPanel(new PrecisionLayout().setColumns(cols));
-        wrapper.setOpaque(false);
+        wrapper = new Panel(new PrecisionLayout().setColumns(cols), false);
         mColorWells = new ArrayList<>();
         int max = ThemeColor.ALL.size();
         cols /= 2;
@@ -143,7 +141,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
     }
 
     private static FontAwesomeButton addHeader(Container parent, String text, int topMargin, Runnable reset) {
-        JPanel header = new JPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        Panel header = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
         JLabel label  = new JLabel(text);
         label.setFont(label.getFont().deriveFont(Font.BOLD));
         header.add(label);

@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -35,7 +36,6 @@ import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.text.DefaultFormatterFactory;
@@ -84,8 +84,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
             idLabel.setBackground(background);
-            JPanel wrapper = new JPanel(new PrecisionLayout().setMargins(6, 0, 6, 0));
-            wrapper.setOpaque(false);
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(6, 0, 6, 0), false);
             wrapper.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(50).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
             mPanel.add(wrapper, new PrecisionLayoutData().setFillAlignment());
             EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)),
