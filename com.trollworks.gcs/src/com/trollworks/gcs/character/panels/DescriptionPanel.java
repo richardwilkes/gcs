@@ -19,8 +19,8 @@ import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -33,7 +33,6 @@ import com.trollworks.gcs.utility.units.WeightValue;
 import java.awt.Container;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /** The character description panel. */
 public class DescriptionPanel extends DropPanel {
@@ -117,7 +116,7 @@ public class DescriptionPanel extends DropPanel {
     }
 
     private static void createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, Runnable randomizer) {
-        parent.add(new FontAwesomeButton("\uf074", UIManager.getFont(Fonts.KEY_LABEL_PRIMARY).getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
+        parent.add(new FontAwesomeButton("\uf074", ThemeFont.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_CONTENT);
         parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));
         parent.add(field, createFieldLayout());

@@ -23,7 +23,6 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
@@ -39,7 +38,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
 /** Various utility methods for the UI. */
@@ -56,16 +54,6 @@ public final class UIUtilities {
             Log.error(ex);
         }
         Theme.current(); // Just here to ensure the theme is loaded
-        Fonts.loadFromPreferences();
-        UIDefaults defaults       = UIManager.getDefaults();
-        Font       systemTextFont = UIManager.getFont("TextField.font");
-        for (String name : new String[]{
-                "TextArea",
-                "TextField",
-                "TextPane"
-        }) {
-            defaults.put(name + ".font", systemTextFont);
-        }
         WiderToolTipUI.installIfNeeded();
     }
 

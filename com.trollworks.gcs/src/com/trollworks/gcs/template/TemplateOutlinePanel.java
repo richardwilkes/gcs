@@ -13,8 +13,8 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.widget.outline.ColumnUtils;
 import com.trollworks.gcs.ui.widget.outline.Outline;
@@ -26,7 +26,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
-import javax.swing.UIManager;
 
 /** The template outline panel. */
 public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
@@ -102,7 +101,7 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
     @Override
     public Dimension minimumLayoutSize(Container parent) {
         Dimension size      = mOutline.getMinimumSize();
-        int       minHeight = TextDrawing.getPreferredSize(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY), "Mg").height;
+        int       minHeight = TextDrawing.getPreferredSize(ThemeFont.PAGE_FIELD_PRIMARY.getFont(), "Mg").height;
         if (size.height < minHeight) {
             size.height = minHeight;
         }

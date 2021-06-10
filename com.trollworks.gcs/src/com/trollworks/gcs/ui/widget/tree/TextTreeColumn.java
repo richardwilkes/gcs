@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.Color;
@@ -221,7 +221,7 @@ public class TextTreeColumn extends TreeColumn {
      * @return The {@link Font} to use.
      */
     public Font getFont(TreeRow row) {
-        return Fonts.getDefaultSystemFont();
+        return ThemeFont.LABEL_PRIMARY.getFont();
     }
 
     /**

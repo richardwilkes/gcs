@@ -11,14 +11,12 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Fonts;
-
-import java.awt.Font;
+import com.trollworks.gcs.ui.ThemeFont;
 
 /** Used to draw headers in the lists. */
 public class EditorHeaderCell extends HeaderCell {
     @Override
-    public Font getFont(Row row, Column column) {
-        return Fonts.getDefaultSystemFont();
+    public ThemeFont getThemeFont(Row row, Column column) {
+        return ThemeFont.LABEL_PRIMARY;
     }
 }

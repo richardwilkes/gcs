@@ -18,7 +18,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.FontDesc;
 import com.trollworks.gcs.ui.Theme;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
@@ -107,7 +107,7 @@ public final class Settings extends ChangeableData {
     private        Path                             mLastDir;
     private        Map<String, PDFRef>              mPdfRefs;
     private        Map<String, String>              mKeyBindingOverrides;
-    private        Map<String, Fonts.Info>          mFontInfo;
+    private        Map<String, FontDesc>            mFontInfo;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
     private        String                           mGURPSCalculatorKey;
     private        String                           mDefaultPlayerName;
@@ -228,7 +228,7 @@ public final class Settings extends ChangeableData {
                         if (m.has(FONTS)) {
                             JsonMap m2 = m.getMap(FONTS);
                             for (String key : m2.keySet()) {
-                                mFontInfo.put(key, new Fonts.Info(m2.getMap(key)));
+                                mFontInfo.put(key, new FontDesc(m2.getMap(key)));
                             }
                         }
                         if (m.has(WINDOW_POSITIONS)) {
@@ -352,7 +352,7 @@ public final class Settings extends ChangeableData {
                     w.endMap();
                     w.key(FONTS);
                     w.startMap();
-                    for (Map.Entry<String, Fonts.Info> entry : mFontInfo.entrySet()) {
+                    for (Map.Entry<String, FontDesc> entry : mFontInfo.entrySet()) {
                         w.key(entry.getKey());
                         entry.getValue().toJSON(w);
                     }
@@ -573,11 +573,11 @@ public final class Settings extends ChangeableData {
         mPdfRefs.remove(ref.getID());
     }
 
-    public Fonts.Info getFontInfo(String key) {
+    public FontDesc getFontInfo(String key) {
         return mFontInfo.get(key);
     }
 
-    public void setFontInfo(String key, Fonts.Info fontInfo) {
+    public void setFontInfo(String key, FontDesc fontInfo) {
         mFontInfo.put(key, fontInfo);
         notifyOfChange();
     }

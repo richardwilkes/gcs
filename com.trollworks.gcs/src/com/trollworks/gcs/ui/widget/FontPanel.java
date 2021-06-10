@@ -11,7 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.FontStyle;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 
 import java.awt.FlowLayout;
@@ -23,10 +24,10 @@ import javax.swing.JComboBox;
 
 /** A standard font selection panel. */
 public class FontPanel extends ActionPanel implements ActionListener {
-    private JComboBox<Integer>         mFontSizeMenu;
-    private JComboBox<String>          mFontNameMenu;
-    private JComboBox<Fonts.FontStyle> mFontStyleMenu;
-    private boolean                    mNoNotify;
+    private JComboBox<Integer>   mFontSizeMenu;
+    private JComboBox<String>    mFontNameMenu;
+    private JComboBox<FontStyle> mFontStyleMenu;
+    private boolean              mNoNotify;
 
     /**
      * Creates a new font panel.
@@ -44,13 +45,10 @@ public class FontPanel extends ActionPanel implements ActionListener {
         UIUtilities.setToPreferredSizeOnly(mFontNameMenu);
         add(mFontNameMenu);
 
-        Integer[] sizes = new Integer[10];
-        for (int i = 0; i < 7; i++) {
-            sizes[i] = Integer.valueOf(6 + i);
+        Integer[] sizes = new Integer[20];
+        for (int i = 0; i < 20; i++) {
+            sizes[i] = Integer.valueOf(5 + i);
         }
-        sizes[7] = Integer.valueOf(14);
-        sizes[8] = Integer.valueOf(16);
-        sizes[9] = Integer.valueOf(18);
         mFontSizeMenu = new JComboBox<>(sizes);
         mFontSizeMenu.setOpaque(false);
         mFontSizeMenu.setMaximumRowCount(sizes.length);
@@ -58,7 +56,7 @@ public class FontPanel extends ActionPanel implements ActionListener {
         UIUtilities.setToPreferredSizeOnly(mFontSizeMenu);
         add(mFontSizeMenu);
 
-        mFontStyleMenu = new JComboBox<>(Fonts.FontStyle.values());
+        mFontStyleMenu = new JComboBox<>(FontStyle.values());
         mFontStyleMenu.setOpaque(false);
         mFontStyleMenu.addActionListener(this);
         UIUtilities.setToPreferredSizeOnly(mFontStyleMenu);
@@ -83,11 +81,11 @@ public class FontPanel extends ActionPanel implements ActionListener {
     public Font getCurrentFont() {
         String name = (String) mFontNameMenu.getSelectedItem();
         if (name == null) {
-            name = Fonts.ROBOTO;
+            name = ThemeFont.ROBOTO;
         }
-        Fonts.FontStyle style = (Fonts.FontStyle) mFontStyleMenu.getSelectedItem();
+        FontStyle style = (FontStyle) mFontStyleMenu.getSelectedItem();
         if (style == null) {
-            style = Fonts.FontStyle.PLAIN;
+            style = FontStyle.PLAIN;
         }
         Integer size = (Integer) mFontSizeMenu.getSelectedItem();
         if (size == null) {
@@ -107,7 +105,7 @@ public class FontPanel extends ActionPanel implements ActionListener {
         if (mFontSizeMenu.getSelectedItem() == null) {
             mFontSizeMenu.setSelectedIndex(3);
         }
-        mFontStyleMenu.setSelectedItem(Fonts.FontStyle.from(font));
+        mFontStyleMenu.setSelectedItem(FontStyle.from(font));
         if (mFontStyleMenu.getSelectedItem() == null) {
             mFontStyleMenu.setSelectedIndex(0);
         }

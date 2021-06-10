@@ -16,11 +16,11 @@ import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.ui.Colors;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -429,7 +429,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                                         if (row.canHaveChildren()) {
                                             gc.setColor(row == mRollRow ? ThemeColor.ROLLOVER_ICON_BUTTON : ThemeColor.ICON_BUTTON);
                                             int disclosureSize = scale.scale(mModel.getIndentWidth());
-                                            gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
+                                            gc.setFont(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
                                             TextDrawing.draw(gc, new Rectangle(colBounds.x - disclosureSize, colBounds.y - scale.scale(2), disclosureSize, disclosureSize), getDisclosure(row), SwingConstants.CENTER, SwingConstants.CENTER);
                                         }
                                     }

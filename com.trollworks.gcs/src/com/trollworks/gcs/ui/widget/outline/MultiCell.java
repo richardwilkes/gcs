@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
@@ -60,17 +60,13 @@ public class MultiCell implements Cell {
     }
 
     /** @return The primary font. */
-    public Font getPrimaryFont() {
-        return UIManager.getFont(mForEditor ? "TextField.font" : Fonts.KEY_FIELD_PRIMARY);
+    public ThemeFont getPrimaryFont() {
+        return mForEditor ? ThemeFont.FIELD_PRIMARY : ThemeFont.PAGE_FIELD_PRIMARY;
     }
 
     /** @return The secondary font, for notes. */
-    public Font getSecondaryFont() {
-        if (mForEditor) {
-            Font font = getPrimaryFont();
-            return font.deriveFont(font.getSize() * 7.0f / 8.0f);
-        }
-        return UIManager.getFont(Fonts.KEY_FIELD_SECONDARY);
+    public ThemeFont getSecondaryFont() {
+        return mForEditor ? ThemeFont.FIELD_SECONDARY : ThemeFont.PAGE_FIELD_SECONDARY;
     }
 
     /**
@@ -110,7 +106,7 @@ public class MultiCell implements Cell {
         int       hMargin     = scale.scale(H_MARGIN);
         Rectangle insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
         String    notes       = getSecondaryText(theRow);
-        Font      font        = scale.scale(getPrimaryFont());
+        Font      font        = scale.scale(getPrimaryFont().getFont());
         int       pos;
         gc.setColor(getColor(outline, row, column, selected, active));
         gc.setFont(font);
@@ -119,7 +115,7 @@ public class MultiCell implements Cell {
         if (!notes.trim().isEmpty()) {
             insetBounds.height -= pos - insetBounds.y;
             insetBounds.y = pos;
-            gc.setFont(scale.scale(getSecondaryFont()));
+            gc.setFont(scale.scale(getSecondaryFont().getFont()));
             TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
         }
     }
@@ -146,10 +142,10 @@ public class MultiCell implements Cell {
     public int getPreferredWidth(Outline outline, Row row, Column column) {
         Scale   scale  = Scale.get(outline);
         ListRow theRow = (ListRow) row;
-        int     width  = TextDrawing.getWidth(scale.scale(getPrimaryFont()), getPrimaryText(theRow));
+        int     width  = TextDrawing.getWidth(scale.scale(getPrimaryFont().getFont()), getPrimaryText(theRow));
         String  notes  = getSecondaryText(theRow);
         if (!notes.trim().isEmpty()) {
-            int notesWidth = TextDrawing.getWidth(scale.scale(getSecondaryFont()), notes);
+            int notesWidth = TextDrawing.getWidth(scale.scale(getSecondaryFont().getFont()), notes);
             if (notesWidth > width) {
                 width = notesWidth;
             }
@@ -167,11 +163,11 @@ public class MultiCell implements Cell {
     public int getPreferredHeight(Outline outline, Row row, Column column) {
         Scale   scale  = Scale.get(outline);
         ListRow theRow = (ListRow) row;
-        Font    font   = scale.scale(getPrimaryFont());
+        Font    font   = scale.scale(getPrimaryFont().getFont());
         int     height = TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, getPrimaryText(theRow), font)).height;
         String  notes  = getSecondaryText(theRow);
         if (!notes.trim().isEmpty()) {
-            font = scale.scale(getSecondaryFont());
+            font = scale.scale(getSecondaryFont().getFont());
             height += TextDrawing.getPreferredSize(font, wrap(scale, theRow, column, notes, font)).height;
         }
         return height;

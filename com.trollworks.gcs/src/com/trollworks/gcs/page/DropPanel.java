@@ -11,18 +11,18 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.TitledBorder;
+import com.trollworks.gcs.ui.widget.ContentPanel;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager;
@@ -30,12 +30,10 @@ import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 
 /** A standard panel with a drop shadow. */
-public class DropPanel extends JPanel {
+public class DropPanel extends ContentPanel {
     private Map<Component, Color> mHorizontalBackgrounds = new HashMap<>();
     private Map<Component, Color> mVerticalBackgrounds   = new HashMap<>();
     private TitledBorder          mTitledBorder;
@@ -58,7 +56,7 @@ public class DropPanel extends JPanel {
      *                                preferred size or not.
      */
     public DropPanel(LayoutManager layout, boolean onlyReportPreferredSize) {
-        this(layout, null, null, onlyReportPreferredSize);
+        this(layout, null, onlyReportPreferredSize);
     }
 
     /**
@@ -68,7 +66,7 @@ public class DropPanel extends JPanel {
      * @param title  The title to use.
      */
     public DropPanel(LayoutManager layout, String title) {
-        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), false);
+        this(layout, title, false);
     }
 
     /**
@@ -80,23 +78,10 @@ public class DropPanel extends JPanel {
      *                                preferred size or not.
      */
     public DropPanel(LayoutManager layout, String title, boolean onlyReportPreferredSize) {
-        this(layout, title, UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), onlyReportPreferredSize);
-    }
-
-    /**
-     * Creates a standard panel with a drop shadow.
-     *
-     * @param layout                  The layout to use.
-     * @param title                   The title to use.
-     * @param font                    The font to use for the title.
-     * @param onlyReportPreferredSize Whether or not minimum and maximum size is reported as
-     *                                preferred size or not.
-     */
-    public DropPanel(LayoutManager layout, String title, Font font, boolean onlyReportPreferredSize) {
         super(layout);
         setOpaque(true);
         setBackground(ThemeColor.CONTENT);
-        mTitledBorder = new TitledBorder(font, title);
+        mTitledBorder = new TitledBorder(ThemeFont.PAGE_LABEL_PRIMARY, title);
         setBorder(new CompoundBorder(mTitledBorder, new EmptyBorder(0, 2, 1, 2)));
         setAlignmentY(TOP_ALIGNMENT);
         mOnlyReportPreferredSize = onlyReportPreferredSize;

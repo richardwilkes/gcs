@@ -14,9 +14,9 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
@@ -48,7 +48,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;
-import javax.swing.UIManager;
 
 /** The character portrait. */
 public class PortraitPanel extends DropPanel implements DropTargetListener {
@@ -61,7 +60,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
      */
     public PortraitPanel(CharacterSheet sheet) {
         super(null, true);
-        setBorder(new TitledBorder(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY), I18n.text("Portrait")));
+        setBorder(new TitledBorder(ThemeFont.PAGE_LABEL_PRIMARY, I18n.text("Portrait")));
         mSheet = sheet;
         setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.text("""
                 <html><body>

@@ -16,66 +16,86 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.SwingConstants;
 
 /** General text drawing utilities. */
 public final class TextDrawing {
-    private static Map<Font, Map<Character, Integer>> WIDTH_MAP  = new HashMap<>();
-    private static Map<Font, Integer>                 HEIGHT_MAP = new HashMap<>();
+    private static FontRenderContext DEFAULT_FONT_RENDER_CONTEXT;
 
     private TextDrawing() {
     }
 
     /**
-     * @param font The {@link Font} to measure with.
-     * @param ch   The character to measure.
-     * @return The width, in pixels.
+     * @param font The font to work on.
+     * @return The font metrics for the specified font.
      */
-    public static int getWidth(Font font, char ch) {
-        return getCharWidth(font, ch, getWidthMap(font));
+    public static FontMetrics getFontMetrics(Font font) {
+        Graphics2D  g2d = GraphicsUtilities.getGraphics();
+        FontMetrics fm  = g2d.getFontMetrics(font);
+        g2d.dispose();
+        return fm;
     }
 
-    private static int getCharWidth(Font font, char ch, Map<Character, Integer> map) {
-        Integer width = map.get(Character.valueOf(ch));
-        if (width == null) {
-            width = Integer.valueOf(Math.max(Fonts.getFontMetrics(font).charWidth(ch), 1));
-            map.put(Character.valueOf(ch), width);
-        }
-        return width.intValue();
+    /** @return A default {@link FontRenderContext}. */
+    public static FontRenderContext getDefaultFontRenderContext() {
+        Graphics2D        g2d = GraphicsUtilities.getGraphics();
+        FontRenderContext frc = g2d.getFontRenderContext();
+        g2d.dispose();
+        return frc;
     }
 
     /**
      * @param font The {@link Font} to measure with.
-     * @param text The text to measure.
+     * @param text The text to measure. Returns are not treated specially.
      * @return The width, in pixels.
      */
     public static int getSimpleWidth(Font font, String text) {
-        Map<Character, Integer> map   = getWidthMap(font);
-        int                     total = 0;
-        int                     count = text.length();
-        for (int i = 0; i < count; i++) {
-            total += getCharWidth(font, text.charAt(i), map);
+        if (text == null || text.isEmpty()) {
+            return 0;
         }
-        return total;
+        Rectangle2D bounds = font.getStringBounds(text, getDefaultFontRenderContext());
+        return (int) Math.ceil(bounds.getWidth());
     }
 
-    private static Map<Character, Integer> getWidthMap(Font font) {
-        Map<Character, Integer> map = WIDTH_MAP.get(font);
-        if (map == null) {
-            map = new HashMap<>();
-            WIDTH_MAP.put(font, map);
-            FontMetrics fm = Fonts.getFontMetrics(font);
-            for (char i = 32; i < 127; i++) {
-                map.put(Character.valueOf(i), Integer.valueOf(Math.max(fm.charWidth(i), 1)));
+    /**
+     * @param font The font the text will be in.
+     * @param text The text to calculate a size for. May contain returns. The width of the widest
+     *             line will be returned.
+     * @return The width of the text in the specified font.
+     */
+    public static int getWidth(Font font, String text) {
+        if (text == null || text.isEmpty()) {
+            return 0;
+        }
+        StringTokenizer tokenizer = new StringTokenizer(text, "\n", true);
+        boolean         veryFirst = true;
+        boolean         first     = true;
+        int             width     = 0;
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if ("\n".equals(token)) {
+                if (first && !veryFirst) {
+                    first = false;
+                    continue;
+                }
+                token = " ";
+            } else {
+                first = true;
+            }
+            veryFirst = false;
+            int bWidth = getSimpleWidth(font, token);
+            if (width < bWidth) {
+                width = bWidth;
             }
         }
-        return map;
+        return width;
     }
 
     /**
@@ -112,12 +132,11 @@ public final class TextDrawing {
     public static int draw(Graphics gc, Rectangle bounds, String text, int hAlign, int vAlign, Color strikeThruColor, int strikeThruSize) {
         int y = bounds.y;
         if (!text.isEmpty()) {
-            List<String> list    = new ArrayList<>();
-            Font         font    = gc.getFont();
-            FontMetrics  fm      = gc.getFontMetrics();
-            int          ascent  = fm.getAscent();
-            int          descent = fm.getDescent();
-            // Don't use fm.getHeight(), as the PC adds too much dead space
+            List<String>    list       = new ArrayList<>();
+            Font            font       = gc.getFont();
+            FontMetrics     fm         = gc.getFontMetrics();
+            int             ascent     = fm.getAscent();
+            int             descent    = fm.getDescent();
             int             fHeight    = ascent + descent;
             StringTokenizer tokenizer  = new StringTokenizer(text, " \n", true);
             StringBuilder   buffer     = new StringBuilder(text.length());
@@ -188,48 +207,42 @@ public final class TextDrawing {
      * @return The preferred size of the text in the specified font.
      */
     public static Dimension getPreferredSize(Font font, String text) {
-        int width  = 0;
-        int height = 0;
-        int length = text.length();
-        if (length > 0) {
-            Map<Character, Integer> map      = getWidthMap(font);
-            int                     fHeight  = getFontHeight(font);
-            char                    ch       = 0;
-            int                     curWidth = 0;
-            for (int i = 0; i < length; i++) {
-                ch = text.charAt(i);
-                if (ch == '\n') {
-                    height += fHeight;
-                    if (curWidth > width) {
-                        width = curWidth;
-                    }
-                    curWidth = 0;
-                } else {
-                    curWidth += getCharWidth(font, ch, map);
-                }
-            }
-            if (ch != '\n') {
+        if (text == null || text.isEmpty()) {
+            return new Dimension();
+        }
+        StringTokenizer tokenizer = new StringTokenizer(text, "\n", true);
+        boolean         veryFirst = true;
+        boolean         first     = true;
+        int             fHeight   = getFontHeight(font);
+        int             width     = 0;
+        int             height    = 0;
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if ("\n".equals(token)) {
                 height += fHeight;
+                if (first && !veryFirst) {
+                    first = false;
+                    continue;
+                }
+                token = " ";
+            } else {
+                first = true;
             }
-            if (curWidth > width) {
-                width = curWidth;
+            veryFirst = false;
+            int bWidth = getSimpleWidth(font, token);
+            if (width < bWidth) {
+                width = bWidth;
             }
-            if (width == 0) {
-                width = getCharWidth(font, ' ', map);
-            }
+        }
+        if (!text.endsWith("\n")) {
+            height += fHeight;
         }
         return new Dimension(width, height);
     }
 
     public static int getFontHeight(Font font) {
-        Integer height = HEIGHT_MAP.get(font);
-        if (height == null) {
-            FontMetrics fm = Fonts.getFontMetrics(font);
-            // Don't use fm.getHeight(), as the PC adds too much dead space
-            height = Integer.valueOf(fm.getAscent() + fm.getDescent());
-            HEIGHT_MAP.put(font, height);
-        }
-        return height.intValue();
+        FontMetrics fm = getFontMetrics(font);
+        return fm.getAscent() + fm.getDescent();
     }
 
     /**
@@ -256,36 +269,6 @@ public final class TextDrawing {
             }
         }
         return height;
-    }
-
-    /**
-     * @param font The font the text will be in.
-     * @param text The text to calculate a size for.
-     * @return The width of the text in the specified font.
-     */
-    public static int getWidth(Font font, String text) {
-        StringTokenizer tokenizer = new StringTokenizer(text, "\n", true);
-        boolean         veryFirst = true;
-        boolean         first     = true;
-        int             width     = 0;
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            if ("\n".equals(token)) {
-                if (first && !veryFirst) {
-                    first = false;
-                    continue;
-                }
-                token = " ";
-            } else {
-                first = true;
-            }
-            veryFirst = false;
-            int bWidth = getSimpleWidth(font, token);
-            if (width < bWidth) {
-                width = bWidth;
-            }
-        }
-        return width;
     }
 
     /**

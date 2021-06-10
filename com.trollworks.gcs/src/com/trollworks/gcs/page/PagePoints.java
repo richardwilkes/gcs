@@ -11,19 +11,17 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
-import javax.swing.UIManager;
-
 /** A points field in a page. */
 public class PagePoints extends Label {
     public PagePoints(int points) {
         super("[" + points + "]");
-        setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
+        setThemeFont(ThemeFont.PAGE_LABEL_SECONDARY);
         setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Points spent")));
         UIUtilities.setToPreferredSizeOnly(this);
     }

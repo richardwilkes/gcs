@@ -330,10 +330,11 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         }
     }
 
-    /** Forces a full repaint and invalidate on all windows, disposing of any window buffers. */
-    public static void forceRepaintAndInvalidate() {
+    /** Forces a revalidate and full repaint on all windows, disposing of any window buffers. */
+    public static void forceRevalidateAndRepaint() {
         for (BaseWindow window : getAllAppWindows()) {
-            window.invalidate(window.getRootPane());
+            window.revalidate();
+            window.repaint();
         }
     }
 

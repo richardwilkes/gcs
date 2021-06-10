@@ -30,11 +30,10 @@ import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 /** A simple label replacement that is scalable. */
-public class Label extends JComponent implements PropertyChangeListener {
+public class SpecialFontLabel extends JComponent implements PropertyChangeListener {
     private static final String ERROR_KEY = "error";
 
     private String     mText;
-    private ThemeFont  mThemeFont;
     private int        mHAlign;
     private JComponent mRefersTo;
 
@@ -43,10 +42,10 @@ public class Label extends JComponent implements PropertyChangeListener {
      *
      * @param text The text to use.
      */
-    public Label(String text) {
+    public SpecialFontLabel(String text) {
         mText = "";
         mHAlign = SwingConstants.LEFT;
-        setThemeFont(ThemeFont.LABEL_PRIMARY);
+        setFont(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, 9));
         setForeground(ThemeColor.ON_BACKGROUND);
         setOpaque(false);
         setText(text);
@@ -58,24 +57,9 @@ public class Label extends JComponent implements PropertyChangeListener {
      * @param text   The text to use.
      * @param hAlign The horizontal alignment to use.
      */
-    public Label(String text, int hAlign) {
+    public SpecialFontLabel(String text, int hAlign) {
         this(text);
         mHAlign = hAlign;
-    }
-
-    public final void setThemeFont(ThemeFont font) {
-        mThemeFont = font;
-    }
-
-    @Override
-    public final Font getFont() {
-        return mThemeFont.getFont();
-    }
-
-    @Override
-    public final void setFont(Font font) {
-        System.out.println("ERROR: tried to set font rather than theme font");
-        new Exception().printStackTrace(System.out);
     }
 
     /** @return The text. */

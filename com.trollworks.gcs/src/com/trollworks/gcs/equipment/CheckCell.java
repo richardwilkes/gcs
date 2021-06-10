@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.equipment;
 
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultipleRowUndo;
@@ -30,10 +30,8 @@ public class CheckCell extends ListTextCell {
     }
 
     @Override
-    public Font getFont(Row row, Column column) {
-        Font font = super.getFont(row, column);
-        font = new Font(Fonts.FONT_AWESOME_SOLID, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
-        return font;
+    protected Font deriveFont(Row row, Column column, Font font) {
+        return new Font(ThemeFont.FONT_AWESOME_SOLID, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
     }
 
     @Override

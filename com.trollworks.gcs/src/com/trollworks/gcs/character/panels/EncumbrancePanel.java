@@ -19,7 +19,7 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.page.SpecialFontPageLabel;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -30,7 +30,6 @@ import com.trollworks.gcs.utility.text.Numbers;
 
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Font;
 import java.text.MessageFormat;
 import javax.swing.SwingConstants;
 
@@ -81,10 +80,7 @@ public class EncumbrancePanel extends DropPanel {
             }
 
             if (encumbrance == current) {
-                PageLabel marker = new PageLabel("\uf24e");
-                marker.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, 9));
-                marker.setForeground(textColor);
-                add(marker, new PrecisionLayoutData().setFillHorizontalAlignment());
+                add(new SpecialFontPageLabel("\uf24e", textColor, header), new PrecisionLayoutData().setFillHorizontalAlignment());
             } else {
                 add(new PageLabel(" ", textColor, header), new PrecisionLayoutData().setFillHorizontalAlignment());
             }

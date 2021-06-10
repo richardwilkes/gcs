@@ -22,8 +22,8 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.page.PagePoints;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -32,7 +32,6 @@ import com.trollworks.gcs.utility.I18n;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 public class PointPoolsPanel extends DropPanel {
     public PointPoolsPanel(CharacterSheet sheet) {
@@ -60,19 +59,19 @@ public class PointPoolsPanel extends DropPanel {
         String    fullName = def.getFullName();
         label.setToolTipText(fullName.isBlank() ? null : fullName);
         add(label);
-        PageLabel mState = new PageLabel("");
-        mState.setFont(UIManager.getFont(Fonts.KEY_LABEL_SECONDARY));
+        PageLabel state = new PageLabel("");
+        state.setThemeFont(ThemeFont.PAGE_LABEL_SECONDARY);
         PoolThreshold threshold = attr.getCurrentThreshold(gch);
         if (threshold != null) {
-            mState.setText(String.format("[%s]", threshold.getState()));
+            state.setText(String.format("[%s]", threshold.getState()));
             String explanation = threshold.getExplanation();
             if (explanation.isEmpty()) {
                 explanation = null;
             }
-            if (!Objects.equals(explanation, mState.getToolTipText())) {
-                mState.setToolTipText(explanation);
+            if (!Objects.equals(explanation, state.getToolTipText())) {
+                state.setToolTipText(explanation);
             }
         }
-        add(mState, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.END));
+        add(state, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.END));
     }
 }

@@ -43,10 +43,11 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.Selection;
+import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -97,7 +98,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.RepaintManager;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -669,8 +669,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
         String      pageString = MessageFormat.format(I18n.text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
         Scale       scale      = getScale();
-        Font        font1      = scale.scale(UIManager.getFont(Fonts.KEY_FOOTER_SECONDARY));
-        Font        font2      = scale.scale(UIManager.getFont(Fonts.KEY_FOOTER_PRIMARY));
+        Font        font1      = scale.scale(ThemeFont.PAGE_FOOTER_SECONDARY.getFont());
+        Font        font2      = scale.scale(ThemeFont.PAGE_FOOTER_PRIMARY.getFont());
         FontMetrics fm1        = gc.getFontMetrics(font1);
         FontMetrics fm2        = gc.getFontMetrics(font2);
         int         y          = bounds.y + bounds.height + fm2.getAscent();
@@ -719,8 +719,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     public Insets getPageAdornmentsInsets(Page page) {
-        FontMetrics fm1 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_FOOTER_SECONDARY));
-        FontMetrics fm2 = Fonts.getFontMetrics(UIManager.getFont(Fonts.KEY_FOOTER_PRIMARY));
+        FontMetrics fm1 = TextDrawing.getFontMetrics(ThemeFont.PAGE_FOOTER_SECONDARY.getFont());
+        FontMetrics fm2 = TextDrawing.getFontMetrics(ThemeFont.PAGE_FOOTER_PRIMARY.getFont());
         return new Insets(0, 0, fm1.getAscent() + fm1.getDescent() + fm2.getAscent() + fm2.getDescent(), 0);
     }
 

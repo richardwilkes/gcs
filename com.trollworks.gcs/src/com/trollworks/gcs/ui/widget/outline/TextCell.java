@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
@@ -216,8 +217,30 @@ public class TextCell implements Cell {
      * @param column The column.
      * @return The font.
      */
-    public Font getFont(Row row, Column column) {
-        return UIManager.getFont("TextField.font");
+    public ThemeFont getThemeFont(Row row, Column column) {
+        return ThemeFont.FIELD_PRIMARY;
+    }
+
+    /**
+     * @param row    The row.
+     * @param column The column.
+     * @return The font.
+     */
+    public final Font getFont(Row row, Column column) {
+        return deriveFont(row, column, getThemeFont(row, column).getFont());
+    }
+
+    /**
+     * Gets called to allow the font to be derived from a ThemeFont. This was done so that the
+     * typical usage of calling getFont() can't be accidentally overriden.
+     *
+     * @param row    The row.
+     * @param column The column.
+     * @param font   The font from the theme.
+     * @return The font.
+     */
+    protected Font deriveFont(Row row, Column column, Font font) {
+        return font;
     }
 
     /** @return The horizontal alignment. */

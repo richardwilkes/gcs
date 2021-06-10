@@ -11,15 +11,13 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import javax.swing.UIManager;
 
 /** Used to draw headers in the lists. */
 public class ListHeaderCell extends HeaderCell {
@@ -35,8 +33,8 @@ public class ListHeaderCell extends HeaderCell {
     }
 
     @Override
-    public Font getFont(Row row, Column column) {
-        return UIManager.getFont(Fonts.KEY_LABEL_PRIMARY);
+    public ThemeFont getThemeFont(Row row, Column column) {
+        return ThemeFont.PAGE_LABEL_PRIMARY;
     }
 
     @Override

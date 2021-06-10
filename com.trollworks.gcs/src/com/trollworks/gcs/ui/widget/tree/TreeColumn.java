@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeFont;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -248,7 +248,7 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
 
     /** @return The {@link Font} to use for the header. */
     public Font getHeaderFont() {
-        return Fonts.getDefaultSystemFont();
+        return ThemeFont.LABEL_PRIMARY.getFont();
     }
 
     /** @return The {@link Color} to use for the sorter controls. */

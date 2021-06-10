@@ -27,12 +27,11 @@ public class FontAwesomeCell extends ListHeaderCell {
     }
 
     @Override
-    public Font getFont(Row row, Column column) {
-        Font font = super.getFont(row, column);
-        if (row == null) {
-            font = new Font(mFontName, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
+    protected Font deriveFont(Row row, Column column, Font font) {
+        if (row != null) {
+            return font;
         }
-        return font;
+        return new Font(mFontName, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
     }
 
     @Override

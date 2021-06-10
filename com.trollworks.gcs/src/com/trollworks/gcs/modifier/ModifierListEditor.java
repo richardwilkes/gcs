@@ -13,7 +13,7 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -85,7 +85,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         top.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         add(top, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        setBorder(new TitledBorder(Fonts.getDefaultSystemFont(), toString()));
+        setBorder(new TitledBorder(ThemeFont.LABEL_PRIMARY, toString()));
     }
 
     /** @return Whether a {@link Modifier} was modified. */

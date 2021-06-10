@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
@@ -32,21 +32,21 @@ public class WrappedCell implements Cell {
         Scale scale   = Scale.get(outline);
         int   hMargin = scale.scale(H_MARGIN);
         gc.setColor(selected ? UIManager.getColor("List.selectionForeground") : outline.getForeground());
-        gc.setFont(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)));
+        gc.setFont(scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont()));
         TextDrawing.draw(gc, new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height), row.getDataAsText(column), SwingConstants.LEFT, SwingConstants.TOP);
     }
 
     @Override
     public int getPreferredWidth(Outline outline, Row row, Column column) {
         Scale scale = Scale.get(outline);
-        int   width = TextDrawing.getWidth(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)), row.getDataAsText(column));
+        int   width = TextDrawing.getWidth(scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont()), row.getDataAsText(column));
         return width + scale.scale(H_MARGIN) * 2;
     }
 
     @Override
     public int getPreferredHeight(Outline outline, Row row, Column column) {
         Scale scale = Scale.get(outline);
-        Font  font  = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY));
+        Font  font  = scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont());
         return TextDrawing.getPreferredSize(font, wrap(row, column, row.getDataAsText(column), font, scale)).height;
     }
 

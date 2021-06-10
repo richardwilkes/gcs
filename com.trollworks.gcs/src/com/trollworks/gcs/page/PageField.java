@@ -14,15 +14,16 @@ package com.trollworks.gcs.page;
 import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.ui.Colors;
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -32,7 +33,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField;
-import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 
 /** A generic field for a page. */
@@ -40,6 +40,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
     private CharacterSheet  mSheet;
     private String          mTag;
     private CharacterSetter mSetter;
+    private ThemeFont       mThemeFont;
 
     /**
      * Creates a new disabled text input field.
@@ -77,7 +78,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         mSheet = sheet;
         mTag = tag;
         mSetter = setter;
-        setFont(sheet.getScale().scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)));
+        setThemeFont(ThemeFont.PAGE_FIELD_PRIMARY);
         setBorder(null);
         setOpaque(false);
         // Just setting opaque to false isn't enough for some reason, so I'm also setting the
@@ -92,6 +93,34 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         addPropertyChangeListener("value", this);
         addActionListener(this);
         setFocusLostBehavior(COMMIT_OR_REVERT);
+    }
+
+    public final void setThemeFont(ThemeFont font) {
+        mThemeFont = font;
+    }
+
+    @Override
+    public final Font getFont() {
+        if (mThemeFont == null) {
+            // If this happens, we are in the constructor and the look & feel is being inited, so
+            // just return whatever was there by default.
+            return super.getFont();
+        }
+        return mSheet.getScale().scale(mThemeFont.getFont());
+    }
+
+    @Override
+    public final void setFont(Font font) {
+        // TODO: Find a way to not need all this crud (i.e. override the look & feel that is used)
+        super.setFont(font);
+        Exception ex = new Exception();
+        for (StackTraceElement el : ex.getStackTrace()) {
+            if ("javax.swing.plaf.basic.BasicTextUI".equals(el.getClassName())) {
+                return;
+            }
+        }
+        System.out.println("ERROR: tried to set font rather than theme font");
+        ex.printStackTrace(System.out);
     }
 
     @Override

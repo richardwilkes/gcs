@@ -12,20 +12,19 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
-import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.SpecialFontLabel;
 
 import java.awt.Color;
 import javax.swing.JComponent;
 
 /** A label for a field in a page. */
-public class PageLabel extends Label {
+public class SpecialFontPageLabel extends SpecialFontLabel {
     /**
      * Creates a new label.
      *
      * @param title The title of the field.
      */
-    public PageLabel(String title) {
+    public SpecialFontPageLabel(String title) {
         this(title, ThemeColor.ON_CONTENT, null);
     }
 
@@ -35,7 +34,7 @@ public class PageLabel extends Label {
      * @param title    The title of the field.
      * @param refersTo The component it refers to.
      */
-    public PageLabel(String title, JComponent refersTo) {
+    public SpecialFontPageLabel(String title, JComponent refersTo) {
         this(title, ThemeColor.ON_CONTENT, refersTo);
     }
 
@@ -46,9 +45,8 @@ public class PageLabel extends Label {
      * @param color    The color to use.
      * @param refersTo The component it refers to.
      */
-    public PageLabel(String title, Color color, JComponent refersTo) {
+    public SpecialFontPageLabel(String title, Color color, JComponent refersTo) {
         super(title);
-        setThemeFont(ThemeFont.PAGE_LABEL_PRIMARY);
         setForeground(color);
         setRefersTo(refersTo);
     }

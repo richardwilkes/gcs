@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.weapon;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -58,14 +58,14 @@ public class WeaponDescriptionCell implements Cell {
         WeaponDisplayRow theRow      = (WeaponDisplayRow) row;
         Rectangle        insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
         String           notes       = getSecondaryText(theRow);
-        Font             font        = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY));
+        Font             font        = scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont());
         gc.setColor(selected ? UIManager.getColor("List.selectionForeground") : outline.getForeground());
         gc.setFont(font);
         int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
         if (!notes.trim().isEmpty()) {
             insetBounds.height -= pos - insetBounds.y;
             insetBounds.y = pos;
-            gc.setFont(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_SECONDARY)));
+            gc.setFont(scale.scale(ThemeFont.PAGE_FIELD_SECONDARY.getFont()));
             TextDrawing.draw(gc, insetBounds, notes, SwingConstants.LEFT, SwingConstants.TOP);
         }
     }
@@ -74,10 +74,10 @@ public class WeaponDescriptionCell implements Cell {
     public int getPreferredWidth(Outline outline, Row row, Column column) {
         Scale            scale  = Scale.get(outline);
         WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-        int              width  = TextDrawing.getWidth(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY)), getPrimaryText(theRow));
+        int              width  = TextDrawing.getWidth(scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont()), getPrimaryText(theRow));
         String           notes  = getSecondaryText(theRow);
         if (!notes.trim().isEmpty()) {
-            int notesWidth = TextDrawing.getWidth(scale.scale(UIManager.getFont(Fonts.KEY_FIELD_SECONDARY)), notes);
+            int notesWidth = TextDrawing.getWidth(scale.scale(ThemeFont.PAGE_FIELD_SECONDARY.getFont()), notes);
             if (notesWidth > width) {
                 width = notesWidth;
             }
@@ -89,11 +89,11 @@ public class WeaponDescriptionCell implements Cell {
     public int getPreferredHeight(Outline outline, Row row, Column column) {
         Scale            scale  = Scale.get(outline);
         WeaponDisplayRow theRow = (WeaponDisplayRow) row;
-        Font             font   = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_PRIMARY));
+        Font             font   = scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont());
         int              height = TextDrawing.getPreferredSize(font, wrap(theRow, column, getPrimaryText(theRow), font, scale)).height;
         String           notes  = getSecondaryText(theRow);
         if (!notes.trim().isEmpty()) {
-            font = scale.scale(UIManager.getFont(Fonts.KEY_FIELD_SECONDARY));
+            font = scale.scale(ThemeFont.PAGE_FIELD_SECONDARY.getFont());
             height += TextDrawing.getPreferredSize(font, wrap(theRow, column, notes, font, scale)).height;
         }
         return height;

@@ -11,13 +11,11 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.ThemeFont;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import javax.swing.UIManager;
 
 /** Represents cells in a {@link Outline}. */
 public class ListTextCell extends TextCell {
@@ -32,8 +30,8 @@ public class ListTextCell extends TextCell {
     }
 
     @Override
-    public Font getFont(Row row, Column column) {
-        return UIManager.getFont(Fonts.KEY_FIELD_PRIMARY);
+    public ThemeFont getThemeFont(Row row, Column column) {
+        return ThemeFont.PAGE_FIELD_PRIMARY;
     }
 
     @Override

@@ -11,13 +11,12 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.text.Text;
 
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /** A header within the page. */
 public class PageHeader extends Label {
@@ -29,8 +28,8 @@ public class PageHeader extends Label {
      */
     public PageHeader(String title, String tooltip) {
         super(title);
+        setThemeFont(ThemeFont.PAGE_LABEL_PRIMARY);
         setHorizontalAlignment(SwingConstants.CENTER);
-        setFont(UIManager.getFont(Fonts.KEY_LABEL_PRIMARY));
         setForeground(ThemeColor.ON_HEADER);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
     }

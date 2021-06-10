@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui.border;
 
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
@@ -25,9 +26,9 @@ import javax.swing.SwingConstants;
 
 /** A border consisting of a frame and optional title. */
 public class TitledBorder extends LineBorder {
-    private String mTitle;
-    private Font   mFont;
-    private Color  mTitleColor;
+    private String    mTitle;
+    private ThemeFont mFont;
+    private Color     mTitleColor;
 
     /** Creates a new border without a title. */
     public TitledBorder() {
@@ -41,7 +42,7 @@ public class TitledBorder extends LineBorder {
      * @param font  The font to use.
      * @param title The title to use.
      */
-    public TitledBorder(Font font, String title) {
+    public TitledBorder(ThemeFont font, String title) {
         this();
         mFont = font;
         mTitle = title;
@@ -55,7 +56,7 @@ public class TitledBorder extends LineBorder {
      * @param font        The font to use.
      * @param title       The title to use.
      */
-    public TitledBorder(Color borderColor, Color titleColor, Font font, String title) {
+    public TitledBorder(Color borderColor, Color titleColor, ThemeFont font, String title) {
         super(borderColor);
         mFont = font;
         mTitle = title;
@@ -63,12 +64,12 @@ public class TitledBorder extends LineBorder {
     }
 
     /** @return The font. */
-    public Font getFont() {
+    public ThemeFont getFont() {
         return mFont;
     }
 
     /** @param font The font to use. */
-    public void setFont(Font font) {
+    public void setFont(ThemeFont font) {
         mFont = font;
     }
 
@@ -84,7 +85,7 @@ public class TitledBorder extends LineBorder {
 
     @Override
     public Insets getBorderInsets(Component component) {
-        setThickness(Edge.TOP, (mTitle != null && mFont != null) ? TextDrawing.getPreferredSize(mFont, mTitle).height : Scale.get(component).scale(1));
+        setThickness(Edge.TOP, (mTitle != null && mFont != null) ? TextDrawing.getPreferredSize(mFont.getFont(), mTitle).height : Scale.get(component).scale(1));
         return super.getBorderInsets(component);
     }
 
@@ -94,7 +95,7 @@ public class TitledBorder extends LineBorder {
         if (mTitle != null && mFont != null) {
             Scale scale     = Scale.get(component);
             Font  savedFont = graphics.getFont();
-            Font  font      = scale.scale(mFont);
+            Font  font      = scale.scale(mFont.getFont());
             int   one       = scale.scale(1);
             graphics.setFont(font);
             graphics.setColor(mTitleColor);
@@ -105,8 +106,8 @@ public class TitledBorder extends LineBorder {
 
     public int getMinimumWidth(Component component) {
         Scale scale = Scale.get(component);
-        if (mTitle != null) {
-            return TextDrawing.getPreferredSize(scale.scale(mFont), mTitle).width + scale.scale(1) * 4;
+        if (mTitle != null && mFont != null) {
+            return TextDrawing.getPreferredSize(scale.scale(mFont.getFont()), mTitle).width + scale.scale(1) * 4;
         }
         return scale.scale(1) * 4;
     }
