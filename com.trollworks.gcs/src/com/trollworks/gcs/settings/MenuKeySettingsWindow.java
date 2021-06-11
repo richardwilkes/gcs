@@ -82,7 +82,13 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         content.add(new ScrollPanel(mPanel), BorderLayout.CENTER);
         content.add(createResetPanel(), BorderLayout.SOUTH);
         adjustResetButton();
+        establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);
+    }
+
+    @Override
+    public void establishSizing() {
+        pack();
         int width = getSize().width;
         setMinimumSize(new Dimension(width, 200));
         setMaximumSize(new Dimension(width, getPreferredSize().height));

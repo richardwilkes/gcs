@@ -128,10 +128,15 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
             mCharacter.addChangeListener(this);
             Settings.getInstance().addChangeListener(this);
         }
-        Dimension min1 = getMinimumSize();
-        setMinimumSize(new Dimension(Math.max(min1.width, 600), min1.height));
+        establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);
         EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
+    }
+
+    @Override
+    public void establishSizing() {
+        Dimension min = getMinimumSize();
+        setMinimumSize(new Dimension(Math.max(min.width, 600), min.height));
     }
 
     private Map<String, AttributeDef> getAttributes() {

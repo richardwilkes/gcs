@@ -399,4 +399,13 @@ public final class UIUtilities {
         Insets insets = component.getInsets();
         return new Rectangle(insets.left, insets.top, component.getWidth() - (insets.left + insets.right), component.getHeight() - (insets.top + insets.bottom));
     }
+
+    public static void invalidateTree(Component comp) {
+        comp.invalidate();
+        if (comp instanceof Container) {
+            for (Component child : ((Container) comp).getComponents()) {
+                invalidateTree(child);
+            }
+        }
+    }
 }

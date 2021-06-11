@@ -173,9 +173,14 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         content.add(mResetButton, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setHorizontalSpan(3).setTopMargin(10));
 
         adjustResetButton();
+        establishSizing();
+        WindowUtils.packAndCenterWindowOn(this, null);
+    }
+
+    @Override
+    public void establishSizing() {
         setMinimumSize(new Dimension(20, 20));
         setResizable(false);
-        WindowUtils.packAndCenterWindowOn(this, null);
     }
 
     private void reset() {

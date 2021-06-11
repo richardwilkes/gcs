@@ -122,14 +122,20 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         addTopPanel();
         addResetPanel();
         adjustResetButton();
+        establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);
-        int width = getSize().width;
-        setMinimumSize(new Dimension(width, 200));
-        setMaximumSize(new Dimension(width, 10000));
         if (mCharacter != null) {
             mCharacter.addChangeListener(this);
             Settings.getInstance().addChangeListener(this);
         }
+    }
+
+    @Override
+    public void establishSizing() {
+        pack();
+        int width = getSize().width;
+        setMinimumSize(new Dimension(width, 200));
+        setMaximumSize(new Dimension(width, 10000));
     }
 
     private void addTopPanel() {

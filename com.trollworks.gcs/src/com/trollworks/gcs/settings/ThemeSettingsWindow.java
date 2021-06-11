@@ -68,8 +68,6 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         super(I18n.text("Theme Settings"));
         Panel panel = new Panel(new PrecisionLayout().setMargins(10));
 
-        panel.add(new Label(I18n.text("Changing fonts may require restarting GCS to see the effect properly.")), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
-
         mResetFontsButton = addHeader(panel, I18n.text("Fonts"), 0, this::resetFonts);
         Panel wrapper = new Panel(new PrecisionLayout().setColumns(2), false);
         mFontPanels = new ArrayList<>();
@@ -110,7 +108,13 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
 
         getContentPane().add(new ScrollPanel(panel), BorderLayout.CENTER);
         adjustResetButtons();
+        establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);
+    }
+
+    @Override
+    public void establishSizing() {
+        pack();
         int width = getSize().width;
         setMinimumSize(new Dimension(width, 200));
         setMaximumSize(new Dimension(width, getPreferredSize().height));
@@ -142,7 +146,6 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         }
         mIgnore = false;
         BaseWindow.forceRevalidateAndRepaint();
-        Theme.repaint();
         adjustResetButtons();
     }
 
@@ -152,7 +155,6 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
             tracker.reset();
         }
         mIgnore = false;
-        BaseWindow.forceRevalidateAndRepaint();
         Theme.repaint();
         adjustResetButtons();
     }

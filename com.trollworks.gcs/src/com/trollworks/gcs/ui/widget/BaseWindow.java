@@ -19,6 +19,7 @@ import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.settings.MenuKeySettingsWindow;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.utility.Log;
@@ -333,9 +334,20 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
     /** Forces a revalidate and full repaint on all windows, disposing of any window buffers. */
     public static void forceRevalidateAndRepaint() {
         for (BaseWindow window : getAllAppWindows()) {
-            window.revalidate();
+            UIUtilities.invalidateTree(window);
+            window.setMinimumSize(null);
+            window.setPreferredSize(null);
+            window.setMaximumSize(null);
+            window.establishSizing();
+            window.pack();
+            WindowUtils.forceOnScreen(window);
             window.repaint();
         }
+    }
+
+    /** Intended to be called to establish any sizing constraints on the window. */
+    public void establishSizing() {
+        // Does nothing by default.
     }
 
     public static class Position {
