@@ -14,20 +14,22 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.outline.ColumnUtils;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Insets;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 
 /** The template sheet. */
 public class TemplateSheet extends CollectedOutlines {
     private Template mTemplate;
+    private boolean  mIgnoreContentSizeChange;
 
     /**
      * Creates a new TemplateSheet.
@@ -36,24 +38,23 @@ public class TemplateSheet extends CollectedOutlines {
      */
     public TemplateSheet(Template template) {
         mTemplate = template;
-        setLayout(new ColumnLayout(1, 0, 5));
+        setLayout(new PrecisionLayout().setVerticalSpacing(5).setHorizontalSpacing(0).setMargins(5));
         setOpaque(true);
         setBackground(ThemeColor.PAGE);
-        setBorder(new EmptyBorder(5));
 
         // Make sure our primary outlines exist
         createOutlines(template);
-        add(new TemplateOutlinePanel(getAdvantagesOutline(), I18n.text("Advantages, Disadvantages & Quirks")));
-        add(new TemplateOutlinePanel(getSkillsOutline(), I18n.text("Skills")));
-        add(new TemplateOutlinePanel(getSpellsOutline(), I18n.text("Spells")));
-        add(new TemplateOutlinePanel(getEquipmentOutline(), I18n.text("Equipment")));
-        add(new TemplateOutlinePanel(getOtherEquipmentOutline(), I18n.text("Other Equipment")));
-        add(new TemplateOutlinePanel(getNotesOutline(), I18n.text("Notes")));
+        PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true);
+        add(new TemplateOutlinePanel(getAdvantagesOutline(), I18n.text("Advantages, Disadvantages & Quirks")), layoutData.clone());
+        add(new TemplateOutlinePanel(getSkillsOutline(), I18n.text("Skills")), layoutData.clone());
+        add(new TemplateOutlinePanel(getSpellsOutline(), I18n.text("Spells")), layoutData.clone());
+        add(new TemplateOutlinePanel(getEquipmentOutline(), I18n.text("Equipment")), layoutData.clone());
+        add(new TemplateOutlinePanel(getOtherEquipmentOutline(), I18n.text("Other Equipment")), layoutData.clone());
+        add(new TemplateOutlinePanel(getNotesOutline(), I18n.text("Notes")), layoutData.clone());
 
-        revalidate();
         mTemplate.addChangeListener(this);
         setDropTarget(new DropTarget(this, this));
-        adjustSize();
+        rebuild();
     }
 
     @Override
@@ -66,37 +67,29 @@ public class TemplateSheet extends CollectedOutlines {
     public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
         if (Outline.CMD_POTENTIAL_CONTENT_SIZE_CHANGE.equals(command)) {
-            markForRebuild();
+            if (!mIgnoreContentSizeChange) {
+                markForRebuild();
+            }
         }
     }
 
     @Override
     public void rebuild() {
+        mIgnoreContentSizeChange = true;
         mTemplate.recalculate();
-        syncOutline(getAdvantagesOutline());
-        syncOutline(getSkillsOutline());
+        Insets insets = getInsets();
+        int    width  = Scale.get(this).scale(8 * 72) - (insets.left + insets.right);
+        ColumnUtils.pack(getAdvantagesOutline(), width);
+        ColumnUtils.pack(getSkillsOutline(), width);
         SpellOutline spellOutline = getSpellsOutline();
         spellOutline.resetColumns();
-        syncOutline(spellOutline);
-        syncOutline(getEquipmentOutline());
-        syncOutline(getOtherEquipmentOutline());
-        syncOutline(getNotesOutline());
-        adjustSize();
-    }
-
-    private static void syncOutline(Outline outline) {
-        if (outline != null) {
-            outline.sizeColumnsToFit();
-        }
-    }
-
-    void adjustSize() {
-        Scale scale = Scale.get(this);
-        updateRowHeights();
-        revalidate();
-        Dimension size = getLayout().preferredLayoutSize(this);
-        size.width = scale.scale(8 * 72);
-        UIUtilities.setOnlySize(this, size);
-        setSize(size);
+        ColumnUtils.pack(spellOutline, width);
+        ColumnUtils.pack(getEquipmentOutline(), width);
+        ColumnUtils.pack(getOtherEquipmentOutline(), width);
+        ColumnUtils.pack(getNotesOutline(), width);
+        setSize(getPreferredSize());
+        // This next line must be put into the event queue to prevent an endless rebuild cycle due
+        // to deferred processing.
+        EventQueue.invokeLater(() -> mIgnoreContentSizeChange = false);
     }
 }

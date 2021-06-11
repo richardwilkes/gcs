@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.utility.Log;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -20,7 +21,7 @@ import java.awt.Dimension;
  * Data for components within a {@link PrecisionLayout}. Do not re-use {@link PrecisionLayoutData}
  * objects. Each component should have its own.
  */
-public final class PrecisionLayoutData {
+public final class PrecisionLayoutData implements Cloneable {
     public static final int                      DEFAULT     = -1;
     private             int                      mCacheMinWidth;
     private             int                      mCacheWidth;
@@ -40,6 +41,17 @@ public final class PrecisionLayoutData {
     private             boolean                  mHGrab;
     private             boolean                  mVGrab;
     private             boolean                  mExclude;
+
+    @Override
+    public PrecisionLayoutData clone() {
+        try {
+            return (PrecisionLayoutData) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            // Can't happen
+            Log.error(ex);
+            return new PrecisionLayoutData();
+        }
+    }
 
     /**
      * Position the component at the left of the cell. This is the default.
