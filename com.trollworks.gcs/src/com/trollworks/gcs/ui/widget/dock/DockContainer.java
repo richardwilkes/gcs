@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget.dock;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.StdPanel;
 
 import java.awt.AWTKeyStroke;
 import java.awt.Component;
@@ -33,13 +34,12 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
-import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 /**
  * All {@link Dockable}s are wrapped in a DockContainer when placed within a {@link Dock}.
  */
-public class DockContainer extends JPanel implements DockLayoutNode, LayoutManager {
+public class DockContainer extends StdPanel implements DockLayoutNode, LayoutManager {
     private Dock           mDock;
     private DockHeader     mHeader;
     private List<Dockable> mDockables = new ArrayList<>();
@@ -55,7 +55,6 @@ public class DockContainer extends JPanel implements DockLayoutNode, LayoutManag
     public DockContainer(Dock dock, Dockable dockable) {
         mDock = dock;
         setLayout(this);
-        setOpaque(true);
         setBackground(ThemeColor.BACKGROUND);
         mHeader = new DockHeader(this);
         add(mHeader);

@@ -15,12 +15,8 @@ import com.trollworks.gcs.ui.ThemeColor;
 
 import java.awt.LayoutManager;
 
-public class ContentPanel extends Panel {
+public class ContentPanel extends StdPanel {
     public ContentPanel() {
-    }
-
-    public ContentPanel(boolean opaque) {
-        super(opaque);
     }
 
     public ContentPanel(LayoutManager layout) {

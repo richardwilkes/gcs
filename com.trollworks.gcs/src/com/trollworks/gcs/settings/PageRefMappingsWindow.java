@@ -23,7 +23,7 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -84,7 +84,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
             idLabel.setBackground(background);
-            Panel wrapper = new Panel(new PrecisionLayout().setMargins(6, 0, 6, 0), false);
+            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(6, 0, 6, 0), false);
             wrapper.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(50).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
             mPanel.add(wrapper, new PrecisionLayoutData().setFillAlignment());
             EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)),

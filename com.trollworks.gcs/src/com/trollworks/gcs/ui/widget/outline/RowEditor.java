@@ -20,11 +20,10 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Commitable;
-import com.trollworks.gcs.ui.widget.Label;
-import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -67,9 +66,9 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             StdDialog dialog  = new StdDialog(owner, MessageFormat.format(I18n.text("Edit {0}"), row.getRowType()));
             Container content = dialog.getContentPane();
             if (i != length - 1) {
-                int    remaining = length - i - 1;
-                String msg       = remaining == 1 ? I18n.text("1 item remaining to be edited.") : MessageFormat.format(I18n.text("{0} items remaining to be edited."), Integer.valueOf(remaining));
-                Label  label     = new Label(msg, SwingConstants.CENTER);
+                int      remaining = length - i - 1;
+                String   msg       = remaining == 1 ? I18n.text("1 item remaining to be edited.") : MessageFormat.format(I18n.text("{0} items remaining to be edited."), Integer.valueOf(remaining));
+                StdLabel label     = new StdLabel(msg, SwingConstants.CENTER);
                 label.setBorder(new EmptyBorder(StdDialog.MARGIN, 0, 0, 0));
                 content.add(label, BorderLayout.NORTH);
                 dialog.addCancelRemainingButton();
@@ -155,7 +154,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     }
 
     protected static void addLabel(Container parent, String text, JComponent linkedTo) {
-        parent.add(new LinkedLabel(text, linkedTo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new StdLabel(text, linkedTo), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
     /**

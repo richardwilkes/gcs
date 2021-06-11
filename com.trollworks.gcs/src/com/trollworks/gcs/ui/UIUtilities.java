@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.widget.WiderToolTipUI;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -407,5 +408,18 @@ public final class UIUtilities {
                 invalidateTree(child);
             }
         }
+    }
+
+    public static Color getIconButtonColor(boolean enabled, boolean inMouseDown, boolean pressed, boolean rollover) {
+        if (enabled) {
+            if (inMouseDown && pressed) {
+                return ThemeColor.PRESSED_ICON_BUTTON;
+            }
+            if (rollover) {
+                return ThemeColor.ROLLOVER_ICON_BUTTON;
+            }
+            return ThemeColor.ICON_BUTTON;
+        }
+        return ThemeColor.DISABLED_ICON_BUTTON;
     }
 }

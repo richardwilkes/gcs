@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
@@ -23,29 +24,35 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Objects;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 /** A simple label replacement that is scalable. */
-public class Label extends JComponent implements PropertyChangeListener {
+public class StdLabel extends JComponent implements PropertyChangeListener {
     private static final String ERROR_KEY = "error";
+    private static final int    GAP       = 4;
 
+    private RetinaIcon mIcon;
     private String     mText;
     private ThemeFont  mThemeFont;
     private int        mHAlign;
     private JComponent mRefersTo;
+    private int        mTruncationPolicy;
 
     /**
      * Create a new label.
      *
      * @param text The text to use.
      */
-    public Label(String text) {
+    public StdLabel(String text) {
         mText = "";
         mHAlign = SwingConstants.LEFT;
+        mTruncationPolicy = SwingConstants.CENTER;
         setThemeFont(ThemeFont.LABEL_PRIMARY);
         setForeground(ThemeColor.ON_BACKGROUND);
         setOpaque(false);
@@ -58,9 +65,31 @@ public class Label extends JComponent implements PropertyChangeListener {
      * @param text   The text to use.
      * @param hAlign The horizontal alignment to use.
      */
-    public Label(String text, int hAlign) {
+    public StdLabel(String text, int hAlign) {
         this(text);
         mHAlign = hAlign;
+    }
+
+    /**
+     * Create a new label.
+     *
+     * @param text     The text to use.
+     * @param refersTo The {@link JComponent} to pair with.
+     */
+    public StdLabel(String text, JComponent refersTo) {
+        this(text);
+        setRefersTo(refersTo);
+    }
+
+    /**
+     * Create a new label.
+     *
+     * @param icon The icon to use.
+     * @param text The text to use.
+     */
+    public StdLabel(RetinaIcon icon, String text) {
+        this(text);
+        mIcon = icon;
     }
 
     public final void setThemeFont(ThemeFont font) {
@@ -76,6 +105,19 @@ public class Label extends JComponent implements PropertyChangeListener {
     public final void setFont(Font font) {
         System.out.println("ERROR: tried to set font rather than theme font");
         new Exception().printStackTrace(System.out);
+    }
+
+    /** @return The icon, or {@code null} if there is none. */
+    public Icon getIcon() {
+        return mIcon;
+    }
+
+    /** @param icon The {@link RetinaIcon} to use, or {@code null}. */
+    public void setIcon(RetinaIcon icon) {
+        if (mIcon != icon) {
+            mIcon = icon;
+            invalidate();
+        }
     }
 
     /** @return The text. */
@@ -107,14 +149,36 @@ public class Label extends JComponent implements PropertyChangeListener {
         }
     }
 
+    public int getTruncationPolicy() {
+        return mTruncationPolicy;
+    }
+
+    public void setTruncationPolicy(int truncationPolicy) {
+        mTruncationPolicy = truncationPolicy;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (mRefersTo != null && mRefersTo.getClientProperty(ERROR_KEY) != null) {
             g.setColor(Color.RED); // TODO: Use themed error color
         }
-        g.setFont(Scale.get(this).scale(getFont()));
-        TextDrawing.draw(g, UIUtilities.getLocalInsetBounds(this), mText, mHAlign, SwingConstants.CENTER);
+        Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
+        Scale     scale  = Scale.get(this);
+        Font      font   = scale.scale(getFont());
+        g.setFont(font);
+        if (mIcon != null) {
+            mIcon.paintIcon(this, g, bounds.x, bounds.y + (bounds.height - scale.scale(mIcon.getIconHeight())) / 2);
+            int amt = scale.scale(mIcon.getIconWidth()) + scale.scale(GAP);
+            bounds.x += amt;
+            bounds.width -= amt;
+        }
+        String text = mText;
+        if (mTruncationPolicy == SwingConstants.LEFT || mTruncationPolicy == SwingConstants.CENTER ||
+                mTruncationPolicy == SwingConstants.RIGHT) {
+            text = TextDrawing.truncateIfNecessary(font, text, bounds.width, mTruncationPolicy);
+        }
+        TextDrawing.draw(g, bounds, text, mHAlign, SwingConstants.CENTER);
     }
 
     @Override
@@ -123,9 +187,17 @@ public class Label extends JComponent implements PropertyChangeListener {
             return super.getPreferredSize();
         }
         Insets    insets = getInsets();
-        Dimension size   = TextDrawing.getPreferredSize(Scale.get(this).scale(getFont()), mText);
+        Scale     scale  = Scale.get(this);
+        Dimension size   = TextDrawing.getPreferredSize(scale.scale(getFont()), mText);
         size.width += insets.left + insets.right;
         size.height += insets.top + insets.bottom;
+        if (mIcon != null) {
+            size.width += scale.scale(mIcon.getIconWidth()) + scale.scale(GAP);
+            int height = scale.scale(mIcon.getIconHeight());
+            if (height > size.height) {
+                size.height = height;
+            }
+        }
         return size;
     }
 

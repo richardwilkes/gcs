@@ -12,7 +12,6 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.Log;
@@ -35,13 +34,12 @@ import java.awt.dnd.DragGestureEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /** Provides a panel that manages scrolling internally to itself. */
-public abstract class DirectScrollPanel extends JPanel implements Autoscroll, LayoutManager, ChangeListener, MouseWheelListener {
+public abstract class DirectScrollPanel extends ContentPanel implements Autoscroll, LayoutManager, ChangeListener, MouseWheelListener {
     /** The autoscroll margin. */
     public static final int                   AUTO_SCROLL_MARGIN = 10;
     private             JScrollBar            mHSB               = new JScrollBar(Adjustable.HORIZONTAL);
@@ -63,7 +61,6 @@ public abstract class DirectScrollPanel extends JPanel implements Autoscroll, La
 
     /** Creates a new DirectScrollPanel. */
     protected DirectScrollPanel() {
-        setBackground(ThemeColor.CONTENT);
         setLayout(this);
         mHSB.setVisible(false);
         mVSB.setVisible(false);

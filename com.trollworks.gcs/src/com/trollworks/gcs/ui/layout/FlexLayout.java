@@ -24,11 +24,6 @@ import java.awt.Rectangle;
 public class FlexLayout implements LayoutManager2 {
     private FlexCell mRootCell;
 
-    /** Creates a new FlexLayout. */
-    public FlexLayout() {
-        // Does nothing.
-    }
-
     /**
      * Creates a new FlexLayout.
      *

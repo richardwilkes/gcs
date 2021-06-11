@@ -17,7 +17,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -39,7 +39,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
 /** Asks the user to enable/disable advantage modifiers. */
-public final class AdvantageModifierEnabler extends Panel {
+public final class AdvantageModifierEnabler extends StdPanel {
     private Advantage           mAdvantage;
     private JCheckBox[]         mEnabled;
     private AdvantageModifier[] mModifiers;
@@ -97,8 +97,8 @@ public final class AdvantageModifierEnabler extends Panel {
     }
 
     private static Container createTop(Advantage advantage, int remaining) {
-        Panel  top   = new Panel(new ColumnLayout());
-        JLabel label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
+        StdPanel top   = new StdPanel(new ColumnLayout());
+        JLabel   label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
 
         top.setBorder(new EmptyBorder(0, 0, 15, 0));
         if (remaining > 0) {
@@ -108,13 +108,13 @@ public final class AdvantageModifierEnabler extends Panel {
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
         label.setOpaque(true);
-        top.add(new Panel());
+        top.add(new StdPanel());
         top.add(label);
         return top;
     }
 
     private Container createCenter() {
-        Panel           panel = new Panel(new ColumnLayout());
+        StdPanel        panel = new StdPanel(new ColumnLayout());
         SelfControlRoll cr    = mAdvantage.getCR();
         if (cr != SelfControlRoll.NONE_REQUIRED) {
             ArrayList<String> possible = new ArrayList<>();

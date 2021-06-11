@@ -13,13 +13,11 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -33,12 +31,11 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
-public class FontAwesomeButton extends JComponent implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
+public class FontAwesomeButton extends StdPanel implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
     private String   mText;
     private Runnable mClickFunction;
     private int      mSize;
@@ -52,8 +49,7 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
     }
 
     public FontAwesomeButton(String text, int size, String tooltip, Runnable clickFunction) {
-        setOpaque(false);
-        setBackground(null);
+        super(null, false);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         setText(text);
         setSize(size);
@@ -118,19 +114,7 @@ public class FontAwesomeButton extends JComponent implements MouseListener, Mous
         bounds.y = insets.top;
         bounds.width -= insets.left + insets.right;
         bounds.height -= insets.top + insets.bottom;
-        Color color;
-        if (isEnabled()) {
-            if (mInMouseDown && mPressed) {
-                color = ThemeColor.PRESSED_ICON_BUTTON;
-            } else if (mRollover) {
-                color = ThemeColor.ROLLOVER_ICON_BUTTON;
-            } else {
-                color = ThemeColor.ICON_BUTTON;
-            }
-        } else {
-            color = ThemeColor.DISABLED_ICON_BUTTON;
-        }
-        gc.setColor(color);
+        gc.setColor(UIUtilities.getIconButtonColor(isEnabled(), mInMouseDown, mPressed, mRollover));
         Scale scale = Scale.get(this);
         gc.setFont(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)));
         TextDrawing.draw(gc, bounds, mText, SwingConstants.CENTER, SwingConstants.CENTER);

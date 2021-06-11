@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.Saveable;
+import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -20,6 +21,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumericComparator;
 import com.trollworks.gcs.utility.text.Text;
@@ -37,15 +40,11 @@ import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Path2D;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 /** Provides a tab that contains the {@link Dockable}'s icon, title, and close button, if any. */
-public class DockTab extends JPanel implements ContainerListener, MouseListener, DragGestureListener, DataModifiedListener, Comparable<DockTab> {
+public class DockTab extends StdPanel implements ContainerListener, MouseListener, DragGestureListener, DataModifiedListener, Comparable<DockTab> {
     private Dockable mDockable;
-    private JLabel   mTitle;
+    private StdLabel mTitle;
 
     /**
      * Creates a new DockTab for the specified {@link Dockable}.
@@ -53,12 +52,11 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
      * @param dockable The {@link Dockable} to work with.
      */
     public DockTab(Dockable dockable) {
-        super(new PrecisionLayout().setMargins(2, 4, 2, 4).setMiddleVerticalAlignment());
+        super(new PrecisionLayout().setMargins(2, 4, 2, 4).setMiddleVerticalAlignment(), false);
         mDockable = dockable;
-        setOpaque(false);
         setBorder(new EmptyBorder(2, 1, 0, 1));
         addContainerListener(this);
-        mTitle = new JLabel(getFullTitle(), dockable.getTitleIcon(), SwingConstants.LEFT);
+        mTitle = new StdLabel(dockable.getTitleIcon(), getFullTitle());
         FontAwesomeButton closeButton = new FontAwesomeButton("\uf057", I18n.text("Close"), this::attemptClose);
         add(mTitle, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHeightHint(Math.max(mTitle.getPreferredSize().height, closeButton.getPreferredSize().height)));
         if (dockable instanceof CloseHandler) {
@@ -86,7 +84,7 @@ public class DockTab extends JPanel implements ContainerListener, MouseListener,
     }
 
     /** @return The icon used by the tab. */
-    public Icon getIcon() {
+    public RetinaIcon getIcon() {
         return mDockable.getTitleIcon();
     }
 

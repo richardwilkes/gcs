@@ -15,7 +15,8 @@ import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
@@ -32,7 +33,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
@@ -41,9 +41,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A standard search control. */
-public class Search extends Panel implements DocumentListener, KeyListener, FocusListener {
+public class Search extends StdPanel implements DocumentListener, KeyListener, FocusListener {
     private SearchTarget   mTarget;
-    private JLabel         mHits;
+    private StdLabel       mHits;
     private SearchField    mFilterField;
     private SearchDropDown mFloater;
     private String         mFilter;
@@ -59,7 +59,7 @@ public class Search extends Panel implements DocumentListener, KeyListener, Focu
         mTarget = target;
         mFilterField = new SearchField();
         add(mFilterField, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
-        mHits = new JLabel();
+        mHits = new StdLabel("");
         mHits.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The number of matches found")));
         adjustHits();
         add(mHits);
@@ -97,6 +97,8 @@ public class Search extends Panel implements DocumentListener, KeyListener, Focu
         if (mFloater != null) {
             mFloater.adjustToHits(hits);
         }
+        mHits.revalidate();
+        mHits.repaint();
         return hits;
     }
 

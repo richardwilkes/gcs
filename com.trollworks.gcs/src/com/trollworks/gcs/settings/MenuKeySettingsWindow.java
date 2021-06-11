@@ -19,7 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -119,7 +119,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
             adjustResetButton();
         });
-        Panel wrapper = new Panel(new PrecisionLayout().setMargins(4),false);
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(4),false);
         wrapper.add(button);
         mPanel.add(wrapper);
         mPanel.add(new JLabel(cmd.getTitle()));
@@ -139,7 +139,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         prefs.setKeyBindingOverride(key, override);
     }
 
-    private Panel createResetPanel() {
+    private StdPanel createResetPanel() {
         mResetButton = new JButton(I18n.text("Reset to Factory Defaults"));
         mResetButton.addActionListener((evt) -> {
             for (Map.Entry<JButton, Command> entry : mMap.entrySet()) {
@@ -149,7 +149,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
             adjustResetButton();
         });
-        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
+        StdPanel panel = new StdPanel(new FlowLayout(FlowLayout.CENTER));
         panel.add(mResetButton);
         return panel;
     }

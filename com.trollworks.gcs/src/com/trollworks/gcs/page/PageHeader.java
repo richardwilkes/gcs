@@ -13,13 +13,13 @@ package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
-import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.utility.text.Text;
 
 import javax.swing.SwingConstants;
 
 /** A header within the page. */
-public class PageHeader extends Label {
+public class PageHeader extends StdLabel {
     /**
      * Creates a new PageHeader.
      *

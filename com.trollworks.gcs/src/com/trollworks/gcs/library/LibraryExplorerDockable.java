@@ -37,7 +37,7 @@ import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.Toolbar;
+import com.trollworks.gcs.ui.widget.StdToolbar;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dock;
@@ -72,7 +72,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.swing.Icon;
 import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 
@@ -107,11 +106,11 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel.setUserSortable(false);
         mTreePanel.setOpenableProxy(this);
         mTreePanel.setDeletableProxy(this);
-        Toolbar toolbar = new Toolbar();
+        StdToolbar toolbar = new StdToolbar();
         mSearch = new Search(this);
         toolbar.add(new FontAwesomeButton("\uf0e8", I18n.text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
         toolbar.add(new FontAwesomeButton("\uf2f1", I18n.text("Refresh"), this::refresh));
-        toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
+        toolbar.add(mSearch, StdToolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
         List<String> openRowKeys = Settings.getInstance().getLibraryExplorerOpenRowKeys();
@@ -129,7 +128,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     }
 
     @Override
-    public Icon getTitleIcon() {
+    public RetinaIcon getTitleIcon() {
         return Images.FOLDER;
     }
 

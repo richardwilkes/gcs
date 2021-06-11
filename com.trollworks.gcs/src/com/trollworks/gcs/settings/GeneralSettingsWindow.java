@@ -21,7 +21,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.LinkedLabel;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
@@ -78,7 +78,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         // First row
         mPlayerName = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, prefs.getDefaultPlayerName(),
                 I18n.text("The player name to use when a new character sheet is created"));
-        content.add(new LinkedLabel(I18n.text("Player"), mPlayerName), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new StdLabel(I18n.text("Player"), mPlayerName), new PrecisionLayoutData().setFillHorizontalAlignment());
         content.add(mPlayerName, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mAutoFillProfile = new JCheckBox(I18n.text("Fill in initial description"),
@@ -107,7 +107,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
                         TL11: Age of Exotic Matter<br>
                         TL12: Anything Goes
                         </body></html>"""));
-        content.add(new LinkedLabel(I18n.text("Tech Level"), mTechLevel), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new StdLabel(I18n.text("Tech Level"), mTechLevel), new PrecisionLayoutData().setFillHorizontalAlignment());
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         wrapper.add(mTechLevel, new PrecisionLayoutData().setFillHorizontalAlignment());
@@ -115,7 +115,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         mInitialPoints = new EditorField(FieldFactory.POSINT6, this, SwingConstants.RIGHT,
                 Integer.valueOf(prefs.getInitialPoints()), Integer.valueOf(999999),
                 I18n.text("The initial number of character points to start with"));
-        wrapper.add(new LinkedLabel(I18n.text("Initial Points"), mTechLevel), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new StdLabel(I18n.text("Initial Points"), mTechLevel), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mInitialPoints, new PrecisionLayoutData().setFillHorizontalAlignment());
 
         mIncludeUnspentPointsInTotal = new JCheckBox(I18n.text("Include unspent points in total"),
@@ -131,7 +131,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         mInitialScale.setSelectedItem(prefs.getInitialUIScale());
         mInitialScale.addItemListener(this);
         mInitialScale.setMaximumRowCount(mInitialScale.getItemCount());
-        content.add(new LinkedLabel(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new StdLabel(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
         wrapper.add(mInitialScale);
@@ -139,22 +139,22 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         mToolTipTimeout = new EditorField(FieldFactory.TOOLTIP_TIMEOUT, this, SwingConstants.RIGHT,
                 Integer.valueOf(prefs.getToolTipTimeout()), FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
                 I18n.text("The number of seconds before tooltips will dismiss themselves"));
-        wrapper.add(new LinkedLabel(I18n.text("Tooltip Timeout"), mToolTipTimeout), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new StdLabel(I18n.text("Tooltip Timeout"), mToolTipTimeout), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mToolTipTimeout, new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper.add(new LinkedLabel(I18n.text("seconds"), mToolTipTimeout));
+        wrapper.add(new StdLabel(I18n.text("seconds"), mToolTipTimeout));
 
         mImageResolution = new EditorField(FieldFactory.OUTPUT_DPI, this, SwingConstants.RIGHT,
                 Integer.valueOf(prefs.getImageResolution()), FieldFactory.getMaxValue(FieldFactory.OUTPUT_DPI),
                 I18n.text("The resolution, in dots-per-inch, to use when saving sheets as PNG files"));
-        wrapper.add(new LinkedLabel(I18n.text("Image Resolution"), mImageResolution), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new StdLabel(I18n.text("Image Resolution"), mImageResolution), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mImageResolution, new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper.add(new LinkedLabel(I18n.text("dpi"), mImageResolution));
+        wrapper.add(new StdLabel(I18n.text("dpi"), mImageResolution));
 
         // Fourth row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         mGCalcKey = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, prefs.getGURPSCalculatorKey(), null);
-        wrapper.add(new LinkedLabel(I18n.text("GURPS Calculator Key"), mGCalcKey), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new StdLabel(I18n.text("GURPS Calculator Key"), mGCalcKey), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mGCalcKey, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         JButton findMine = new JButton(I18n.text("Find mine"));
         findMine.addActionListener((evt) -> {

@@ -22,9 +22,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
-import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -139,7 +139,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
     }
 
     private void addTopPanel() {
-        Panel left = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
+        StdPanel left = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         mShowCollegeInSpells = addCheckBox(left, I18n.text("Show the College column"), null, mSheetSettings.showCollegeInSpells());
         mShowDifficulty = addCheckBox(left, I18n.text("Show the Difficulty column"), null, mSheetSettings.showDifficulty());
         mShowAdvantageModifierAdj = addCheckBox(left, I18n.text("Show advantage modifier cost adjustments"), null, mSheetSettings.showAdvantageModifierAdj());
@@ -155,10 +155,10 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.notesDisplay(), tooltip);
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new MultiLineTextField(Settings.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
-        left.add(new Label(I18n.text("Block Layout")), new PrecisionLayoutData().setHorizontalSpan(2));
+        left.add(new StdLabel(I18n.text("Block Layout")), new PrecisionLayoutData().setHorizontalSpan(2));
         left.add(mBlockLayoutField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true).setHorizontalSpan(2));
 
-        Panel right = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
+        StdPanel right = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         mUseMultiplicativeModifiers = addCheckBox(right, I18n.text("Use Multiplicative Modifiers (PW102; changes point value)"), null, mSheetSettings.useMultiplicativeModifiers());
         mUseModifyingDicePlusAdds = addCheckBox(right, I18n.text("Use Modifying Dice + Adds (B269)"), null, mSheetSettings.useModifyingDicePlusAdds());
         mUseKnowYourOwnStrength = addCheckBox(right, I18n.text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSheetSettings.useKnowYourOwnStrength());
@@ -172,7 +172,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
         right.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(2).setTopMargin(10));
 
-        Panel panel = new Panel(new PrecisionLayout().setColumns(2).setMargins(10).setHorizontalSpacing(10));
+        StdPanel panel = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(10).setHorizontalSpacing(10));
         panel.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         panel.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
@@ -180,20 +180,20 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
     }
 
     private void addResetPanel() {
-        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
+        StdPanel panel = new StdPanel(new FlowLayout(FlowLayout.CENTER));
         mResetButton = new JButton(mCharacter == null ? I18n.text("Reset to Factory Settings") : I18n.text("Reset to Defaults"));
         mResetButton.addActionListener(this);
         panel.add(mResetButton);
         getContentPane().add(panel, BorderLayout.SOUTH);
     }
 
-    private static void addLabel(Panel panel, String title) {
+    private static void addLabel(StdPanel panel, String title) {
         JLabel label = new JLabel(title, SwingConstants.RIGHT);
         label.setOpaque(false);
         panel.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
-    private <E> JComboBox<E> addCombo(Panel panel, E[] values, E choice, String tooltip) {
+    private <E> JComboBox<E> addCombo(StdPanel panel, E[] values, E choice, String tooltip) {
         JComboBox<E> combo = new JComboBox<>(values);
         combo.setOpaque(false);
         combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -204,7 +204,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         return combo;
     }
 
-    private JCheckBox addCheckBox(Panel panel, String title, String tooltip, boolean checked) {
+    private JCheckBox addCheckBox(StdPanel panel, String title, String tooltip, boolean checked) {
         JCheckBox checkbox = new JCheckBox(title, checked);
         checkbox.setOpaque(false);
         checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));

@@ -17,9 +17,9 @@ import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -222,7 +222,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
 
         GURPSCharacter character = mRow.getCharacter();
         if (character != null) {
-            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
             mHasTechLevel = new JCheckBox(I18n.text("Tech Level"), hasTL);
             UIUtilities.setToPreferredSizeOnly(mHasTechLevel);
@@ -289,15 +289,15 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            StdLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            LinkedLabel.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
+            StdLabel.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
         } else if (doc == mCastingCostField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
+            StdLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
         } else if (doc == mCastingTimeField.getDocument()) {
-            LinkedLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
+            StdLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
         } else if (doc == mDurationField.getDocument()) {
-            LinkedLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
+            StdLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
         }
     }
 

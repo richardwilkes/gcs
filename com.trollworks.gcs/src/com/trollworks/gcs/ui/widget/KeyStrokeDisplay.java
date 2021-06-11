@@ -12,7 +12,6 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.utility.Platform;
@@ -28,14 +27,13 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.regex.Pattern;
-import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 
 /** Displays and captures keystrokes typed. */
-public class KeyStrokeDisplay extends JLabel implements KeyListener {
+public class KeyStrokeDisplay extends StdLabel implements KeyListener {
     private static final Pattern   PLUS_PATTERN = Pattern.compile("\\+");
     private              KeyStroke mKeyStroke;
 
@@ -51,7 +49,6 @@ public class KeyStrokeDisplay extends JLabel implements KeyListener {
         setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         addKeyListener(this);
         mKeyStroke = ks;
-        UIUtilities.setToPreferredSizeOnly(this);
         setText(getKeyStrokeDisplay(mKeyStroke));
     }
 

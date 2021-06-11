@@ -16,7 +16,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 
 import java.awt.BorderLayout;
@@ -24,7 +24,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import javax.swing.Scrollable;
 
-public class LibraryContent extends Panel implements ScaleRoot, Scrollable {
+public class LibraryContent extends StdPanel implements ScaleRoot, Scrollable {
     private ListOutline mOutline;
     private Scale       mScale;
 

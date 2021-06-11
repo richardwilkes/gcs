@@ -22,9 +22,8 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JColorChooser;
-import javax.swing.JPanel;
 
-public class ColorWell extends JPanel implements MouseListener {
+public class ColorWell extends StdPanel implements MouseListener {
     private Color                mColor;
     private ColorChangedListener mListener;
 

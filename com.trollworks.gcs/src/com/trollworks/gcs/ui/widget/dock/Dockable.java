@@ -11,28 +11,27 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
+import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.StdPanel;
 
 import java.awt.LayoutManager;
-import javax.swing.Icon;
-import javax.swing.JPanel;
 
 /** Represents dockable items. */
-public abstract class Dockable extends JPanel {
+public abstract class Dockable extends StdPanel {
     /**
      * Creates a new Dockable.
      */
     protected Dockable() {
-        super(true);
     }
 
     /** @param layout The {@link LayoutManager} to use. */
     protected Dockable(LayoutManager layout) {
-        super(layout, true);
+        super(layout);
     }
 
-    /** @return An {@link Icon} to represent this Dockable. */
-    public abstract Icon getTitleIcon();
+    /** @return An {@link RetinaIcon} to represent this Dockable. */
+    public abstract RetinaIcon getTitleIcon();
 
     /** @return The title of this Dockable. */
     public abstract String getTitle();

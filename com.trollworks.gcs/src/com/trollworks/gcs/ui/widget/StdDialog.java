@@ -28,16 +28,16 @@ public class StdDialog extends JDialog {
     public static final int       OK     = 1;
     public static final int       CANCEL = 2;
     public static final int       MARGIN = 10;
-    private             Component mOwner;
-    private             Panel     mButtons;
-    private             int       mResult;
+    private Component mOwner;
+    private StdPanel  mButtons;
+    private int       mResult;
 
     public StdDialog(Component owner, String title) {
         super(WindowUtils.getWindowForComponent(owner), title, ModalityType.APPLICATION_MODAL);
         setResizable(true);
-        Panel content = new Panel(new BorderLayout());
-        Panel buttons = new Panel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
-        mButtons = new Panel(new PrecisionLayout().setEqualColumns(true).setMargins(0));
+        StdPanel content = new StdPanel(new BorderLayout());
+        StdPanel buttons = new StdPanel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        mButtons = new StdPanel(new PrecisionLayout().setEqualColumns(true).setMargins(0));
         buttons.add(mButtons);
         content.add(buttons, BorderLayout.SOUTH);
         setContentPane(content);

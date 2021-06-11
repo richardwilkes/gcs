@@ -14,10 +14,9 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -31,12 +30,12 @@ import java.util.List;
 import javax.swing.ToolTipManager;
 
 /** A header panel for use with {@link Outline}. */
-public class OutlineHeader extends Panel implements MouseListener, MouseMotionListener {
-    private Outline mOwner;
-    private Column  mSortColumn;
-    private boolean mResizeOK;
-    private boolean mIgnoreResizeOK;
-    private Color   mTopDividerColor;
+public class OutlineHeader extends StdPanel implements MouseListener, MouseMotionListener {
+    private Outline    mOwner;
+    private Column     mSortColumn;
+    private boolean    mResizeOK;
+    private boolean    mIgnoreResizeOK;
+    private ThemeColor mTopDividerColor;
 
     /**
      * Creates a new outline header.
@@ -53,12 +52,12 @@ public class OutlineHeader extends Panel implements MouseListener, MouseMotionLi
     }
 
     /** @return The top divider color. */
-    public Color getTopDividerColor() {
+    public ThemeColor getTopDividerColor() {
         return mTopDividerColor == null ? ThemeColor.DIVIDER : mTopDividerColor;
     }
 
     /** @param color The new top divider color. Pass in {@code null} to restore defaults. */
-    public void setTopDividerColor(Color color) {
+    public void setTopDividerColor(ThemeColor color) {
         mTopDividerColor = color;
     }
 
@@ -169,7 +168,7 @@ public class OutlineHeader extends Panel implements MouseListener, MouseMotionLi
         Insets    insets       = getInsets();
         Rectangle bounds       = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         boolean   drawDividers = mOwner.shouldDrawColumnDividers();
-        gc.setColor(getTopDividerColor());
+        gc.setColor(mTopDividerColor);
         gc.fillRect(clip.x, bounds.y + bounds.height - one, clip.width, one);
         List<Column> columns    = mOwner.getModel().getColumns();
         int          count      = columns.size();

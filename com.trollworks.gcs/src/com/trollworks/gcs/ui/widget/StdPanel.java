@@ -16,26 +16,25 @@ import com.trollworks.gcs.ui.ThemeColor;
 import java.awt.LayoutManager;
 import javax.swing.JPanel;
 
-public class Panel extends JPanel {
-    public Panel() {
-        setOpaque(true);
-        setStdColors();
+public class StdPanel extends JPanel {
+    public StdPanel() {
+        init(true);
     }
 
-    public Panel(boolean opaque) {
-        setOpaque(opaque);
-    }
-
-    public Panel(LayoutManager layout) {
+    public StdPanel(LayoutManager layout) {
         super(layout);
-        setStdColors();
-        setOpaque(true);
+        init(true);
     }
 
-    public Panel(LayoutManager layout, boolean opaque) {
+    public StdPanel(LayoutManager layout, boolean opaque) {
         super(layout);
+        init(opaque);
+    }
+
+    private void init(boolean opaque) {
         setStdColors();
         setOpaque(opaque);
+        setBorder(null);
     }
 
     protected void setStdColors() {

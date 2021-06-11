@@ -20,7 +20,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
@@ -68,7 +68,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
 
         OutlineHeader header = mOutline.getHeaderPanel();
         header.setIgnoreResizeOK(true);
-        Panel panel = new Panel(new BorderLayout());
+        StdPanel panel = new StdPanel(new BorderLayout());
         panel.add(header, BorderLayout.NORTH);
         panel.add(mOutline, BorderLayout.CENTER);
 
@@ -76,11 +76,11 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove the selected modifiers"), () -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
 
-        Panel right = new Panel(new PrecisionLayout().setMargins(5));
+        StdPanel right = new StdPanel(new PrecisionLayout().setMargins(5));
         right.add(mAddButton);
         right.add(mDeleteButton);
 
-        Panel top = new Panel(new PrecisionLayout().setMargins(0).setColumns(2).setHorizontalSpacing(1));
+        StdPanel top = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2).setHorizontalSpacing(1));
         top.add(panel, new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(true));
         top.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         add(top, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));

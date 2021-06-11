@@ -20,7 +20,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.Toolbar;
+import com.trollworks.gcs.ui.widget.StdToolbar;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
@@ -58,8 +58,8 @@ public class SheetDockable extends CollectedOutlinesDockable {
     }
 
     @Override
-    protected Toolbar createToolbar() {
-        Toolbar toolbar = super.createToolbar();
+    protected StdToolbar createToolbar() {
+        StdToolbar toolbar = super.createToolbar();
         mQuickExportButton = new FontAwesomeButton("\uf56e", "<html><body>" + I18n.text("Quick Export<br>Export to the same location using the last used output template for this sheet") + "</body></html>", this::quickExport);
         toolbar.add(new FontAwesomeButton("\uf013", I18n.text("Settings"), () -> SheetSettingsWindow.display(getDataFile())), 0);
         toolbar.add(mQuickExportButton, 1);

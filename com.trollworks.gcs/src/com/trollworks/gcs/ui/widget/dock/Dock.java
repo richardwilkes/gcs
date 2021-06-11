@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Cursors;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.Log;
 
 import java.awt.AWTEvent;
@@ -41,10 +42,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JPanel;
 
 /** Provides an area where {@link Dockable} components can be displayed and rearranged. */
-public class Dock extends JPanel implements MouseListener, MouseMotionListener, PropertyChangeListener, DropTargetListener {
+public class Dock extends StdPanel implements MouseListener, MouseMotionListener, PropertyChangeListener, DropTargetListener {
     private static final String         PERMANENT_FOCUS_OWNER_KEY = "permanentFocusOwner";
     private static final int            GRIP_GAP                  = 1;
     private static final int            GRIP_WIDTH                = 4;
@@ -68,8 +68,7 @@ public class Dock extends JPanel implements MouseListener, MouseMotionListener, 
 
     /** Creates a new, empty Dock. */
     public Dock() {
-        super(new DockLayout(), true);
-        setBorder(null);
+        super(new DockLayout());
         addMouseListener(this);
         addMouseMotionListener(this);
         setFocusCycleRoot(true);

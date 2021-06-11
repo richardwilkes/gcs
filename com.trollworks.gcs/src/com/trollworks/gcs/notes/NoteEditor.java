@@ -14,10 +14,10 @@ package com.trollworks.gcs.notes;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -52,16 +52,16 @@ public class NoteEditor extends RowEditor<Note> {
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
         outer.add(wrapper, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mDescriptionField = new MultiLineTextField(mRow.getDescription(), null, null);
-        wrapper.add(new LinkedLabel(I18n.text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        wrapper.add(new StdLabel(I18n.text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         wrapper.add(mDescriptionField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mReferenceField = new JTextField(mRow.getReference());
         mReferenceField.setToolTipText(Text.wrapPlainTextForToolTip(PageRefCell.getStdToolTip(I18n.text("note"))));
-        wrapper.add(new LinkedLabel(I18n.text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new StdLabel(I18n.text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

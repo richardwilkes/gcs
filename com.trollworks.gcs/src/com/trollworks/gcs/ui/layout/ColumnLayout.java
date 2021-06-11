@@ -49,25 +49,6 @@ public class ColumnLayout implements LayoutManager2 {
     }
 
     /**
-     * Creates a new layout with the specified number of columns.
-     *
-     * @param columns The number of columns.
-     */
-    public ColumnLayout(int columns) {
-        this(columns, DEFAULT_H_GAP_SIZE, DEFAULT_V_GAP_SIZE, RowDistribution.USE_PREFERRED_HEIGHT);
-    }
-
-    /**
-     * Creates a new layout with the specified number of columns and height distribution.
-     *
-     * @param columns      The number of columns.
-     * @param distribution The height distribution style.
-     */
-    public ColumnLayout(int columns, RowDistribution distribution) {
-        this(columns, DEFAULT_H_GAP_SIZE, DEFAULT_V_GAP_SIZE, distribution);
-    }
-
-    /**
      * Creates a new layout.
      *
      * @param columns The number of columns.

@@ -14,7 +14,7 @@ package com.trollworks.gcs.weapon;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
@@ -39,7 +39,7 @@ public class MeleeWeaponListEditor extends WeaponListEditor {
 
     @Override
     protected void createFields(Container parent) {
-        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(5));
+        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(5));
         mReach = addField(parent, panel, "C-99**", I18n.text("Reach"));
         mParry = addField(panel, panel, "+99**", I18n.text("Parry Modifier"));
         mBlock = addField(panel, panel, "+99**", I18n.text("Block Modifier"));

@@ -22,10 +22,10 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.LinkedLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.I18n;
@@ -122,7 +122,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private JPanel createTopSection() {
-        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
         addPrimaryCommonFields(panel);
         if (mRow.canHaveChildren()) {
             addSecondaryCommonFields(panel);
@@ -139,7 +139,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mNameField = createField(mRow.getName(), null, I18n.text("The name of the advantage, without any notes"));
         mNameField.getDocument().addDocumentListener(this);
         addLabel(parent, I18n.text("Name"), mNameField);
-        Panel wrapper = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mNameField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mEnabledCheckBox = new JCheckBox(I18n.text("Enabled"));
         mEnabledCheckBox.setSelected(mRow.isSelfEnabled());
@@ -161,7 +161,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mPointsField = createField(-9999999, 9999999, mRow.getAdjustedPoints(), I18n.text("The total point cost of this advantage"));
         mPointsField.setEnabled(false);
         addLabel(parent, I18n.text("Point Cost"), mPointsField);
-        Panel wrapper = new Panel(new PrecisionLayout().setColumns(10).setMargins(0));
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(10).setMargins(0));
         wrapper.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
 
         mBasePointsField = createField(-9999, 9999, mRow.getPoints(), I18n.text("The base point cost of this advantage"));
@@ -207,25 +207,25 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
     private void addSecondaryCommonFields(Container parent) {
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this advantage"), this);
-        parent.add(new LinkedLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        parent.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         parent.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (mRow.getDataFile() instanceof GURPSCharacter) {
             mUserDesc = mRow.getUserDesc();
             mUserDescField = new MultiLineTextField(mUserDesc, I18n.text("Additional notes for your own reference. These only exist in character sheets and will be removed if transferred to a data list or template"), this);
-            parent.add(new LinkedLabel(I18n.text("User Description"), mUserDescField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+            parent.add(new StdLabel(I18n.text("User Description"), mUserDescField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
             parent.add(mUserDescField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
 
         mCategoriesField = createField(mRow.getCategoriesAsString(), null, I18n.text("The category or categories the advantage belongs to (separate multiple categories with a comma)"));
-        parent.add(new LinkedLabel(I18n.text("Categories"), mCategoriesField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new StdLabel(I18n.text("Categories"), mCategoriesField), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(mCategoriesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mCRCombo = new JComboBox<>(SelfControlRoll.values());
         mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
         mCRCombo.addActionListener(this);
-        parent.add(new LinkedLabel(I18n.text("Self-Control Roll"), mCRCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
-        Panel wrapper = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
+        parent.add(new StdLabel(I18n.text("Self-Control Roll"), mCRCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mCRCombo);
         mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
         mCRAdjCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Adjustments that are applied due to Self-Control Roll limitations")));
@@ -241,7 +241,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
 
         mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.text("Mental"));
-        Panel wrapper = new Panel(new PrecisionLayout().setColumns(12).setMargins(0));
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(12).setMargins(0));
         wrapper.add(mMentalType);
         wrapper.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
 
@@ -269,8 +269,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
         mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
         mContainerTypeCombo.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The type of container this is")));
-        parent.add(new LinkedLabel(I18n.text("Container Type"), mContainerTypeCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
-        Panel wrapper = new Panel(new PrecisionLayout().setColumns(3).setMargins(0));
+        parent.add(new StdLabel(I18n.text("Container Type"), mContainerTypeCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(3).setMargins(0));
         wrapper.add(mContainerTypeCombo);
         addRefField(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -278,7 +278,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
     private void addRefField(Container parent) {
         mReferenceField = createField(mRow.getReference(), "MMMMMM", I18n.text("Page Reference"));
-        parent.add(new LinkedLabel(I18n.text("Ref"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
+        parent.add(new StdLabel(I18n.text("Ref"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
         parent.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
@@ -289,8 +289,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         return button;
     }
 
-    private static LinkedLabel createTypeLabel(RetinaIcon icon, JCheckBox linkTo) {
-        LinkedLabel label = new LinkedLabel(icon, linkTo);
+    private static StdLabel createTypeLabel(RetinaIcon icon, JCheckBox linkTo) {
+        StdLabel label = new StdLabel(icon, "");
+        label.setRefersTo(linkTo);
         label.addMouseListener(new LinkAdapter(linkTo));
         return label;
     }
@@ -470,7 +471,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private void docChanged(DocumentEvent event) {
         Document doc = event.getDocument();
         if (mNameField.getDocument() == doc) {
-            LinkedLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            StdLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         } else if (mUserDescField != null && mUserDescField.getDocument() == doc) {
             mUserDesc = mUserDescField.getText();
         }

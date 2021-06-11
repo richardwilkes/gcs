@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.text.Text;
@@ -34,11 +35,10 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import javax.swing.JPanel;
 import javax.swing.border.CompoundBorder;
 
 /** The header for a {@link DockContainer}. */
-public class DockHeader extends JPanel implements LayoutManager, DropTargetListener {
+public class DockHeader extends StdPanel implements LayoutManager, DropTargetListener {
     private static final int               MINIMUM_TAB_WIDTH = 60;
     private static final int               GAP               = 4;
     private              FontAwesomeButton mMaximizeRestoreButton;
@@ -53,8 +53,6 @@ public class DockHeader extends JPanel implements LayoutManager, DropTargetListe
      */
     public DockHeader(DockContainer dc) {
         super.setLayout(this);
-        setOpaque(true);
-        setBackground(ThemeColor.BACKGROUND);
         setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, 4, 0, 4)));
         for (Dockable dockable : dc.getDockables()) {
             add(new DockTab(dockable));

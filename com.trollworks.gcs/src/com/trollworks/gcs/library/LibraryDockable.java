@@ -22,7 +22,7 @@ import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.Toolbar;
+import com.trollworks.gcs.ui.widget.StdToolbar;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -49,7 +49,7 @@ import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
 public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
-    private Toolbar           mToolbar;
+    private StdToolbar        mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private JTextField        mFilterField;
     private JComboBox<String> mCategoryCombo;
@@ -68,7 +68,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         LibraryContent content = new LibraryContent(mOutline);
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         Settings       prefs   = Settings.getInstance();
-        mToolbar = new Toolbar();
+        mToolbar = new StdToolbar();
         mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf13e", I18n.text("Switches between allowing editing and not"), () -> {
             OutlineModel model = mOutline.getModel();
             model.setLocked(!model.isLocked());
@@ -126,8 +126,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         return null;
     }
 
-    /** @return The {@link Toolbar}. */
-    public Toolbar getToolbar() {
+    /** @return The {@link StdToolbar}. */
+    public StdToolbar getToolbar() {
         return mToolbar;
     }
 
@@ -150,7 +150,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         // This client property is specific to Mac OS X
         mFilterField.putClientProperty("JTextField.variant", "search");
         mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));
-        mToolbar.add(mFilterField, Toolbar.LAYOUT_FILL);
+        mToolbar.add(mFilterField, StdToolbar.LAYOUT_FILL);
     }
 
     private void createCategoryCombo() {
