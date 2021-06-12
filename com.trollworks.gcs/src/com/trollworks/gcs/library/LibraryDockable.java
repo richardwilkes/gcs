@@ -21,7 +21,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.StdToolbar;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
@@ -92,7 +92,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         createFilterField();
         createCategoryCombo();
         add(mToolbar, BorderLayout.NORTH);
-        ScrollPanel scroller = new ScrollPanel(header, content);
+        StdScrollPanel scroller = new StdScrollPanel(header, content);
         scroller.getViewport().setBackground(ThemeColor.PAGE_VOID);
         add(scroller, BorderLayout.CENTER);
         prefs.addChangeListener(this);

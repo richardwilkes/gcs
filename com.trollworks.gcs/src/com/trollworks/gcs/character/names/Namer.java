@@ -19,7 +19,8 @@ import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.layout.LayoutSize;
 import com.trollworks.gcs.ui.widget.Commitable;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -58,33 +58,35 @@ public final class Namer extends JPanel {
         List<HashSet<String>> setList  = new ArrayList<>();
         boolean               modified = false;
         int                   count;
-
         for (ListRow row : list) {
             HashSet<String> set = new HashSet<>();
-
             row.fillWithNameableKeys(set);
             if (!set.isEmpty()) {
                 rowList.add(row);
                 setList.add(set);
             }
         }
-
         count = rowList.size();
         for (int i = 0; i < count; i++) {
-            ListRow  row     = rowList.get(i);
-            boolean  hasMore = i != count - 1;
-            int      type    = hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION;
-            String[] options = hasMore ? new String[]{I18n.text("Apply"), I18n.text("Cancel"), I18n.text("Cancel Remaining")} : new String[]{I18n.text("Apply"), I18n.text("Cancel")};
-            Namer    panel   = new Namer(row, setList.get(i), count - i - 1);
-            switch (WindowUtils.showOptionDialog(owner, panel, MessageFormat.format(I18n.text("Name {0}"), row.getLocalizedName()), true, type, JOptionPane.PLAIN_MESSAGE, row.getIcon(true), options, I18n.text("Apply"))) {
-            case JOptionPane.YES_OPTION:
+            ListRow row   = rowList.get(i);
+            Namer   panel = new Namer(row, setList.get(i), count - i - 1);
+            StdDialog dialog = StdDialog.prepareToShowMessage(owner,
+                    MessageFormat.format(I18n.text("Name {0}"), row.getLocalizedName()),
+                    MessageType.QUESTION, panel);
+            if (i != count - 1) {
+                dialog.addCancelRemainingButton();
+            }
+            dialog.addCancelButton();
+            dialog.addApplyButton();
+            dialog.presentToUser();
+            switch (dialog.getResult()) {
+            case StdDialog.OK:
                 panel.applyChanges();
                 modified = true;
                 break;
-            case JOptionPane.NO_OPTION:
+            case StdDialog.CANCEL:
                 break;
-            case JOptionPane.CANCEL_OPTION:
-            case JOptionPane.CLOSED_OPTION:
+            case StdDialog.CLOSED:
             default:
                 return modified;
             }

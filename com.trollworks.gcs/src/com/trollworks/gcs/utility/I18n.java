@@ -16,6 +16,7 @@ import com.trollworks.gcs.utility.text.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -111,7 +112,7 @@ public final class I18n {
         while (true) {
             Path path = base.resolve(filename + ".i18n");
             if (Files.isRegularFile(path) && Files.isReadable(path)) {
-                try (BufferedReader in = Files.newBufferedReader(path)) {
+                try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
                     int           lineNum          = 0;
                     int           lastKeyLineStart = 0;
                     StringBuilder keyBuilder       = null;

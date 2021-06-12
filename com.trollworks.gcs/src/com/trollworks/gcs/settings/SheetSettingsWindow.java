@@ -25,7 +25,7 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -176,7 +176,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         panel.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         panel.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        getContentPane().add(new ScrollPanel(panel), BorderLayout.CENTER);
+        getContentPane().add(new StdScrollPanel(panel), BorderLayout.CENTER);
     }
 
     private void addResetPanel() {

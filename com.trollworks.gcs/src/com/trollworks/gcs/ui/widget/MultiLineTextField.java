@@ -20,7 +20,6 @@ import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusEvent;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.DocumentListener;
 
@@ -28,7 +27,7 @@ public class MultiLineTextField extends JTextArea {
     public MultiLineTextField(String text, String tooltip, DocumentListener listener) {
         super(text);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        setBorder(UIManager.getBorder("FormattedTextField.border"));
+        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
         setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
         setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS));
@@ -41,7 +40,6 @@ public class MultiLineTextField extends JTextArea {
         setSelectionColor(ThemeColor.SELECTION);
         setSelectedTextColor(ThemeColor.ON_SELECTION);
         setDisabledTextColor(ThemeColor.DISABLED_ON_EDITABLE);
-        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         setMinimumSize(new Dimension(50, 16));
         if (listener != null) {
             getDocument().addDocumentListener(listener);

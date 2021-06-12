@@ -21,7 +21,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -121,8 +121,8 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         if (!mIsEditable) {
             UIUtilities.disableControls(outer);
         }
-        ScrollPanel scroller   = new ScrollPanel(outer);
-        int         scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
+        StdScrollPanel scroller   = new StdScrollPanel(outer);
+        int            scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
         scroller.setPreferredSize(adjustSize(outer.getPreferredSize(), scrollSize));
         Dimension size = adjustSize(outer.getMinimumSize(), scrollSize);
         if (size.height > 128) {

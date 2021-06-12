@@ -40,7 +40,7 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic editor panel. */
 public abstract class EditorPanel extends ActionPanel implements ActionListener, PropertyChangeListener {
-    private static final int    GAP        = 5;
+    private static final int    GAP        = 4;
     private static final String COMPARISON = "Comparison";
 
     /** Creates a new EditorPanel. */

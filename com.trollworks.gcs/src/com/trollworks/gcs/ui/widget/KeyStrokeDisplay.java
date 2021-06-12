@@ -27,13 +27,16 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.regex.Pattern;
+import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 
+// Note: This must stay as a JLabel for now, as the default font is capable of rendering the keystroke symbols properly.
+
 /** Displays and captures keystrokes typed. */
-public class KeyStrokeDisplay extends StdLabel implements KeyListener {
+public class KeyStrokeDisplay extends JLabel implements KeyListener {
     private static final Pattern   PLUS_PATTERN = Pattern.compile("\\+");
     private              KeyStroke mKeyStroke;
 
@@ -48,6 +51,7 @@ public class KeyStrokeDisplay extends StdLabel implements KeyListener {
         setBackground(ThemeColor.EDITABLE);
         setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         addKeyListener(this);
+        setFocusable(true);
         mKeyStroke = ks;
         setText(getKeyStrokeDisplay(mKeyStroke));
     }
@@ -104,6 +108,9 @@ public class KeyStrokeDisplay extends StdLabel implements KeyListener {
             } else {
                 buffer.append(getKeyText(keyCode));
             }
+        }
+        if (buffer.isEmpty()) {
+            buffer.append(" ");
         }
         return buffer.toString();
     }

@@ -16,9 +16,9 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.QuickExport;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
@@ -168,7 +168,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
                 try {
                     Desktop.getDesktop().browse(url.toURI());
                 } catch (IOException | URISyntaxException exception) {
-                    WindowUtils.showError(null, MessageFormat.format(I18n.text("Unable to open {0}"), url.toExternalForm()));
+                    StdDialog.showError(null, MessageFormat.format(I18n.text("Unable to open:\n{0}"), url.toExternalForm()));
                 }
             }
         });

@@ -15,11 +15,11 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.pdfview.PDFServer;
-import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.PageRefMappingsWindow;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Selection;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
@@ -122,7 +122,7 @@ public class OpenPageReferenceCommand extends Command {
                 try {
                     PDFServer.showPDF(ref.getPath(), page + ref.getPageToIndexOffset());
                 } catch (Exception exception) {
-                    WindowUtils.showError(null, exception.getMessage());
+                    StdDialog.showError(null, exception.getMessage());
                 }
             }
         }

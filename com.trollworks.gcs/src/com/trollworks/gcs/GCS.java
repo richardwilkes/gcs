@@ -18,8 +18,9 @@ import com.trollworks.gcs.menu.file.OpenDataFileCommand;
 import com.trollworks.gcs.menu.file.PrintCommand;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.help.AboutCommand;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;
@@ -259,6 +260,7 @@ public final class GCS {
             }
         }
 
+        Settings.getInstance();
         UpdateChecker.check();
         launchProxy.setReady(true);
 
@@ -269,7 +271,7 @@ public final class GCS {
                 OpenDataFileCommand.open(file);
             }
             if (Platform.isMacintosh() && System.getProperty("java.home").toLowerCase().contains("/apptranslocation/")) {
-                WindowUtils.showError(null, Text.wrapToCharacterCount(I18n.text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + "xattr -d com.apple.quarantine \"/Applications/GCS.app\"");
+                StdDialog.showError(null, Text.wrapToCharacterCount(I18n.text("macOS has translocated GCS, restricting access to the file system and preventing access to the data library. To fix this, you must quit GCS, then run the following command in the terminal after cd'ing into the GURPS Character Sheet folder:\n\n"), 60) + "xattr -d com.apple.quarantine \"/Applications/GCS.app\"");
             }
             setNotificationAllowed(true);
         });

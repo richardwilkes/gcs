@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Provides standard file dialog handling. */
@@ -71,7 +70,7 @@ public final class StdFileDialog {
         Path path = show(dialog);
         if (path != null) {
             if (!PathUtils.isNameValidForFile(PathUtils.getLeafName(path, true))) {
-                WindowUtils.showError(comp, I18n.text("Invalid file name"));
+                StdDialog.showError(comp, I18n.text("Invalid file name"));
                 return null;
             }
             if (filters != null) {
@@ -81,9 +80,14 @@ public final class StdFileDialog {
                 }
             }
             if (Files.exists(path)) {
-                String   cancel  = I18n.text("Cancel");
-                Object[] options = {I18n.text("Replace"), cancel};
-                if (WindowUtils.showConfirmDialog(comp, String.format(I18n.text("%s already exists!\nDo you want to overwrite it?"), path), I18n.text("Already exists!"), JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.NO_OPTION) {
+                StdDialog question = StdDialog.prepareToShowMessage(comp,
+                        I18n.text("Already Exists!"),
+                        MessageType.QUESTION,
+                        String.format(I18n.text("%s already exists!\nDo you want to overwrite it?"), path));
+                question.addCancelButton();
+                question.addButton(I18n.text("Replace"), StdDialog.OK);
+                question.presentToUser();
+                if (question.getResult() == StdDialog.CANCEL) {
                     return null;
                 }
             }
@@ -101,9 +105,9 @@ public final class StdFileDialog {
     public static void showCannotOpenMsg(Component comp, String name, Throwable throwable) {
         if (throwable != null) {
             Log.error(throwable);
-            WindowUtils.showError(comp, MessageFormat.format(I18n.text("Unable to open \"{0}\"\n{1}"), name, throwable.getMessage()));
+            StdDialog.showError(comp, MessageFormat.format(I18n.text("Unable to open \"{0}\"\n{1}"), name, throwable.getMessage()));
         } else {
-            WindowUtils.showError(comp, MessageFormat.format(I18n.text("Unable to open \"{0}\"."), name));
+            StdDialog.showError(comp, MessageFormat.format(I18n.text("Unable to open \"{0}\"."), name));
         }
     }
 

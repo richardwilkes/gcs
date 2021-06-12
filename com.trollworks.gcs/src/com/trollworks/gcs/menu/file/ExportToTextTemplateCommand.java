@@ -15,11 +15,11 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.QuickExport;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 
@@ -59,7 +59,7 @@ public class ExportToTextTemplateCommand extends Command {
         if (new TextTemplate(dockable.getSheet()).export(exportPath, templatePath)) {
             dockable.recordQuickExport(new QuickExport(templatePath, exportPath));
         } else {
-            WindowUtils.showError(dockable, String.format(I18n.text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(templatePath, false)));
+            StdDialog.showError(dockable, String.format(I18n.text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(templatePath, false)));
         }
     }
 }

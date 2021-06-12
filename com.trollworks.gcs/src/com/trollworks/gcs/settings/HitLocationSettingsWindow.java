@@ -23,9 +23,10 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -59,7 +60,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     private              HitLocationTablePanel                mLocationsPanel;
     private              FontAwesomeButton                    mResetButton;
     private              FontAwesomeButton                    mMenuButton;
-    private              ScrollPanel                          mScroller;
+    private              StdScrollPanel                       mScroller;
     private              boolean                              mUpdatePending;
 
     /** Displays the hit location settings window. */
@@ -113,7 +114,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
             }
             adjustResetButton();
         });
-        mScroller = new ScrollPanel(mLocationsPanel);
+        mScroller = new StdScrollPanel(mLocationsPanel);
         content.add(mScroller, BorderLayout.CENTER);
         if (mCharacter != null) {
             mCharacter.addChangeListener(this);
@@ -164,7 +165,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
                 reset(new HitLocationTable(path));
             } catch (IOException ioe) {
                 Log.error(ioe);
-                WindowUtils.showError(this, I18n.text("Unable to import hit locations."));
+                StdDialog.showError(this, I18n.text("Unable to import hit locations."));
             }
         }
     }
@@ -190,7 +191,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
             } catch (Exception exception) {
                 Log.error(exception);
                 transaction.abort();
-                WindowUtils.showError(this, I18n.text("Unable to export hit locations."));
+                StdDialog.showError(this, I18n.text("Unable to export hit locations."));
             }
         }
     }

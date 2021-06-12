@@ -13,9 +13,8 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.FontStyle;
 import com.trollworks.gcs.ui.ThemeFont;
-import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
 
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
@@ -35,14 +34,13 @@ public class FontPanel extends ActionPanel implements ActionListener {
      * @param font The font to start with.
      */
     public FontPanel(Font font) {
-        super(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        super(new PrecisionLayout().setColumns(3).setMargins(0));
         setOpaque(false);
 
         mFontNameMenu = new JComboBox<>(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
         mFontNameMenu.setOpaque(false);
         mFontNameMenu.setMaximumRowCount(25);
         mFontNameMenu.addActionListener(this);
-        UIUtilities.setToPreferredSizeOnly(mFontNameMenu);
         add(mFontNameMenu);
 
         Integer[] sizes = new Integer[20];
@@ -53,13 +51,11 @@ public class FontPanel extends ActionPanel implements ActionListener {
         mFontSizeMenu.setOpaque(false);
         mFontSizeMenu.setMaximumRowCount(sizes.length);
         mFontSizeMenu.addActionListener(this);
-        UIUtilities.setToPreferredSizeOnly(mFontSizeMenu);
         add(mFontSizeMenu);
 
         mFontStyleMenu = new JComboBox<>(FontStyle.values());
         mFontStyleMenu.setOpaque(false);
         mFontStyleMenu.addActionListener(this);
-        UIUtilities.setToPreferredSizeOnly(mFontStyleMenu);
         add(mFontStyleMenu);
 
         setCurrentFont(font);

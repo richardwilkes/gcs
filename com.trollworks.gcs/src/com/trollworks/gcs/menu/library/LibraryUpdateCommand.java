@@ -15,8 +15,11 @@ import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.library.LibraryUpdater;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.MarkdownDocument;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Release;
@@ -24,7 +27,6 @@ import com.trollworks.gcs.utility.Version;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 
 public class LibraryUpdateCommand extends Command {
@@ -84,9 +86,17 @@ public class LibraryUpdateCommand extends Command {
             size.width = maxWidth;
             markdown.setPreferredSize(size);
         }
+        markdown.setBackground(ThemeColor.BACKGROUND);
+        markdown.setForeground(ThemeColor.ON_BACKGROUND);
         markdown.setEditable(false);
-        String update = I18n.text("Update");
-        if (WindowUtils.showOptionDialog(null, new ScrollPanel(markdown), String.format(I18n.text("%s v%s is available!"), library.getTitle(), release.getVersion()), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{update, I18n.text("Ignore")}, update) == JOptionPane.OK_OPTION) {
+        StdDialog dialog = StdDialog.prepareToShowMessage(null,
+                String.format(I18n.text("%s v%s is available!"), library.getTitle(), release.getVersion()),
+                MessageType.WARNING,
+                new StdScrollPanel(markdown));
+        dialog.addButton(I18n.text("Ignore"), StdDialog.CANCEL);
+        dialog.addButton(I18n.text("Update"), StdDialog.OK);
+        dialog.presentToUser();
+        if (dialog.getResult() == StdDialog.OK) {
             LibraryUpdater.download(library, release);
         }
     }

@@ -14,7 +14,8 @@ package com.trollworks.gcs.library;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
@@ -38,7 +39,6 @@ import java.util.concurrent.FutureTask;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 import javax.swing.border.CompoundBorder;
@@ -100,7 +100,7 @@ public final class LibraryUpdater implements Runnable {
                     if (path != null && path.toAbsolutePath().startsWith(prefix)) {
                         if (dfd.mayAttemptClose()) {
                             if (!dfd.attemptClose()) {
-                                JOptionPane.showMessageDialog(null, String.format(I18n.text("GCS %s update was canceled."), title), I18n.text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
+                                StdDialog.showMessage(null, I18n.text("Canceled!"), MessageType.NONE, String.format(I18n.text("GCS %s update was canceled."), title));
                                 return;
                             }
                         }
@@ -219,9 +219,9 @@ public final class LibraryUpdater implements Runnable {
         mDialog.dispose();
         String title = mLibrary.getTitle();
         if (mResult == null) {
-            JOptionPane.showMessageDialog(null, String.format(I18n.text("%s update was successful."), title), I18n.text("Success!"), JOptionPane.INFORMATION_MESSAGE);
+            StdDialog.showMessage(null, I18n.text("Success!"), MessageType.NONE, String.format(I18n.text("%s update was successful."), title));
         } else {
-            WindowUtils.showError(null, String.format(I18n.text("An error occurred while trying to update the %s:\n\n"), title) + mResult);
+            StdDialog.showError(null, String.format(I18n.text("An error occurred while trying to update the %s:\n\n"), title) + mResult);
         }
     }
 }

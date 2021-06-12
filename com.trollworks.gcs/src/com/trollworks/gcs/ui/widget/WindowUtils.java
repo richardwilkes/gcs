@@ -11,17 +11,13 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.utility.Geometry;
-import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -29,7 +25,6 @@ import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -37,152 +32,13 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.InputEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import javax.swing.Icon;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.text.JTextComponent;
 
 /** Utilities for use with windows. */
 public final class WindowUtils {
     private static Frame HIDDEN_FRAME;
 
     private WindowUtils() {
-    }
-
-    /**
-     * @param comp The {@link Component} to use for determining the parent {@link Frame} or {@link
-     *             Dialog}.
-     * @param msg  The message to display.
-     */
-    public static void showError(Component comp, String msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.text("Error"), JOptionPane.ERROR_MESSAGE);
-    }
-
-    /**
-     * @param comp The {@link Component} to use for determining the parent {@link Frame} or {@link
-     *             Dialog}.
-     * @param msg  The message to display.
-     */
-    public static void showError(Component comp, Component msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.text("Error"), JOptionPane.ERROR_MESSAGE);
-    }
-
-    /**
-     * @param comp The {@link Component} to use for determining the parent {@link Frame} or {@link
-     *             Dialog}.
-     * @param msg  The message to display.
-     */
-    public static void showWarning(Component comp, String msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.text("Warning"), JOptionPane.WARNING_MESSAGE);
-    }
-
-    /**
-     * @param comp The {@link Component} to use for determining the parent {@link Frame} or {@link
-     *             Dialog}.
-     * @param msg  The message to display.
-     */
-    public static void showWarning(Component comp, Component msg) {
-        JOptionPane.showMessageDialog(comp, msg, I18n.text("Warning"), JOptionPane.WARNING_MESSAGE);
-    }
-
-    /**
-     * Shows a confirmation dialog with custom options.
-     *
-     * @param comp         The {@link Component} to use. May be {@code null}.
-     * @param message      The message.
-     * @param title        The title to use.
-     * @param optionType   The type of option dialog. Use the {@link JOptionPane} constants.
-     * @param options      The options to display.
-     * @param initialValue The initial option.
-     * @return See the documentation for {@link JOptionPane}.
-     */
-    public static int showConfirmDialog(Component comp, String message, String title, int optionType, Object[] options, Object initialValue) {
-        return showOptionDialog(comp, message, title, false, optionType, JOptionPane.QUESTION_MESSAGE, null, options, initialValue);
-    }
-
-    /**
-     * Shows an option dialog.
-     *
-     * @param parentComponent The parent {@link Component} to use. May be {@code null}.
-     * @param message         The message. May be a {@link Component}.
-     * @param title           The title to use.
-     * @param resizable       Whether to allow the dialog to be resized by the user.
-     * @param optionType      The type of option dialog. Use the {@link JOptionPane} constants.
-     * @param messageType     The type of message. Use the {@link JOptionPane} constants.
-     * @param icon            The icon to use. May be {@code null}.
-     * @param options         The options to display. May be {@code null}.
-     * @param initialValue    The initial option.
-     * @return See the documentation for {@link JOptionPane}.
-     */
-    public static int showOptionDialog(Component parentComponent, Object message, String title, boolean resizable, int optionType, int messageType, Icon icon, Object[] options, Object initialValue) {
-        JOptionPane pane = new JOptionPane(message, messageType, optionType, icon, options, initialValue);
-        pane.setUI(new SizeAwareBasicOptionPaneUI(pane.getUI()));
-        pane.setInitialValue(initialValue);
-        pane.setComponentOrientation((parentComponent == null ? JOptionPane.getRootFrame() : parentComponent).getComponentOrientation());
-        pane.setBackground(ThemeColor.BACKGROUND);
-        pane.setForeground(ThemeColor.ON_BACKGROUND);
-        pane.getComponent(1).setBackground(ThemeColor.BACKGROUND);
-
-        Window  owningWindow = getWindowForComponent(parentComponent);
-        JDialog dialog       = pane.createDialog(owningWindow, title);
-        WindowSizeEnforcer.monitor(dialog);
-        pane.selectInitialValue();
-        dialog.setResizable(resizable);
-        Component field = getFirstFocusableField(message);
-        if (field != null) {
-            dialog.addWindowFocusListener(new WindowAdapter() {
-                @Override
-                public void windowGainedFocus(WindowEvent event) {
-                    field.requestFocus();
-                    dialog.removeWindowFocusListener(this);
-                }
-            });
-        }
-        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
-        if (focusOwner == null) {
-            focusOwner = parentComponent;
-        }
-        packAndCenterWindowOn(dialog, owningWindow);
-        dialog.setVisible(true);
-        dialog.dispose();
-        if (focusOwner != null) {
-            focusOwner.requestFocus();
-        }
-        pane.setMessage(null);
-
-        Object selectedValue = pane.getValue();
-        if (selectedValue != null) {
-            if (options == null) {
-                if (selectedValue instanceof Integer) {
-                    return ((Integer) selectedValue).intValue();
-                }
-            } else {
-                int length = options.length;
-                for (int i = 0; i < length; i++) {
-                    if (options[i].equals(selectedValue)) {
-                        return i;
-                    }
-                }
-            }
-        }
-        return JOptionPane.CLOSED_OPTION;
-    }
-
-    private static Component getFirstFocusableField(Object comp) {
-        if (comp instanceof JTextComponent || comp instanceof KeyStrokeDisplay) {
-            return (Component) comp;
-        }
-        if (comp instanceof Container) {
-            for (Component child : ((Container) comp).getComponents()) {
-                Component field = getFirstFocusableField(child);
-                if (field != null) {
-                    return field;
-                }
-            }
-        }
-        return null;
     }
 
     /**

@@ -13,10 +13,11 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
@@ -29,12 +30,11 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.JTextField;
 
-public final class LibraryLocationsPanel extends JPanel {
+public final class LibraryLocationsPanel extends StdPanel {
     private List<LibraryFields> mFields;
     private JButton             mApplyButton;
-    private JButton             mCancelButton;
 
     public static void showDialog() {
         // Close all documents
@@ -56,9 +56,15 @@ public final class LibraryLocationsPanel extends JPanel {
 
         // Ask the user to make changes
         LibraryLocationsPanel panel    = new LibraryLocationsPanel();
-        ScrollPanel           scroller = new ScrollPanel(panel);
-        int                   result   = WindowUtils.showOptionDialog(Workspace.get(), scroller, ChangeLibraryLocationsCommand.INSTANCE.getTitle(), true, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new JButton[]{panel.mApplyButton, panel.mCancelButton}, panel.mCancelButton);
-        if (result == JOptionPane.OK_OPTION) {
+        StdScrollPanel        scroller = new StdScrollPanel(panel);
+        StdDialog             dialog   = StdDialog.prepareToShowMessage(Workspace.get(), ChangeLibraryLocationsCommand.INSTANCE.getTitle(), MessageType.QUESTION, scroller);
+        dialog.addButton(I18n.text("Add"), (evt) -> panel.addLibraryRow());
+        dialog.addCancelButton();
+        panel.mApplyButton = dialog.addApplyButton();
+        panel.mFields.get(0).contentsChanged();
+        dialog.presentToUser();
+        int result = dialog.getResult();
+        if (result == StdDialog.OK) {
             Library.LIBRARIES.clear();
             for (LibraryFields fields : panel.mFields) {
                 switch (fields.getLibraryType()) {
@@ -83,7 +89,7 @@ public final class LibraryLocationsPanel extends JPanel {
         }
 
         // Check to see if the new library locations need updating
-        if (result == JOptionPane.OK_OPTION) {
+        if (result == StdDialog.OK) {
             UpdateChecker.check();
         }
     }
@@ -102,45 +108,27 @@ public final class LibraryLocationsPanel extends JPanel {
             }
             mFields.add(new LibraryFields(this, library.getTitle(), library.getGitHubAccountName(), library.getRepoName(), library.getPathNoCreate().toString(), libType));
         }
-        createAddButton();
-        mApplyButton = createDialogButton(I18n.text("Apply"));
-        mCancelButton = createDialogButton(I18n.text("Cancel"));
-        mFields.get(0).contentsChanged();
     }
 
     public List<LibraryFields> getFields() {
         return mFields;
     }
 
-    private void createAddButton() {
-        JButton button = new JButton(I18n.text("Add"));
-        button.addActionListener(e -> {
-            remove(button);
-            mFields.add(new LibraryFields(this, "", "", "", "", LibraryFields.LibraryType.EXTRA));
-            add(button);
-            mFields.get(0).contentsChanged();
-            revalidate();
-            repaint();
-            EventQueue.invokeLater(() -> {
-                scrollRectToVisible(button.getBounds());
-                mFields.get(mFields.size() - 1).getTitleField().requestFocus();
-            });
+    private void addLibraryRow() {
+        mFields.add(new LibraryFields(this, "", "", "", "", LibraryFields.LibraryType.EXTRA));
+        mFields.get(0).contentsChanged();
+        revalidate();
+        repaint();
+        EventQueue.invokeLater(() -> {
+            JTextField field = mFields.get(mFields.size() - 1).getTitleField();
+            scrollRectToVisible(field.getBounds());
+            field.requestFocus();
         });
-        add(button);
-    }
-
-    private static JButton createDialogButton(String title) {
-        JButton button = new JButton(title);
-        button.addActionListener(e -> {
-            JOptionPane pane = UIUtilities.getAncestorOfType(button, JOptionPane.class);
-            if (pane != null) {
-                pane.setValue(button);
-            }
-        });
-        return button;
     }
 
     public void setApplyState(boolean enabled) {
-        mApplyButton.setEnabled(enabled);
+        if (mApplyButton != null) {
+            mApplyButton.setEnabled(enabled);
+        }
     }
 }

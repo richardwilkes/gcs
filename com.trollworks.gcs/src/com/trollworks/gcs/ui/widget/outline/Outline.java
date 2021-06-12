@@ -25,7 +25,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.ActionPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
 import com.trollworks.gcs.utility.Geometry;
@@ -1427,7 +1427,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 mSelectOnMouseUp = -1;
                 if (mDividerDrag != null && allowColumnResize()) {
                     dragColumnDivider(x);
-                    if (UIUtilities.getAncestorOfType(this, ScrollPanel.class) != null) {
+                    if (UIUtilities.getAncestorOfType(this, StdScrollPanel.class) != null) {
                         Point pt = event.getPoint();
                         if (!(event.getSource() instanceof Outline)) {
                             // Column resizing is occurring in the header, most likely
@@ -2604,8 +2604,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public Insets getAutoscrollInsets() {
-        int         margin      = Scale.get(this).scale(AUTO_SCROLL_MARGIN);
-        ScrollPanel scrollPanel = UIUtilities.getAncestorOfType(this, ScrollPanel.class);
+        int            margin      = Scale.get(this).scale(AUTO_SCROLL_MARGIN);
+        StdScrollPanel scrollPanel = UIUtilities.getAncestorOfType(this, StdScrollPanel.class);
         if (scrollPanel != null) {
             Rectangle bounds = scrollPanel.getViewport().getViewRect();
             return new Insets(bounds.y + margin, bounds.x + margin, getHeight() - (bounds.y + bounds.height) + margin, getWidth() - (bounds.x + bounds.width) + margin);

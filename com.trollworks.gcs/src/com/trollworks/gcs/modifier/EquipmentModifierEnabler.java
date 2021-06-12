@@ -15,13 +15,15 @@ import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -31,7 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
@@ -62,20 +63,22 @@ public final class EquipmentModifierEnabler extends StdPanel {
 
         count = list.size();
         for (int i = 0; i < count; i++) {
-            Equipment                eqp         = list.get(i);
-            boolean                  hasMore     = i != count - 1;
-            EquipmentModifierEnabler panel       = new EquipmentModifierEnabler(eqp, count - i - 1);
-            String                   applyTitle  = I18n.text("Apply");
-            String                   cancelTitle = I18n.text("Cancel");
-            switch (WindowUtils.showOptionDialog(comp, panel, I18n.text("Enable Modifiers"), true, hasMore ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, eqp.getIcon(true), hasMore ? new String[]{applyTitle, cancelTitle, I18n.text("Cancel Remaining")} : new String[]{applyTitle, cancelTitle}, applyTitle)) {
-            case JOptionPane.YES_OPTION:
+            EquipmentModifierEnabler panel  = new EquipmentModifierEnabler(list.get(i), count - i - 1);
+            StdDialog                dialog = StdDialog.prepareToShowMessage(comp, I18n.text("Enable Modifiers"), MessageType.QUESTION, panel);
+            if (i != count - 1) {
+                dialog.addCancelRemainingButton();
+            }
+            dialog.addCancelButton();
+            dialog.addApplyButton();
+            dialog.presentToUser();
+            switch (dialog.getResult()) {
+            case StdDialog.OK:
                 panel.applyChanges();
                 modified = true;
                 break;
-            case JOptionPane.NO_OPTION:
+            case StdDialog.CANCEL:
                 break;
-            case JOptionPane.CANCEL_OPTION:
-            case JOptionPane.CLOSED_OPTION:
+            case StdDialog.CLOSED:
             default:
                 return modified;
             }
@@ -87,7 +90,7 @@ public final class EquipmentModifierEnabler extends StdPanel {
         super(new BorderLayout());
         mEquipment = equipment;
         add(createTop(equipment, remaining), BorderLayout.NORTH);
-        ScrollPanel scrollPanel = new ScrollPanel(createCenter());
+        StdScrollPanel scrollPanel = new StdScrollPanel(createCenter());
         scrollPanel.setMinimumSize(new Dimension(500, 120));
         add(scrollPanel, BorderLayout.CENTER);
     }
@@ -100,6 +103,8 @@ public final class EquipmentModifierEnabler extends StdPanel {
             top.add(new JLabel(MessageFormat.format(I18n.text("{0} equipment remaining to be processed."), Integer.valueOf(remaining)), SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
+        label.setBackground(Color.BLACK);
+        label.setForeground(Color.WHITE);
         label.setOpaque(true);
         top.add(new StdPanel());
         top.add(label);

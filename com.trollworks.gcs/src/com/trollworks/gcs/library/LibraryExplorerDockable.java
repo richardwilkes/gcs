@@ -36,9 +36,10 @@ import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
 import com.trollworks.gcs.ui.widget.StdToolbar;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
@@ -72,7 +73,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 
 /** A list of available library files. */
@@ -541,11 +541,18 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public void deleteSelection() {
         List<Path> paths = collectSelectedFilePaths();
         if (!paths.isEmpty()) {
-            String   message = paths.size() == 1 ? I18n.text("Are you sure you want to delete this file?") : I18n.text("Are you sure you want to delete these files?");
-            String   title   = paths.size() == 1 ? I18n.text("Delete File") : String.format(I18n.text("Delete {0} Files"), Integer.valueOf(paths.size()));
-            String   cancel  = I18n.text("Cancel");
-            Object[] options = {I18n.text("Delete"), cancel};
-            if (WindowUtils.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.YES_OPTION) {
+            StdDialog dialog = StdDialog.prepareToShowMessage(this,
+                    paths.size() == 1 ?
+                            I18n.text("Delete File") :
+                            String.format(I18n.text("Delete {0} Files"), Integer.valueOf(paths.size())),
+                    MessageType.QUESTION,
+                    paths.size() == 1 ?
+                            I18n.text("Are you sure you want to delete this file?") :
+                            I18n.text("Are you sure you want to delete these files?"));
+            dialog.addCancelButton();
+            dialog.addButton(I18n.text("Delete"), StdDialog.OK);
+            dialog.presentToUser();
+            if (dialog.getResult() == StdDialog.OK) {
                 int failed = 0;
                 for (Path p : paths) {
                     FileProxy proxy = (FileProxy) getDockableFor(p);
@@ -562,7 +569,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                 }
                 refresh();
                 if (failed != 0) {
-                    WindowUtils.showError(this, failed == 1 ? I18n.text("A file could not be deleted.") : String.format(I18n.text("{0} files could not be deleted."), Integer.valueOf(failed)));
+                    StdDialog.showError(this, failed == 1 ? I18n.text("A file could not be deleted.") : String.format(I18n.text("{0} files could not be deleted."), Integer.valueOf(failed)));
                 }
             }
         }

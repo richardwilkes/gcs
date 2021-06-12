@@ -18,7 +18,7 @@ import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.FileType;
@@ -105,7 +105,7 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
             getDockContainer().updateTitle(this);
             return true;
         }
-        WindowUtils.showError(this, I18n.text("An error occurred while trying to save the file."));
+        StdDialog.showError(this, I18n.text(String.format("An error occurred while trying to save the file to:\n%s", path)));
         return false;
     }
 

@@ -23,8 +23,10 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
@@ -35,7 +37,6 @@ import java.awt.Component;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.text.DefaultFormatterFactory;
@@ -70,7 +71,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         setLayout(new BorderLayout());
         mPanel = new BandedPanel(true);
         buildPanel();
-        getContentPane().add(new ScrollPanel(mPanel), BorderLayout.CENTER);
+        getContentPane().add(new StdScrollPanel(mPanel), BorderLayout.CENTER);
         WindowUtils.packAndCenterWindowOn(this, null);
     }
 
@@ -99,19 +100,24 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
             mPanel.add(fileLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
             FontAwesomeButton removeButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), null);
             removeButton.setClickFunction(() -> {
-                String   cancel  = I18n.text("Cancel");
-                Object[] options = {I18n.text("Remove"), cancel};
-                if (WindowUtils.showConfirmDialog(this, String.format(I18n.text("""
+                StdDialog dialog = StdDialog.prepareToShowMessage(this,
+                        I18n.text("Confirm Change"),
+                        MessageType.QUESTION,
+                        String.format(I18n.text("""
                                 Are you sure you want to remove this page reference
-                                mapping from %s to "%s"?"""), ref.getID(), ref.getPath().getFileName().toString()),
-                        "", JOptionPane.YES_NO_OPTION, options, cancel) == JOptionPane.YES_OPTION) {
+                                mapping from %s to "%s"?"""), ref.getID(), ref.getPath().getFileName().toString()));
+                dialog.addCancelButton();
+                dialog.addButton(I18n.text("Remove"), StdDialog.OK);
+                dialog.presentToUser();
+                if (dialog.getResult() == StdDialog.OK) {
                     Settings.getInstance().removePdfRef(ref);
                     Component[] children = mPanel.getComponents();
                     int         length   = children.length;
                     for (int i = 0; i < length; i++) {
                         if (children[i] == removeButton) {
-                            for (int j = i + 5; --j >= i; ) {
-                                mPanel.remove(j);
+                            int max = ((PrecisionLayout) mPanel.getLayout()).getColumns();
+                            for (int j = 0; j < max; j++) {
+                                mPanel.remove(i - j);
                             }
                             break;
                         }

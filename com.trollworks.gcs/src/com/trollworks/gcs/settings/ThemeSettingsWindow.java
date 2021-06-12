@@ -25,7 +25,7 @@ import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -106,7 +106,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         }
         panel.add(wrapper);
 
-        getContentPane().add(new ScrollPanel(panel), BorderLayout.CENTER);
+        getContentPane().add(new StdScrollPanel(panel), BorderLayout.CENTER);
         adjustResetButtons();
         establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);

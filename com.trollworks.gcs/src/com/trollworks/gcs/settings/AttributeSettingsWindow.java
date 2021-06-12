@@ -25,9 +25,10 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -67,7 +68,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     private              AttributeListPanel                 mListPanel;
     private              FontAwesomeButton                  mResetButton;
     private              FontAwesomeButton                  mMenuButton;
-    private              ScrollPanel                        mScroller;
+    private              StdScrollPanel                     mScroller;
     private              boolean                            mUpdatePending;
 
     /** Displays the attribute settings window. */
@@ -121,7 +122,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 mCharacter.notifyOfChange();
             }
         });
-        mScroller = new ScrollPanel(mListPanel);
+        mScroller = new StdScrollPanel(mListPanel);
         content.add(mScroller, BorderLayout.CENTER);
         adjustResetButton();
         if (mCharacter != null) {
@@ -200,7 +201,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 reset(set.getAttributes());
             } catch (IOException ioe) {
                 Log.error(ioe);
-                WindowUtils.showError(this, I18n.text("Unable to import attribute settings."));
+                StdDialog.showError(this, I18n.text("Unable to import attribute settings."));
             }
         }
     }
@@ -222,7 +223,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
             } catch (Exception exception) {
                 Log.error(exception);
                 transaction.abort();
-                WindowUtils.showError(this, I18n.text("Unable to export attribute settings."));
+                StdDialog.showError(this, I18n.text("Unable to export attribute settings."));
             }
         }
     }

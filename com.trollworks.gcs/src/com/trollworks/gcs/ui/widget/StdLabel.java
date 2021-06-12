@@ -34,6 +34,8 @@ import javax.swing.SwingConstants;
 
 /** A simple label replacement that is scalable. */
 public class StdLabel extends JComponent implements PropertyChangeListener {
+    /** Pass this constant in to indicate wrapping should be done rather than truncation. */
+    public static final  int    WRAP      = -1;
     private static final String ERROR_KEY = "error";
     private static final int    GAP       = 4;
 
@@ -174,8 +176,7 @@ public class StdLabel extends JComponent implements PropertyChangeListener {
             bounds.width -= amt;
         }
         String text = mText;
-        if (mTruncationPolicy == SwingConstants.LEFT || mTruncationPolicy == SwingConstants.CENTER ||
-                mTruncationPolicy == SwingConstants.RIGHT) {
+        if (mTruncationPolicy != WRAP) {
             text = TextDrawing.truncateIfNecessary(font, text, bounds.width, mTruncationPolicy);
         }
         TextDrawing.draw(g, bounds, text, mHAlign, SwingConstants.CENTER);
@@ -199,6 +200,18 @@ public class StdLabel extends JComponent implements PropertyChangeListener {
             }
         }
         return size;
+    }
+
+    public int getPreferredHeight(int width) {
+        Scale  scale  = Scale.get(this);
+        Insets insets = getInsets();
+        width -= insets.left + insets.right;
+        if (mIcon != null) {
+            width -= scale.scale(mIcon.getIconWidth()) + scale.scale(GAP);
+        }
+        Font      font = scale.scale(getFont());
+        Dimension size = TextDrawing.getPreferredSize(font, TextDrawing.wrapToPixelWidth(font, mText, width));
+        return size.height;
     }
 
     /** @return The {@link JComponent} that is being paired with. */

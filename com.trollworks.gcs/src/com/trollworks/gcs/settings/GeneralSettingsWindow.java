@@ -21,6 +21,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Wrapper;
@@ -161,7 +162,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             try {
                 Desktop.getDesktop().browse(new URI(ExportToGURPSCalculatorCommand.GURPS_CALCULATOR_URL));
             } catch (Exception exception) {
-                WindowUtils.showError(this, MessageFormat.format(I18n.text("Unable to open {0}"),
+                StdDialog.showError(this, MessageFormat.format(I18n.text("Unable to open {0}"),
                         ExportToGURPSCalculatorCommand.GURPS_CALCULATOR_URL));
             }
         });

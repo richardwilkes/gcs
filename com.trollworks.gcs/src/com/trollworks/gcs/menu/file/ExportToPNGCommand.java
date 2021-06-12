@@ -13,11 +13,11 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.QuickExport;
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
@@ -56,7 +56,7 @@ public final class ExportToPNGCommand extends Command {
         if (dockable.getSheet().saveAsPNG(exportPath, new ArrayList<>())) {
             dockable.recordQuickExport(new QuickExport(exportPath));
         } else {
-            WindowUtils.showError(dockable, I18n.text("An error occurred while trying to export the sheet as PNG."));
+            StdDialog.showError(dockable, I18n.text("An error occurred while trying to export the sheet as PNG."));
         }
     }
 }

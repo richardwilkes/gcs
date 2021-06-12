@@ -19,8 +19,10 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -35,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
 /** A window for editing menu key settings. */
@@ -78,8 +79,8 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
                 addOne(cmds.get(i + half));
             }
         }
-        Container   content  = getContentPane();
-        content.add(new ScrollPanel(mPanel), BorderLayout.CENTER);
+        Container content = getContentPane();
+        content.add(new StdScrollPanel(mPanel), BorderLayout.CENTER);
         content.add(createResetPanel(), BorderLayout.SOUTH);
         adjustResetButton();
         establishSizing();
@@ -103,23 +104,27 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             JButton          btn     = (JButton) evt.getSource();
             Command          command = mMap.get(btn);
             KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command.getAccelerator());
-            switch (WindowUtils.showOptionDialog(this, ksd, I18n.text("Type a keystroke…"), false, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new Object[]{I18n.text("Accept"), I18n.text("Clear"), I18n.text("Reset")}, null)) {
-            case JOptionPane.CLOSED_OPTION:
-            default:
-                break;
-            case JOptionPane.YES_OPTION: // Accept
+            StdDialog        dialog  = StdDialog.prepareToShowMessage(this, I18n.text("Type a keystroke…"), MessageType.QUESTION, ksd);
+            dialog.addButton(I18n.text("Accept"), StdDialog.OK);
+            dialog.addButton(I18n.text("Clear"), 100);
+            dialog.addButton(I18n.text("Reset"), 200);
+            dialog.presentToUser();
+            switch (dialog.getResult()) {
+            case StdDialog.OK:
                 setAccelerator(btn, ksd.getKeyStroke());
                 break;
-            case JOptionPane.NO_OPTION: // Clear
+            case 100: // Clear
                 setAccelerator(btn, null);
                 break;
-            case JOptionPane.CANCEL_OPTION: // Reset
+            case 200: // Reset
                 setAccelerator(btn, command.getOriginalAccelerator());
+                break;
+            default: // Close
                 break;
             }
             adjustResetButton();
         });
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(4),false);
+        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(4), false);
         wrapper.add(button);
         mPanel.add(wrapper);
         mPanel.add(new JLabel(cmd.getTitle()));

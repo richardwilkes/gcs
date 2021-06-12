@@ -21,8 +21,8 @@ import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -92,7 +92,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
             try {
                 mSheet.getCharacter().getProfile().setPortrait(Img.create(path));
             } catch (Exception exception) {
-                WindowUtils.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), path.normalize().toAbsolutePath()));
+                StdDialog.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), path.normalize().toAbsolutePath()));
             }
         }
     }
@@ -156,7 +156,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
                 try {
                     mSheet.getCharacter().getProfile().setPortrait(Img.create(img));
                 } catch (Exception exception) {
-                    WindowUtils.showError(this, I18n.text("Unable to load image."));
+                    StdDialog.showError(this, I18n.text("Unable to load image."));
                 }
                 dtde.dropComplete(true);
                 dtde.getDropTargetContext().getComponent().requestFocus();
@@ -173,7 +173,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
                         mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
                         break;
                     } catch (Exception exception) {
-                        WindowUtils.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
+                        StdDialog.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
                     }
                 }
                 dtde.dropComplete(true);
