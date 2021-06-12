@@ -315,7 +315,12 @@ public final class Json {
             mUsePrevious = false;
             c = mPrevious;
         } else {
-            c = mReader.read();
+            try {
+                c = mReader.read();
+            } catch(IOException ioe) {
+                Log.error(toString());
+                throw ioe;
+            }
             if (c <= 0) { // End of stream
                 mEOF = true;
                 c = 0;
