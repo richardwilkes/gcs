@@ -58,7 +58,7 @@ public final class LibraryLocationsPanel extends StdPanel {
         LibraryLocationsPanel panel    = new LibraryLocationsPanel();
         StdScrollPanel        scroller = new StdScrollPanel(panel);
         StdDialog             dialog   = StdDialog.prepareToShowMessage(Workspace.get(), ChangeLibraryLocationsCommand.INSTANCE.getTitle(), MessageType.QUESTION, scroller);
-        dialog.addButton(I18n.text("Add"), () -> panel.addLibraryRow());
+        dialog.addButton(I18n.text("Add"), panel::addLibraryRow);
         dialog.addCancelButton();
         panel.mApplyButton = dialog.addApplyButton();
         panel.mFields.get(0).contentsChanged();
