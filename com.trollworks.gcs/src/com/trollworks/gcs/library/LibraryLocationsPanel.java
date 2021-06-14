@@ -14,6 +14,7 @@ package com.trollworks.gcs.library;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.StdButton;
 import com.trollworks.gcs.ui.widget.StdDialog;
@@ -24,15 +25,17 @@ import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.UpdateChecker;
 
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 
-public final class LibraryLocationsPanel extends StdPanel {
+public final class LibraryLocationsPanel extends StdPanel implements Scrollable {
     private List<LibraryFields> mFields;
     private StdButton           mApplyButton;
 
@@ -44,7 +47,7 @@ public final class LibraryLocationsPanel extends StdPanel {
                 CloseHandler handler = (CloseHandler) dockable;
                 if (handler.mayAttemptClose()) {
                     if (!handler.attemptClose()) {
-                        JOptionPane.showMessageDialog(null, I18n.text("No documents may be open when setting library locations."), I18n.text("Canceled!"), JOptionPane.INFORMATION_MESSAGE);
+                        StdDialog.showWarning(null, I18n.text("No documents may be open when setting library locations."));
                         return;
                     }
                 }
@@ -57,7 +60,9 @@ public final class LibraryLocationsPanel extends StdPanel {
         // Ask the user to make changes
         LibraryLocationsPanel panel    = new LibraryLocationsPanel();
         StdScrollPanel        scroller = new StdScrollPanel(panel);
-        StdDialog             dialog   = StdDialog.prepareToShowMessage(Workspace.get(), ChangeLibraryLocationsCommand.INSTANCE.getTitle(), MessageType.QUESTION, scroller);
+        StdDialog dialog = StdDialog.prepareToShowMessage(Workspace.get(),
+                ChangeLibraryLocationsCommand.INSTANCE.getTitle(), MessageType.QUESTION, scroller);
+        dialog.setResizable(true);
         dialog.addButton(I18n.text("Add"), panel::addLibraryRow);
         dialog.addCancelButton();
         panel.mApplyButton = dialog.addApplyButton();
@@ -95,7 +100,7 @@ public final class LibraryLocationsPanel extends StdPanel {
     }
 
     private LibraryLocationsPanel() {
-        super(new PrecisionLayout().setColumns(8).setVerticalSpacing(1));
+        super(new PrecisionLayout().setColumns(7));
         mFields = new ArrayList<>();
         for (Library library : Library.LIBRARIES) {
             LibraryFields.LibraryType libType;
@@ -120,7 +125,7 @@ public final class LibraryLocationsPanel extends StdPanel {
         revalidate();
         repaint();
         EventQueue.invokeLater(() -> {
-            JTextField field = mFields.get(mFields.size() - 1).getTitleField();
+            EditorField field = mFields.get(mFields.size() - 1).getTitleField();
             scrollRectToVisible(field.getBounds());
             field.requestFocus();
         });
@@ -130,5 +135,30 @@ public final class LibraryLocationsPanel extends StdPanel {
         if (mApplyButton != null) {
             mApplyButton.setEnabled(enabled);
         }
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 16;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return true;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
     }
 }

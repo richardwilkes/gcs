@@ -24,7 +24,6 @@ import java.awt.desktop.AboutHandler;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.JPanel;
 
 /** Provides the "About" command. */
 public final class AboutCommand extends Command implements AboutHandler {
@@ -66,7 +65,7 @@ public final class AboutCommand extends Command implements AboutHandler {
     }
 
     private class AboutWindow extends BaseWindow implements CloseHandler {
-        AboutWindow(String title, JPanel content) {
+        AboutWindow(String title, AboutPanel content) {
             super(title);
             getContentPane().add(content);
             addWindowListener(new WindowAdapter() {

@@ -11,17 +11,16 @@
 
 package com.trollworks.gcs.skill;
 
-import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Component;
 import java.awt.Graphics;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /** A label that displays the "or" message, or nothing if it is the first one. */
-public class OrLabel extends JLabel {
+public class OrLabel extends StdLabel {
     private Component mOwner;
 
     /**
@@ -32,12 +31,12 @@ public class OrLabel extends JLabel {
     public OrLabel(Component owner) {
         super(I18n.text("or"), SwingConstants.RIGHT);
         mOwner = owner;
-        UIUtilities.setToPreferredSizeOnly(this);
     }
 
     @Override
     protected void paintComponent(Graphics gc) {
-        setText(UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0 ? I18n.text("or") : "");
-        super.paintComponent(GraphicsUtilities.prepare(gc));
+        if (UIUtilities.getIndexOf(mOwner.getParent(), mOwner) != 0) {
+            super.paintComponent(gc);
+        }
     }
 }

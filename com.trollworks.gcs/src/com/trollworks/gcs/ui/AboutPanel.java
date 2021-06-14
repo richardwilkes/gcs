@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.ui.image.Images;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Color;
@@ -23,18 +24,21 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.RenderingHints;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 /** The about box contents. */
-public class AboutPanel extends JPanel {
+public class AboutPanel extends StdPanel {
     private static final int MARGIN = 8;
 
     /** Creates a new about panel. */
     public AboutPanel() {
-        setOpaque(true);
-        setBackground(Color.black);
         setPreferredSize(new Dimension(Images.ABOUT.getIconWidth(), Images.ABOUT.getIconHeight()));
+    }
+
+    @Override
+    protected void setStdColors() {
+        setBackground(Color.BLACK);
+        setForeground(Color.WHITE);
     }
 
     @Override
@@ -43,14 +47,14 @@ public class AboutPanel extends JPanel {
         super.paintComponent(gc);
         Images.ABOUT.paintIcon(this, gc, 0, 0);
         //noinspection IntegerDivisionInFloatingPointContext
-        gc.setPaint(new LinearGradientPaint(0, Images.ABOUT.getIconHeight() / 2, 0, Images.ABOUT.getIconHeight(), new float[]{0, 1}, new Color[]{Colors.TRANSPARENT, Color.BLACK}));
+        gc.setPaint(new LinearGradientPaint(0, Images.ABOUT.getIconHeight() / 2, 0, Images.ABOUT.getIconHeight(), new float[]{0, 1}, new Color[]{Colors.TRANSPARENT, getBackground()}));
         gc.fillRect(0, 0, Images.ABOUT.getIconWidth(), Images.ABOUT.getIconHeight());
         RenderingHints saved = (RenderingHints) gc.getRenderingHints().clone();
         gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         gc.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         Font baseFont = UIManager.getFont("TextField.font");
         gc.setFont(baseFont.deriveFont(10.0f));
-        gc.setColor(Color.WHITE);
+        gc.setColor(getForeground());
         int right = getWidth() - MARGIN;
         int y     = draw(gc, I18n.text("GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.\nThis product includes copyrighted material from the GURPS game, which is used by permission of Steve Jackson Games."), getHeight() - MARGIN, right, true, true);
         int y2    = draw(gc, GCS.COPYRIGHT + "\nAll rights reserved", y, right, false, true);

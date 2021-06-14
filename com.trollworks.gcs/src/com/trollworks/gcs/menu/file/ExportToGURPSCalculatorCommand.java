@@ -18,6 +18,7 @@ import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -172,7 +173,11 @@ public final class ExportToGURPSCalculatorCommand extends Command {
                 }
             }
         });
-        JOptionPane.showMessageDialog(Command.getFocusOwner(), messagePane, success ? I18n.text("Success") : I18n.text("Error"), success ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
+        if (success) {
+            StdDialog.showMessage(Command.getFocusOwner(), I18n.text("Success"), MessageType.NONE, messagePane);
+        } else {
+            StdDialog.showError(Command.getFocusOwner(), messagePane);
+        }
     }
 
     public static String get(String path) throws IOException {

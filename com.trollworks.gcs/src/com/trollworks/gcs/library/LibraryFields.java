@@ -11,13 +11,17 @@
 
 package com.trollworks.gcs.library;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.Wrapper;
+import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.Separator;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;
 
-import java.awt.Color;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,12 +29,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JSeparator;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -38,13 +38,11 @@ import javax.swing.event.DocumentListener;
 public class LibraryFields implements DocumentListener {
     private LibraryLocationsPanel mOwner;
     private LibraryType           mLibraryType;
-    private JTextField            mTitle;
-    private JTextField            mGitHubAccountName;
-    private JTextField            mRepoName;
-    private JTextField            mPath;
+    private EditorField           mTitle;
+    private EditorField           mGitHubAccountName;
+    private EditorField           mRepoName;
+    private EditorField           mPath;
     private List<JComponent>      mComps;
-    private Color                 mNormalForeground;
-    private Color                 mNormalBackground;
 
     public enum LibraryType {
         MASTER,
@@ -57,79 +55,19 @@ public class LibraryFields implements DocumentListener {
         mLibraryType = libType;
         mComps = new ArrayList<>();
 
-        addPlaceholder();
+        if (owner.getComponentCount() > 0) {
+            Separator sep = new Separator();
+            mOwner.add(sep, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(7).setTopMargin(5).setBottomMargin(5));
+            mComps.add(sep);
+        }
+
         mTitle = addLabelAndField(I18n.text("Name:"), title, 1);
         mGitHubAccountName = addLabelAndField(I18n.text("GitHub Account:"), account, 1);
         mRepoName = addLabelAndField(I18n.text("Repo:"), repo, 1);
-        addLocateButton();
-
-        addRemoveButton();
-        mPath = addLabelAndField(I18n.text("Path:"), path, 5);
-        addUseDefaultButton();
-
-        JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
-        mOwner.add(sep, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(8));
-        mComps.add(sep);
-
-        if (mLibraryType != LibraryType.EXTRA) {
-            mTitle.setEnabled(false);
-            mGitHubAccountName.setEnabled(false);
-            mRepoName.setEnabled(false);
-        }
-        mNormalForeground = mPath.getForeground();
-        mNormalBackground = mPath.getBackground();
-    }
-
-    public LibraryType getLibraryType() {
-        return mLibraryType;
-    }
-
-    public JTextField getTitleField() {
-        return mTitle;
-    }
-
-    private JTextField addLabelAndField(String title, String value, int columns) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        mOwner.add(label, new PrecisionLayoutData().setEndHorizontalAlignment());
-        JTextField field = new JTextField(value);
-        mOwner.add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(columns));
-        field.getDocument().addDocumentListener(this);
-        mComps.add(label);
-        mComps.add(field);
-        return field;
-    }
-
-    private void addRemoveButton() {
-        if (mLibraryType == LibraryType.EXTRA) {
-            JButton button = new JButton(I18n.text("Remove"));
-            button.addActionListener(e -> {
-                for (JComponent comp : mComps) {
-                    mOwner.remove(comp);
-                }
-                mOwner.getFields().remove(this);
-                contentsChanged();
-                mOwner.revalidate();
-                mOwner.repaint();
-            });
-            mOwner.add(button);
-            mComps.add(button);
-        } else {
-            addPlaceholder();
-        }
-    }
-
-    private void addPlaceholder() {
-        Wrapper wrapper = new Wrapper();
-        mOwner.add(wrapper);
-        mComps.add(wrapper);
-    }
-
-    private void addLocateButton() {
-        JButton button = new JButton(I18n.text("Locate"));
-        button.addActionListener(e -> {
-            String       path    = mPath.getText();
-            Path         current = path.isBlank() ? Settings.getInstance().getLastDir() : Paths.get(path).getParent().toAbsolutePath();
-            JFileChooser dialog  = new JFileChooser(current.toString());
+        FontAwesomeButton button = new FontAwesomeButton("\uf689", I18n.text("Locate"), () -> {
+            String       currentPath = mPath.getText();
+            Path         current     = currentPath.isBlank() ? Settings.getInstance().getLastDir() : Paths.get(currentPath).getParent().toAbsolutePath();
+            JFileChooser dialog      = new JFileChooser(current.toString());
             dialog.setDialogTitle(mTitle.getText());
             dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (dialog.showDialog(mOwner, I18n.text("Select")) == JFileChooser.APPROVE_OPTION) {
@@ -140,14 +78,20 @@ public class LibraryFields implements DocumentListener {
         });
         mOwner.add(button);
         mComps.add(button);
-    }
 
-    private void addUseDefaultButton() {
+        mPath = addLabelAndField(I18n.text("Path:"), path, 5);
         if (mLibraryType == LibraryType.EXTRA) {
-            addPlaceholder();
+            button = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
+                for (JComponent comp : mComps) {
+                    mOwner.remove(comp);
+                }
+                mOwner.getFields().remove(this);
+                contentsChanged();
+                mOwner.revalidate();
+                mOwner.repaint();
+            });
         } else {
-            JButton button = new JButton(I18n.text("Use Default"));
-            button.addActionListener(e -> {
+            button = new FontAwesomeButton("\uf011", I18n.text("Use Default"), () -> {
                 Path def;
                 switch (mLibraryType) {
                 case MASTER:
@@ -163,9 +107,34 @@ public class LibraryFields implements DocumentListener {
                 mPath.requestFocus();
                 mPath.selectAll();
             });
-            mOwner.add(button);
-            mComps.add(button);
         }
+        mOwner.add(button);
+        mComps.add(button);
+
+        if (mLibraryType != LibraryType.EXTRA) {
+            mTitle.setEnabled(false);
+            mGitHubAccountName.setEnabled(false);
+            mRepoName.setEnabled(false);
+        }
+    }
+
+    public LibraryType getLibraryType() {
+        return mLibraryType;
+    }
+
+    public EditorField getTitleField() {
+        return mTitle;
+    }
+
+    private EditorField addLabelAndField(String title, String value, int columns) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, value, null);
+        field.getDocument().addDocumentListener(this);
+        StdLabel label = new StdLabel(title, field);
+        mOwner.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+        mOwner.add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(columns));
+        mComps.add(label);
+        mComps.add(field);
+        return field;
     }
 
     public void contentsChanged() {
@@ -202,9 +171,9 @@ public class LibraryFields implements DocumentListener {
         return adjustColors(mPath, !path.isBlank() && set.add(path) && getPath() != null);
     }
 
-    private boolean adjustColors(JTextField field, boolean valid) {
-        field.setForeground(valid ? mNormalForeground : Color.BLACK);
-        field.setBackground(valid ? mNormalBackground : Color.ORANGE);
+    private static boolean adjustColors(EditorField field, boolean valid) {
+        field.setForeground(valid ? ThemeColor.ON_EDITABLE : ThemeColor.ON_WARNING);
+        field.setBackground(valid ? ThemeColor.EDITABLE : ThemeColor.WARNING);
         return !valid;
     }
 

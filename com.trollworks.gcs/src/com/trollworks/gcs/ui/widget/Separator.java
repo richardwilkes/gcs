@@ -19,20 +19,21 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.Rectangle;
-import javax.swing.JPanel;
 
-public class Separator extends JPanel {
+public class Separator extends StdPanel {
     private boolean mVertical;
 
     public Separator() {
-        setOpaque(false);
-        setBackground(ThemeColor.DIVIDER);
+        super(null, false);
     }
 
     public Separator(boolean vertical) {
+        super(null, false);
         mVertical = vertical;
-        setOpaque(false);
+    }
+
+    @Override
+    protected void setStdColors() {
         setBackground(ThemeColor.DIVIDER);
     }
 
@@ -57,9 +58,8 @@ public class Separator extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D gc     = GraphicsUtilities.prepare(g);
-        Rectangle  bounds = UIUtilities.getLocalInsetBounds(this);
+        Graphics2D gc = GraphicsUtilities.prepare(g);
         gc.setColor(getBackground());
-        gc.fill(bounds);
+        gc.fill(UIUtilities.getLocalInsetBounds(this));
     }
 }

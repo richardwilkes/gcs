@@ -259,7 +259,7 @@ public class StdDialog extends JDialog {
             label.setTruncationPolicy(StdLabel.WRAP);
             msgComp = label;
         }
-        content.add(msgComp, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        content.add(msgComp, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
         dialog.getContentPane().add(content, BorderLayout.CENTER);
         dialog.setResizable(false);
         return dialog;

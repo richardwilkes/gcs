@@ -36,7 +36,6 @@ import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 /** The detailed editor for {@link Spell}s. */
@@ -128,7 +127,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         }
         StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(panel, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this spell is based on"));
-        panel.add(new JLabel("/"));
+        panel.add(new StdLabel("/"));
         mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The difficulty of the spell"));
         if (forCharacter || forTemplate) {
             mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 4);

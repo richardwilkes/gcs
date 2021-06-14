@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -23,6 +24,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -161,21 +163,26 @@ public class StdLabel extends JComponent implements PropertyChangeListener {
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        paintComponentWithText(g, mText);
+    }
+
+    // This is exposed to allow sub-classes to temporarily override the text used.
+    protected void paintComponentWithText(Graphics g, String text) {
+        Graphics2D gc = GraphicsUtilities.prepare(g);
+        super.paintComponent(gc);
         if (mRefersTo != null && mRefersTo.getClientProperty(ERROR_KEY) != null) {
-            g.setColor(Color.RED); // TODO: Use themed error color
+            gc.setColor(Color.RED); // TODO: Use themed error color
         }
         Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
         Scale     scale  = Scale.get(this);
         Font      font   = scale.scale(getFont());
-        g.setFont(font);
+        gc.setFont(font);
         if (mIcon != null) {
-            mIcon.paintIcon(this, g, bounds.x, bounds.y + (bounds.height - scale.scale(mIcon.getIconHeight())) / 2);
+            mIcon.paintIcon(this, gc, bounds.x, bounds.y + (bounds.height - scale.scale(mIcon.getIconHeight())) / 2);
             int amt = scale.scale(mIcon.getIconWidth()) + scale.scale(GAP);
             bounds.x += amt;
             bounds.width -= amt;
         }
-        String text = mText;
         if (mTruncationPolicy != WRAP) {
             text = TextDrawing.truncateIfNecessary(font, text, bounds.width, mTruncationPolicy);
         }

@@ -30,7 +30,6 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -161,20 +160,13 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         right.add(remove);
     }
 
-    private static void addLabel(Container container, String title, String tooltip) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        label.setOpaque(false);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        container.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-    }
-
     private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
-        addLabel(container, title, tooltip);
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
+        container.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }

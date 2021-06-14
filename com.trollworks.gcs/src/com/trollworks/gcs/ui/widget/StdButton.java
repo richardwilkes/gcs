@@ -36,17 +36,16 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Path2D;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-public class StdButton extends JPanel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
+public class StdButton extends StdPanel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
     private String   mText;
     private Runnable mClickFunction;
     private boolean  mInMouseDown;
     private boolean  mPressed;
 
     public StdButton(String text, Runnable clickFunction) {
-        setOpaque(false);
+        super(null, false);
         setText(text);
         setCursor(Cursor.getDefaultCursor());
         setClickFunction(clickFunction);
@@ -81,7 +80,7 @@ public class StdButton extends JPanel implements MouseListener, MouseMotionListe
         Insets    insets = getInsets();
         Scale     scale  = Scale.get(this);
         Dimension size   = TextDrawing.getPreferredSize(scale.scale(getFont()), mText);
-        size.width += insets.left + insets.right + scale.scale(8);
+        size.width += insets.left + insets.right + scale.scale(16);
         size.height += insets.top + insets.bottom + scale.scale(4);
         return size;
     }
@@ -110,7 +109,7 @@ public class StdButton extends JPanel implements MouseListener, MouseMotionListe
         }
 
         Path2D.Double path         = new Path2D.Double();
-        double        corner       = bounds.height / 2.0;
+        double        corner       = bounds.height / 3.0;
         double        top          = bounds.y;
         double        topCorner    = bounds.y + corner;
         double        left         = bounds.x;

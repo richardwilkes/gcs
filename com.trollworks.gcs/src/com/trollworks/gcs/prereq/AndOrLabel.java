@@ -11,16 +11,14 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Graphics;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /** A label that displays the "and" or the "or" message, or nothing if it is the first one. */
-public class AndOrLabel extends JLabel {
+public class AndOrLabel extends StdLabel {
     private Prereq mOwner;
 
     /**
@@ -31,17 +29,13 @@ public class AndOrLabel extends JLabel {
     public AndOrLabel(Prereq owner) {
         super(I18n.text("and"), SwingConstants.RIGHT);
         mOwner = owner;
-        UIUtilities.setToPreferredSizeOnly(this);
     }
 
     @Override
     protected void paintComponent(Graphics gc) {
         PrereqList parent = mOwner.getParent();
         if (parent != null && parent.getChildren().get(0) != mOwner) {
-            setText(parent.requiresAll() ? I18n.text("and") : I18n.text("or"));
-        } else {
-            setText(""); //$NON-NLS-1$
+            paintComponentWithText(gc, parent.requiresAll() ? I18n.text("and") : I18n.text("or"));
         }
-        super.paintComponent(GraphicsUtilities.prepare(gc));
     }
 }
