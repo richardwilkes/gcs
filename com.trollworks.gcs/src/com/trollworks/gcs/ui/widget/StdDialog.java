@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -242,14 +243,17 @@ public class StdDialog extends JDialog {
      *                a label.
      */
     public static StdDialog prepareToShowMessage(Component comp, String title, MessageType msgType, Object msg) {
-        StdDialog dialog    = new StdDialog(comp, title);
-        String    iconValue = msgType.getText();
-        boolean   hasIcon   = !iconValue.isEmpty();
-        StdPanel  content   = new StdPanel(new PrecisionLayout().setColumns(hasIcon ? 2 : 1).setHorizontalSpacing(20).setMargins(20));
+        StdDialog dialog  = new StdDialog(comp, title);
+        StdPanel  content = new StdPanel(new BorderLayout(20, 0));
+        content.setBorder(new EmptyBorder(20));
+        String  iconValue = msgType.getText();
+        boolean hasIcon   = !iconValue.isEmpty();
         if (hasIcon) {
+            StdPanel        left = new StdPanel(new BorderLayout());
             FontAwesomeIcon icon = new FontAwesomeIcon(iconValue, ThemeFont.LABEL_PRIMARY.getFont().getSize() * 3, 0, null);
             icon.setForeground(msgType.getColor());
-            content.add(icon, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+            left.add(icon, BorderLayout.NORTH);
+            content.add(left, BorderLayout.WEST);
         }
         Component msgComp;
         if (msg instanceof Component) {
@@ -259,7 +263,7 @@ public class StdDialog extends JDialog {
             label.setTruncationPolicy(StdLabel.WRAP);
             msgComp = label;
         }
-        content.add(msgComp, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        content.add(msgComp, BorderLayout.CENTER);
         dialog.getContentPane().add(content, BorderLayout.CENTER);
         dialog.setResizable(false);
         return dialog;
