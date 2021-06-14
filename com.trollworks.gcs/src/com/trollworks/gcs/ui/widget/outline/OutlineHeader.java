@@ -44,7 +44,6 @@ public class OutlineHeader extends StdPanel implements MouseListener, MouseMotio
      */
     public OutlineHeader(Outline owner) {
         mOwner = owner;
-        setOpaque(true);
         addMouseListener(this);
         addMouseMotionListener(this);
         setAutoscrolls(true);
@@ -168,7 +167,7 @@ public class OutlineHeader extends StdPanel implements MouseListener, MouseMotio
         Insets    insets       = getInsets();
         Rectangle bounds       = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         boolean   drawDividers = mOwner.shouldDrawColumnDividers();
-        gc.setColor(mTopDividerColor);
+        gc.setColor(getTopDividerColor());
         gc.fillRect(clip.x, bounds.y + bounds.height - one, clip.width, one);
         List<Column> columns    = mOwner.getModel().getColumns();
         int          count      = columns.size();

@@ -16,11 +16,11 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.ContentPanel;
-import com.trollworks.gcs.ui.widget.WidgetHelpers;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -82,7 +82,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         ContentPanel center = new ContentPanel(new PrecisionLayout(), false);
         add(center, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        ContentPanel wrapper = new ContentPanel(new PrecisionLayout().setColumns(8).setMargins(0),false);
+        ContentPanel wrapper = new ContentPanel(new PrecisionLayout().setColumns(8).setMargins(0), false);
         wrapper.setOpaque(false);
         mStateField = addField(wrapper,
                 I18n.text("State"),
@@ -132,7 +132,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         ThresholdOps[] opValues = ThresholdOps.values();
-        wrapper = new ContentPanel(new PrecisionLayout().setColumns(opValues.length - 1).setMargins(0),false);
+        wrapper = new ContentPanel(new PrecisionLayout().setColumns(opValues.length - 1).setMargins(0), false);
         for (ThresholdOps op : opValues) {
             if (op != ThresholdOps.UNKNOWN) {
                 addCheckBox(wrapper, op);
@@ -147,7 +147,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
                 mThreshold.getExplanation());
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
-        ContentPanel right = new ContentPanel(new PrecisionLayout(),false);
+        ContentPanel right = new ContentPanel(new PrecisionLayout(), false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
@@ -180,8 +180,8 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
     }
 
     private MultiLineTextField addTextArea(Container container, String title, String tooltip, String text) {
-        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         MultiLineTextField area = new MultiLineTextField(text, tooltip, this);
+        container.add(new StdLabel(title, area), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         container.add(area, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return area;
     }

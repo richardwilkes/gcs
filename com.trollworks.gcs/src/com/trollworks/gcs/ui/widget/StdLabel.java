@@ -73,13 +73,13 @@ public class StdLabel extends JComponent implements PropertyChangeListener {
     }
 
     /**
-     * Create a new label.
+     * Create a new right-aligned label that refers to another component.
      *
      * @param text     The text to use.
      * @param refersTo The {@link JComponent} to pair with.
      */
     public StdLabel(String text, JComponent refersTo) {
-        this(text);
+        this(text, SwingConstants.RIGHT);
         setRefersTo(refersTo);
     }
 

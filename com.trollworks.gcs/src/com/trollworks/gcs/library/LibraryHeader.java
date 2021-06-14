@@ -16,17 +16,17 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 
 import java.awt.BorderLayout;
-import javax.swing.JPanel;
 
-public class LibraryHeader extends JPanel implements ScaleRoot {
+public class LibraryHeader extends StdPanel implements ScaleRoot {
     private Scale mScale;
 
     public LibraryHeader(OutlineHeader header) {
+        super(new BorderLayout());
         header.setBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 0, 1));
-        setLayout(new BorderLayout());
         add(header);
         mScale = Settings.getInstance().getInitialUIScale().getScale();
     }

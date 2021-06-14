@@ -72,8 +72,8 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(2), false);
         mFontPanels = new ArrayList<>();
         for (ThemeFont font : ThemeFont.ALL) {
-            wrapper.add(new StdLabel(font.toString(), SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
             FontTracker tracker = new FontTracker(font);
+            wrapper.add(new StdLabel(font.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment());
             wrapper.add(tracker);
             mFontPanels.add(tracker);
         }
@@ -133,9 +133,9 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
     }
 
     private void addColorTracker(Container parent, ThemeColor color, int leftMargin) {
-        parent.add(new StdLabel(color.toString(), SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(leftMargin));
         ColorTracker tracker = new ColorTracker(color);
         mColorWells.add(tracker);
+        parent.add(new StdLabel(color.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(leftMargin));
         parent.add(tracker, new PrecisionLayoutData().setLeftMargin(4));
     }
 

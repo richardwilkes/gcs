@@ -106,10 +106,10 @@ public final class Namer extends StdPanel implements DocumentListener {
         List<String> list = new ArrayList<>(set);
         Collections.sort(list);
         for (String name : list) {
-            add(new StdLabel(name, SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
             EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, "", null);
             field.setName(name);
             field.getDocument().addDocumentListener(this);
+            add(new StdLabel(name, field), new PrecisionLayoutData().setFillHorizontalAlignment());
             add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMinimumWidth(200));
             mFields.add(field);
         }

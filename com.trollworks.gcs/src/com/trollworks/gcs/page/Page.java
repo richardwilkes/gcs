@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.PrintProxy;
 
 import java.awt.BorderLayout;
@@ -24,10 +25,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.print.PageFormat;
-import javax.swing.JPanel;
 
 /** A printer page. */
-public class Page extends JPanel {
+public class Page extends StdPanel {
     private PageOwner mOwner;
 
     /**
@@ -38,8 +38,6 @@ public class Page extends JPanel {
     public Page(PageOwner owner) {
         super(new BorderLayout());
         mOwner = owner;
-        setOpaque(true);
-        setBackground(ThemeColor.PAGE);
         PageFormat fmt    = mOwner.getPageSettings().createPageFormat();
         Insets     insets = mOwner.getPageAdornmentsInsets(this);
         setBorder(new EmptyBorder(insets.top + (int) fmt.getImageableY(), insets.left + (int) fmt.getImageableX(),
@@ -49,6 +47,12 @@ public class Page extends JPanel {
         Dimension pageSize = new Dimension(scale.scale((int) fmt.getWidth()), scale.scale((int) fmt.getHeight()));
         UIUtilities.setOnlySize(this, pageSize);
         setSize(pageSize);
+    }
+
+    @Override
+    protected void setStdColors() {
+        setBackground(ThemeColor.PAGE);
+        setForeground(ThemeColor.ON_PAGE);
     }
 
     @Override

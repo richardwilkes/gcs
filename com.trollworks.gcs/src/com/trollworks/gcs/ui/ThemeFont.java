@@ -32,6 +32,8 @@ public final class ThemeFont {
     public static final String ROBOTO               = "Roboto";
     /** The name of the Roboto Black font. */
     public static final String ROBOTO_BLACK         = "Roboto Black";
+    /** The name of the Roboto Medium font. */
+    public static final String ROBOTO_MEDIUM        = "Roboto Medium";
     /** The name of the Font Awesome Brands font. */
     public static final String FONT_AWESOME_BRANDS  = "Font Awesome 5 Brands Regular";
     /** The name of the Font Awesome Regular font. */
@@ -86,7 +88,7 @@ public final class ThemeFont {
             }
         }
         BUTTON = new ThemeFont("button", I18n.text("Button"), new Font(ROBOTO_BLACK, Font.PLAIN, 13));
-        HEADER = new ThemeFont("header", I18n.text("Header"), new Font(ROBOTO_BLACK, Font.PLAIN, 15));
+        HEADER = new ThemeFont("header", I18n.text("Header"), new Font(ROBOTO_MEDIUM, Font.PLAIN, 13));
         LABEL_PRIMARY = new ThemeFont("label.primary", I18n.text("Primary Labels"), new Font(ROBOTO, Font.PLAIN, 13));
         LABEL_SECONDARY = new ThemeFont("label.secondary", I18n.text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 11));
         FIELD_PRIMARY = new ThemeFont("field.primary", I18n.text("Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 13));

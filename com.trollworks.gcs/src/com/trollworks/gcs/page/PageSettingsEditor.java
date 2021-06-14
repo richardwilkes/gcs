@@ -12,24 +12,24 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 
-import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
-public class PageSettingsEditor extends JPanel {
+public class PageSettingsEditor extends StdPanel {
     private static final Fixed6                     HUNDRED = new Fixed6(100);
     private              PageSettings               mSettings;
     private              Runnable                   mAdjustCallback;
@@ -47,10 +47,9 @@ public class PageSettingsEditor extends JPanel {
     }
 
     public PageSettingsEditor(PageSettings settings, Runnable adjustCallback, ResetPageSettings resetCallback) {
-        super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0));
-        setOpaque(false);
-        JLabel header = new JLabel(I18n.text("Page Settings"));
-        header.setFont(header.getFont().deriveFont(Font.BOLD));
+        super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0), false);
+        StdLabel header = new StdLabel(I18n.text("Page Settings"));
+        header.setThemeFont(ThemeFont.HEADER);
         add(header, new PrecisionLayoutData().setHorizontalSpan(4));
         add(new JSeparator(SwingConstants.HORIZONTAL), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
         mSettings = settings;
@@ -88,28 +87,22 @@ public class PageSettingsEditor extends JPanel {
         return newUnits.convert(oldUnits, value).mul(HUNDRED).round().div(HUNDRED);
     }
 
-    private void addLabel(String title) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        label.setOpaque(false);
-        add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-    }
-
     private EditorField addField(String title, Object value, Object protoValue, PropertyChangeListener listener) {
-        addLabel(title);
         EditorField field = new EditorField(FieldFactory.LENGTH, listener, SwingConstants.LEFT, value, protoValue, null);
+        add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
     private <T> JComboBox<T> addCombo(String title, T[] values, T selection, ActionListener listener) {
-        if (title != null) {
-            addLabel(title);
-        }
         JComboBox<T> combo = new JComboBox<>(values);
         combo.setOpaque(false);
         combo.setSelectedItem(selection);
         combo.addActionListener(listener);
         combo.setMaximumRowCount(combo.getItemCount());
+        if (title != null) {
+            add(new StdLabel(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        }
         add(combo);
         return combo;
     }

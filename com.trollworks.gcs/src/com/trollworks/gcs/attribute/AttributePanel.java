@@ -16,10 +16,10 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.ContentPanel;
-import com.trollworks.gcs.ui.widget.WidgetHelpers;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.text.Text;
@@ -46,7 +46,7 @@ public class AttributePanel extends ContentPanel {
     private   ThresholdListPanel        mThresholdListPanel;
 
     public AttributePanel(Map<String, AttributeDef> attributes, AttributeDef attrDef, Runnable adjustCallback) {
-        super(new PrecisionLayout().setColumns(3).setMargins(0),false);
+        super(new PrecisionLayout().setColumns(3).setMargins(0), false);
         mAttributes = attributes;
         mAttrDef = attrDef;
         mAdjustCallback = adjustCallback;
@@ -78,10 +78,10 @@ public class AttributePanel extends ContentPanel {
         mAddThresholdButton = new FontAwesomeButton("\uf055", I18n.text("Add Pool Threshold"), this::addThreshold);
         left.add(mAddThresholdButton);
 
-        mCenter = new ContentPanel(new PrecisionLayout(),false);
+        mCenter = new ContentPanel(new PrecisionLayout(), false);
         add(mCenter, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
-        ContentPanel wrapper = new ContentPanel(new PrecisionLayout().setColumns(6).setMargins(0),false);
+        ContentPanel wrapper = new ContentPanel(new PrecisionLayout().setColumns(6).setMargins(0), false);
         mIDField = addField(wrapper,
                 I18n.text("ID"),
                 I18n.text("A unique ID for the attribute"),
@@ -127,7 +127,7 @@ public class AttributePanel extends ContentPanel {
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
-        wrapper = new ContentPanel(new PrecisionLayout().setColumns(7).setMargins(0),false);
+        wrapper = new ContentPanel(new PrecisionLayout().setColumns(7).setMargins(0), false);
         addAttributeTypeCombo(wrapper,
                 attrDef.getType(),
                 (evt) -> {
@@ -185,7 +185,7 @@ public class AttributePanel extends ContentPanel {
             mCenter.add(mThresholdListPanel, new PrecisionLayoutData().setHorizontalSpan(7).setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         }
 
-        ContentPanel right = new ContentPanel(new PrecisionLayout(),false);
+        ContentPanel right = new ContentPanel(new PrecisionLayout(), false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
             getParent().remove(this);
@@ -196,12 +196,12 @@ public class AttributePanel extends ContentPanel {
     }
 
     private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
-        container.add(WidgetHelpers.createLabel(title, tooltip), new PrecisionLayoutData().setFillHorizontalAlignment());
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
+        container.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }
