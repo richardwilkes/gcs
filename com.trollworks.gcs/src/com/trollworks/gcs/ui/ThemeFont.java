@@ -41,7 +41,10 @@ public final class ThemeFont {
 
     public static final List<ThemeFont> ALL = new ArrayList<>();
 
+    public static final ThemeFont BUTTON;
+    public static final ThemeFont HEADER;
     public static final ThemeFont LABEL_PRIMARY;
+    public static final ThemeFont LABEL_SECONDARY;
     public static final ThemeFont FIELD_PRIMARY;
     public static final ThemeFont FIELD_SECONDARY;
     public static final ThemeFont PAGE_LABEL_PRIMARY;
@@ -82,7 +85,10 @@ public final class ThemeFont {
                 Log.error("unable to load font: " + embeddedFont);
             }
         }
+        BUTTON = new ThemeFont("button", I18n.text("Button"), new Font(ROBOTO_BLACK, Font.PLAIN, 13));
+        HEADER = new ThemeFont("header", I18n.text("Header"), new Font(ROBOTO_BLACK, Font.PLAIN, 15));
         LABEL_PRIMARY = new ThemeFont("label.primary", I18n.text("Primary Labels"), new Font(ROBOTO, Font.PLAIN, 13));
+        LABEL_SECONDARY = new ThemeFont("label.secondary", I18n.text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 11));
         FIELD_PRIMARY = new ThemeFont("field.primary", I18n.text("Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 13));
         FIELD_SECONDARY = new ThemeFont("field.secondary", I18n.text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 11));
         PAGE_LABEL_PRIMARY = new ThemeFont("page.label.primary", I18n.text("Page Primary Labels"), new Font(ROBOTO, Font.PLAIN, 9));

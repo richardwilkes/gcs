@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -23,9 +22,19 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 public class StdDialog extends JDialog {
     public static final int       CLOSED = 0;
@@ -34,6 +43,8 @@ public class StdDialog extends JDialog {
     public static final int       MARGIN = 10;
     private             Component mOwner;
     private             StdPanel  mButtons;
+    private             StdButton mOKButton;
+    private             StdButton mCancelButton;
     private             int       mResult;
 
     public StdDialog(Component owner, String title) {
@@ -41,14 +52,86 @@ public class StdDialog extends JDialog {
         setResizable(true);
         StdPanel content = new StdPanel(new BorderLayout());
         StdPanel buttons = new StdPanel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
-        mButtons = new StdPanel(new PrecisionLayout().setEqualColumns(true).setMargins(0));
+        mButtons = new StdPanel(new PrecisionLayout().setEqualColumns(true).setMargins(0).setHorizontalSpacing(10));
         buttons.add(mButtons);
         content.add(buttons, BorderLayout.SOUTH);
         setContentPane(content);
         mOwner = owner;
+        installActions();
+    }
+
+    public StdButton getOKButton() {
+        return mOKButton;
+    }
+
+    public StdButton getCancelButton() {
+        return mCancelButton;
+    }
+
+    private void installActions() {
+        final String pressOKKey     = "press_ok";
+        final String pressCancelKey = "press_cancel";
+        ActionMap    actionMap      = getRootPane().getActionMap();
+        actionMap.put(pressOKKey, new KeyAction(this::getOKButton));
+        actionMap.put(pressCancelKey, new KeyAction(this::getCancelButton));
+        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(KeyStroke.getKeyStroke("ENTER"), pressOKKey);
+        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), pressCancelKey);
+    }
+
+    private interface KeyButton {
+        StdButton getButton();
+    }
+
+    private static class KeyAction extends AbstractAction {
+        private KeyButton mAccessor;
+
+        KeyAction(KeyButton accessor) {
+            mAccessor = accessor;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            StdButton button = mAccessor.getButton();
+            if (button != null && SwingUtilities.getRootPane(button) == event.getSource()) {
+                button.click();
+            }
+        }
+
+        @Override
+        public boolean accept(Object sender) {
+            if (sender instanceof JRootPane) {
+                StdButton button = mAccessor.getButton();
+                return button != null && button.isEnabled() && button.isShowing();
+            }
+            return true;
+        }
     }
 
     public void presentToUser() {
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent event) {
+                transferFocusDownCycle();
+            }
+        });
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent event) {
+                if (event.getModifiersEx() == 0) {
+                    char ch = event.getKeyChar();
+                    if (ch == 27) {
+                        if (mCancelButton != null && mCancelButton.isEnabled()) {
+                            mCancelButton.click();
+                        }
+                    } else if (ch == '\n') {
+                        if (mOKButton != null && mOKButton.isEnabled()) {
+                            mOKButton.click();
+                        }
+                    }
+                }
+            }
+        });
         WindowSizeEnforcer.monitor(this);
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         if (focusOwner == null) {
@@ -70,41 +153,46 @@ public class StdDialog extends JDialog {
         return mButtons;
     }
 
-    public JButton addButton(String title, int value) {
-        return addButton(title, (evt) -> {
+    public StdButton addButton(String title, int value) {
+        StdButton button = addButton(title, () -> {
             mResult = value;
             setVisible(false);
         });
+        if (value == OK) {
+            mOKButton = button;
+        } else if (value == CANCEL) {
+            mCancelButton = button;
+        }
+        return button;
     }
 
-    public JButton addButton(String title, ActionListener listener) {
-        JButton button = new JButton(title);
-        button.addActionListener(listener);
-        mButtons.add(button, new PrecisionLayoutData().setFillHorizontalAlignment());
+    public StdButton addButton(String title, Runnable clickHandler) {
+        StdButton button = new StdButton(title, clickHandler);
+        mButtons.add(button, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(60));
         ((PrecisionLayout) mButtons.getLayout()).setColumns(mButtons.getComponentCount());
         return button;
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public JButton addCancelRemainingButton() {
+    public StdButton addCancelRemainingButton() {
         return addButton(I18n.text("Cancel Remaining"), CLOSED);
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public JButton addCancelButton() {
+    public StdButton addCancelButton() {
         return addButton(I18n.text("Cancel"), CANCEL);
     }
 
-    public JButton addApplyButton() {
+    public StdButton addApplyButton() {
         return addButton(I18n.text("Apply"), OK);
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public JButton addOKButton() {
+    public StdButton addOKButton() {
         return addButton(I18n.text("OK"), OK);
     }
 
-    public JButton addYesButton() {
+    public StdButton addYesButton() {
         return addButton(I18n.text("Yes"), OK);
     }
 
@@ -158,12 +246,10 @@ public class StdDialog extends JDialog {
         String    iconValue = msgType.getText();
         boolean   hasIcon   = !iconValue.isEmpty();
         StdPanel  content   = new StdPanel(new PrecisionLayout().setColumns(hasIcon ? 2 : 1).setHorizontalSpacing(20).setMargins(20));
-        int       offset    = 0;
         if (hasIcon) {
             FontAwesomeIcon icon = new FontAwesomeIcon(iconValue, ThemeFont.LABEL_PRIMARY.getFont().getSize() * 3, 0, null);
             icon.setForeground(msgType.getColor());
             content.add(icon, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-            offset = (icon.getPreferredSize().height - TextDrawing.getFontHeight(ThemeFont.LABEL_PRIMARY.getFont())) / 2;
         }
         Component msgComp;
         if (msg instanceof Component) {
@@ -173,7 +259,7 @@ public class StdDialog extends JDialog {
             label.setTruncationPolicy(StdLabel.WRAP);
             msgComp = label;
         }
-        content.add(msgComp, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(offset));
+        content.add(msgComp, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
         dialog.getContentPane().add(content, BorderLayout.CENTER);
         dialog.setResizable(false);
         return dialog;

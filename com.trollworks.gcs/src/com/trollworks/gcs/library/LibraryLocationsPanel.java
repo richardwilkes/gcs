@@ -15,6 +15,7 @@ import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdButton;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
@@ -28,13 +29,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 public final class LibraryLocationsPanel extends StdPanel {
     private List<LibraryFields> mFields;
-    private JButton             mApplyButton;
+    private StdButton           mApplyButton;
 
     public static void showDialog() {
         // Close all documents
@@ -58,7 +58,7 @@ public final class LibraryLocationsPanel extends StdPanel {
         LibraryLocationsPanel panel    = new LibraryLocationsPanel();
         StdScrollPanel        scroller = new StdScrollPanel(panel);
         StdDialog             dialog   = StdDialog.prepareToShowMessage(Workspace.get(), ChangeLibraryLocationsCommand.INSTANCE.getTitle(), MessageType.QUESTION, scroller);
-        dialog.addButton(I18n.text("Add"), (evt) -> panel.addLibraryRow());
+        dialog.addButton(I18n.text("Add"), () -> panel.addLibraryRow());
         dialog.addCancelButton();
         panel.mApplyButton = dialog.addApplyButton();
         panel.mFields.get(0).contentsChanged();

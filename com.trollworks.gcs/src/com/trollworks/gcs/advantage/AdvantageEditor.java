@@ -46,8 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -121,7 +119,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
     }
 
-    private JPanel createTopSection() {
+    private StdPanel createTopSection() {
         StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
         addPrimaryCommonFields(panel);
         if (mRow.canHaveChildren()) {
@@ -236,7 +234,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void addTypeFields(Container parent) {
-        JLabel label = new JLabel(I18n.text("Type"), SwingConstants.RIGHT);
+        StdLabel label = new StdLabel(I18n.text("Type"), SwingConstants.RIGHT);
         label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The type of advantage this is")));
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
 

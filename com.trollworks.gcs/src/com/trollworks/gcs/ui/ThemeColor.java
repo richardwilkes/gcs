@@ -54,6 +54,15 @@ public final class ThemeColor extends Color {
     public static final ThemeColor PAGE           = new ThemeColor("page", I18n.text("Page"), new Color(255, 255, 255));
     public static final ThemeColor ON_PAGE        = new ThemeColor("on_page", I18n.text("On Page"), new Color(0, 0, 0));
 
+    public static final ThemeColor BUTTON             = new ThemeColor("button.background", I18n.text("Button"), new Color(248, 248, 248));
+    public static final ThemeColor ON_BUTTON          = new ThemeColor("on_button.background", I18n.text("On Button"), new Color(0, 0, 0));
+    public static final ThemeColor ON_DISABLED_BUTTON = new ThemeColor("on_button.disabled", I18n.text("On Disabled Button"), new Color(192, 192, 192));
+    public static final ThemeColor FOCUS_BUTTON       = new ThemeColor("button.focus", I18n.text("Focus Button"), new Color(110, 146, 189));
+    public static final ThemeColor ON_FOCUS_BUTTON    = new ThemeColor("on_button.focus", I18n.text("On Focus Button"), new Color(0, 0, 0));
+    public static final ThemeColor PRESSED_BUTTON     = new ThemeColor("button.pressed", I18n.text("Pressed Button"), new Color(0, 64, 96));
+    public static final ThemeColor ON_PRESSED_BUTTON  = new ThemeColor("on_button.pressed", I18n.text("On Pressed Button"), new Color(255, 255, 255));
+    public static final ThemeColor BUTTON_BORDER      = new ThemeColor("button.border", I18n.text("Button Border"), new Color(96, 96, 96));
+
     public static final ThemeColor ICON_BUTTON          = new ThemeColor("icon_button", I18n.text("Icon Button"), new Color(0, 0, 0));
     public static final ThemeColor DISABLED_ICON_BUTTON = new ThemeColor("disabled_icon_button", I18n.text("Disabled Icon Button"), new Color(192, 192, 192));
     public static final ThemeColor ROLLOVER_ICON_BUTTON = new ThemeColor("rollover_icon_button", I18n.text("Rollover Icon Button"), new Color(54, 137, 131));

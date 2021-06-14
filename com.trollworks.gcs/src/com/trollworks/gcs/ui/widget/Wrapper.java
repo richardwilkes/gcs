@@ -16,16 +16,15 @@ import com.trollworks.gcs.ui.scale.Scale;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
-import javax.swing.JPanel;
 
 /** A wrapper panel which is initially transparent. */
-public class Wrapper extends JPanel {
+public class Wrapper extends StdPanel {
     private int mWidth  = -1;
     private int mHeight = -1;
 
     /** Creates a new Wrapper. */
     public Wrapper() {
-        setOpaque(false);
+        super(null, false);
     }
 
     /**
@@ -34,8 +33,7 @@ public class Wrapper extends JPanel {
      * @param layout The layout to use.
      */
     public Wrapper(LayoutManager2 layout) {
-        super(layout);
-        setOpaque(false);
+        super(layout, false);
     }
 
     public void setOnlySize(int width, int height) {
