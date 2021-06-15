@@ -52,7 +52,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.JEditorPane;
-import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 
 public final class ExportToGURPSCalculatorCommand extends Command {
@@ -67,6 +66,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
 
     @Override
     public void adjust() {
+        setEnabled(Command.getTarget(SheetDockable.class) != null);
     }
 
     @Override
@@ -78,77 +78,99 @@ public final class ExportToGURPSCalculatorCommand extends Command {
         if (dockable != null) {
             CharacterSheet sheet     = dockable.getSheet();
             GURPSCharacter character = sheet.getCharacter();
+            String         key       = Settings.getInstance().getGURPSCalculatorKey();
             try {
-                String key = Settings.getInstance().getGURPSCalculatorKey();
                 if ("true".equals(get(String.format("api/GetCharacterExists/%s/%s", character.getID(), key)))) {
-                    String cancel = I18n.text("Cancel");
-                    switch (JOptionPane.showOptionDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(), I18n.text("This character already exists in GURPS Calculator.\nWould you like to replace it?\n\nIf you choose 'Create New', you should save your\ncharacter afterwards."), I18n.text("Character Exists"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new Object[]{I18n.text("Replace"), I18n.text("Create New"), cancel}, cancel)) {
-                    case JOptionPane.NO_OPTION:
+                    StdDialog dialog = StdDialog.prepareToShowMessage(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(),
+                            I18n.text("Character already exists"), MessageType.WARNING,
+                            I18n.text("""
+                                    This character already exists in GURPS Calculator.
+                                    Would you like to replace it?
+
+                                    If you choose 'Create New', you should save your
+                                    character afterwards."""));
+                    dialog.addButton(I18n.text("Replace"), (btn) -> {
+                        export(dockable);
+                        dialog.setVisible(false);
+                    });
+                    dialog.addButton(I18n.text("Create New"), (btn) -> {
                         character.generateNewID();
                         character.setModified(true);
-                        break;
-                    case JOptionPane.CANCEL_OPTION:
-                        return;
-                    default:
-                        break;
-                    }
-                }
-                File templateFile = File.createTempFile("gcalcTemplate", ".html");
-                try {
-                    try (PrintWriter out = new PrintWriter(templateFile, StandardCharsets.UTF_8)) {
-                        out.print(get("api/GetOutputTemplate"));
-                    }
-                    File outputFile = File.createTempFile("gcalcOutput", ".html");
-                    try {
-                        if (new TextTemplate(sheet).export(outputFile.toPath(), templateFile.toPath())) {
-                            String result = null;
-                            try (Scanner scanner = new Scanner(outputFile, StandardCharsets.UTF_8)) {
-                                result = scanner.useDelimiter("\\A").next();
-                            } catch (FileNotFoundException exception) {
-                                Log.error(exception);
-                            }
-                            UUID   id   = character.getID();
-                            String path = String.format("api/SaveCharacter/%s/%s", id, key);
-                            result = post(path, result);
-                            if (!result.isEmpty()) {
-                                throw new IOException("Bad response from the web server for template write");
-                            }
-                            File image = File.createTempFile("gcalcImage", ".png");
-                            try {
-                                ImageIO.write(character.getProfile().getPortrait().getRetina(), "png", image);
-                                path = String.format("api/SaveCharacterImage/%s/%s", id, key);
-                                result = post(path, Files.readAllBytes(image.toPath()));
-                                if (!result.isEmpty()) {
-                                    throw new IOException("Bad response from the web server for image write");
-                                }
-                            } finally {
-                                image.delete();
-                            }
-                            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                                try (JsonWriter w = new JsonWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), "\t")) {
-                                    character.save(w, SaveType.NORMAL, false);
-                                }
-                                path = String.format("api/SaveCharacterRawFileGCS/%s/%s", id, key);
-                                result = post(path, out.toByteArray());
-                                if (!result.isEmpty()) {
-                                    throw new IOException("Bad response from the web server for GCS file write");
-                                }
-                            }
-                            dockable.recordQuickExport(new QuickExport());
-                            showResult(true);
-                        } else {
-                            showResult(false);
-                        }
-                    } finally {
-                        outputFile.delete();
-                    }
-                } finally {
-                    templateFile.delete();
+                        export(dockable);
+                        dialog.setVisible(false);
+                    });
+                    dialog.addCancelButton();
+                    dialog.presentToUser();
+                } else {
+                    export(dockable);
                 }
             } catch (Exception exception) {
                 Log.error(exception);
                 showResult(false);
             }
+        }
+    }
+
+    private static void export(SheetDockable dockable) {
+        CharacterSheet sheet = dockable.getSheet();
+        try {
+            File templateFile = File.createTempFile("gcalcTemplate", ".html");
+            try {
+                try (PrintWriter out = new PrintWriter(templateFile, StandardCharsets.UTF_8)) {
+                    out.print(get("api/GetOutputTemplate"));
+                }
+                File outputFile = File.createTempFile("gcalcOutput", ".html");
+                try {
+                    if (new TextTemplate(sheet).export(outputFile.toPath(), templateFile.toPath())) {
+                        String result = null;
+                        try (Scanner scanner = new Scanner(outputFile, StandardCharsets.UTF_8)) {
+                            result = scanner.useDelimiter("\\A").next();
+                        } catch (FileNotFoundException exception) {
+                            Log.error(exception);
+                        }
+                        GURPSCharacter character = sheet.getCharacter();
+                        UUID           id        = character.getID();
+                        String         key       = Settings.getInstance().getGURPSCalculatorKey();
+                        String         path      = String.format("api/SaveCharacter/%s/%s", id, key);
+                        result = post(path, result);
+                        if (!result.isEmpty()) {
+                            throw new IOException("Bad response from the web server for template write");
+                        }
+                        File image = File.createTempFile("gcalcImage", ".png");
+                        try {
+                            ImageIO.write(character.getProfile().getPortrait().getRetina(), "png", image);
+                            path = String.format("api/SaveCharacterImage/%s/%s", id, key);
+                            result = post(path, Files.readAllBytes(image.toPath()));
+                            if (!result.isEmpty()) {
+                                throw new IOException("Bad response from the web server for image write");
+                            }
+                        } finally {
+                            image.delete();
+                        }
+                        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                            try (JsonWriter w = new JsonWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), "\t")) {
+                                character.save(w, SaveType.NORMAL, false);
+                            }
+                            path = String.format("api/SaveCharacterRawFileGCS/%s/%s", id, key);
+                            result = post(path, out.toByteArray());
+                            if (!result.isEmpty()) {
+                                throw new IOException("Bad response from the web server for GCS file write");
+                            }
+                        }
+                        dockable.recordQuickExport(new QuickExport());
+                        showResult(true);
+                    } else {
+                        showResult(false);
+                    }
+                } finally {
+                    outputFile.delete();
+                }
+            } finally {
+                templateFile.delete();
+            }
+        } catch (Exception exception) {
+            Log.error(exception);
+            showResult(false);
         }
     }
 
@@ -162,6 +184,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
         Color       color       = ThemeColor.BACKGROUND;
         JEditorPane messagePane = new JEditorPane("text/html", "<html><body style='font-family:" + font.getFamily() + ";font-weight:" + (font.isBold() ? "bold" : "normal") + ";font-size:" + font.getSize() + "pt;background-color: rgb(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ");'>" + message + "</body></html>");
         messagePane.setEditable(false);
+        messagePane.setFocusable(false);
         messagePane.setBorder(null);
         messagePane.addHyperlinkListener(event -> {
             if (Desktop.isDesktopSupported() && event.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {

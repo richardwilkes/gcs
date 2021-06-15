@@ -35,7 +35,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.font.TextAttribute;
 import java.awt.geom.Path2D;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.SwingConstants;
 
 public class StdButton extends StdPanel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
@@ -106,22 +109,15 @@ public class StdButton extends StdPanel implements MouseListener, MouseMotionLis
 
     @Override
     protected void paintComponent(Graphics g) {
-        Rectangle bounds     = UIUtilities.getLocalInsetBounds(this);
-        boolean   focusOwner = isFocusOwner();
-        boolean   enabled    = isEnabled();
+        Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
         Color     color;
         Color     onColor;
         if (mPressed) {
             color = ThemeColor.PRESSED_BUTTON;
             onColor = ThemeColor.ON_PRESSED_BUTTON;
-        } else if (enabled) {
-            if (focusOwner) {
-                color = ThemeColor.FOCUS_BUTTON;
-                onColor = ThemeColor.ON_FOCUS_BUTTON;
-            } else {
-                color = ThemeColor.BUTTON;
-                onColor = ThemeColor.ON_BUTTON;
-            }
+        } else if (isEnabled()) {
+            color = ThemeColor.BUTTON;
+            onColor = ThemeColor.ON_BUTTON;
         } else {
             color = ThemeColor.BUTTON;
             onColor = ThemeColor.ON_DISABLED_BUTTON;
@@ -154,6 +150,11 @@ public class StdButton extends StdPanel implements MouseListener, MouseMotionLis
 
         Scale scale = Scale.get(this);
         Font  font  = scale.scale(getFont());
+        if (isFocusOwner()) {
+            Map<TextAttribute, Integer> attributes = new HashMap<>();
+            attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_TWO_PIXEL);
+            font = font.deriveFont(attributes);
+        }
         gc.setFont(font);
         gc.setColor(onColor);
         Rectangle textBounds = new Rectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 2);

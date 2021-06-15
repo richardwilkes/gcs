@@ -35,6 +35,7 @@ public final class ExportToPNGCommand extends Command {
 
     @Override
     public void adjust() {
+        setEnabled(Command.getTarget(SheetDockable.class) != null);
     }
 
     @Override

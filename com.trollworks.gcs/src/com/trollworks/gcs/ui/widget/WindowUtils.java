@@ -19,7 +19,6 @@ import com.trollworks.gcs.utility.Platform;
 
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
@@ -50,7 +49,7 @@ public final class WindowUtils {
             if (comp == null) {
                 return JOptionPane.getRootFrame();
             }
-            if (comp instanceof Frame || comp instanceof Dialog) {
+            if (comp instanceof Window) {
                 return (Window) comp;
             }
             comp = comp.getParent();

@@ -15,6 +15,7 @@ import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.menu.file.QuitCommand;
 import com.trollworks.gcs.menu.file.SaveCommand;
+import com.trollworks.gcs.menu.file.SaveResult;
 import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.settings.MenuKeySettingsWindow;
 import com.trollworks.gcs.settings.Settings;
@@ -136,7 +137,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         if (!hasOwnedWindowsShowing(this)) {
             List<Saveable> saveables = new ArrayList<>();
             collectSaveables(this, saveables);
-            if (SaveCommand.attemptSave(saveables)) {
+            if (SaveCommand.attemptSave(saveables) != SaveResult.CANCEL) {
                 dispose();
             }
         }

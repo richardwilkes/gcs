@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.StdButton;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
@@ -46,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextArea;
@@ -79,7 +79,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
     private              JComboBox<DisplayOption>       mNotesDisplayCombo;
     private              JTextArea                      mBlockLayoutField;
     private              PageSettingsEditor             mPageSettingsEditor;
-    private              JButton                        mResetButton;
+    private              StdButton                      mResetButton;
     private              boolean                        mUpdatePending;
 
     /** Displays the sheet settings window. */
@@ -175,8 +175,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
 
     private void addResetPanel() {
         StdPanel panel = new StdPanel(new FlowLayout(FlowLayout.CENTER));
-        mResetButton = new JButton(mCharacter == null ? I18n.text("Reset to Factory Settings") : I18n.text("Reset to Defaults"));
-        mResetButton.addActionListener(this);
+        mResetButton = new StdButton(mCharacter == null ? I18n.text("Reset to Factory Settings") : I18n.text("Reset to Defaults"), (btn) -> reset());
         panel.add(mResetButton);
         getContentPane().add(panel, BorderLayout.SOUTH);
     }
@@ -278,8 +277,6 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
             mSheetSettings.setModifiersDisplay((DisplayOption) mModifiersDisplayCombo.getSelectedItem());
         } else if (source == mNotesDisplayCombo) {
             mSheetSettings.setNotesDisplay((DisplayOption) mNotesDisplayCombo.getSelectedItem());
-        } else if (source == mResetButton) {
-            reset();
         }
         adjustResetButton();
     }
@@ -305,6 +302,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mNotesDisplayCombo.setSelectedItem(defaults.notesDisplay());
         mBlockLayoutField.setText(Settings.linesToString(defaults.blockLayout()));
         mPageSettingsEditor.reset();
+        adjustResetButton();
     }
 
     @Override

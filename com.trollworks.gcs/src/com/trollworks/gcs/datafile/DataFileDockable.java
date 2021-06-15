@@ -14,6 +14,7 @@ package com.trollworks.gcs.datafile;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.SaveCommand;
+import com.trollworks.gcs.menu.file.SaveResult;
 import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -116,7 +117,7 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
 
     @Override
     public boolean attemptClose() {
-        if (SaveCommand.attemptSave(this)) {
+        if (SaveCommand.attemptSave(this) != SaveResult.CANCEL) {
             getDockContainer().close(this);
             return true;
         }

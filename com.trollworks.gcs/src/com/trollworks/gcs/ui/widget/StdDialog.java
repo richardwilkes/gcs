@@ -41,7 +41,7 @@ public class StdDialog extends JDialog {
     public static final int       CLOSED = 0;
     public static final int       OK     = 1;
     public static final int       CANCEL = 2;
-    public static final int       MARGIN = 10;
+    public static final int       MARGIN = 20;
     private             Component mOwner;
     private             StdPanel  mButtons;
     private             StdButton mOKButton;
@@ -52,7 +52,7 @@ public class StdDialog extends JDialog {
         super(WindowUtils.getWindowForComponent(owner), title, ModalityType.APPLICATION_MODAL);
         setResizable(true);
         StdPanel content = new StdPanel(new BorderLayout());
-        StdPanel buttons = new StdPanel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        StdPanel buttons = new StdPanel(new PrecisionLayout().setMargins(0, MARGIN, MARGIN, MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
         mButtons = new StdPanel(new PrecisionLayout().setEqualColumns(true).setMargins(0).setHorizontalSpacing(10));
         buttons.add(mButtons);
         content.add(buttons, BorderLayout.SOUTH);
@@ -113,7 +113,7 @@ public class StdDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent event) {
-                transferFocusDownCycle();
+                transferFocus();
             }
         });
         addKeyListener(new KeyAdapter() {
@@ -184,6 +184,10 @@ public class StdDialog extends JDialog {
         return addButton(I18n.text("Cancel"), CANCEL);
     }
 
+    public StdButton addNoButton() {
+        return addButton(I18n.text("No"), CANCEL);
+    }
+
     public StdButton addApplyButton() {
         return addButton(I18n.text("Apply"), OK);
     }
@@ -244,8 +248,8 @@ public class StdDialog extends JDialog {
      */
     public static StdDialog prepareToShowMessage(Component comp, String title, MessageType msgType, Object msg) {
         StdDialog dialog  = new StdDialog(comp, title);
-        StdPanel  content = new StdPanel(new BorderLayout(20, 0));
-        content.setBorder(new EmptyBorder(20));
+        StdPanel  content = new StdPanel(new BorderLayout(MARGIN, 0));
+        content.setBorder(new EmptyBorder(MARGIN));
         String  iconValue = msgType.getText();
         boolean hasIcon   = !iconValue.isEmpty();
         if (hasIcon) {

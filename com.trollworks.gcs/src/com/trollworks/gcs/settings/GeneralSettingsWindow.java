@@ -21,6 +21,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.StdButton;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -38,7 +39,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
 import java.text.MessageFormat;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
@@ -54,7 +54,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
     private        EditorField           mImageResolution;
     private        JCheckBox             mIncludeUnspentPointsInTotal;
     private        EditorField           mGCalcKey;
-    private        JButton               mResetButton;
+    private        StdButton             mResetButton;
 
     /** Displays the general settings window. */
     public static void display() {
@@ -157,20 +157,17 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         mGCalcKey = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, prefs.getGURPSCalculatorKey(), null);
         wrapper.add(new StdLabel(I18n.text("GURPS Calculator Key"), mGCalcKey), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mGCalcKey, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        JButton findMine = new JButton(I18n.text("Find mine"));
-        findMine.addActionListener((evt) -> {
+        wrapper.add(new StdButton(I18n.text("Find mine"), (btn) -> {
             try {
                 Desktop.getDesktop().browse(new URI(ExportToGURPSCalculatorCommand.GURPS_CALCULATOR_URL));
             } catch (Exception exception) {
                 StdDialog.showError(this, MessageFormat.format(I18n.text("Unable to open {0}"),
                         ExportToGURPSCalculatorCommand.GURPS_CALCULATOR_URL));
             }
-        });
-        wrapper.add(findMine);
+        }));
 
         // Bottom row
-        mResetButton = new JButton(I18n.text("Reset to Factory Settings"));
-        mResetButton.addActionListener((evt) -> reset());
+        mResetButton = new StdButton(I18n.text("Reset to Factory Settings"), (btn) -> reset());
         content.add(mResetButton, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setHorizontalSpan(3).setTopMargin(10));
 
         adjustResetButton();

@@ -15,6 +15,8 @@ import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -22,7 +24,6 @@ import java.awt.event.KeyEvent;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Collection;
-import javax.swing.JOptionPane;
 
 /** Provides the "Save" command. */
 public final class SaveCommand extends Command {
@@ -52,45 +53,56 @@ public final class SaveCommand extends Command {
      * Makes an attempt to save the specified {@link Saveable}s if any have been modified.
      *
      * @param saveables The {@link Saveable}s to work on.
-     * @return {@code false} if a save was cancelled or failed.
+     * @return The result of the save attempt.
      */
-    public static boolean attemptSave(Collection<Saveable> saveables) {
+    public static SaveResult attemptSave(Collection<Saveable> saveables) {
         Commitable.sendCommitToFocusOwner();
         for (Saveable saveable : saveables) {
-            if (!attemptSaveInternal(saveable)) {
-                return false;
+            if (attemptSaveInternal(saveable) == SaveResult.CANCEL) {
+                return SaveResult.CANCEL;
             }
         }
-        return true;
+        return SaveResult.SUCCESS;
     }
 
     /**
      * Makes an attempt to save the specified {@link Saveable} if it has been modified.
      *
      * @param saveable The {@link Saveable} to work on.
-     * @return {@code false} if the save was cancelled or failed.
+     * @return The result of the save attempt.
      */
-    public static boolean attemptSave(Saveable saveable) {
+    public static SaveResult attemptSave(Saveable saveable) {
         if (saveable != null) {
             Commitable.sendCommitToFocusOwner();
             return attemptSaveInternal(saveable);
         }
-        return true;
+        return SaveResult.SUCCESS;
     }
 
-    private static boolean attemptSaveInternal(Saveable saveable) {
+    private static SaveResult attemptSaveInternal(Saveable saveable) {
         if (saveable.isModified()) {
             saveable.toFrontAndFocus();
-            int answer = JOptionPane.showConfirmDialog(UIUtilities.getComponentForDialog(saveable), MessageFormat.format(I18n.text("Save changes to \"{0}\"?"), saveable.getSaveTitle()), I18n.text("Save"), JOptionPane.YES_NO_CANCEL_OPTION);
-            if (answer == JOptionPane.CANCEL_OPTION || answer == JOptionPane.CLOSED_OPTION) {
-                return false;
-            }
-            if (answer == JOptionPane.YES_OPTION) {
+            StdDialog dialog = StdDialog.prepareToShowMessage(UIUtilities.getComponentForDialog(saveable),
+                    I18n.text("Save"), MessageType.QUESTION,
+                    MessageFormat.format(I18n.text("Save changes to \"{0}\"?"), saveable.getSaveTitle()));
+            dialog.addButton(I18n.text("Cancel"), StdDialog.CLOSED);
+            dialog.addButton(I18n.text("Discard"), StdDialog.CANCEL);
+            dialog.addButton(I18n.text("Save"), StdDialog.OK);
+            dialog.presentToUser();
+            switch (dialog.getResult()) {
+            case StdDialog.OK:
                 save(saveable);
-                return !saveable.isModified();
+                if (saveable.isModified()) {
+                    return SaveResult.CANCEL;
+                }
+                return SaveResult.SUCCESS;
+            case StdDialog.CANCEL: // No
+                return SaveResult.NO_SAVE;
+            default:
+                return SaveResult.CANCEL;
             }
         }
-        return true;
+        return SaveResult.SUCCESS;
     }
 
     /**

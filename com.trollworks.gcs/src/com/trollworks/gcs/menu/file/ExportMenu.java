@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.menu.file;
 
-import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.utility.I18n;
@@ -33,6 +32,7 @@ import javax.swing.event.MenuListener;
 public class ExportMenu extends JMenu implements MenuListener {
     public ExportMenu() {
         super(I18n.text("Export To…"));
+        populate();
         addMenuListener(this);
     }
 
@@ -48,10 +48,11 @@ public class ExportMenu extends JMenu implements MenuListener {
 
     @Override
     public void menuSelected(MenuEvent event) {
+        populate();
+    }
+
+    private void populate() {
         removeAll();
-        boolean shouldEnable = Command.getTarget(SheetDockable.class) != null;
-        ExportToGURPSCalculatorCommand.INSTANCE.setEnabled(shouldEnable);
-        ExportToPNGCommand.INSTANCE.setEnabled(shouldEnable);
         add(ExportToGURPSCalculatorCommand.INSTANCE);
         add(ExportToPNGCommand.INSTANCE);
         for (Library lib : Library.LIBRARIES) {
@@ -76,7 +77,6 @@ public class ExportMenu extends JMenu implements MenuListener {
                 header.setEnabled(false);
                 add(header);
                 for (Command cmd : cmds) {
-                    cmd.setEnabled(shouldEnable);
                     add(cmd);
                 }
             }

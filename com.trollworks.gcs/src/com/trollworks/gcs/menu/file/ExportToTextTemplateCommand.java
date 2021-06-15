@@ -37,6 +37,7 @@ public class ExportToTextTemplateCommand extends Command {
 
     @Override
     public void adjust() {
+        setEnabled(Command.getTarget(SheetDockable.class) != null);
     }
 
     @Override
