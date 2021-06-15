@@ -22,8 +22,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
-import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -49,7 +49,6 @@ import java.util.UUID;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -146,13 +145,10 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mShowEquipmentModifierAdj = addCheckBox(left, I18n.text("Show equipment modifier cost & weight adjustments"), null, mSheetSettings.showEquipmentModifierAdj());
         mShowSpellAdj = addCheckBox(left, I18n.text("Show spell ritual, cost & time adjustments"), null, mSheetSettings.showSpellAdj());
         mShowTitleInsteadOfNameInPageFooter = addCheckBox(left, I18n.text("Show the title instead of the name in the footer"), null, mSheetSettings.useTitleInFooter());
-        addLabel(left, I18n.text("Show User Description"));
         String tooltip = I18n.text("Where to display this information");
-        mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.userDescriptionDisplay(), tooltip);
-        addLabel(left, I18n.text("Show Modifiers"));
-        mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.modifiersDisplay(), tooltip);
-        addLabel(left, I18n.text("Show Notes"));
-        mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.notesDisplay(), tooltip);
+        mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"), tooltip);
+        mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip);
+        mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.notesDisplay(), I18n.text("Show Notes"), tooltip);
         String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.text("Specifies the layout of the various blocks of data on the character sheet"));
         mBlockLayoutField = new MultiLineTextField(Settings.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
         left.add(new StdLabel(I18n.text("Block Layout")), new PrecisionLayoutData().setHorizontalSpan(2));
@@ -165,10 +161,8 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mUseReducedSwing = addCheckBox(right, I18n.text("Use the reduced swing rules"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", mSheetSettings.useReducedSwing());
         mUseThrustEqualsSwingMinus2 = addCheckBox(right, I18n.text("Use Thrust = Swing - 2"), null, mSheetSettings.useThrustEqualsSwingMinus2());
         mUseSimpleMetricConversions = addCheckBox(right, I18n.text("Use the simple metric conversion rules (B9)"), null, mSheetSettings.useSimpleMetricConversions());
-        addLabel(right, I18n.text("Length Units"));
-        mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSheetSettings.defaultLengthUnits(), I18n.text("The units to use for display of generated lengths"));
-        addLabel(right, I18n.text("Weight Units"));
-        mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSheetSettings.defaultWeightUnits(), I18n.text("The units to use for display of generated weights"));
+        mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSheetSettings.defaultLengthUnits(), I18n.text("Length Units"), I18n.text("The units to use for display of generated lengths"));
+        mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSheetSettings.defaultWeightUnits(), I18n.text("Weight Units"), I18n.text("The units to use for display of generated weights"));
         mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
         right.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(2).setTopMargin(10));
 
@@ -188,18 +182,17 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
     }
 
     private static void addLabel(StdPanel panel, String title) {
-        JLabel label = new JLabel(title, SwingConstants.RIGHT);
-        label.setOpaque(false);
-        panel.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(new StdLabel(title, SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
-    private <E> JComboBox<E> addCombo(StdPanel panel, E[] values, E choice, String tooltip) {
+    private <E> JComboBox<E> addCombo(StdPanel panel, E[] values, E choice, String title, String tooltip) {
         JComboBox<E> combo = new JComboBox<>(values);
         combo.setOpaque(false);
         combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         combo.setSelectedItem(choice);
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
+        panel.add(new StdLabel(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
         panel.add(combo);
         return combo;
     }

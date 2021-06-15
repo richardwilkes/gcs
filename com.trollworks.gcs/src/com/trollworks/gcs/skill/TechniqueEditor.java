@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -179,7 +178,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
         wrapper.add(mLimitCheckbox);
         wrapper.add(mLimitField);
-        parent.add(new JLabel());
+        parent.add(new StdLabel(""));
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

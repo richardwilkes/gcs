@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.utility.I18n;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
@@ -97,10 +97,10 @@ public final class EquipmentModifierEnabler extends StdPanel {
 
     private static Container createTop(Equipment equipment, int remaining) {
         StdPanel top   = new StdPanel(new ColumnLayout());
-        JLabel   label = new JLabel(Text.truncateIfNecessary(equipment.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
+        StdLabel label = new StdLabel(Text.truncateIfNecessary(equipment.toString(), 80, SwingConstants.CENTER), SwingConstants.LEFT);
         top.setBorder(new EmptyBorder(0, 0, 15, 0));
         if (remaining > 0) {
-            top.add(new JLabel(MessageFormat.format(I18n.text("{0} equipment remaining to be processed."), Integer.valueOf(remaining)), SwingConstants.CENTER));
+            top.add(new StdLabel(MessageFormat.format(I18n.text("{0} equipment remaining to be processed."), Integer.valueOf(remaining)), SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
         label.setBackground(Color.BLACK);

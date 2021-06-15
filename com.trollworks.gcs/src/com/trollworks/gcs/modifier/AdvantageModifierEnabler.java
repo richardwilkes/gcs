@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.utility.I18n;
@@ -35,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
@@ -101,13 +101,13 @@ public final class AdvantageModifierEnabler extends StdPanel {
 
     private static Container createTop(Advantage advantage, int remaining) {
         StdPanel top   = new StdPanel(new ColumnLayout());
-        JLabel   label = new JLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.RIGHT), SwingConstants.LEFT);
+        StdLabel label = new StdLabel(Text.truncateIfNecessary(advantage.toString(), 80, SwingConstants.CENTER), SwingConstants.LEFT);
 
         top.setBorder(new EmptyBorder(0, 0, 15, 0));
         if (remaining > 0) {
             String msg;
             msg = remaining == 1 ? I18n.text("1 advantage remaining to be processed.") : MessageFormat.format(I18n.text("{0} advantages remaining to be processed."), Integer.valueOf(remaining));
-            top.add(new JLabel(msg, SwingConstants.CENTER));
+            top.add(new StdLabel(msg, SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
         label.setBackground(Color.BLACK);

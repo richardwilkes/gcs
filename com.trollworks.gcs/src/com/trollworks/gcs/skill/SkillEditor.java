@@ -46,7 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -247,7 +246,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this skill is based on"));
-        wrapper.add(new JLabel("/"));
+        wrapper.add(new StdLabel("/"));
         mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The relative difficulty of learning this skill"));
 
         if (forCharacterOrTemplate) {

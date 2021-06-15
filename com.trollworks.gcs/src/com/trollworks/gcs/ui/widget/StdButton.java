@@ -39,13 +39,19 @@ import java.awt.geom.Path2D;
 import javax.swing.SwingConstants;
 
 public class StdButton extends StdPanel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
-    private String   mText;
-    private Runnable mClickFunction;
-    private boolean  mInMouseDown;
-    private boolean  mPressed;
+    private String        mText;
+    private ThemeFont     mThemeFont;
+    private ClickFunction mClickFunction;
+    private boolean       mInMouseDown;
+    private boolean       mPressed;
 
-    public StdButton(String text, Runnable clickFunction) {
+    public interface ClickFunction {
+        void buttonClicked(StdButton button);
+    }
+
+    public StdButton(String text, ClickFunction clickFunction) {
         super(null, false);
+        setThemeFont(ThemeFont.BUTTON);
         setText(text);
         setCursor(Cursor.getDefaultCursor());
         setClickFunction(clickFunction);
@@ -54,6 +60,19 @@ public class StdButton extends StdPanel implements MouseListener, MouseMotionLis
         addMouseMotionListener(this);
         addKeyListener(this);
         addFocusListener(this);
+    }
+
+    public final ThemeFont getThemeFont() {
+        return mThemeFont;
+    }
+
+    public final void setThemeFont(ThemeFont font) {
+        mThemeFont = font;
+    }
+
+    @Override
+    public final Font getFont() {
+        return mThemeFont != null ? mThemeFont.getFont() : super.getFont();
     }
 
     /** @return The text. */
@@ -134,7 +153,7 @@ public class StdButton extends StdPanel implements MouseListener, MouseMotionLis
         gc.fill(path);
 
         Scale scale = Scale.get(this);
-        Font  font  = scale.scale(ThemeFont.BUTTON.getFont());
+        Font  font  = scale.scale(getFont());
         gc.setFont(font);
         gc.setColor(onColor);
         Rectangle textBounds = new Rectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 2);
@@ -205,7 +224,7 @@ public class StdButton extends StdPanel implements MouseListener, MouseMotionLis
         return x >= 0 && y >= 0 && x < getWidth() && y < getHeight();
     }
 
-    public void setClickFunction(Runnable clickFunction) {
+    public void setClickFunction(ClickFunction clickFunction) {
         mClickFunction = clickFunction;
     }
 
@@ -222,7 +241,7 @@ public class StdButton extends StdPanel implements MouseListener, MouseMotionLis
         }
         mPressed = wasPressed;
         paintImmediately(0, 0, width, height);
-        mClickFunction.run();
+        mClickFunction.buttonClicked(this);
     }
 
     @Override

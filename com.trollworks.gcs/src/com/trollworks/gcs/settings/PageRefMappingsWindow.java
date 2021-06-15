@@ -25,6 +25,7 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -36,7 +37,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.text.DefaultFormatterFactory;
@@ -81,7 +81,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         mPanel.removeAll();
         mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 10).setVerticalSpacing(0));
         for (PDFRef ref : prefs.allPdfRefs(false)) {
-            JLabel idLabel = new JLabel(ref.getID(), SwingConstants.CENTER);
+            StdLabel idLabel = new StdLabel(ref.getID(), SwingConstants.CENTER);
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
             idLabel.setBackground(background);
@@ -94,8 +94,8 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
                     Integer.valueOf(-9999),
                     I18n.text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
             mPanel.add(field);
-            Path   path      = ref.getPath().normalize().toAbsolutePath();
-            JLabel fileLabel = new JLabel(path.getFileName().toString());
+            Path     path      = ref.getPath().normalize().toAbsolutePath();
+            StdLabel fileLabel = new StdLabel(path.getFileName().toString());
             fileLabel.setToolTipText(path.toString());
             mPanel.add(fileLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
             FontAwesomeButton removeButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), null);
@@ -131,7 +131,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         }
         if (mPanel.getComponentCount() == 0) {
             mPanel.setLayout(new PrecisionLayout().setMargins(10));
-            mPanel.add(new JLabel(I18n.text("No page reference mappings have been set."), SwingConstants.CENTER), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
+            mPanel.add(new StdLabel(I18n.text("No page reference mappings have been set."), SwingConstants.CENTER), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
         }
         mPanel.revalidate();
         mPanel.repaint();

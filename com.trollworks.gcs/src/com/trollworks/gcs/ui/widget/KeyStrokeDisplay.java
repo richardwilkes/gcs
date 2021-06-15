@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.utility.Platform;
 import static java.awt.event.KeyEvent.VK_ALT;
+import static java.awt.event.KeyEvent.VK_ALT_GRAPH;
 import static java.awt.event.KeyEvent.VK_CAPS_LOCK;
 import static java.awt.event.KeyEvent.VK_CONTROL;
 import static java.awt.event.KeyEvent.VK_ESCAPE;
@@ -23,21 +24,22 @@ import static java.awt.event.KeyEvent.VK_META;
 import static java.awt.event.KeyEvent.VK_SHIFT;
 import static java.awt.event.KeyEvent.getKeyText;
 
+import java.awt.Font;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.regex.Pattern;
-import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 
-// Note: This must stay as a JLabel for now, as the default font is capable of rendering the keystroke symbols properly.
-
 /** Displays and captures keystrokes typed. */
-public class KeyStrokeDisplay extends JLabel implements KeyListener {
-    private static final Pattern   PLUS_PATTERN = Pattern.compile("\\+");
+public class KeyStrokeDisplay extends StdLabel implements KeyListener, FocusListener {
+    public static final  Font      KEYBOARD_FONT = new Font("Dialog", Font.PLAIN, 13);
+    private static final Pattern   PLUS_PATTERN  = Pattern.compile("\\+");
     private              KeyStroke mKeyStroke;
 
     /**
@@ -47,22 +49,37 @@ public class KeyStrokeDisplay extends JLabel implements KeyListener {
      */
     public KeyStrokeDisplay(KeyStroke ks) {
         super(getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), SwingConstants.CENTER);
+        setThemeFont(null);
+        setFont(KEYBOARD_FONT);
         setOpaque(true);
-        setBackground(ThemeColor.EDITABLE);
         setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
-        addKeyListener(this);
         setFocusable(true);
+        addFocusListener(this);
+        addKeyListener(this);
         mKeyStroke = ks;
         setText(getKeyStrokeDisplay(mKeyStroke));
+    }
+
+    @Override
+    protected void setStdColors() {
+        setBackground(ThemeColor.EDITABLE);
+        setForeground(ThemeColor.ON_EDITABLE);
     }
 
     @Override
     public void keyPressed(KeyEvent event) {
         KeyStroke ks   = KeyStroke.getKeyStrokeForEvent(event);
         int       code = ks.getKeyCode();
-        if (code != VK_SHIFT && code != VK_CONTROL && code != VK_META && code != VK_ALT && code != VK_CAPS_LOCK && code != VK_ESCAPE) {
+        if (code != VK_SHIFT &&
+                code != VK_CONTROL &&
+                code != VK_META &&
+                code != VK_ALT &&
+                code != VK_ALT_GRAPH &&
+                code != VK_CAPS_LOCK &&
+                code != VK_ESCAPE) {
             mKeyStroke = ks;
             setText(getKeyStrokeDisplay(mKeyStroke));
+            repaint();
         }
     }
 
@@ -113,5 +130,15 @@ public class KeyStrokeDisplay extends JLabel implements KeyListener {
             buffer.append(" ");
         }
         return buffer.toString();
+    }
+
+    @Override
+    public void focusGained(FocusEvent event) {
+        setBorder(new CompoundBorder(new LineBorder(ThemeColor.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+    }
+
+    @Override
+    public void focusLost(FocusEvent event) {
+        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
     }
 }

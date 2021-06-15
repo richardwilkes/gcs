@@ -18,6 +18,8 @@ import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.utility.I18n;
@@ -50,7 +52,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 
@@ -157,9 +158,8 @@ public final class ExportToGURPSCalculatorCommand extends Command {
         if (key == null || !UUID_PATTERN.matcher(key).matches()) {
             message = String.format(I18n.text("You need to set a valid GURPS Calculator Key in sheet preferences.<br><a href='%s'>Click here</a> for more information."), GURPS_CALCULATOR_URL);
         }
-        JLabel      styleLabel  = new JLabel();
-        Font        font        = styleLabel.getFont();
-        Color       color       = styleLabel.getBackground();
+        Font        font        = ThemeFont.LABEL_PRIMARY.getFont();
+        Color       color       = ThemeColor.BACKGROUND;
         JEditorPane messagePane = new JEditorPane("text/html", "<html><body style='font-family:" + font.getFamily() + ";font-weight:" + (font.isBold() ? "bold" : "normal") + ";font-size:" + font.getSize() + "pt;background-color: rgb(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ");'>" + message + "</body></html>");
         messagePane.setEditable(false);
         messagePane.setBorder(null);

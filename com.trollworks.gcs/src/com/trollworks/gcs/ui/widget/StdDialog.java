@@ -155,7 +155,7 @@ public class StdDialog extends JDialog {
     }
 
     public StdButton addButton(String title, int value) {
-        StdButton button = addButton(title, () -> {
+        StdButton button = addButton(title, (btn) -> {
             mResult = value;
             setVisible(false);
         });
@@ -167,7 +167,7 @@ public class StdDialog extends JDialog {
         return button;
     }
 
-    public StdButton addButton(String title, Runnable clickHandler) {
+    public StdButton addButton(String title, StdButton.ClickFunction clickHandler) {
         StdButton button = new StdButton(title, clickHandler);
         mButtons.add(button, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(60));
         ((PrecisionLayout) mButtons.getLayout()).setColumns(mButtons.getComponentCount());

@@ -63,7 +63,7 @@ public final class LibraryLocationsPanel extends StdPanel implements Scrollable 
         StdDialog dialog = StdDialog.prepareToShowMessage(Workspace.get(),
                 ChangeLibraryLocationsCommand.INSTANCE.getTitle(), MessageType.QUESTION, scroller);
         dialog.setResizable(true);
-        dialog.addButton(I18n.text("Add"), panel::addLibraryRow);
+        dialog.addButton(I18n.text("Add"), (btn) -> panel.addLibraryRow());
         dialog.addCancelButton();
         panel.mApplyButton = dialog.addApplyButton();
         panel.mFields.get(0).contentsChanged();

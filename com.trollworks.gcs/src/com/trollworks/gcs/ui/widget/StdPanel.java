@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.ThemeColor;
 
+import java.awt.Graphics;
 import java.awt.LayoutManager;
 import javax.swing.JPanel;
 
@@ -40,5 +41,13 @@ public class StdPanel extends JPanel {
     protected void setStdColors() {
         setBackground(ThemeColor.BACKGROUND);
         setForeground(ThemeColor.ON_BACKGROUND);
+    }
+
+    protected void paintComponent(Graphics g) {
+        if (isOpaque()) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
+        g.setColor(getForeground());
     }
 }

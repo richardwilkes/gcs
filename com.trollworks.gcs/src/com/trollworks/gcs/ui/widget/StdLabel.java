@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -35,7 +34,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 /** A simple label replacement that is scalable. */
-public class StdLabel extends JComponent implements PropertyChangeListener {
+public class StdLabel extends StdPanel implements PropertyChangeListener {
     /** Pass this constant in to indicate wrapping should be done rather than truncation. */
     public static final  int    WRAP      = -1;
     private static final String ERROR_KEY = "error";
@@ -54,12 +53,11 @@ public class StdLabel extends JComponent implements PropertyChangeListener {
      * @param text The text to use.
      */
     public StdLabel(String text) {
+        super(null, false);
         mText = "";
         mHAlign = SwingConstants.LEFT;
         mTruncationPolicy = SwingConstants.CENTER;
         setThemeFont(ThemeFont.LABEL_PRIMARY);
-        setForeground(ThemeColor.ON_BACKGROUND);
-        setOpaque(false);
         setText(text);
     }
 
@@ -96,19 +94,17 @@ public class StdLabel extends JComponent implements PropertyChangeListener {
         mIcon = icon;
     }
 
+    public final ThemeFont getThemeFont() {
+        return mThemeFont;
+    }
+
     public final void setThemeFont(ThemeFont font) {
         mThemeFont = font;
     }
 
     @Override
     public final Font getFont() {
-        return mThemeFont.getFont();
-    }
-
-    @Override
-    public final void setFont(Font font) {
-        System.out.println("ERROR: tried to set font rather than theme font");
-        new Exception().printStackTrace(System.out);
+        return mThemeFont != null ? mThemeFont.getFont() : super.getFont();
     }
 
     /** @return The icon, or {@code null} if there is none. */

@@ -20,7 +20,9 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
 import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdButton;
 import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -35,18 +37,16 @@ import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 
 /** A window for editing menu key settings. */
 public final class MenuKeySettingsWindow extends BaseWindow implements CloseHandler {
-    private static final String                NONE = "NONE";
-    private static       boolean               LOADED;
-    private static       MenuKeySettingsWindow INSTANCE;
-    private              BandedPanel           mPanel;
-    private              JButton               mResetButton;
-    private              Map<JButton, Command> mMap;
+    private static final String                  NONE = "NONE";
+    private static       boolean                 LOADED;
+    private static       MenuKeySettingsWindow   INSTANCE;
+    private              BandedPanel             mPanel;
+    private              StdButton               mResetButton;
+    private              Map<StdButton, Command> mMap;
 
     /** Displays the menu key settings window. */
     public static void display() {
@@ -96,12 +96,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     }
 
     private void addOne(Command cmd) {
-        JButton button = new JButton(KeyStrokeDisplay.getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)));
-        UIUtilities.setToPreferredSizeOnly(button);
-        button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
-        mMap.put(button, cmd);
-        button.addActionListener((evt) -> {
-            JButton          btn     = (JButton) evt.getSource();
+        StdButton button = new StdButton(KeyStrokeDisplay.getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), (btn) -> {
             Command          command = mMap.get(btn);
             KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command.getAccelerator());
             StdDialog        dialog  = StdDialog.prepareToShowMessage(this, I18n.text("Type a keystroke…"), MessageType.QUESTION, ksd);
@@ -124,13 +119,18 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
             adjustResetButton();
         });
+        button.setFont(KeyStrokeDisplay.KEYBOARD_FONT);
+        button.setThemeFont(null);
+        UIUtilities.setToPreferredSizeOnly(button);
+        button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
+        mMap.put(button, cmd);
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(4), false);
         wrapper.add(button);
         mPanel.add(wrapper);
-        mPanel.add(new JLabel(cmd.getTitle()));
+        mPanel.add(new StdLabel(cmd.getTitle()));
     }
 
-    private void setAccelerator(JButton button, KeyStroke ks) {
+    private void setAccelerator(StdButton button, KeyStroke ks) {
         Command cmd = mMap.get(button);
         cmd.setAccelerator(ks);
         button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
@@ -145,10 +145,9 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     }
 
     private StdPanel createResetPanel() {
-        mResetButton = new JButton(I18n.text("Reset to Factory Defaults"));
-        mResetButton.addActionListener((evt) -> {
-            for (Map.Entry<JButton, Command> entry : mMap.entrySet()) {
-                JButton button = entry.getKey();
+        mResetButton = new StdButton(I18n.text("Reset to Factory Defaults"), (btn) -> {
+            for (Map.Entry<StdButton, Command> entry : mMap.entrySet()) {
+                StdButton button = entry.getKey();
                 setAccelerator(button, entry.getValue().getOriginalAccelerator());
                 button.invalidate();
             }

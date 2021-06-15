@@ -37,7 +37,6 @@ import java.awt.Font;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
@@ -122,8 +121,8 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
 
     private static FontAwesomeButton addHeader(Container parent, String text, int topMargin, Runnable reset) {
         StdPanel header = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
-        JLabel   label  = new JLabel(text);
-        label.setFont(label.getFont().deriveFont(Font.BOLD));
+        StdLabel label  = new StdLabel(text);
+        label.setThemeFont(ThemeFont.HEADER);
         header.add(label);
         FontAwesomeButton resetButton = new FontAwesomeButton("\uf011", I18n.text("Reset to Factory Defaults"), reset);
         header.add(resetButton, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.END));
