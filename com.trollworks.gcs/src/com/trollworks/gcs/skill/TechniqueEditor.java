@@ -12,15 +12,16 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.attribute.AttributeChoice;
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Commitable;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
@@ -28,8 +29,6 @@ import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.NumberFilter;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
 import com.trollworks.gcs.weapon.RangedWeaponListEditor;
@@ -42,28 +41,28 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 /** The detailed editor for {@link Technique}s. */
 public class TechniqueEditor extends RowEditor<Technique> implements ActionListener, DocumentListener {
-    private JTextField                 mNameField;
+    private EditorField                mNameField;
     private MultiLineTextField         mNotesField;
-    private JTextField                 mCategoriesField;
-    private JTextField                 mReferenceField;
+    private EditorField                mCategoriesField;
+    private EditorField                mReferenceField;
     private JComboBox<Object>          mDifficultyCombo;
-    private JTextField                 mPointsField;
-    private JTextField                 mLevelField;
+    private EditorField                mPointsField;
+    private EditorField                mLevelField;
     private StdPanel                   mDefaultPanel;
     private StdLabel                   mDefaultPanelLabel;
     private JComboBox<AttributeChoice> mDefaultTypeCombo;
-    private JTextField                 mDefaultNameField;
-    private JTextField                 mDefaultSpecializationField;
-    private JTextField                 mDefaultModifierField;
+    private EditorField                mDefaultNameField;
+    private EditorField                mDefaultSpecializationField;
+    private EditorField                mDefaultModifierField;
     private JCheckBox                  mLimitCheckbox;
-    private JTextField                 mLimitField;
+    private EditorField                mLimitField;
     private PrereqsPanel               mPrereqs;
     private FeaturesPanel              mFeatures;
     private String                     mLastDefaultType;
@@ -84,15 +83,24 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     protected void addContentSelf(ScrollContent outer) {
         StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
-        mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("The base name of the technique, without any notes or specialty information"));
-        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this technique"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(),
+                I18n.text("The base name of the technique, without any notes or specialty information"),
+                null);
+        mNotesField = new MultiLineTextField(mRow.getNotes(),
+                I18n.text("Any notes that you would like to show up in the list along with this technique"),
+                this);
+        panel.add(new StdLabel(I18n.text("Notes"), mNotesField),
+                new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the technique belongs to (separate multiple categories with a comma)"), 0);
+        mCategoriesField = createField(panel, panel, I18n.text("Categories"),
+                mRow.getCategoriesAsString(),
+                I18n.text("The category or categories the technique belongs to (separate multiple categories with a comma)"),
+                0, null);
         createDefaults(panel);
         createLimits(panel);
         createDifficultyPopups(panel);
-        mReferenceField = createField(panel, panel, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("technique")), 6);
+        mReferenceField = createField(panel, panel, I18n.text("Page Reference"), mRow.getReference(),
+                PageRefCell.getStdToolTip(I18n.text("technique")), 6, null);
         outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mPrereqs = new PrereqsPanel(mRow, mRow.getPrereqs());
@@ -109,7 +117,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private void createDefaults(Container parent) {
         mDefaultPanel = new StdPanel(new PrecisionLayout().setMargins(0));
         mDefaultPanelLabel = new StdLabel(I18n.text("Defaults To"));
-        mDefaultTypeCombo = SkillDefaultType.createCombo(mDefaultPanel, mRow.getDataFile(), mRow.getDefault().getType(), "", this, mIsEditable);
+        mDefaultTypeCombo = SkillDefaultType.createCombo(mDefaultPanel, mRow.getDataFile(),
+                mRow.getDefault().getType(), "", this, mIsEditable);
         parent.add(mDefaultPanelLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(mDefaultPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         rebuildDefaultPanel();
@@ -156,11 +165,16 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
             mDefaultPanel.remove(1);
         }
         if (skillBased) {
-            mDefaultNameField = createCorrectableField(null, mDefaultPanel, I18n.text("Defaults To"), def.getName(), I18n.text("The name of the skill this technique defaults from"));
-            mDefaultSpecializationField = createField(null, mDefaultPanel, null, def.getSpecialization(), I18n.text("The specialization of the skill, if any, this technique defaults from"), 0);
+            mDefaultNameField = createCorrectableField(null, mDefaultPanel, I18n.text("Defaults To"),
+                    def.getName(), I18n.text("The name of the skill this technique defaults from"),
+                    (f) -> recalculateLevel());
+            mDefaultSpecializationField = createField(null, mDefaultPanel, null, def.getSpecialization(),
+                    I18n.text("The specialization of the skill, if any, this technique defaults from"),
+                    0, (f) -> recalculateLevel());
             mDefaultPanelLabel.setRefersTo(mDefaultNameField);
         }
-        mDefaultModifierField = createNumberField(mDefaultPanel, I18n.text("The amount to adjust the default skill level by"), def.getModifier());
+        mDefaultModifierField = createSInt2NumberField(mDefaultPanel,
+                I18n.text("The amount to adjust the default skill level by"), def.getModifier());
         ((PrecisionLayout) mDefaultPanel.getLayout()).setColumns(mDefaultPanel.getComponentCount());
         mDefaultPanel.revalidate();
     }
@@ -168,13 +182,15 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private void createLimits(Container parent) {
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
-        mLimitCheckbox = new JCheckBox(I18n.text("Cannot exceed default skill level by more than"), mRow.isLimited());
+        mLimitCheckbox = new JCheckBox(I18n.text("Cannot exceed default skill level by more than"),
+                mRow.isLimited());
         mLimitCheckbox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether to limit the maximum level that can be achieved or not")));
         mLimitCheckbox.addActionListener(this);
 
-        mLimitField = createNumberField(wrapper, I18n.text("The maximum amount above the default skill level that this technique can be raised"), mRow.getLimitModifier());
+        mLimitField = createSInt2NumberField(wrapper,
+                I18n.text("The maximum amount above the default skill level that this technique can be raised"),
+                mRow.getLimitModifier());
         mLimitField.setEnabled(mLimitCheckbox.isSelected());
-        mLimitField.addActionListener(this);
 
         wrapper.add(mLimitCheckbox);
         wrapper.add(mLimitField);
@@ -182,9 +198,8 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
-        JTextField field = new JTextField(text);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
         if (labelParent != null) {
             addLabel(labelParent, title, field);
@@ -193,14 +208,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         return field;
     }
 
-    private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-        if (maxChars > 0) {
-            UIUtilities.setToPreferredSizeOnly(field);
-            field.setText(text);
-        }
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.addActionListener(this);
+    private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text,
+                maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         if (labelParent != null) {
             addLabel(labelParent, title, field);
         }
@@ -212,9 +222,10 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         return field;
     }
 
-    private JTextField createNumberField(Container fieldParent, String tooltip, int value) {
-        JTextField field = createField(null, fieldParent, null, Numbers.formatWithForcedSign(value), tooltip, 3);
-        NumberFilter.apply(field, false, true, false, 2);
+    private EditorField createSInt2NumberField(Container fieldParent, String tooltip, int value) {
+        EditorField field = new EditorField(FieldFactory.SINT2, (f) -> recalculateLevel(),
+                SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(-99), tooltip);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
@@ -223,12 +234,16 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private void createPointsFields(Container parent, boolean forCharacter) {
-        mPointsField = createField(parent, parent, I18n.text("Points"), Integer.toString(mRow.getRawPoints()), I18n.text("The number of points spent on this technique"), 4);
-        NumberFilter.apply(mPointsField, false, false, false, 4);
-        mPointsField.addActionListener(this);
-
+        mPointsField = new EditorField(FieldFactory.POSINT3, (f) -> recalculateLevel(),
+                SwingConstants.LEFT, Integer.valueOf(mRow.getRawPoints()), Integer.valueOf(999),
+                I18n.text("The number of points spent on this technique"));
+        addLabel(parent, I18n.text("Points"), mPointsField);
+        parent.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
         if (forCharacter) {
-            mLevelField = createField(parent, parent, I18n.text("Level"), Technique.getTechniqueDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(), mRow.getDefault().getModifier()), editorLevelTooltip() + mRow.getLevelToolTip(), 6);
+            mLevelField = createField(parent, parent, I18n.text("Level"),
+                    Technique.getTechniqueDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel(),
+                            mRow.getDefault().getModifier()),
+                    editorLevelTooltip() + mRow.getLevelToolTip(), 6, null);
             mLevelField.setEnabled(false);
         }
     }
@@ -266,7 +281,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private int getPoints() {
-        return Numbers.extractInteger(mPointsField.getText(), 0, true);
+        return ((Integer) mPointsField.getValue()).intValue();
     }
 
     private int getAdjustedSkillPoints() {
@@ -284,11 +299,11 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private int getDefaultModifier() {
-        return Numbers.extractInteger(mDefaultModifierField.getText(), 0, true);
+        return ((Integer) mDefaultModifierField.getValue()).intValue();
     }
 
     private int getLimitModifier() {
-        return Numbers.extractInteger(mLimitField.getText(), 0, true);
+        return ((Integer) mLimitField.getValue()).intValue();
     }
 
     @Override
@@ -322,7 +337,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
                 rebuildDefaultPanel();
             }
         }
-        if (src == mDifficultyCombo || src == mPointsField || src == mDefaultNameField || src == mDefaultModifierField || src == mLimitCheckbox || src == mLimitField || src == mDefaultSpecializationField || src == mDefaultTypeCombo) {
+        if (src == mDifficultyCombo || src == mLimitCheckbox || src == mDefaultTypeCombo) {
             recalculateLevel();
         }
     }

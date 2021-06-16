@@ -13,14 +13,15 @@ package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
@@ -46,24 +47,24 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Skill}s. */
 public class SkillEditor extends RowEditor<Skill> implements ActionListener, DocumentListener, FocusListener {
-    private JTextField                 mNameField;
-    private JTextField                 mSpecializationField;
+    private EditorField                mNameField;
+    private EditorField                mSpecializationField;
     private MultiLineTextField         mNotesField;
-    private JTextField                 mCategoriesField;
-    private JTextField                 mReferenceField;
+    private EditorField                mCategoriesField;
+    private EditorField                mReferenceField;
     private JCheckBox                  mHasTechLevel;
-    private JTextField                 mTechLevel;
+    private EditorField                mTechLevel;
     private String                     mSavedTechLevel;
     private JComboBox<AttributeChoice> mAttributePopup;
     private JComboBox<Object>          mDifficultyPopup;
-    private JTextField                 mPointsField;
-    private JTextField                 mLevelField;
+    private EditorField                mPointsField;
+    private EditorField                mLevelField;
     private JComboBox<Object>          mEncPenaltyPopup;
     private PrereqsPanel               mPrereqs;
     private FeaturesPanel              mFeatures;
@@ -88,19 +89,24 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         mNameField = createCorrectableField(panel, I18n.text("Name"), mRow.getName(), I18n.text("The base name of the skill, without any notes or specialty information"));
         if (!isContainer) {
             StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
-            mSpecializationField = createField(panel, wrapper, I18n.text("Specialization"), mRow.getSpecialization(), I18n.text("The specialization, if any, taken for this skill"), 0);
+            mSpecializationField = createField(panel, wrapper, I18n.text("Specialization"),
+                    mRow.getSpecialization(), I18n.text("The specialization, if any, taken for this skill"),
+                    0, null);
             createTechLevelFields(wrapper);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this skill"), this);
         panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the skill belongs to (separate multiple categories with a comma)"), 0);
+        mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(),
+                I18n.text("The category or categories the skill belongs to (separate multiple categories with a comma)"),
+                0, null);
         if (!isContainer) {
             createDifficultyPopups(panel);
             mEncPenaltyPopup = createEncumbrancePenaltyMultiplierPopup(panel);
         }
-        mReferenceField = createField(panel, panel, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("skill")), 0);
+        mReferenceField = createField(panel, panel, I18n.text("Page Reference"), mRow.getReference(),
+                PageRefCell.getStdToolTip(I18n.text("skill")), 0, null);
         outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (!isContainer) {
@@ -119,24 +125,17 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
     }
 
-    private JTextField createCorrectableField(Container parent, String title, String text, String tooltip) {
-        JTextField field = new JTextField(text);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createCorrectableField(Container parent, String title, String text, String tooltip) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
         parent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
-    private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-        if (maxChars > 0) {
-            UIUtilities.setToPreferredSizeOnly(field);
-            field.setText(text);
-        }
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.addActionListener(this);
-        field.addFocusListener(this);
+    private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text,
+                maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
@@ -152,13 +151,13 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private void createPointsFields(Container parent, boolean forCharacter) {
         mPointsField = createField(parent, parent, I18n.text("Points"), Integer.toString(mRow.getRawPoints()),
-                I18n.text("The number of points spent on this skill"), 4);
+                I18n.text("The number of points spent on this skill"), 4, (f) -> recalculateLevel());
         NumberFilter.apply(mPointsField, false, false, false, 4);
         if (forCharacter) {
             String level = Skill.getSkillDisplayLevel(mRow.getDataFile(), mRow.getLevel(),
                     mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren());
             mLevelField = createField(parent, parent, I18n.text("Level"), level,
-                    editorLevelTooltip() + mRow.getLevelToolTip(), 8);
+                    editorLevelTooltip() + mRow.getLevelToolTip(), 8, null);
             mLevelField.setEnabled(false);
         }
     }
@@ -182,10 +181,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
 
-            mTechLevel = new JTextField("9999");
-            UIUtilities.setToPreferredSizeOnly(mTechLevel);
-            mTechLevel.setText(mSavedTechLevel);
-            mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
+            mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT,
+                    mSavedTechLevel, "9999", tlTooltip);
             mTechLevel.setEnabled(hasTL);
             wrapper.add(mTechLevel);
             parent.add(wrapper);
@@ -194,7 +191,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                 mSavedTechLevel = character.getProfile().getTechLevel();
             }
         } else {
-            mTechLevel = new JTextField(mSavedTechLevel);
+            mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT,
+                    mSavedTechLevel, "9999", null);
             mHasTechLevel = new JCheckBox(I18n.text("Tech Level Required"), hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this skill requires tech level specialization")));
             mHasTechLevel.addActionListener(this);
@@ -365,7 +363,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                 mSavedTechLevel = mTechLevel.getText();
                 mTechLevel.setText("");
             }
-        } else if (src == mAttributePopup || src == mDifficultyPopup || src == mPointsField || src == mDefaults || src == mEncPenaltyPopup) {
+        } else if (src == mAttributePopup || src == mDifficultyPopup || src == mDefaults || src == mEncPenaltyPopup) {
             recalculateLevel();
         }
     }
