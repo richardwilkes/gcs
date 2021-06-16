@@ -17,6 +17,6 @@ import com.trollworks.gcs.ui.ThemeFont;
 public class EditorHeaderCell extends HeaderCell {
     @Override
     public ThemeFont getThemeFont(Row row, Column column) {
-        return ThemeFont.LABEL_PRIMARY;
+        return ThemeFont.HEADER;
     }
 }

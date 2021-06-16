@@ -46,7 +46,7 @@ public enum EquipmentModifierColumnID {
 
         @Override
         public String getDataAsText(EquipmentModifier modifier) {
-            return modifier.isEnabled() ? "✓" : "";
+            return modifier.isEnabled() ? "\uf058" : "";
         }
 
         @Override

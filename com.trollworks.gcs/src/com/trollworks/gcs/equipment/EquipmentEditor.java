@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.equipment;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.EquipmentModifier;
@@ -19,6 +20,7 @@ import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
@@ -27,44 +29,40 @@ import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
+import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
 import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
 import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
-public class EquipmentEditor extends RowEditor<Equipment> implements ActionListener, DocumentListener, FocusListener {
+public class EquipmentEditor extends RowEditor<Equipment> implements DocumentListener {
     private JCheckBox                   mEquippedCheckBox;
     private JCheckBox                   mIgnoreWeightForSkillsCheckBox;
-    private JTextField                  mDescriptionField;
-    private JTextField                  mTechLevelField;
-    private JTextField                  mLegalityClassField;
-    private JTextField                  mQtyField;
-    private JTextField                  mUsesField;
-    private JTextField                  mMaxUsesField;
-    private JTextField                  mValueField;
-    private JTextField                  mExtValueField;
-    private JTextField                  mWeightField;
-    private JTextField                  mExtWeightField;
+    private EditorField                 mDescriptionField;
+    private EditorField                 mTechLevelField;
+    private EditorField                 mLegalityClassField;
+    private EditorField                 mQtyField;
+    private EditorField                 mUsesField;
+    private EditorField                 mMaxUsesField;
+    private EditorField                 mValueField;
+    private EditorField                 mExtValueField;
+    private EditorField                 mWeightField;
+    private EditorField                 mExtWeightField;
     private MultiLineTextField          mNotesField;
-    private JTextField                  mCategoriesField;
-    private JTextField                  mReferenceField;
+    private EditorField                 mCategoriesField;
+    private EditorField                 mReferenceField;
     private PrereqsPanel                mPrereqs;
     private FeaturesPanel               mFeatures;
     private MeleeWeaponListEditor       mMeleeWeapons;
@@ -95,6 +93,10 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         mFeatures = new FeaturesPanel(mRow, mRow.getFeatures());
         addSection(outer, mFeatures);
         mModifiers = EquipmentModifierListEditor.createEditor(mRow);
+        mModifiers.addActionListener((evt) -> {
+            valueChanged();
+            weightChanged();
+        });
         addSection(outer, mModifiers);
         List<WeaponStats> weapons = mRow.getWeapons();
         mMeleeWeapons = new MeleeWeaponListEditor(mRow, weapons);
@@ -117,10 +119,13 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         StdPanel   wrapper                = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
         JComponent labelParent            = panel;
         if (forCharacterOrTemplate) {
-            mUsesField = createIntegerNumberField(panel, wrapper, I18n.text("Uses"), mRow.getUses(), I18n.text("The number of uses remaining for this equipment"), 5);
+            mUsesField = createIntegerNumberField(panel, wrapper, I18n.text("Uses"), mRow.getUses(),
+                    I18n.text("The number of uses remaining for this equipment"), 99999, null);
             labelParent = wrapper;
         }
-        mMaxUsesField = createIntegerNumberField(labelParent, wrapper, I18n.text("Max Uses"), mRow.getMaxUses(), I18n.text("The maximum number of uses for this equipment"), 5);
+        mMaxUsesField = createIntegerNumberField(labelParent, wrapper, I18n.text("Max Uses"),
+                mRow.getMaxUses(), I18n.text("The maximum number of uses for this equipment"),
+                99999, null);
         mReferenceField = createField(wrapper, wrapper, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return panel;
@@ -130,7 +135,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         boolean  isContainer = mRow.canHaveChildren();
         StdPanel wrapper     = new StdPanel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
         if (!isContainer) {
-            mQtyField = createIntegerNumberField(parent, wrapper, I18n.text("Quantity"), mRow.getQuantity(), I18n.text("The number of this equipment present"), 9);
+            mQtyField = createIntegerNumberField(parent, wrapper, I18n.text("Quantity"),
+                    mRow.getQuantity(), I18n.text("The number of this equipment present"), 999999999,
+                    (f) -> {
+                        valueChanged();
+                        weightChanged();
+                    });
         }
         mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
         mLegalityClassField = createField(wrapper, wrapper, I18n.text("Legality Class"), mRow.getLegalityClass(), I18n.text("The legality class of this equipment"), 3);
@@ -151,8 +161,15 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     private void createValueAndWeightFields(Container parent) {
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(3));
         mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed6(mRow.getQuantity())));
-        mValueField = createValueField(parent, wrapper, I18n.text("Value"), mRow.getValue(), I18n.text("The base value of one of these pieces of equipment before modifiers"), 13);
-        mExtValueField = createValueField(wrapper, wrapper, I18n.text("Extended"), mRow.getExtendedValue(), I18n.text("The value of all of these pieces of equipment, plus the value of any contained equipment"), 13);
+        Fixed6 protoValue = new Fixed6("9999999.999999", false);
+        mValueField = createValueField(parent, wrapper, I18n.text("Value"), mRow.getValue(),
+                protoValue,
+                I18n.text("The base value of one of these pieces of equipment before modifiers"),
+                (f) -> valueChanged());
+        mExtValueField = createValueField(wrapper, wrapper, I18n.text("Extended"),
+                mRow.getExtendedValue(), protoValue,
+                I18n.text("The value of all of these pieces of equipment, plus the value of any contained equipment"),
+                null);
         mExtValueField.setEnabled(false);
         parent.add(wrapper);
 
@@ -161,8 +178,14 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         WeightValue weight = new WeightValue(mRow.getAdjustedWeight(false));
         weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));
         mContainedWeight.subtract(weight);
-        mWeightField = createWeightField(parent, wrapper, I18n.text("Weight"), mRow.getWeight(), I18n.text("The weight of one of these pieces of equipment"), 13);
-        mExtWeightField = createWeightField(wrapper, wrapper, I18n.text("Extended"), mRow.getExtendedWeight(false), I18n.text("The total weight of this quantity of equipment, plus everything contained by it"), 13);
+        WeightValue weightProto = new WeightValue(protoValue, WeightUnits.LB);
+        mWeightField = createWeightField(parent, wrapper, I18n.text("Weight"), mRow.getWeight(),
+                weightProto, I18n.text("The weight of one of these pieces of equipment"),
+                (f) -> weightChanged());
+        mExtWeightField = createWeightField(wrapper, wrapper, I18n.text("Extended"),
+                mRow.getExtendedWeight(false), weightProto,
+                I18n.text("The total weight of this quantity of equipment, plus everything contained by it"),
+                null);
         mExtWeightField.setEnabled(false);
         mIgnoreWeightForSkillsCheckBox = new JCheckBox(I18n.text("Ignore for Skills"));
         mIgnoreWeightForSkillsCheckBox.setSelected(mRow.isWeightIgnoredForSkills());
@@ -173,26 +196,18 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         parent.add(wrapper);
     }
 
-    private JTextField createCorrectableField(Container parent, String title, String text, String tooltip) {
-        JTextField field = new JTextField(text);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createCorrectableField(Container parent, String title, String text, String tooltip) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
-        field.addFocusListener(this);
         parent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
-    private JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-        if (maxChars > 0) {
-            UIUtilities.setToPreferredSizeOnly(field);
-            field.setText(text);
-        }
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         field.setEnabled(mIsEditable);
-        field.addFocusListener(this);
         labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
@@ -202,42 +217,25 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
         return field;
     }
 
-    private JTextField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ','));
-        UIUtilities.setToPreferredSizeOnly(field);
-        field.setText(Numbers.format(value));
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxValue, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(maxValue == 99999 ? FieldFactory.POSINT5 : FieldFactory.POSINT9, listener, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
         field.setEnabled(mIsEditable);
-        NumberFilter.apply(field, false, false, true, maxDigits);
-        field.addActionListener(this);
-        field.addFocusListener(this);
         labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
-    private JTextField createValueField(Container labelParent, Container fieldParent, String title, Fixed6 value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
-        UIUtilities.setToPreferredSizeOnly(field);
-        field.setText(value.toLocalizedString());
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createValueField(Container labelParent, Container fieldParent, String title, Fixed6 value, Fixed6 protoValue, String tooltip, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.FIXED6, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        NumberFilter.apply(field, true, false, true, maxDigits);
-        field.addActionListener(this);
-        field.addFocusListener(this);
         labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
-    private JTextField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + ".");
-        UIUtilities.setToPreferredSizeOnly(field);
-        field.setText(value.toString());
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, WeightValue protoValue, String tooltip, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.WEIGHT, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        field.addActionListener(this);
-        field.addFocusListener(this);
         labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
@@ -276,11 +274,6 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
             mRow.setModifiers(mModifiers.getModifiers());
         }
         return modified;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        adjustForChange(event.getSource());
     }
 
     private int getQty() {
@@ -327,26 +320,5 @@ public class EquipmentEditor extends RowEditor<Equipment> implements ActionListe
     @Override
     public void removeUpdate(DocumentEvent event) {
         docChanged(event);
-    }
-
-    @Override
-    public void focusGained(FocusEvent event) {
-        // Not used.
-    }
-
-    @Override
-    public void focusLost(FocusEvent event) {
-        adjustForChange(event.getSource());
-    }
-
-    private void adjustForChange(Object field) {
-        if (field == mValueField) {
-            valueChanged();
-        } else if (field == mWeightField) {
-            weightChanged();
-        } else if (field == mQtyField || field == mModifiers) {
-            valueChanged();
-            weightChanged();
-        }
     }
 }

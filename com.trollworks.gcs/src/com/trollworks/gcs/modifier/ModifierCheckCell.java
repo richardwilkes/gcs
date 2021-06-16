@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -22,6 +23,7 @@ import com.trollworks.gcs.ui.widget.outline.TextCell;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -33,6 +35,16 @@ public class ModifierCheckCell extends TextCell {
     public ModifierCheckCell(boolean forEditor) {
         super(SwingConstants.CENTER, false);
         mForEditor = forEditor;
+    }
+
+    @Override
+    protected Font deriveFont(Row row, Column column, Font font) {
+        return new Font(ThemeFont.FONT_AWESOME_SOLID, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
+    }
+
+    @Override
+    public int getVAlignment() {
+        return SwingConstants.CENTER;
     }
 
     @Override

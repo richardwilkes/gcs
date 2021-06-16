@@ -37,6 +37,7 @@ public final class FieldFactory {
     public static final DefaultFormatterFactory PERCENT_REDUCTION = new DefaultFormatterFactory(new IntegerFormatter(0, 80, false));
     public static final DefaultFormatterFactory POSINT5           = new DefaultFormatterFactory(new IntegerFormatter(0, 99999, false));
     public static final DefaultFormatterFactory POSINT6           = new DefaultFormatterFactory(new IntegerFormatter(0, 999999, false));
+    public static final DefaultFormatterFactory POSINT9           = new DefaultFormatterFactory(new IntegerFormatter(0, 999999999, false));
     public static final DefaultFormatterFactory SM                = new DefaultFormatterFactory(new IntegerFormatter(-99, 9999, true));
     public static final DefaultFormatterFactory STRING;
     public static final DefaultFormatterFactory WEIGHT            = new DefaultFormatterFactory(new WeightFormatter(true));

@@ -13,6 +13,7 @@ package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.EditorHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.Outline;
@@ -438,9 +439,7 @@ public enum WeaponColumn {
         for (WeaponColumn one : values()) {
             if (one.isValidFor(weaponClass, forEditor)) {
                 Column column = new Column(one.ordinal(), one.toString(weaponClass), one.getToolTip(), one.getCell(forEditor));
-                if (!forEditor) {
-                    column.setHeaderCell(new ListHeaderCell(true));
-                }
+                column.setHeaderCell(forEditor ? new EditorHeaderCell() : new ListHeaderCell(true));
                 model.addColumn(column);
             }
         }
