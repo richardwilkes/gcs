@@ -11,25 +11,26 @@
 
 package com.trollworks.gcs.notes;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 /** The detailed editor for {@link Note}s. */
 public class NoteEditor extends RowEditor<Note> {
     private MultiLineTextField mDescriptionField;
-    private JTextField         mReferenceField;
+    private EditorField        mReferenceField;
 
     /**
      * Creates a new {@link Note} editor.
@@ -59,8 +60,7 @@ public class NoteEditor extends RowEditor<Note> {
         wrapper.add(new StdLabel(I18n.text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         wrapper.add(mDescriptionField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
-        mReferenceField = new JTextField(mRow.getReference());
-        mReferenceField.setToolTipText(Text.wrapPlainTextForToolTip(PageRefCell.getStdToolTip(I18n.text("note"))));
+        mReferenceField = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("note")));
         wrapper.add(new StdLabel(I18n.text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }

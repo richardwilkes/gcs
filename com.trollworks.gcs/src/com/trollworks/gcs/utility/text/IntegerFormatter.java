@@ -63,7 +63,7 @@ public class IntegerFormatter extends JFormattedTextField.AbstractFormatter {
 
     @Override
     public String valueToString(Object value) {
-        int val = value == null ? 0 : ((Integer) value).intValue();
+        int val = value == null ? 0 : ((Number) value).intValue();
         if (mBlankOnZero && val == 0) {
             return "";
         }

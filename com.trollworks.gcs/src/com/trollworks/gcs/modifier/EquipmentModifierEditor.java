@@ -11,12 +11,13 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
@@ -26,28 +27,24 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** Editor for {@link EquipmentModifier}s. */
-public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements ActionListener, DocumentListener, FocusListener {
-    private JTextField         mNameField;
-    private JTextField         mTechLevelField;
+public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements DocumentListener {
+    private EditorField        mNameField;
+    private EditorField        mTechLevelField;
     private JCheckBox          mEnabledField;
     private MultiLineTextField mNotesField;
-    private JTextField         mReferenceField;
+    private EditorField        mReferenceField;
     private FeaturesPanel      mFeatures;
     private JComboBox<Object>  mCostType;
-    private JTextField         mCostAmountField;
+    private EditorField        mCostAmountField;
     private JComboBox<Object>  mWeightType;
-    private JTextField         mWeightAmountField;
+    private EditorField        mWeightAmountField;
 
     /**
      * Creates a new EquipmentModifierEditor.
@@ -111,22 +108,17 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return modified;
     }
 
-    private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
-        JTextField field = new JTextField(text);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
         addLabel(labelParent, title, field);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
-    private static JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-        if (maxChars > 0) {
-            UIUtilities.setToPreferredSizeOnly(field);
-            field.setText(text);
-        }
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text,
+                maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         addLabel(labelParent, title, field);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
@@ -144,12 +136,9 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void createCostAdjustmentField(Container labelParent, Container fieldParent) {
-        mCostAmountField = new JTextField("-999,999,999.00");
-        UIUtilities.setToPreferredSizeOnly(mCostAmountField);
-        mCostAmountField.setText(mRow.getCostAdjType().format(mRow.getCostAdjAmount(), true));
-        mCostAmountField.setToolTipText(I18n.text("The cost modifier"));
-        mCostAmountField.addFocusListener(this);
-        mCostAmountField.addActionListener(this);
+        mCostAmountField = new EditorField(FieldFactory.STRING, (f) -> costChanged(),
+                SwingConstants.LEFT, mRow.getCostAdjType().format(mRow.getCostAdjAmount(), true),
+                "-999,999,999.00", I18n.text("The cost modifier"));
         addLabel(labelParent, "", mCostAmountField);
         fieldParent.add(mCostAmountField);
     }
@@ -158,7 +147,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         EquipmentModifierCostType[] types = EquipmentModifierCostType.values();
         mCostType = new JComboBox<>(types);
         mCostType.setSelectedItem(mRow.getCostAdjType());
-        mCostType.addActionListener(this);
+        mCostType.addActionListener((evt) -> costChanged());
         mCostType.setMaximumRowCount(types.length);
         parent.add(mCostType);
     }
@@ -179,12 +168,10 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void createWeightAdjustmentField(Container labelParent, Container fieldParent) {
-        mWeightAmountField = new JTextField("-999,999,999.00");
-        UIUtilities.setToPreferredSizeOnly(mWeightAmountField);
-        mWeightAmountField.setText(mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(), mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true));
-        mWeightAmountField.setToolTipText(I18n.text("The weight modifier"));
-        mWeightAmountField.addActionListener(this);
-        mWeightAmountField.addFocusListener(this);
+        mWeightAmountField = new EditorField(FieldFactory.STRING, (f) -> weightChanged(),
+                SwingConstants.LEFT, mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(),
+                mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true),
+                "-999,999,999.00", I18n.text("The weight modifier"));
         labelParent.add(new StdLabel("", mWeightAmountField));
         fieldParent.add(mWeightAmountField);
     }
@@ -193,7 +180,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         EquipmentModifierWeightType[] types = EquipmentModifierWeightType.values();
         mWeightType = new JComboBox<>(types);
         mWeightType.setSelectedItem(mRow.getWeightAdjType());
-        mWeightType.addActionListener(this);
+        mWeightType.addActionListener((evt) -> weightChanged());
         mWeightType.setMaximumRowCount(types.length);
         parent.add(mWeightType);
     }
@@ -204,18 +191,6 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             obj = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
         }
         return (EquipmentModifierWeightType) obj;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        if (!mRow.canHaveChildren()) {
-            Object src = event.getSource();
-            if (src == mCostAmountField || src == mCostType) {
-                costChanged();
-            } else if (src == mWeightAmountField || src == mWeightType) {
-                weightChanged();
-            }
-        }
     }
 
     private void docChanged(DocumentEvent event) {
@@ -237,23 +212,6 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     @Override
     public void removeUpdate(DocumentEvent event) {
         docChanged(event);
-    }
-
-    @Override
-    public void focusGained(FocusEvent event) {
-        // Not used.
-    }
-
-    @Override
-    public void focusLost(FocusEvent event) {
-        if (!mRow.canHaveChildren()) {
-            Object src = event.getSource();
-            if (src == mCostAmountField) {
-                costChanged();
-            } else if (src == mWeightAmountField) {
-                weightChanged();
-            }
-        }
     }
 
     private void weightChanged() {

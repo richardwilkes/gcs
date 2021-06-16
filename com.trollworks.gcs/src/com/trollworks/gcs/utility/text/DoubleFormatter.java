@@ -39,7 +39,7 @@ public class DoubleFormatter extends JFormattedTextField.AbstractFormatter {
 
     @Override
     public String valueToString(Object value) {
-        double val = ((Double) value).doubleValue();
+        double val = ((Number) value).doubleValue();
         return mForceSign ? Numbers.formatWithForcedSign(val) : Numbers.format(val);
     }
 }

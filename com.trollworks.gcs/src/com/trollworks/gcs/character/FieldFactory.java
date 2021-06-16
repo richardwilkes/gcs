@@ -29,12 +29,15 @@ public final class FieldFactory {
     public static final DefaultFormatterFactory FIXED6            = new DefaultFormatterFactory(new Fixed6Formatter(Fixed6.ZERO, new Fixed6(99999), false));
     public static final DefaultFormatterFactory FLOAT             = new DefaultFormatterFactory(new DoubleFormatter(0, 99999, false));
     public static final DefaultFormatterFactory HEIGHT            = new DefaultFormatterFactory(new HeightFormatter(true));
+    public static final DefaultFormatterFactory INT5              = new DefaultFormatterFactory(new IntegerFormatter(-99999, 99999, false));
     public static final DefaultFormatterFactory INT6              = new DefaultFormatterFactory(new IntegerFormatter(-999999, 999999, false));
     public static final DefaultFormatterFactory INT7              = new DefaultFormatterFactory(new IntegerFormatter(-9999999, 9999999, false));
+    public static final DefaultFormatterFactory INT9              = new DefaultFormatterFactory(new IntegerFormatter(-999999999, 999999999, false));
     public static final DefaultFormatterFactory LENGTH            = new DefaultFormatterFactory(new HeightFormatter(false));
     public static final DefaultFormatterFactory OUTPUT_DPI        = new DefaultFormatterFactory(new IntegerFormatter(50, 300, false));
     public static final DefaultFormatterFactory TOOLTIP_TIMEOUT   = new DefaultFormatterFactory(new IntegerFormatter(1, 300, false));
     public static final DefaultFormatterFactory PERCENT_REDUCTION = new DefaultFormatterFactory(new IntegerFormatter(0, 80, false));
+    public static final DefaultFormatterFactory POSINT3           = new DefaultFormatterFactory(new IntegerFormatter(0, 999, false));
     public static final DefaultFormatterFactory POSINT5           = new DefaultFormatterFactory(new IntegerFormatter(0, 99999, false));
     public static final DefaultFormatterFactory POSINT6           = new DefaultFormatterFactory(new IntegerFormatter(0, 999999, false));
     public static final DefaultFormatterFactory POSINT9           = new DefaultFormatterFactory(new IntegerFormatter(0, 999999999, false));

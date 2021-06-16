@@ -11,19 +11,19 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.NumberFilter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
@@ -33,19 +33,20 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JTextField;
+import javax.swing.JFormattedTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** Editor for {@link AdvantageModifier}s. */
 public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implements ActionListener, DocumentListener {
-    private JTextField         mNameField;
+    private EditorField        mNameField;
     private JCheckBox          mEnabledField;
     private MultiLineTextField mNotesField;
-    private JTextField         mReferenceField;
-    private JTextField         mCostField;
-    private JTextField         mLevelField;
-    private JTextField         mCostModifierField;
+    private EditorField        mReferenceField;
+    private EditorField        mCostField;
+    private EditorField        mLevelField;
+    private EditorField        mCostModifierField;
     private FeaturesPanel      mFeatures;
     private JComboBox<Object>  mCostType;
     private JComboBox<Object>  mAffects;
@@ -59,16 +60,19 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     public AdvantageModifierEditor(AdvantageModifier modifier) {
         super(modifier);
         addContent();
+        updateCostModifier();
     }
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
         StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
         if (mRow.canHaveChildren()) {
-            mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("Name of container"));
+            mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(),
+                    I18n.text("Name of container"));
         } else {
             StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
-            mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
+            mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(),
+                    I18n.text("Name of Modifier"));
             mEnabledField = new JCheckBox(I18n.text("Enabled"), mRow.isEnabled());
             mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
             mEnabledField.setEnabled(mIsEditable);
@@ -79,10 +83,12 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         }
 
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(new StdLabel(I18n.text("Notes"), mNotesField),
+                new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("advantage modifier")), 6);
+        mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(),
+                PageRefCell.getStdToolTip(I18n.text("advantage modifier")), 6);
         outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (!mRow.canHaveChildren()) {
@@ -97,7 +103,8 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
         if (!mRow.canHaveChildren()) {
-            modified |= getCostType() == AdvantageModifierCostType.MULTIPLIER ? mRow.setCostMultiplier(getCostMultiplier()) : mRow.setCost(getCost());
+            modified |= getCostType() == AdvantageModifierCostType.MULTIPLIER ?
+                    mRow.setCostMultiplier(getCostMultiplier()) : mRow.setCost(getCost());
             if (hasLevels()) {
                 modified |= mRow.setLevels(getLevels());
                 modified |= mRow.setCostType(AdvantageModifierCostType.PERCENTAGE);
@@ -118,9 +125,8 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         return mCostType.getSelectedIndex() == 0;
     }
 
-    private JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
-        JTextField field = new JTextField(text);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
         addLabel(labelParent, title, field);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -129,23 +135,35 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        if (!mRow.canHaveChildren()) {
-            Object src = event.getSource();
-            if (src == mCostType) {
-                costTypeChanged();
-            } else if (src == mCostField || src == mLevelField) {
-                updateCostModifier();
+        if (!mRow.canHaveChildren() && event.getSource() == mCostType) {
+            boolean hasLevels = hasLevels();
+            if (hasLevels) {
+                mLevelField.setValue(Integer.valueOf(mLastLevel));
+            } else {
+                mLastLevel = ((Integer) mLevelField.getValue()).intValue();
+                mLevelField.setText("");
             }
+            mLevelField.setEnabled(hasLevels);
+
+            Object value = mCostField.getValue();
+            if (getCostType() == AdvantageModifierCostType.MULTIPLIER) {
+                if (mCostField.getFormatterFactory() != FieldFactory.FLOAT) {
+                    mCostField.setFormatterFactory(FieldFactory.FLOAT);
+                    mCostField.setValue(Double.valueOf(Math.abs(((Number) value).intValue())));
+                }
+            } else {
+                if (mCostField.getFormatterFactory() != FieldFactory.INT5) {
+                    mCostField.setFormatterFactory(FieldFactory.INT5);
+                    mCostField.setValue(Integer.valueOf(((Number) value).intValue()));
+                }
+            }
+            updateCostModifier();
         }
     }
 
-    private static JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-        if (maxChars > 0) {
-            UIUtilities.setToPreferredSizeOnly(field);
-            field.setText(text);
-        }
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text,
+                maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         addLabel(labelParent, title, field);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
@@ -155,27 +173,19 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         return field;
     }
 
-    private JTextField createNumberField(Container labelParent, Container fieldParent, String title, boolean allowSign, int value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + (allowSign ? "-" : ""));
-        UIUtilities.setToPreferredSizeOnly(field);
-        field.setText(Numbers.format(value));
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createNumberField(Container labelParent, Container fieldParent, String title, JFormattedTextField.AbstractFormatterFactory formatter, int value, int protoValue, String tooltip, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(formatter, listener, SwingConstants.LEFT,
+                Integer.valueOf(value), Integer.valueOf(protoValue), tooltip);
         field.setEnabled(mIsEditable);
-        NumberFilter.apply(field, false, allowSign, true, maxDigits);
-        field.addActionListener(this);
         addLabel(labelParent, title, field);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
-    private JTextField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, int maxDigits) {
-        JTextField field = new JTextField(Text.makeFiller(maxDigits, '9') + Text.makeFiller(maxDigits / 3, ',') + '.');
-        UIUtilities.setToPreferredSizeOnly(field);
-        field.setText(Numbers.format(value));
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private EditorField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.FLOAT, listener, SwingConstants.LEFT,
+                Double.valueOf(value), Double.valueOf(-99999), tooltip);
         field.setEnabled(mIsEditable);
-        NumberFilter.apply(field, true, false, true, maxDigits);
-        field.addActionListener(this);
         addLabel(labelParent, title, field);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
@@ -189,10 +199,16 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         }
         String costTitle   = I18n.text("Cost");
         String costTooltip = I18n.text("The base cost modifier");
-        mCostField = mRow.getCostType() == AdvantageModifierCostType.MULTIPLIER ? createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip, 5) : createNumberField(parent, wrapper, costTitle, true, mRow.getCost(), costTooltip, 5);
+        mCostField = mRow.getCostType() == AdvantageModifierCostType.MULTIPLIER ?
+                createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip,
+                        (f) -> updateCostModifier()) :
+                createNumberField(parent, wrapper, costTitle, FieldFactory.INT5, mRow.getCost(),
+                        -99999, costTooltip, (f) -> updateCostModifier());
         createCostType(wrapper);
-        mLevelField = createNumberField(wrapper, wrapper, I18n.text("Levels"), false, mLastLevel, I18n.text("The number of levels this modifier has"), 3);
-        mCostModifierField = createNumberField(wrapper, wrapper, I18n.text("Total"), true, 0, I18n.text("The cost modifier's total value"), 9);
+        mLevelField = createNumberField(wrapper, wrapper, I18n.text("Levels"), FieldFactory.POSINT3,
+                mLastLevel, 999, I18n.text("The number of levels this modifier has"),
+                (f) -> updateCostModifier());
+        mCostModifierField = createField(wrapper, wrapper, I18n.text("Total"), "", I18n.text("The cost modifier's total value"), 9);
         mAffects = createComboBox(wrapper, Affects.values(), mRow.getAffects());
         mCostModifierField.setEnabled(false);
         if (!mRow.hasLevels()) {
@@ -207,7 +223,6 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
-        UIUtilities.setToPreferredSizeOnly(combo);
         parent.add(combo, new PrecisionLayoutData().setFillHorizontalAlignment());
         return combo;
     }
@@ -220,33 +235,10 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         mCostType = createComboBox(parent, values, mRow.hasLevels() ? values[0] : mRow.getCostType());
     }
 
-    private void costTypeChanged() {
-        boolean hasLevels = hasLevels();
-        if (hasLevels) {
-            mLevelField.setText(Numbers.format(mLastLevel));
-        } else {
-            mLastLevel = Numbers.extractInteger(mLevelField.getText(), 0, true);
-            mLevelField.setText("");
-        }
-        mLevelField.setEnabled(hasLevels);
-        updateCostField();
-        updateCostModifier();
-    }
-
-    private void updateCostField() {
-        if (getCostType() == AdvantageModifierCostType.MULTIPLIER) {
-            NumberFilter.apply(mCostField, true, false, true, 5);
-            mCostField.setText(Numbers.format(Math.abs(Numbers.extractDouble(mCostField.getText(), 0, true))));
-        } else {
-            NumberFilter.apply(mCostField, false, true, true, 5);
-            mCostField.setText(Numbers.formatWithForcedSign(Numbers.extractInteger(mCostField.getText(), 0, true)));
-        }
-    }
-
     private void updateCostModifier() {
         boolean enabled = true;
         if (hasLevels()) {
-            mCostModifierField.setText(Numbers.formatWithForcedSign((long) getCost() * getLevels()) + "%");
+            mCostModifierField.setText(Integer.valueOf(getCost() * getLevels()) + "%");
         } else {
             AdvantageModifierCostType costType = getCostType();
             switch (costType) {
@@ -271,15 +263,15 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     }
 
     private int getCost() {
-        return Numbers.extractInteger(mCostField.getText(), 0, true);
+        return ((Number) mCostField.getValue()).intValue();
     }
 
     private double getCostMultiplier() {
-        return Numbers.extractDouble(mCostField.getText(), 0, true);
+        return ((Number) mCostField.getValue()).doubleValue();
     }
 
     private int getLevels() {
-        return Numbers.extractInteger(mLevelField.getText(), 0, true);
+        return ((Number) mLevelField.getValue()).intValue();
     }
 
     private void docChanged(DocumentEvent event) {
